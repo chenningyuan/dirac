@@ -62,16 +62,28 @@ cp -R /home/ilias/bin/cmake_static/*   $DIRAC/build/.
 cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun   $DIRAC/build/.
 
 echo -e "\n now packing... "
-
-#cat "--scratch=$PWD ; --global-scratch-disk" > diracrc_grid
-tar cvzf dirac_test_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton cmake build diracrc_grid
+tar cvzf dirac_grid_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton basis_ecp cmake build doc src utils COPYING maintenance/grid_testing/diracrc_grid 
+echo -e "\n packing done... "
+ls -lt dirac_grid_suite.tgz
 
 # initialize your certificate from grid computing
+# ? ...
 
 # delete the old package from the SE
+#lcg-del -a   lfn:/grid/voce/ilias/dirac_grid_suite.tgz
+#lcg-del -a   lfn:/grid/compchem/ilias/dirac_grid_suite.tgz
 
-# copy the tar-packge onto SE
+# copy the tar-package onto SE #
+#  lcg-cr -l lfn://grid/voce/ilias/dirac_grid_suite.tgz  --vo voce dirac_grid_suite.tgz
+# lcg-cr -d  gridse.ilc.cnr.it -l lfn://grid/compchem/ilias/dirac_current.tgz  --vo compchem dirac_current.tgz
+
+#   Check files on grid SE:
+#  lcg-ls lfn://grid/voce/ilias
+#  lcg-ls lfn://grid/compchem/ilias
+
 
 # submit extra launching script with glite
+#cd maintenance/grid_testing
+#glite-wms-job-submit -o JOB_voce -a submit_voce.jdl
 
 exit 0

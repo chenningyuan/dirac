@@ -38,8 +38,13 @@ put "\*static\*" into Modules/Setup.dist and type ::
 Working with your certificate
 ------------------------------
 
-Initialize: 
+Simple initialization :
 ::
+ voms-proxy-init --voms voce
+
+More advanced initialization:
+::
+
   voms-proxy-init --voms voce -hours 24 -vomslife 24:00 --out ~/voce_cert; export X509_USER_PROXY=~/voce_cert; voms-proxy-info --all
   voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
