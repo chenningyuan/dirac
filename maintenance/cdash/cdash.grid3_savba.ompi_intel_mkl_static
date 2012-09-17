@@ -32,12 +32,11 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 # download fresh clone...
 git pull
 
-pamadm -a
-
 ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
 
 cd $DIRAC/$BUILD
  cmake ..
+ make -j2 dirac.x
  #make ExperimentalUpdate
  make ExperimentalConfigure
  make ExperimentalBuild
@@ -53,13 +52,14 @@ echo "build finished at "$timestamp
 # create the reduced tar-file containing all important stuff ...
 cd $DIRAC
 ### prepare own build with all files ready...
-/bin/rm -rf $DIRAC/build
-mkdir $DIRAC/build
-cp $DIRAC/$BUILD/dirac.x $DIRAC/build/.
+/bin/rm -rf  $DIRAC/build
+mkdir  $DIRAC/build
+# copy static dirac.x
+cp $DIRAC/$BUILD/dirac.x  $DIRAC/build/.
 # copy there the cmake static
-cp -R /home/ilias/bin/cmake_static/* $DIRAC/build/.
+cp -R /home/ilias/bin/cmake_static/*   $DIRAC/build/.
 # copy there the mpirun static
-cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun  $DIRAC/build/.
+cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun   $DIRAC/build/.
 
 echo -e "\n now packing... "
 
@@ -72,6 +72,6 @@ tar cvzf dirac_test_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test 
 
 # copy the tar-packge onto SE
 
-# launch extra script with glite
+# submit extra launching script with glite
 
 exit 0
