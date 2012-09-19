@@ -145,7 +145,7 @@ contains
                               cord(2,i), &
                               cord(3,i)  &   
                             )
-       enddo
+       end do
     !> end
 
 ! 

@@ -41,10 +41,6 @@ module x2c_2e_soc_interface
 
   private
 
-  real(8), parameter :: val_d1      =  1.0d0
-  real(8), parameter :: val_d0      =  0.0d0
-  real(8), parameter :: val_dm1     = -1.0d0
-
 contains
 
 !**********************************************************************
@@ -109,6 +105,7 @@ contains
      integer, intent(in)     :: print_lvl
      logical, intent(in)     :: spherical_on
 !----------------------------------------------------------------------
+     integer                 :: i
 !**********************************************************************
  
        if(x2c_add_amfi == 1)then
@@ -138,9 +135,30 @@ contains
                                      print_lvl)
        else
 #ifdef MOD_AOOSOC
-         call put_atomic_oo_order_so_correction(           &
-                                               print_lvl   &
-                                               )
+         call x2c_interface2aoosoc(naosh_ls,             &
+                                   nr_ao_L,              &
+                                   naosh_all,            &
+                                   naosh_L,              &
+                                   nfsym,                &
+                                   nz,                   &
+                                   bs_irrep_mat,         &
+                                   ipq_off_in,           &
+                                   iqp_off_in,           &
+                                   iqmult_trip_q,        &
+                                   op_bs_to_fs,          &
+                                   quat_pointer,         &
+                                   quat_pointer_op,      &
+                                   cspeed,               &
+                                   max_quant_num,        &
+                                   nuclei_totnum,        &
+                                   tot_charge_for_mfsum, &
+                                   amfi_order_contrib,   &
+                                   is_len_wrk,           &
+                                   spherical_on,         &
+                                   x2c_file_amf,         &
+                                   x2c_file_glb,         &
+                                   print_lvl)
+
 #else
          call quit('unknown 2e-SOC interface in x2c module')
 #endif
@@ -457,6 +475,209 @@ contains
        deallocate(scr2_mat)
 
   end subroutine x2c_interface2old_amfi
+
+!**********************************************************************
+
+  subroutine x2c_interface2aoosoc(naosh_ls,              &
+                                  nr_ao_L,               &
+                                  naosh_all,             &
+                                  naosh_L,               &
+                                  nfsym,                 &
+                                  nz,                    &
+                                  bs_irrep_mat,          &
+                                  ipq_off_in,            &
+                                  iqp_off_in,            &
+                                  iqmult_trip_q,         &
+                                  op_bs_to_fs,           &
+                                  quat_pointer,          &
+                                  quat_pointer_op,       &
+                                  cspeed,                &
+                                  max_quant_num,         &
+                                  nuclei_totnum,         &
+                                  tot_charge_for_mfsum,  &
+                                  amfi_order_contrib,    &
+                                  is_len_wrk,            &
+                                  spherical_on,          &
+                                  x2c_file_amf,          &
+                                  x2c_file_glb,          &
+                                  print_lvl)   
+!**********************************************************************
+!
+!    purpose: interface routine to th oo-order 2e-SOC module written by S. Knecht 
+!             and friends. 
+!
+!             the outline of this routine may be sketched as follows:
+!
+!             1. retrieve 2e-SOC from file
+!   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
+!  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
+!            \  c. insert quaternion phases
+!             2. read h1_++_saao_cartesian_gaussian from file X2Camfi_scr (in ++ form but 4c-format retained)
+!             3. pick out LL block
+!             4. save h1_++_LL_saao_cartesian_gaussian to file X2CMAT (only LL-block retained)
+!
+!             partly written on the transatlantic flight from Buenos Aires to Paris ...
+!
+!----------------------------------------------------------------------
+     real(8), intent(in)             :: cspeed
+     integer, intent(in)             :: naosh_ls
+     integer, intent(in)             :: nr_ao_L
+     integer, intent(in)             :: naosh_all(nfsym)
+     integer, intent(in)             :: naosh_L(nfsym)
+     integer, intent(in)             :: nfsym
+     integer, intent(in)             :: nz
+     integer, intent(in)             :: ipq_off_in(4,0:7)
+     integer, intent(in)             :: iqp_off_in(4,0:7)
+     integer, intent(in)             :: op_bs_to_fs(0:7,1:2)
+     integer, intent(in)             :: bs_irrep_mat(4,0:7)
+     integer, intent(in)             :: iqmult_trip_q(4,4,4)
+     integer, intent(in)             :: quat_pointer(0:7,2)
+     integer, intent(in)             :: quat_pointer_op(0:7)
+     integer, intent(in)             :: x2c_file_amf
+     integer, intent(in)             :: x2c_file_glb
+     integer, intent(in)             :: is_len_wrk
+     integer, intent(in)             :: max_quant_num
+     integer, intent(in)             :: nuclei_totnum
+     integer, intent(in)             :: tot_charge_for_mfsum
+     integer, intent(in)             :: amfi_order_contrib
+     integer, intent(in)             :: print_lvl
+     logical, intent(in)             :: spherical_on
+!--------------------------------------------------------------
+     real(8), allocatable            :: scr1_mat(:)
+     real(8), allocatable            :: scr2_mat(:)
+     integer                         :: i
+     integer                         :: j
+     integer                         :: iq
+     integer                         :: ipq
+     integer                         :: iz
+     integer                         :: irepd
+     integer                         :: nsphcm
+     integer                         :: wf_components
+     character (len=12)              :: flabel
+!**********************************************************************
+ 
+!      allocate scratch space - part 1
+       allocate(scr1_mat(naosh_ls*naosh_ls*4))
+       scr1_mat = 0.0d0
+
+!      ------------------------------------------------------------------
+!      step 1. read aoosoc contributions for symmetry independent centers
+!      ------------------------------------------------------------------
+!        out: aoosoc  -> scr1_mat
+
+       do i = 1, nuclei_totnum
+         call put_atomic_oo_order_so_correction(                &
+                                                scr1_mat,       &
+                                                nrows_ext,      &
+                                                ncols_ext,      &
+                                                4,              &
+                                                i,              &
+                                                nuclei_totnum,  &
+                                                print_lvl       &
+                                                )
+       end do
+
+!      allocate scratch space - part 2
+       allocate(scr2_mat(naosh_ls*naosh_ls*4))
+       scr2_mat = 0
+
+!      b. transform from AO-basis to SO-AO basis
+!      -----------------------------------------
+!        in : h1_AO    -> scr2_mat
+!        out: h1_SO-AO -> scr1_mat
+       scr1_mat = 0.0d0
+       i = op_bs_to_fs(0,1)
+       do iz = 1, 4
+         irepd = bs_irrep_mat(iz,0)
+         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+         ipq   = iqp_off_in(iq,0)
+         call mtaoso(scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
+                     scr1_mat(1+(naosh_ls*naosh_ls*(ipq-1))),    &
+                     naosh_ls,                                   &
+                     irepd,                                      &
+                     print_lvl)
+       end do
+
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+       call butobs_no_work(scr1_mat,nz)
+
+!      d. insert quaternion phase factors
+!      ----------------------------------
+       if(nz < 4)then
+         do iz = 1, nz                                                
+           iq = ipq_off_in(iz,0)
+           call q2bphase('F',iq,1,scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))))
+         end do           
+       end if          
+
+!      -------------------------------------------------------------------------------
+!      step 3. read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
+!      -------------------------------------------------------------------------------
+
+       i = 0
+       j = 0
+       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
+       scr2_mat = 0.0d0
+       call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
+         call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
+!      end if
+
+!      add amfi contributions to h1_2c
+       call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
+
+       scr2_mat = 0.0d0
+
+!      --------------------------------------------------------
+!      step 4. select LL-block of h1_++_saao_cartesian_gaussian
+!      --------------------------------------------------------
+
+       call pick_LL_block_saao_bas(scr1_mat,            &
+                                   scr2_mat,            &
+                                   naosh_L,             &
+                                   naosh_all,           &
+                                   naosh_ls,            &
+                                   nr_ao_L,             &
+                                   nfsym,               &
+                                   nz,                  &
+                                   0,                   &
+                                   op_bs_to_fs)
+
+!      -------------------------------------------------------------
+!      step 5. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
+!      -------------------------------------------------------------
+
+       i = 0
+       j = 0
+       write(flabel,'(a7,i4,i1)') 'h12cAOA',j,i
+
+       if(spherical_on)then
+
+         lwrk = is_len_wrk
+         allocate(wrk(lwrk))
+         call sph_iotc(scr2_mat,scr1_mat,nr_sph,print_lvl,wrk,lwrk)
+         deallocate(wrk)
+
+         call x2c_write(flabel,scr1_mat,nr_sph**2  * nz,x2c_file_glb)
+       else
+
+!        debug print
+!        if(print_lvl > 2)then
+           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
+!        end if
+
+         call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
+       end if
+
+!      release scratch space
+       deallocate(scr1_mat)
+       deallocate(scr2_mat)
+
+  end subroutine x2c_interface2aoosoc
 
 !**********************************************************************
 

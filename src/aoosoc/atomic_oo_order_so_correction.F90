@@ -124,33 +124,43 @@ contains
   end subroutine get_atomic_oo_order_so_correction
 !----------------------------------------------------------------------
 
-  subroutine put_atomic_oo_order_so_correction(            &
-                                               print_lvl,  &
-                                               xmat)
+  subroutine put_atomic_oo_order_so_correction(                             &
+                                               Gmat,                        &
+                                               nrows_ext,                   &
+                                               ncols_ext,                   &
+                                               nr_quat_ext,                 &
+                                               center_id,                   &
+                                               center_total,                &
+                                               print_lvl                    &
+                                              )    
 !**********************************************************************
-     real(8), optional, intent(in)      :: xmat(*)
+     real(8), optional, intent(inout)   :: Gmat(*)
+     integer, intent(in)                :: nrows_ext
+     integer, intent(in)                :: ncols_ext
+     integer, intent(in)                :: nr_quat_ext
+     integer, intent(in)                :: center_id
+     integer, intent(in)                :: center_total
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
-     integer                            :: i
-     integer, allocatable               :: boson_info(:)
-     logical                            :: sbsave
 !----------------------------------------------------------------------
 
 !     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
-      call read_normalized_2e_soc(                            &
-                                  fmat,                       & 
-                                  nrows,                      &
-                                  ncols,                      &
-                                  nr_quat,                    &
-                                  file_name_aoo_contributions,&
-                                  nint(atom(i)%charge),       &
-                                  aoo_fsoc                    &
+      call read_normalized_2e_soc(                              &
+                                  Gmat,                         & 
+                                  nrows_ext,                    &
+                                  ncols_ext,                    &
+                                  nr_quat_ext,                  &
+                                  file_name_aoo_contributions,  &
+                                  nint(atom(center_id)%charge), &
+                                  aoo_fsoc                      &
                                  )
 
 !     release memory for atom type
-      if(allocated(atom)) deallocate(atom)                             
+      if(center_id == center_total)then 
+        deallocate(atom)                             
+      end if
 
   end subroutine put_atomic_oo_order_so_correction
 !----------------------------------------------------------------------
 
-end module atomic_oo_order_so_correction
+  end module atomic_oo_order_so_correction
