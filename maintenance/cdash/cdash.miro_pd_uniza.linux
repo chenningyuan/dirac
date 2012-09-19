@@ -7,9 +7,10 @@
 # for crontab&queue system you have to set up enviroment !
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-export PATH=/home/ilias/bin/ompi_i32lp64_static/bin:$PATH
-export MANPATH=/home/ilias/bin/ompi_i32lp64_static/share/man:$MANPATH
-export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64/lib:$LD_LIBRARY_PATH
+# STATIC GNU OpenMPI stuff
+#export PATH=/home/ilias/bin/ompi_i32lp64_static/bin:$PATH
+#export MANPATH=/home/ilias/bin/ompi_i32lp64_static/share/man:$MANPATH
+#export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
 
