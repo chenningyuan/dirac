@@ -3,13 +3,14 @@ Launching DIRAC in the grid environment
 
 Testing of the DIRAC program suite in the grid enviroment.
 
-DIRAC is packed and the tar-ball is copied onto chosen VO location,
-from where an assigned CE unpacks it and performs own calculations.
+DIRAC is packed and the tar-ball is copied onto chosen VO location - storage
+element (SE), 
+from where an assigned computing element (CE) unpacks it and performs own calculations.
 
 Python script is not yet used for launching jdl-initiated script due to possibility
 that not all CE are equipped with appropriate python version. So we resort to the bash shell.
 
-The aim of this folder is to provide user with some teplates for so-called 
+The aim of this folder is to provide user with some teplates for the so-called 
 grid-computing.
 
 Making dirac.x static
@@ -58,12 +59,11 @@ Repeat for the certificate regeneration:
   myproxy-get-delegation -v -l ilias -k miro2 -a /tmp/x509up_u501
   voms-proxy-init --noregen --voms voce
 
-
-List of all valid proxy...
+List of all valid proxies:
 ::
  voms-proxy-info --all
 
-Destroy proxy: 
+Destroy currnt proxy: 
 ::
   voms-proxy-destroy
   myproxy-destroy -v -l ilias -k miro2

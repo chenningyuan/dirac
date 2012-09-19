@@ -20,9 +20,7 @@ echo " "
 ###  copy files to the current CE ###
 #####################################
 export rundir=`pwd`
-#lcg-cp lfn://grid/voce/ilias/dirac_test_suite.tgz  file://$rundir/dirac_test_suite.tgz  ||  { echo "Exiting...no dirac_test_suite.tgz found..." ; exit 3; }
-#lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$rundir/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
-lcg-cp lfn://grid/voce/ilias/dirac_current.tgz  file://$PWD/dirac_current.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
+lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
 
 ##########################################
 ##  make it executable and finally launch
@@ -36,14 +34,14 @@ echo -e "\n server Python version \c"; python -V
 echo -e "\n"
 
  # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
- export BUILD_EXECS=build_imported_static
- export BUILD=build
+ #export BUILD=build
+ export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 
  export OPAL_PREFIX=$PWD/$BUILD
- echo -e "OPAL_PREFIX=$OPAL_PREFIX"
+ echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
  
  export PATH=$PWD/$BUILD:$PATH
- echo -e "modified PATH=$PATH"
+ echo -e "Modified PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
 echo -e "\n ---- server environment ---- set :"
@@ -59,13 +57,10 @@ cat /proc/meminfo
 
 echo -e "\n ---- DIRAC unpacking ---- \n"
 tar --version
-tar xvfz dirac_current.tgz
+tar xvfz dirac_grid_suite.tgz
 
-#/bin/rm -rf $BUILD
-#mv $BUILD_EXECS  $BUILD
-
-#chmod  u+x  $BUILD/dirac.x  $BUILD/mpirun  $BUILD/cmake  $BUILD/ctest  pam  runtest
-chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest  pam  runtest
+echo "making executables"
+chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun   pam  runtest
 
 # create diracrc file for paralle run on the grid CE
 cp maintenance/grid_testing/diracrc_grid  diracrc
@@ -73,8 +68,8 @@ echo -e "\n ---- diracrc created ---- \n"
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo --mpi=2
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo --mpi=2
+#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
 
@@ -82,8 +77,8 @@ echo -e "\n --- Launching quick runtest --- \n ";
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-#python ./runtest --verbose --quick --mpi=2  #  works
-python ./runtest --verbose --quick #  works
+python ./runtest --verbose --quick --mpi=2  #  works
+#python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
 
 #############################################################
@@ -97,8 +92,8 @@ python ./runtest --verbose --quick #  works
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
 mv CMakeCache.txt CMakeCache.txt_STORED
 
-# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_serial_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_serial_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
 
  make ExperimentalConfigure
  make ExperimentalStart
@@ -106,6 +101,18 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  make ExperimentalSubmit
 ## return back into main directory
  cd ..
+
+# ----------------------------------------- #
+# ---- try own buildup on the grid CE ----- #
+# ----------------------------------------- #
+ echo -e "ifort ? \c"; which ifort
+ echo -e "gfortran 44 ? \c"; which gfortran44
+
+ mkdir build_on_grid
+ cd build_on_grid
+ cmake ..
+ make Experimental
+
 
 # ------------
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
