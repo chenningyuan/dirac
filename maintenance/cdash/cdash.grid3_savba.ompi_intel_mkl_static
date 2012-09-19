@@ -59,7 +59,8 @@ cp $DIRAC/$BUILD/dirac.x  $DIRAC/build/.
 # copy there the cmake static
 cp -R /home/ilias/bin/cmake_static/*   $DIRAC/build/.
 # copy there the mpirun static
-cp /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun   $DIRAC/build/.
+cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/build/.
+cp -R /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/build/.
 
 echo -e "\n now packing... "
 tar cvzf dirac_grid_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton basis_ecp cmake build doc src utils COPYING maintenance/grid_testing/diracrc_grid 
