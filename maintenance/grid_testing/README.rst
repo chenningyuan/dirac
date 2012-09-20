@@ -80,19 +80,21 @@ Accesible nodes/storage space:
   lcg-infosites -vo compchem se
   lcg-infosites -vo compchem all
 
-What you have in your VO space:
+What you have in your VO's lfn-space:
 
 ::
 
   lcg-ls -l  lfn://grid/voce/ilias/
-  lcg-ls lfn://grid/compchem/ilias
-  lcg-ls lfn://grid/compchem
+  lcg-ls -l  lfn://grid/compchem/ilias
  
- copy executable to your compchem space:
+Copy (upload) file to your VO's data storage space:
 :: 
-
+  lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
   lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
-  guid:9198887f-a283-486e-af4f-fb0ed4649dab
+
+And you get answer like:
+::
+  guid:1a4c183f-9335-47f4-af01-b358cc454f78
 
 even better:
 
@@ -101,18 +103,19 @@ even better:
   lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  ../../build/dirac.x
   guid:e3b25fad-ad2a-4a01-9b9b-dd2472e86f0c
 
-Delete data from your SE space:
+Delete selected data from your SE space:
 
 ::
 
-  lcg-del -a   lfn:/grid/compchem/ilias/dirac.x
+  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-del -a lfn://grid/compchem/ilias/dirac_grid_suite.tgz
 
-Copy files from SE onto current directory:
+Donwload files from SE into your server's current directory:
 
 :: 
 
- lcg-cp  lfn://grid/voce/ilias/dirac_current.tgz      file://$PWD/dirac_current.tgz
- lcg-cp  lfn://grid/compchem/ilias/dirac_current.tgz  file://$PWD/dirac_current.tgz
+ lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz      file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz
 
 
 -----------------------------------

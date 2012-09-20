@@ -2,7 +2,7 @@
 #######################################################################################################
 #
 #
-#               short script for copying and launching the DIRAC testing machinery
+#           Script for copying and launching the DIRAC suite on grid
 #
 #
 #######################################################################################################
@@ -11,16 +11,15 @@ echo -e "\n --- Hostname: \c"; hostname -f; echo
 echo -e " ---------  I am here: ---------  $PWD "
 echo -e "---  My space: "; df -h .
 
-echo -e  "\n files on my voce space lfn://grid/voce/ilias:"
+echo -e  "\n Files on my vo=voce space lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
 
 echo " "
 
 #####################################
-###  copy files to the current CE ###
+###  download file to the current CE ###
 #####################################
-export rundir=`pwd`
-lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  ||  { echo "Exiting...no dirac_current.tgz  found..." ; exit -1; }
+lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  ||  { echo "Exiting...no dirac_grid_suite.tgz  found..." ; exit -1; }
 
 ##########################################
 ##  make it executable and finally launch
@@ -68,7 +67,7 @@ echo -e "\n ---- diracrc created ---- \n"
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo --mpi=2
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
@@ -84,7 +83,9 @@ python ./runtest --verbose --quick --mpi=2  #  works
 #############################################################
 #               check own static cmake stuff
 #############################################################
+
  python pamadm -a
+
  cd $BUILD
 
 # FIX ERROR:
@@ -92,7 +93,7 @@ python ./runtest --verbose --quick --mpi=2  #  works
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
 mv CMakeCache.txt CMakeCache.txt_STORED
 
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
 # ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_serial_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
 
  make ExperimentalConfigure
@@ -108,20 +109,21 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  echo -e "ifort ? \c"; which ifort
  echo -e "gfortran 44 ? \c"; which gfortran44
 
- mkdir build_on_grid
- cd build_on_grid
+ ./setup -D VERBOSE_OUTPUT=ON 
+ cd build
  cmake ..
  make Experimental
 
 
-# ------------
+# ----------------------------
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
 ls -lt
 tar --version
 #tar --help
 echo " "
 #tar cvzf dirac_suite_back.tgz test *.out *.tgz
-tar cvzf dirac_suite_back.tgz test *.out 
+#tar cvzf dirac_suite_back.tgz test *.out 
+tar cvzf dirac_grid_suite_back.tgz  *
 
 ############################
 #  print out some info .. 

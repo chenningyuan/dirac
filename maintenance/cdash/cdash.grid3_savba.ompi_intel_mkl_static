@@ -35,8 +35,9 @@ git pull
 ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
 
 cd $DIRAC/$BUILD
- cmake ..
- make -j2 dirac.x
+ #cmake ..
+ #make -j2 dirac.x
+ make depend
  #make ExperimentalUpdate
  make ExperimentalConfigure
  make ExperimentalBuild
@@ -51,19 +52,14 @@ echo "build finished at "$timestamp
 
 # create the reduced tar-file containing all important stuff ...
 cd $DIRAC
-### prepare own build with all files ready...
-/bin/rm -rf  $DIRAC/build
-mkdir  $DIRAC/build
-# copy static dirac.x
-cp $DIRAC/$BUILD/dirac.x  $DIRAC/build/.
 # copy there the cmake static
-cp -R /home/ilias/bin/cmake_static/*   $DIRAC/build/.
+cp -R /home/ilias/bin/cmake_static/*   $DIRAC/$BUILD/.
 # copy there the mpirun static
-cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/build/.
-cp -R /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/build/.
+cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
+cp -R /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/.
 
 echo -e "\n now packing... "
-tar cvzf dirac_grid_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest test  basis  basis_dalton basis_ecp cmake build doc src utils COPYING maintenance/grid_testing/diracrc_grid 
+tar cvzf dirac_grid_suite.tgz CMakeLists.txt CTestConfig.cmake pam runtest setup  test  basis  basis_dalton basis_ecp cmake $BUILD doc src utils COPYING maintenance/grid_testing/diracrc_grid 
 echo -e "\n packing done... "
 ls -lt dirac_grid_suite.tgz
 
@@ -71,20 +67,19 @@ ls -lt dirac_grid_suite.tgz
 # ? ...
 
 # delete the old package from the SE
-#lcg-del -a   lfn:/grid/voce/ilias/dirac_grid_suite.tgz
-#lcg-del -a   lfn:/grid/compchem/ilias/dirac_grid_suite.tgz
+lcg-del -a  lfn:/grid/voce/ilias/dirac_grid_suite.tgz
+#lcg-del -a  lfn:/grid/compchem/ilias/dirac_grid_suite.tgz
 
-# copy the tar-package onto SE #
-#  lcg-cr -l lfn://grid/voce/ilias/dirac_grid_suite.tgz  --vo voce dirac_grid_suite.tgz
-# lcg-cr -d  gridse.ilc.cnr.it -l lfn://grid/compchem/ilias/dirac_current.tgz  --vo compchem dirac_current.tgz
+# upload the fresh tar-ball onto the SE
+lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
+#lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
 
-#   Check files on grid SE:
-#  lcg-ls lfn://grid/voce/ilias
+#   Check your files on grid SE:
+lcg-ls -l lfn://grid/voce/ilias
 #  lcg-ls lfn://grid/compchem/ilias
 
-
 # submit extra launching script with glite
-#cd maintenance/grid_testing
-#glite-wms-job-submit -o JOB_voce -a submit_voce.jdl
+cd maintenance/grid_testing
+glite-wms-job-submit -o JOB_voce.$timestamp -a submit_voce.jdl
 
 exit 0
