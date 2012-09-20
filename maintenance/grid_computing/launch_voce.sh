@@ -8,7 +8,7 @@
 #######################################################################################################
 
 echo -e "\n --- Hostname: \c"; hostname -f; echo
-echo -e " ---------  I am here: ---------  $PWD "
+echo -e " ---------  My current directory :  $PWD "
 echo -e "---  My space: "; df -h .
 
 echo -e  "\n Files on my vo=voce space lfn://grid/voce/ilias:"
@@ -20,6 +20,7 @@ echo " "
 ###  download file to the current CE ###
 #####################################
 lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  ||  { echo "Exiting...no dirac_grid_suite.tgz  found..." ; exit -1; }
+echo ""
 
 ##########################################
 ##  make it executable and finally launch
@@ -28,12 +29,11 @@ echo -e "\n Job started at : \c"; date
 
 uname -a
 
-echo -e "\n server Python version \c"; python -V
+echo -e "\n server Python version: \c"; which python; python -V
 
 echo -e "\n"
 
  # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
- #export BUILD=build
  export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 
  export OPAL_PREFIX=$PWD/$BUILD
@@ -46,27 +46,30 @@ echo -e "\n"
 echo -e "\n ---- server environment ---- set :"
 set
 
-echo -e "\n ---- server CPU equipment, /proc/cpuinfo ----"
-cat /proc/cpuinfo
+#echo -e "\n ---- server CPU equipment, /proc/cpuinfo ----"
+#cat /proc/cpuinfo
 
 echo -e "\n Number of CPUs :\c";cat /proc/cpuinfo | grep processor | wc -l
 
 echo -e "\n ---- server memory equipment ----"
 cat /proc/meminfo
 
-echo -e "\n ---- DIRAC unpacking ---- \n"
-tar --version
-tar xvfz dirac_grid_suite.tgz
+echo -e "\n ---- DIRAC unpacking with tar : \c "; which tar;  tar --version
+tar xfz dirac_grid_suite.tgz
 
-echo "making executables"
-chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun   pam  runtest
+
+echo -e "\n Content of directory BUILD=$BUILD: \c"; ls -lt $BUILD
+
+echo -e "\n making executables:"
+ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
+chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
+ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
 
 # create diracrc file for paralle run on the grid CE
 cp maintenance/grid_testing/diracrc_grid  diracrc
-echo -e "\n ---- diracrc created ---- \n"
+echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
-
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
@@ -84,9 +87,10 @@ python ./runtest --verbose --quick --mpi=2  #  works
 #               check own static cmake stuff
 #############################################################
 
- python pamadm -a
+ python ./pamadm -a
 
  cd $BUILD
+ echo -e "\n I am in $PWD \n"
 
 # FIX ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
@@ -109,7 +113,7 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  echo -e "ifort ? \c"; which ifort
  echo -e "gfortran 44 ? \c"; which gfortran44
 
- ./setup -D VERBOSE_OUTPUT=ON 
+ python ./setup -D VERBOSE_OUTPUT=ON 
  cd build
  cmake ..
  make Experimental
@@ -123,7 +127,7 @@ tar --version
 echo " "
 #tar cvzf dirac_suite_back.tgz test *.out *.tgz
 #tar cvzf dirac_suite_back.tgz test *.out 
-tar cvzf dirac_grid_suite_back.tgz  *
+tar czf dirac_grid_suite_back.tgz  *
 
 ############################
 #  print out some info .. 
