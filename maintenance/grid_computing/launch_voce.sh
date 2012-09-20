@@ -27,7 +27,7 @@ echo ""
 ##########################################
 echo -e "\n Job started at : \c"; date
 
-uname -a
+echo -e "Server specification: \c";  uname -a
 
 echo -e "\n server Python version: \c"; which python; python -V
 
@@ -35,11 +35,13 @@ echo -e "\n"
 
  # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
  export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
+ export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 
  export OPAL_PREFIX=$PWD/$BUILD
  echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
  
- export PATH=$PWD/$BUILD:$PATH
+ #export PATH=$PWD/$BUILD:$PATH
+ export PATH=$PWD/$BUILD_SERIAL:$PWD/$BUILD:$PATH
  echo -e "Modified PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
@@ -70,7 +72,8 @@ cp maintenance/grid_testing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
+#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
@@ -79,8 +82,8 @@ echo -e "\n --- Launching quick runtest --- \n ";
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-python ./runtest --verbose --quick --mpi=2  #  works
-#python ./runtest --verbose --quick #  works
+#python ./runtest --verbose --quick --mpi=2  #  works
+python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
 
 #############################################################
@@ -89,7 +92,7 @@ python ./runtest --verbose --quick --mpi=2  #  works
 
  python ./pamadm -a
 
- cd $BUILD
+ cd $BUILD_SERIAL
  echo -e "\n I am in $PWD \n"
 
 # FIX ERROR:
@@ -97,8 +100,8 @@ python ./runtest --verbose --quick --mpi=2  #  works
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
 mv CMakeCache.txt CMakeCache.txt_STORED
 
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
-# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_serial_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -DRUNTEST_BINARY=$DIRAC/$BUILD_SERIAL/dirac.x ..
 
  make ExperimentalConfigure
  make ExperimentalStart
@@ -110,8 +113,12 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
 # ----------------------------------------- #
- echo -e "ifort ? \c"; which ifort
- echo -e "gfortran 44 ? \c"; which gfortran44
+ echo -e "\n ifort ? \c"; which ifort
+ echo -e "\n icc ? \c"; which icc
+ echo -e "\n gfortran44 ? \c"; which gfortran44
+ echo -e "\n gcc 44 ? \c"; which gcc44
+
+ echo "  "
 
  python ./setup -D VERBOSE_OUTPUT=ON 
  cd build
