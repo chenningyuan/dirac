@@ -103,7 +103,7 @@ C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
       ONE = 1.0D0
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
-      ISKIP = 3 ! from which commutator to skip
+      ISKIP = 5 ! from which commutator to skip
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -123,21 +123,18 @@ C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
 *      
 *      May want to allocate some temporary arrays
 *
-      CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
-      CALL EXP_MT_H_EXP_TC_MEM_KRCC(WORK,KFREE,LFREE)
+      CALL EXP_MT_H_EXP_TC_MEM_KRCC(1,WORK,KFREE,LFREE)
 *
 *. Start by zeroing the CC-vector function and the intermediates
-      ZERO = 0.0D0
       CALL SETVEC(CC_VEC,ZERO,N_CC_AMP+1)
-      CALL SETVEC(WORK(KM01),ZERO,LEN_M01_VEC_CC)
-      CALL SETVEC(WORK(KM10),ZERO,LEN_M10_VEC_CC)
-      CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
-      CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC)
-      CALL SETVEC(WORK(KM12),ZERO,LEN_M12_VEC_CC)
+C     CALL SETVEC(WORK(KM01),ZERO,LEN_M01_VEC_CC)
+C     CALL SETVEC(WORK(KM10),ZERO,LEN_M10_VEC_CC)
+C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
+C     CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC)
+C     CALL SETVEC(WORK(KM12),ZERO,LEN_M12_VEC_CC)
       print*,'LEN_M10_VEC_CC',LEN_M10_VEC_CC
 *. And some temporary arrays
 C     CALL SETVEC(DUMMY,ZERO,1000)
-      CALL SETVEC(WORK(KM11_EXTRA),ZERO,LEN_M11_VEC_CC)
 *
 * Start with zero commutators! (If first iteration and no restart this
 * should be the only one done!)
@@ -250,7 +247,14 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
 *
 * H20 -- 10 -- M10 (multiply by 1/2) Should be done first!!!
 *
+* Allocate the M10 intermediate
+*
+      NPART = 1
+      NHOLE = 0 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
+*
       IF(ISKIP.GE.3) THEN
+*
       print*,'to intermediate'
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
@@ -275,7 +279,6 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 *
       CALL SCALVE(WORK(KM10),HALF,LEN_M10_VEC_CC)
       CALL MEMCHK_KRCC(WORK)
-      print*,'after scalev'
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
 *
@@ -338,9 +341,7 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 *
 * And now the contraction
 *
-C     DO MMM= 1,1000
       print*,'second contraction M10'
-C     end do
       IHM = 2
       IFHM = 2 !intermediates are fetched
 *
@@ -356,13 +357,27 @@ C     end do
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+*
       END IF !ISKIP
+*
+* Deallocate the M10 intermediate
+*
+      NPART = 1
+      NHOLE = 0 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
 *
 * Fourth through M02
 *
 * H22 -- 10 -- M12 (multiply by 1/2)
 *
+* Allocate the M12 intermediate
+*
+      NPART = 1
+      NHOLE = 2 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
+*
       IF(ISKIP.GE.5) THEN
+*
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
 *
@@ -384,12 +399,20 @@ C     end do
       CALL SCALVE(WORK(KM12),HALF,LEN_M12_VEC_CC)
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
-      IF(ISKIP.GE.3) THEN
 *
 * M12 + H12 -- 10 -- M02 
 *
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
+*
+*
+* Allocate the M02 intermediate
+*
+      NPART = 0
+      NHOLE = 2 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
+*
+      IF(ISKIP.GE.3) THEN
 *
       print*,'adding M12 to H12'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH12,WORK(KNH12),
@@ -420,6 +443,7 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KINTM02),NINTER02,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+*
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
 *
@@ -482,13 +506,27 @@ C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+*
       END IF !ISKIP
+*
+* Deallocate the M12 intermediate (Will also deallocate M02)
+*
+      NPART = 1
+      NHOLE = 2
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
 *
 * Fifth through M11
 *
 * H22 -- 11 -- M11 (multiply by 1/2)
 *
+* Allocate the M11 intermediate
+*
+      NPART = 1
+      NHOLE = 1 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
+*
       IF(ISKIP.GE.3) THEN
+*
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
       print*,'H22 to M11 is now in session'
@@ -508,7 +546,36 @@ C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
 *
 * Save vector to disc since it will be needed later
 *
-      CALL VEC_TO_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
+C LBLK is now in use and the size of the blocks
+C     CALL VEC_TO_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC5)
+C     CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
+C     CALL SETVEC(WORK(KM11_EXTRA),ZERO,LEN_M11_VEC_CC)
+C     CALL MEMCHK_KRCC(WORK)
+C     print*,'write KM11_EXTRA,LEN_M11_VEC_CC',LEN_M11_VEC_CC
+C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     print*,'check KM11_EXTRA'
+C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+      CALL VEC_TO_DISC_KRCC(WORK(KM11),LEN_M11_VEC_CC,1,
+     &                      I_READ_BLOCK,LUSC4)
+C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     CALL MEMCHK_KRCC(WORK)
+C     CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC5)
+C     CALL VEC_FROM_DISC_KRCC(WORK(KM11_EXTRA),
+C    &               LEN_M11_VEC_CC,1,1200,LUSC4)
+C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11_EXTRA))
+C     CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11_EXTRA),
+C    &               LEN_M11_VEC_CC,1,1200,LUSC4)
+C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     CALL MEMCHK_KRCC(WORK)
+C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11_EXTRA))
+C     OME = -1.0D0
+C     CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
+C    &            ONE,OME,LEN_M11_VEC_CC)
+C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11))
+C     CALL MEMCHK_KRCC(WORK)
+C     stop
+
 *
 * Multiply by 1/2
 *
@@ -565,12 +632,28 @@ C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
 C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
 C    &     WORK,KFREE,LFREE)
 C     CALL MEMCHK_KRCC(WORK)
-*
-* Zero M11
-*
-      CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
       END IF !ISKIP
+*
+* Deallocate the M11 intermediate 
+*
+      NPART = 1
+      NHOLE = 1
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+*
       CALL MEMCHK_KRCC(WORK)
+*
+* Allocate the M01 intermediate. Since in this way we will never need
+* more than two intermediates in memory
+*
+      NPART = 0
+      NHOLE = 1 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
+*
+* Allocate the M11 intermediate
+*
+      NPART = 1
+      NHOLE = 1 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
       IF(ISKIP.GE.4) THEN
 *
 * Sixth through M01
@@ -580,7 +663,8 @@ C     CALL MEMCHK_KRCC(WORK)
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
 *
-      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11_EXTRA),IONE,IHM,
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11),IONE,IHM,
+C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11_EXTRA),IONE,IHM,
 C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,M11_EXTRA,IONE,IHM,
      &     IFHM,WORK(KT_CC), 
      &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
@@ -596,18 +680,32 @@ C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,M11_EXTRA,IONE,IHM,
 *
 * Multiply by 1/2
 *
-      CALL SCALVE(WORK(KM11_EXTRA),HALF,LEN_M11_VEC_CC)
+      CALL SCALVE(WORK(KM11),HALF,LEN_M11_VEC_CC)
+C     CALL SCALVE(WORK(KM11_EXTRA),HALF,LEN_M11_VEC_CC)
 C     CALL SCALVE(M11_EXTRA,HALF,LEN_M11_VEC_CC)
 *
 * H22 -- 11 -- M11 (reuse the above M11)
 *
-      CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
+C     print*,'before addition'
+C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     print*,'LBLK',LBLK
+      CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11),LEN_M11_VEC_CC,1,
+     &                              I_READ_BLOCK,LUSC4)
+      print*,'after addition'
+      CALL MEMCHK_KRCC(WORK)
+C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11),LEN_M11_VEC_CC,1,
+C    &                              LBLK,LUSC4)
+C    &                              12000,LUSC4)
+C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
+C     stop 'lllll'
+C     CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
 *
 * Add the stored KM11 and KM11_EXTRA
 *
-      CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
+C     CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
 C     CALL VECSUM(WORK(KM11),WORK(KM11),M11_EXTRA,
-     &            ONE,ONE,LEN_M11_VEC_CC)
+C    &            ONE,ONE,LEN_M11_VEC_CC)
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
 C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC) !only temp!!!!
@@ -616,7 +714,6 @@ C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC) !only temp!!!!
 *
 * Add amplitudes and integrals 
 ! Careful with signs since IHINDX may be different for the two!!!
-*
       print*,' adding M11 and H11 Second time'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
@@ -648,8 +745,21 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 C     print*,'writing out the M01 intermediate'
 C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
+*
+* Deallocate the M11 intermediate 
+*
+      NPART = 1
+      NHOLE = 1
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+*
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
+*
+* Allocate the M02 intermediate
+*
+      NPART = 0
+      NHOLE = 2 
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
 *
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
@@ -683,6 +793,13 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
 C     print*,'writing out the M01 intermediate'
 C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
+*
+* Deallocate the M02 intermediate 
+*
+      NPART = 0
+      NHOLE = 2
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+*
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.3) THEN
@@ -783,6 +900,13 @@ C    &                                   DUMMY,DUMMY,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+*
+* Deallocate the M01 intermediate 
+*
+      NPART = 0
+      NHOLE = 1
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+*
       END IF !ISKIP
 22    CONTINUE
       CALL MEMCHK_KRCC(WORK)
@@ -809,7 +933,9 @@ C     print*,'CC_VEC(N_CC_AMP+1),CC_VEC(1)',CC_VEC(N_CC_AMP+1),CC_VEC(1)
      &                   WORK,KFREE,LFREE)
       END IF
 *
-      CALL MEMREL('MAPPNG',WORK,KM11_EXTRA,KM11_EXTRA,KFREE,LFREE)
+* Release temp mem
+*
+      CALL EXP_MT_H_EXP_TC_MEM_KRCC(0,WORK,KFREE,LFREE)
 * 
 C     STOP ' Enforced stop after CC_VEC_FNC'
       RETURN
