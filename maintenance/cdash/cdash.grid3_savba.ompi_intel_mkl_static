@@ -25,6 +25,7 @@ DIRAC=/home/ilias/qch_work/software/dirac_git/trunk_current
 #
 BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
+BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
 cd $DIRAC
 
@@ -45,7 +46,7 @@ cd $DIRAC/$BUILD
  make ExperimentalSubmit
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo "build finished at "$timestamp
+echo "build 1 finished at "$timestamp
 
 cd $DIRAC
 ./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_SERIAL/dirac.x --force $BUILD_SERIAL
@@ -55,6 +56,19 @@ cd $DIRAC/$BUILD_SERIAL
  make depend
  #make ExperimentalUpdate
  make ExperimentalConfigure
+ make ExperimentalBuild
+ make ExperimentalSubmit
+
+cd $DIRAC
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD_GNU_SERIAL/dirac.x --force $BUILD_GNU_SERIAL
+cd $DIRAC/$BUILD_GNU_SERIAL
+ #cmake ..
+ #make -j2 dirac.x
+ make depend
+ #make ExperimentalUpdate
+ make ExperimentalConfigure
+ make ExperimentalBuild
+ make ExperimentalSubmit
 
 
 #################################################
@@ -70,11 +84,18 @@ cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD
 # copy there the mpirun static with related files
 cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
 mkdir $BUILD/share
-cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/share.
+cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/share/.
+
+# problems with "--exclude test/*/*.out"  - so remove them
+/bin/rm ../../test/*/*.out*
+/bin/rm -r ../../test/*/compare
 
 echo -e "\n now packing stuff for grid computations..."
-tar czf dirac_grid_suite.tgz CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_testing/diracrc_grid 
-echo -e "\n packing done, we have tar-ball file to be put on grid's SE : "
+
+tar czf dirac_grid_suite.tgz  \ 
+     CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp \ 
+     cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid 
+echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
 ls -lt dirac_grid_suite.tgz
 
 # initialize your certificate from grid computing
@@ -96,6 +117,7 @@ lcg-ls -l lfn://grid/voce/ilias
 #  lcg-ls lfn://grid/compchem/ilias
 
 # submit extra launching script with glite
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 cd maintenance/grid_computing
 glite-wms-job-submit -o JOB_voce.$timestamp -a submit_voce.jdl
 

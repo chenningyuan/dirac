@@ -61,14 +61,15 @@ tar xfz dirac_grid_suite.tgz
 
 
 echo -e "\n Content of directory BUILD=$BUILD: \c"; ls -lt $BUILD
+echo -e "\n Content of directory BUILD_SERIAL=$BUILD_SERIAL: \c"; ls -lt $BUILD_SERIAL
 
-echo -e "\n making executables:"
-ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
+#echo -e "\n making executables:"
+#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
+#chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
+#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
 
 # create diracrc file for paralle run on the grid CE
-cp maintenance/grid_testing/diracrc_grid  diracrc
+cp maintenance/grid_computing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
@@ -113,21 +114,24 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
 # ----------------------------------------- #
+ echo -e "\n pgf90 ? \c"; which pgf90
  echo -e "\n ifort ? \c"; which ifort
- echo -e "\n icc ? \c"; which icc
  echo -e "\n gfortran44 ? \c"; which gfortran44
- echo -e "\n gcc 44 ? \c"; which gcc44
+ echo -e "\n gfortran ? \c"; which gfortran
 
- echo "  "
+ echo -e "\n Own buildup of the host server "
 
- python ./setup -D VERBOSE_OUTPUT=ON 
+ #python ./setup -D VERBOSE_OUTPUT=ON --fc=$FORTRAN
+ python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off
  cd build
  cmake ..
  make Experimental
 
 
-# ----------------------------
+# --------------------------------------------------------------------
 echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
+# delete old tar-ball first
+rm dirac_grid_suite.tgz
 ls -lt
 tar --version
 #tar --help
