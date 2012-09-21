@@ -37,9 +37,10 @@ VirtualOrganisation="voce";
 # Demands on CE #
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
 #################
-Requirements =
- other.GlueCEPolicyMaxWallClockTime > 1200 &&
- other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
- other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
-;
+Requirements = other.GlueCEPolicyMaxWallClockTime > 1200;
+#Requirements =
+# other.GlueCEPolicyMaxWallClockTime > 1200 && 
+# other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
+# other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
+#;
 
