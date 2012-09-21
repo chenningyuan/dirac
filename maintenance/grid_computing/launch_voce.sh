@@ -13,14 +13,18 @@ echo -e "---  My space: "; df -h .
 
 echo -e  "\n Files on my vo=voce space lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
-
-echo " "
+lcg-lr    lfn://grid/voce/ilias/dirac_grid_suite.tgz
+echo " ------------------------- "
 
 #####################################
 ###  download file to the current CE ###
 #####################################
-lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  ||  { echo "Exiting...no dirac_grid_suite.tgz  found..." ; exit -1; }
-echo ""
+echo -e "\n Going to download lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
+lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  
+echo -e "\nFile attributes;  ls -lt dirac_grid_suite.tgz"
+ls -lt dirac_grid_suite.tgz
+echo " -----------------------"
+
 
 ##########################################
 ##  make it executable and finally launch

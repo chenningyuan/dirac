@@ -104,6 +104,8 @@ tar -tvf dirac_grid_suite.tgz
 
 # initialize your certificate from grid computing
 # ? ...
+echo -e "\n Valid certificate :"
+voms-proxy-info --all
 
 # delete the old package from the SE
 echo -e "\n deleting the previous file lfn:/grid/voce/ilias/dirac_grid_suite.tgz ...."
