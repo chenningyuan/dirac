@@ -20,8 +20,8 @@ echo " ------------------------- "
 ###  download file to the current CE ###
 #####################################
 echo -e "\n Going to download lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  
-echo -e "\nFile attributes;  ls -lt dirac_grid_suite.tgz"
+lcg-cp -v lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  
+echo -e "\nDownloaded ? File attributes;  ls -lt dirac_grid_suite.tgz"
 ls -lt dirac_grid_suite.tgz
 echo " -----------------------"
 
