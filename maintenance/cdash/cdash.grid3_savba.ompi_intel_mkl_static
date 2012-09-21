@@ -95,19 +95,18 @@ cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BU
 
 echo -e "\n now packing stuff for grid computations..."
 
-tar czf dirac_grid_suite.tgz  \\ 
-     CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp \\ 
-     cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid
+
 echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
 ls -lt dirac_grid_suite.tgz
-echo "tarball contains files:"
+echo -e "\n This tarball contains :"
 tar -tvf dirac_grid_suite.tgz
 
 # initialize your certificate from grid computing
 # ? ...
 
 # delete the old package from the SE
-echo -e "\n deleting lfn:/grid/voce/ilias/dirac_grid_suite.tgz ...."
+echo -e "\n deleting the previous file lfn:/grid/voce/ilias/dirac_grid_suite.tgz ...."
 lcg-del -a  lfn:/grid/voce/ilias/dirac_grid_suite.tgz
 #lcg-del -a  lfn:/grid/compchem/ilias/dirac_grid_suite.tgz
 
@@ -120,11 +119,15 @@ lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite
 echo -e "\n List of files on grid SE, lcg-ls -l lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
 #  lcg-ls lfn://grid/compchem/ilias
+echo -e "\n File attributes lcg-lr  lfn://grid/voce/ilias/dirac_grid_suite.tgz:"
+lcg-lr    lfn://grid/voce/ilias/dirac_grid_suite.tgz
+#  uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
 
 #############################################################################
 #            submit external launching script with glite
 #############################################################################
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "going to launch for grid, with timestamp=$timestamp..."
 cd maintenance/grid_computing
 glite-wms-job-submit -o JOB.$timestamp.voce1 -a submit_voce.jdl
 glite-wms-job-submit -o JOB.$timestamp.voce2 -a submit_voce.jdl
@@ -134,4 +137,5 @@ glite-wms-job-submit -o JOB.$timestamp.voce5 -a submit_voce.jdl
 glite-wms-job-submit -o JOB.$timestamp.voce6 -a submit_voce.jdl
 glite-wms-job-submit -o JOB.$timestamp.voce7 -a submit_voce.jdl
 
+echo -e"\n Done, script finished."
 exit 0
