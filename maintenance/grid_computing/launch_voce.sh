@@ -11,7 +11,7 @@ echo -e "\n --- Hostname: \c"; hostname -f; echo
 echo -e " ---------  My current directory :  $PWD "
 echo -e "---  My space: "; df -h .
 
-echo -e "-- \n Is cmake ? which cmake"; which cmake
+echo -e "-- \n Is cmake ? which cmake="; which cmake
 
 echo -e  "\n Files on my vo=voce space lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
@@ -22,9 +22,9 @@ echo " ------------------------- "
 ###  download file to the current CE ###
 #####################################
 echo -e "\n Going to download lcg-cp lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz  
-echo -e "\nDownloaded ? File attributes;  ls -lt dirac_grid_suite.tgz"
-ls -lt dirac_grid_suite.tgz
+lcg-cp -v lfn://grid/voce/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || {echo "Exit,downloading of dirac_grid_suite.tg failed !" ; exit -2; }
+echo -e "\nDownloaded ? File attributes (ls -lt dirac_grid_suite.tgz) :"
+ls -lt dirac_grid_suite.tgz || {echo -e "No dirac_grid_suite.tgz found !"; exit -3;}
 echo " -----------------------"
 
 
@@ -163,3 +163,5 @@ echo -e "I am here: \c"; pwd
 echo -e "My space: "; df -h .
 echo -e "\n All files:"; ls -lt
 echo -e "Total occupied space: \c"; du -h -s .
+
+exit 0
