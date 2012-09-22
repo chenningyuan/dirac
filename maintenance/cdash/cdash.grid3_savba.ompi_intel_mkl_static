@@ -144,15 +144,17 @@ lcg-lr    lfn://grid/voce/ilias/dirac_grid_suite.tgz
 #            submit external launching script with glite
 #############################################################################
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "going to launch for grid, with timestamp=$timestamp..."
+echo -e "\n going to launch for grid, with timestamp=$timestamp..."
 cd maintenance/grid_computing
+echo -e "I am in the directory $PWD"
+
 glite-wms-job-submit -o JOB.$timestamp.voce1 -a submit_voce.jdl
 glite-wms-job-submit -o JOB.$timestamp.voce2 -a submit_voce.jdl
 glite-wms-job-submit -o JOB.$timestamp.voce3 -a submit_voce.jdl
-glite-wms-job-submit -o JOB.$timestamp.voce4 -a submit_voce.jdl
-glite-wms-job-submit -o JOB.$timestamp.voce5 -a submit_voce.jdl
-glite-wms-job-submit -o JOB.$timestamp.voce6 -a submit_voce.jdl
-glite-wms-job-submit -o JOB.$timestamp.voce7 -a submit_voce.jdl
+#glite-wms-job-submit -o JOB.$timestamp.voce4 -a submit_voce.jdl
+#glite-wms-job-submit -o JOB.$timestamp.voce5 -a submit_voce.jdl
+#glite-wms-job-submit -o JOB.$timestamp.voce6 -a submit_voce.jdl
+#glite-wms-job-submit -o JOB.$timestamp.voce7 -a submit_voce.jdl
 
 echo -e"\n Done, script finished."
 exit 0

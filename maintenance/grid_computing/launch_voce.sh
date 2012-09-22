@@ -11,6 +11,8 @@ echo -e "\n --- Hostname: \c"; hostname -f; echo
 echo -e " ---------  My current directory :  $PWD "
 echo -e "---  My space: "; df -h .
 
+echo -e "-- \n Is cmake ? which cmake"; which cmake
+
 echo -e  "\n Files on my vo=voce space lfn://grid/voce/ilias:"
 lcg-ls -l lfn://grid/voce/ilias
 lcg-lr    lfn://grid/voce/ilias/dirac_grid_suite.tgz
@@ -33,8 +35,8 @@ echo -e "\n Job started at : \c"; date
 
 echo -e "Server specification: \c";  uname -a
 
-echo -e "\n server Python version: \c"; which python; python -V
-
+echo -e "\n server Python version: \c"; which python
+python -V
 echo -e "\n"
 
  # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
@@ -98,22 +100,25 @@ python ./runtest --verbose --quick #  works
  python ./pamadm -a
 
  cd $BUILD_SERIAL
- echo -e "\n I am in $PWD \n"
+ echo -e "\n I am in build-directory  $PWD \n"
+ echo -e "--- Directory content ---:"; ls -lt
 
 # FIX ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
 mv CMakeCache.txt CMakeCache.txt_STORED
 
-# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DENABLE_SANITY_CHECKS=OFF -DRUNTEST_BINARY=$DIRAC/$BUILD_SERIAL/dirac.x ..
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=ON -DRUNTEST_NR_PROC=2 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999  ..
 
- make ExperimentalConfigure
+# make ExperimentalConfigure
  make ExperimentalStart
  make ExperimentalTest
  make ExperimentalSubmit
+
 ## return back into main directory
  cd ..
+ echo -e "\n I am in main directory $PWD \n"
 
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
@@ -133,10 +138,15 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 
 
 # --------------------------------------------------------------------
-echo -e "\n --- Packing all wanted stuff from the grid CE  --- \n "; 
+echo -e "\n --------------------------------- \n "; 
+cd $DIRAC
 # delete old tar-ball first
+ls -lt dirac_grid_suite.tgz
+echo "deleting old dirac_grid_suite.tgz..."
 rm dirac_grid_suite.tgz
+echo "check files..."
 ls -lt
+echo -e "\n --- Packing all wanted stuff from the grid CE  --- "; 
 tar --version
 #tar --help
 echo " "
