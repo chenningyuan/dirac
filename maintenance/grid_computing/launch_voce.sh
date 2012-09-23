@@ -43,6 +43,7 @@ echo -e "\n"
  export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
  export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 
+ unset OPAL_PREFIX
  export OPAL_PREFIX=$PWD/$BUILD
  echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
  
@@ -162,6 +163,6 @@ echo -e "Job finished at: \c"; date
 echo -e "I am here: \c"; pwd
 echo -e "My space: "; df -h .
 echo -e "\n All files:"; ls -lt
-echo -e "Total occupied space: \c"; du -h -s .
+echo -e "\n Total occupied space: \c"; du -h -s .
 
 exit 0
