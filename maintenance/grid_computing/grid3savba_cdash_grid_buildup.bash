@@ -12,7 +12,7 @@ if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; th
  exit -12
 else
  VO=$1
- echo -e "OK, you specified VO=$VO"
+ echo -e "OK, you specified properly VO=$VO"
  exit 0
 fi
 

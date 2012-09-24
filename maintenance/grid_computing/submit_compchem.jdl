@@ -6,9 +6,10 @@
 #
 ##############################################################
 
-Executable = "launch_compchem.sh";
+Executable = "launch_VO.sh";
+Arguments = "compchem";
 # files with full paths
-InputSandbox = {"launch_compchem.sh"};
+InputSandbox = {"launch_VO.sh"};
 
 ##############################################
 # stdout,stderr output & other working files
