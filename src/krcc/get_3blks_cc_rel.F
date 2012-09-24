@@ -132,6 +132,7 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
           WRITE(6,*) 'GET_3BL: MXADKBLK ', MXADKBLK
           WRITE(6,*) ' Space for resolution matrices ',LSCR2
         END IF
+        CALL MEMREL('3BLKS',WORK,KLCIOIO,KLCIOIO,KFREE,LFREE)
       END DO
 *     ^ End loop over MK2 values
 *
@@ -140,7 +141,6 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
       LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
 C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GET_3B')
-      CALL MEMREL('3BLKS',WORK,KLCIOIO,KLCIOIO,KFREE,LFREE)
 *
       RETURN
       END

@@ -1,5 +1,5 @@
-      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,VEC1,VEC2,
-     &                         CCTYPE,ECC,WORK,KFREE,LFREE)
+      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,
+     &                         ECC,WORK,KFREE,LFREE)
 *
 * Optimize CC wave function
 *
@@ -7,7 +7,6 @@
 *
 * Jeppe Olsen
 *
-* Summer of 99 : CCTYPE added so both CCSD and General CC can be realized
 * Feb  2000    : ICCSOLVE added for DIIS etc
 * June 2001    : Version with just three vectors
 *
@@ -31,7 +30,6 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
-      CHARACTER*6 CCTYPE
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "crun.inc"
@@ -49,7 +47,7 @@
 C added
 #include "cicisp.inc"
 *. Scratch 
-      DIMENSION VEC1(*),VEC2(*), CCVEC1(*)
+      DIMENSION CCVEC1(*)
 *. Input and output
       DIMENSION CC_AMP(*),WORK(*)
 * Test
@@ -61,9 +59,6 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
       LBLK = -1
 *
       NTEST = 000 
-      IF(NTEST.GE.5) THEN
-        WRITE(6,'(A,A)') ' OPTIM_CC: Form of CC expansion ',CCTYPE
-      END IF
 *. Optimization of coupled cluster wavefunction defines symmetry as
       ICSM = IREFSM
       ISSM = IREFSM
@@ -153,7 +148,7 @@ C reset CCVEC1
 *. result in CCVEC1
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' Current CC amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CC_AMP,LU,
      &                     WORK,KFREE,LFREE)
         END IF
 C**************************************************************
@@ -185,15 +180,6 @@ C Norm of real + imagenary
         do i=1,N_CC_AMP +1
           print*,'CC_AMP',CC_AMP(i)
         end do
-        print*
-        do i=1,N_CC_AMP+1
-          print*,'VEC1',VEC1(i)
-        end do
-        print*
-        do i=1,N_CC_AMP+1
-          print*,'VEC2',VEC2(i)
-        end do
-        print*
         END IF
 C Notice the identety is now number one and not the last element!
          XNORM = SQRT(INPROD(CCVEC1(2),CCVEC1(2),IMULTFAC*N_CC_AMP))
@@ -214,7 +200,7 @@ C Notice the identety is now number one and not the last element!
         IF(IM_CONVERGED.EQ.1) GOTO 1001
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' vector function : '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CCVEC1,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
@@ -422,7 +408,7 @@ C          CALL SCALVE(CCVEC1,ONEM,2*N_CC_AMP)
         END IF
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction  vector '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CCVEC1,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
@@ -476,7 +462,7 @@ C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 *       ^ End of PERT/DIIS switch 
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Updated amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CC_AMP,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
@@ -516,7 +502,7 @@ C      stop
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Final set of CC_amplitudes '
-        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
+        CALL WRT_CC_VEC2(CC_AMP,6,
      &                   WORK,KFREE,LFREE)
       END IF
 *

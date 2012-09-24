@@ -574,10 +574,6 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
       IF(NTEST.GE.5)
      &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
 *
-*. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
-      CALL GET_3BLKS_GCC_REL(KVEC1,KVEC2,KVEC3,MXCJ,
-     &                       WORK,KFREE,LFREE)
-       WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3
 *. and two CC vectors , extra element for unexcited SD at end of vectors
        N_SD_INT = 1
 * next line added by Lasse not sure if correct but thinks so
@@ -617,8 +613,7 @@ C Now with automated restart. Lasse
 *
 *. New optimizer
       CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
-     &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
-     &                   WORK,KFREE,LFREE)
+     &                   ECC,WORK,KFREE,LFREE)
       STOP 'CC ENERGY HAS BEEN OPTIMIZED'
 *
 * ===========================
@@ -653,10 +648,8 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 *. Analyze T- ampitudes
 * ======================
 *
-      WRITE(6,*) ' KVEC3 before ANA_GCC ', KVEC3
       CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1,
      &                       WORK,KFREE,LFREE)
-      WRITE(6,*) ' KVEC3 after ANA_GCC ', KVEC3
       STOP 'AFTER ANALYZE'
 *
 *

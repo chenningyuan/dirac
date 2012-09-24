@@ -75,7 +75,7 @@ C             print*,'LENGTH',LENGTH
        RETURN
        END
 *
-      SUBROUTINE WRT_CC_VEC2(CC,LU,CCTYPE,
+      SUBROUTINE WRT_CC_VEC2(CC,LU,
      &                       WORK,KFREE,LFREE)
 *
 * Print vector of CC amplitudes, type is governed by CCTYPE
@@ -88,7 +88,6 @@ C             print*,'LENGTH',LENGTH
 #include "ctcc.inc"
 #include "ctccp.inc"
 *
-      CHARACTER*6 CCTYPE
       DIMENSION CC(*) 
 *
       DIMENSION WORK(*)
