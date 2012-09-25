@@ -20,14 +20,15 @@ git pull
 
 BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
 # configure step
-./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD 
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD 
 cd $DIRAC/$BUILD
 make Experimental
 
+cd $DIRAC
 # now the second buildup with serial ifort
 BUILD1=build_ifort_mkl_int64
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ifort_icc_mkl_ilp64" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD1/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD1
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.ifort_icc_mkl_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD1/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD1
 cd $DIRAC/$BUILD1
 make Experimental
 
