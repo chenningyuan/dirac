@@ -961,7 +961,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       RETURN
       END
 *
-      SUBROUTINE IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
+      SUBROUTINE IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,IWAY)
 *
 * Subroutine that wil dimension and allocate arrays for the
 * intermediates.
@@ -985,8 +985,9 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       ISYMINT = 1
 *
-      NTEST = 00
+      NTEST = 100
       IDUM = 0
+      ZERO = 0.0D0
 *
       MX_ST_TSOSO_INI = MX_ST_TSOSO
       MX_ST_TSOSO_BLK_INI = MX_ST_TSOSO_BLK
@@ -995,6 +996,9 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
 *  Have to check these does not exceed those for T by simply comparing against them 
 *  MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK. Largest will be choosen!
+*
+      IF(NPART.EQ.0.AND.NHOLE.EQ.1) THEN
+        IF(IWAY.EQ.1) THEN
 *
 * Setup and allocate for M01
 *
@@ -1013,6 +1017,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL MEMGET('REAL',KM01,IMULTFAC*LEN_M01_VEC_CC,
      &            WORK,KFREE,LFREE)
+      CALL SETVEC(WORK(KM01),IMULTFAC*ZERO,LEN_M01_VEC_CC)
 *
 * Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
 * (at least for now)
@@ -1029,6 +1034,14 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
         MX_SBSTR = MX_SBSTR_INT
       END IF
+*
+        ELSE
+          CALL MEMREL('M01',WORK,KLLSOBEX_M01,KLLSOBEX_M01,KFREE,LFREE)
+        END IF
+      END IF
+*
+      IF(NPART.EQ.1.AND.NHOLE.EQ.0) THEN
+        IF(IWAY.EQ.1) THEN
 *
 * Setup and allocate for M10
 *
@@ -1043,6 +1056,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL MEMGET('REAL',KM10,IMULTFAC*LEN_M10_VEC_CC,
      &            WORK,KFREE,LFREE)
+      CALL SETVEC(WORK(KM10),IMULTFAC*ZERO,LEN_M10_VEC_CC)
 *
 * Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
 * (at least for now)
@@ -1059,6 +1073,14 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
         MX_SBSTR = MX_SBSTR_INT
       END IF
+*
+        ELSE
+          CALL MEMREL('M10',WORK,KLLSOBEX_M10,KLLSOBEX_M10,KFREE,LFREE)
+        END IF
+      END IF
+*
+      IF(NPART.EQ.0.AND.NHOLE.EQ.2) THEN
+        IF(IWAY.EQ.1) THEN
 *
 * Setup and allocate for M02
 *
@@ -1073,6 +1095,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL MEMGET('REAL',KM02,IMULTFAC*LEN_M02_VEC_CC,
      &            WORK,KFREE,LFREE)
+      CALL SETVEC(WORK(KM02),IMULTFAC*ZERO,LEN_M02_VEC_CC)
 *
 * Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
 * (at least for now)
@@ -1089,6 +1112,14 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
         MX_SBSTR = MX_SBSTR_INT
       END IF
+*
+        ELSE
+          CALL MEMREL('M02',WORK,KLLSOBEX_M02,KLLSOBEX_M02,KFREE,LFREE)
+        END IF
+      END IF
+*
+      IF(NPART.EQ.1.AND.NHOLE.EQ.1) THEN
+        IF(IWAY.EQ.1) THEN
 *
 * Setup and allocate for M11
 *
@@ -1103,6 +1134,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL MEMGET('REAL',KM11,IMULTFAC*LEN_M11_VEC_CC,
      &            WORK,KFREE,LFREE)
+      CALL SETVEC(WORK(KM11),IMULTFAC*ZERO,LEN_M11_VEC_CC)
 *
 * Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
 * (at least for now)
@@ -1119,6 +1151,14 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
         MX_SBSTR = MX_SBSTR_INT
       END IF
+*
+        ELSE
+          CALL MEMREL('M11',WORK,KLLSOBEX_M11,KLLSOBEX_M11,KFREE,LFREE)
+        END IF
+      END IF
+*
+      IF(NPART.EQ.1.AND.NHOLE.EQ.2) THEN
+        IF(IWAY.EQ.1) THEN
 *
 * Setup and allocate for M12
 *
@@ -1133,6 +1173,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       CALL MEMGET('REAL',KM12,IMULTFAC*LEN_M12_VEC_CC,
      &            WORK,KFREE,LFREE)
+      CALL SETVEC(WORK(KM12),IMULTFAC*ZERO,LEN_M12_VEC_CC)
 *
 * Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
 * (at least for now)
@@ -1150,7 +1191,14 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
         MX_SBSTR = MX_SBSTR_INT
       END IF
 *
+        ELSE
+          CALL MEMREL('M12',WORK,KLLSOBEX_M12,KLLSOBEX_M12,KFREE,LFREE)
+        END IF
+      END IF
+*
       IF(NTEST.GE.100) THEN
+        WRITE(6,*) 'Dimension changes for intermediate with: NPART ',
+     &              NPART,' and NHOLE ',NHOLE
         IF(MX_ST_TSOSO_INI.NE.MX_ST_TSOSO) THEN
           WRITE(6,*) 'Increased MX_ST_TSOSO from ',
      &                MX_ST_TSOSO_INI,' to ',MX_ST_TSOSO

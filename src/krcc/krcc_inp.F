@@ -30,7 +30,7 @@ C
       SAVE SET
       DATA TABLE /'.MAX CC','.MK2REF','.MK2DEL','.GASSH ','.GASSPC',
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
-     &            '.GASSHK','.INACTI','.IBATCH','.XXXXXX','.XXXXXX',
+     &            '.GASSHK','.INACTI','.IBATCH','.NO4IDX','.IREADB',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -60,6 +60,7 @@ C     ===================
 C
       MK2REF    = 0
       MK2DEL    = 0
+      NO4IDX    = 0 ! Skip 4-index transformation
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -212,8 +213,14 @@ C&&& IBATCH: Change default batch length according to memory and speed
                  IKWSET(13) = 1
                GO TO 100
    14          CONTINUE
+C&&& Skip the 4-index transformation - used for restarrted calculations
+                 IKWSET(14) = 1
+                 NO4IDX = 1
                GO TO 100
    15          CONTINUE
+C&&& The length of the blocks written and read from disc
+                 READ(LUCMD,*) I_READ_BLOCK
+                 IKWSET(15) = 1
                GO TO 100
    16          CONTINUE
                GO TO 100
@@ -276,6 +283,15 @@ C
         END IF
       END IF
 C
+C Change of convergence threshold
+C
+      IF(IKWSET(10).EQ.1) THEN
+        WRITE(6,*) ' Convergence threshold changed to: ',CCCONV
+      ELSE
+        CCCONV = 1.0D-10
+        WRITE(6,*) ' Default convergence threshold of ',CCCONV,' used'
+      END IF
+C
 C Calculate number of orbitals per gasspace and total number of orbitals
 C Using new input type
 C
@@ -316,6 +332,27 @@ C
       ELSE
         WRITE(6,*) ' You have changed the default batch length to',LCCB
       END IF
+C
+C No 4-index transformation
+C
+      IF(IKWSET(14).EQ.0) THEN
+        WRITE(6,*) ' Will do the 4-index transformation'
+      ELSE
+        WRITE(6,*) ' This is a restarted calculation from integrals'
+        WRITE(6,*) ' No 4-index transformation will be performed'
+      END IF
+C
+C The block size in which files are written and read => smaller blocks =
+C less memory but more reads
+C
+      IF(IKWSET(15).EQ.0) THEN
+        I_READ_BLOCK = 100000
+        WRITE(6,*) ' The default block sizes are : ',I_READ_BLOCK
+      ELSE
+        WRITE(6,*) ' You have changed the default block size to : ',
+     &               I_READ_BLOCK
+      END IF
+
 C
 C Setting some defaults that i am too lazy to change in the code
 C

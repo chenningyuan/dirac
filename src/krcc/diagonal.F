@@ -787,7 +787,7 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.EQ.100) THEN
         WRITE(6,*) ' Start index = ',ISTART
         WRITE(6,*) ' End index = ',IEND
@@ -832,7 +832,7 @@ C
 C
 C Calculate absolute offset off integral with help from relative
 C
-        print*,'IPOS,IFETCH',IPOS,IFETCH
+C       print*,'IPOS,IFETCH',IPOS,IFETCH
         XOUT(IPOS) = XINT(IFETCH)
       END DO
 *

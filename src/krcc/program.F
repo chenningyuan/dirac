@@ -8,8 +8,6 @@ C
 C Written by Lasse Soerensen 2010
 C
 C
-C common blocks needs cleaning!!!!!!!!!!!!!!!!
-C
 C***********************************************************************
       use memory_allocator
 
@@ -603,7 +601,7 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
 * Now to dimension and setup arrays for intermediates.
 * This should later be moved to CC_VEC_FNC_KRCC to save space
 *
-      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
+C     CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs

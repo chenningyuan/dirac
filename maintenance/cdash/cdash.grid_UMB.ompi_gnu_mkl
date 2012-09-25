@@ -4,12 +4,12 @@
 #PBS -N cdash_buildup
 ### Declare myprogram non-rerunable
 #PBS -r n
-#PBS -l nodes=1
-##PBS -l nodes=2
+#PBS -l nodes=1:comp03
+##PBS -l nodes=2:comp04
 #PBS -l walltime=6:00:00
-##PBS -l mem=4g
+#PBS -l mem=8g
 #PBS -j oe
-##PBS -q batch
+#PBS -q batch
 
 echo "Working host is: "; hostname -f
 
@@ -40,11 +40,11 @@ BUILD=build_Intel_OpenMPI_MKL_ILP64
 cd $DIRAC
 
 #./pamadm -a --hscc --hsfsdyn --auto
-#./pamadm -a 
+./pamadm -a 
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
-#./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="linux.grid_UMB_ompi_GNU_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=4 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD
 
 cd $DIRAC/$BUILD
 
