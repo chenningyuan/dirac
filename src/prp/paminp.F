@@ -793,10 +793,7 @@ C  /* Deck xprinp */
      &                  WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
-C  Last revision: May 14 1996 - tsaue
-C                 Febr. 2011   M Ilias (TRS_FLIP)
-C
+! PURPOSE:
 C  Assign a new property operator based on the input
 C  and the /XCBPRP/ list.
 C
@@ -885,8 +882,14 @@ C     2   Property labels (to be found on file)
 C     3   Class label
 C     4   Separate factor for each component
 C     5   Common factor for all components
-C     6   Keyword to force the time-reversal symmetry flip
+!
+!
+C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
+C  Last revision: May 14 1996 - tsaue
+C                 Sept. 2012   M Ilias 
 C
+!
+!
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -898,13 +901,13 @@ C
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL, TRS_FLIP
+      LOGICAL     CLABEL
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
-     &           'TRS_FLIP',
+     &           '        ',
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
@@ -925,7 +928,6 @@ C
       PFAC(2) = D1
       PFAC(3) = D1
       CLABEL  = .FALSE.
-      TRS_FLIP = .FALSE.
       !mi - position of the Fock operator in the TABKW list, or "border" index
       I_FOCKMAT=6
 C
@@ -1044,9 +1046,6 @@ C
               ITRXPR = 1
            END IF
  
-           ! ... initialize ...
-           TRS_FLIP=.FALSE.
-
 !mi     ...jump on operator types according to the variable I prepared above, I : 1-27
 !           4-8 are operators characteritics, TABKW(1-5)
            GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
@@ -1092,10 +1091,8 @@ C&&&     Multiply with current value of the speed of light, CMULT
            PFAC(2) = PFAC(2)*CVAL
            PFAC(3) = PFAC(3)*CVAL
          GO TO 300
-C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
+C&&&     
     8    CONTINUE
-           TRS_FLIP=.TRUE.
-           IKW=6
          GO TO 300
          !GO TO 100
 C
@@ -1146,11 +1143,6 @@ C        IKW .eq. 5 :  Common factor for all components
          PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
 
-!         TRS_FLIP
-      ELSE IF (IKW .EQ. 6) THEN
-         write(LUPRI,*) 'TRS_FLIP !'
-         TRS_FLIP=.TRUE.
-         IKW=1
 C
 C     Unknown IKW
 C     ===========
@@ -1196,12 +1188,7 @@ CHJMAERKE: implement interpretation of class keyword
 CMI      ... assign remaining parameters in dedicated subroutine
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-         IF (TRS_FLIP) THEN
-           ! miro: perform the time-reversal symmetry flip of the operaror if wanted
-           CALL OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                            INDXPR,ISYXPR,ITRXPR,IPRINT)
-           TRS_FLIP=.FALSE.
-         ENDIF
+
          IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
      &      '*** Output from XPRINP after XPRIND ***'
@@ -1272,26 +1259,6 @@ C
       LTKN = (INDL + 1 - IND1)
 C
  9999 CALL QEXIT('XPRTKN')
-      RETURN
-      END
-      SUBROUTINE OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-! Perform the operator time-reversal symmetry flip (thanks to TRS_FLIP characteritics)
-!
-! Called by XPRINT
-!
-! M.Ilias, Banska Bystrica, February 2011
-!
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
-      CHARACTER PNAME*16
-      DIMENSION PFAC(NPCOMP)
-      WRITE(LUPRI,*)
-     &'Flipping time reversal symmetry for the selected operator ',
-     & PNAME
-      IPRPTIM(INDXPR) =  - IPRPTIM(INDXPR)
       RETURN
       END
 

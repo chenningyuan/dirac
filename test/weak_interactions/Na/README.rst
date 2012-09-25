@@ -17,3 +17,5 @@ imag.value of (-0.0040172597, 0.0009382881) => abs.val=sqrt(re^2+im^2)=.00412537
 C1:
 quaternion value: (0.0003625855, -0.0006566902, -0.0030236243, 0.0027043938)
 absol.value= .004125379982
+
+Likewise employed "eEDM2" operator of [Nataraj2007]_.

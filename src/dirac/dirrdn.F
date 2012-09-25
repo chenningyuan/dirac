@@ -4523,7 +4523,7 @@ C
 #include "cbieri.h"
 #endif
 C
-      LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
+      LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
@@ -4566,7 +4566,7 @@ C
 !                   57        58        59        60
      &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.DOSSSS','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.TRSMIX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4577,6 +4577,7 @@ C
       GAUNT_SAVE = GAUNT
       IOTC = .FALSE.
       SYMSTP = .FALSE.
+      TRSSTP = .FALSE.
       INPERR = 0
       ICHANG  = 0 ! mi-to satisfy ifort runtime check
       CALL TITLER('Hamiltonian defined','*',127)
@@ -4667,6 +4668,8 @@ C ... get integral flags in advance
       ISLINT    = IBTAND(INTGEN/2,1)
       ISSINT    = IBTAND(INTGEN/4,1)
       IGTINT    = IBTAND(INTGEN/8,1)
+!mi:  by default do not allow mixing T+ with T-
+      TRS_MIX=.FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -5238,8 +5241,9 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
             DOLVC = .FALSE.
             GO TO 100
   164     CONTINUE
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+          TRS_MIX = .TRUE.
           GO TO 100
-
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -5249,7 +5253,6 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
         CALL QUIT('Illegal prompt in HAMINP.')
       END IF
   300 CONTINUE
-
 
 
       if (dirac_cfg_fde) then
@@ -5991,7 +5994,7 @@ C
           CALL PRSYMB(LUPRI,'-',75,0)
           CALL WRIXPR(I,INDXPR)
 
-!         Operator must be totally symmetric within molecular point group
+! Added operator must be totally symmetric within molecular point group
 !
           ISYXPR = IPRPSYM(INDXPR)-1
           IF(ISYXPR.NE.0) THEN
@@ -6010,8 +6013,8 @@ C
      &       (SYMOP(KSOP(J-1)),J=1,NELM),'} '
           ENDIF
 
-!         Operator must be symmetric under time reversal only for Kramers restricted 
-!         wave-functions !
+! Operator must be symmetric under time reversal only for Kramers restricted 
+!  wave-functions !
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
             WRITE(LUPRI,'(4X,A)') '***** HAMINP WARNING *****'
@@ -6023,6 +6026,14 @@ C
      &     '1. Use it with Kramers unrestricted wave functions (RelCC).'
             WRITE(LUPRI,'(6X,A)')
      &     '2. Include operator as perturbation for response methods.'
+            IF (.NOT.TRS_MIX) THEN 
+              WRITE(LUPRI,'(A)') 
+     &       'T+ and T- operators mixing not allowed !'
+              TRSSTP=.TRUE.
+            ELSE
+              WRITE(LUPRI,'(/,2X,A,/)')
+     &"*** Mixing of T+ and T- operators allowed at user's risk ! ***"
+            ENDIF
           ENDIF
         ENDDO
 CMI  ... treat the INPERR as in paminp.F - proper input is required
@@ -6245,8 +6256,11 @@ C
 C
  500  CONTINUE
 C
-      IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
+      IF (SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
      &                     ' molecular point group symmetry!')
+      IF (TRSSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
+     &                ' time-reversal symmetry (T+ and T- mixing) !')
+      
 C
       CALL QEXIT('HAMINP')
       RETURN
