@@ -8,6 +8,14 @@
 export PATH=/home/milias/bin/openmpi_ilp64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64:/usr/local/lib
 
+####  server's Intel compilers  ####
+if [[ -z $PROD_DIR ]]; then
+  #source /home/ilias/intel/bin/compilervars.sh intel64
+  source /opt/intel/bin/compilervars.sh intel64
+  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+fi
+alias mkl='export MATH_ROOT=/opt/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"'
+
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/trunk
 OMPI=/home/milias/bin/openmpi_ilp64/bin
@@ -18,18 +26,18 @@ git pull
 
 ./pamadm -a --hsfsdyn --hscc --auto
 
-BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
+BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
 # configure step
-./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD 
-cd $DIRAC/$BUILD
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_GNU/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
+cd $DIRAC/$BUILD_GNU
 make Experimental
 
 cd $DIRAC
 # now the second buildup with serial ifort
-BUILD1=build_ifort_mkl_int64
+BUILD_INTEL=build_ifort_mkl_int64
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.ifort_icc_mkl_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD1/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD1
-cd $DIRAC/$BUILD1
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_INTEL/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
+cd $DIRAC/$BUILD_INTEL
 make Experimental
 
 #
