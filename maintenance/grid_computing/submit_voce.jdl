@@ -6,21 +6,11 @@
 #
 ##############################################################
 
-#
-# store onto vo=voce SE
-# p=`pwd`;lcg-cr -v -d se.ui.savba.sk file://$p/dirac_test_suite.tgz  -l lfn://grid/voce/ilias/dirac_test_suite.tgz
-# list: lcg-ls lfn://grid/voce/ilias
-#
-# delete: lcg-del -a lfn://grid/voce/ilias/dirac_test_suite.tgz
-#
-# Copy file from the current directory onto grid SE:
-# lcg-cr -l lfn://grid/voce/ilias/dirac_current.tgz  --vo voce dirac_current.tgz
-#
-
 Executable = "launch_VO.sh";
-Arguments = "voce";
-# files with full paths
 InputSandbox = {"launch_VO.sh"};
+Arguments = "voce";
+VirtualOrganisation="voce";
+#VirtualOrganisation="compchem";
 
 ##############################################
 # stdout,stderr output & other working files
@@ -28,12 +18,6 @@ InputSandbox = {"launch_VO.sh"};
 StdOutput = "DIRAC_tests_std.out";
 StdError = "DIRAC_tests_std.err";
 OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_grid_suite_back.tgz"};
-
-##################
-# assign your VO #
-##################
-#VirtualOrganisation="compchem";
-VirtualOrganisation="voce";
 
 #################
 # Demands on CE #
