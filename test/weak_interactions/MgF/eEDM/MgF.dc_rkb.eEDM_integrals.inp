@@ -7,7 +7,7 @@
 1 1 1
 **INTEGRALS
 .PRINT
-1
+15
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN
@@ -29,7 +29,11 @@
  2.0000
 .TRSMIX
 #.ONESYS
+.INTFLG
+1 0 0
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
-#.RELCCSD
+*SCF
+.MAXITR
+1
 *END OF
