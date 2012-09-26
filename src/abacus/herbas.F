@@ -1158,7 +1158,8 @@ C
          WRITE (LUPRI,'(A)')
      +        'NB! Basis Huckel must be available to use Huckel guess!'
       END IF
-      CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found. Check whether DIRAC '//
+     &          'can locate basis set libraries.')
 C
 C Error messages 
 C
@@ -1388,7 +1389,8 @@ C
          END DO
   300    WRITE (LUPRI,'(/,3A)')
      +      'Basis "',STRING(1:LSTR),'" doesn''t exist'
-         CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found. Check whether DIRAC '//
+     &          'can locate basis set libraries.')
       END IF
 C
 C Error messages 

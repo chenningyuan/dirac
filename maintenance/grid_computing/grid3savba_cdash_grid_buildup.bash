@@ -45,6 +45,7 @@ cd $DIRAC
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # download fresh clone...
+echo -e "\n downloading fresh clone..."
 git pull
 
 ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
@@ -109,11 +110,12 @@ cd $DIRAC
 cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD/.
 cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_SERIAL/.
 
-# copy there the mpirun static with related files
+# copy there the mpirun static with related directpries & files
 cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
 /bin/rm -rf $BUILD/share
 mkdir $BUILD/share
 cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/share/.
+cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc  $DIRAC/$BUILD/.
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
 /bin/rm test/*/*.out*
@@ -138,17 +140,18 @@ ls -lt dirac_grid_suite.tgz
 ######################################################## 
 
 echo -e "\n ---  My valid certificate (voms-proxy-info --all)  ---"
-voms-proxy-info --all ||  { echo -e "\n Exiting...no valid certificate found !\n" ; exit -2; }
+#voms-proxy-info --all ||  { echo -e "\n Exiting...no valid certificate found !\n" ; exit -2; }
+voms-proxy-info --all 
 
 # delete the old package from the SE
 echo -e "\n deleting the previous file, lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ...."
-lcg-del -a -v  lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ||  { echo "Exit, deleting failed!" ; exit -3; }
+lcg-del -a -v  lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ||  { echo "FYI: did not succeed in deleting. maybe it's already deleted..." }
 echo -e "\n After deleting, checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
-lcg-ls -l lfn://grid/$VO/ilias || { echo "Exit, lcg-ls command failed !" ; exit -4; }
+lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once again..."; lcg-ls -l lfn://grid/$VO/ilias  }
 
 # upload the fresh tar-ball onto the SE
 echo -e "\n uploading lcg-cr -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/voce/ilias/dirac_grid_suite.tgz...."
-lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Exit, uploading failed !" ; exit -4; }
+lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, uploading failed !" ; exit -4; }
 #lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
 
 ###   Check your copied file on the grid SE:  ###
