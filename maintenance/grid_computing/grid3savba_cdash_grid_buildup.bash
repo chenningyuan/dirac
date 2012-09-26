@@ -17,6 +17,11 @@ fi
 
 echo -e "\n *** Working host is: "; hostname -f
 
+##################################################
+# fill the PATH to be the same as in online mode
+##################################################
+export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 # My own OpenMPI Intel static
