@@ -20,7 +20,12 @@ echo -e "\n *** Working host is: "; hostname -f
 ##################################################
 # fill the PATH to be the same as in online mode
 ##################################################
-export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+#export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+# rather do the sourcing ...
+source ~/.bashrc
+source ~/.bash_profile
+source /etc/bashrc
+
 
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
@@ -140,8 +145,8 @@ ls -lt dirac_grid_suite.tgz
 #
 # initialize your certificate from grid computing
 #
-# voms-proxy-init --voms voce      -vomslife 24:00 
-# voms-proxy-init --voms compchem  -vomslife 24:00 
+#  voms-proxy-init --voms voce -hours 24 -vomslife 24:00 
+#  voms-proxy-init --voms compchem -hours 24 -vomslife 24:00 
 # 
 ######################################################## 
 

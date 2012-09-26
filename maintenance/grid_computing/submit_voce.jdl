@@ -9,8 +9,11 @@
 Executable = "launch_VO.sh";
 InputSandbox = {"launch_VO.sh"};
 Arguments = "voce";
+#Arguments = "compchem";
+#Arguments = "osg";
 VirtualOrganisation="voce";
 #VirtualOrganisation="compchem";
+#VirtualOrganisation="osg";
 
 ##############################################
 # stdout,stderr output & other working files
@@ -23,7 +26,7 @@ OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_grid_suite
 # Demands on CE #
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
 #################
-Requirements = other.GlueCEPolicyMaxWallClockTime > 1200;
+Requirements = other.GlueCEPolicyMaxWallClockTime > 1800;
 #Requirements =
 # other.GlueCEPolicyMaxWallClockTime > 1200 && 
 # other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||

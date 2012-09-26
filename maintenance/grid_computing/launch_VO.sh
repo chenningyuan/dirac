@@ -18,7 +18,8 @@ else
  #exit 0
 fi
 
-echo -e "\n --- Hostname: \c"; hostname -f; echo
+THIS_HOSTNAME=`hostname -f`
+echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
 echo -e " ---------  My current directory :  $PWD "
 echo -e "---  My space, df -h: "; df -h .
 
@@ -62,8 +63,8 @@ echo -e "\n"
  echo -e "Modified PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
-echo -e "\n ---- server environment ---- set :"
-set
+#echo -e "\n ---- server environment ---- set :"
+#set
 
 #echo -e "\n ---- server CPU equipment, /proc/cpuinfo ----"
 #cat /proc/cpuinfo
@@ -75,7 +76,6 @@ echo -e "\n Number of CPUs : $nprocs";
 echo -e " CPUs model : \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
 
 echo -e "\n ---- server total memory equipment ----"
-#cat /proc/meminfo
 cat /proc/meminfo | grep MemTotal
 
 echo -e "\n ---- DIRAC unpacking with tar : \c "; which tar;  tar --version
@@ -127,7 +127,7 @@ echo -e "\n False configuration in order to enable tests running"
 mv CMakeCache.txt CMakeCache.txt_STORED
 
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
 
 # make ExperimentalConfigure
  make ExperimentalStart
@@ -147,12 +147,15 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  echo -e "\n lfc ? \c"; which lfc
  echo -e "\n gfortran44 ? \c"; which gfortran44
  echo -e "\n gfortran ? \c"; which gfortran
+ echo -e "\n g++ ? \c"; which g++
  echo -e "\n mpif90 ? \c"; which mpif90
+ echo -e "\n mpicc ? \c"; which mpicc
+ echo -e "\n mpiCC ? \c"; which mpiCC
 
  echo -e "\n ==== Try own buildup of the host server in build directory ==== "
 
  #python ./setup -D VERBOSE_OUTPUT=ON --fc=$FORTRAN
- python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999
+ python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999
  cd build
  cmake ..
  make Experimental
