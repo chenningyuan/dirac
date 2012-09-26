@@ -22,6 +22,10 @@ StdOutput = "DIRAC_tests_std.out";
 StdError = "DIRAC_tests_std.err";
 OutputSandbox = {"DIRAC_tests_std.out", "DIRAC_tests_std.err", "dirac_grid_suite_back.tgz"};
 
+## to be able to reach intermediate results of your job
+PerusalFileEnable=true;
+PerusalTimeInterval=30;
+
 #################
 # Demands on CE #
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
