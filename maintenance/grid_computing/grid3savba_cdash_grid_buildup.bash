@@ -27,8 +27,10 @@ export PATH=/home/ilias/bin/cmake_static:$PATH
 echo "My own CMake is in PATH."
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
 echo "My PATH=$PATH"
 #echo "which make:"; which make
+echo -e "\n set:"; set
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
@@ -44,7 +46,7 @@ cd $DIRAC
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # download fresh clone...
-echo -e "\n downloading fresh clone..."
+echo -e "\n downloading the fresh clone..."
 git pull
 
 ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD

@@ -34,10 +34,10 @@ echo " ------------------------------------------------------ "
 ###  download file to the current CE 
 #####################################
 echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz   file://$PWD/dirac_grid_suite.tgz || {echo "Exit,downloading of dirac_grid_suite.tg failed !" ; exit -2; }
+lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz   file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
 echo -e "\nDownloaded ? File attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || {echo -e "No dirac_grid_suite.tgz found !"; exit -3;}
-echo " -----------------------"
+ls -lt dirac_grid_suite.tgz || { echo -e "No dirac_grid_suite.tgz in local directory found, error exit"; exit -3;}
+echo " ---------------------------------------------------------------------------------------------------------------------"
 
 ##########################################
 ##  make it executable and finally launch
