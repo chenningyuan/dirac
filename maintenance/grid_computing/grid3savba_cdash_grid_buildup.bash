@@ -12,11 +12,15 @@ if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; th
  exit -12
 else
  VO=$1
- echo -e "OK, you specified properly VO=$VO"
- exit 0
+ echo -e "OK, you specified properly VO=$VO, continuing"
 fi
 
 echo -e "\n *** Working host is: "; hostname -f
+
+##################################################
+# fill the PATH to be the same as in online mode
+##################################################
+export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
 
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
@@ -28,8 +32,10 @@ export PATH=/home/ilias/bin/cmake_static:$PATH
 echo "My own CMake is in PATH."
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
 echo "My PATH=$PATH"
 #echo "which make:"; which make
+echo -e "\n set:"; set
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
@@ -45,7 +51,7 @@ cd $DIRAC
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # download fresh clone...
-echo -e "\n downloading fresh clone..."
+echo -e "\n downloading the fresh clone..."
 git pull
 
 ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
@@ -140,19 +146,17 @@ ls -lt dirac_grid_suite.tgz
 ######################################################## 
 
 echo -e "\n ---  My valid certificate (voms-proxy-info --all)  ---"
-#voms-proxy-info --all ||  { echo -e "\n Exiting...no valid certificate found !\n" ; exit -2; }
 voms-proxy-info --all 
 
 # delete the old package from the SE
 echo -e "\n deleting the previous file, lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ...."
-lcg-del -a -v  lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ||  { echo "FYI: did not succeed in deleting. maybe it's already deleted..." }
+lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz || { echo "FYI: did not succeed in deleting, maybe it is already deleted...";}
 echo -e "\n After deleting, checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
-lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once again..."; lcg-ls -l lfn://grid/$VO/ilias  }
+lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once again..."; lcg-ls -l lfn://grid/$VO/ilias;  }
 
 # upload the fresh tar-ball onto the SE
 echo -e "\n uploading lcg-cr -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/voce/ilias/dirac_grid_suite.tgz...."
-lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, uploading failed !" ; exit -4; }
-#lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
+lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
 
 ###   Check your copied file on the grid SE:  ###
 echo -e "\n After uploading, list of files on grid SE, lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz"
@@ -175,4 +179,5 @@ glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
 glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
 
 echo -e "\n Done, script finished."
+
 exit 0
