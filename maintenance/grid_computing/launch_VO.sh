@@ -95,7 +95,8 @@ echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
+#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
@@ -105,7 +106,8 @@ echo -e "\n --- Launching quick runtest --- \n ";
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-python ./runtest --verbose --quick --mpi=$nprocs  #  works
+#python ./runtest --verbose --quick --mpi=$nprocs  #  works
+python ./runtest --verbose --quick --mpi=8  #  works
 #python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
 
@@ -131,7 +133,7 @@ echo -e "\n False configuration in order to enable tests running"
 mv CMakeCache.txt CMakeCache.txt_STORED
 
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=8 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 
 # make ExperimentalConfigure
  make ExperimentalStart

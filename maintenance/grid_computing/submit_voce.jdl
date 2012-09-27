@@ -15,6 +15,9 @@ VirtualOrganisation="voce";
 #VirtualOrganisation="compchem";
 #VirtualOrganisation="osg";
 
+# maximum number of accessible CPU's
+CpuNumber = 8;
+
 ##############################################
 # stdout,stderr output & other working files
 ##############################################
