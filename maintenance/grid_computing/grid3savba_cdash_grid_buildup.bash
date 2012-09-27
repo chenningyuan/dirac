@@ -182,6 +182,8 @@ echo -e "I am in the directory $PWD"
 glite-wms-job-submit -o JOB.$timestamp.$VO.1 -a submit_$VO.jdl
 glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
 glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
+glite-wms-job-submit -o JOB.$timestamp.$VO.4 -a submit_$VO.jdl
+glite-wms-job-submit -o JOB.$timestamp.$VO.5 -a submit_$VO.jdl
 
 echo -e "\n Done, script finished."
 

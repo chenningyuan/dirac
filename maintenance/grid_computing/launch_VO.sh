@@ -26,17 +26,17 @@ echo -e "---  My space, df -h: "; df -h .
 echo -e "-- \n Is there cmake ? which cmake="; which cmake
 
 echo -e  "\n Files on my vo=$VO space, lcg-ls -l lfn://grid/$VO/ilias:"
-lcg-ls -l lfn://grid/$VO/ilias
+lcg-ls -l lfn://grid/$VO/ilias || { echo -e "\n once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
+lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "\n once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
 echo " ------------------------------------------------------ "
 
 #####################################
 ###  download file to the current CE 
 #####################################
 echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz   file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
-echo -e "\nDownloaded ? File attributes (ls -lt dirac_grid_suite.tgz) :"
+lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
+echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
 ls -lt dirac_grid_suite.tgz || { echo -e "No dirac_grid_suite.tgz in local directory found, error exit"; exit -3;}
 echo " ---------------------------------------------------------------------------------------------------------------------"
 
@@ -146,7 +146,9 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 # ---- try own buildup on the grid CE ----- #
 # ----------------------------------------- #
  echo -e "\n pgf90 ? \c"; which pgf90
+ echo -e "\n pgcc ? \c"; which pgcc
  echo -e "\n ifort ? \c"; which ifort
+ echo -e "\n icc ? \c"; which icc
  echo -e "\n echo MKLROOT=$MKLROOT"
  echo -e "\n lfc ? \c"; which lfc
  echo -e "\n gfortran44 ? \c"; which gfortran44
