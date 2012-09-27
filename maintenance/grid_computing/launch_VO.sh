@@ -115,6 +115,10 @@ python ./runtest --verbose --quick --mpi=$nprocs  #  works
 
  python ./pamadm -a
 
+ cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
+ cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
+ echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
+
  #cd $BUILD_SERIAL
  cd $BUILD
  echo -e "\n I am in build-directory  $PWD \n"
