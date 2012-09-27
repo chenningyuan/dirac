@@ -1,7 +1,10 @@
 Launching DIRAC in the grid environment
 =======================================
 
-Testing of the DIRAC program suite in the grid enviroment.
+Building up, launching and testing of the DIRAC program suite in the grid enviroment.
+
+The aim of this folder is to provide user with some teplates for the so-called 
+grid-computing.
 
 DIRAC is packed and the tar-ball is copied onto chosen VO location - storage
 element (SE), 
@@ -9,9 +12,6 @@ from where an assigned computing element (CE) unpacks it and performs own calcul
 
 Python script is not yet used for launching jdl-initiated script due to possibility
 that not all CE are equipped with appropriate python version. So we resort to the bash shell.
-
-The aim of this folder is to provide user with some teplates for the so-called 
-grid-computing.
 
 Making dirac.x static
 ---------------------
@@ -126,6 +126,10 @@ Some "gLite" howtos :
  http://egee-uig.web.cern.ch/egee-uig/production_pages/SimpleJobCycle.html
  http://iag.iucc.ac.il/workshop/complex_jobs.htm
 
+Retrieve the list computing elements that match your job:
+::
+  glite-wms-job-list-match -a submit_voce.jdl
+
 Submit job script: 
 
 ::
@@ -138,13 +142,19 @@ Get job status:
 
  glite-wms-job-status  -i <JOB_ID_file>
 
-Get job files back
-
-::
-
+See intermediate results of your job:
+Add two lines to your jdl-file: ::
+ PerusalFileEnable=true;
+ PerusalTimeInterval=30;
+Next, specify the files (here DIRAC_tests_std.out and DIRAC_tests_std.err) you want to view: ::  
+ glite-wms-job-perusal --set -f DIRAC_tests_std.out -f DIRAC_tests_std.err -i JOB_id
+And execute the following command to retrieve the current output: ::
+ glite-wms-job-perusal --get -f DIRAC_tests_std.out -i JOB_id
+ 
+Get job files back: ::
  glite-wms-job-output -i <JOB_ID_file>
 
-Querry computing elements on specific software:
+Ask computing elements on selected attributes:
 
 ::
 

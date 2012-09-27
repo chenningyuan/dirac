@@ -20,7 +20,12 @@ echo -e "\n *** Working host is: "; hostname -f
 ##################################################
 # fill the PATH to be the same as in online mode
 ##################################################
-export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+#export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+# rather do the sourcing ...
+source ~/.bashrc
+source ~/.bash_profile
+source /etc/bashrc
+
 
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
@@ -129,7 +134,7 @@ cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc  $DIRAC/$BUILD/.
 
 echo -e "\n now packing stuff for grid computations..."
 
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
 
 echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
 ls -lt dirac_grid_suite.tgz
@@ -140,8 +145,8 @@ ls -lt dirac_grid_suite.tgz
 #
 # initialize your certificate from grid computing
 #
-# voms-proxy-init --voms voce      -vomslife 24:00 
-# voms-proxy-init --voms compchem  -vomslife 24:00 
+#  voms-proxy-init --voms voce -hours 24 -vomslife 24:00 
+#  voms-proxy-init --voms compchem -hours 24 -vomslife 24:00 
 # 
 ######################################################## 
 
@@ -177,6 +182,8 @@ echo -e "I am in the directory $PWD"
 glite-wms-job-submit -o JOB.$timestamp.$VO.1 -a submit_$VO.jdl
 glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
 glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
+glite-wms-job-submit -o JOB.$timestamp.$VO.4 -a submit_$VO.jdl
+glite-wms-job-submit -o JOB.$timestamp.$VO.5 -a submit_$VO.jdl
 
 echo -e "\n Done, script finished."
 
