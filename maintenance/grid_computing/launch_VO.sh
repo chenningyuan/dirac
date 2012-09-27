@@ -116,8 +116,8 @@ python ./runtest --verbose --quick --mpi=$nprocs  #  works
  python ./pamadm -a
 
  cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
- cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
- echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
+cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
+echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
 
  #cd $BUILD_SERIAL
  cd $BUILD
@@ -131,7 +131,7 @@ echo -e "\n False configuration in order to enable tests running"
 mv CMakeCache.txt CMakeCache.txt_STORED
 
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 
 # make ExperimentalConfigure
  make ExperimentalStart
@@ -145,23 +145,67 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
 # ----------------------------------------- #
- echo -e "\n pgf90 ? \c"; which pgf90
- echo -e "\n pgcc ? \c"; which pgcc
- echo -e "\n ifort ? \c"; which ifort
- echo -e "\n icc ? \c"; which icc
- echo -e "\n echo MKLROOT=$MKLROOT"
- echo -e "\n lfc ? \c"; which lfc
- echo -e "\n gfortran44 ? \c"; which gfortran44
- echo -e "\n gfortran ? \c"; which gfortran
+ unset FC
+ if [[ -n `which pgf90` ]]; then
+   FC=`which pgf90`
+   echo -e "\n pgf90 ? $FC ";
+ elif [[ -n `which ifort` ]]; then
+   FC=`which ifort`
+   echo -e "\n ifort ? $FC \c"; 
+ elif [[ -n `which lfc` ]]; then
+   FC=`which lfc`
+   echo -e "\n lfc ? $FC "; 
+ elif [[ -n  `which gfortran44` ]]; then
+   FC=`which gfortran44`
+   echo -e "\n gfortran44 ? $FC "; 
+ else
+   echo -e "\n No suitable Fortran compiler found..."
+ fi
+
+ unset CC
+ if [[ -n `which pgcc` ]]; then
+   CC=`which pgcc`
+   echo -e "\n pgcc ? $CC ";
+ elif [[ -n `which icc` ]]; then
+   CC=`which icc`
+   echo -e "\n icc ? $CC \c"; 
+ elif [[ -n `which fcc` ]]; then
+   CC=`which fcc`
+   echo -e "\n fcc ? $CC "; 
+ elif [[ -n  `which gcc44` ]]; then
+   CC=`which gcc44`
+   echo -e "\n gcc44 ? $CC "; 
+ else
+   echo -e "\n No suitable C compiler found..."
+ fi
+
+
+ if [[ -n $MKLROOT ]]; then
+    echo -e "\n  Found MKL library, MKLROOT=$MKLROOT"
+    export MATH_ROOT=$MKLROOT
+ fi
+
+
+ echo -e "\n pgCC ? \c"; which pgCC
+ echo -e "\n icpc ? \c"; which icpc
  echo -e "\n g++ ? \c"; which g++
+
  echo -e "\n mpif90 ? \c"; which mpif90
- echo -e "\n mpicc ? \c"; which mpicc
+ echo -e "\n mpicc ? \c";  which mpicc
  echo -e "\n mpiCC ? \c"; which mpiCC
 
- echo -e "\n ==== Try own buildup of the host server in build directory ==== "
+ echo -e "\n\n ==== Try own buildup of the host server in build directory ==== \n "
 
- #python ./setup -D VERBOSE_OUTPUT=ON --fc=$FORTRAN
- python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999
+ if [[ -n $FC  && -n $CC ]]; then
+    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+ elif [[ -n $FC  && -z $CC ]]; then
+    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+ elif [[ -z $FC  && -n $CC ]]; then
+    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+ elif [[ -z $FC  && -z $CC ]]; then
+    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+ fi
+
  cd build
  cmake ..
  make Experimental
