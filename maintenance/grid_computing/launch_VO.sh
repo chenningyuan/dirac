@@ -25,17 +25,34 @@ if [[ -z $THIS_HOSTNAME ]]; then
 fi
 
 echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
-echo -e " ---------  My current directory :  $PWD "
-echo -e "---  My space, df -h: "; df -h .
+echo -e "Server specification: \c";  uname -a
+######################################################
+#     get number of CPUs on the given node
+######################################################
+nprocs_all=`cat /proc/cpuinfo | grep processor | wc -l`
+nprocs_PBS=`cat $PBS_NODEFILE | wc -l`
+nprocs=$nprocs_all
+echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
+echo -e "==== Number of all CPUs     :  $nprocs   ";
+echo -e "==== Number of allowed CPUs :  $nprocs_PBS  ";
+echo -e "\n ---- server's total memory :\c"; cat /proc/meminfo | grep MemTotal
+# check space
+echo -e "\n--- Server's filesystem (df): "; df -h .
+echo -e "--- My current directory :  $PWD "
+echo -e "--- Occupied space by me (du) : \c"; du -h -s
+
 
 echo -e "-- \n Is there cmake ? which cmake="; which cmake
+echo -e "Python present : \c"; which python; python -V
 
+###########################
+### Check files on SE: ####
+###########################
 echo -e  "\n Files on my vo=$VO space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "\n once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "\n once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
 echo " ------------------------------------------------------ "
-
 #####################################
 ###  download file to the current CE 
 #####################################
@@ -49,12 +66,6 @@ echo " -------------------------------------------------------------------------
 ##  make it executable and finally launch
 ##########################################
 echo -e "\n Job started at : \c"; date
-
-echo -e "Server specification: \c";  uname -a
-
-echo -e "\n server Python version: \c"; which python
-python -V
-echo -e "\n"
 
 # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
  export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
@@ -71,17 +82,8 @@ echo -e "\n"
 #echo -e "\n ---- server environment ---- set :"
 #set
 
-#echo -e "\n ---- server CPU equipment, /proc/cpuinfo ----"
-#cat /proc/cpuinfo
-
-# get number of CPUs on the given node
-nprocs=`cat /proc/cpuinfo | grep processor | wc -l`
-#echo -e "\n Number of CPUs :\c";cat /proc/cpuinfo | grep processor | wc -l
-echo -e "\n Number of CPUs : $nprocs";
-echo -e " CPUs model : \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
-
-echo -e "\n ---- server total memory equipment ----"
-cat /proc/meminfo | grep MemTotal
+# here exit
+#exit
 
 echo -e "\n ---- DIRAC unpacking,  tar : \c "; which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
@@ -102,8 +104,8 @@ echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
-python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
+python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
+#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
@@ -113,8 +115,8 @@ echo -e "\n --- Launching quick runtest --- \n ";
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-#python ./runtest --verbose --quick --mpi=$nprocs  #  works
-python ./runtest --verbose --quick --mpi=8  #  works
+python ./runtest --verbose --quick --mpi=$nprocs  #  works
+#python ./runtest --verbose --quick --mpi=8  #  works
 #python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
 
@@ -122,18 +124,18 @@ python ./runtest --verbose --quick --mpi=8  #  works
 #               check own static cmake stuff
 #############################################################
 
- python ./pamadm -a
+  python ./pamadm -a
 
- cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
-cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
-echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
+  cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
+  cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
+  echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
 
- #cd $BUILD_SERIAL
- cd $BUILD
- echo -e "\n I am in build-directory  $PWD \n"
- echo -e "--- Directory $BUILD content ---:"; ls -lt
+  #cd $BUILD_SERIAL
+  cd $BUILD
+  echo -e "\n I am in build-directory  $PWD \n"
+  echo -e "--- Directory $BUILD content ---:"; ls -lt
 
-echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
+  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
 
 # FIX ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
@@ -141,7 +143,7 @@ echo -e "\n\n===== Performing false configuration setup in order to enable tests
 mv CMakeCache.txt CMakeCache.txt_STORED
 
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=8 -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 
 # make ExperimentalConfigure
  make ExperimentalStart
@@ -211,14 +213,14 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 
 
 ### check presence of MPI compilers ###
- echo -e "\n mpif90 ? \c"; which mpif90
- echo -e "\n mpicc ? \c";  which mpicc
- echo -e "\n mpiCC ? \c";  which mpiCC
+ echo -e "\n Is  mpif90 ? \c"; which mpif90
+ echo -e "\n Is  mpicc ? \c";  which mpicc
+ echo -e "\n Is  mpiCC ? \c";  which mpiCC
 
  echo -e "\n\n ==== Try own buildup of the host server in build directory ==== \n "
 
  BUILD_NAME="$THIS_HOSTNAME_gridCEbuild"
- echo "with BUILD NAME=$BUILD_NAME"
+ echo "Assigned BUILD NAME=$BUILD_NAME"
 
  if [[ -n $FC  && -n $CC ]]; then
     echo "buildup with selected FC=$FC and CC=$CC"

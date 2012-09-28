@@ -15,8 +15,12 @@ VirtualOrganisation="voce";
 #VirtualOrganisation="compchem";
 #VirtualOrganisation="osg";
 
-# maximum number of accessible CPU's
-CpuNumber = 8;
+# whether whole nodes should be used exclusively or not - sets according to the GlueHostArchitectureSMPSize parameter
+WholeNodes = True;
+# maximum number of nodes 
+HostNumber = 1;
+# maximum number of accessible CPU's (on one, or on more nodes) 
+#CpuNumber = 8;
 
 ##############################################
 # stdout,stderr output & other working files
@@ -33,7 +37,8 @@ PerusalTimeInterval=30;
 # Demands on CE #
 # RegExp("gridce.iihe.ac.be", other.GlueCEUniqueId) 
 #################
-Requirements = other.GlueCEPolicyMaxWallClockTime > 1800;
+# for VOCE can not be > 10000
+Requirements = other.GlueCEPolicyMaxWallClockTime > 3600;
 #Requirements =
 # other.GlueCEPolicyMaxWallClockTime > 1200 && 
 # other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
