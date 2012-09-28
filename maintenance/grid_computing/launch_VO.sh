@@ -70,6 +70,7 @@ echo -e "\n Job started at : \c"; date
 # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
  export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
  export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
+ export BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
  unset OPAL_PREFIX
  export OPAL_PREFIX=$PWD/$BUILD
@@ -128,9 +129,9 @@ python ./runtest --verbose --quick --mpi=$nprocs  #  works
 
   cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
   cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
+  cp maintenance/grid_computing/diracrc_build_grid  $BUILD_GNU_SERIAL/diracrc
   echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
 
-  #cd $BUILD_SERIAL
   cd $BUILD
   echo -e "\n I am in build-directory  $PWD \n"
   echo -e "--- Directory $BUILD content ---:"; ls -lt
@@ -141,10 +142,8 @@ python ./runtest --verbose --quick --mpi=$nprocs  #  works
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
 mv CMakeCache.txt CMakeCache.txt_STORED
-
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_test_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
-
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 # make ExperimentalConfigure
  make ExperimentalStart
  make ExperimentalTest
@@ -154,9 +153,44 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  cd ..
  echo -e "\n I am in main directory $PWD \n"
 
+### Again, do the buildup using serial standalone executable ###
+# http://software.intel.com/en-us/articles/recommended-settings-for-calling-intelr-mkl-routines-from-multi-threaded-applications/
+# set MKL threads
+  let nprocsm1=$nprocs-1
+  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
+  cd $BUILD_SERIAL
+  echo -e "\n I am in build-directory $PWD \n"
+  echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt
+  mv CMakeCache.txt CMakeCache.txt_STORED
+#note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+ make ExperimentalStart
+ make ExperimentalTest
+ make ExperimentalSubmit
+## return back into main directory
+ cd ..
+ echo -e "\n I am again in the main directory $PWD \n"
+
+### Again, do the buildup using serial standalone executable ###
+  cd $BUILD_GNU_SERIAL
+  echo -e "\n I am in build-directory $PWD \n"
+  echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
+  mv CMakeCache.txt CMakeCache.txt_STORED
+#note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
+ ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+ make ExperimentalStart
+ make ExperimentalTest
+ make ExperimentalSubmit
+## return back into main directory
+ cd ..
+ echo -e "\n I am again in the main directory $PWD \n"
+
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
 # ----------------------------------------- #
+
+ echo -e "\n\n\n ==== Try own buildup on the host server (in build directory) ==== \n "
+
  unset FC
  if [[ -n `which pgf90` ]]; then
    FC=`which pgf90`
@@ -175,7 +209,7 @@ mv CMakeCache.txt CMakeCache.txt_STORED
    echo -e "\n gfortran44 ? $FC "; 
    gfortran44 --version
  else
-   echo -e "\n No suitable Fortran compiler found...gfortran ?"
+   echo -e "\n No suitable Fortran compiler found...only default gfortran ?"
    which gfortran; gfortran --version
  fi
 
@@ -201,7 +235,7 @@ mv CMakeCache.txt CMakeCache.txt_STORED
    CXX=`which g++44`
    echo -e "\n g++44 ? $CXX "; 
  else
-   echo -e "\n No suitable C compiler found...gcc,g++ ?"
+   echo -e "\n No suitable C compiler found...only default gcc,g++ ?"
    which gcc; gcc --version
    which g++; g++ --version
  fi
@@ -211,15 +245,12 @@ mv CMakeCache.txt CMakeCache.txt_STORED
     export MATH_ROOT=$MKLROOT
  fi
 
-
 ### check presence of MPI compilers ###
  echo -e "\n Is  mpif90 ? \c"; which mpif90
  echo -e "\n Is  mpicc ? \c";  which mpicc
  echo -e "\n Is  mpiCC ? \c";  which mpiCC
 
- echo -e "\n\n ==== Try own buildup of the host server in build directory ==== \n "
-
- BUILD_NAME="$THIS_HOSTNAME_gridCEbuild"
+ BUILD_NAME="$THIS_HOSTNAME.gridCE_ownbuild"
  echo "Assigned BUILD NAME=$BUILD_NAME"
 
  if [[ -n $FC  && -n $CC ]]; then
@@ -237,7 +268,7 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  fi
 
  cd build
- cmake ..
+ #cmake ..
  make ExperimentalStart
  make Experimental
 

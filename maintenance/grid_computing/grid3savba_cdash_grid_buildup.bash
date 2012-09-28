@@ -120,6 +120,7 @@ cd $DIRAC
 # copy there the cmake static
 cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD/.
 cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_SERIAL/.
+cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_GNU_SERIAL/.
 
 # copy there the mpirun static with related directpries & files
 cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
@@ -134,7 +135,7 @@ cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc  $DIRAC/$BUILD/.
 
 echo -e "\n now packing stuff for grid computations..."
 
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
 
 echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
 ls -lt dirac_grid_suite.tgz
