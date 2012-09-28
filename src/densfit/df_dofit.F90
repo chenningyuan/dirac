@@ -87,7 +87,7 @@ use densfit_common
 !
 ! ==== Local variables ===>
 !
-  integer(KINT)                 :: n_fit, n_fit_A, n_fit_B
+  integer(KINT)                 :: n_fit, n_fit_A, n_fit_B, info
   real(KREAL), allocatable      :: fit_coefficients(:), weight_matrix(:,:), weight_vector(:)
   type(center_definition)       :: definition_center_A, definition_center_B
 !
@@ -245,6 +245,7 @@ use densfit_common
 ! definition_center  : Structure with all the relevant information
 !
   integer(KINT), intent(out)                :: ierr
+  integer(KINT), intent(in )                :: ld_DM, n_fit
   type(center_definition), intent(in)       :: definition_center_A, definition_center_B
   real(KREAL), intent(in)                   :: Density_AB(ld_DM,*)
   real(KREAL), intent(out)                  :: weight_matrix(n_fit,n_fit), weight_vector(n_fit)

@@ -724,7 +724,7 @@ use allocator_cfg
 implicit none
 
 real(8), allocatable :: WORK(:)
-integer :: lwork
+integer :: lwork,  WORK_memsize
 
 LWORK = WORK_memsize
 call alloc(WORK,LWORK,id='WORK in PAMHSMRCC')

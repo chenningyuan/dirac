@@ -512,18 +512,22 @@ C
             END IF
          END IF
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
+* Stupid routine to see if the 4-index transformation should be done
+      CALL AN_IDIOT(NO4IDX)
 * Transformation 
       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBEIG),NORBT)
 C
+      IF(NO4IDX.EQ.0) THEN
       CALL RTRACTL(WORK(KCMO),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
 C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C no need for these calls. Lasse 2012
 C     CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
 C     CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
       CALL MEMCHK('cemory2',WORK,KCMO)
+      END IF
 *
 *
 * Calculate NASHT
@@ -580,6 +584,17 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       CALL QEXIT('KRCC_INT')
       print*,'exit KRCC_INT'
+*
+      RETURN
+      END
+*
+      SUBROUTINE AN_IDIOT(I)
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+*
+      I = NO4IDX
 *
       RETURN
       END
@@ -648,7 +663,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       NTESTL = 1
 C     NTEST = max(NTESTL,IPRNT)
-      NTEST = 2
+      NTEST = 1
 *
 * Constants
       IZERO = 0
@@ -1211,7 +1226,7 @@ C Routine to see if there has been a change in the type of integral
 C
 #include "implicit.inc"
 C from 1 to
-      NTEST = 100
+      NTEST = 00
       ICHANGE = 0
       IF(ISUM.NE.IISUM) ICHANGE = 1
 C

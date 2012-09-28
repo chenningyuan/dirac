@@ -133,9 +133,9 @@ C           print*,'enter 4'
 *
         IF(NALPHA.EQ.4) THEN
           ITYPE = ITYPE + IRELTYPE(3)
-C        print*,'ITYPE ABS',ITYPE
+C         print*,'ITYPE,IRELTYPE(3)',ITYPE,IRELTYPE(3)
         ELSE IF(NALPHA.EQ.0) THEN
-C          print*,'ITYPE,IRELTYPE(4)',ITYPE,IRELTYPE(4)
+C         print*,'ITYPE,IRELTYPE(4)',ITYPE,IRELTYPE(4)
           ITYPE = ITYPE + IRELTYPE(4)
         ELSE
           ITYPE = ITYPE + IRELTYPE(6)
@@ -177,7 +177,7 @@ C          print*,'JSEA,LSEA,ISEA,KSEA',JSEA,LSEA,ISEA,KSEA
 C          print*,'IORB(I_INDX_TO_GAS(2)-1)',IORB(I_INDX_TO_GAS(2)-1)
 C          print*,'IPOS for 1',IPOS
           IPOS = IPOS + IOFFINTTYPE(ITYPE)
-C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 1',IPOS,IOFFINTTYPE(ITYPE)
+C         print*,'IPOS,IOFFINTTYPE(ITYPE) for 1',IPOS,IOFFINTTYPE(ITYPE)
         ELSE IF (I_INDX_TO_GAS(1).NE.I_INDX_TO_GAS(3).AND.
      &     I_INDX_TO_GAS(2).NE.I_INDX_TO_GAS(4)) THEN
           IPOS = (JSEA - IORB(I_INDX_TO_GAS(2))-1) * 
@@ -194,7 +194,7 @@ C          print*,'JSEA,LSEA,ISEA,KSEA',JSEA,LSEA,ISEA,KSEA
 C          print*,'IORB(I_INDX_TO_GAS(2)-1)',IORB(I_INDX_TO_GAS(2)-1)
 C          print*,'IPOS for 2',IPOS
           IPOS = IPOS + IOFFINTTYPE(ITYPE)
-C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 2',IPOS,IOFFINTTYPE(ITYPE)
+C         print*,'IPOS,IOFFINTTYPE(ITYPE) for 2',IPOS,IOFFINTTYPE(ITYPE)
 C          print*,'
         ELSE IF (I_INDX_TO_GAS(1).EQ.I_INDX_TO_GAS(3)) THEN
           IPOS = ISEA - IORB(I_INDX_TO_GAS(1)) - 1 +
@@ -206,7 +206,7 @@ C          print*,'
      &           ISUMORB(NGSOBT(I_INDX_TO_GAS(3)))
 C          print*,'IPOS for 3',IPOS
           IPOS = IPOS + IOFFINTTYPE(ITYPE)
-C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 3',IPOS,IOFFINTTYPE(ITYPE)
+C         print*,'IPOS,IOFFINTTYPE(ITYPE) for 3',IPOS,IOFFINTTYPE(ITYPE)
         ELSE IF (I_INDX_TO_GAS(2).EQ.I_INDX_TO_GAS(4)) THEN
           IPOS = (ISEA - IORB(I_INDX_TO_GAS(1))-1) *
      &                   NGSOBT(I_INDX_TO_GAS(3)) +
@@ -219,7 +219,7 @@ C          print*,'IPOS,IOFFINTTYPE(ITYPE) for 3',IPOS,IOFFINTTYPE(ITYPE)
      &                   NGSOBT(I_INDX_TO_GAS(3)) 
 C          print*,'IPOS 4',IPOS
           IPOS = IPOS + IOFFINTTYPE(ITYPE)
-C          print*,'IPOS,IOFFINTTYPE(ITYPE) 4',IPOS,IOFFINTTYPE(ITYPE)
+C         print*,'IPOS,IOFFINTTYPE(ITYPE) 4',IPOS,IOFFINTTYPE(ITYPE)
         END IF
       ELSE
           IPOS = (LSEA - IORB(I_INDX_TO_GAS(4))-1) *
@@ -258,7 +258,7 @@ C        print*,'IPOS2ALPHA',IPOS2ALPHA(1),IPOS2ALPHA(2),IPOS2ALPHA(3)
       END IF
 * 5. Fetch integral from list
 C
-C      print*,'ipos',ipos
+C      print*,'ipos,SIGN2,NALPHA',ipos,SIGN2,NALPHA
 C      print*,'i am here'
       IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
         XOUT = SIGN2*XINT(IPOS)

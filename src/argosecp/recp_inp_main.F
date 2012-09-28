@@ -15,6 +15,7 @@
       USE RECP_NTR
       USE RECP_OUTPUT
       USE RECP_FUNCTION
+      USE RECP_WRITE
       implicit logical(a-z)
 #include "inc_mxvalue.h"
 #include "inc_print.h" 
@@ -61,11 +62,20 @@
       character*1 ibl, ipc, isk, lblsh(21)
       integer  iodfac
       external iodfac
-      LOGICAL  OLDINP
-      data ibl, isk /' ','0'/, lblsh /'s','p','d','f','g','h','i','k',
+      INTEGER  FILE_NUM(2)
+      CHARACTER(10) FILE_NAME(2)
+
+      DATA FILE_NUM  / 64, 65 /
+      DATA FILE_NAME /'RECP_INP_0','RECP_INP_P'/
+      DATA ibl, isk /' ','0'/ 
+      DATA lblsh /'s','p','d','f','g','h','i','k',
      &  'l','m','n','o','q','r','t','u','v','w','x','y','z'/
 
       CALL OUTPUT_LOC('RECP_INP_MAIN','E')
+!     write file in debug mode
+      IF (RECP_DBG.GE.1) THEN
+         CALL RECP_WRITE_FILEOPEN(FILE_NUM(1),FILE_NAME(1),'REPLACE')
+      ENDIF
 
 !     intitalize some input variables.
       itol   = 20
@@ -114,7 +124,7 @@
  
 !     contracted orbital and lower-triangle-packed matrix symmetry
 !     offsets.
-      CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
+      CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst,FILE_NUM)
  
 !     # nnbft = total number of unique so function pairs.
 !     # mpru = the number of elements in a diagonal,
@@ -191,26 +201,28 @@
               call l2opxv(lmn,itl,itu,IPT_LMNV,eval,leig,ics,igcs) 
 
 !             # not an eigenvalue. print a warning.
-              if ( leig .lt. 0 ) then
-                IF (PRINT_LEVEL .GE. 2) THEN 
-                   write(RECP_OUT,'(3x,a,i3,a3,a,a,f12.8)') 
-     &               's.o. basis function',iso,ityp(lai),
-     &               ' is not an L^2 eigenvector. : ',
-     &               '<v|L^2|v>/<v|v> =', eval
-                ENDIF 
-                leig = lmn  !assign the maximum value
-              endif
+              IF (leig.LT.0) THEN
+                 IF (PRINT_LEVEL.GE.2) THEN 
+                    WRITE(RECP_OUT,'(3x,a,i3,a3,a,a,f12.8)') 
+     &                's.o. basis function',iso,ityp(lai),
+     &                ' is not an L^2 eigenvector. : ',
+     &                '<v|L^2|v>/<v|v> =', eval
+                 ENDIF 
+                 leig = lmn  !assign the maximum value
+              ENDIF
 
 !             # assign the mnl(*) values to the so functions.
 !             # 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g,...
               mnl(iso) = ( lmnp1(icons)**2 + 2 * leig + 5 ) / 4
+!             IF (RECP_DBG.GE.1) THEN
+!             ENDIF
 
               iau = nd(lai)
               do ia = 1,iau
                  ics = ics+1
                  if ( (inam(nu).ge.5).and.(leig.eq.1) ) then
 !                   # determine angular momentum symmetries.
-                    CALL RECP_INP_ORBANGSYM
+                    CALL RECP_INP_ORBITAL_ANGSYM
      &                   (icu,itl,itu,ics,igcs,lai,ixyzir)
                  endif
               enddo
@@ -275,6 +287,8 @@
      &                                   (/31x,4(3x,a3,':',i4)))
       ENDIF
 
+
+      IF (RECP_DBG.GE.1) CLOSE (74) ! close file (RECP_DBG_INP)
       CALL OUTPUT_LOC('RECP_INP_MAIN','X')
       END
 

@@ -91,7 +91,7 @@ module gen1int_shell
   integer, public, parameter :: REDUNDANT_GEO = 3
 
   public :: Gen1IntShellCreate
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   public :: Gen1IntShellBcast
 #endif
   public :: Gen1IntShellView
@@ -204,7 +204,7 @@ module gen1int_shell
     end if
   end subroutine Gen1IntShellCreate
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
   !> \brief broadcasts AO sub-shells
   !> \author Bin Gao
   !> \date 2012-05-13
@@ -464,7 +464,7 @@ module gen1int_shell
     integer start_ints, end_ints               !start and end addresses of contracted integrals
     integer idens, igeo, iprop                 !incremental recorders
     integer ierr                               !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
     integer rank_proc                          !rank of processor
     integer num_proc                           !number of processors
@@ -575,7 +575,7 @@ module gen1int_shell
     ! sets the start and end addresses of expectation values
     start_expt = path_offset*num_prop+1
     end_expt = path_offset*num_prop+num_matrices
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
       call MPI_Comm_rank(api_comm, rank_proc, ierr)
@@ -619,7 +619,7 @@ module gen1int_shell
           unique_expt => val_expt
         end if
       end if
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
       ! broadcasts what kind of jobs to do
       if (present(api_comm)) then
         call MPI_Bcast(do_integral, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
@@ -1139,7 +1139,7 @@ module gen1int_shell
         ! decreases the number of remaining pairs
         remaining_jobs = remaining_jobs-1
       end do
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     end if
 #endif
     ! frees spaces
@@ -1148,12 +1148,12 @@ module gen1int_shell
     if (do_expectation) then
 !FIXME
       ! writes expectation values \var(unique_expt) on file
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
       if (rank_proc==MANAGER) then
 #endif
         if (p_write_expt) then
         end if
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
       end if
 #endif
       if (present(val_expt)) then
@@ -1173,7 +1173,7 @@ module gen1int_shell
       end if
       nullify(unique_expt)
     end if
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! blocks until all processors have finished
     if (present(api_comm)) call MPI_Barrier(api_comm, ierr)
 #endif
@@ -1259,7 +1259,7 @@ module gen1int_shell
     integer start_ints, end_ints                !start and end addresses of contracted integrals
     integer idens, igeo, iprop, ipoint          !incremental recorders
     integer ierr                                !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
     integer rank_proc                           !rank of processor
     integer num_proc                            !number of processors
@@ -1356,7 +1356,7 @@ module gen1int_shell
     ! sets the start and end addresses of expectation values
     start_expt = path_offset*num_prop+1
     end_expt = path_offset*num_prop+num_matrices
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
       call MPI_Comm_rank(api_comm, rank_proc, ierr)
@@ -1386,7 +1386,7 @@ module gen1int_shell
           unique_expt => val_expt
         end if
       end if
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
       ! broadcasts what kind of jobs to do
       if (present(api_comm)) then
         call MPI_Bcast(do_expectation, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
@@ -1755,7 +1755,7 @@ module gen1int_shell
         ! decreases the number of remaining pairs
         remaining_jobs = remaining_jobs-1
       end do
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     end if
 #endif
     ! frees spaces
@@ -1774,7 +1774,7 @@ module gen1int_shell
       end if
       nullify(unique_expt)
     end if
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
     ! blocks until all processors have finished
     if (present(api_comm)) call MPI_Barrier(api_comm, ierr)
 #endif
@@ -1830,7 +1830,7 @@ module gen1int_shell
     integer min_row_idx, max_row_idx                !minimum and maximum indices of AOs
     integer imo, iopt, icontr, iao                  !incremental recorders
     integer ierr                                    !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPI_UNDEFINED)
 #include "mpif.h"
     integer rank_proc                               !rank of processor
     integer num_proc                                !number of processors

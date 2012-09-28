@@ -291,7 +291,7 @@ dirac_modules[this_module].add_test('legacy_openrsp_molecular_gradient')
 dirac_modules[this_module].add_test('legacy_openrsp_pv')
 dirac_modules[this_module].add_test('legacy_openrsp_quadrupole')
 dirac_modules[this_module].add_test('legacy_openrsp_roa')
-dirac_modules[this_module].add_test('pnc_gradient')
+dirac_modules[this_module].add_test('legacy_openrsp_pnc_gradient')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'oof'
