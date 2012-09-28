@@ -3064,7 +3064,7 @@ C
             CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = FC
+C         First part of transformation: W = Fao C
 C         ------------------------------------
 C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
@@ -3079,7 +3079,7 @@ C
             CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = (C+)W
+C         Second part of transformation: Fmo = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
@@ -3151,14 +3151,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = F(C+)
+C         First part of transformation: W = Fmo(C+)
 C
           CALL QGEMM(NRMO,NCAO,NCMO,D1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       D0,IQW,BUF,NRMO,NCAO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = CW
 C
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
@@ -3174,14 +3174,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = CF
+C         First part of transformation: W = CFmo
 C
           CALL QGEMM(NRAO,NCMO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       D0,IQW,BUF,NRAO,NCMO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = W(C+)
 C
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
      &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
@@ -3209,8 +3209,13 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
       use memory_allocator
 #include "implicit.h"
-      real(8), allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
+      real(8) :: FAO(LRAO,LCAO,NZAO)
+      real(8) :: FMO(LRMO,LCMO,NZMO)
+      real(8) :: TM1(LR1 ,LC1 ,NZTM1)
+      real(8) :: TM2(LR2 ,LC2 ,NZTM2)
+      integer :: IQAO(:), IQMO(:), IQTM1(:), IQTM2(:)
+      real(8), allocatable :: work(:)
       integer IQW(4)
 C     find out how much buffer is needed in qtrans
       IF(TYP.EQ.'AOMO') THEN
