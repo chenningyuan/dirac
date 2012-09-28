@@ -18,7 +18,12 @@ else
  #exit 0
 fi
 
+unset THIS_HOSTNAME
 THIS_HOSTNAME=`hostname -f`
+if [[ -z $THIS_HOSTNAME ]]; then
+ THIS_HOSTNAME=`hostname`
+fi
+
 echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
 echo -e " ---------  My current directory :  $PWD "
 echo -e "---  My space, df -h: "; df -h .
@@ -78,8 +83,10 @@ echo -e " CPUs model : \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
 echo -e "\n ---- server total memory equipment ----"
 cat /proc/meminfo | grep MemTotal
 
-echo -e "\n ---- DIRAC unpacking with tar : \c "; which tar;  tar --version
+echo -e "\n ---- DIRAC unpacking,  tar : \c "; which tar;  tar --version
+echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
 tar xfz dirac_grid_suite.tgz
+echi -e "done."
 
 echo -e "\n Content of directory BUILD=$BUILD: \c"; ls -lt $BUILD
 echo -e "\n Content of directory BUILD_SERIAL=$BUILD_SERIAL: \c"; ls -lt $BUILD_SERIAL
@@ -126,7 +133,8 @@ echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
  echo -e "\n I am in build-directory  $PWD \n"
  echo -e "--- Directory $BUILD content ---:"; ls -lt
 
-echo -e "\n False configuration in order to enable tests running"
+echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
+
 # FIX ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
@@ -151,36 +159,50 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  if [[ -n `which pgf90` ]]; then
    FC=`which pgf90`
    echo -e "\n pgf90 ? $FC ";
+   pgf90 -V
  elif [[ -n `which ifort` ]]; then
    FC=`which ifort`
-   echo -e "\n ifort ? $FC \c"; 
+   echo -e "\n ifort ? $FC"; 
+   ifort --version
  elif [[ -n `which lfc` ]]; then
    FC=`which lfc`
+   lfc --version
    echo -e "\n lfc ? $FC "; 
  elif [[ -n  `which gfortran44` ]]; then
    FC=`which gfortran44`
    echo -e "\n gfortran44 ? $FC "; 
+   gfortran44 --version
  else
-   echo -e "\n No suitable Fortran compiler found..."
+   echo -e "\n No suitable Fortran compiler found...gfortran ?"
+   which gfortran; gfortran --version
  fi
 
  unset CC
  if [[ -n `which pgcc` ]]; then
    CC=`which pgcc`
+   pgcc -V
    echo -e "\n pgcc ? $CC ";
+   echo -e "\n pgCC ? \c"; which pgCC
  elif [[ -n `which icc` ]]; then
    CC=`which icc`
-   echo -e "\n icc ? $CC \c"; 
+   echo -e "\n icc ? $CC"; 
+   icc --version
+    echo -e "\n icpc ? \c"; which icpc
  elif [[ -n `which fcc` ]]; then
    CC=`which fcc`
-   echo -e "\n fcc ? $CC "; 
+   echo -e "\n fcc ? $CC ";
+   fcc --version 
  elif [[ -n  `which gcc44` ]]; then
    CC=`which gcc44`
    echo -e "\n gcc44 ? $CC "; 
+   gcc44 --version
+   CXX=`which g++44`
+   echo -e "\n g++44 ? $CXX "; 
  else
-   echo -e "\n No suitable C compiler found..."
+   echo -e "\n No suitable C compiler found...gcc,g++ ?"
+   which gcc; gcc --version
+   which g++; g++ --version
  fi
-
 
  if [[ -n $MKLROOT ]]; then
     echo -e "\n  Found MKL library, MKLROOT=$MKLROOT"
@@ -188,28 +210,33 @@ mv CMakeCache.txt CMakeCache.txt_STORED
  fi
 
 
- echo -e "\n pgCC ? \c"; which pgCC
- echo -e "\n icpc ? \c"; which icpc
- echo -e "\n g++ ? \c"; which g++
-
+### check presence of MPI compilers ###
  echo -e "\n mpif90 ? \c"; which mpif90
  echo -e "\n mpicc ? \c";  which mpicc
- echo -e "\n mpiCC ? \c"; which mpiCC
+ echo -e "\n mpiCC ? \c";  which mpiCC
 
  echo -e "\n\n ==== Try own buildup of the host server in build directory ==== \n "
 
+ BUILD_NAME="$THIS_HOSTNAME_gridCEbuild"
+ echo "with BUILD NAME=$BUILD_NAME"
+
  if [[ -n $FC  && -n $CC ]]; then
-    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    echo "buildup with selected FC=$FC and CC=$CC"
+    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
  elif [[ -n $FC  && -z $CC ]]; then
-    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    echo "buildup with selected FC=$FC"
+    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
  elif [[ -z $FC  && -n $CC ]]; then
-    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    echo "buildup with selected CC=$CC"
+    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
  elif [[ -z $FC  && -z $CC ]]; then
-    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME="$THIS_HOSTNAME_grid_ownbuild" -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    echo "buildup with cmake automatic selection of compilers"
+    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
  fi
 
  cd build
  cmake ..
+ make ExperimentalStart
  make Experimental
 
 
