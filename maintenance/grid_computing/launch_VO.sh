@@ -89,10 +89,7 @@ echo -e "\n Job started at : \c"; date
 echo -e "\n ---- DIRAC unpacking,  tar : \c "; which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
 tar xfz dirac_grid_suite.tgz
-echi -e "done."
-
-echo -e "\n Content of directory BUILD=$BUILD: \c"; ls -lt $BUILD
-echo -e "\n Content of directory BUILD_SERIAL=$BUILD_SERIAL: \c"; ls -lt $BUILD_SERIAL
+echo -e "done; see the content of $PWD :"; ls -lt
 
 #echo -e "\n making executables:"
 #ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
@@ -104,7 +101,6 @@ cp maintenance/grid_computing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created: "; cat diracrc
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=2
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
@@ -112,11 +108,21 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
 
 #####################################################################
 
-echo -e "\n --- Launching quick runtest --- \n "; 
+  echo -e "\n\n --- Launching regular parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  python ./runtest --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+
+  echo -e "\n\n --- Launching regular serial runtest - Intel+MKL --- \n "; date 
+  let nprocsm1=$nprocs-1
+  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
+  python ./runtest --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
+
+  echo -e "\n\n --- Launching regular serial runtest - GNU  --- \n "; date
+  python ./runtest --verbose --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
+
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
 #python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-python ./runtest --verbose --quick --mpi=$nprocs  #  works
+#python ./runtest --verbose --quick --mpi=$nprocs  #  works
 #python ./runtest --verbose --quick --mpi=8  #  works
 #python ./runtest --verbose --quick #  works
 #python ./runtest --verbose --all  # works
@@ -127,63 +133,66 @@ python ./runtest --verbose --quick --mpi=$nprocs  #  works
 
   python ./pamadm -a
 
-  cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
-  cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
-  cp maintenance/grid_computing/diracrc_build_grid  $BUILD_GNU_SERIAL/diracrc
-  echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
+ # cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
+ # cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
+ # cp maintenance/grid_computing/diracrc_build_grid  $BUILD_GNU_SERIAL/diracrc
+ # echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
 
-  cd $BUILD
-  echo -e "\n I am in build-directory  $PWD \n"
-  echo -e "--- Directory $BUILD content ---:"; ls -lt
+  #cd $BUILD
+  #echo -e "\n I am in build-directory  $PWD \n"
+  #echo -e "--- Directory $BUILD content ---:"; ls -lt
 
-  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
+  #echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
 
 # FIX ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
-mv CMakeCache.txt CMakeCache.txt_STORED
+##mv CMakeCache.txt CMakeCache.txt_STORED
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 # make ExperimentalConfigure
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
-
+# make ExperimentalStart
+# make ExperimentalTest
+# make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am in main directory $PWD \n"
+# cd ..
+# echo -e "\n I am in main directory $PWD \n"
+# date
 
 ### Again, do the buildup using serial standalone executable ###
 # http://software.intel.com/en-us/articles/recommended-settings-for-calling-intelr-mkl-routines-from-multi-threaded-applications/
 # set MKL threads
-  let nprocsm1=$nprocs-1
-  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
-  cd $BUILD_SERIAL
-  echo -e "\n I am in build-directory $PWD \n"
-  echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt
-  mv CMakeCache.txt CMakeCache.txt_STORED
+#  let nprocsm1=$nprocs-1
+#  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
+
+#  cd $BUILD_SERIAL
+#  echo -e "\n I am in build-directory $PWD \n"
+#  echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt
+#  mv CMakeCache.txt CMakeCache.txt_STORED
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+# make ExperimentalStart
+# make ExperimentalTest
+# make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am again in the main directory $PWD \n"
+# cd ..
+# echo -e "\n I am again in the main directory $PWD \n"
+# date
 
 ### Again, do the buildup using serial standalone executable ###
-  cd $BUILD_GNU_SERIAL
-  echo -e "\n I am in build-directory $PWD \n"
-  echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
-  mv CMakeCache.txt CMakeCache.txt_STORED
+#  cd $BUILD_GNU_SERIAL
+#  echo -e "\n I am in build-directory $PWD \n"
+#  echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
+#  mv CMakeCache.txt CMakeCache.txt_STORED
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
+# ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+# make ExperimentalStart
+# make ExperimentalTest
+# make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am again in the main directory $PWD \n"
+# cd ..
+# echo -e "\n I am again in the main directory $PWD \n"
+# date
 
 # ----------------------------------------- #
 # ---- try own buildup on the grid CE ----- #
@@ -269,7 +278,7 @@ mv CMakeCache.txt CMakeCache.txt_STORED
 
  cd build
  #cmake ..
- make ExperimentalStart
+ #make ExperimentalStart
  make Experimental
 
 
@@ -283,13 +292,12 @@ echo -e "\n deleting the old dirac_grid_suite.tgz..."
 rm dirac_grid_suite.tgz
 echo "check files..."
 ls -lt
-echo -e "\n --- Packing all wanted stuff from the grid CE  --- "; 
+echo -e "\n --- Packing all wanted stuff back from the grid CE  --- "; 
 tar --version
-#tar --help
 echo " "
-#tar cvzf dirac_suite_back.tgz test *.out *.tgz
-#tar cvzf dirac_suite_back.tgz test *.out 
-tar czf dirac_grid_suite_back.tgz  *
+#tar cvzf dirac_suite_back.tgz test *
+tar czf dirac_grid_suite_back.tgz $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL build test
+echo -e "suite packed, ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
 
 ############################
 #  print out some info .. 
