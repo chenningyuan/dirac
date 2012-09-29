@@ -109,15 +109,15 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
 #####################################################################
 
   echo -e "\n\n --- Launching regular parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  python ./runtest --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+  python ./runtest --all --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
 
   echo -e "\n\n --- Launching regular serial runtest - Intel+MKL --- \n "; date 
   let nprocsm1=$nprocs-1
   export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
-  python ./runtest --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
+  python ./runtest --all --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
 
   echo -e "\n\n --- Launching regular serial runtest - GNU  --- \n "; date
-  python ./runtest --verbose --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
+  python ./runtest --all --verbose --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
 
 
 #python ./runtest --verbose --tests=quick --mpi=2   # works ...
@@ -217,9 +217,12 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
    FC=`which gfortran44`
    echo -e "\n gfortran44 ? $FC "; 
    gfortran44 --version
+ elif [[ -n  `which gfortran` ]]; then
+   FC=`which gfortran`
+   echo -e "\n gfortran ? $FC "; 
+   gfortran --version
  else
-   echo -e "\n No suitable Fortran compiler found...only default gfortran ?"
-   which gfortran; gfortran --version
+   echo -e "\n No suitable Fortran compiler found..."
  fi
 
  unset CC
@@ -227,12 +230,10 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
    CC=`which pgcc`
    pgcc -V
    echo -e "\n pgcc ? $CC ";
-   echo -e "\n pgCC ? \c"; which pgCC
  elif [[ -n `which icc` ]]; then
    CC=`which icc`
    echo -e "\n icc ? $CC"; 
    icc --version
-    echo -e "\n icpc ? \c"; which icpc
  elif [[ -n `which fcc` ]]; then
    CC=`which fcc`
    echo -e "\n fcc ? $CC ";
@@ -241,51 +242,100 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
    CC=`which gcc44`
    echo -e "\n gcc44 ? $CC "; 
    gcc44 --version
+ elif [[ -n  `which gcc` ]]; then
+   CC=`which gcc`
+   echo -e "\n gcc ? $CC "; 
+   gcc --version
+ else
+   echo -e "\n No suitable C compiler found..."
+ fi
+
+ unset CXX
+ if [[ -n `which pgCC` ]]; then
+   CXX=`which pgCC`
+   pgCC -V
+   echo -e "\n pgCC ? $CXX ";
+ elif [[ -n `which icpc` ]]; then
+   CXX=`which icpc`
+   echo -e "\n iccpc ? $CXX"; 
+   icpc --version
+ elif [[ -n `which fcc` ]]; then
+   CXX=`which fcc`
+   echo -e "\n fcc ? $CXX ";
+   fcc --version 
+ elif [[ -n  `which g++44` ]]; then
    CXX=`which g++44`
    echo -e "\n g++44 ? $CXX "; 
+   g++44 --version
+ elif [[ -n  `which g++` ]]; then
+   CXX=`which g++`
+   echo -e "\n g++ ? $CXX "; 
+   g++ --version
  else
-   echo -e "\n No suitable C compiler found...only default gcc,g++ ?"
-   which gcc; gcc --version
-   which g++; g++ --version
+   echo -e "\n No suitable C++ compiler found..."
  fi
+
 
  if [[ -n $MKLROOT ]]; then
     echo -e "\n  Found MKL library, MKLROOT=$MKLROOT"
     export MATH_ROOT=$MKLROOT
  fi
 
-### check presence of MPI compilers ###
- echo -e "\n Is  mpif90 ? \c"; which mpif90
- echo -e "\n Is  mpicc ? \c";  which mpicc
- echo -e "\n Is  mpiCC ? \c";  which mpiCC
+### check presence of parallel MPI compilers ###
+ if [[ -n `which mpif90` ]]; then
+    echo -e "\n Is  mpif90 ? \c"; which mpif90
+ fi
+ if [[ -n `which mpicc` ]]; then
+    echo -e "\n Is  mpicc ? \c";  which mpicc
+ fi
+ if [[ -n `which mpiCC` ]]; then
+    echo -e "\n Is  mpiCC ? \c";  which mpiCC
+ fi
 
  BUILD_NAME="$THIS_HOSTNAME.gridCE_ownbuild"
  echo "Assigned BUILD NAME=$BUILD_NAME"
+ dirac_file=$PWD/build/dirac.x
 
  if [[ -n $FC  && -n $CC ]]; then
     echo "buildup with selected FC=$FC and CC=$CC"
-    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$dirac_file
  elif [[ -n $FC  && -z $CC ]]; then
     echo "buildup with selected FC=$FC"
-    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$dirac_file
  elif [[ -z $FC  && -n $CC ]]; then
     echo "buildup with selected CC=$CC"
-    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$dirac_file
  elif [[ -z $FC  && -z $CC ]]; then
     echo "buildup with cmake automatic selection of compilers"
-    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$PWD/build/dirac.x 
+    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_BINARY=$dirac_file
  fi
 
  cd build
  #cmake ..
  #make ExperimentalStart
- make Experimental
+ #make Experimental
+ #make depend
+ make ExperimentalConfigure
+ make ExperimentalBuild
+ make ExperimentalSubmit
+ # return to the main directory
+ cd ..
+
+ if [ -f "$dirac_file" ]; then
+   echo -e "\n\n --- Launching runtest of own dirac.x buildup on CE --- \n "; date
+   echo -e "dirac.x file: \c "; ls -lt $dirac_file
+   python ./runtest --all --verbose --binary=$dirac_file
+ else
+   echo -e "\nown buildup of dirac.x failed, no tests run\n"
+ fi 
 
 
-# --------------------------------------------------------------------
+##############################################################
+#
+# pack selected files to get them back from CE
+#
+##############################################################
 echo -e "\n --------------------------------- \n "; 
-# return to the "main" directory...
-cd  ..
 # delete old tar-ball first
 ls -lt dirac_grid_suite.tgz
 echo -e "\n deleting the old dirac_grid_suite.tgz..."
