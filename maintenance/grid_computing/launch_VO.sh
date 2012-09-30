@@ -80,13 +80,13 @@ echo -e "\n Job started at : \c"; date
  echo -e "Modified PATH=$PATH"
  echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
-#echo -e "\n ---- server environment ---- set :"
-#set
+echo -e "\n ---- server environment ---- set :"
+set
 
 # here exit
 #exit
 
-echo -e "\n ---- DIRAC unpacking,  tar : \c "; which tar;  tar --version
+echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "; which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
 tar xfz dirac_grid_suite.tgz
 echo -e "done; see the content of $PWD :"; ls -lt
