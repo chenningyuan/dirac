@@ -49,9 +49,9 @@ echo -e "Python present : \c"; which python; python -V
 ### Check files on SE: ####
 ###########################
 echo -e  "\n Files on my vo=$VO space, lcg-ls -l lfn://grid/$VO/ilias:"
-lcg-ls -l lfn://grid/$VO/ilias || { echo -e "\n once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
+lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "\n once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
+lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
 echo " ------------------------------------------------------ "
 #####################################
 ###  download file to the current CE 
@@ -111,10 +111,16 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
   echo -e "\n\n --- Launching regular parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
   python ./runtest --all --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
 
+  echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  python ./runtest --benchmark --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+
   echo -e "\n\n --- Launching regular serial runtest - Intel+MKL --- \n "; date 
   let nprocsm1=$nprocs-1
   export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
   python ./runtest --all --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
+
+  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
+  python ./runtest --benchmark --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
 
   echo -e "\n\n --- Launching regular serial runtest - GNU  --- \n "; date
   python ./runtest --all --verbose --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
@@ -272,24 +278,37 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
    echo -e "\n g++ ? $CXX "; 
    g++ --version
  else
-   echo -e "\n No suitable C++ compiler found..."
+   echo -e "\n No suitable C++ compiler found !"
  fi
 
 
  if [[ -n $MKLROOT ]]; then
-    echo -e "\n  Found MKL library, MKLROOT=$MKLROOT"
-    export MATH_ROOT=$MKLROOT
+    echo -e "\n ===  Found Intel MKL library, MKLROOT=$MKLROOT === \n"
+    export MATH_ROOT=$MKLROOT ; echo "MATH_ROOT variable activated"
  fi
 
 ### check presence of parallel MPI compilers ###
+ MPISWITCH='off'; MPISWITCH_F90='off'; MPISWITCH_CC='off'; MPISWITCH_CXX='off';
  if [[ -n `which mpif90` ]]; then
     echo -e "\n Is  mpif90 ? \c"; which mpif90
+    mpif90 --version
+    MPISWITCH_F90='on'
  fi
  if [[ -n `which mpicc` ]]; then
     echo -e "\n Is  mpicc ? \c";  which mpicc
+    mpicc --version
+    MPISWITCH_CC='on'
  fi
  if [[ -n `which mpiCC` ]]; then
     echo -e "\n Is  mpiCC ? \c";  which mpiCC
+    mpiCC --version
+    MPISWITCH_CXX='on'
+ fi
+ if [[ $MPISWITCH_F90 == 'on' && $MPISWITCH_CC == 'on' && $MPISWITCH_CXX == 'on' ]]; then
+    if [[ -n `which mpirun` ]]; then
+        echo -e "\n Is  mpirun ? \c";  which mpirun
+        MPISWITCH='on'
+    fi
  fi
 
  BUILD_NAME="$THIS_HOSTNAME.gridCE_ownbuild"
