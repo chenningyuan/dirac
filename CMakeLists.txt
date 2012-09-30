@@ -6,7 +6,7 @@ cmake_policy(SET CMP0010 OLD)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-project(DIRAC Fortran C)
+project(DIRAC Fortran C CXX)
 
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
