@@ -139,6 +139,11 @@ group.add_option('--overwrite',
                  dest='overwrite',
                  default=False,
                  help='overwrite reference files [default: %default]')
+group.add_option('--backup',
+                 action='store_true',
+                 dest='backup',
+                 default=False,
+                 help='backup pam output files with archive files [default: %default]')
 group.add_option('--verbose',
                  action='store_true',
                  dest='verbose',
@@ -505,8 +510,9 @@ class run:
          if program_is_dirac:
              if not options.verbose:
                  launcher_flags += '--silent '
-             launcher_flags += '--nobackup '
-             launcher_flags += '--noarch '
+             if not options.backup:
+                 launcher_flags += '--nobackup '
+                 launcher_flags += '--noarch '
              if options.binary:
                  launcher_flags += '--dirac=%s ' % options.binary
              if options.jobargs:

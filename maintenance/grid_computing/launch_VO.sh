@@ -109,18 +109,18 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
 #####################################################################
 
   echo -e "\n\n --- Launching regular parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  python ./runtest --all --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+  python ./runtest --all --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
 
   echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  python ./runtest --benchmark --verbose --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
 
   echo -e "\n\n --- Launching regular serial runtest - Intel+MKL --- \n "; date 
   let nprocsm1=$nprocs-1
   export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
-  python ./runtest --all --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
+  python ./runtest --all --verbose --backup  --binary=$PWD/$BUILD_SERIAL/dirac.x 
 
   echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
-  python ./runtest --benchmark --verbose --binary=$PWD/$BUILD_SERIAL/dirac.x 
+  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x 
 
   echo -e "\n\n --- Launching regular serial runtest - GNU  --- \n "; date
   python ./runtest --all --verbose --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
@@ -343,7 +343,7 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
  if [ -f "$dirac_file" ]; then
    echo -e "\n\n --- Launching runtest of own dirac.x buildup on CE --- \n "; date
    echo -e "dirac.x file: \c "; ls -lt $dirac_file
-   python ./runtest --all --verbose --binary=$dirac_file
+   python ./runtest --all --verbose --backup --binary=$dirac_file
  else
    echo -e "\nown buildup of dirac.x failed, no tests run\n"
  fi 
