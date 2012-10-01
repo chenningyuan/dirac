@@ -1007,7 +1007,7 @@ C check with nst_spgrp_dbg from sigden.
 *
 *
 * ============================
-*. Offsets to T1, T2, T3, T4
+*. Offsets to T1
 * ============================
 *
 *. T1

@@ -5367,7 +5367,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
       END DO
  1001 CONTINUE
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ICAAB of string = ', ICAAB
         WRITE(6,*) ' Occupation : '
