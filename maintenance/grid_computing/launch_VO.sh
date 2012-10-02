@@ -48,12 +48,20 @@ echo -e "--- Occupied space by me (du) : \c"; du -h -s
 
 # get info about CE #
 echo -e "\n querry attribute SMPSize:"
+date
 lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
+date
+
 echo -e "\n querry attribute PlatformArch:"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
 echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
 
+# better: 
+echo -e "\n faster querrying....";date
+CE_BDII=${CE_ID/:*/:2170}
+lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
+date
 
 echo -e "\n\n ****  server environment:  set command  **** \n" 
 set
