@@ -46,6 +46,14 @@ echo -e "\n--- Server's filesystem (df): "; df -h .
 echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
 
+# get info about CE #
+echo -e "\n querry attribute SMPSize:"
+lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
+echo -e "\n querry attribute PlatformArch:"
+lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
+echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
+lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
+
 
 echo -e "\n\n ****  server environment:  set command  **** \n" 
 set
