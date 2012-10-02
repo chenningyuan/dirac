@@ -47,7 +47,7 @@ echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
 
 
-echo -e "\n\n ****  server environment:  set command  ****" 
+echo -e "\n\n ****  server environment:  set command  **** \n" 
 set
 
 echo -e "\n\n Is there cmake ? which cmake="; which cmake
@@ -113,23 +113,19 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
 #python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
-# specify tests for two runtest runs
+#           specify tests for two runtest runs
 #####################################################################
-regular_subset="fscc fscc_highspin fscc_intensities krci_energy krci_properties_omega_tdm krci_properties_perm_dipmom cosci_energy acmoin gaunt basis_automatic_augmentation basis_input bss_energy density_at_nuclei dft_ac dft_ao_eval dft_response_symmetry fde_static-vemb_dipole lucita_large lucita_short  mcscf_energy  molecular_mean_field_hamiltonian_schemes mp2_energy mp2_properties  projection_analysis response_lao_shield  symmetry_recognition symmetry_scf_energy visual_lao_shielding ecp"
-benchmark_subset=""
 
+regular_subset='fscc fscc_highspin fscc_intensities krci_energy krci_properties_omega_tdm krci_properties_perm_dipmom cosci_energy acmoin gaunt basis_automatic_augmentation basis_input bss_energy density_at_nuclei dft_ac dft_ao_eval dft_response_symmetry fde_static-vemb_dipole lucita_large lucita_short  mcscf_energy  molecular_mean_field_hamiltonian_schemes mp2_energy mp2_properties  projection_analysis response_lao_shield  symmetry_recognition symmetry_scf_energy visual_lao_shielding ecp'
 
-#python ./runtest --verbose --tests=quick --mpi=2   # works ...
-#python ./runtest --verbose --tests="cosci_energy fscc acmoin" --mpi=2 # works
-#python ./runtest --verbose --quick --mpi=$nprocs  #  works
-#python ./runtest --verbose --quick --mpi=8  #  works
-#python ./runtest --verbose --quick #  works
-#python ./runtest --verbose --all  # works
+benchmark_subset='cc_benchmark cc_linear fscc_intensities gaunt mcscf_energy moltra_4or6'
+
 
 #############################################################
 #               check own static cmake stuff
 #############################################################
 
+  echo -e "\n Performing pamadm step:"
   python ./pamadm -a
 
   cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
@@ -137,85 +133,88 @@ benchmark_subset=""
   cp maintenance/grid_computing/diracrc_build_grid  $BUILD_GNU_SERIAL/diracrc
   echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
 
+#######################################################################################
+#unset DO_CMAKE
+DO_CMAKE=1
+if [[ -n $DO_CMAKE ]]; then
+  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
   cd $BUILD
   echo -e "\n I am in build-directory  $PWD \n"
   echo -e "--- Directory $BUILD content ---:"; ls -lt
-
-  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
-# FIX ERROR:
+# FIX THIS  ERROR:
 # CMake Error: The current CMakeCache.txt directory /tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/build/CMakeCache.txt is different than the directory /home/ilias/qch_work/software/dirac_git/trunk_current/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
-##mv CMakeCache.txt CMakeCache.txt_STORED
+  mv CMakeCache.txt CMakeCache.txt_STORED
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
 # make ExperimentalConfigure
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
-
-
+  make ExperimentalStart
+  make ExperimentalTest
+  make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am in main directory $PWD \n"
- date
+  cd ..
+  echo -e "\n I am in main directory $PWD \n"
+  date
+fi
 
- echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
- python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests=$regular_subset
+  echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
 
- echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
- python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs 
+  echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
 
 
+if [[ -n $DO_CMAKE ]]; then
   echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static Intel, serial dirac.x ===== \n"
 ### Again, do the buildup using serial standalone executable ###
 # http://software.intel.com/en-us/articles/recommended-settings-for-calling-intelr-mkl-routines-from-multi-threaded-applications/
 # set MKL threads
   let nprocsm1=$nprocs-1
   export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
-
   cd $BUILD_SERIAL
   echo -e "\n I am in build-directory $PWD \n"
   echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt
   mv CMakeCache.txt CMakeCache.txt_STORED
-#note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
+  #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
-
+  make ExperimentalStart
+  make ExperimentalTest
+  make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am again in the main directory $PWD \n"
- date
+  cd ..
+  echo -e "\n I am again in the main directory $PWD \n"
+  date
+fi
 
- echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
- python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests=$regular_subset
+  echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
+  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
 
- echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
- python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x 
-
+  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
 
 ### Again, do the buildup using serial standalone executable ###
+if [[ -n $DO_CMAKE ]]; then
+  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static, GNU, serial dirac.x ===== \n"
   cd $BUILD_GNU_SERIAL
   echo -e "\n I am in build-directory $PWD \n"
   echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
   mv CMakeCache.txt CMakeCache.txt_STORED
-#note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
- make ExperimentalStart
- make ExperimentalTest
- make ExperimentalSubmit
-
+  #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
+  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 -DRUNTEST_BINARY=$PWD/dirac.x ..
+  make ExperimentalStart
+  make ExperimentalTest
+  make ExperimentalSubmit
 ## return back into main directory
- cd ..
- echo -e "\n I am again in the main directory $PWD \n"
- date
+  cd ..
+  echo -e "\n I am again in the main directory $PWD \n"
+  date
+fi
 
   echo -e "\n\n --- Launching serial runtest - GNU - with selected tests  --- \n "; date
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests=$regular_subset
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
 
   echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
-  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
 
 
 # ----------------------------------------- #
@@ -357,15 +356,13 @@ benchmark_subset=""
 
  if [ -d "build" ]; then
    cd build
-   #cmake ..
-   #make ExperimentalStart
    make Experimental
-   #make depend
+   #make ExperimentalStart
    #make ExperimentalConfigure
    #make ExperimentalBuild
    #make ExperimentalSubmit
 
-   # return to the main directory
+       # return to the main directory
    cd ..
  fi
 
@@ -373,7 +370,7 @@ benchmark_subset=""
  if [ -f "$dirac_file" ]; then
    echo -e "\n\n --- Launching  runtest - selected tests - of own dirac.x buildup on CE --- \n "; date
    echo -e "dirac.x file: \c "; ls -lt $dirac_file
-   python ./runtest --verbose --backup --binary=$dirac_file --tests=$regular_subset
+   python ./runtest --verbose --backup --binary=$dirac_file --tests="$regular_subset"
    BUILD_LOCAL=build
  else
    echo -e "\n own buildup of dirac.x failed, no tests run \n"
