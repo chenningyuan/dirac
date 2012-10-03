@@ -37,7 +37,7 @@ module fde_data
    public get_fde_grid_weight
    public fde_test_frozen_density
    public fde_test_active_density
-   public fde_test_export_density
+   public fde_test_export
 #ifdef MOD_UNRELEASED
    public fde_import_frozen
    public fde_import_gridout
@@ -446,23 +446,35 @@ module fde_data
 
 
 !   ----------------------------------------------------------------------------
-   subroutine fde_test_export_density
+   subroutine fde_test_export
 !   ----------------------------------------------------------------------------
-      integer      :: point
-      real(kind=8) :: export_particle_number 
+      integer      :: i
+      real(kind=8) :: exp_int_n 
+      real(kind=8) :: exp_int_vc 
+      real(kind=8) :: exp_int_vn 
 
-      export_particle_number = 0.0d0
+      exp_int_n  = 0.0d0
+      exp_int_vc = 0.0d0  
+      exp_int_vn = 0.0d0  
 
-      do point = 1, fde_export_grid_np 
-         export_particle_number = export_particle_number + fde_export_grid(4,point)*gf_export%n(point) 
+      
+      do i = 1, fde_export_grid_np 
+         exp_int_n  = exp_int_n  + fde_export_grid(4,i)*gf_export%n(i) 
+         exp_int_vc = exp_int_vc + 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*gf_export%elpot(i) 
+         exp_int_vn = exp_int_vn + fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
       end do
       
-      write (*,*) ' Exported density integrates to ',export_particle_number,' electrons'
-      write (*,*) ' Grid points processed ',fde_export_grid_np
+      write (*,*) ' '
+      write (*,*) 'Exported quantities (over ',fde_export_grid_np,'grid points) integrate to:'
+      write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
+      write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vc,' a.u.'
+      write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'
 
-      export_particle_number = 0.0
+      exp_int_n  = 0.0d0
+      exp_int_vc = 0.0d0  
+      exp_int_vn = 0.0d0  
 
-   end subroutine fde_test_export_density
+   end subroutine fde_test_export
 
    
 end module fde_data
