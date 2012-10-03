@@ -143,13 +143,14 @@ Get job status:
  glite-wms-job-status  -i <JOB_ID_file>
 
 See intermediate results of your job:
+---------------------------------------
 Add two lines to your jdl-file: ::
  PerusalFileEnable=true;
  PerusalTimeInterval=30;
 Next, specify the files (here DIRAC_tests_std.out and DIRAC_tests_std.err) you want to view: ::  
- glite-wms-job-perusal --set -f DIRAC_tests_std.out -f DIRAC_tests_std.err -i JOB_id
+ glite-wms-job-perusal --set -f DIRAC_runs.stdout -f DIRAC_runs.stderr -i JOB_id
 And execute the following command to retrieve the current output: ::
- glite-wms-job-perusal --get -f DIRAC_tests_std.out -i JOB_id
+ glite-wms-job-perusal --get -f DIRAC_runs.stdout -i JOB_id
  
 Get job files back: ::
  glite-wms-job-output -i <JOB_ID_file>
