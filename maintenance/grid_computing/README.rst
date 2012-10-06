@@ -63,10 +63,10 @@ List of all valid proxies:
 ::
  voms-proxy-info --all
 
-Destroy currnt proxy: 
+Destroy current proxy: 
 ::
   voms-proxy-destroy
-  myproxy-destroy -v -l ilias -k miro2
+  myproxy-destroy 
 
 
 ------------------
@@ -180,3 +180,7 @@ Querry tag attributes :
  lcg-info --list-ce --query 'Tag=*MPICH*' --attrs 'CE' --vo voce
  lcg-info --list-ce --query 'Tag=*GCC*'   --attrs 'CE' --vo voce
 
+Launch bash-script through nohup: 
+::
+ nohup grid3savba_cdash_grid_buildup.bash voce     > nohup_voce 2>&1 & 
+ nohup grid3savba_cdash_grid_buildup.bash compchem > nohup_compchem 2>&1 & 
