@@ -199,19 +199,20 @@ echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
 
-#############################################################################
-#            submit external launching script with glite
-#############################################################################
+##########################################################################
+#             submit external launching script with glite                #
+##########################################################################
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n going to launch for grid, with timestamp=$timestamp..."
+echo -e "\n going to launch jobs for grid, with timestamp=$timestamp..."
 cd maintenance/grid_computing
-echo -e "I am in the directory $PWD"
+echo -e "Now I am in the directory $PWD"
 
-glite-wms-job-submit -o JOB.$timestamp.$VO.1 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.4 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.5 -a submit_$VO.jdl
+# launch through the cycle #
+for i in {1..7} 
+do
+  glite-wms-job-submit -o JOB_$VO.$timestamp.no$i -a submit_$VO.jdl
+  sleep 5 # wait after each launch
+done
 
 echo -e "\n Done, script finished."
 

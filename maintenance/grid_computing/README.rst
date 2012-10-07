@@ -50,9 +50,13 @@ More advanced initialization:
   voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
 
-  myproxy-init  --pshost myproxy.cnaf.infn.it # compchem
-  myproxy-init  --pshost px.ui.savba.sk       # voce
+  myproxy-init  --pshost myproxy.cnaf.infn.it -d -n # compchem
+  myproxy-init  --pshost px.ui.savba.sk  -d -n       # voce
   myproxy-init -c 504 -k miro2 -l ilias -x -R "/C=SK/O=SlovakGrid/O=UMB/CN=Miroslav Ilias" # initialize for 504 hours
+
+Verify your long-term certificate:
+::
+  myproxy-info -v --pshost myproxy.cnaf.infn.it
 
 Repeat for the certificate regeneration:
 ::
@@ -180,7 +184,7 @@ Querry tag attributes :
  lcg-info --list-ce --query 'Tag=*MPICH*' --attrs 'CE' --vo voce
  lcg-info --list-ce --query 'Tag=*GCC*'   --attrs 'CE' --vo voce
 
-Launch bash-script through nohup: 
+Launch your bash-script with the help of the nohup command: 
 ::
  nohup grid3savba_cdash_grid_buildup.bash voce     > nohup_voce 2>&1 & 
  nohup grid3savba_cdash_grid_buildup.bash compchem > nohup_compchem 2>&1 & 
