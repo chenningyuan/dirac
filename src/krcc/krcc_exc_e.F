@@ -1,5 +1,4 @@
-      SUBROUTINE KRCC_EXC_E(CCAMP,CCVEC1,CCVEC2,
-     &                        CCDIA,ECC,
+      SUBROUTINE KRCC_EXC_E(CCVEC1,CCVEC2,ECC,
      &                       WORK,KFREE,LFREE)
 *
 * Master routine for coupled cluster linear response calculation 
@@ -25,8 +24,7 @@
 #include "symm.inc"
 *
 *. Scratch vectors ( To show Jesper that I am on the right track )
-      DIMENSION CCAMP(*),CCVEC1(*),WORK(*)
-      DIMENSION CCVEC2(*),CCDIA(*)
+      DIMENSION CCVEC1(*),CCVEC2(*),WORK(*)
 *. Local scratch, assuming atmost 1000 roots per sym 
       INTEGER IREO(1000)
 *
@@ -44,9 +42,6 @@
       WRITE(6,*) ' * Outer setup from Jeppe Olsens CI-driven CC *'
       WRITE(6,*) ' *                                            *'
       WRITE(6,*) ' **********************************************'
-      DO i=1,100
-      WRITE(6,*) ' WHAT IS MV8 '
-      END DO
 *
 * Check if there is a vector to start from
 *
@@ -133,19 +128,21 @@ C               FRMDSC(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED)
           WRITE(6,*) ' Number of CC amplitudes ',N_CC_AMP
 *
 *. Set up Diagonal for this symmetry
-          CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,CCDIA,
+          CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
+          CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &                        WORK(KDIA),
      &                        ISM,KDUM,KDUM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,
      &                        N1ELINT,N2ELINT,WORK(KT_CC),
      &                        WORK,KFREE,LFREE)
 *
 *. Save on LUDIA for future use
           CALL REWINO(LUDIA)
-          CALL TODSC(CCDIA,LEN_T_VEC,-1,LUDIA)
+          CALL TODSC(WORK(KDIA),LEN_T_VEC,-1,LUDIA)
 *
 *. Initialization : Restart or lowest diagonal elements 
           IF (II_RES_EXC.EQ.0) THEN
 *. Lowest elements of diagonal
-            CALL DUMSORT(CCDIA,LEN_T_VEC,NROOT_CC,IREO,CCVEC2)
+            CALL DUMSORT(WORK(KDIA),LEN_T_VEC,NROOT_CC,IREO,CCVEC2)
 *. Save corresponding initial guesses
             CALL REWINO(LU_CCVECF)
             DO IROOT = 1, NROOT_CC
@@ -168,6 +165,7 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
              CALL TODSC(CCVEC1,LEN_T_VEC,-1,LU_CCVECF)
             END DO
           END IF
+          CALL MEMREL('GET RID OF DIA',WORK,KDIA,KDIA,KFREE,LFREE)
 *         ^ End of shift between different forms of initialization
 *. Allocate scratch space for the diagonalization 
 *. Length of APROJ : MAXVEC**2
@@ -178,7 +176,7 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
           CALL MEMGET('REAL',KLAPROJ,MAXVEC**2,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KLAVEC ,MAXVEC**2,WORK,KFREE,LFREE)
           LWORK2 = 4*MAXVEC**2 + 7*MAXVEC
-          CALL MEMGET('REAL',KLWORK,LWORK2,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KLWORK2,LWORK2,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KLSCR ,0,WORK,KFREE,LFREE)
           LEN = NROOT_CC*MXITLR
           CALL MEMGET('REAL',KLRNRM,LEN,WORK,KFREE,LFREE)
@@ -186,6 +184,8 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
           CALL MEMGET('REAL',KLFINEIG,NROOT_CC,WORK,KFREE,LFREE)
           print*,'MXCIV,NROOT_CC,LWORK2,LEN,MXITLR',
      &            MXCIV,NROOT_CC,LWORK2,LEN,MXITLR
+       CALL SETVEC(WORK(KLAPROJ),0.0D0,MAXVEC**2) ! DELETE THIS AGAIN
+       CALL SETVEC(WORK(KLWORK2),0.0D0,LWORK2) ! DELETE THIS AGAIN
 *
 *. Performing Jacobian times right vectors for excitation energies
           L_OR_R = 2
@@ -195,8 +195,9 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
      &         WORK(KLEIG),WORK(KLFINEIG),MXITLR,LEN_T_VEC,LU_CCVEC,
      &         LUDIA,
      &         NROOT_CC,MAXVEC,NROOT_CC,WORK(KLAPROJ),WORK(KLAVEC),
-     &         WORK(KLWORK),IPRDIA,0,0.0D0,0,0,0,0,0.0D0,0.0D0,0,0,
-     &         CCCONV_EX)
+     &         WORK(KLWORK2),IPRDIA,0,0.0D0,0,0,0,0,0.0D0,0.0D0,0,0,
+     &         CCCONV_EX,
+     &         WORK,KFREE,LFREE)
 *
 * Analyze excitation vectors - and copy to LU_CCEXC
           if (I_ANA_CC.eq.1) then
@@ -373,9 +374,10 @@ C
       SUBROUTINE GENMAT_DIAG_REL(ECC,VEC1,VEC2,
      &                  LU1,LU2,LU_CCEXC_OP,RNRM,EIG,FINEIG,MAXIT,NVAR,
      &                  LU3,LUDIA,NROOT,MAXVEC,NINVEC,
-     &                  APROJ,AVEC,WORK,IPRT,
+     &                  APROJ,AVEC,WORK2,IPRT,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,EIGSHF,
-     &                  IOLSEN,IPICO,CCCONV_EX)
+     &                  IOLSEN,IPICO,CCCONV_EX,
+     &                  WORK,KFREE,LFREE)
 *
 * p.t. matrix vector routine is hardwired
 *
@@ -422,15 +424,15 @@ C
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION FINEIG(1)
-       DIMENSION H0(*),IPNTR(*)
+       DIMENSION H0(*),IPNTR(*),WORK(*)
 *
 *. Scratch through argument list
 *
 *. Length of APROJ : MAXVEC**2
 *. Length of AVEC  : MAXVEC**2
-*  Length of WORK  : 4*MAXVEC**2 + 7*MAXVEC
+*  Length of WORK2 : 4*MAXVEC**2 + 7*MAXVEC
 *  Length of H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
-       DIMENSION APROJ(*),AVEC(*),WORK(*)
+       DIMENSION APROJ(*),AVEC(*),WORK2(*)
        DIMENSION H0SCR(*)
 *. Local scratch - atmost 1000 roots
        LOGICAL RTCNV(1000)
@@ -464,28 +466,28 @@ C      END IF
        END IF
 *. Division of scratch memory
       KAPROJ = 1
-      KFREE = KAPROJ + MAXVEC**2
+      KFREE2 = KAPROJ + MAXVEC**2
 *
-      KARVAL = KFREE
-      KFREE = KARVAL + MAXVEC
+      KARVAL = KFREE2
+      KFREE2 = KARVAL + MAXVEC
 *
-      KAIVAL = KFREE
-      KFREE = KAIVAL + MAXVEC
+      KAIVAL = KFREE2
+      KFREE2 = KAIVAL + MAXVEC
 *
-      KARVEC = KFREE
-      KFREE = KARVEC + MAXVEC**2
+      KARVEC = KFREE2
+      KFREE2 = KARVEC + MAXVEC**2
 *
-      KAIVEC = KFREE
-      KFREE = KAIVEC + MAXVEC**2
+      KAIVEC = KFREE2
+      KFREE2 = KAIVEC + MAXVEC**2
 *
-      KZ = KFREE
-      KFREE = KZ    + MAXVEC**2
+      KZ = KFREE2
+      KFREE2 = KZ    + MAXVEC**2
 *
-      KW = KFREE
-      KFREE = KW    + MAXVEC
+      KW = KFREE2
+      KFREE2 = KW    + MAXVEC
 *
-      KSCR1 = KFREE
-      KFREE = KSCR1 + 4*MAXVEC
+      KSCR1 = KFREE2
+      KFREE2 = KSCR1 + 4*MAXVEC
 *
 C     CCCONV_EX = 1.0D-10
       CONVER = .FALSE.
@@ -505,23 +507,23 @@ C     CCCONV_EX = 1.0D-10
            CALL FRMDSC(VEC1,NVAR,-1,LU1,IMZERO,IAMPACK)
          END DO
 *. Diagonal element
-         WORK(KAPROJ-1+(IROOT-1)*NINVEC+IROOT) =
+         WORK2(KAPROJ-1+(IROOT-1)*NINVEC+IROOT) =
      &   INPROD(VEC1,VEC1,NVAR)
          DO JROOT = IROOT+1, NINVEC
            CALL FRMDSC(VEC2,NVAR,-1,LU1,IMZERO,IAMPACK)
-           WORK(KAPROJ-1+(IROOT-1)*NINVEC+JROOT) =
+           WORK2(KAPROJ-1+(IROOT-1)*NINVEC+JROOT) =
      &     INPROD(VEC1,VEC2,NVAR)
-           WORK(KAPROJ-1+(JROOT-1)*NINVEC+IROOT) =
-     &     WORK(KAPROJ-1+(IROOT-1)*NINVEC+JROOT)
+           WORK2(KAPROJ-1+(JROOT-1)*NINVEC+IROOT) =
+     &     WORK2(KAPROJ-1+(IROOT-1)*NINVEC+JROOT)
          END DO
        END DO
 *
        IF(IPRT.GE.1) THEN
         WRITE(6,*) ' Overlap matrix of initial basis '
-        CALL WRTMAT(WORK(KAPROJ),NROOT,NROOT,NROOT,NROOT)
+        CALL WRTMAT(WORK2(KAPROJ),NROOT,NROOT,NROOT,NROOT)
        END IF
 *. Orthonormal basis for the NROOT lowest roots
-       CALL MGS3(WORK(KARVEC),WORK(KAPROJ),NINVEC,WORK(KAIVEC))
+       CALL MGS3(WORK2(KARVEC),WORK2(KAPROJ),NINVEC,WORK2(KAIVEC))
 *. Orthogonalize, save orthogonlized vectors on LU3
        CALL REWINO( LU3)
        DO IROOT = 1, NINVEC
@@ -529,7 +531,7 @@ C     CCCONV_EX = 1.0D-10
          CALL SETVEC(VEC1,0.0D0,NVAR)
          DO IVEC = 1, NINVEC
            CALL FRMDSC(VEC2,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-           FACTOR =  WORK(KARVEC-1+(IROOT-1)*NINVEC+IVEC)
+           FACTOR =  WORK2(KARVEC-1+(IROOT-1)*NINVEC+IVEC)
            CALL VECSUM(VEC1,VEC1,VEC2,1.0D0,FACTOR,NVAR)
          END DO
          CALL TODSC(VEC1,NVAR,-1  ,LU3)
@@ -548,8 +550,7 @@ C     CCCONV_EX = 1.0D-10
 * Mat * initial  vectors
        DO JVEC = 1,NINVEC
          CALL FRMDSC(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-*
-         CALL MV10_REL(VEC1,VEC2,WORK,KFREE,LFREE)
+C        CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
          CALL TODSC(VEC2,NVAR,-1  ,LU2)
        END DO
 *. Projected matrix
@@ -560,16 +561,16 @@ C     CCCONV_EX = 1.0D-10
          CALL WRTMAT(APROJ,NINVEC,NINVEC,NINVEC,NINVEC)
        END IF
 *  Diagonalize initial subspace matrix
-       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*NINVEC)
-       CALL EIGGMT3(WORK(KAPROJ),NINVEC,WORK(KARVAL),WORK(KAIVAL),
-     &              WORK(KARVEC),WORK(KAIVEC),WORK(KZ),WORK(KW),
-     &              WORK(KSCR1),1)
+       CALL COPVEC(APROJ,WORK2(KAPROJ),NINVEC*NINVEC)
+       CALL EIGGMT3(WORK2(KAPROJ),NINVEC,WORK2(KARVAL),WORK2(KAIVAL),
+     &              WORK2(KARVEC),WORK2(KAIVEC),WORK2(KZ),WORK2(KW),
+     &              WORK2(KSCR1),1)
 C          EIGGMT3(AMAT,NDIM,ARVAL,AIVAL,ARVEC,AIVEC,
 C    &                   Z,W,SCR,IORD)
        DO 20 IROOT = 1, NROOT
-         EIG(1,IROOT) = WORK(KARVAL-1+IROOT)
+         EIG(1,IROOT) = WORK2(KARVAL-1+IROOT)
    20  CONTINUE
-       CALL COPVEC(WORK(KARVEC),AVEC,NINVEC**2)
+       CALL COPVEC(WORK2(KARVEC),AVEC,NINVEC**2)
 *
        IF( IPRT  .GE. 3 ) THEN
          WRITE(6,'(A,I4)') ' Initial set of eigenvalues '
@@ -755,26 +756,26 @@ C         write(6,*) ' Current norm : ',RNORM
 *
       DO 150 IVEC = 1, IADD
         CALL FRMDSC(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-        CALL MV10_REL(VEC1,VEC2,WORK,KFREE,LFREE)
+C       CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
         CALL TODSC(VEC2,NVAR,-1  ,LU2)
   150 CONTINUE
 *.Augment projected matrix
 C     GET_NONSYM_SUBMAT(LUC,LUHC,NVEC,NVECP,SUBMAT,NDIM,
 C    &                             VEC1,VEC2,SUBMATP)
-      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC**2)
+      CALL COPVEC(APROJ,WORK2(KAPROJ),NVEC**2)
       CALL GET_NONSYM_SUBMAT(LU1,LU2,NVEC+IADD,NVEC,APROJ,NVAR,
-     &                       VEC1,VEC2,WORK(KAPROJ))
+     &                       VEC1,VEC2,WORK2(KAPROJ))
 *  DIAGONALIZE PROJECTED MATRIX
       NVEC = NVEC + IADD
-      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*NVEC)
-      CALL EIGGMT3(WORK(KAPROJ),NVEC,WORK(KARVAL),WORK(KAIVAL),
-     &             WORK(KARVEC),WORK(KAIVEC),WORK(KZ),WORK(KW),
-     &             WORK(KSCR1),1)
+      CALL COPVEC(APROJ,WORK2(KAPROJ),NVEC*NVEC)
+      CALL EIGGMT3(WORK2(KAPROJ),NVEC,WORK2(KARVAL),WORK2(KAIVAL),
+     &             WORK2(KARVEC),WORK2(KAIVEC),WORK2(KZ),WORK2(KW),
+     &             WORK2(KSCR1),1)
 
       DO  IROOT = 1, NROOT
-        EIG(ITER,IROOT) = WORK(KARVAL-1+IROOT)
+        EIG(ITER,IROOT) = WORK2(KARVAL-1+IROOT)
       END DO
-      CALL COPVEC(WORK(KARVEC),AVEC,NROOT*NVEC)
+      CALL COPVEC(WORK2(KARVEC),AVEC,NROOT*NVEC)
       IF(I_DO_ROOTHOOMING.EQ.1) THEN
 *
 *. Reorder roots so the NROOT with the largest overlap with
@@ -809,7 +810,7 @@ C    &                             VEC1,VEC2,SUBMATP)
        CALL COPVEC(XJEP,AVEC,NVEC*NVEC)
        DO INEW = 1, NVEC
          IOLD = IXJEP(INEW)
-         XJEP(INEW) = WORK(KARVAL-1+IOLD)
+         XJEP(INEW) = WORK2(KARVAL-1+IOLD)
        END DO
        DO INEW = 1, NROOT
          EIG(ITER,INEW)=XJEP(INEW)
@@ -925,7 +926,7 @@ C    &                             VEC1,VEC2,SUBMATP)
 *. Overlap matrix of lowest NROOT eigenvectors
         DO IROOT = 1, NROOT
           DO JROOT = 1, NROOT
-            WORK(KAPROJ-1+(IROOT-1)*NROOT+JROOT) =
+            WORK2(KAPROJ-1+(IROOT-1)*NROOT+JROOT) =
      &      INPROD(AVEC((IROOT-1)*NVEC+1),
      &             AVEC((JROOT-1)*NVEC+1),NVEC)
           END DO
@@ -933,17 +934,17 @@ C    &                             VEC1,VEC2,SUBMATP)
 *
         IF(IPRT.GE.10) THEN
          WRITE(6,*) ' Overlap matrix in new basis '
-         CALL WRTMAT(WORK(KAPROJ),NROOT,NROOT,NROOT,NROOT)
+         CALL WRTMAT(WORK2(KAPROJ),NROOT,NROOT,NROOT,NROOT)
         END IF
 *. Orthonormal basis for the NROOT lowest roots
 C       MGS3(X,S,NDIM,SCR1)
-        CALL MGS3(WORK(KARVEC),WORK(KAPROJ),NROOT,WORK(KAIVEC))
+        CALL MGS3(WORK2(KARVEC),WORK2(KAPROJ),NROOT,WORK2(KAIVEC))
 *. Orthogonalization matrix is now in WORK(KARVEC)
 *  Obtain new basis  - if iteration procedure continues
         IF(ITER.LT.MAXIT .AND. (.NOT.CONVER)) THEN
-          CALL MATML4(WORK(KAIVEC),AVEC,WORK(KARVEC),
+          CALL MATML4(WORK2(KAIVEC),AVEC,WORK2(KARVEC),
      &    NVEC,NROOT,NVEC,NROOT,NROOT,NROOT,0)
-          CALL COPVEC(WORK(KAIVEC),AVEC,NROOT*NVEC)
+          CALL COPVEC(WORK2(KAIVEC),AVEC,NROOT*NVEC)
         END IF
 *
         CALL REWINO( LU3)
@@ -996,7 +997,7 @@ C       MGS3(X,S,NDIM,SCR1)
   410   CONTINUE
 *
         CALL GET_NONSYM_SUBMAT(LU1,LU2,NROOT,0,APROJ,NVAR,
-     &                       VEC1,VEC2,WORK(KAPROJ))
+     &                       VEC1,VEC2,WORK2(KAPROJ))
 C
       END IF
 C
@@ -1838,7 +1839,8 @@ C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
 C    &            ICISTR,NOCSF,IDIAG
 
-      DIMENSION WORK(*)
+C     DIMENSION WORK(*)
+C     DIMENSION ALPHP(NPDM*(NPDM+1)/2),ALPHQ(MXP1*MXQ),ALQHQ(MXQ)
 
 
       COMMON/SHFT/SHIFT
@@ -1848,6 +1850,8 @@ C    &            ICISTR,NOCSF,IDIAG
       KLPHP = KH0
       KLPHQ = KH0 + NPDM*(NPDM+1)/2
       KLQHQ = KLPHQ + MXP1*MXQ
+      print*,'NPDM,MXP1,MXQ,SHIFT',NPDM,MXP1,MXQ,SHIFT
+      STOP ' remove work from this routine '
 *
 C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       CALL HPQTV(MXP1,MXP2,MXQ,
@@ -1867,46 +1871,6 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
       RETURN
       END
-*
-      SUBROUTINE MV10_REL(CCIN,CCOUT,WORK,KFREE,LFREE)
-*
-* Initial outer routine for cc Jacobian times vector
-*
-* Jeppe Olsen, June 2000
-*
-#include "implicit.inc"
-#include "mxpdim.inc"
-#include "glbbas.inc"
-C#include "wrkspc.inc" !pass down work
-#include "ctcc.inc"
-#include "ctccp.inc"
-C#include "lorr.inc"
-#include "crun.inc"
-C     COMMON/LORR/L_OR_R
-*
-      DIMENSION CCIN(LEN_T_VEC_MX),CCOUT(LEN_T_VEC_MX),WORK(*)
-*
-      ZERO = 0.0D0
-      NTEST = 00
-C
-      CALL SETVEC(CCOUT,ZERO,LEN_T_VEC_MX)
-C
-      CALL KRCC_VEC_FNC_LR(WORK(KCC1),CCIN,CCOUT,WORK,KFREE,LFREE)
-*WORK(KCC1) are the CC amplitudes 
-*CCIN is the right vector VR 
-          IF(NTEST.GE.100) THEN
-            WRITE(6,*)
-            WRITE(6,*) ' ====================================== '
-            WRITE(6,*) ' Input and output KRCC LRCC' 
-            WRITE(6,*) ' ====================================== '
-            WRITE(6,*) 
-            CALL WRTMAT(CCIN,1,LEN_T_VEC_MX,1,LEN_T_VEC_MX)
-            WRITE(6,*)
-            CALL WRTMAT(CCOUT,1,LEN_T_VEC_MX,1,LEN_T_VEC_MX)
-          END IF
-*
-      RETURN
-      END 
 *
       SUBROUTINE KRCC_VEC_FNC_LR(CC_AMP,CC_VEC,
      &                          WORK,KFREE,LFREE)

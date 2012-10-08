@@ -156,20 +156,6 @@ C
       CHARACTER*6 CCTYPE
       DIMENSION WORK(*)
 *
-*************************************************************
-*                                                           *
-* Things not yet appliable (or never will be?)              *
-*                                                           *
-* I_TRANS_WF, ICCSOLVE         *
-* II_RES_EXC, MXSPOX                          *
-*                                                           *
-*                                                 Lasse     *
-*                                                           *
-*                                                           *
-*************************************************************
-*CALL MEMGET('INTE',KLIHIND,4*NSPOBEX_TP,WORK,KFREE,LFREE)
-*CALL MEMGET('REAL',KSIGNNHX,NSPOBEX_TP,WORK,KFREE,LFREE)
-*
 * Hardwirerings
 ***************************
 * Hardwirering IHTYPE for now Lasse used in get_hx_rela
@@ -748,14 +734,9 @@ C?    CALL WRTVCD(WORK(KVEC1),LUHC,1,-1)
 C
 C Linear response works only for real groups. Lasse
 C
-        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCC3,IMULTFAC*N_CC_AMP,WORK,KFREE,LFREE)
 *
-        CALL KRCC_EXC_E(WORK(KCC1),
-     &                WORK(KCC2),WORK(KCC3),
-     &                WORK(KDIA),ECC,
+        CALL KRCC_EXC_E(WORK(KCC1),WORK(KCC2),ECC,
      &                WORK,KFREE,LFREE)
-        CALL MEMREL('MAPPING',WORK,KDIA,KDIA,KFREE,LFREE)
       END IF
 *
       WRITE(6,*)  ' Returning from KRCC '

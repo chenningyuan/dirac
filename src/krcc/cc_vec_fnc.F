@@ -836,18 +836,3 @@ C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
       RETURN
       END
 *
-****************************************************************
-*                                                              *
-* Silly subroutine by Lasse to find largest difference between *
-* neighbouring elements in an array.                           *
-*                                                              *
-****************************************************************
-      SUBROUTINE FIND_LARGEST_DIFF_FOR_NEIGHBOURS(NOUT,NARR,NLENGHT)
-      IMPLICIT NONE
-      INTEGER NOUT,NLENGHT,NARR(NLENGHT),I,J
-      NOUT = 0
-      DO I=2,NLENGHT
-        J = NARR(I)-NARR(I-1)
-        IF(J.GT.NOUT) NOUT = J
-      END DO
-      END
