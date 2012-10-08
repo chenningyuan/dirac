@@ -571,8 +571,7 @@ C
       N_CC_AMPP1 = N_CC_AMP + 1
 *. Why is this done???
 C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
-      IF(NTEST.GE.5)
-     &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
+      WRITE(6,*) ' KRCC : N_CC_AMP = ', N_CC_AMP
 *
 *. and two CC vectors , extra element for unexcited SD at end of vectors
        N_SD_INT = 1
@@ -614,35 +613,34 @@ C Now with automated restart. Lasse
 *. New optimizer
       CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
      &                   ECC,WORK,KFREE,LFREE)
-      STOP 'CC ENERGY HAS BEEN OPTIMIZED'
 *
 * ===========================
 * Calculate density matrices
 * ===========================
 *
-      IDENSI = 0
-      IF(IDENSI.NE.0) THEN
+C     IDENSI = 0
+C     IF(IDENSI.NE.0) THEN
 *. Three more vectors
-        CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
-        CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
-        CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
+C       CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
+C       CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
+C       CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
 C       CALL CC_DENSI(WORK(KCC1),WORK(KCC2),WORK(KDIA),
 C    &       WORK(KCC3),WORK(KCC4),WORK(KCC5),
 C    &       WORK(KVEC1),WORK(KVEC2) )
 C     CC_DENSI(CCAMP,CCLAG,CCDIA,CCVEC1,CCVEC2,CCVEC3,
 C    &           VEC1,VEC2)
-      END IF
+C     END IF
 *
 * =========================================
 *. Coupled cluster first order properties
 * =========================================
 *
-      NPROP = 0
-      IF(NPROP.GT.0) THEN
+C     NPROP = 0
+C     IF(NPROP.GT.0) THEN
 *. Calculate properties
-        KLDUM = 1
+C       KLDUM = 1
 C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
-      END IF
+C     END IF
 *
 * ======================
 *. Analyze T- ampitudes
@@ -650,7 +648,6 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 *
       CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1,
      &                       WORK,KFREE,LFREE)
-      STOP 'AFTER ANALYZE'
 *
 *
 * =========================
@@ -658,6 +655,8 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 * =========================
 *
 *.  Exp(t) !ref>
+      IEXPECT = 0
+      IF(IEXPECT.EQ.1) THEN
       I_DO_CC_EXP = 0
       IF(I_DO_CC_EXP.EQ.1) THEN
       MX_TERM = 100
@@ -737,31 +736,29 @@ C?    CALL WRTVCD(WORK(KVEC1),LUHC,1,-1)
 !       CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
 !    &                 WORK(KCC2))
       END IF
+      END IF
 *
 *
 * =======================
 * CC excitation energies
 * =======================
 *
-      I_DO_CC_EXC_E = 0
+      CALL MEMCHK_KRCC(WORK)
       IF(I_DO_CC_EXC_E.EQ.1) THEN
 C
 C Linear response works only for real groups. Lasse
 C
-*. Three more vectors
-        CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
-        CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
-        CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
+        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCC3,IMULTFAC*N_CC_AMP,WORK,KFREE,LFREE)
 *
-C       CALL CC_EXC_E_REL(WORK(KVEC1),WORK(KVEC2),WORK(KCC1),
-C    &                WORK(KCC2),WORK(KCC3),WORK(KCC4),
-C    &                WORK(KDIA),II_RES_EXC,ECC)
+        CALL KRCC_EXC_E(WORK(KCC1),
+     &                WORK(KCC2),WORK(KCC3),
+     &                WORK(KDIA),ECC,
+     &                WORK,KFREE,LFREE)
+        CALL MEMREL('MAPPING',WORK,KDIA,KDIA,KFREE,LFREE)
       END IF
 *
-      WRITE(6,*)  ' Returning from LUCIA_GENCC_REL '
-      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GENCC ')
+      WRITE(6,*)  ' Returning from KRCC '
 *
       RETURN
       END
-
-

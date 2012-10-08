@@ -69,8 +69,6 @@
       DIMENSION CC_VEC(*)
 *
       DIMENSION WORK(*)
-*. Temporary scratch
-C     DIMENSION DUMMY(1000)
 *.
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -84,13 +82,6 @@ C     DIMENSION DUMMY(1000)
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"
-      COMMON/CMXCJ/MXCJ
-*. Local scratch 
-      INTEGER ISX(2*MXPNGAS*MXPNGAS)
-C     DIMENSION M11_EXTRA(LEN_M11_VEC_CC)
-C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
-*
-      REAL*8 INPRDD, INPROD
 *
       LBLK = -1
       NTEST = 10
@@ -121,20 +112,12 @@ C     DIMENSION M02_EXTRA(LEN_M02_VEC_CC)
       IHSM = 1
       ITSM = 1
 *      
-*      May want to allocate some temporary arrays
+*. May want to allocate some temporary arrays
 *
       CALL EXP_MT_H_EXP_TC_MEM_KRCC(1,WORK,KFREE,LFREE)
 *
-*. Start by zeroing the CC-vector function and the intermediates
+*. Start by zeroing the CC-vector function
       CALL SETVEC(CC_VEC,ZERO,N_CC_AMP+1)
-C     CALL SETVEC(WORK(KM01),ZERO,LEN_M01_VEC_CC)
-C     CALL SETVEC(WORK(KM10),ZERO,LEN_M10_VEC_CC)
-C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC)
-C     CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC)
-C     CALL SETVEC(WORK(KM12),ZERO,LEN_M12_VEC_CC)
-      print*,'LEN_M10_VEC_CC',LEN_M10_VEC_CC
-*. And some temporary arrays
-C     CALL SETVEC(DUMMY,ZERO,1000)
 *
 * Start with zero commutators! (If first iteration and no restart this
 * should be the only one done!)
@@ -261,7 +244,6 @@ C     CALL SETVEC(DUMMY,ZERO,1000)
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM10),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
-C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     WORK(KLIBSOBEX_M10),WORK(KLLSOBEX_M10),NINTER10,
      &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),WORK(KLIHIND),IHSM,
@@ -403,8 +385,6 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 * M12 + H12 -- 10 -- M02 
 *
 * Add amplitudes and integrals 
-! Careful with signs since IHINDX may be different for the two!!!
-*
 *
 * Allocate the M02 intermediate
 *
@@ -433,7 +413,6 @@ C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM02),IONE,IHM,
      &     IFHM,WORK(KM12), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLIBSOBEX_M02),WORK(KLLSOBEX_M02),NINTER02,
      &    NINTER12,WORK(KINTM12),WORK(KLIBSOBEX_M12),WORK(KLIHIND),IHSM,
      &     NINTER12,WORK(KLLSOBEX_M12),
@@ -468,7 +447,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
 * M02 + H02 -- 02 -- T (save M02 + H02)
 *
 * Add amplitudes and integrals 
-! Careful with signs since IHINDX may be different for the two!!!
 *
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
@@ -486,8 +464,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
 * Save vector to disc since it will be needed later
 *
       CALL VEC_TO_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
-C     CALL VEC_FROM_DISC(M02_EXTRA,LEN_M02_VEC_CC,1,LBLK,LUSC5)
-C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
 *
 * And now the contraction
 *
@@ -546,36 +522,8 @@ C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
 *
 * Save vector to disc since it will be needed later
 *
-C LBLK is now in use and the size of the blocks
-C     CALL VEC_TO_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC5)
-C     CALL MEMGET('REAL',KM11_EXTRA,LEN_M11_VEC_CC,WORK,KFREE,LFREE)
-C     CALL SETVEC(WORK(KM11_EXTRA),ZERO,LEN_M11_VEC_CC)
-C     CALL MEMCHK_KRCC(WORK)
-C     print*,'write KM11_EXTRA,LEN_M11_VEC_CC',LEN_M11_VEC_CC
-C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     print*,'check KM11_EXTRA'
-C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
       CALL VEC_TO_DISC_KRCC(WORK(KM11),LEN_M11_VEC_CC,1,
      &                      I_READ_BLOCK,LUSC4)
-C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     CALL MEMCHK_KRCC(WORK)
-C     CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC5)
-C     CALL VEC_FROM_DISC_KRCC(WORK(KM11_EXTRA),
-C    &               LEN_M11_VEC_CC,1,1200,LUSC4)
-C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11_EXTRA))
-C     CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11_EXTRA),
-C    &               LEN_M11_VEC_CC,1,1200,LUSC4)
-C     CALL WRTMAT(WORK(KM11_EXTRA),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     CALL MEMCHK_KRCC(WORK)
-C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11_EXTRA))
-C     OME = -1.0D0
-C     CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
-C    &            ONE,OME,LEN_M11_VEC_CC)
-C     CALL DUMDUM(LEN_M11_VEC_CC,WORK(KM11),WORK(KM11))
-C     CALL MEMCHK_KRCC(WORK)
-C     stop
-
 *
 * Multiply by 1/2
 *
@@ -587,7 +535,6 @@ C     stop
 * M11 + H11 -- 11 -- T 
 *
 * Add amplitudes and integrals 
-! Careful with signs since IHINDX may be different for the two!!!
 *
       print*,' adding M11 and H11'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
@@ -617,21 +564,6 @@ C     stop
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-C     IHM = 1
-C     IFHM = 1 !integrals are fetched
-C
-C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
-C    &     IFHM,WORK(KT_CC), 
-C    &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
-C    &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),WORK(KLIHIND),IHSM,
-C    &     NH11,WORK(KNH11),
-C    &     NH11TOT,WORK(KNH11TOT),WORK(KNH11TT),WORK(KCOMBNH11TOT),
-C    &     WORK(KPERMNH11TOT),WORK(KFACNH11TOT),WORK(KCOMBFACNH11TOT),
-C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
-C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
-C    &     WORK,KFREE,LFREE)
-C     CALL MEMCHK_KRCC(WORK)
       END IF !ISKIP
 *
 * Deallocate the M11 intermediate 
@@ -664,8 +596,6 @@ C     CALL MEMCHK_KRCC(WORK)
       IFHM = 1 !integrals are fetched
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11),IONE,IHM,
-C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM11_EXTRA),IONE,IHM,
-C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,M11_EXTRA,IONE,IHM,
      &     IFHM,WORK(KT_CC), 
      &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
      &     WORK(KLIBSOBEX_M11),WORK(KLLSOBEX_M11),NINTER11,
@@ -681,39 +611,19 @@ C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,M11_EXTRA,IONE,IHM,
 * Multiply by 1/2
 *
       CALL SCALVE(WORK(KM11),HALF,LEN_M11_VEC_CC)
-C     CALL SCALVE(WORK(KM11_EXTRA),HALF,LEN_M11_VEC_CC)
-C     CALL SCALVE(M11_EXTRA,HALF,LEN_M11_VEC_CC)
 *
-* H22 -- 11 -- M11 (reuse the above M11)
+* H22 -- 11 -- M11 (reuse the above M11). Add KM11 and LUSC4
 *
-C     print*,'before addition'
-C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     print*,'LBLK',LBLK
       CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11),LEN_M11_VEC_CC,1,
      &                              I_READ_BLOCK,LUSC4)
-      print*,'after addition'
       CALL MEMCHK_KRCC(WORK)
-C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     CALL ADD_VEC_FROM_DISC_TO_VEC(WORK(KM11),LEN_M11_VEC_CC,1,
-C    &                              LBLK,LUSC4)
-C    &                              12000,LUSC4)
-C     CALL WRTMAT(WORK(KM11),1,LEN_M11_VEC_CC,1,LEN_M11_VEC_CC)
-C     stop 'lllll'
-C     CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LUSC4)
-*
-* Add the stored KM11 and KM11_EXTRA
-*
-C     CALL VECSUM(WORK(KM11),WORK(KM11),WORK(KM11_EXTRA),
-C     CALL VECSUM(WORK(KM11),WORK(KM11),M11_EXTRA,
-C    &            ONE,ONE,LEN_M11_VEC_CC)
+C
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
-C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC) !only temp!!!!
 *
 * M11 + H11 -- 10 -- M01
 *
 * Add amplitudes and integrals 
-! Careful with signs since IHINDX may be different for the two!!!
       print*,' adding M11 and H11 Second time'
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
@@ -733,7 +643,6 @@ C     CALL SETVEC(WORK(KM11),ZERO,LEN_M11_VEC_CC) !only temp!!!!
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
      &     IFHM,WORK(KM11), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLIBSOBEX_M01),WORK(KLLSOBEX_M01),NINTER01,
      &    NINTER11,WORK(KINTM11),WORK(KLIBSOBEX_M11),WORK(KLIHIND),IHSM,
      &     NINTER11,WORK(KLLSOBEX_M11),
@@ -743,8 +652,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-C     print*,'writing out the M01 intermediate'
-C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
 *
 * Deallocate the M11 intermediate 
 *
@@ -764,15 +671,10 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
       CALL VEC_FROM_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
-C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
 *
 * Multiply by 1/2
 *
       CALL SCALVE(WORK(KM02),HALF,LEN_M02_VEC_CC)
-C     CALL SCALVE(M02_EXTRA,HALF,LEN_M02_VEC_CC)
-C     CALL ABS_DIFF(WORK(KM02),M02_EXTRA,LEN_M02_VEC_CC)
-C     stop 'right here'
-C     CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC) !only temp!!!!
 * 
       IHM = 2
       IFHM = 2 !intermediates are fetched
@@ -781,7 +683,6 @@ C     CALL SETVEC(WORK(KM02),ZERO,LEN_M02_VEC_CC) !only temp!!!!
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
      &     IFHM,WORK(KM02), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLIBSOBEX_M01),WORK(KLLSOBEX_M01),NINTER01,
      &    NINTER02,WORK(KINTM02),WORK(KLIBSOBEX_M02),WORK(KLIHIND),IHSM,
      &     NINTER02,WORK(KLLSOBEX_M02),
@@ -791,8 +692,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-C     print*,'writing out the M01 intermediate'
-C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
 *
 * Deallocate the M02 intermediate 
 *
@@ -866,7 +765,6 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
 * M01 + H01 -- 01 -- T
 *
 * Add amplitudes and integrals 
-! Careful with signs since IHINDX may be different for the two!!!
 *
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
@@ -876,7 +774,6 @@ C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
      &                                   NINTER01,WORK(KINTM01),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
-C    &                                   DUMMY,DUMMY,
      &                                   WORK(KM01),WORK(KM01TOH01),
      &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
@@ -914,7 +811,6 @@ C    &                                   DUMMY,DUMMY,
 *
 C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
       E_CC = CC_VEC(1)
-C     print*,'CC_VEC(N_CC_AMP+1),CC_VEC(1)',CC_VEC(N_CC_AMP+1),CC_VEC(1)
 *
 *. Mission over, print 
 *
@@ -937,7 +833,6 @@ C     print*,'CC_VEC(N_CC_AMP+1),CC_VEC(1)',CC_VEC(N_CC_AMP+1),CC_VEC(1)
 *
       CALL EXP_MT_H_EXP_TC_MEM_KRCC(0,WORK,KFREE,LFREE)
 * 
-C     STOP ' Enforced stop after CC_VEC_FNC'
       RETURN
       END
 *

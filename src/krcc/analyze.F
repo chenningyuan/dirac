@@ -54,15 +54,14 @@ C     LENGTH_SOX = NSPOBEX_TP_CC*10
       CALL MEMGET('INTE',KNCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KWCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
 *. Number and weight of orbital excitation type
-      LENGTH_OX = NOBEX_TP*10
+      LENGTH_OX = (NOBEX_TP+1)*10
       CALL MEMGET('INTE',KNCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KWCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
       IUSLAB = 0
 *
 *. Occupation of strings of given sym and supergroup
       CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),
-C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
-     &            NSPOBEX_TPE,NOBEX_TP,ISM,
+     &            NSPOBEX_TPE,NOBEX_TP+1,ISM,
      &            THRES,MAXTRM,
      &            WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
      &            WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
@@ -197,6 +196,7 @@ C     END DO
        NEL_AA = IELSUM(ISPOBEX_TP(1+2*NGAS,ITSS),NGAS)
        NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
 *
+      CALL MEMCHK_KRCC(WORK)
        DO ISM_C = 1, NSMST
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
         ISM_A = IADJSYM(ISM_A) !testing
@@ -232,8 +232,8 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           NSTR_TOT =NSTR_AB*NSTR_AA*NSTR_CB*NSTR_CA
           IF(NSTR_TOT.GE.1) THEN
-          print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
-     &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+C         print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+C    &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
           END IF
           DO I_AB = 1, NSTR_AB
              I_AA_MIN = 1
@@ -269,7 +269,7 @@ C    &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
      &          '                 =================== '
                 WRITE(6,*)
 
-       print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
+C      print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
                 WRITE(6,'(A,2I8,2X,E14.8)')
      &          '  Type, number, size of amplitude : ',
      &          ITSS, IT, T(IT)

@@ -55,7 +55,7 @@ C    &                           NSPOBEX_TP,ISPOBEX_TP)
             CALL NST_SPGP_CC_REL(ISPOBEX_TP(IB,JTP),NJ,IUB,ICA)
             NI_TOT = IELSUM(NI,NSMST)
             NJ_TOT = IELSUM(NJ,NSMST)
-            print*,'NI_TOT,NJ_TOT',NI_TOT,NJ_TOT
+C           print*,'NI_TOT,NJ_TOT',NI_TOT,NJ_TOT
             LEN = NI_TOT*NJ_TOT
             LEN_T1T2_STRING = MAX(LEN_T1T2_STRING,LEN)
           END IF

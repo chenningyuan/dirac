@@ -4681,7 +4681,7 @@ C     CALL MEMCHK_KRCC(WORK)
       print*,'IDIMINDX',IDIMINDX
 *
 * First cluster operator (could perhaps be done before (see if this
-* needs to mve later on)
+* needs to move later on)
       CALL MEMGET('INTE',KT_IDXS,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXS),IZERO,IDIMINDX)
       CALL MEMGET('INTE',KT_IDXF,IDIMINDX,WORK,KFREE,LFREE)
@@ -4698,6 +4698,12 @@ C     CALL MEMCHK_KRCC(WORK)
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KT_IDXS),WORK(KT_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* New insert only for Cluster operator since we before sorting define
+* certain mappings some of these have to be redefined
+*
+      CALL REDEFINE_MAPPING_FOR_T(WORK(KHELP_IDX),WORK(KLSOX_TO_OX),
+     &                            NSPOBEX_TPE)
 *
 * release memory
 *
@@ -5367,7 +5373,7 @@ C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
       END DO
  1001 CONTINUE
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ICAAB of string = ', ICAAB
         WRITE(6,*) ' Occupation : '

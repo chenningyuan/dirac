@@ -4390,7 +4390,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0000
+      NTEST = 000
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -7475,11 +7475,9 @@ C     Double group
 *
 * Find the number of operators with given N,Mk,Mub
 *
-C     print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
-C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
       END DO
 *
       IF(NTEST.GE.100) THEN
@@ -7616,6 +7614,26 @@ C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
           WRITE(6,*) ' Number of AB  = ',NAB
         END IF
       END IF
+*
+      RETURN
+      END
+
+      SUBROUTINE REDEFINE_MAPPING_FOR_T(NEWORDER,ISOX_TO_OX,NDIM)
+*
+* Just a little routine to restore some mapping between SOX and OX after
+* the sorting of the cluster operator
+*
+#include "implicit.inc"
+*
+      INTEGER NEWORDER(NDIM),ISOX_TO_OX(NDIM)
+* local scratch
+      INTEGER ISCRATCH(NDIM)
+*
+      DO I=1,NDIM
+        ISCRATCH(I) = ISOX_TO_OX(NEWORDER(I))
+      END DO
+*
+      CALL ICOPVE(ISCRATCH,ISOX_TO_OX,NDIM)
 *
       RETURN
       END

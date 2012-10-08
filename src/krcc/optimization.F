@@ -7,25 +7,19 @@
 *
 * Jeppe Olsen
 *
-* Feb  2000    : ICCSOLVE added for DIIS etc
-* June 2001    : Version with just three vectors
-*
 * Input :
 * ========
 *
 * CC_AMP : Initial set of CC amplitiudes
-* CCVEC6 : Imaginary Initial set of CC amplitiudes
 *
 * Output
 * ========
 *
 * CC_AMP : Final set of amplitudes 
-* CCVEC6 : Imaginary Final set of amplitudes
 *
 * Scratch
 * ========
 *
-* VEC1, VEC2 : Two vectors for CI calculations (old CCVEC)
 * CCVEC1 : Complete CC vector
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -50,8 +44,6 @@ C added
       DIMENSION CCVEC1(*)
 *. Input and output
       DIMENSION CC_AMP(*),WORK(*)
-* Test
-      INTEGER INUMBER
 *
       IDUMMY = 0
 C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
@@ -76,10 +68,6 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *             Construct diagonal 
 * ===========================================
 *
-C     IF(I_DO_NEWCCV.GE.1) THEN
-C
-C Inactive Fock Matrix only used in new cc vector function hence only contructed there. Lasse
-C Comes in a lttle differently in CI-driven
 * Obtain Inactive Fock matrix
 *
       CALL FI_KRCC(WORK(KT_CC),WORK(KFI),ECC,1,ISPINFREE)
@@ -92,25 +80,12 @@ C Imaginary part of inactive fock-matrix, At the moment only real.
         ECORE_H = ECORE_AB
         ECORE = ECORE_ORIG + ECORE_H
         WRITE(6,*) ' Updated core energy ',ECORE 
-C     ELSE
-C       ECORE_H = 0.0D0
-C       ECORE_ORIG = 0.D0
-C     END IF
-C      print*,'real diagonal'
-C      print*,(WORK(KT_CC+II),II=0,N1ELINT+N2ELINT-1)
-C      print*,'imaginay diagonal'
-C      print*,(WORK(KT_CC+II),II=N1ELINT+N2ELINT,2*(N1ELINT+N2ELINT))
 *. And the diagonal 
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
 C
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-! should be since this is the starting!!
-      print*,'call GENCC_F_DIAG_M_KRCC'
-! not NSPOBEX_TP_CC but NSPOBEX_TPE since identity will be first!
+C Remember the 1 is the symmetry
+C
       CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,CCVEC1,
      &      1,KDUM,KDUM,MX_ST_TSOSO_MX,
      &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
