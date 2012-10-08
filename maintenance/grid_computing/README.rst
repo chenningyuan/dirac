@@ -50,18 +50,23 @@ More advanced initialization:
   voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
 
+Create and store a long-term proxy:
+::
   myproxy-init  --pshost myproxy.cnaf.infn.it -d -n # compchem
   myproxy-init  --pshost px.ui.savba.sk  -d -n       # voce
   myproxy-init -c 504 -k miro2 -l ilias -x -R "/C=SK/O=SlovakGrid/O=UMB/CN=Miroslav Ilias" # initialize for 504 hours
 
+
 Verify your long-term certificate:
 ::
+  myproxy-info -v --pshost px.ui.savba.sk
   myproxy-info -v --pshost myproxy.cnaf.infn.it
 
-Repeat for the certificate regeneration:
-::
-  myproxy-get-delegation -v -l ilias -k miro2 -a /tmp/x509up_u501
-  voms-proxy-init --noregen --voms voce
+where -s <myproxy_server> specifies the hostname of the machine where a MyProxy Server runs, 
+the -d option instructs the server to associate the user DN to the proxy, 
+and the -n option avoids the use of a passphrase to access the long-term proxy, 
+so that the WMS renews the proxy automatically. 
+
 
 List of all valid proxies:
 ::
@@ -174,6 +179,7 @@ Ask computing elements on selected attributes:
  lcg-info --list-ce  --query 'CE=*' --attrs EstRespTime,MaxCPUTime,TotalCPUs,Memory,ClockSpeed,Cluster,VMemory   --vo compchem
  lcg-info --list-ce --attrs MaxWCTime --vo voce
  lcg-info --list-ce --attrs RunningJobs,FreeCPUs,MaxWCTime,MaxCPUTime --vo voce
+ lcg-info --list-ce --attrs Memory,VMemory  --vo voce
  lcg-info --list-ce --attrs PlatformArch --vo voce
  lcg-info --list-ce --query 'PlatformArch=x86_64' --vo voce
 
