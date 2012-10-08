@@ -576,7 +576,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             type='int',
             action='store',
             dest='dest_mpi',
-            default=0,
+            default=1,
             help='set number of cores in parallel run [default: %default]',
             metavar='INTEGER',
             )
@@ -811,8 +811,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
 
         if options.dest_mpi:
-            self.nr_proc      = int(options.dest_mpi)
-            self.parallel_run = True
+            self.nr_proc = int(options.dest_mpi)
+            # only if nr of proc is larger than 1 run through MPI
+            if self.nr_proc > 1:
+                self.parallel_run = True
 
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
