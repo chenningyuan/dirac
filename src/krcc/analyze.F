@@ -196,7 +196,6 @@ C     END DO
        NEL_AA = IELSUM(ISPOBEX_TP(1+2*NGAS,ITSS),NGAS)
        NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
 *
-      CALL MEMCHK_KRCC(WORK)
        DO ISM_C = 1, NSMST
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
         ISM_A = IADJSYM(ISM_A) !testing
@@ -259,8 +258,8 @@ C    &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
 *             ^ End of loop over powers of ten
               END IF
 *             ^ end if we are in loop 1
-C             IF( XMAX .GE. ABS(T(IT)) .AND.
-C    &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
+              IF( XMAX .GE. ABS(T(IT)) .AND.
+     &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
                 ITRM = ITRM + 1
                 IIT = IIT + 1
                 TTNORM = TTNORM + T(IT) ** 2
@@ -286,8 +285,8 @@ C               IF(IUSLAB.EQ.0) THEN
                   WRITE(6,*) ' Annihilator beta '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
-C               END IF
-C             END IF
+                END IF
+              END IF
 *             ^ End if could and should be printed
              END DO
 *            ^ End of loop over alpha creation strings

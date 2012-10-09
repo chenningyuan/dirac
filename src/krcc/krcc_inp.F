@@ -475,11 +475,13 @@ C
       WRITE(LUPRI,'(A,I4)')
      &   ' Number of inactive shells ',(KRCC_NISH(I),I=1,NFSYM)
       IF(I_DO_CC_EXC_E.EQ.1) THEN
+        WRITE(6,*) '                                       '
         WRITE(6,*) ' Will calculate excited state energies '
         WRITE(6,*) '                                       '
         WRITE(6,*) ' ------------------------------------- '
         WRITE(6,*) '                                       '
         WRITE(6,*) ' Number of excited states in each symmetry '
+        WRITE(6,*) '                                       '
         DO I = 1,NBSYM
           WRITE(6,*) 'Number of roots : ',NEXC_PER_SYM(I),
      &               ' in symmetry : ',I

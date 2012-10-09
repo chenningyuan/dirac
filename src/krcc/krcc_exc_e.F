@@ -550,7 +550,7 @@ C     CCCONV_EX = 1.0D-10
 * Mat * initial  vectors
        DO JVEC = 1,NINVEC
          CALL FRMDSC(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-C        CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
+         CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
          CALL TODSC(VEC2,NVAR,-1  ,LU2)
        END DO
 *. Projected matrix
@@ -756,7 +756,7 @@ C         write(6,*) ' Current norm : ',RNORM
 *
       DO 150 IVEC = 1, IADD
         CALL FRMDSC(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-C       CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
+        CALL KRCC_VEC_FNC_LR(VEC1,VEC2,WORK,KFREE,LFREE)
         CALL TODSC(VEC2,NVAR,-1  ,LU2)
   150 CONTINUE
 *.Augment projected matrix
@@ -1968,7 +1968,6 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       END IF
 *
 * Hardwire symmetry ! this should be changed!!!!!!!!!!
-      STOP 'correct the symmetry'
       IHSM = 1
       ITSM = 1
 *      
