@@ -154,15 +154,10 @@ C format.
 *
         IF(NCOMMU.EQ.0) THEN
           PERM_FAC = ONE
-          print*,' info for zero contractions',IH
           IT1 = 1 ! unit operator is the first operator
           IT1_B = IBSPOBEX(IT1)
-          print*,'IT1_B',IT1_B
           IHCTP = IOPRES(IH)
-          print*,'IHCTP',IHCTP
           LCCFBLK = LSPOBEX_TO(IHCTP)
-          print*,'IBSPOBEX_TO(IHCTP)',IBSPOBEX_TO(IHCTP)
-          print*,'NSPOBEX_TO',NSPOBEX_TO
           IF(IHCTP.GE.1) THEN
               IFHM = 0
           CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,NRANK,

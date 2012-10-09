@@ -1,5 +1,6 @@
       SUBROUTINE CC_VEC_FNC_KRCC(CC_AMP,CC_VEC,E_CC,ITER,
-     &                          WORK,KFREE,LFREE)
+     &                           I_WRITE_INTERMEDIATES,
+     &                           WORK,KFREE,LFREE)
 *
 * Calculate energy and CC vector function for 
 * a set of CC amplitudes defined by CC_AMP
@@ -321,6 +322,12 @@
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
 *
+* Write intermediate KM10 
+*
+      IF(I_WRITE_INTERMEDIATES.EQ.1.AND.I_DO_CC_EXC_E.EQ.1) THEN
+      CALL VEC_TO_DISC(WORK(KM10),LEN_M10_VEC_CC,1,LBLK,LU_M10)
+      END IF
+*
 * And now the contraction
 *
       print*,'second contraction M10'
@@ -465,6 +472,12 @@
 *
       CALL VEC_TO_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
 *
+* Write intermediate KM02
+*
+      IF(I_WRITE_INTERMEDIATES.EQ.1.AND.I_DO_CC_EXC_E.EQ.1) THEN
+      CALL VEC_TO_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LU_M02)
+      END IF
+*
 * And now the contraction
 *
       IHM = 2
@@ -545,6 +558,12 @@
      &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
+*
+* Write intermediate KM11
+*
+      IF(I_WRITE_INTERMEDIATES.EQ.1.AND.I_DO_CC_EXC_E.EQ.1) THEN
+      CALL VEC_TO_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LU_M11)
+      END IF
 *
 * And now the contraction
 *
@@ -778,6 +797,12 @@ C
      &                                   WORK(KLIHIND),
      &                                   MX_ST_TSOSO_BLK_MX,
      &                                   WORK,KFREE,LFREE)
+*
+* Write intermediate KM01
+*
+      IF(I_WRITE_INTERMEDIATES.EQ.1.AND.I_DO_CC_EXC_E.EQ.1) THEN
+      CALL VEC_TO_DISC(WORK(KM01),LEN_M01_VEC_CC,1,LBLK,LU_M01)
+      END IF
 *
 * And now the contraction
 *

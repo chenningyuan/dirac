@@ -53,9 +53,9 @@
 *. Input file for CI-vectors
 *. restart from file 21 is assumed
 *. INTEGRAL FILE FROM SORTING
-      LUSC81 = 81
+      LUSC81 = 51
 *. INDICES FILE FROM SORTING
-      LUSC82 = 82
+      LUSC82 = 52
 * =================
 * Internal files
 * =================
@@ -102,6 +102,14 @@
       LU_M02 = 81
       LU_M11 = 82
       LU_M01 = 83
+      Open(Unit=LU_M10,File='LU_M10',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LU_M02,File='LU_M02',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LU_M11,File='LU_M11',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LU_M01,File='LU_M01',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
 *.
 * =================
 * Output files

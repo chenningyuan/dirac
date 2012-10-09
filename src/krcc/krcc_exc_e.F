@@ -1883,7 +1883,8 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 * CC_VEC is as usual the output vector
 * There is no use for the amplitudes from the CC calculation since all
 * nested commutators are stored on disc and read in so these just need
-* to be contracted with the response
+* to be contracted with the response. The intermediates include
+* integrals and come in sorted and batched.
 *
 * Lasse 2012
 *
@@ -1898,47 +1899,28 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 * but can "easily" be changed. These are in execution order without
 * scaling considerations.
 *
-* First H00 -- OK 
-*
-* H00 -- 00 -- T !Remove
-*
-* Second all single lines -- OK
+* First all single lines 
 *
 * H22 -- 22 -- T !keep
 * H21 -- 21 -- T !keep
 * H12 -- 12 -- T !keep
 * H20 -- 20 -- T !keep
 *
-* Third through M10
+* Second through M10
 *
-* H20 -- 10 -- M10 (multiply by 1/2) !remove
-* H22 -- 12 -- M10 !remove
-* H21 -- 11 -- M10 !remove
+* M10 -- 10 -- T !keep
 *
-* M10 + H10 -- 10 -- T !keep
+* Third through M02
 *
-* Fourth through M02
+* M02 -- 02 -- T !keep
 *
-* H22 -- 10 -- M12 (multiply by 1/2) !remove
-* M12 + H12 -- 10 -- M02 !remove
-* H22 -- 20 --  M02  !remove
-* M02 + H02 -- 02 -- T (save M02 + H02) !keep
+* Fourth through M11
 *
-* Fifth through M11
+* M11 -- 11 -- T !keep
 *
-* H22 -- 11 -- M11 (multiply by 1/2, save M11 before multiplication) !remove
-* M11 + H11 -- 11 -- T !keep
+* Fifth through M01
 *
-* Sixth through M01
-*
-* H21 -- 10 -- M11 (multiply by 1/2 on additional array(At the moment)) !remove
-* H22 -- 11 -- M11 (reuse the above M11, add to above) !remove
-* M11 + H11 -- 10 -- M01 !remove
-* H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2) !remove
-* H22 -- 21 -- M01 !remove
-* H21 -- 20 -- M01 !remove
-* H12 -- 11 -- M01 !remove
-* M01 + H01 -- 01 -- T !keep
+* M01 -- 01 -- T !keep
 *
 * I guess that is all we need then!
 *
@@ -1969,11 +1951,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Will determine the number of commutators (Of course one one with zero)
       IONE = 1
-      IZERO = 0
       ZERO = 0.0D0
-      HALF = 0.5D0
-      ONE = 1.0D0
-      DOUBLE = 2.0D0 !!! forgot it?
 * Debug
       ISKIP = 5 ! from which commutator to skip
 *         
@@ -1990,6 +1968,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       END IF
 *
 * Hardwire symmetry ! this should be changed!!!!!!!!!!
+      STOP 'correct the symmetry'
       IHSM = 1
       ITSM = 1
 *      
@@ -2002,7 +1981,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Start with single commutators! This is response
 *
-* Second all single lines
+* First all single lines
 *
 * H22 -- 22 -- T
 *
@@ -2091,7 +2070,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Read the intermediate M10 from disc
 *
-      STOP ' read intermediate '
+      CALL VEC_FROM_DISC(WORK(KM10),LEN_M10_VEC_CC,1,LBLK,LU_M10)
 *
 * M10 -- 10 -- T
 *
@@ -2130,7 +2109,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Read the intermediate M02 from disc
 *
-      STOP ' read intermediate '
+      CALL VEC_FROM_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LU_M02)
 *
 * And now the contraction
 *
@@ -2166,7 +2145,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Read the intermediate M11 from disc
 *
-      STOP ' read intermediate '
+      CALL VEC_FROM_DISC(WORK(KM11),LEN_M11_VEC_CC,1,LBLK,LU_M11)
 *
 * And now the contraction
 *
@@ -2199,9 +2178,9 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       NHOLE = 1 
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
 *
-* Read the intermediate M11 from disc
+* Read the intermediate M01 from disc
 *
-      STOP ' read intermediate '
+      CALL VEC_FROM_DISC(WORK(KM01),LEN_M01_VEC_CC,1,LBLK,LU_M01)
 *
 * And now the contraction
 *
