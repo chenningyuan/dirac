@@ -95,6 +95,13 @@
       LUSC41 = 79
       Open(Unit=LUSC41,File='LUSC41',Status='UNKNOWN',
      &     Form='UNFORMATTED')
+* ===========================
+* Intermediate files for lrcc
+* ===========================
+      LU_M10 = 80
+      LU_M02 = 81
+      LU_M11 = 82
+      LU_M01 = 83
 *.
 * =================
 * Output files
