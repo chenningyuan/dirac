@@ -272,6 +272,12 @@ dirac_modules[this_module].add_directory('src/interest')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
+this_module = 'peqm'
+dirac_modules[this_module] = dirac_module('peqm', 'Polarizable embedding module')
+dirac_modules[this_module].add_cppflag('MOD_PEQM')
+dirac_modules[this_module].add_directory('src/peqm')
+dirac_modules[this_module].take_out_of_release()
+
 this_module = 'krcc'
 dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
