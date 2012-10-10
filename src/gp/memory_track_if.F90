@@ -133,8 +133,10 @@
 
          trace_result = ' '
          call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
-         call track_RegisterAllocation(size,kind,varAddr,varLabel,&
-     &                                 trace_result,traceStackDepth) 
+!        edh: Commented out due to Fedora problem: Fix will appear due
+!        to André 
+!         call track_RegisterAllocation(size,kind,varAddr,varLabel,&
+!     &                                 trace_result,traceStackDepth) 
 
       end subroutine allocator_registerAllocation
       
@@ -149,8 +151,10 @@
 
          trace_result = ' '
          call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
-         call track_RegisterDeallocation(varAddr,varLabel,&
-     &                                   trace_result,traceStackDepth) 
+!        edh: Commented out due to Fedora problem: Fix will appear due
+!        to André 
+!         call track_RegisterDeallocation(varAddr,varLabel,&
+!     &                                   trace_result,traceStackDepth) 
 
       end subroutine allocator_registerDeallocation
 !     

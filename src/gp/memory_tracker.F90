@@ -80,7 +80,7 @@
          character(len=charArrayLength), save :: current_group
 
          public track_initTracker, track_DestroyTracker
-         public track_RegisterAllocation, track_RegisterDeallocation
+!         public track_RegisterAllocation, track_RegisterDeallocation
          public track_PrintStats
          public track_SetCurrentGroup, track_GetCurrentGroup
          public track_getMemoryInuse
@@ -88,53 +88,55 @@
          contains
 !
 !
-            subroutine track_RegisterAllocation(size,type,varID,varLabel,trackCaller,trackLevel)
-               integer                  :: size, type, trackLevel
-               real(kind=kreal)         :: bytes
-               integer(kind=klongint)   :: varID
-               character(len=*)         :: varLabel, trackCaller
-               type (memChunk), pointer :: newChunk
-
-               call track_createNewChunk(newChunk)
-
-               newChunk%n_elements  = size
-               newChunk%type        = type
-               newChunk%varID       = varID
-               newChunk%varLabel    = varLabel
-               bytes = real(size)*real(type)
-               write (newChunk%allocatedAt,'(a42)') trackCaller
-
-               call track_AddToList(memTracking%aL,newChunk)
-
-               memTracking%n_created        = memTracking%n_created + 1
-               memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse + bytes 
-
-               call track_updateTopLists(memTracking,newChunk)
-
-            end subroutine track_RegisterAllocation
+! edh: following subroutine should be commented out according to André. He'll fix this
+! later  
+!            subroutine track_RegisterAllocation(size,type,varID,varLabel,trackCaller,trackLevel)
+!               integer                  :: size, type, trackLevel
+!               real(kind=kreal)         :: bytes
+!               integer(kind=klongint)   :: varID
+!               character(len=*)         :: varLabel, trackCaller
+!               type (memChunk), pointer :: newChunk
+!
+!               call track_createNewChunk(newChunk)
+!
+!               newChunk%n_elements  = size
+!               newChunk%type        = type
+!               newChunk%varID       = varID
+!               newChunk%varLabel    = varLabel
+!               bytes = real(size)*real(type)
+!               write (newChunk%allocatedAt,'(a42)') trackCaller
+!
+!               call track_AddToList(memTracking%aL,newChunk)
+!
+!               memTracking%n_created        = memTracking%n_created + 1
+!               memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse + bytes 
+!
+!               call track_updateTopLists(memTracking,newChunk)
+!
+!            end subroutine track_RegisterAllocation
 !
 ! registerDeallocation will ad the information gathered within dealloc
 !
-            subroutine track_RegisterDeallocation(varID,varLabel,trackCaller,trackLevel)
-               integer(kind=klongint)   :: varID
-               character(len=*)         :: varLabel
-               character(len=*)         :: trackCaller
-               integer                  :: trackLevel
-               real(kind=kreal)         :: bytes
-               type (memChunk), pointer :: tmp
-
-               call track_findEntryFromEnd(varID,tmp,memTracking%aL)
-
-               if ( associated(tmp) ) then
-                  bytes = real(tmp%n_elements) * real(tmp%type)
-                  memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse - bytes
-                  memTracking%n_destroyed = memTracking%n_destroyed + 1
-                  call track_moveEntry(tmp,memTracking%aL,memTracking%dL)
-               else
-                  write (*,*) '*** dealloc() was not used on a variable allocated with alloc()'
-               endif
-
-            end subroutine track_RegisterDeallocation
+!            subroutine track_RegisterDeallocation(varID,varLabel,trackCaller,trackLevel)
+!               integer(kind=klongint)   :: varID
+!               character(len=*)         :: varLabel
+!               character(len=*)         :: trackCaller
+!               integer                  :: trackLevel
+!               real(kind=kreal)         :: bytes
+!               type (memChunk), pointer :: tmp
+!
+!               call track_findEntryFromEnd(varID,tmp,memTracking%aL)
+!
+!               if ( associated(tmp) ) then
+!                  bytes = real(tmp%n_elements) * real(tmp%type)
+!                  memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse - bytes
+!                  memTracking%n_destroyed = memTracking%n_destroyed + 1
+!                  call track_moveEntry(tmp,memTracking%aL,memTracking%dL)
+!               else
+!                  write (*,*) '*** dealloc() was not used on a variable allocated with alloc()'
+!               endif
+!
+!            end subroutine track_RegisterDeallocation
 
 !
 ! track_updateTopLists updates the list of maximum and minimum memory usage
