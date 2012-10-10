@@ -1494,6 +1494,18 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
+
+
+#ifdef MOD_PEQM
+!        if (bla) then
+!           later we will the keyword for that
+
+!           here call peqm ...
+
+!        end if
+#endif
+
+
  
 C
 C        Read one-electron Fock matrix from file into CMO
