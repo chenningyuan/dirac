@@ -1367,6 +1367,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
 
     work => dalwrk
 
+     write(luout,*) '*** edh: Entering pe_module ***'
+
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
         fock = .true.
@@ -1407,7 +1409,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     ndens = nmats
     nnbas = size(denmats) / ndens
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPI) 
     if (myid == 0 .and. ncores > 1) then
         call mpi_bcast(44, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         if (fock) then
@@ -2714,6 +2716,9 @@ subroutine pe_fock(denmats, fckmats, Epe)
         end do
     end if
 
+!   edh: Print energy Epe
+    write(luout,*) '*** edh: Epe =', Epe
+    
 end subroutine pe_fock
 
 !------------------------------------------------------------------------------
@@ -3010,12 +3015,12 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
                 m = (l - 1) * nnbas + 1
                 n = l * nnbas
                 Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
+!edh              if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do
         end do
         i = i + 1
     end do
-
+    print *, "raboof", Eel(1), Enuc
     deallocate(Tsm, symfacs, Mk_ints)
 
 end subroutine es_multipoles
@@ -4227,8 +4232,12 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
 !     sirfck(fckmat, denmat, ?, isymdm, ifctyp, direct, work, nwrk)
     isymdm = 1
     ifctyp = 11
+#ifdef PRG_DIRAC
+    call quit('sirfck missing in dirac')
+#else
     call sirfck(full_fckmat, full_denmat, 1, isymdm, ifctyp, .true.,&
                 work, size(work))
+#endif
     deallocate(full_denmat)
 
     ! extract upper triangle part of full Fock matrix corresponding to
@@ -4247,7 +4256,11 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     ! Repulsion stuff from here
     allocate(overlap(nbas*(nbas+1)/2))
     allocate(full_overlap(nbas,nbas))
+#ifdef PRG_DIRAC
+    call quit('rdonel  missing in dirac')
+#else
     call rdonel('OVERLAP', .true., overlap, nbas*(nbas+1)/2)
+#endif
     call dsptge(nbas, overlap, full_overlap)
     deallocate(overlap)
 !    call gemm(full_overlap(fbas+1:nbas,1:fbas),&

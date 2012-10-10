@@ -1273,6 +1273,9 @@ C*****************************************************************************
 #ifdef PCM_MODULE
       use pcm_interface
 #endif
+#ifdef MOD_PEQM
+      use polarizable_embedding, only: pe_master
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1300,6 +1303,9 @@ C
 #ifdef PCM_MODULE
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
+#endif
+#ifdef MOD_PEQM
+      real(8) :: Epe(1)
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1497,10 +1503,26 @@ C
 
 
 #ifdef MOD_PEQM
+
 !        if (bla) then
 !           later we will the keyword for that
 
-!           here call peqm ...
+!        *** edh: "Polarizable playground" ***  
+
+      write(lupri,*) '*** Polarizable Embedding Playground ***'    
+
+         !      call pe_master('fock',
+         !      denmats=wrk(kdentf:kdentf+nnbasx-1),
+!     &               fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+!     &               Epe=wrk(kwrk1:kwrk1),
+!     &               dalwrk=wrk(kwrk1+1:kwrk1+1+lwrk1))
+!      eqmmm = wrk(kwrk1)
+
+      call pe_master('fock', denmats=dmat(1:n2bbasxq),
+     &               fckmats=fock(1:n2bbasxq), nmats=1,
+     &               Epe=Epe,
+     &               dalwrk=work(kfree:kfree + lfree))
+      eqmmm = work(kfree)
 
 !        end if
 #endif
