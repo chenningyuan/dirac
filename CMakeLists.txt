@@ -29,7 +29,7 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
-option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    OFF)
+option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
