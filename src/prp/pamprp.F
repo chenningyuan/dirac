@@ -1583,11 +1583,20 @@ C
      &      'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',76,0)
       IOFF = ICHAR('w')
+      ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
      &        CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
      &        (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',76,0)
+      ! print in a.u.
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(DIPME(I)),' a.u. ',
+     &                   (DIPMN(I)),' a.u. ',
+     &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'

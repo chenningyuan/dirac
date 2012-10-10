@@ -22,6 +22,11 @@ HostNumber = 1;
 # maximum number of accessible CPU's (on one or also on more nodes!) 
 #CpuNumber = 8;
 
+# myproxy server
+#MyProxyServer = "myproxy.cern.ch";
+#MyProxyServer = "myproxy.cnaf.infn.it";
+MyProxyServer = "px.ui.savba.sk";
+
 ##############################################
 # stdout,stderr output & other working files
 ##############################################
