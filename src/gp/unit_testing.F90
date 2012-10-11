@@ -10,12 +10,28 @@ module unit_testing
    public matrix_to_file
    public matrix_from_file
 
+interface compare_2vectors
+   module procedure compare_1d_real_vectors
+   module procedure compare_2d_real_vectors
+   module procedure compare_3d_real_vectors
+   module procedure compare_4d_real_vectors
+   module procedure compare_5d_real_vectors
+   module procedure compare_1d_complex_vectors
+   module procedure compare_2d_complex_vectors
+end interface compare_2vectors
+
    private
 
    integer, parameter :: file_unit = 137
    logical            :: file_exists
 
    private :: strip_blank, str_size, print_err_info
+   private :: compare_real_vectors, compare_complex_vectors
+
+interface print_err_info
+   module procedure print_real_err_info
+   module procedure print_complex_err_info
+end interface print_err_info
 
 contains
 
@@ -146,7 +162,45 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-   subroutine compare_2vectors(ndim, vector1, vector2, thresh)
+   subroutine compare_1d_real_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(:), vector2(:)
+   call compare_real_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_1d_real_vectors
+
+   subroutine compare_2d_real_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(:,:), vector2(:,:)
+   call compare_real_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_2d_real_vectors
+
+   subroutine compare_3d_real_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(:,:,:), vector2(:,:,:)
+   call compare_real_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_3d_real_vectors
+
+   subroutine compare_4d_real_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(:,:,:,:), vector2(:,:,:,:)
+   call compare_real_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_4d_real_vectors
+
+   subroutine compare_5d_real_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer, intent(in) :: ndim
+   real*8,  intent(in) :: thresh, vector1(:,:,:,:,:), vector2(:,:,:,:,:)
+   call compare_real_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_5d_real_vectors
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+   subroutine compare_real_vectors(ndim, vector1, vector2, thresh)
    implicit none
 
    ! External variables
@@ -184,12 +238,83 @@ contains
    ! check result
    if(errmax > thresh)then
      write(6,'(a)')
-     write(6,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
-     write(0,'(a)') ' ERROR in compare_2vectors routine: Examined arrays differ too much'
+     write(6,'(a)') ' ERROR in compare_real_vectors routine: Examined arrays differ too much'
+     write(0,'(a)') ' ERROR in compare_real_vectors routine: Examined arrays differ too much'
      stop
    endif
 
-   end subroutine compare_2vectors
+   end subroutine compare_real_vectors
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+   subroutine compare_1d_complex_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer,    intent(in) :: ndim
+   real*8,     intent(in) :: thresh
+   complex*16, intent(in) :: vector1(:), vector2(:)
+   call compare_complex_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_1d_complex_vectors
+
+   subroutine compare_2d_complex_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+   integer,    intent(in) :: ndim
+   real*8,     intent(in) :: thresh
+   complex*16, intent(in) :: vector1(:,:), vector2(:,:)
+   call compare_complex_vectors(ndim, vector1, vector2, thresh)
+   end subroutine compare_2d_complex_vectors
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+   subroutine compare_complex_vectors(ndim, vector1, vector2, thresh)
+   implicit none
+
+   ! External variables
+   integer,    intent(in) :: ndim
+   real*8,     intent(in) :: thresh
+   complex*16, intent(in) :: vector1(*), vector2(*)
+
+   ! Internal variables
+   integer :: ic, icmax
+   real*8  :: sdev, errmax, diff
+   complex*16 :: dval1, dval2
+
+   ! compare data from file and vector
+   errmax = 0.0d0
+   sdev   = 0.0d0
+   dval1  = 0.0d0
+   dval2  = 0.0d0
+   icmax  = 0
+   do ic=1, ndim
+
+     diff = (dreal(vector1(ic))-dreal(vector2(ic))) * (dreal(vector1(ic))-dreal(vector2(ic))) &
+          + (dimag(vector1(ic))-dimag(vector2(ic))) * (dimag(vector1(ic))-dimag(vector2(ic)))
+     diff = dsqrt(diff)
+     sdev = sdev + diff*diff
+
+     if( diff > errmax )then
+       errmax = diff
+       dval1  = vector1(ic)
+       dval2  = vector2(ic)
+       icmax  = ic
+     endif
+
+   enddo
+
+   ! info
+   sdev = dsqrt(sdev/dfloat(ndim))
+   call print_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
+
+   ! check result
+   if(errmax > thresh)then
+     write(6,'(a)')
+     write(6,'(a)')' ERROR in compare_complex_vectors routine: Examined arrays differ too much'
+     write(0,'(a)')' ERROR in compare_complex_vectors routine: Examined arrays differ too much'
+     stop
+   endif
+
+   end subroutine compare_complex_vectors
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -469,7 +594,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine print_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
+  subroutine print_real_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
   implicit none
 
   integer, intent(in) :: ndim, icmax
@@ -488,6 +613,31 @@ contains
   write(6,'(a,i12)')    ' Position of these elements = ',icmax
   write(6,'(a,d12.4)')  ' Standard deviation: sqrt( (a-b)^2 / n ) = ',dsqrt(sdev/dfloat(ndim))
 
-  end subroutine print_err_info
+  end subroutine print_real_err_info
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine print_complex_err_info(ndim,thresh,errmax,dval1,dval2,icmax,sdev)
+  implicit none
+
+  integer,    intent(in) :: ndim, icmax
+  real*8,     intent(in) :: thresh, errmax, sdev
+  complex*16, intent(in) :: dval1, dval2
+
+  write(6,'(a)')
+  write(6,'(a)') ' --------------------------------'
+  write(6,'(a)') ' Compare two sets of real numbers'
+  write(6,'(a)') '   a --> reference  set'
+  write(6,'(a)') '   b --> calculated set'
+  write(6,'(a,d12.4)')  ' Threshold  = ',thresh
+  write(6,'(a,i12)')    ' Number of compared elements  = ',ndim
+  write(6,'(a,d12.4)')  ' The largest difference (max|a-b|) = ',errmax
+  write(6,'(a,2d25.16)')' a = ',dval1
+  write(6,'(a,2d25.16)')' b = ',dval2
+  write(6,'(a,i12)')    ' Position of these elements = ',icmax
+  write(6,'(a,d12.4)')  ' Standard deviation: sqrt( (a-b)^2 / n ) = ',dsqrt(sdev/dfloat(ndim))
+
+  end subroutine print_complex_err_info
 
 end module
