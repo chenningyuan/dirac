@@ -210,6 +210,7 @@ For DIRAC programmers
    :maxdepth: 1
 
    programmers/documentation_howto.rst
+   programmers/release_preparation.rst
    programmers/testing.rst
    programmers/cdash.rst
    programmers/input_reading.rst
