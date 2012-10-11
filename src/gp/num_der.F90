@@ -65,21 +65,21 @@ contains
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
 #ifdef CREATE_UNIT_TESTS
-! icount = icount + 1
-! call set_suffix(icount)
-! call set_driver_routine('nddrv')
-! call add_module('num_der')
-!
-! call add_inp_variable(nder   ,'nder   ')
-! call add_inp_variable(derstr ,'derstr ')
-! call add_inp_variable(ipoint ,'ipoint ')
-! call add_inp_variable(nprint ,'nprint ')
-! call add_inp_variable(lunit  ,'lunit  ')
-! call add_inp_variable(npoints,'npoints')
-! call add_inp_variable(xcoor  ,'xcoor  ')
-! call add_inp_variable(ycoor  ,'ycoor  ')
-! call add_inp_variable(yerr   ,'yerr   ')
-! call add_inp_variable(ierr   ,'ierr   ')
+  icount = icount + 1
+  call set_suffix(icount)
+  call set_driver_routine('nddrv')
+  call add_module('num_der')
+ 
+  call add_inp_variable(nder   ,'nder   ')
+  call add_inp_variable(derstr ,'derstr ')
+  call add_inp_variable(ipoint ,'ipoint ')
+  call add_inp_variable(nprint ,'nprint ')
+  call add_inp_variable(lunit  ,'lunit  ')
+  call add_inp_variable(npoints,'npoints')
+  call add_inp_variable(xcoor  ,'xcoor  ')
+  call add_inp_variable(ycoor  ,'ycoor  ')
+  call add_inp_variable(yerr   ,'yerr   ')
+  call add_inp_variable(ierr   ,'ierr   ')
 #endif
 
   !------------------------------------------------------------------------------!
@@ -184,8 +184,8 @@ contains
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
 #ifdef CREATE_UNIT_TESTS
-! call add_out_variable(derres,'derres')
-! call generate_test()
+  call add_out_variable(derres,'derres')
+  call generate_test()
 #endif
 
   !------------------------------------------------------------------------------!
