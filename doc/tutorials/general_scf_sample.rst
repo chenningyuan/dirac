@@ -168,7 +168,11 @@ we get the average energy of 20 possible electronic states:
 - testing math  (http://www.bruunisejs.dk/PythonHacks/rstFiles/400%20Mathematical%20notes.html#examples)...
 
 .. math::
- \left(\begin{matrix} 10 & \\ 9 &  \end{matrix}\right)
+ \left(\begin{array}{cc} a & b \\
+     c & d \end{array}\right)
+
+.. math::
+ \left(\begin{matrix} 10  \\ 9   \end{matrix}\right)
 
 .. math::
  \left(
