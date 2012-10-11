@@ -4,12 +4,13 @@
 !
 !     This program is based on argos integral routine
 !     with the permission of R. M. Pitzer
-!     and maintained by Young Choon Park (KAIST)
+!     and maintained by Yoon Sup Lee and Young Choon Park (KAIST)
 !
 !*******************************************************************
       SUBROUTINE RECP
 
       USE RECP_OUTPUT
+      USE RECP_CHK
       USE RECP_INP_READ
       IMPLICIT NONE
 #include "priunit.h"
@@ -27,6 +28,9 @@
 
 !     Print title
       CALL OUTPUT_TITLE   
+
+!     Check consistency
+      CALL RECP_CHK_MAIN
 
 !     Main part
       CALL RECP_ONE
@@ -117,7 +121,7 @@
       INT_AREP = 0
       IF (nu.eq.4) INT_AREP = 1
 
-      do n = 4, nu
+      DO n = 4, nu
         nnam  = inam(n)
         CALL RECP_ONE_MAIN(
      &        IPT_A,     ccr,        chg,       eta,        ica,
@@ -129,7 +133,7 @@
      &        nprir,     nrcr,       nt,        ntl,        ntu,
      &        x,         y,          z,         zcr,        zet,
      &        nso, INT_AREP, N1MAX,  L1REC )
-      enddo
+      ENDDO
 
 !     Deallocate variables
       DEALLOCATE (IPT_CX)
@@ -144,6 +148,7 @@
       SUBROUTINE RECP_SETPARM
       IMPLICIT NONE
 #include "inc_mxvalue.h"
+#include "inc_print.h" 
       integer
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       common /parmi/
@@ -154,6 +159,12 @@
      & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,
      & lxyzir(3),inam(5),nnam,mdum(32)
       integer i
+
+      DATA RECP_FNUM / 71, 72, 73, 74, 75, 76, 77, 78, 79, 80 /
+      DATA RECP_FNAM / 'RECP_XXXXX', 'RECP_XXXXX', 'RECP_XXXXX',
+     &                 'RECP_H2___', 'RECP_XXXXX', 'RECP_XXXXX',
+     &                 'RECP_XXXXX', 'RECP_XXXXX', 'RECP_XXXXX',
+     &                 'RECP_XXXXX' /
 
 !     parmi values
 !     ------------
