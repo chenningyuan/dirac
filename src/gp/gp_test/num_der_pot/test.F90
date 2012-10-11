@@ -50,7 +50,7 @@ program test
 
   call get_data_derres_ref(derres_ref)
 
-  call compare_2vectors(12,derres_ref,derres,1.0d-15)
+  call compare_2vectors(12,derres_ref,derres,1.0d-14)
 
   deallocate( xcoor   )
   deallocate( ycoor   )
