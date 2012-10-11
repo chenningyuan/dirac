@@ -62,12 +62,12 @@
   errwng = 0.0d0  ! errwng(2*nder,2)
   ierrpot = 0; ierrprp = 0
 
-  call titler('VIBCAL for properties : Written by T. Saue ','*',110)
+  call titler('VIBCAL for properties','*',110)
 
   ! decide how to get derivatives
   write(lupri,'(a)') 'How to get force constants and property derivatives [default:1]:'
-  write(lupri,'(a)') '      1. Read them from input file '
-  write(lupri,'(a)') '      2. Calculate them numerically'
+  write(lupri,'(a)') '      1. Read them from input file  (Written by T. Saue)'
+  write(lupri,'(a)') '      2. Calculate them numerically (Written by S. Komorovsky)'
   read(lucmd,'(a)',iostat=ier) strkey; read(strkey,*,iostat=ier) keymeth
   if(keymeth /= 2) keymeth = 1
 
@@ -181,7 +181,7 @@
     ipoint = (npoints / 2) + mod(npoints,2)
     step = xcoor(2) - xcoor(1)
     if(nprint==1)then
-      write(ilogg,'(a,i4,a)')'  We use  ',ipoint,'th point for calculating of derivatives'
+      write(ilogg,'(a,i4,a)')'  We use the mid-point (',ipoint,'th point) for calculation of derivatives'
       write(ilogg,'(a,es12.4)')'  step = ',step
       write(ilogg,*)
     endif
