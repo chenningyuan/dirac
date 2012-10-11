@@ -15,6 +15,10 @@ Arguments = "compchem";
 VirtualOrganisation="compchem";
 #VirtualOrganisation="osg";
 
+# myproxy server
+#MyProxyServer = "myproxy.cern.ch";
+MyProxyServer = "myproxy.cnaf.infn.it";
+
 # whether whole nodes should be used exclusively or not - sets according to the GlueHostArchitectureSMPSize parameter
 WholeNodes = True;
 # maximum number of nodes 

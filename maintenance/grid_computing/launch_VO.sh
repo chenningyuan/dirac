@@ -46,8 +46,11 @@ echo -e "\n--- Server's filesystem (df): "; df -h .
 echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
 
+echo -e "\n Checking long-term proxy with myproxy-info -v : "; myproxy-info -v
+echo -e "\n Checking short-term proxy with voms-proxy-info --all : "; voms-proxy-info --all
+
 # get info about CE #
-echo -e "\n querry attribute SMPSize:"
+echo -e "\n querry attribute SMPSize, CE=$CE_ID:"
 date
 lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
 date
@@ -58,7 +61,7 @@ echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
 
 # better: 
-echo -e "\n faster querrying....";date
+echo -e "\n faster querrying using CE_BDII=$CE_BDII....";date
 CE_BDII=${CE_ID/:*/:2170}
 lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
 date
@@ -72,7 +75,13 @@ echo -e "Python present : \c"; which python; python -V
 ###########################
 ### Check files on SE: ####
 ###########################
-echo -e  "\n Files on my vo=$VO space, lcg-ls -l lfn://grid/$VO/ilias:"
+echo -e "\n\n On the host CE, checking variable LFC_HOST=$LFC_HOST"
+if [[ -z $LFC_HOST ]];  then
+  echo -e "The LFC_HOST environmental variable is not defined !"
+fi
+echo -e "Trying command lcg-infosites --vo $VO lfc :"; lcg-infosites --vo $VO lfc
+
+echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
@@ -82,8 +91,9 @@ echo " ------------------------------------------------------ "
 #####################################
 echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
 lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
+
 echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "No dirac_grid_suite.tgz in local directory found, error exit"; exit -3;}
+ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in local directory - error exit !"; exit -3;}
 echo " ---------------------------------------------------------------------------------------------------------------------"
 
 ##########################################

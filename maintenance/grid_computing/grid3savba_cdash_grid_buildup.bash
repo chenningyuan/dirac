@@ -51,7 +51,11 @@ BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
+unset DO_UPDATE
+
 cd $DIRAC
+
+if [[ -n $DO_UPDATE ]]; then
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
@@ -142,6 +146,12 @@ ls -lt dirac_grid_suite.tgz
 #echo -e "\n This tarball contains :"
 #tar -tvf dirac_grid_suite.tgz
 
+else
+  echo -e "\n\n ===  No local buildup of DIRAC done ! ==== "
+  echo -e "Using the last tar-ball of  :"; ls -lt dirac_grid_suite.tgz
+  echo -e "\n\n"
+fi # of DO_UPDATE
+
 ######################################################## 
 #
 # initialize your certificate from grid computing
@@ -154,15 +164,32 @@ ls -lt dirac_grid_suite.tgz
 echo -e "\n ---  My valid certificate (voms-proxy-info --all)  ---"
 voms-proxy-info --all 
 
+### define variable for access to SE ###
+if [[ $VO == "voce" || $VO == "compchem" ]]; then
+   export LFC_HOST=`lcg-infosites --vo $VO lfc`
+   echo -e "\n defined variable LFC_HOST=$LFC_HOST"
+   echo "VO_VOCE_DEFAULT_SE=$VO_VOCE_DEFAULT_SE"
+   echo "VO_COMPCHEM_DEFAULT_SE=$VO_COMPCHEM_DEFAULT_SE"
+   # get list of SE with the command: lcg-infosites -vo compchem se
+   if [[  $VO == "compchem" ]]; then
+      #VO_SE="aliserv6.ct.infn.it" - does not work, try other SE...
+      VO_SE="grid2.fe.infn.it"
+      echo "set storage element of $VO, VO_SE=$VO_SE"
+   fi
+   if [[  $VO == "voce" ]]; then
+      VO_SE="se.ui.savba.sk"
+      echo "set storage element of $VO, VO_SE=$VO_SE"
+   fi
+fi
 # delete the old package from the SE
 echo -e "\n deleting the previous file, lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ...."
-lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz || { echo "FYI: did not succeed in deleting, maybe it is already deleted...";}
-echo -e "\n After deleting, checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
+lcg-del --force -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz || { echo "FYI: did not succeed in deleting, maybe the file is already deleted...";}
+echo -e "\n Then (possibly after deleting), checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
 lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once again..."; lcg-ls -l lfn://grid/$VO/ilias;  }
 
 # upload the fresh tar-ball onto the SE
-echo -e "\n uploading lcg-cr -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/voce/ilias/dirac_grid_suite.tgz...."
-lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
+echo -e "\n uploading lcg-cr -d $VO_SE  -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz...."
+lcg-cr -d $VO_SE -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
 
 ###   Check your copied file on the grid SE:  ###
 echo -e "\n After uploading, list of files on grid SE, lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz"
@@ -172,19 +199,20 @@ echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
 
-#############################################################################
-#            submit external launching script with glite
-#############################################################################
+##########################################################################
+#             submit external launching script with glite                #
+##########################################################################
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n going to launch for grid, with timestamp=$timestamp..."
+echo -e "\n going to launch jobs for grid, with timestamp=$timestamp..."
 cd maintenance/grid_computing
-echo -e "I am in the directory $PWD"
+echo -e "Now I am in the directory $PWD"
 
-glite-wms-job-submit -o JOB.$timestamp.$VO.1 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.4 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.5 -a submit_$VO.jdl
+# launch through the cycle #
+for i in {1..7} 
+do
+  glite-wms-job-submit -o JOB_$VO.$timestamp.no$i -a submit_$VO.jdl
+  sleep 5 # wait after each launch
+done
 
 echo -e "\n Done, script finished."
 

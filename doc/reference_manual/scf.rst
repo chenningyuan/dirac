@@ -167,7 +167,7 @@ two-electron repulsion via nuclear-attraction type integrals:
 
 .. math::
 
- \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle ~~, ~~X = L,S
+ \langle X_{A} \vert \sum_{C} \frac{-Z_{C} \cdot \sum_j a_j e^{(-\alpha^C_j r_{C}^{2})}}{r_{C}} \vert X_{B} \rangle, \ \ \ X = L,S
  
 The coefficients *a*\ :sub:`*j*`\  and the exponents :math:`\alpha^{C_j}`
 in this expression are chosen according to Slater's rules to obtain
@@ -305,7 +305,7 @@ This may be achieved by convergence acceleration schemes:
 -  **Damping:** The simplest scheme is damping of the Fock matrix
    that may remove oscillations. In iteration *n* + 1 the Fock matrix
    to be diagonalized is:
-   :math:`\mathbf{F}'=(1-c)\mathbf{F}_{n+1}+c\mathbf{F}_{n}`, 
+   :math:`{\mathbf{F}}\' = (1-c) {\mathbf{F}}_{n+1} + c {\mathbf{F}}_{n}`, 
    where *c* is the damping factor.
    
 -  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,
@@ -365,10 +365,9 @@ DIIS using AO-basis. The error vector is
 where the :math:`\mathbf{f}` is given by
 
 .. math::
-
-   \mathbf{f}=\mathbf{C}^{\dagger}\cdot\mathbf{S}_{\text{AO}}\cdot\biggl[\mathbf{D}^{C}_{\text{AO}}\cdot\mathbf{F}^{D}_\text{AO}+\\
-   \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{\text{AO}}\cdot\bigl(\mathbf{F}^{D}_{\text{AO}}+\\
-   (a_{O}-1)\mathbf{Q}^{V,O}_{\text{AO}}\bigr)\biggr]\mathbf{C}
+   \mathbf{f}=\mathbf{C}^{\dagger}\cdot\mathbf{S}_{AO}\cdot \left[ \mathbf{D}^{C}_{AO}\cdot\mathbf{F}^{D}_{AO}+
+   \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{{AO}}\cdot ( \mathbf{F}^{D}_{{AO}}+
+   (a_{O}-1)\mathbf{Q}^{V,O}_{{AO}} ) \right] \mathbf{C}
 
 .. _.NODIIS:
 

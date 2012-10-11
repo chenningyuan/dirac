@@ -1,6 +1,3 @@
-!     # the following parameters should agree exactly with those in the
-!     # seg1mn() routine.  (rls)
-
 !     # msu    = max number of symmetry inequivalent types of atoms.
       integer    msup
       parameter (msup=203)

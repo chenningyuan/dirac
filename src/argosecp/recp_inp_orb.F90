@@ -37,11 +37,12 @@ END SUBROUTINE RECP_INP_INTCHECK
 SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 ! normalize the contraction coefficients
   IMPLICIT NONE
+#include "inc_print.h"
 ! variables : local 
   INTEGER :: mrcru,mconu ! from common (parmi)
-  INTEGER :: ncons    ! I  Number of Contractions??
-  INTEGER :: nrcr(*)  ! J
-  INTEGER :: ncon(*)  ! K
+  INTEGER :: ncons    ! I  Number of basis-set blocks
+  INTEGER :: nrcr(*)  ! J  Number of contraction coefficient
+  INTEGER :: ncon(*)  ! K  Number of primitive
   INTEGER :: lmnp1(*) !
   REAL(8) :: eta(mrcru,mconu,*)
   REAL(8) :: zet(mconu,*)
@@ -78,12 +79,15 @@ SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
     ENDDO
   ENDDO
 
-! DO I = 1, ncons
-!    print *,'From RECP_INP(CCNORM)'
-!    DO J = 1, ncon(I)
-!       print *, zet(J,I),(eta(K,J,I),K=1,nrcr(I))
+! print
+! IF (RECP_DBG.GE.5) THEN
+!    DO I = 1, ncons
+!       print *,'From RECP_INP(CCNORM)'
+!       DO J = 1, ncon(I)
+!          print *, zet(J,I),(eta(K,J,I),K=1,nrcr(I))
+!       ENDDO
 !    ENDDO
-! ENDDO
+! ENDIF
 END SUBROUTINE RECP_INP_ORBITAL_CCNORM
 
 

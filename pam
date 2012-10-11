@@ -35,7 +35,9 @@ if sys.version < '2.4':
     sys.exit(1)
 
 global install_dir
-install_dir_default = os.path.realpath(__file__)[:-4]
+
+name_of_this_script = os.path.realpath(__file__).split('/')[-1]
+install_dir_default = os.path.realpath(__file__)[:-len(name_of_this_script)]
 install_dir = install_dir_default
 
 class pam_enviroment:
@@ -284,7 +286,7 @@ class pam_enviroment:
             scratch_disk_usage=scratch_disk_usage.replace(" ","")
             print "  Scratch directory   ",  self.scratch_dir,scratch_disk_usage
         else:
-            print_std_out_err('scratch dir:'+self.scratch_dir+' not found/not accessible !')
+            print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
         print "  Relevant for parallel builds:"
         print "    mpi launcher         ",  self.mpirun
         print "    mpirun extra args    ",  self.mpiarg
@@ -401,7 +403,7 @@ class pam_enviroment:
                 try:
                     shutil.rmtree(self.scratch_dir)
                 except:
-                    print_std_out_err('can not delete scratch directory due to system reasons !')
+                    print_error_message('can not delete scratch directory due to system reasons !')
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
@@ -574,7 +576,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             type='int',
             action='store',
             dest='dest_mpi',
-            default=0,
+            default=1,
             help='set number of cores in parallel run [default: %default]',
             metavar='INTEGER',
             )
@@ -809,8 +811,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
 
         if options.dest_mpi:
-            self.nr_proc      = int(options.dest_mpi)
-            self.parallel_run = True
+            self.nr_proc = int(options.dest_mpi)
+            # only if nr of proc is larger than 1 run through MPI
+            if self.nr_proc > 1:
+                self.parallel_run = True
 
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
@@ -830,7 +834,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if  os.path.isfile(self.dirac_exe) is False:
             err_message=\
             "The dirac.x executable either does not exist (in default build directory) or its location is wrongly or not specified. Check also the corresponding diracrc file. Wanted executable:"+self.dirac_exe
-            print_std_out_err(err_message)
+            print_error_message(err_message)
 
         if options.dest_timeout:
             self.timeout = process_time_string(options.dest_timeout)
@@ -876,7 +880,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             else:
                 print 'debugger selected as pam flag: ',options.dest_debugger
                 print 'But no full path assigned: ',debugger_full_path
-                print_std_out_err('Debugger wrongly assigned.')
+                print_error_message('Debugger wrongly assigned.')
 
         if options.dest_vg:
             self.vg_debug = True
@@ -900,7 +904,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 self.assign_mol_inp_files()
             else:
                 if not self.full_restart:
-                    print_std_out_err("both --mol and --inp input parameters are required !")
+                    print_error_message("both --mol and --inp input parameters are required !")
                     sys.exit(22)
 
         self.set_output_name()
@@ -1062,10 +1066,10 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         for parallel calculations.
         """
         if not self.rcp:
-            print_std_out_err('No rcp command specified, use --rcp= on the command line or in ~/.diracrc')
+            print_error_message('No rcp command specified, use --rcp= on the command line or in ~/.diracrc')
             sys.exit(-1)
         if not self.rsh:
-            print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.diracrc')
+            print_error_message('No rsh command specified, use --rsh= on the command line or in ~/.diracrc')
             sys.exit(-1)
         # get the list of nodes
         self.get_nodes()
@@ -1311,7 +1315,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         command="ps -fu "+self.user_name
         process_string=subprocess.Popen(shlex.split(command),stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
-        print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
+        print_error_message("\n current processes left: \n--------------------------- \n"+process_string)
 
     def child_signaller(self,signum,frame):
         '''
@@ -1337,7 +1341,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
             else:
                 interrupt_message="\npam: Caught signal #"+str(signum)+" ("+signal_numtoname(signum)+")"\
                 " -  dirac.x process group is going to be terminated with this signal."
-            print_std_out_err(interrupt_message)
+            print_error_message(interrupt_message)
             if not is_windows():
                 # Always kill with the strongest ammunution - SIGINT, as signum=14(SIGALARM) was leaving zombie!
                 os.killpg(self.pgid,signum_kill)
@@ -1349,7 +1353,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
             # flush out specific timeout interruption message
             if signum == 14 and self.set_timeout_limit:
                 timeout_interrupt_message="\npam: This is specific timeout kill after "+str(self.timeout)+" seconds."
-                print_std_out_err(timeout_interrupt_message)
+                print_error_message(timeout_interrupt_message)
                 self.f.write(timeout_interrupt_message+"\n")
             #TODO: maybe specify CTRL+C interruption and  flush out message about it ?
             # flush out the final sdterr message on details about the dirac run
@@ -1452,8 +1456,8 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
             p.wait()
             self.f.close()
         else:
-            print_std_out_err('pam - self.profiling_file='+self.profiling_file)
-            print_std_out_err('pam - can not perform profiling, missing profiling core...did you set profiling flag ??? ')
+            print_error_message('pam - self.profiling_file='+self.profiling_file)
+            print_error_message('pam - can not perform profiling, missing profiling core...did you set profiling flag ??? ')
 
     def save_files(self):
         "save files in various manners from the scratch directory"
@@ -1471,7 +1475,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
                 else:
                     print '  Saved file "',file_name,'" from the scratch directory.'
             else:
-                print_std_out_err(file_name+' not found in the scratch directory.')
+                print_error_message(file_name+' not found in the scratch directory.')
 
         if self.archive:
             self.archive_working_files()
@@ -1494,7 +1498,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         if self.nodes:
             # ulf: on grid systems I don't think we can log into the nodes..
             if not self.rsh:
-                print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
+                print_error_message('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
                 sys.exit(-1)
             for this_node in self.nodes:
                 print 'content of the scratch_dir, slave node ', this_node, \
@@ -1576,7 +1580,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
                 scratch_disk_usage=scratch_disk_usage.replace(" ","")
                 print '  scratch dir    :', self.scratch_dir,scratch_disk_usage
             else:
-                print_std_out_err('scratch dir:'+self.scratch_dir+' not found/not accessible !')
+                print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
@@ -1595,14 +1599,14 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         if self.profile:
            print '  You want profiling - check that you have proper linking flag and assigned profiler.'
            if not os.path.isfile(str(find_executable(self.profiler))):
-               print_std_out_err('You fool - your profiler not found:'+self.profiler)
+               print_error_message('You fool - your profiler not found:'+self.profiler)
                sys.exit(19)
 
         print
 
         # add few consistency checks
         if self.dirac_exe == None:
-            print_std_out_err('No Dirac executable assigned, quitting.')
+            print_error_message('No Dirac executable assigned, quitting.')
             sys.exit(29)
 
         if self.parallel_run and self.mpirun==None:
@@ -1613,8 +1617,8 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
                 sys.exit(20)
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
-            print_std_out_err('\n pam: Parallel run with local disks but without machinefile ! ')
-            print_std_out_err(' for this case add --global-scratch-disk to your pam-flags. \n ')
+            print_error_message('\n pam: Parallel run with local disks but without machinefile ! ')
+            print_error_message(' for this case add --global-scratch-disk to your pam-flags. \n ')
             sys.exit(21)
 
 class pam_run(pam_enviroment):
@@ -1896,14 +1900,9 @@ def find_executable(executable, path=None):
     else:
         return None
 
-def print_std_out_err(s):
-    """
-    print the entering string "s" into both stdout/stderr streams
-    this is global function
-    """
-    for stream in [sys.stdout,sys.stderr]:
-        print  >> stream,s
-        stream.flush()
+def print_error_message(s):
+    print  >> sys.stderr, s
+    sys.stderr.flush()
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
