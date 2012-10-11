@@ -1,5 +1,5 @@
 $ERROR 1.E-10
 nlines 12:TOTAL ENERGY
 
-$ERROR 1.E-7
+$ERROR 1.E-6
 nlines 5:Complete property matrix in molecular spinor basis

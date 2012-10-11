@@ -3734,8 +3734,8 @@ C         from this parameter type is below threshold, then no
 C         trial vectors of this kind is generated
           GPTMP = DNRM2(NBDIM,GP,1)
           IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-            NDIM = NFREQ*NSTAT*NDAMP
-            CALL IZERO(IVEC,NDIM)
+            NMDIM = NFREQ*NSTAT*NDAMP
+            CALL IZERO(IVEC,NMDIM)
             DO IP = 1,NFREQ*NDAMP,NDAMP
               IFREQ = IFREQ + 1
               IM = IP + NFREQ*NDAMP

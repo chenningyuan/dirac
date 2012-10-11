@@ -9,10 +9,8 @@
 #
 --global-scratch-disk
 #
-# dirac executable - in build_imported_static/
-#--dirac=$PWD/build_imported_static/dirac.x
-#
+# dirac executable - in own build... directory
+--dirac=$PWD/build_Intel_OpenMPI_MKL_ILP64_STATIC/dirac.x
+#--dirac=$PWD/build_Intel_serial_MKL_ILP64_STATIC/dirac.x
 #
 # mpirun - is specified in $PATH 
-#
-#--mpirun=$PWD/build_imported_static/mpirun

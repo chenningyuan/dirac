@@ -1,0 +1,34 @@
+[
+Type = "Collection";
+JobType = "Normal";
+#Executable = "launch_VO.sh";
+#Arguments = "voce";
+InputSandbox = {"launch_VO.sh"};
+VirtualOrganisation="voce";
+WholeNodes = True;
+HostNumber = 1;
+MyProxyServer = "px.ui.savba.sk";
+StdOutput = "DIRAC_runs.std_oe";
+StdError  = "DIRAC_runs.std_oe";
+OutputSandbox = {"DIRAC_runs.std_oe", "dirac_grid_suite_back.tgz"};
+PerusalFileEnable=true;
+PerusalTimeInterval=10005; 
+#Requirements =  other.GlueCEPolicyMaxWallClockTime > 3600;
+# global set of attributes is inherited by all the sub-jobs, and a set of attributes for each sub-job supersede sthe global ones
+Nodes = {
+ [Executable = "launch_VO.sh"; Arguments = "voce"; 
+   Requirements = other.GlueCEUniqueID == "ce2.ui.savba.sk:8443/cream-pbs-voce";],
+ [Executable = "launch_VO.sh"; Arguments = "voce"; 
+   Requirements = other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce";],
+ [Executable = "launch_VO.sh"; Arguments = "voce";
+   Requirements = other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce";],
+ [Executable = "launch_VO.sh"; Arguments = "voce"; 
+   Requirements = other.GlueCEUniqueID == "hephygr.oeaw.ac.at:8443/cream-pbs-voce";],
+ [Executable = "launch_VO.sh"; Arguments = "voce"; 
+   Requirements = other.GlueCEUniqueID == "hepx4.uibk.ac.at:8443/cream-pbs-voce";],
+ [Executable = "launch_VO.sh"; Arguments = "voce"; 
+   Requirements = other.GlueCEUniqueID == "cream.grid.tuke.sk:8443/cream-pbs-voce";]
+}; 
+]
+
+

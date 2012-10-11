@@ -8,8 +8,6 @@ C
 C Written by Lasse Soerensen 2010
 C
 C
-C common blocks needs cleaning!!!!!!!!!!!!!!!!
-C
 C***********************************************************************
       use memory_allocator
 
@@ -451,6 +449,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
      &     IRECOM,WORK,KFREE,LFREE)
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
+      print*,'NSPOBEX_TPE',NSPOBEX_TPE
       CALL MEMCHK_KRCC(WORK)
 *. Add unit-operator as last spinorbital excitation
       IZERO = 0
@@ -602,7 +601,7 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
 * Now to dimension and setup arrays for intermediates.
 * This should later be moved to CC_VEC_FNC_KRCC to save space
 *
-      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
+C     CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs
