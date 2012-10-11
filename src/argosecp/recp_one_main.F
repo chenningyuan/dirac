@@ -26,15 +26,10 @@
       common /parmi/
      & mccu, mconu, mcu,   mpru, nbft, nnbft,
      & mrcru, mstu, msu,   ng,   ns,   nst
-c
-      integer
-     & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
-     & lxyzir,         inam,        nnam, mdum
+      integer mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
       common /ntgr/
-     & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
-     & lxyzir(3),      inam(5),     nnam, mdum(32)
+     &        mconsu,mru,mcru,msfu,msfru,ngcs,nu,   
+     &        lxyzir(3),inam(5),nnam,mdum(32)
       real*8
      & fnfct,  rr,     xij,    xijm,
      & yij,    yijm,   zij,    zijm

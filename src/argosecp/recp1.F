@@ -56,9 +56,9 @@
       common /parmi/
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       integer
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir,inam,nnam,mdum
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
       common /ntgr/
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,   
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,   
      & lxyzir(3),inam(5),nnam,mdum(32)
 
 !     # dummy:
@@ -154,9 +154,9 @@
       common /parmi/
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       integer
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir,inam,nnam,mdum
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
       common /ntgr/
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,
      & lxyzir(3),inam(5),nnam,mdum(32)
       integer i
 
@@ -171,12 +171,9 @@
       mccu  = mccup
       mconu = mconup
       mcu   = mcup
-!     mpru,nbft,nnbft
       mrcru = mrcrup
       mstu  = mstup
       msu   = msup
-!     ng,ns,nst
-
 
 !     ntgr values
 !     -----------
@@ -185,11 +182,9 @@
       mcru   = mcrup
       msfu   = msfup
       msfru  = msfrup
-      mnru   = mnrup
-!     ngcs,nu,lxyzir
+
       do i = 1, 3
         inam(i) = i
       enddo
-!     nnam,mdum
       END SUBROUTINE RECP_SETPARM
 
