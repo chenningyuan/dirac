@@ -100,7 +100,6 @@ module fde_eval_dirac
                       r,             &
                       nuc_part,      &
                       ele_part)
-         vc = -0.5d0*vc
 !
 ! now the nuclear potential
 !
@@ -116,7 +115,6 @@ module fde_eval_dirac
                       r,             &
                       nuc_part,      &
                       ele_part)
-         vnuc = -vnuc
 !
 ! assemble the final electrostatic potential
 !
