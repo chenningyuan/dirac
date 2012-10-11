@@ -5,7 +5,7 @@ public  :: nddrv
 
 private :: forwder, backder, centder, mul2exp, stir1, forwn, backn, centn, centnmu
 
-integer*4, private :: luout
+integer, private :: luout
 
 contains
 
@@ -41,45 +41,45 @@ contains
 #include "unit-test.h"
 
   ! external variables
-  character*(*), intent(in) :: derstr
-  integer*4,     intent(in) :: nder, nprint, lunit, npoints, ipoint
-  integer*4,     intent(out):: ierr
-  real*8,        intent(in) :: yerr
+  character(*), intent(in) :: derstr
+  integer,      intent(in) :: nder, nprint, lunit, npoints, ipoint
+  integer,      intent(out):: ierr
+  real(8),      intent(in) :: yerr
 
-  real*8,        intent(in), dimension(npoints) :: xcoor, ycoor
-  real*8,        intent(out),dimension(nder, 3) :: derres
+  real(8),      intent(in), dimension(npoints) :: xcoor, ycoor
+  real(8),      intent(out),dimension(nder, 3) :: derres
 
   ! internal variables
   character :: strres*14
 
-  integer*4 :: i, k, ntmp, itmp, ier
+  integer :: i, k, ntmp, itmp, ier
 
-  real*8, parameter :: tresh = 1.0d-10
-  real*8 :: step, tmp
+  real(8), parameter :: tresh = 1.0d-10
+  real(8) :: step, tmp
 
-  integer*4, allocatable, dimension(:)   :: ndmax
-  real*8,    allocatable, dimension(:,:) :: dcon, err3c, dpar
-  integer*4, save :: icount = 0
+  integer, allocatable, dimension(:)   :: ndmax
+  real(8), allocatable, dimension(:,:) :: dcon, err3c, dpar
+  integer, save :: icount = 0
 
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
 #ifdef CREATE_UNIT_TESTS
-  icount = icount + 1
-  call set_suffix(icount)
-  call set_driver_routine('nddrv')
-  call add_module('num_der')
-
-  call add_inp_variable(nder   ,'nder   ')
-  call add_inp_variable(derstr ,'derstr ')
-  call add_inp_variable(ipoint ,'ipoint ')
-  call add_inp_variable(nprint ,'nprint ')
-  call add_inp_variable(lunit  ,'lunit  ')
-  call add_inp_variable(npoints,'npoints')
-  call add_inp_variable(xcoor  ,'xcoor  ')
-  call add_inp_variable(ycoor  ,'ycoor  ')
-  call add_inp_variable(yerr   ,'yerr   ')
-  call add_inp_variable(ierr   ,'ierr   ')
+! icount = icount + 1
+! call set_suffix(icount)
+! call set_driver_routine('nddrv')
+! call add_module('num_der')
+!
+! call add_inp_variable(nder   ,'nder   ')
+! call add_inp_variable(derstr ,'derstr ')
+! call add_inp_variable(ipoint ,'ipoint ')
+! call add_inp_variable(nprint ,'nprint ')
+! call add_inp_variable(lunit  ,'lunit  ')
+! call add_inp_variable(npoints,'npoints')
+! call add_inp_variable(xcoor  ,'xcoor  ')
+! call add_inp_variable(ycoor  ,'ycoor  ')
+! call add_inp_variable(yerr   ,'yerr   ')
+! call add_inp_variable(ierr   ,'ierr   ')
 #endif
 
   !------------------------------------------------------------------------------!
@@ -184,8 +184,8 @@ contains
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
 #ifdef CREATE_UNIT_TESTS
-  call add_out_variable(derres,'derres')
-  call generate_test()
+! call add_out_variable(derres,'derres')
+! call generate_test()
 #endif
 
   !------------------------------------------------------------------------------!
@@ -210,18 +210,18 @@ contains
   implicit none
 
   ! external variables
-  integer*4, intent(in) :: ider, ipoint
-  integer*4             :: ndmax
-  real*8,    intent(in) :: space
+  integer, intent(in) :: ider, ipoint
+  integer             :: ndmax
+  real(8), intent(in) :: space
 
-  real*8, dimension(:)  :: dcon, derrc, ycoor
+  real(8), dimension(:)  :: dcon, derrc, ycoor
 
   ! internal variables
-  integer*4 :: i, j, ier, npoints, nmax
-  real*8    :: tmp1, tmp2, xstep
+  integer :: i, j, ier, npoints, nmax
+  real(8) :: tmp1, tmp2, xstep
 
-  integer*4, allocatable, dimension(:,:) :: istirc1
-  real*8,    allocatable, dimension(:)   :: tp
+  integer, allocatable, dimension(:,:) :: istirc1
+  real(8), allocatable, dimension(:)   :: tp
   !------------------------------------------------------------------------------!
   !                             Initialize code                                  !
   !------------------------------------------------------------------------------!
@@ -295,18 +295,18 @@ contains
   implicit none
 
   ! external variables
-  integer*4, intent(in) :: ider, ipoint
-  integer*4             :: ndmax
-  real*8,    intent(in) :: space
+  integer, intent(in) :: ider, ipoint
+  integer             :: ndmax
+  real(8), intent(in) :: space
 
-  real*8, dimension(:)  :: dcon, derrc, ycoor
+  real(8), dimension(:)  :: dcon, derrc, ycoor
 
   ! internal variables
-  integer*4 :: i, j, ier, npoints, nmax
-  real*8    :: tmp1, tmp2, xstep
+  integer :: i, j, ier, npoints, nmax
+  real(8) :: tmp1, tmp2, xstep
 
-  integer*4, allocatable, dimension(:,:) :: istirc1
-  real*8,    allocatable, dimension(:)   :: tp
+  integer, allocatable, dimension(:,:) :: istirc1
+  real(8), allocatable, dimension(:)   :: tp
   !------------------------------------------------------------------------------!
   !                             Initialize code                                  !
   !------------------------------------------------------------------------------!
@@ -378,18 +378,18 @@ contains
   implicit none
 
   ! external variables
-  integer*4, intent(in) :: ider, ipoint
-  integer*4             :: ndmax
-  real*8,    intent(in) :: space
+  integer, intent(in) :: ider, ipoint
+  integer             :: ndmax
+  real(8), intent(in) :: space
 
-  real*8, dimension(:)  :: dcon, derrc, ycoor
+  real(8), dimension(:) :: dcon, derrc, ycoor
 
   ! internal variables
-  integer*4 :: npoints, ntp, nmax, npoints2, ipoint2
-  integer*4 :: i, ii, j, ier
-  real*8    :: tmp1, tmp2, xstep
+  integer :: npoints, ntp, nmax, npoints2, ipoint2
+  integer :: i, ii, j, ier
+  real(8) :: tmp1, tmp2, xstep
 
-  real*8,    allocatable, dimension(:)   :: expan, expan1, expans, ares, ycoor2, tp
+  real(8), allocatable, dimension(:) :: expan, expan1, expans, ares, ycoor2, tp
 
   !------------------------------------------------------------------------------!
   !                             Initialize code                                  !
@@ -553,11 +553,11 @@ contains
   !------------------------------------------------------------------------------!
   implicit none
 
-  integer*4 :: n, k
+  integer :: n, k
 
-  integer*4, dimension(0:n,0:k) :: istirc1
+  integer, dimension(0:n,0:k) :: istirc1
 
-  integer*4 :: ik, jn
+  integer :: ik, jn
   !------------------------------------------------------------------------------!
   istirc1 = 0  ! istirc1(0:nstir)
 
@@ -586,13 +586,13 @@ contains
   !------------------------------------------------------------------------------!
   implicit none
 
-  integer*4 :: nord, n1, n2
+  integer :: nord, n1, n2
 
-  real*8, dimension(0: n1 ) :: a1
-  real*8, dimension(0: n2 ) :: a2
-  real*8, dimension(0:nord) :: ares
+  real(8), dimension(0: n1 ) :: a1
+  real(8), dimension(0: n2 ) :: a2
+  real(8), dimension(0:nord) :: ares
 
-  integer*4 :: i, j
+  integer :: i, j
   !------------------------------------------------------------------------------!
   ares = 0.0d0  ! ares(nord)
   do i=0, n1
@@ -613,12 +613,12 @@ contains
   implicit none
   ! Calculates recursively N forward differences in point "ipoint"
 
-  integer*4 :: npoints, ipoint, N, ier  ! external variables
+  integer :: npoints, ipoint, N, ier  ! external variables
 
-  integer*4 :: ip ! internal variables
+  integer :: ip ! internal variables
 
-  real*8    :: resfor
-  real*8, dimension(npoints) :: ycoor
+  real(8) :: resfor
+  real(8), dimension(npoints) :: ycoor
 
   !------------------------------------------------------------------------------!
   ip = ipoint + 1
@@ -645,12 +645,12 @@ contains
   implicit none
   ! Calculates recursively N backward differences in point "ipoint"
 
-  integer*4 :: npoints, ipoint, N, ier  ! external variables
+  integer :: npoints, ipoint, N, ier  ! external variables
 
-  integer*4 :: ip ! internal variables
+  integer :: ip ! internal variables
 
-  real*8    :: resbac
-  real*8, dimension(npoints) :: ycoor
+  real(8) :: resbac
+  real(8), dimension(npoints) :: ycoor
 
   !------------------------------------------------------------------------------!
   ip = ipoint - 1
@@ -677,12 +677,12 @@ contains
   implicit none
   ! Calculates recursively N central differences in point "ipoint"
 
-  integer*4 :: npoints, ipoint, N, ier  ! external variables
+  integer :: npoints, ipoint, N, ier  ! external variables
 
-  integer*4 :: Nm, ip, im ! internal variables
+  integer :: Nm, ip, im ! internal variables
 
-  real*8    :: resdel
-  real*8, dimension(npoints) :: ycoor
+  real(8) :: resdel
+  real(8), dimension(npoints) :: ycoor
 
   !------------------------------------------------------------------------------!
   im = ipoint - 1
@@ -713,12 +713,12 @@ contains
   !   and multiply it with averaging operator from the left
 
   ! external variables
-  integer*4 :: npoints, ipoint, N, ier
-  real*8, dimension(npoints) :: ycoor
+  integer :: npoints, ipoint, N, ier
+  real(8), dimension(npoints) :: ycoor
 
   ! internal variables
-  integer*4 :: ip, im
-  real*8    :: resdelmu
+  integer :: ip, im
+  real(8) :: resdelmu
 
   !------------------------------------------------------------------------------!
   im = ipoint - 1
