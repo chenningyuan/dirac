@@ -4,12 +4,14 @@ WARNING: Unable to read mpd.hosts or list of hosts isn't provided. MPI job will 
 
 DIRAC master    (cluster1.univ-lille1.fr) starts by allocating             80000000 words (           610 MB) of memory
 DIRAC node    1 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    2 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    3 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    1 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
 DIRAC master    (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
  
-DIRAC node    1 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
+DIRAC node    2 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
 DIRAC node    3 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
  ******************************************************************************
  *                                                                            *
@@ -36,8 +38,6 @@ DIRAC node    3 (cluster1.univ-lille1.fr) to allocate at most             256000
  S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
  c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
  S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
-DIRAC node    2 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC node    2 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
  $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
  $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
  ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
@@ -186,15 +186,15 @@ Binary information
                           | --start-group -lmkl_intel_lp64 -lmkl_intel_thread 
                           | -lmkl_core -Wl,--end-group -openmp -lpthread -lm
  Static linking           | OFF
- Last Git revision        | 5b123ed
- Configuration time       | 2012-10-03 18:27:06.006258
+ Last Git revision        | e678617
+ Configuration time       | 2012-10-11 14:15:13.885005
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct  3 18:35:17 2012
+     Date and time (Linux)  : Thu Oct 11 14:17:30 2012
      Host name              : cluster1.univ-lille1.fr                 
 
 
@@ -700,7 +700,7 @@ Total no. of orbitals           (NORB):    14
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Oct  3 18:35:17 2012
+########## START ITERATION NO.   1 ##########   Thu Oct 11 14:17:31 2012
 
 
      *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
@@ -732,9 +732,9 @@ Total energy              :   -32.441851156070420
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * DFT xc matrix             (CPU): 0.00000000s
    * FDE Fock matrix           (CPU): 0.00000000s
-It.    1    -32.44185115607      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Oct  3
+It.    1    -32.44185115607      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Oct 11
 
-########## START ITERATION NO.   2 ##########   Wed Oct  3 18:35:17 2012
+########## START ITERATION NO.   2 ##########   Thu Oct 11 14:17:31 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -794,14 +794,14 @@ Total energy                       :    -66.38161416099555
 * B matrix condition: 0.000D+00
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   2 ##########   Wed Oct  3 18:35:17 2012
+########## END ITERATION NO.   2 ##########   Thu Oct 11 14:17:31 2012
 
-It.    2    -66.38161416100      3.39D+01  4.61D+00  1.15D+00               0.00000000s   LL SL          Wed Oct  3
+It.    2    -66.38161416100      3.39D+01  4.61D+00  1.15D+00               0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   3 ##########   Wed Oct  3 18:35:18 2012
+########## START ITERATION NO.   3 ##########   Thu Oct 11 14:17:31 2012
 
     3 *** Differential density matrix. DCOVLP     = 0.9784
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -813,10 +813,10 @@ SOfock:SL  1.00D-12    0.00%   50.68%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0057695503607626
-   number of electrons from numerical integration =         0.0383851018757154
+   DFT exchange-correlation energy:               =        -0.0057695503607597
+   number of electrons from numerical integration =         0.0383851018757002
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9616148981242851
+   WARNING: error in the number of electrons      =        -9.9616148981242993
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -842,10 +842,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.25002365665183
+Total electronic energy            :    -75.25002365665270
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.26965339902193
+Total energy                       :    -66.26965339902279
 
 
                                Output from DIISD1:
@@ -860,16 +860,16 @@ Total energy                       :    -66.26965339902193
      lambda     7.429D-02
          2      4.791D-01
          3      5.209D-01
-   * Two-electron Fock matrix  (CPU): 0.00000000s
+   * Two-electron Fock matrix  (CPU): 1.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 1.00000000s
 
-########## END ITERATION NO.   3 ##########   Wed Oct  3 18:35:18 2012
+########## END ITERATION NO.   3 ##########   Thu Oct 11 14:17:31 2012
 
-It.    3    -66.26965339902     -1.12D-01 -1.24D+00  1.07D+00   DIIS   2    1.00000000s   LL SL          Wed Oct  3
+It.    3    -66.26965339902     -1.12D-01 -1.24D+00  1.07D+00   DIIS   2    1.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   4 ##########   Wed Oct  3 18:35:18 2012
+########## START ITERATION NO.   4 ##########   Thu Oct 11 14:17:32 2012
 
     4 *** Differential density matrix. DCOVLP     = 0.7823
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -881,10 +881,10 @@ SOfock:SL  1.00D-12    0.00%   50.67%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0021831745730944
-   number of electrons from numerical integration =         0.0180460812969494
+   DFT exchange-correlation energy:               =        -0.0021831745730854
+   number of electrons from numerical integration =         0.0180460812968905
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9819539187030504
+   WARNING: error in the number of electrons      =        -9.9819539187031090
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -910,10 +910,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.65708161585668
+Total electronic energy            :    -75.65708161585616
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.67671135822678
+Total energy                       :    -66.67671135822624
  cp DFCOEF DFCOEF.BEST
 
 
@@ -935,11 +935,11 @@ Total energy                       :    -66.67671135822678
 >>> Total wall time: 1.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   4 ##########   Wed Oct  3 18:35:18 2012
+########## END ITERATION NO.   4 ##########   Thu Oct 11 14:17:32 2012
 
-It.    4    -66.67671135823      4.07D-01  7.28D-01  1.88D-01   DIIS   3    0.00000000s   LL SL          Wed Oct  3
+It.    4    -66.67671135823      4.07D-01  7.28D-01  1.88D-01   DIIS   3    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   5 ##########   Wed Oct  3 18:35:19 2012
+########## START ITERATION NO.   5 ##########   Thu Oct 11 14:17:33 2012
 
     5 *** Differential density matrix. DCOVLP     = 1.0140
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -951,10 +951,10 @@ SOfock:SL  1.00D-12    0.00%   51.02%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025508587469233
-   number of electrons from numerical integration =         0.0203688948565790
+   DFT exchange-correlation energy:               =        -0.0025508587469499
+   number of electrons from numerical integration =         0.0203688948567455
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9796311051434206
+   WARNING: error in the number of electrons      =        -9.9796311051432554
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -980,10 +980,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66804586872834
+Total electronic energy            :    -75.66804586872759
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68767561109843
+Total energy                       :    -66.68767561109769
  cp DFCOEF DFCOEF.BEST
 
 
@@ -1003,14 +1003,14 @@ Total energy                       :    -66.68767561109843
          5      1.062D+00
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Wed Oct  3 18:35:19 2012
+########## END ITERATION NO.   5 ##########   Thu Oct 11 14:17:33 2012
 
-It.    5    -66.68767561110      1.10D-02 -9.30D-02  1.73D-02   DIIS   4    0.00000000s   LL SL          Wed Oct  3
+It.    5    -66.68767561110      1.10D-02 -9.30D-02  1.73D-02   DIIS   4    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   6 ##########   Wed Oct  3 18:35:20 2012
+########## START ITERATION NO.   6 ##########   Thu Oct 11 14:17:33 2012
 
     6 *** Differential density matrix. DCOVLP     = 1.0011
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -1022,10 +1022,10 @@ SOfock:SL  1.00D-12    0.00%   51.50%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025852508470485
-   number of electrons from numerical integration =         0.0205819433181350
+   DFT exchange-correlation energy:               =        -0.0025852508470154
+   number of electrons from numerical integration =         0.0205819433179286
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9794180566818653
+   WARNING: error in the number of electrons      =        -9.9794180566820714
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -1051,10 +1051,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66813126159376
+Total electronic energy            :    -75.66813126159350
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68776100396386
+Total energy                       :    -66.68776100396360
  cp DFCOEF DFCOEF.BEST
 
 
@@ -1075,14 +1075,14 @@ Total energy                       :    -66.68776100396386
          6      9.095D-01
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 1.00000000s
 
-########## END ITERATION NO.   6 ##########   Wed Oct  3 18:35:20 2012
+########## END ITERATION NO.   6 ##########   Thu Oct 11 14:17:33 2012
 
-It.    6    -66.68776100396      8.54D-05 -8.97D-03  9.93D-04   DIIS   5    1.00000000s   LL SL          Wed Oct  3
+It.    6    -66.68776100396      8.54D-05 -8.97D-03  9.93D-04   DIIS   5    1.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   7 ##########   Wed Oct  3 18:35:20 2012
+########## START ITERATION NO.   7 ##########   Thu Oct 11 14:17:34 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -1094,10 +1094,10 @@ SOfock:SL  1.00D-12    0.00%   52.15%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025873931654563
-   number of electrons from numerical integration =         0.0205952195677870
+   DFT exchange-correlation energy:               =        -0.0025873931654202
+   number of electrons from numerical integration =         0.0205952195675644
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9794047804322137
+   WARNING: error in the number of electrons      =        -9.9794047804324357
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -1123,10 +1123,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66813160144186
+Total electronic energy            :    -75.66813160144181
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68776134381196
+Total energy                       :    -66.68776134381190
  cp DFCOEF DFCOEF.BEST
 
 
@@ -1148,14 +1148,14 @@ Total energy                       :    -66.68776134381196
          7      1.009D+00
    * Two-electron Fock matrix  (CPU): 1.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 1.00000000s
 
-########## END ITERATION NO.   7 ##########   Wed Oct  3 18:35:20 2012
+########## END ITERATION NO.   7 ##########   Thu Oct 11 14:17:34 2012
 
-It.    7    -66.68776134381      3.40D-07 -4.84D-04  8.62D-05   DIIS   6    1.00000000s   LL SL          Wed Oct  3
+It.    7    -66.68776134381      3.40D-07 -4.84D-04  8.62D-05   DIIS   6    1.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   8 ##########   Wed Oct  3 18:35:21 2012
+########## START ITERATION NO.   8 ##########   Thu Oct 11 14:17:34 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -1167,10 +1167,10 @@ SOfock:SL  1.00D-12    0.00%   53.03%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025875790912501
-   number of electrons from numerical integration =         0.0205963694350205
+   DFT exchange-correlation energy:               =        -0.0025875790912122
+   number of electrons from numerical integration =         0.0205963694347855
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9794036305649794
+   WARNING: error in the number of electrons      =        -9.9794036305652138
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -1196,10 +1196,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66813160356261
+Total electronic energy            :    -75.66813160356222
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68776134593270
+Total energy                       :    -66.68776134593230
  cp DFCOEF DFCOEF.BEST
 
 
@@ -1212,24 +1212,24 @@ Total energy                       :    -66.68776134593270
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.166D-17
-         2     -6.234D-08
+     lambda     3.150D-17
+         2     -6.232D-08
          3      1.368D-06
          4     -3.066D-05
-         5     -8.514D-05
+         5     -8.516D-05
          6      3.140D-03
          7      8.085D-02
          8      9.161D-01
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   8 ##########   Wed Oct  3 18:35:21 2012
+########## END ITERATION NO.   8 ##########   Thu Oct 11 14:17:34 2012
 
-It.    8    -66.68776134593      2.12D-09 -4.81D-05  1.43D-06   DIIS   7    0.00000000s   LL SL          Wed Oct  3
+It.    8    -66.68776134593      2.12D-09 -4.81D-05  1.43D-06   DIIS   7    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   9 ##########   Wed Oct  3 18:35:21 2012
+########## START ITERATION NO.   9 ##########   Thu Oct 11 14:17:35 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -1241,10 +1241,10 @@ SOfock:SL  1.00D-12    0.00%   55.94%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025875755893306
-   number of electrons from numerical integration =         0.0205963477619257
+   DFT exchange-correlation energy:               =        -0.0025875755892991
+   number of electrons from numerical integration =         0.0205963477617310
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9794036522380747
+   WARNING: error in the number of electrons      =        -9.9794036522382683
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
@@ -1270,10 +1270,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66813160356290
+Total electronic energy            :    -75.66813160356264
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68776134593298
+Total energy                       :    -66.68776134593273
  cp DFCOEF DFCOEF.BEST
 
 
@@ -1282,27 +1282,27 @@ Total energy                       :    -66.68776134593298
 
 * DIIS iteration no.:         8
 * B matrix dimension:         7
-* B matrix condition: 7.665D-16
+* B matrix condition: 7.664D-16
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.088D-20
-         4     -1.471D-08
-         5      1.960D-06
-         6     -7.955D-06
-         7     -9.197D-04
-         8      9.880D-02
-         9      9.021D-01
+     lambda     3.523D-20
+         4     -1.487D-08
+         5      1.968D-06
+         6     -7.966D-06
+         7     -9.218D-04
+         8      9.876D-02
+         9      9.022D-01
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   9 ##########   Wed Oct  3 18:35:21 2012
+########## END ITERATION NO.   9 ##########   Thu Oct 11 14:17:35 2012
 
-It.    9    -66.68776134593      2.84D-13  9.09D-07  2.19D-07   DIIS   6    0.00000000s   LL SL          Wed Oct  3
+It.    9    -66.68776134593      4.26D-13  9.09D-07  2.19D-07   DIIS   6    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.  10 ##########   Wed Oct  3 18:35:22 2012
+########## START ITERATION NO.  10 ##########   Thu Oct 11 14:17:35 2012
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -1314,16 +1314,16 @@ SOfock:SL  1.00D-12    0.00%   59.20%    0.00%    0.00%   0.00000000s
  DFT integration
  
    number of grid points                          =      8884
-   DFT exchange-correlation energy:               =        -0.0025875760555510
-   number of electrons from numerical integration =         0.0205963506469888
+   DFT exchange-correlation energy:               =        -0.0025875760555649
+   number of electrons from numerical integration =         0.0205963506470770
    number of electrons from orbital occupations   =        10
-   WARNING: error in the number of electrons      =        -9.9794036493530118
+   WARNING: error in the number of electrons      =        -9.9794036493529230
             is larger than 1.0d-3
             this can happen when starting from coefficients
             from a different geometry
             or it can mean that the quadrature grid is inappropriate
  
-   time spent in DFT integration                  =   1.00 seconds
+   time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         4
  
 
@@ -1343,19 +1343,19 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -75.66813160356321
+Total electronic energy            :    -75.66813160356298
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -66.68776134593330
+Total energy                       :    -66.68776134593307
  cp DFCOEF DFCOEF.BEST
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 1.00000000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.  10 ##########   Wed Oct  3 18:35:22 2012
+########## END ITERATION NO.  10 ##########   Thu Oct 11 14:17:35 2012
 
-It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00000000s   LL SL          Wed Oct  3
+It.   10    -66.68776134593      3.41D-13 -1.20D-07  6.38D-11   DIIS   6    0.00000000s   LL SL          Thu Oct 11
 
 
                                    SCF - CYCLE
@@ -1371,16 +1371,16 @@ It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.44185115607      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Oct  3
-It.    2    -66.38161416100      3.39D+01  4.61D+00  1.15D+00               0.00000000s   LL SL          Wed Oct  3
-It.    3    -66.26965339902     -1.12D-01 -1.24D+00  1.07D+00   DIIS   2    1.00000000s   LL SL          Wed Oct  3
-It.    4    -66.67671135823      4.07D-01  7.28D-01  1.88D-01   DIIS   3    0.00000000s   LL SL          Wed Oct  3
-It.    5    -66.68767561110      1.10D-02 -9.30D-02  1.73D-02   DIIS   4    0.00000000s   LL SL          Wed Oct  3
-It.    6    -66.68776100396      8.54D-05 -8.97D-03  9.93D-04   DIIS   5    1.00000000s   LL SL          Wed Oct  3
-It.    7    -66.68776134381      3.40D-07 -4.84D-04  8.62D-05   DIIS   6    1.00000000s   LL SL          Wed Oct  3
-It.    8    -66.68776134593      2.12D-09 -4.81D-05  1.43D-06   DIIS   7    0.00000000s   LL SL          Wed Oct  3
-It.    9    -66.68776134593      2.84D-13  9.09D-07  2.19D-07   DIIS   6    0.00000000s   LL SL          Wed Oct  3
-It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00000000s   LL SL          Wed Oct  3
+It.    1    -32.44185115607      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Oct 11
+It.    2    -66.38161416100      3.39D+01  4.61D+00  1.15D+00               0.00000000s   LL SL          Thu Oct 11
+It.    3    -66.26965339902     -1.12D-01 -1.24D+00  1.07D+00   DIIS   2    1.00000000s   LL SL          Thu Oct 11
+It.    4    -66.67671135823      4.07D-01  7.28D-01  1.88D-01   DIIS   3    0.00000000s   LL SL          Thu Oct 11
+It.    5    -66.68767561110      1.10D-02 -9.30D-02  1.73D-02   DIIS   4    0.00000000s   LL SL          Thu Oct 11
+It.    6    -66.68776100396      8.54D-05 -8.97D-03  9.93D-04   DIIS   5    1.00000000s   LL SL          Thu Oct 11
+It.    7    -66.68776134381      3.40D-07 -4.84D-04  8.62D-05   DIIS   6    1.00000000s   LL SL          Thu Oct 11
+It.    8    -66.68776134593      2.12D-09 -4.81D-05  1.43D-06   DIIS   7    0.00000000s   LL SL          Thu Oct 11
+It.    9    -66.68776134593      4.26D-13  9.09D-07  2.19D-07   DIIS   6    0.00000000s   LL SL          Thu Oct 11
+It.   10    -66.68776134593      3.41D-13 -1.20D-07  6.38D-11   DIIS   6    0.00000000s   LL SL          Thu Oct 11
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
@@ -1391,14 +1391,14 @@ It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -75.668131603563211
+   Electronic energy                        :    -75.668131603562983
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      8.980370229500169
    SS Coulombic correction                  :      0.000000028129738
 
    Sum of all contributions to the energy
-   Total energy                             :    -66.687761345933296
+   Total energy                             :    -66.687761345933069
 
 
                                    Eigenvalues
@@ -1407,9 +1407,9 @@ It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--15.95887560695852  ( 2)    -0.21384279736656  ( 2)     0.17574786267173  ( 2)     0.47396062797856  ( 2)     0.58545754417472  ( 2)
+-15.95887560696234  ( 2)    -0.21384279736043  ( 2)     0.17574786266319  ( 2)     0.47396062799568  ( 2)     0.58545754417623  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.85034167624185  ( 2)     0.97512192668699  ( 2)
+  0.85034167624303  ( 2)     0.97512192669088  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.85034168 au (symmetry E1 )
@@ -1463,9 +1463,9 @@ It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    Dipole length: X :     0.61234674D-12 a.u.      F   F
-    Dipole length: Y :     0.30775882D-09 a.u.      F   F
-    Dipole length: Z :     2.931404000788 a.u.      F   F
+    Dipole length: X :     0.61234656D-12 a.u.      F   F
+    Dipole length: Y :     0.28637648D-09 a.u.      F   F
+    Dipole length: Z :     2.931404000780 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1478,6 +1478,10 @@ It.   10    -66.68776134593      3.13D-13 -1.20D-07  4.87D-11   DIIS   6    1.00
 x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
 y         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
 z         7.45095475 Debye        -6.77337478 Debye         0.67757996 Debye
+----------------------------------------------------------------------------
+x         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+y         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+z         2.93140400 a.u.         -2.66482600 a.u.          0.26657800 a.u.
 ----------------------------------------------------------------------------
 
  1 a.u =   2.54177000 Debye
@@ -1501,8 +1505,8 @@ z         7.45095475 Debye        -6.77337478 Debye         0.67757996 Debye
   
  Exported quantities (over         8884 grid points) integrate to:
  - electron density    :         0.020596 electrons
- - Hartree      energy :         0.048217 a.u.
- - n.-el. attr. energy :        -0.055359 a.u.
+ - Hartree      energy :         0.026927 a.u.
+ - n.-el. attr. energy :        -0.054320 a.u.
  writing xml file
  closing xml file
  Deleting children
@@ -1514,10 +1518,10 @@ z         7.45095475 Debye        -6.77337478 Debye         0.67757996 Debye
 
 
  
-     Date and time (Linux)  : Wed Oct  3 18:35:30 2012
+     Date and time (Linux)  : Thu Oct 11 14:17:43 2012
      Host name              : cluster1.univ-lille1.fr                 
 
->>>> Node 0, utime: 10, stime: 2, minflt: 84575, majflt: 0, nvcsw: 39, nivcsw: 946, maxrss: 55264
+>>>> Node 0, utime: 10, stime: 2, minflt: 84587, majflt: 0, nvcsw: 39, nivcsw: 480, maxrss: 55316
 >>>> Total WALL time used in DIRAC: 13s
   
   Dynamical Memory Usage Summary
@@ -1537,13 +1541,13 @@ z         7.45095475 Debye        -6.77337478 Debye         0.67757996 Debye
         7.63 Mb at subroutine readin_+0x139                              for WORK in READIN                            
         0.76 Mb at subroutine paminp_+0xe6                               for PAMINP WORK array                         
   
-  
   Peak memory usage    (Mb) :       643.00
        reached at subroutine : dftgrd_+0x145b                            
-              for variable   : unnamed variable                          
+              for variable   : unnamed variable                   
+  
+         
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-  
   

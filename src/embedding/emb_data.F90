@@ -459,9 +459,9 @@ module fde_data
 
       
       do i = 1, fde_export_grid_np 
-         exp_int_n  = exp_int_n  + fde_export_grid(4,i)*gf_export%n(i) 
-         exp_int_vc = exp_int_vc + 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*gf_export%elpot(i) 
-         exp_int_vn = exp_int_vn + fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
+         exp_int_n  = exp_int_n  +       fde_export_grid(4,i)*gf_export%n(i) 
+         exp_int_vc = exp_int_vc - 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*(gf_export%elpot(i)-gf_export%nucpot(i)) 
+         exp_int_vn = exp_int_vn -       fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
       end do
       
       write (*,*) ' '

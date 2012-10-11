@@ -16,69 +16,46 @@ c
 c  entry ibummr must be called prior to bummer() to set the output
 c  unit and to perform any additional initialization.
 c
-c  version log:
-c  24-apr-92 %val() blocks added for ibm rs6000. -rls
-c  11-sep-91 parerr() calls added. -rjh
-c  13-mar-91 posix code added. -rls
-c  01-mar-89 write(stderr,*) and call exit() for unix machines (rls).
-c  05-jul-88 unicos version (rls).
-c  03-nov-87 ibm version (dcc).
-c  10-sep-87 written by ron shepard.
-c
       implicit integer(a-z)
       character*(*) text
       integer iunit, errtyp, ierr
       integer f77err
-      integer nlist,        stderr
-      save    nlist,        stderr
-      data    nlist / 6 /,  stderr / 0 /
  
       if ( errtyp .eq. 0 ) then
 c        # print a warning message and continue execution.
-         write(nlist,6010) 'bummer (warning):', text, ierr
-         write(stderr,6010) 'bummer (warning):', text, ierr
+         write(6,6010) 'bummer (warning):', text, ierr
          return
       elseif ( errtyp .eq. 1 ) then
 c        # print a warning message, stop execution.
-         write(nlist,6010) 'bummer (nonfatal):', text, ierr
-         write(stderr,6010) 'bummer (nonfatal):', text, ierr
+         write(6,6010) 'bummer (nonfatal):', text, ierr
          call exit( 0 )
       elseif ( errtyp .eq. 2 ) then
 c        # print an error message, stop execution, and abort job
 c        # sequence.
-         write(nlist,6010) 'bummer (fatal):', text, ierr
-         write(stderr,6010) 'bummer (fatal):', text, ierr
+         write(6,6010) 'bummer (fatal):', text, ierr
          call exit( 1 )
       else
 c        # unknown error level.  treat as a fatal error.
-         write(nlist,6020) 'bummer (unknown): errtyp=',
-     &    errtyp, text, ierr
-         write(stderr,6020) 'bummer (unknown): errtyp=',
+         write(6,6020) 'bummer (unknown): errtyp=',
      &    errtyp, text, ierr
          call exit( 1 )
       endif
-c
+ 
 c     # this statement is not executed, it is included
 c     # just to avoid compiler warnings. -rls
       stop 'bummer error'
-c
+ 
 c     # initialization...
-c
       entry ibummr( iunit )
-c
+ 
 c     # save the listing unit for use later.
-c
       nlist = iunit
-c
       return
 6010  format(1x,a,a,i10)
 6020  format(1x,a,i10,a,i10)
       end
 
-*deck sifcfg
-      subroutine sifcfg(
-     & nbft,  ifmt,    lrec,    nmax,    ierr )
-c
+      subroutine sifcfg(nbft,ifmt,lrec,nmax,ierr)
 c  return a set of consistent configuration parameters for a standard
 c  integral file structure.  ( for 1-e integrals )
 c
@@ -113,33 +90,28 @@ c     #          consistent with the record "dword" encoding.
 c     # lrcinc = record length block size increments.
 c     # ndeflt = default number of block increments. such that
 c     #          the default record length = (lrecmn + ndeflt * lrcinc)
-c  
       integer    nbftmx
       parameter( nbftmx=2**16-1 )
       integer    lrecmn,     lrecmx,         lrcinc,      ndeflt
       parameter( lrecmn=512, lrecmx=2**16,   lrcinc=512,  ndeflt=3 )
-c
+ 
 c     # check the input parameters...
-c
       ierr = 0
-c
       if ( nbft .le. 0    .or.    nbft .gt. nbftmx ) then
          ierr = -2
          return
       endif
-c
+ 
 c     # adjust lrec for efficient I/O.
 c     # machine-dependent quirks, magic record lengths, etc. should
 c     # be localized here and in the above parameter definitions..
-c
       lrec = lrecmn + (ndeflt * lrcinc)
-
       lrec = min( lrecmx, lrec )
       if ( lrec .lt. lrecmn ) then
          ierr = -3
          return
       endif
-c
+ 
 c     # for this record length, compute the number of values.
 c
 c     # 1-e records: dword // values // fcore // packed_labels // ibitv
@@ -197,49 +169,6 @@ c
       return
       end
 
-*deck sifpre
-      subroutine sifpre( nlist, nenrgy, energy, ietype )
-c
-c  print out the energy(*) array with character labels.
-c
-c  24-apr-92 cnvginf values added. -rls
-c  08-oct-90 (columbus day) written by ron shepard.
-c
-      implicit none
-      integer  nlist,  nenrgy, ietype(*)
-      real*8   energy(*)
-      integer  i,      itypea, itypeb
-      character*8      chrtyp
-c
-      do 10 i = 1, nenrgy
-         itypea = ietype(i) / 1024
-         itypeb = mod( ietype(i), 1024 )
-         call siftyp( itypea, itypeb, chrtyp )
-c
-         if ( ietype(i) .ge. 0 ) then
-c           # fcore from a 1-e hamiltonian array.
-            write(nlist,6010) i, energy(i), ietype(i), 'fcore', chrtyp
-         elseif ( itypea .eq. 0 ) then
-c           # core energy value.
-            write(nlist,6010) i, energy(i), ietype(i), 'core', chrtyp
-         elseif ( itypea .eq. -1 ) then
-c           # total energy value.
-            write(nlist,6010) i, energy(i), ietype(i), 'total', chrtyp
-         elseif ( itypea .eq. -2 ) then
-c           # energy or wave function convergence value.
-            write(nlist,6010) i, energy(i), ietype(i), 'cnvginf', chrtyp
-         else
-c           # undefined energy type.
-            write(nlist,6010) i, energy(i), ietype(i), 'unknown', chrtyp
-         endif
- 10   continue
-      return
-c
- 6010 format(' energy(', i2, ')=', 1pe20.12, ', ietype=', i5,
-     & ', ', a7, ' energy of type: ', a )
-      end
-
- 
 
 *deck sifsce
       function sifsce( nenrgy, energy, ietype )
@@ -384,47 +313,10 @@ c
       end
 
 
-
-      subroutine setiarray(
-     &   itypea, itypax, itypbx, btypmx, btypes, iarray)
-!
-!     # set iarray to point into array(*,iarray).
-!
-      integer itypea, itypax, itypbx, btypmx
-      integer btypes(0:btypmx), iarray
-
-         if ( itypea .eq. -1 ) then
-!           # single array mode. accumulate into array(*,1) always.
-            iarray = 1
-         elseif ( itypax.eq.0 ) then
-!           # correct generic array type for s, t, v, c.
-!           # mask btypmx with btypes(*) to see if this array should
-!           # be accumulated somewhere.
-            if ( itypbx .le. btypmx) then
-               iarray = btypes(itypbx)
-            else
-               iarray = -1
-            endif
-         elseif ( itypax.eq.2 ) then
-!           # correct generic array type for soc.
-!           # mask btypmx with btypes(*) to see if this array should
-!           # be accumulated somewhere.
-            if ( itypbx .le. btypmx) then
-               iarray = 4 + btypes(itypbx)
-            else
-               iarray = -1
-            endif
-         else
-!           # ignore this array.
-            iarray = -1
-         endif
-      return
-      end
-
 !----------------------- end colib --------------------
 
       subroutine gcentr(ica,nc)
-c  generate group of center-interchange operators
+!     generate group of center-interchange operators
       integer
      & mccu, mconu, mcu,   mpru, nbft, nnbft,
      & mrcru, mstu, msu,   ng,   ns,   nst
@@ -434,9 +326,8 @@ c  generate group of center-interchange operators
       dimension ica(mcu,msu,*), nc(*)
 
       if (ng .eq. 1) go to 56
-c
-c  set up identity operator
-c
+ 
+!     set up identity operator
       do 16 is=1,ns
         icu=nc(is)
         if(icu.eq.1) go to 16
@@ -444,16 +335,15 @@ c
           ica(ic,is,1)=ic
    12   continue
    16 continue
-c
-c        do 52(+3) ig=2,ng
-c
+ 
+!        do 52(+3) ig=2,ng
+ 
       ig=2
    20 do 52 jg=2,ig
       igp=ig
       jgp=jg
-c
-c  generate new operator candidate
-c
+ 
+!  generate new operator candidate
    24 do 32 is=1,ns
         icu=nc(is)
         if(icu.eq.1) go to 32
@@ -461,9 +351,8 @@ c
           ica(ic,is,ng+1)=ica(ica(ic,is,igp),is,jgp)
    28   continue
    32 continue
-c
-c  check against list of operators
-c
+ 
+!  check against list of operators
       do 44 kg=1,ng
         do 40 is=1,ns
           icu=nc(is)
@@ -472,15 +361,14 @@ c
             if(ica(ic,is,ng+1).ne.ica(ic,is,kg)) go to 44
    36     continue
    40   continue
-c       # not a new operator
+!       # not a new operator
         go to 48
    44 continue
-c     # new operator found
+!     # new operator found
       ng=ng+1
    48 if(jgp.eq.ig) go to 52
-c
-c  take product in other order
-c
+ 
+!  take product in other order
       igp=jg
       jgp=ig
       go to 24
@@ -488,9 +376,8 @@ c
       if(ig.eq.ng) go to 56
       ig=ig+1
       go to 20
-c
-c  set up operators for unique nuclei
-c
+ 
+!  set up operators for unique nuclei
    56 do 64 is=1,ns
       if(nc(is).eq.1) then
         do 60 ig=1,ng
@@ -502,21 +389,19 @@ c
       end
 
       subroutine stvint(hpt,hwt)
-c
-c  gauss-hermite quadrature using minimum-point formula
-c
+!  gauss-hermite quadrature using minimum-point formula
       implicit real*8 (a-h,o-z)
       parameter (zero=0.0d0)
       common /stv/ xint,yint,zint,t,x0,y0,z0,xi,yi,zi,xj,yj,zj,ni,nj
       dimension hpt(*), hwt(*)
-c
+ 
       xint=zero
       yint=zero
       zint=zero
       npts=(ni+nj)/2
       imax=(npts*(npts+1))/2
       imin=imax-npts+1
-      do 40 i=imin,imax
+      do i=imin,imax
         dum=hpt(i)/t
         ptx=dum+x0
         pty=dum+y0
@@ -528,27 +413,27 @@ c
         by=pty-yj
         bz=ptz-zj
         dum=hwt(i)
-c       # take care to avoid (0.0d0)**0
+!       # take care to avoid (0.0d0)**0
         dumx = dum
         dumy = dum
         dumz = dum
-        do 20 ipwr = 1,ni-1
+        do ipwr = 1,ni-1
           dumx = dumx*ax
           dumy = dumy*ay
           dumz = dumz*az
-   20   continue
-        do 30 ipwr = 1,nj-1
+        enddo
+        do ipwr = 1,nj-1
           dumx = dumx*bx
           dumy = dumy*by
           dumz = dumz*bz
-   30   continue
+        enddo
         xint = xint + dumx
         yint = yint + dumy
         zint = zint + dumz
-c       xint=xint+dum*ax**(ni-1)*bx**(nj-1)
-c       yint=yint+dum*ay**(ni-1)*by**(nj-1)
-c       zint=zint+dum*az**(ni-1)*bz**(nj-1)
-   40 continue
+!       xint=xint+dum*ax**(ni-1)*bx**(nj-1)
+!       yint=yint+dum*ay**(ni-1)*by**(nj-1)
+!       zint=zint+dum*az**(ni-1)*bz**(nj-1)
+      enddo
       return
       end
 
@@ -648,37 +533,19 @@ c
       return
       end
 
-*deck droot
       subroutine droot(nroots,n1,xx,ff,c,s,a,rt,r,w,uf,wf)
-c
-c  ith root of the jth rys polynomial is returned in r(i,j)
-c  with the corresponding weight factor in w(i,j).  j=1,2,...,n
-c  this version uses christoffel formula for weights.
-c
-*mdc*if real16 vax ibm cray
-*      implicit real*16 (a-h,o-z)
-*      real*8 xx,uf,wf
-*mdc*else
+!  ith root of the jth rys polynomial is returned in r(i,j)
+!  with the corresponding weight factor in w(i,j).  j=1,2,...,n
+!  this version uses christoffel formula for weights.
       implicit real*8 (a-h,o-z)
       real*8 xx,uf,wf
-*mdc*endif
-*mdc*if real16q ibm vax rs6000 fujitsu
-*c *** this mdc block is not necessary since the constants will be ***
-*c *** correctly converted at compile time.  should it be removed? ***
-*      parameter (a0=0.0q0, a1s2=0.5q0, a1=1.0q0, a4=4.0q0)
-*mdc*else
       parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a4=4.0d0)
-*mdc*endif
-c     common /ffm/ x,nn,n1,k
-c     dimension uf(*), wf(*)
-c     dimension ff(19), c(10,10), s(10,10), a(10), rt(10),
-c    &  r(9,9), w(9,9)
       dimension ff(*), c(n1,*), s(n1,*), a(*), rt(*),
      &  r(nroots,*), w(nroots,*), uf(*), wf(*)
-c
+ 
       n=max(nroots,2)
       x=xx
-c     n1=n+1
+!     n1=n+1
       nn=n+n
       call dfunc(nn,x,ff,c)
       do 15 i=1,n1
@@ -738,32 +605,15 @@ c     n1=n+1
    75 continue
       return
       end
-*deck dfunc
+
       subroutine dfunc(nn,x,ff,term)
-*mdc*if real16 vax cray ibm
-*      implicit real*16 (a-h,o-z)
-*mdc*else
       implicit real*8 (a-h,o-z)
-*mdc*endif
-*mdc*if real16q ibm vax rs6000 fujitsu
-*      parameter (a0=0.0q0, a1s2=0.5q0, a1=1.0q0 )
-*      parameter (pie4=0.7853981633974483096156608 q0)
-*mdc*else
       parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0)
       parameter (pie4=0.7853981633974483096156608 d0)
-*mdc*endif
-*mdc*if fps164
-*      parameter (xsw=19.0d0)
-*mdc*elseif cray
-*      parameter (xsw=33.0d0)
-*mdc*elseif real16q vax ibm rs6000 fujitsu
-*      parameter (xsw=39.0q0)
-*mdc*else
       parameter (xsw=15.0d0)
-*mdc*endif
-c     common /ffm/ x,nn,n1,k1
+!     common /ffm/ x,nn,n1,k1
       dimension ff(*), term(*)
-c
+ 
       e=a1s2*exp(-x)
       fac0=nn
       fac0=fac0+a1s2
@@ -821,8 +671,6 @@ c  sum decreasing terms backwards
 c
    85 sum1=a0
 c
-c  11-feb-90 cray vectorization suppressed to avoid a numeric exception
-c            which occured for x=5670. - rick ross/rls
 cdir$ novector
       do 90 k=1,i
         sum1=sum1+term(i+1-k)
@@ -841,22 +689,11 @@ c
       end
 *deck dsmit
       subroutine dsmit(n1,c,s,v,y)
-c
 c  return an n1 by n1 triangular matrix c such that
 c  c(t)sc=i, where i is an n1 by n1 identity matrix.
 c
-*mdc*if real16 vax ibm cray
-*      implicit real*16 (a-h,o-z)
-*mdc*else
       implicit real*8 (a-h,o-z)
-*mdc*endif
-*mdc*if real16q ibm vax
-*c *** this mdc block is not necessary since the constants will be ***
-*c *** correctly converted at compile time.  should it be removed? ***
-*      parameter (a0=0.0q0, a1=1.0q0)
-*mdc*else
       parameter (a0=0.0d0, a1=1.0d0)
-*mdc*endif
 c     common /ffm/ x,nn,n1,k1
       dimension c(n1,*), s(n1,*), v(*), y(*)
 c
@@ -890,22 +727,16 @@ c
    80 continue
       return
       end
-*deck dnode
+
       subroutine dnode(k,a,rt)
-c  return in rt(i) the ith root of a polynomial
-c  of order k whose mth coefficient is stored in a(m+1).
-c  the initial values in rt must bracket the final values.
+!  return in rt(i) the ith root of a polynomial
+!  of order k whose mth coefficient is stored in a(m+1).
+!  the initial values in rt must bracket the final values.
       implicit real*8 (a-h,o-z)
       parameter (a0=0.0d0, a1s16=6.25d-2, a1s4=0.25d0, a3s4=0.75d0)
       parameter (accrt=1.0d-12)
  
-      integer   nunits
-      parameter(nunits=4)
-      integer        iunits
-      common /units/ iunits(nunits)
-      integer                  nlist
-      equivalence ( iunits(1), nlist )
-c     common /ffm/ x,nn,n1,k
+!     common /ffm/ x,nn,n1,k
       dimension a(*), rt(*)
  
       k1=k+1
@@ -921,7 +752,7 @@ c     common /ffm/ x,nn,n1,k
    10 continue
       prod=p1*p2
       if(prod.ge.a0) then
-        write (nlist,15) m,k
+        write (6,15) m,k
    15   format(/' dnode: root number',i4,
      +    ' was not found for polynomial of order',i4//)
         call bummer('dnode: root not found, m=',m,2)
