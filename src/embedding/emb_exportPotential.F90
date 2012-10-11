@@ -108,7 +108,9 @@ module FDE_exportPotentials
 !not handling hessian now
 !        character(len=132) :: csizehesrho1
          type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:), hes(:,:)
+         real(kind=8), pointer :: gp(:,:)                   ! the grid
+         real(kind=8), pointer :: np(:), gnp(:,:), hes(:,:) ! density, its gradient and hessian
+         real(kind=8), pointer :: vcp(:), vnp(:)            ! electrostatic (hartree+nuclear), nuclear potentials
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
@@ -139,6 +141,7 @@ module FDE_exportPotentials
          
          if (associated(gf_export%elpot)) then
             vcp => gf_export%elpot
+            vnp => gf_export%nucpot
          else
             call quit('potential not available in fde export')
          endif
@@ -202,6 +205,12 @@ module FDE_exportPotentials
                   call set_attribute(tag,'size',  csizept2)
                   call set_attribute(tag,'width', '1')
                   call xml_add_data(tag,vcp)
+                tag=>xml_tag_close(tag)
+
+                tag=>xml_tag_open(tag,'dataset','nuc')
+                  call set_attribute(tag,'size',  csizept2)
+                  call set_attribute(tag,'width', '1')
+                  call xml_add_data(tag,vnp)
                 tag=>xml_tag_close(tag)
              endif
 
