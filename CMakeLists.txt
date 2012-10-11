@@ -6,7 +6,7 @@ cmake_policy(SET CMP0010 OLD)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-project(DIRAC Fortran C)
+project(DIRAC Fortran C CXX)
 
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
@@ -133,15 +133,9 @@ if(ENABLE_PCMMOD)
         )
 endif()
 
-# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
-    COPYONLY
-    )
-configure_file(
-    ${CMAKE_SOURCE_DIR}/pam
-    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 
@@ -228,7 +222,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
     compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")

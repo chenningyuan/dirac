@@ -13,8 +13,8 @@ foreach(
 endforeach()
 
 install(
-    FILES ${PROJECT_BINARY_DIR}/pam-dirac
-    DESTINATION bin
+    FILES ${PROJECT_BINARY_DIR}/pam
+    DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
     GROUP_READ             GROUP_EXECUTE
