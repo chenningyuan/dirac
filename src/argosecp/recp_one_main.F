@@ -9,8 +9,8 @@
      &       x,          y,          z,          zcr,        zet,
      &       n_bfn_sym,  INT_AREP,N1MAX,L1REC )
 
-      USE ARGOS_ONEINT_NUC
       USE RECP_IPT
+      USE RECP_1ESUB
       USE RECP_OUTPUT
       USE RECP_WRITE
       implicit logical(a-z)
@@ -36,7 +36,7 @@ c
      & msfru,  mnru,   ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
       real*8
-     & dxij,   dyij,   dzij,   fnfct,  rr,     xij,    xijm,
+     & fnfct,  rr,     xij,    xijm,
      & yij,    yijm,   zij,    zijm
       integer  ibl1,   ibl2,   icxi1,  icxi2,  ij,     ijsf,
      & ic,     icons,  igu,
@@ -45,7 +45,7 @@ c
      & ljt,    nblt1,  nc2,    nc1,    nop,    ntij1,  ntij2
       logical
      & esf,    esfc,   igueq1, jgueq1
-      common /one/     dxij,   dyij,   dzij,   fnfct,  rr,
+      common /one/     fnfct,  rr,
      & xij,    xijm,   yij,    yijm,   zij,    zijm,   ibl1,
      & ibl2,   icxi1,  icxi2,  ij,     ijsf,   ic,     icons,
      & igu,    ircru,  is,     isf,    itl,    itu,    jc,
@@ -82,8 +82,6 @@ c
      & SYM_I, ICA_MIN, icc, igw, jfu, if, jf, iop,
      & ipr, itst, iprm, inx, jnx, nwt, ipr1, ipr2, iju
       logical  es
-      real*8     zero
-      parameter( zero=0d0 )
       integer i,j,last,iapt(3),nblu,NUC_J
       integer n_bfn_sym(mstup)  ! (nbpsy or nso)
       integer N_INTEGRAL(3), MN_INTEGRAL
@@ -110,32 +108,32 @@ c
       N_INTEGRAL(3)  = 0
       MN_INTEGRAL    = 0
  
-      if ( nnam .eq. 5 ) then
-c       # x, y, and z components of spin-orbit integrals are all
-c       # computed together.
-        do ixyz = 1, 3
-          ist                   = lxyzir(ixyz)
-          nopir(ist)            = nopir(ist) + 1
-          ilxyz(nopir(ist),ist) = ixyz
-        enddo
-        nop     = 3
-        iapt(1) = 0
-        iapt(2) = 0
-        iapt(3) = 0
-        CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA1','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(65,'RECP_ISA2','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(66,'RECP_ISA3','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB1','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(68,'RECP_ISB2','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(69,'RECP_ISB3','REPLACE')
-      else
-        nopir(1)   = 1
-        ilxyz(1,1) = 1
-        nop        = 1
-        iapt(1)    = 0
-        CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA0','REPLACE')
-        CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB0','REPLACE')
-      endif
+      IF (nnam.EQ.5) THEN
+!        # x, y, and z components of spin-orbit integrals are all
+!        # computed together.
+         DO ixyz = 1, 3
+            ist                   = lxyzir(ixyz)
+            nopir(ist)            = nopir(ist) + 1
+            ilxyz(nopir(ist),ist) = ixyz
+         ENDDO
+         nop     = 3
+         iapt(1) = 0
+         iapt(2) = 0
+         iapt(3) = 0
+         CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA1','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(65,'RECP_ISA2','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(66,'RECP_ISA3','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB1','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(68,'RECP_ISB2','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(69,'RECP_ISB3','REPLACE')
+      ELSE
+         nopir(1)   = 1
+         ilxyz(1,1) = 1
+         nop        = 1
+         iapt(1)    = 0
+         CALL RECP_WRITE_FILEOPEN(64,'RECP_ISA0','REPLACE')
+         CALL RECP_WRITE_FILEOPEN(67,'RECP_ISB0','REPLACE')
+      ENDIF
  
       ijsf = 0
       isf  = 0
@@ -155,45 +153,48 @@ c       # computed together.
 !     --------------------------------------
 !     center combinations for is=js or is>js
 !     --------------------------------------
-      IF(es) THEN 
+      IF (es) THEN 
 !        center combinations for is=js
-         CALL ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,
+         CALL RECP_1ESUB_ISEQJS(is,js,ic,ng,ncc,mcu,msu,
      &                          ica,icb,nfct,ngw)
       ELSE
 !        center combinations for is>js
          jfu = nf(js) !YCP FIX
          if(nf(js).eq.0) goto 708
-         CALL ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,
+         CALL RECP_1ESUB_ISGTJS(is,js,nc,ng,ic,mcu,msu,
      &                          ica,icb,ncc,nfct)
       ENDIF
 
-      if(ncc.gt.mccu) then
+      IF (ncc.GT.mccu) THEN
         call bummer('change mccup (one place) to ',ncc,2)
-      endif
+      ENDIF
 
 !     --------------------------------------
 !     evaluate integrals
 !     --------------------------------------
+      IF (RECP_DBG.GE.2) WRITE(RECP_OUT,*) "evaluate integrals" 
+
       isf=isfis
       do 704 if = 1, ifu
+
       isf = isf + 1
-      icons=mcons(isf)
-      ircru=nrcr(icons)
-      lit=lmnp1(icons)
-      igu=ncon(icons)
+      CALL RECP_1ESUB_IBLOCK
+     &     (icons,ircru,lit,igu,isf,mcons,nrcr,lmnp1,ncon)
       itl=ntl(isf)
       itu=ntu(isf)
+
       jsf=jsfjs
       if(es) jfu=if
       do 700 jf = 1, jfu
+
       jsf = jsf + 1
-      esf=isf.eq.jsf
-      jcons=mcons(jsf)
-      jrcru=nrcr(jcons)
-      ljt=lmnp1(jcons)
+      CALL RECP_1ESUB_JBLOCK
+     &     (jcons,jrcru,ljt,jsf,mcons,nrcr,lmnp1)
+
       ijsf = ijsf + 1
       ibl1=0
       ibl2=0
+      esf=isf.eq.jsf
       do ist=1,nst
         iop=nopir(ist)
         if(iop.ne.0) then
@@ -218,6 +219,7 @@ c       # computed together.
         nblu=ircru*jrcru*ibl2
       endif
 
+!     -----------------------
       if(nblu.eq.0) go to 696
 
 !     # allocate space.
@@ -232,7 +234,7 @@ c       # computed together.
       jtl=ntl(jsf)
       jtu=ntu(jsf)
 
-      if ( (.not. es) .or. esf ) then
+      if ((.not.es).or.esf) then
         do icc = 1, ncc
            ic = icb(1,1,icc)
            jc = icb(2,1,icc)
@@ -262,7 +264,7 @@ c       # computed together.
               nwt = nwt + 1
             enddo
             fnfct = (nwt * nfct(icc))
-            call RECP_STVCZ( a,ccr,chg,eta,ilxyz,lcr,lls,IPT_LMNV,
+            CALL RECP_STVCZ( a,ccr,chg,eta,ilxyz,lcr,lls,IPT_LMNV,
      &           lproju,mcrs,nc,ncr,nkcrl,nkcru,nklsl,nklsu,nopir,nprir,
      &           nt,x,y,z,zcr,zet )
             itst = jc
@@ -279,6 +281,7 @@ c       # computed together.
 704   continue
 708   continue
 712   continue
+
       IF (nnam.EQ.5) THEN
          IF (RECP_DBG.GE.1)
      &      WRITE(RECP_OUT,'(A)')'*End writing ISA(1/2/3),ISB(1/2/3)' 
@@ -301,7 +304,8 @@ c       # computed together.
      &        mpru,nbft,nnbft,nst)
 
       CALL OUTPUT_LOC('RECP_ONE_MAIN','X') 
-      end
+
+      END
 
 
 

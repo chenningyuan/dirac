@@ -8,7 +8,7 @@
       parameter (a0=0.0d0, eps1=1.0d-15, a1=1.0d0, a2=2.0d0,
      1  a4=4.0d0, a50=50.0d0)
       common /parmr/ tol
-      common /one/dxij,dyij,dzij,fnfct,rr,xij,xijm,yij,yijm,zij,zijm,
+      common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,
      1  ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic,
      2  icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl,
      3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
