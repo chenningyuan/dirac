@@ -8,6 +8,8 @@ SUBROUTINE OUTPUT_TITLE
 ! OUTPUT : print title
   IMPLICIT NONE
 #include "inc_print.h"
+  WRITE(RECP_OUT,'(/)')
+  WRITE(RECP_OUT,'(10X,A)')'-----------------------------------------------------------'
   WRITE(RECP_OUT,'(10X,A)')'Relativistic Effective Core Potential Integral routine'
   WRITE(RECP_OUT,'(10X,A)')'This routine is based on ARGOS integral'
   WRITE(RECP_OUT,'(10X,A)')'with the permission of R. M. Pitzer (Ohio State University)'

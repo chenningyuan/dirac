@@ -885,15 +885,16 @@ C     continue in inquiring:
         ENDIF
       ENDIF
       IF (EXST) THEN
-        IF (.NOT.USE_BASNAM) THEN
-         OPEN(LUBAS, FILE=STRING)
-        ELSE
-         OPEN(LUBAS, FILE=BASNAM)
-        ENDIF
+         IF (.NOT.USE_BASNAM) THEN
+            OPEN(LUBAS, FILE=STRING)
+         ELSE
+            OPEN(LUBAS, FILE=BASNAM)
+         ENDIF
 C     
 C
 C        Searching the file for the element.
 C
+         REWIND(LUBAS)  
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
@@ -946,7 +947,7 @@ C
  200  CONTINUE
       WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
       WRITE(LUPRI,'(I3,2A)') INTQ0,
-     &     ' is an unsupported element for ECP ',BASNAM
+     &     ' is an unsupported element in',BASNAM
       CALL QUIT('Unsupported ECP element')
       END
 
