@@ -1484,15 +1484,16 @@ CLV ... same thing for ZORA!
       END IF
 
 CMI ... inform about the assigned PCOMB
-      IF (IPRINT .GE. 6) THEN
-         WRITE(LUPRI,'(A,A4)') '  assigned PCOMB:',PCOMB
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(1X,A,A4)')
+     &   'for this operator assigned PCOMB:',PCOMB
       END IF
 
 !     ...  assign proper factor for EDM  ...
       IF (PLABEL(1).EQ.'EDM') THEN
         PFAC(1) = -4.0D0 * CVAL * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  'EDM operator: operator strenght multiplied by -4*CVAL,'
+     &  '4c EDM2 operator: strength multiplied by -4*CVAL,'
      & //' PFAC(1)=', PFAC(1)
       ENDIF
 
@@ -1505,22 +1506,17 @@ CMI ... inform about the assigned PCOMB
          ENDIF
          PCOMB_SAVE = PCOMB
          PCOMB(1:1)='0'
-         WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "e_EDM operator -",PNAME,
-     &   '=> assigned matrix structure ',PCOMB_SAVE," --> ",PCOMB
-         IF (NPCOMP.EQ.3) THEN
-         IF (PLABEL(1).EQ.'XE_EDM') THEN
-           PLABEL(1)='NEF 001'
-           WRITE(LUPRI,*) 'reassigned PLABEL(1)=',PLABEL(1)
-         ENDIF
-         IF (PLABEL(2).EQ.'YE_EDM') THEN
-           PLABEL(2)='NEF 002'
-           WRITE(LUPRI,*) 'reassigned PLABEL(2)=',PLABEL(2)
-         ENDIF
-         IF (PLABEL(3).EQ.'ZE_EDM') THEN
-           PLABEL(3)='NEF 003'
-           WRITE(LUPRI,*) 'reassigned PLABEL(3)=',PLABEL(3)
-         ENDIF
-         ENDIF
+         WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "Operator ",PNAME,
+     &   'changed 4-component matrix structure: ',
+     &   PCOMB_SAVE," --> ",PCOMB
+         ! adjust the operator strenght
+         DO I=1,NPCOMP
+           PFAC_TEMP = PFAC(I)
+           PFAC(I)=2.0d0*PFAC_TEMP
+           write(LUPRI,'(3X,I1,A,D7.2,A,D7.2)')
+     &     I,'.factor of ',PFAC_TEMP,
+     &     ' multiplied by 2, giving ', PFAC(I)
+         ENDDO
       ENDIF
 
 C
@@ -2013,10 +2009,10 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
         CLASLB = 'CAPD_VD' 
-CMI  EDM operator [Nataraj2007]_, [Mukherjee2009]_
+CMI  EDM2 operator, see Refs. [Nataraj2007]_, [Mukherjee2009]_
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
-!    another e_EDM operator of Flambaum
+!    original  e_EDM operator of Flambaum
       ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
 C

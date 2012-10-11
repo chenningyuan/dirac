@@ -20,7 +20,7 @@
 .INTFLG
 1 1 0
 # T- operator - employ it only with the KU wave-function !
-# this operator is carrying factor of 2 !
+# this operator is carrying factor of 2 
 .OPERATOR
  'e_EDM'
  DSIGMADOT
@@ -28,7 +28,7 @@
  'YNUCFIEL'
  'ZNUCFIEL'
  COMFACTOR
- 0.001
+ 0.0005
 .TRSMIX
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 #.SCF

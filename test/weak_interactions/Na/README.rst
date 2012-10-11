@@ -1,5 +1,5 @@
- eEDM matrix elements of the Na (^2S) atom
-===========================================
+eEDM matrix elements of the Na (^2S) atom
+=========================================
 
 STO-2G decontracted basis set 6s4p, DCrkb-HF wave-function
 
@@ -18,4 +18,4 @@ C1:
 quaternion value: (0.0003625855, -0.0006566902, -0.0030236243, 0.0027043938)
 absol.value= .004125379982
 
-Likewise employed "eEDM2" operator of [Nataraj2007]_.
+Likewise we employed the "eEDM2" operator of [Nataraj2007]_.

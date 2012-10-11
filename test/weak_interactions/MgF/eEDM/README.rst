@@ -1,11 +1,11 @@
 MgF molecule (2Sigma)
 =====================
 
-Testing finite field calculations with the (T,P)-odd eEDM operator.
+Testing finite field perturbative calculations with the (T,P)-odd eEDM operator.
 
 The symmetry must be the lowest, C_{1}, due to symmetry properties of this operator.
 
-The Kramers symmetry breaking eEDM operator is beeing added to the unperturbed Dirac Hamiltonian at the correlated KU-CCSD(T)/FSCCSD level.
+The Kramers symmetry breaking eEDM operator is added to the unperturbed Dirac Hamiltonian at correlated KU-CCSD(T)/FSCCSD levels.
 
 CCSD(T) energies:
 ------------------
@@ -64,6 +64,6 @@ E(+0.0010)=-287.066053499511781
 (-287.053642268569774+287.049504317675257)/0.0005=-8.275901789
 (-287.066053499511781+287.049504317675257)/0.0010=-16.549181836
 
-extrapolation to the zero field: -8,0606E-04
+extrapolation to the zero field gives some number: -8,0606E-04
 
 

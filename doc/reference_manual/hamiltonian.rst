@@ -755,6 +755,14 @@ Other functionality
 
 **Programmers options**
 
+.TRSMIX
+-------
+
+Allow mixing of the T-even (time reversal symmetric) Hamiltonian and added T-odd perturbation operator.
+This is possible with the Kramers unrestricted (KU) wave-functions, like RelCC od DirCI modules.
+We expect to have KU-SCF besides the default KR-SCF method.
+
+
 .GAUNTSCALE
 -----------
 

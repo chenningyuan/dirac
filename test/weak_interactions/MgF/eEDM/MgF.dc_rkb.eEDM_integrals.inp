@@ -17,8 +17,8 @@
 15
 .INTFLG
 1 1 0
-# T- operator - employ it only with the KU wave-function !
-# this operator is carrying factor of 2 !
+# T- operator - employ it only with the KU wave-function,
+# this operator is carrying factor of 2 
 .OPERATOR
  'e_EDM'
  DSIGMADOT
@@ -26,7 +26,7 @@
  'YNUCFIEL'
  'ZNUCFIEL'
  COMFACTOR
- 2.0000
+ 1.0000
 .TRSMIX
 #.ONESYS
 .INTFLG
