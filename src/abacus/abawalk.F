@@ -3142,7 +3142,6 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-      print *,'yc-WLKINC'
       iprint = 12
 C
 C     ***** STPSYM *****
