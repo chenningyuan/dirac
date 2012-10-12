@@ -32,6 +32,7 @@ detected.
 Run the test set
 ----------------
 
+Run the test set using the extracted tarball (see further up).
 The best way to do that is to run ``make Experimental``::
 
   $ ./setup [--flags] -D BUILDNAME="my-build-name"
