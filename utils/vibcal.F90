@@ -36,10 +36,10 @@
 
   character :: potfil*30, prpfil*30, reply*1, strkey*30
 
-  integer*4 :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp
-  integer*4 :: keymeth, npoints, ipoint, itmp, nprint
+  integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp
+  integer :: keymeth, npoints, ipoint, itmp, nprint
 
-  integer*4, parameter :: nder=4
+  integer, parameter :: nder=4
 
   real*8            :: u, v2, v3, v4, p0, p1, p2, um, omega, step
   real*8            :: fac, a0, a1, a2, a3, v, w, har, anh, tot, dif, dif2
