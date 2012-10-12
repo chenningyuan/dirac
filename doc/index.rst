@@ -209,6 +209,7 @@ For DIRAC programmers
 
    programmers/documentation_howto.rst
    programmers/release_preparation.rst
+   programmers/beta_testing.rst
    programmers/testing.rst
    programmers/cdash.rst
    programmers/input_reading.rst
