@@ -130,7 +130,7 @@ C
               IF (IBTXOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
                  NAXIS  = NAXIS + 1
                  IPTAXI = IPTAXI + 1
-                 IPTAX(ICOOR,ITYPE) = IPTAXI
+                 IPTAX (ICOOR,ITYPE)      = IPTAXI
                  IPTXYZ(NAXIS,IREP,ITYPE) = ICOOR
               END IF
   210      CONTINUE

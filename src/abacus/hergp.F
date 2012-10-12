@@ -1832,10 +1832,13 @@ C
       DO 100 ICOOR = 1, 3
          PERDIP(ICOOR,IPTAX(ICOOR,ITYPEF)) = D1
   100 CONTINUE
+C.....get transformation matrix SCTRA from symmetry to Cartesian coordinates
       CALL TRACOR(CSTRA,SCTRA,ITYPEC,NCOOR,0)
+C.....calculate XMATRI = PERDIP * SDIPDR
       CALL MPAB (PERDIP,3,3,3,3,
      &           SDIPDR,3,NCOOR,3,MXCOOR,
      &           XMATRI,3,MXCOOR)
+C.....calculate CDIPDR = XMATRI*SCTRA(t)
       CALL MPABT(XMATRI,3,NCOOR,3,MXCOOR,
      &           SCTRA(1,1),NCOOR,NCOOR,NCOOR,NCOOR,
      &           CDIPDR,3,MXCOOR)
@@ -1965,6 +1968,9 @@ C
 C
 C     Sets up transformation matrices between Cartesian and symmetry
 C     nuclear coordinates
+C
+C     CSTRA - transformation matrix Cartesian to symmetry coordinates
+C     SCTRA - inverse matrix
 C
 C     tuh Jun 29 1988
 C
