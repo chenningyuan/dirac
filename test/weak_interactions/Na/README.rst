@@ -18,4 +18,19 @@ C1:
 quaternion value: (0.0003625855, -0.0006566902, -0.0030236243, 0.0027043938)
 absol.value= .004125379982
 
+eEDM2 matrix elements
+======================
 Likewise we employed the "eEDM2" operator of [Nataraj2007]_.
+
+<3s|eEDM2|3p> matrix elements:
+
+linear symmetry, D2h:
+0.0000914119
+C2v: 
+  0.0000914119 (as imag.part)
+C1:
+ quaternion value of (0.0000080343,-0.0000145512,-0.0000669987,0.0000599251)
+ absol.value=.00009141187
+
+
+

@@ -14,4 +14,4 @@ For more details see Ref. [Borschevsky2012]_ .
 Other interactions
 -------------------
 
-Also experimental tests of the e_EDM property.
+Test calculations of the e_EDM property, represented with two different operators.
