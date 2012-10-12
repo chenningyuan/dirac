@@ -15,6 +15,9 @@ git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
 
+git checkout release-12
+./pamadm --release
+
 mkdir build
 cd build
 cmake ..
