@@ -21,7 +21,7 @@ of!
 
 We will learn the mol file format using the following example::
 
-  INTGRL
+  DIRAC
 
 
   C   2
@@ -35,11 +35,10 @@ We will learn the mol file format using the following example::
   FINISH
 
 This is the water molecule using the cc-pVDZ basis for the large component
-basis set. The first line is always INTGRL for historical reasons.
-Line 2 and 3 are arbitrary comment lines. You can leave them blank or write
-some note to yourself but they have to be there. Line 4 specifies
-a cartesian GTO basis set (C) and 2 atom types (basis set types).
-So after line 4 DIRAC expects 2 basis set types and here they are - first
+basis set. The first 3 lines are arbitrary comment lines. You can leave them
+blank or write some note to yourself but they have to be there. Line 4
+specifies a cartesian GTO basis set (C) and 2 atom types (basis set types).  So
+after line 4 DIRAC expects 2 basis set types and here they are - first
 hydrogen::
 
           1.    2
@@ -62,6 +61,14 @@ basis set label. DIRAC will look up this label in the basis set library and
 complain if it does not exist. Note that the atom label (H1, H2, O) is only for
 you so that you find it in the output. It does not matter to the code. The code
 will identify basis sets based on the nuclear charge, not the label.
+The cartesian coordinates may be given in free format. However, the name
+of the atom must still be left four places, and no coordinates must
+enter the four first positions.
+
+DIRAC typically runs in cartesian GTO.  Note that by default the transformation
+to spherical harmonic basis (modified for the small components) is done in the
+transformation to the orthogonal basis. Spherical Gaussians (S) are allowed in
+2-component calculations.
 
 
 Default coordinates are in bohr, how can I use angstrom instead?
@@ -71,204 +78,77 @@ See the "A" in line 4 in position 20? If it is there, DIRAC will
 read in angstrom, if this position is blank, then DIRAC will read
 in bohr (default)::
 
-  INTGRL
+  DIRAC
            1         2         3           # this is a comment line
   1234567890123456789012345678901234567890 # this is a comment line
   C   2              A
           1.    2
-  ...
-
-
-
-
-
-.. warning::
-
-   Info below needs adaptation. It used a coloring which has not been preserved
-   during conversion so in present form it is useless.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Number of unique atoms
-----------------------
-
-Number of symmetry-distinct atoms of this type, which is 1 for oxygen in
-water.
-
-
-
-
+  [...]
 
 
 Nuclear exponent
 ----------------
 
-::
+You can modify the default gaussian exponent
+for the nuclear charge distribution by giving a floating
+point value somewhere within the space specified below::
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
-
-Gaussian exponent for the nuclear charge distribution. If blank, then
-the default value is used.
-
-Atom name
----------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
-
-Is is recommended to use a different name for each atom of the same type
-in order to be able to identify them in the output. Usually one labels
-symmetry-distinct atoms of the same proton number with indexes. For
-example, hydrogen atoms in the water molecule (C1 symmetry):
-
-::
-
-     ...
-            1.     2
-    H1    1.4523499293        0.0000000000        0.8996235720
-    H2   -1.4523499293        0.0000000000        0.8996235720
-     ...
-
-Cartesian coordinates
----------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
-
-The *x*-, *y*-, and *z* coordinates are in Bohr.
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
-
-If not blank (usually one places *A* character there) then the molecular
-coordinates are read in ångströms instead of Bohr.
-
-The Cartesian coordinates may be given in free format. However, the name
-of the atom must still be left four places, and no coordinates must
-enter the four first positions.
+  DIRAC
+           1         2         3           # this is a comment line
+  1234567890123456789012345678901234567890 # this is a comment line
+  C   2              A
+          1.    2--------here--------
+  [...]
 
 
 Fitting basis set
 -----------------
 
-In the development version of DIRAC it is now possible to make use of
-density fitting. In such calculations, it is mandatory to include a
-basis set used to expand the density.
+In the development version of DIRAC it is now possible to make use of density
+fitting. In such calculations, it is mandatory to include a basis set used to
+expand the density.  This is done adding a line with the FTSET keyword after
+the coordinates for a given atom type.  Basically all the options available in
+the definition of large or small basis sets are applicable to the fit set (i.e.
+the use of a set from the library, explicitly typed basis, even/well-tempered
+etc). Here is an example::
 
-This is done adding a line with the FTSET keyword to the MOLECULE file,
-after the coordinates for a given atom type
-
-::
-
-    FTSET [options]
-
-Basically all the options available in the definition of large or small
-basis sets are applicable to the fit set (i.e. the use of a set from the
-library, explicitly typed basis, even/well-tempered etc). Here are some
-examples:
-
-Basis sets from the basis set library
--------------------------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE BASIS cc-pVDZ
-    FTSET BASIS Ahlrichs-Coulomb-Fit
+  DIRAC
 
 
-Large component basis set
--------------------------
+  C   2
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
+  FTSET BASIS Ahlrichs-Coulomb-Fit
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
+  FTSET BASIS Ahlrichs-Coulomb-Fit
+  FINISH
 
-The specification of the large component basis set follows the atomic
-coordinates. There are various possibilities for giving the basis set.
-
-Basis sets from the basis set library
--------------------------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE BASIS aug-cc-pVDZ
-
-If you use a aug-cc-p... basis set, you can prefix it with d-, t-, q-,
-and it will add the diffuse functions in an even-tempered fashion.
 
 Multiple basis sets from the basis set library
 ----------------------------------------------
 
-As an alternative to the BASIS option described above, it is possible to
-use specify different basis set files via the MULTIBASIS keyword. The
-MULTIBASIS option is present to allow easier inclusion of different sets
-of diffuse and/or polarization functions to a reference basis set. The
-syntax for this keyword is very similar to that of the BASIS:
+As an alternative to the BASIS option described above, it is possible to use
+specify different basis set files via the MULTIBASIS keyword. The MULTIBASIS
+option is present to allow easier inclusion of different sets of diffuse and/or
+polarization functions to a reference basis set. The syntax for this keyword is
+very similar to that of the BASIS::
 
-::
+  DIRAC
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE MULTIBASIS 2 cc-pVDZ cc-pVDZ-diffuse
+
+  C   2
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE MULTIBASIS 2 cc-pVDZ cc-pVDZ-diffuse
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE MULTIBASIS 2 cc-pVDZ cc-pVDZ-diffuse
+  FINISH
 
 After the keyword an integer with the number of files to be read should
 be specified. It is followed by the name of the different basis set
@@ -276,117 +156,82 @@ files, each separated by a whitespace. The only limitation for the
 number of basis set files is that the total lenght of this line should
 not exceed Fortran's maximum allowed line size (80 characters).
 
+
 Explicitly typed basis sets
 ---------------------------
 
 Explicitly typed basis sets are best described using an explicit
-example:
+example::
 
-::
+  DIRAC
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EXPLICIT  3    1    1    1
-    # s functions
-    f  10    4
-      11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
-       1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
-        400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
-        113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
-         37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
-         13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
-          5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
-          1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
-          0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
-          0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
-    # p functions
-    f   5    3
-         17.7000000  0.04301800  0.00000000  0.00000000
-          3.8540000  0.22891300  0.00000000  0.00000000
-          1.0460000  0.50872800  0.00000000  0.00000000
-          0.2753000  0.46053100  1.00000000  0.00000000
-          0.0685600  0.00000000  0.00000000  1.00000000
-    # d functions
-    f   2    2
-          1.1850000  1.00000000  0.00000000
-          0.3320000  0.00000000  1.00000000
 
-Highest angular quantum number *l* plus one. In this case it is 3, since
-we are using a *spd* basis set.
+  C   2
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE EXPLICIT  3    1    1    1
+  # s functions
+  f  10    4
+    11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
+     1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
+      400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
+      113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
+       37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
+       13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
+        5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
+        1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
+        0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
+        0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
+  # p functions
+  f   5    3
+       17.7000000  0.04301800  0.00000000  0.00000000
+        3.8540000  0.22891300  0.00000000  0.00000000
+        1.0460000  0.50872800  0.00000000  0.00000000
+        0.2753000  0.46053100  1.00000000  0.00000000
+        0.0685600  0.00000000  0.00000000  1.00000000
+  # d functions
+  f   2    2
+        1.1850000  1.00000000  0.00000000
+        0.3320000  0.00000000  1.00000000
+  [...]
 
-Number of blocks for each *l*-value. The memory requirements grow
-rapidly with the number of basis functions in a block (note for instance
-that four *g* functions actually are 60 basis functions, as there are 15
-cartesian components of each *g* function). Memory requirements can
-therefore be reduced by splitting basis functions of the quantum number
-into different blocks. This will, however, decrease the performance of
-the integral calculation.
+Following EXPLICIT is the highest angular quantum number plus one.  In this
+case it is 3, since we are using a *spd* basis set.  Following this number are
+the number of blocks for each *l*-value. The memory requirements grow rapidly
+with the number of basis functions in a block (note for instance that four *g*
+functions actually are 60 basis functions, as there are 15 cartesian components
+of each *g* function). Memory requirements can therefore be reduced by
+splitting basis functions of the quantum number into different blocks. This
+will, however, decrease the performance of the integral calculation.
 
-Lines starting with either !, $, or # are comments.
+Following the LARGE EXPLICIT line we see a line with a comment.  Lines starting
+with either !, $, or # are comments and are ignored by the code.
 
-Number of primitive Gaussians in this block.
-
-Number of contracted Gaussians in this block. If a zero is given, an
-uncontracted basis set will be assumed, and only orbital exponents need
-to be given.
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EXPLICIT  3    1    1    1
-    # s functions
-    f  10    4
-      11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
-       1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
-        400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
-        113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
-         37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
-         13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
-          5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
-          1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
-          0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
-          0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
-    # p functions
-    f   5    3
-         17.7000000  0.04301800  0.00000000  0.00000000
-          3.8540000  0.22891300  0.00000000  0.00000000
-          1.0460000  0.50872800  0.00000000  0.00000000
-          0.2753000  0.46053100  1.00000000  0.00000000
-          0.0685600  0.00000000  0.00000000  1.00000000
-    # d functions
-    f   2    2
-          1.1850000  1.00000000  0.00000000
-          0.3320000  0.00000000  1.00000000
-
-A single character describing the input format of the basis set in this
-block.
+The next line starts with a single character describing the input format of the
+basis set in this block.
 
 The default format is 8F10.4 which will be used if left blank. **Be very
 careful when using this default format as it will miss any exponential
-parameter standing to the right of the 10 characters**. In this format
-the first column is the orbital exponent and the seven last columns are
-contraction coefficients. If no numbers are given, a zero is assumed. If
-more than 7 contracted functions occur in a given block, the contraction
-coefficients may be continued on the next line, but the first column
-(where the orbital exponents are given) must then be left blank.
+parameter standing to the right of the 10 characters**. In this format the
+first column is the orbital exponent and the seven last columns are contraction
+coefficients. If no numbers are given, a zero is assumed. If more than 7
+contracted functions occur in a given block, the contraction coefficients may
+be continued on the next line, but the first column (where the orbital
+exponents are given) must then be left blank.
 
-An F or f in the first position (like in the example above) will
-indicate that the input is in free format. This will of course require
-that all contraction coefficients need to be typed in, as all numbers
-need to be present on each line. However, note that this options is
-particularly handy together with completely decontracted basis sets, as
-described below. Note that the program reads the free format input from
-an internal file that is 80 characters long, and no line should
-therefore exceed 80 characters.
+An F or f in the first position (like in the example above) will indicate that
+the input is in free format. This will of course require that all contraction
+coefficients need to be typed in, as all numbers need to be present on each
+line. However, note that this options is particularly handy together with
+completely decontracted basis sets, as described below. Note that the program
+reads the free format input from an internal file that is 80 characters long,
+and no line should therefore exceed 80 characters.
+
+The numbers in the line "f  10    4" are the number
+of of primitive Gaussians in this block (10) and the number of contracted
+Gaussians in this block (4).  If a zero is given for he number of contracted
+Gaussians, an uncontracted basis set will be assumed, and only orbital
+exponents need to be given.
 
 One may also give the format H or h. This corresponds to high precision
 format 4F20.8, where the first column again is reserved for the orbital
@@ -396,574 +241,308 @@ more than three contracted orbitals in a given block, the contraction
 coefficients may be continued on the next line, though keeping the
 column of the orbital exponents blank.
 
-::
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EXPLICIT  3    1    1    1
-    # s functions
-    f  10    4    0
-      11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
-       1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
-        400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
-        113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
-         37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
-         13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
-          5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
-          1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
-          0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
-          0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
-    # p functions
-    f   5    3    0
-         17.7000000  0.04301800  0.00000000  0.00000000
-          3.8540000  0.22891300  0.00000000  0.00000000
-          1.0460000  0.50872800  0.00000000  0.00000000
-          0.2753000  0.46053100  1.00000000  0.00000000
-          0.0685600  0.00000000  0.00000000  1.00000000
-    # d functions
-    f   2    2    0
-          1.1850000  1.00000000  0.00000000
-          0.3320000  0.00000000  1.00000000
+Specification of how to generate small component functions
+----------------------------------------------------------
 
-Specification of how to generate small component functions by kinetic
-balance. If no number or a 0 is given, the small component functions are
-generated both upwards and downwards, e.g
-:math:`p \rightarrow s, d`.
-If the number is 1, the small component functions are generated upwards,
-e.g :math:`p \rightarrow  d`.
-If the number is 2, the small component functions
-are generated downwards, e.g :math:`p \rightarrow s`.
+Coming back to the example above we can add another integer
+following "f  10    4", which will specify
+how to generate small component functions::
 
-For other values no small components functions generated.
+  DIRAC
 
-The routine that generates the small component basis set by kinetic
-balance will delete duplicate functions.
+
+  C   2
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE EXPLICIT  3    1    1    1
+  # s functions
+  f  10    4    0
+    11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
+     1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
+      400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
+      113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
+       37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
+       13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
+        5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
+        1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
+        0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
+        0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
+  # p functions
+  f   5    3    0
+       17.7000000  0.04301800  0.00000000  0.00000000
+        3.8540000  0.22891300  0.00000000  0.00000000
+        1.0460000  0.50872800  0.00000000  0.00000000
+        0.2753000  0.46053100  1.00000000  0.00000000
+        0.0685600  0.00000000  0.00000000  1.00000000
+  # d functions
+  f   2    2    0
+        1.1850000  1.00000000  0.00000000
+        0.3320000  0.00000000  1.00000000
+  [...]
+
+If a 0 (as in this example) or no number is given, the small component
+functions are generated both upwards and downwards (default).  If the number is
+1, the small component functions are generated upwards, If the number is 2, the
+small component functions are generated downwards.  For other values no small
+components functions generated.
+
 
 MOLFDIR-type basis sets
 -----------------------
 
-::
+The MOLFDIR basis set file(s) (here: Oxygen-xyz.bas) must be copied to the
+scratch area, for example using the pam script::
 
-    DIRAC
-    Water
-    MOLFDIR basis
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE MOLFBAS Oxygen-xyz.bas
+  DIRAC
 
-The MOLFDIR basis set file(s) (here: Oxygen-xyz.bas) must be copied to
-the scratch area, for example using the pam script:
 
-::
+  C   2
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE MOLFBAS Hydrogen-xyz.bas
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE MOLFBAS Oxygen-xyz.bas
+  FINISH
 
-    pam ... -copy "Oxygen-xyz.bas ..."
 
 Even-tempered basis sets (geometric progressions)
 -------------------------------------------------
 
-The exponents η are generated in an even-tempered series:
+The exponents are generated in an even-tempered series:
 
 .. math::
 
-  \eta_{N - k + 1} = \alpha \beta^{k - 1}; k = 1, \ldots, N
+  \eta_{N - k + 1} = \alpha \beta^{k - 1}
+
+with
+
+.. math::
+
+  k = 1, \ldots, N
 
 ::
 
-    DIRAC
-    Water
-    even-tempered basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
     LARGE EVENTEMP 0.05 3.0 11 3 2 1 1
     1..5
     6..11
     7..11
     9..10
 
-::
+This means that alpha is 0.05, beta is 3.0, N is 11.
+Highest angular quantum number plus one is 3 (s, p, and d functions),
+we will have 2 blocks for the s, 1 block for p, and one block for d.
+The s blocks go from exponent 1 to 5 and from 6 to 11, p goes from 7 to 11,
+d goes from 9 to 10.
 
-    DIRAC
-    Water
-    even-tempered basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EVENTEMP 0.05 3.0 11 3 2 1 1
-    1..5
-    6..11
-    7..11
-    9..10
-
-Highest angular quantum number *l* plus one. In this case it is 3, since
-we are using a *spd* basis set.
-
-Number of blocks for each *l*-value. The memory requirements grow
-rapidly with the number of basis functions in a block (note for instance
-that four *g* functions actually are 60 basis functions, as there are 15
-cartesian components of each *g* function). Memory requirements can
-therefore be reduced by splitting basis functions of the quantum number
-into different blocks. This will, however, decrease the performance of
-the integral calculation.
-
-::
-
-    DIRAC
-    Water
-    even-tempered basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EVENTEMP 0.05 3.0 11 3 2 1 1
-    1..5
-    6..11
-    7..11
-    9..10
-
-For each block the range of exponent used for that particular block is
-given. In this case the first block (*s* functions) will consist of
-exponents 1-5, the second block (*s* functions) of exponents 6-11, the
-third block (*p* functions) of exponents 7-11, and the last block (*d*
-functions) of exponents 9-10.
 
 Well-tempered basis sets
 ------------------------
 
-The exponents η are generated in an well-tempered series:
+This works very much like LARGE EVENTEMP, except
+that the exponents are generated in an well-tempered series:
 
 .. math::
 
   \eta_N = \alpha
 
+and
+
 .. math::
 
-  \eta_{N - k + 1} = \eta_{N - k + 2} \beta [ 1 + \gamma (\frac{k}{N})^n ]; k = 1, \ldots, N
+  \eta_{N - k + 1} = \eta_{N - k + 2} \beta [ 1 + \gamma (\frac{k}{N})^n ]
+
+with
+
+.. math::
+
+  k = 1, \ldots, N
 
 ::
 
-    DIRAC
-    Water
-    well-tempered basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
     LARGE WELLTEMP 0.05 2.5 2.0 6.0 11 3 2 1 1
     1..5
     6..11
     7..11
     9..10
 
-For the specification of blocks and exponent ranges see `LARGE
-EVENTEMP </dirac/index.php/Manual:Basis:Large_component_basis_set#Even-tempered_basis_sets_.28geometric_progressions.29>`_.
+Here alpha is 0.05, beta is 2.5, gamma is 2.0, n is 6.0,
+and N is 11.
+
+
+Explicit small component basis set
+----------------------------------
+
+This is for experts.  Following the line or block specifying the LARGE
+component basis set you can override the default kinetic balance prescription
+and specify the small component basis set either using SMALL EXPLICIT or using
+SMALL MOLFBAS, in analogy to LARGE EXPLICIT and LARGE MOLFBAS After the large
+component basis set the small component basis set can be specified. If nothing
+is specified it is equivalent to specifying SMALL KINBAL (see below). There are
+three possibilities for giving the basis set.
+
 
 Family basis sets
 -----------------
 
 Input for basis sets where the same set of exponents are used for all
-functions. This is analogous to the well- and even-tempered basis sets
-except that the exponents are not calculated from a formula, but must be
-given in the file. These exponents may come from a basis set
-optimization with GRASP.
+functions. This is analogous to the well- and even-tempered basis sets except
+that the exponents are not calculated from a formula, but must be given in the
+file. These exponents may come from a basis set optimization with GRASP::
 
-::
+  DIRAC
 
-    DIRAC
-    Water
-    family basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE FAMILY   10    3    1    1    1
-    # exponents
-     6665.0000000
-     1000.0000000
-      228.0000000
-       64.7100000
-       21.0600000
-        7.4950000
-        2.7970000
-        0.5215000
-        0.1596000
-        0.0469000
-    # ranges
-    1..10
-    6..10
-    8..9
 
-For the specification of blocks and exponent ranges see `LARGE
-EVENTEMP </dirac/index.php/Manual:Basis:Large_component_basis_set#Even-tempered_basis_sets_.28geometric_progressions.29>`_.
+  C   2
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE FAMILY   10    3    1    1    1
+  # exponents
+   6665.0000000
+   1000.0000000
+    228.0000000
+     64.7100000
+     21.0600000
+      7.4950000
+      2.7970000
+      0.5215000
+      0.1596000
+      0.0469000
+  # ranges
+  1..10
+  6..10
+  8..9
+  [...]
+
 
 Dual family basis sets
 ----------------------
 
-A basis set analogous to the `family basis
-set </dirac/index.php/Manual:Basis:Large_component_basis_set#Family_basis_sets>`_,
-except one set of exponents are used for *s*, *d*, *g*, ... functions
-and another set is used for *p*, *f*, *h*, ... functions.
-
-::
-
-    DIRAC
-    Water
-    dual family basis set
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE DUALFAMILY   10    5    3    1    1    1
-    # s, d, g, ...
-     6665.0000000
-     1000.0000000
-      228.0000000
-       64.7100000
-       21.0600000
-        7.4950000
-        2.7970000
-        0.5215000
-        0.1596000
-        0.0469000
-    # p, f, h, ...
-        9.4390000
-        2.0020000
-        0.5456000
-        0.1517000
-        0.0404100
-    # ranges
-    1..10
-    1..5
-    8..9
-
-For the specification of blocks and exponent ranges see
-`LARGE
-EVENTEMP </dirac/index.php/Manual:Basis:Large_component_basis_set#Even-tempered_basis_sets_.28geometric_progressions.29>`_.
-
-
-DIRAC Molecule File Structure
------------------------------
-
-In this section we provide more information about the MOLECULE format as
-is used in Dirac. This file is divided in sections, with the following
-being mandatory:
-
--  `Title and
-   symmetry </dirac/index.php/Manual:Basis:Title_and_symmetry>`_
--  `Atomic
-   coordinates </dirac/index.php/Manual:Basis:Atomic_coordinates>`_
--  `Large component basis
-   set </dirac/index.php/Manual:Basis:Large_component_basis_set>`_
-
-It is possible to define explicitly the small component basis set to be
-use with an additional section:
-
--  `Small component basis
-   set </dirac/index.php/Manual:Basis:Small_component_basis_set>`_
-
-but this is however not generally advised, given that the small
-component basis set is more conveniently generated via the kinetic
-balance procedure.
-
-In the development version(s) of DIRAC it is also possible to define the
-so-called fit sets via an additional section:
-
--  `Fitting basis
-   set </dirac/index.php/Manual:Basis:Fitting_basis_set>`_
-
-
-Small component basis set
--------------------------
-
-After the large component basis set the small component basis set *can*
-be specified. If nothing is specified it is equivalent to specifying
-SMALL KINBAL (see below). There are three possibilities for giving the
-basis set.
-
-By kinetic balance
-------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE BASIS aug-cc-pVDZ
-    SMALL KINBAL
-
-The small component basis is generated using kinetic balance. The small
-component basis set will *always* be uncontracted, independent of
-whether the large component basis set is contracted or not.
-
-Explicitly typed basis sets
----------------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE BASIS aug-cc-pVDZ
-    SMALL EXPLICIT  3    1    1    1
-    ...
-
-Syntax is analogous to `LARGE
-EXPLICIT </dirac/index.php/Manual:Basis:Large_component_basis_set#Explicitly_typed_basis_sets>`_.
-
-MOLFDIR-type basis sets
------------------------
-
-::
-
-    DIRAC
-    Water
-    MOLFDIR basis
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE MOLFBAS Oxygen-xyz.bas
-    SMALL MOLFBAS Oxygen-xyz.bas
-
-The MOLFDIR basis set file(s) (here: Oxygen-xyz.bas) must be copied to
-the scratch area, for example using the pam script:
-
-::
-
-    pam ... --copy "Oxygen-xyz.bas ..."
-
-
-Title and symmetry
-------------------
-
-The detailed input is best described using an example:
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    LARGE EXPLICIT  3    1    1    1
-    # s functions
-    f  10    4
-      11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
-       1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
-        400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
-        113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
-         37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
-         13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
-          5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
-          1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
-          0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
-          0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
-    # p functions
-    f   5    3
-         17.7000000  0.04301800  0.00000000  0.00000000
-          3.8540000  0.22891300  0.00000000  0.00000000
-          1.0460000  0.50872800  0.00000000  0.00000000
-          0.2753000  0.46053100  1.00000000  0.00000000
-          0.0685600  0.00000000  0.00000000  1.00000000
-    # d functions
-    f   2    2
-          1.1850000  1.00000000  0.00000000
-          0.3320000  0.00000000  1.00000000
-
-First line
-----------
-
-We start to focus at the first line in the input:
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-
-A keyword that is not used in DIRAC, it can be any sequence of
-characters.
-
-Next two lines
---------------
-
-Next two lines are arbitrary.
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-
-We recommend to place there short descriptions of basis sets, system, or
-any other usefull information.
-
-Cartesian Gaussians
--------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
+A basis set analogous to the family basis set,
+except one set of exponents are used for s, d, g, ... (gerade) functions,
+and another set is used for p, f, h, ... (ungerade) functions::
+
+  DIRAC
+
+
+  C   2
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE DUALFAMILY   10    5    3    1    1    1
+  # s, d, g, ...
+   6665.0000000
+   1000.0000000
+    228.0000000
+     64.7100000
+     21.0600000
+      7.4950000
+      2.7970000
+      0.5215000
+      0.1596000
+      0.0469000
+  # p, f, h, ...
+      9.4390000
+      2.0020000
+      0.5456000
+      0.1517000
+      0.0404100
+  # ranges
+  1..10
+  1..5
+  8..9
+  [...]
+
+
+How to set the charge of the system
+-----------------------------------
+
+By default the charge of the atom/molecule is zero.
+You can change this in the mol file::
+
+  DIRAC
+
+       *** <- you can use these positions on next line
+  C   2  1
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
+  FINISH
+
+This is water with charge plus 1.  Alternatively you can specify the occupation
+explicitly in the inp file and leave it blank in the mol file.
+
+
+How to force specific symmetry
+------------------------------
+
+In all the above examples we have not specified symmetry explicitly.  In this
+case DIRAC will detect and use the highest symmetry available in the code.  In
+doing so it may translate and rotate the molecule (check output).
+
+There are two alternatives to this.  The first is that we can turn off symmetry
+completely and force C1 (by placing a 0 at the right place; the 0 means
+zero symmetry generators)::
+
+  DIRAC
+
+
+  C   2    0
+  [...]
+
+  DIRAC
+
+Alternative two is to specify an explicit symmetry other than C1.  For this we
+need to remove all symmetry dependent centers and specify the coordinates only
+for the symmetry-unique centers::
+
+  DIRAC
+
+
+  C   2    2  X  Y
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
+          1.    1
+  H     1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
+  FINISH
+
+We give only one hydrogen center, the other is generated by symmetry operations.
+This molecule has two symmetry generators (second 2 in line 4).
+
+All available symmetry groups and the corresponding symmetry
+group specification strings are given in the following list::
+
+  C   ?    3  Z  Y  X   # group:      D2h
+                        # operations: reflection(xy)
+                        #             reflection(xz)
+                        #             reflection(yz)
 
-Must be set to C to indicate that Cartesian Gaussians are to be used. If
-not, DIRAC will issue a warning and continue assuming Cartesian
-Gaussians. Note that by default transformation to spherical harmonic
-basis (modified for the small components) is done in the transformation
-to the orthogonal basis. Spherical Gaussians (S) are allowed in
-2-component calculations.
+  C   ?    2XY  YZ      # group:      D2
+                        # operations: rotation(z)
+                        #             rotation(x)
 
-Number of atomic types
-----------------------
+  C   ?    2 Y X        # group:      C2v
+                        # operations: reflection(xz)
+                        #             reflection(yz)
 
-Specify the number of atomic types, which is 2 in this example (oxygen
-and hydrogen).
+  C   ?    2  ZXYZ      # group:      C2h
+                        # operations: reflection(xy)
+                        #             i
 
-::
+  C   ?    1XY          # group:      C2
+                        # operations: rotation(z)
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
+  C   ?    1  Z         # group:      Cs
+                        # operations: reflection(xy)
 
-Charge of the system
---------------------
+  C   ?    1XYZ         # group:      Ci
+                        # operations: i
 
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-
-Specify the charge of the system. This will be used to determine the
-initial Hartree-Fock/Kohn-Sham occupation, if it is not explicitly
-specified. A zero (no charge) is assumed if no number is given here.
-
-The charge functionality is supressed by explicitly setting the
-`occupation </dirac/index.php/Manual:WAVE_FUNCTION:DHFCAL#Occupation>`_.
-
-Number of symmetry generators
------------------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-
-Specify the number of generators of the symmetry group. For
-*C*\ :sub:`2*v*`\  there are two generators, in this example
-σ\ :sub:`*x*`\  and σ\ :sub:`*y*`\ . You must specify explicitly a zero
-0 if you want to run the calculation without symmetry. Be ware that in
-case of symmetry you should only specify a *symmetry-unique* list of
-atoms, as the program will use the generators to find the full list of
-atoms. In case of linear molecules one can specify Dinfh or Cinfv so
-that the full symmetry group D\_{\\infty h} or C\_{\\infty v} is
-employed in some of the modules. This symmetry is not implemented in all
-modules, so that you may also see output referring to the subgroups
-*D*\ :sub:`2*h*`\  or *C*\ :sub:`2*v*`\ , respectively. If the keyword
-is left blank and all atoms are specified explicitly, then DIRAC will
-analyze the geometry and find the appropriate symmetry group by itself.
-In doing so it may rotate the molecule.
-
-Symmetry group string
----------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-
-In general, the symmetry handling will be restricted to the binary
-groups, that is *D*\ :sub:`2*h*`\  and subgroups, which means that a
-symmetry operation acting on the main axes (x,y,z) will at most reverse
-their direction. A group generator is therefore identified by a
-3-character string that specifies the axes reversed under its operation.
-In this example the X and Y are given to indicate the generators
-σ\ :sub:`*x*`\  and σ\ :sub:`*y*`\ .
-
-Used DIRAC binary groups
-------------------------
-
-Examples for the eight binary groups:
-
-**Group**
-
-**Operations**
-
-*D*\ :sub:`2*h*`\
-
-::
-
-    C   ?    3  Z  Y  X
-
-σ(*x**y*),σ(*x**z*),σ(*y**z*)
-
-*D*\ :sub:`2`\
-
-::
-
-    C   ?    2XY  YZ
-
-*C*\ :sub:`2`\ (*z*),*C*\ :sub:`2`\ (*x*)
-
-*C*\ :sub:`2*v*`\
-
-::
-
-    C   ?    2 Y X
-
-σ(*x**z*),σ(*y**z*)
-
-*C*\ :sub:`2*h*`\
-
-::
-
-    C   ?    2  ZXYZ
-
-σ(*x**y*),*i*
-
-*C*\ :sub:`2`\
-
-::
-
-    C   ?    1XY
-
-*C*\ :sub:`2`\ (*z*)
-
-*C*\ :sub:`*s*`\
-
-::
-
-    C   ?    1  Z
-
-σ(*x**y*)
-
-*C*\ :sub:`*i*`\
-
-::
-
-    C   ?    1XYZ
-
-*i*
-
-*C*\ :sub:`1`\
-
-::
-
-    C   ?    0
+  C   ?    0            # group:      C1
