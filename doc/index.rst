@@ -34,16 +34,6 @@ Installing and configuring libraries used by DIRAC
    installation/mkl.rst
 
 
-Basis sets
-==========
-
-.. toctree::
-   :maxdepth: 1
-
-   basis_sets/basis.rst
-   basis_sets/howto_uncontract.rst
-
-
 First steps in DIRAC territory
 ==============================
 
@@ -52,6 +42,18 @@ First steps in DIRAC territory
 
    tutorials/getting_started.rst
    tutorials/reproducing_nr_results.rst
+
+
+Molecule and basis set
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   molecule_and_basis/molecule_using_mol.rst
+   molecule_and_basis/molecule_using_xyz.rst
+   molecule_and_basis/basis.rst
+   molecule_and_basis/howto_uncontract.rst
 
 
 Restarting and multi-step jobs
@@ -170,11 +172,7 @@ Reference manual
 .. toctree::
    :maxdepth: 1
 
-   reference_manual/ref_man_old.rst
-
    reference_manual/dirac.rst
-   reference_manual/molecule.rst
-   reference_manual/basis_ref.rst
    reference_manual/general.rst
    reference_manual/integrals.rst
    reference_manual/optimize.rst
@@ -233,5 +231,5 @@ Bibliography
 
 .. toctree::
    :maxdepth: 1
-   
+
    bib.rst

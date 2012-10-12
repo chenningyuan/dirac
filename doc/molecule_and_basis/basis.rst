@@ -3,6 +3,47 @@
 Pick the right basis for your calculation
 =========================================
 
+The development of basis sets suitable to use in relativistic calculations
+reflects the relatively lateness of the field's development. Because the more
+consistent efforts in method development started at about the mid 1980's, it
+wasn't until well into the late 1990's that the pioneering works of the early
+and mid 1990's were substantially complemented and improved upon.
+
+This situations has dramatically improved in recent years, notably with the
+work of K. G. Dyall, and Dirac users are strongly advised to use Dyall's basis
+sets whenever they are available. These sets follow roughly the
+"correlation-consisten" philosophy introduced by Dunning and coworkers
+[Dunning1989]_, so they already contain polarization functions.
+
+At the time of writing, these are avaiable from Ga onwards, and a detailed
+description can be found at the dirac website, under the "Basis Set Repository"
+link`[1] <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_.  For
+convenience, Dirac collects all of Dyall's available basis sets (those
+published and areadly in distributable form, as the ones listed in the
+repository below, as well as those in preparation) in basis set files. One must
+keep in mind that currently these files support only the use of fully
+uncontracted basis sets.
+
+The following files are present in Dirac's distribution:
+
+dyall.v2z contains the double-zeta basis dyall.v3z contains the triple-zeta
+basis dyall.v4z contains the quadruple-zeta basis dyall.av2z contains the
+double-zeta basis (as in dyall.v2z) plus diffuse functions (p-block only)
+dyall.av3z contains the triple-zeta basis (as in dyall.v3z) plus diffuse
+functions (p-block only) dyall.av4z contains the quadruple-zeta basis (as in
+dyall.v4z) plus diffuse functions (p-block only)
+
+For light elements (say up to Argon) it is advisable to continue using standard
+non-relativistic basis set, such as the correlation-consistent sets of Dunning
+and coworkers. It is advisable that, in order to have a balanced description
+when light and heavy elements are present, that one uses either contracted or
+uncontracted sets thoughout.
+
+Apart from Dyall's sets, one can choose several different basis sets based upon
+geometric progressions of exponents. One such set is that of K. Faegri, also
+available in the basis set library, but with the drawback that the user needs
+to extended it by adding polarization functions.
+
 The DIRAC distribution shares a large library of standard
 non-relativistic and scalar-relativistic basis sets with the
 `Dalton <http://www.kjemi.uio.no/software/dalton>`_ program.

@@ -1,120 +1,125 @@
-Manual:Basis:General
-====================
 
-Choosing input type
--------------------
 
-Presently Dirac can handle two types of files with molecular
-coordinates:
+How to specify the molecule and basis set using the traditional mol files
+=========================================================================
 
--  `.MOL </dirac/index.php/Manual:Basis:MOL>`_
--  `.XYZ </dirac/index.php/Manual:Basis:XYZ>`_
+The procedure used to read mol files is as follows: first, the basis set for
+the large component will be read in from the the mol file; then the small
+component basis set is generated automatically via the kinetic balance
+prescription, but can (by experienced users) also be specified explicitly. Try
+this only if you have studied the theory and know what the criteria for small
+component basis sets are, there are many pitfalls that one needs to be aware
+of!
 
-Which file is present, is determined on the basis of whether a dot is
-present in the name of the submitted molecule file. If no dot is
-present, it is assumed to be a .MOL file, if the name ends with .MOL or
-.XYZ dirac will detect this and handle the molecule file accordingly. If
-an other extension is detected Dirac will exit (as more filetypes may be
-included later). In a .MOL file all the information of the molecule,
-like basis set, coordinates, charges etc. is present in the molecule
-file. In a .XYZ file only the coordinates of the atoms are given. The
-setup of the calculation is given in the .INP file.
+.. warning::
 
-Choosing basis sets
--------------------
+   The traditional mol file is entered in fixed format (with few exceptions). This means that exact
+   position and spacing matters. If you misplace the charge, the number of
+   centers, etc., then DIRAC will not be able to read the structure and basis set
+   information correctly.  Until you get familiar with the format, we recommend to
+   copy existing mol files and adapt them.
 
-Apart from the practical aspects involved in setting up a MOLECULE file
-for Dirac, one must keep in mind also the more fundamental issue of
-choosing a suitable basis set for a given calculation.
+We will learn the mol file format using the following example::
 
-The development of basis sets suitable to use in relativistic
-calculations reflects the relatively lateness of the field's
-development. Because the more consistent efforts in method development
-started at about the mid 1980's, it wasn't until well into the late
-1990's that the pioneering works of the early and mid 1990's were
-substantially complemented and improved upon.
+  INTGRL
 
-This situations has dramatically improved in recent years, notably with
-the work of K. G. Dyall, and Dirac users are strongly advised to use
-Dyall's basis sets whenever they are available. These sets follow
-roughly the "correlation-consisten" philosophy introduced by Dunning and
-coworkers [Dunning1989]_, so they already contain polarization functions.
 
-At the time of writing, these are avaiable from Ga onwards, and a
-detailed description can be found at the dirac website, under the "Basis
-Set Repository"
-link`[1] <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_.
-For convenience, Dirac collects all of Dyall's available basis sets
-(those published and areadly in distributable form, as the ones listed
-in the repository below, as well as those in preparation) in basis set
-files. One must keep in mind that currently these files support only the
-use of fully uncontracted basis sets.
+  C   2
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
+  FINISH
 
-The following files are present in Dirac's distribution:
+This is the water molecule using the cc-pVDZ basis for the large component
+basis set. The first line is always INTGRL for historical reasons.
+Line 2 and 3 are arbitrary comment lines. You can leave them blank or write
+some note to yourself but they have to be there. Line 4 specifies
+a cartesian GTO basis set (C) and 2 atom types (basis set types).
+So after line 4 DIRAC expects 2 basis set types and here they are - first
+hydrogen::
 
-dyall.v2z contains the double-zeta basis dyall.v3z contains the
-triple-zeta basis dyall.v4z contains the quadruple-zeta basis dyall.av2z
-contains the double-zeta basis (as in dyall.v2z) plus diffuse functions
-(p-block only) dyall.av3z contains the triple-zeta basis (as in
-dyall.v3z) plus diffuse functions (p-block only) dyall.av4z contains the
-quadruple-zeta basis (as in dyall.v4z) plus diffuse functions (p-block
-only)
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
 
-For light elements (say up to Argon) it is advisable to continue using
-standard non-relativistic basis set, such as the correlation-consistent
-sets of Dunning and coworkers. It is advisable that, in order to have a
-balanced description when light and heavy elements are present, that one
-uses either contracted or uncontracted sets thoughout.
+then oxygen::
 
-Apart from Dyall's sets, one can choose several different basis sets
-based upon geometric progressions of exponents. One such set is that of
-K. Faegri, also available in the basis set library, but with the
-drawback that the user needs to extended it by adding polarization
-functions.
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
 
-The procedure used in Dirac is as follows: first, the basis set for the
-large component will be read in from the the MOLECULE file; then the
-small component basis set is generated automatically via the kinetic
-balance prescription, but can (by experienced users) also be specified
-explicitly. Try this only if you have studied the theory and know what
-the criteria for small component basis sets are, there are many pitfalls
-that one needs to be aware of!
+and we finish off with a FINISH in the final line.
 
-Atomic coordinates
-------------------
+You can already guess the meaning of the numbers. We have 2 hydrogens with a
+nuclear charge of 1.0 and one oxygen with a nuclear charge of 8.0.  Then come
+the atom symbols and the coordinates in bohr followed by the large component
+basis set label. DIRAC will look up this label in the basis set library and
+complain if it does not exist. Note that the atom label (H1, H2, O) is only for
+you so that you find it in the output. It does not matter to the code. The code
+will identify basis sets based on the nuclear charge, not the label.
 
-Note that only the top six lines are shown in the input examples below.
 
-Proton number
--------------
+Default coordinates are in bohr, how can I use angstrom instead?
+----------------------------------------------------------------
 
-::
+See the "A" in line 4 in position 20? If it is there, DIRAC will
+read in angstrom, if this position is blank, then DIRAC will read
+in bohr (default)::
 
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
+  INTGRL
+           1         2         3           # this is a comment line
+  1234567890123456789012345678901234567890 # this is a comment line
+  C   2              A
+          1.    2
+  ...
 
-The charge of this atom type. In the case of oxygen it is 8.
+
+
+
+
+.. warning::
+
+   Info below needs adaptation. It used a coloring which has not been preserved
+   during conversion so in present form it is useless.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Number of unique atoms
 ----------------------
 
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y
-            8.    1
-    O      .0000000000        0.0000000000        -.2249058930
-    ...
-
 Number of symmetry-distinct atoms of this type, which is 1 for oxygen in
 water.
+
+
+
+
+
 
 Nuclear exponent
 ----------------
@@ -125,7 +130,7 @@ Nuclear exponent
     Water
     aug-cc-pVDZ basis (note that a tight p has NOT been added)
     C   2    2  X  Y
-            8.    1                    
+            8.    1
     O      .0000000000        0.0000000000        -.2249058930
     ...
 
@@ -178,7 +183,7 @@ The *x*-, *y*-, and *z* coordinates are in Bohr.
     DIRAC
     Water
     aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y    
+    C   2    2  X  Y
     O      .0000000000        0.0000000000        -.2249058930
     ...
 
@@ -426,10 +431,10 @@ column of the orbital exponents blank.
 
 Specification of how to generate small component functions by kinetic
 balance. If no number or a 0 is given, the small component functions are
-generated both upwards and downwards, e.g 
-:math:`p \rightarrow s, d`. 
+generated both upwards and downwards, e.g
+:math:`p \rightarrow s, d`.
 If the number is 1, the small component functions are generated upwards,
-e.g :math:`p \rightarrow  d`. 
+e.g :math:`p \rightarrow  d`.
 If the number is 2, the small component functions
 are generated downwards, e.g :math:`p \rightarrow s`.
 
@@ -632,7 +637,7 @@ and another set is used for *p*, *f*, *h*, ... functions.
     1..5
     8..9
 
-For the specification of blocks and exponent ranges see 
+For the specification of blocks and exponent ranges see
 `LARGE
 EVENTEMP </dirac/index.php/Manual:Basis:Large_component_basis_set#Even-tempered_basis_sets_.28geometric_progressions.29>`_.
 
@@ -779,7 +784,7 @@ We start to focus at the first line in the input:
 
 ::
 
-    DIRAC 
+    DIRAC
     Water
     aug-cc-pVDZ basis (note that a tight p has NOT been added)
     C   2    2  X  Y
@@ -795,8 +800,8 @@ Next two lines are arbitrary.
 ::
 
     DIRAC
-    Water                                                                  
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)             
+    Water
+    aug-cc-pVDZ basis (note that a tight p has NOT been added)
     C   2    2  X  Y
 
 We recommend to place there short descriptions of basis sets, system, or
@@ -882,7 +887,7 @@ Symmetry group string
     DIRAC
     Water
     aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y   
+    C   2    2  X  Y
 
 In general, the symmetry handling will be restricted to the binary
 groups, that is *D*\ :sub:`2*h*`\  and subgroups, which means that a
@@ -901,7 +906,7 @@ Examples for the eight binary groups:
 
 **Operations**
 
-*D*\ :sub:`2*h*`\ 
+*D*\ :sub:`2*h*`\
 
 ::
 
@@ -909,7 +914,7 @@ Examples for the eight binary groups:
 
 σ(*x**y*),σ(*x**z*),σ(*y**z*)
 
-*D*\ :sub:`2`\ 
+*D*\ :sub:`2`\
 
 ::
 
@@ -917,7 +922,7 @@ Examples for the eight binary groups:
 
 *C*\ :sub:`2`\ (*z*),*C*\ :sub:`2`\ (*x*)
 
-*C*\ :sub:`2*v*`\ 
+*C*\ :sub:`2*v*`\
 
 ::
 
@@ -925,7 +930,7 @@ Examples for the eight binary groups:
 
 σ(*x**z*),σ(*y**z*)
 
-*C*\ :sub:`2*h*`\ 
+*C*\ :sub:`2*h*`\
 
 ::
 
@@ -933,7 +938,7 @@ Examples for the eight binary groups:
 
 σ(*x**y*),*i*
 
-*C*\ :sub:`2`\ 
+*C*\ :sub:`2`\
 
 ::
 
@@ -941,7 +946,7 @@ Examples for the eight binary groups:
 
 *C*\ :sub:`2`\ (*z*)
 
-*C*\ :sub:`*s*`\ 
+*C*\ :sub:`*s*`\
 
 ::
 
@@ -949,7 +954,7 @@ Examples for the eight binary groups:
 
 σ(*x**y*)
 
-*C*\ :sub:`*i*`\ 
+*C*\ :sub:`*i*`\
 
 ::
 
@@ -957,40 +962,8 @@ Examples for the eight binary groups:
 
 *i*
 
-*C*\ :sub:`1`\ 
+*C*\ :sub:`1`\
 
 ::
 
     C   ?    0
-
-
-Units of coordinates
---------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y    
-
-If not blank then the molecular coordinates are read in ångström instead
-of bohr.
-
-Neglect integrals threshold
----------------------------
-
-::
-
-    DIRAC
-    Water
-    aug-cc-pVDZ basis (note that a tight p has NOT been added)
-    C   2    2  X  Y              
-
-Threshold for neglect of final integrals. Default is 1.0D-15, which will
-be used if no input is given here. A threshold of 1.0D-15 will give
-integrals correct to approximately 1.0D-13. Separate thresholds for SL
-and SS integrals may be specified in the input file (see
-`.THRFAC </dirac/index.php/Manual:INTEGRALS:TWOINT#.THRFAC>`_).
-
-
