@@ -6237,15 +6237,6 @@ C
       CALL DZERO(DMATLO,NCMAT)
       CALL DZERO(TMAT,NCMAT)
       CALL DZERO(PMAT,2*NCMAT)
-      IF (.NOT.XLR_SKIPEP.AND.NSTDIA) THEN
-         IF (LONDON) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &  'For LAO & e-p rotations the diamag.term is not (yet) defined !'
-          WRITE(LUPRI,'(2X,A)')
-     &  'NSTDIA set to .false. ! '
-          NSTDIA=.FALSE.
-         ENDIF
-      ENDIF
 C--------------------------------------------------------------------------
 C     NSTDIA: Nuclear Shielding Tensor DIAmagnetic contribution
 C     Extract Diamagnetic approximation if calculated
