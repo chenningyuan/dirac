@@ -14,9 +14,9 @@
       common /parmi/
      &        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       integer
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir,inam,nnam,mdum
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
       common /ntgr/
-     & mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,   
+     & mconsu,mru,mcru,msfu,msfru,ngcs,nu,   
      & lxyzir(3),inam(5),nnam,mdum(32)
  
       common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,
@@ -65,7 +65,7 @@
 
       rr = (xi-xj)*(xi-xj) + (yi-yj)*(yi-yj) + (zi-zj)*(zi-zj)
 !
-!  prepare items for pairs of (i,j) functions
+!     prepare items for pairs of (i,j) functions
 !
       ij=0
       do it=itl,itu
@@ -90,8 +90,6 @@
 
       tmp_ic0 = ic0
       tmp_ic1 = ic1
-!     tmp_ic0 = nc1 !FIXME??
-!     tmp_ic1 = nc2 !FIXME??
 
       IF (RECP_DBG.GE.10) THEN
          WRITE(RECP_OUT,'(3X,A)') '* Size of variables, G2/G1/GOUT'

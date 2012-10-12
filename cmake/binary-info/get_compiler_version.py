@@ -33,6 +33,7 @@ command_d['xlc']          = 'xlc          -qversion'
 # C++ compilers
 command_d['mpiCC']        = 'mpiCC        --version'
 command_d['g++']          = 'g++          --version'
+command_d['c++']          = 'c++          --version'
 command_d['g++44']        = 'g++44        --version'
 command_d['iCC']          = 'iCC          --version'
 command_d['icpc']         = 'icpc         --version'

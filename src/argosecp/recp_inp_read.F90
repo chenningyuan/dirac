@@ -445,7 +445,7 @@ SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
      IF (NUC2(I).GT.1) THEN
         DO J = 2, ng
            DO K = 1, NUC2(I)
-!             ica(K,I,J) = RECPIN_ICA(K,I,J)  FIXME??
+!             ica(K,I,J) = RECPIN_ICA(K,I,J)  FIXED
               ica(K,I,J) = RECPIN_ICA(K,I,J-1)
            ENDDO
            IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(3X,10I3)') (ica(K,I,J),K=1,NUC2(I) )
