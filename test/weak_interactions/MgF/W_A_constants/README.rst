@@ -7,7 +7,7 @@ P-odd interaction constants
 Demonstration of DC-SCF and DC-DFT calculations of the :math:`W_{A}` parameter of the P-odd spin-rotational Hamiltonian
 for small diatomic molecule.
 
-The operator is T-odd, and has the form of dot-product,  "alpha_x*rho + alpha_y*rho + alpha_z*rho".
+The operator is T-odd, and has the cector form of  "alpha_x*rho, alpha_y*rho, alpha_z*rho".
 
 For more details see Ref. [Borschevsky2012]_ .
 
@@ -57,11 +57,31 @@ GNUC:
      PVC:  -0.0020102470       -0.0044718635
       FC:  -0.0020102465       -0.0044718611
 
-Z86F(65+) MgF-like molecule
----------------------------
-Gnuc
-                F                  Z86
+RnF(65+) MgF-like molecule (21 electrons)
+-----------------------------------------
+
+We simulated diatomic open-shell system with heavy nucleus (Z=86 - Rn atom), RnF,
+but with 21 electrons only, having thus charge of 65+.
+
+MO-transformed matrix elements of alpha*rho operators:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GNUC:
+
+                F                  Rn
       PVC   0.0000799991       -0.0000165875
        FC   0.0000799991       -0.0000166104   
+
+Density at the nucleus (scalar) operators :
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gnuc, valence spinor (#11) exp.val. (in a.u.):
+                F                  Rn
+      PVC   0.29382975D-03   0.26175495D-03
+       FC   0.29383985D-03   0.26190598D-03
+
+Total exp.val, GNUC (in a.u.):
+                F                  Rn
+      PVC   190.2191404628     1564150.328748
+       FC   190.2190907103     1562379.047052
 
 

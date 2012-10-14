@@ -41,6 +41,7 @@
 **PROPERTIES
 ! density at the nuclei
 .RHONUC
+.EFFDENS
 *EXPECTATION
 .ORBANA
 **MOLTRA

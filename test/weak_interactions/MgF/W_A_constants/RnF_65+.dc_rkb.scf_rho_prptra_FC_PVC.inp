@@ -4,6 +4,7 @@
 .WAVE F ! Activate integral and wave functions modules
 .ANALYZE
 .4INDEX
+.PROPERTIES
 **GENERAL
 .DIRECT
 1 1 1
@@ -37,6 +38,12 @@
 *MULPOP
 .VECPOP
 1..28
+**PROPERTIES
+! density at the nuclei
+.RHONUC
+.EFFDENS
+*EXPECTATION
+.ORBANA
 **MOLTRA
 .SCHEME
 6
