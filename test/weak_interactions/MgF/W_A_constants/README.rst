@@ -14,8 +14,11 @@ For more details see Ref. [Borschevsky2012]_ .
 Checking the sole electron density at the nucleus
 =================================================
 
-.RHONUC expectation value confirmed by individual components of the Fermi contact operator, multiplied with the factor (3/4*pi*g_e)= 0.11922794437D0
+.RHONUC expectation value is confirmed by individual components of the Fermi contact operator,
+ multiplied with the factor (3/4*pi*g_e)= 0.11922794437D0
 ( DIAGONAL 'FC F  01' )
+
+These results match with PVC operator MO-matrix elements.
 
 Values for the valence (11th) spinor contributions (in a.u.)
 
@@ -26,7 +29,7 @@ PNuc - point like nucleus
 GNuc:  0.124281062802    0.110710184980 (Fermi-contact multiplied with the factor)
        0.1242810255      0.1107101196   (PVC integrals-prptra elements, factor of 1.0D0)
 
-PVC integrals (factor 1.0D0),        varrying nuclear exponents (the same for both atoms)
+PVC integrals (factor 1.0D0),        varrying nuclear exponents (identical for both atoms)
        0.1242811947      0.11071005            1.0D+20
        0.1242811947      0.1107100466          1.0D+50
        0.1242811947      0.1107100466          1.0D+90
@@ -38,5 +41,27 @@ FC integrals, exp. value,                    GNuc exp.value
 
 PNuc:  0.124281194663    0.110710046559 (Fermi-contact multiplied with the factor)
         NaN                  NaN        (PVC integrals-prptra elements, factor of 1.0D0)
+
+Checking alpha*rho operator matrix elements
+===========================================
+
+FC operator matrix elements are mutiplied with the above given factor.
+For PVC operator we keep factors of 1.0D0.
+
+MgF molecule
+------------
+
+Table: 1,2 matrix elements
+GNUC:
+                 F                   Mg
+     PVC:  -0.0020102470       -0.0044718635
+      FC:  -0.0020102465       -0.0044718611
+
+Z86F(65+) MgF-like molecule
+---------------------------
+Gnuc
+                F                  Z86
+      PVC   0.0000799991       -0.0000165875
+       FC   0.0000799991       -0.0000166104   
 
 

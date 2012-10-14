@@ -48,6 +48,7 @@
 # we need this print level to get matrix elements
 .PRINT
 3
+#### first, density from PVC operator
 .OPERATOR
  'xalpha_PV F' 
  XALPHA
@@ -85,4 +86,46 @@
  'PVCMg 02'
  COMFACTOR
  1.0D00
+#
+# density from the FC operator
+#
+#  comfactor is (3/4*pi*g_e)=1/8.3872954891254192=.11922794437093028553, numerically shortened to 0.11922794437D0
+# factor that originates from the definition of the operator for calculating the density at the nucleus
+#
+.OPERATOR
+ 'xalpha_fc F' 
+ XALPHA
+ 'FC F  01'
+ COMFACTOR
+ 0.11922794437D0
+.OPERATOR
+ 'yalpha_fc F'
+ YALPHA
+ 'FC F  01'
+ COMFACTOR
+ 0.11922794437D0
+.OPERATOR
+ 'zalpha_fc F'
+ ZALPHA
+ 'FC F  01'
+ COMFACTOR
+ 0.11922794437D0
+.OPERATOR
+ 'xalpha_fc Mg' 
+ XALPHA
+ 'FC Mg 02'
+ COMFACTOR
+ 0.11922794437D0
+.OPERATOR
+ 'yalpha_fc Mg'
+ YALPHA
+ 'FC Mg 02'
+ COMFACTOR
+ 0.11922794437D0
+.OPERATOR
+ 'zalpha_fc Mg'
+ ZALPHA
+ 'FC Mg 02'
+ COMFACTOR
+ 0.11922794437D0
 *END OF
