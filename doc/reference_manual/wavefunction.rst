@@ -1,9 +1,10 @@
+
+
 .. _wave_function:
 
-
-==========================================
-\*\*WAVE FUNCTION -- Get the wave function
-==========================================
+=================
+\*\*WAVE FUNCTION
+=================
 
 Get the wave function.
 

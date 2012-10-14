@@ -1,32 +1,40 @@
+
+
 .. _dirac:
 
 ==============================
 \*\*DIRAC -- Job specification
 ==============================
 
-By default DIRAC only activates the generation of the basis set (e.g.
-kinetic balance conditions for small component functions) and the
-one-electron modules. Two-electron integrals over the atomic basis
-functions will be calculated when needed by the job modules given below.
 
-We recommend that you use the
-`DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_ program
-package if you want to e.g. save the two-electron integrals to disk for
-another purpose, this is not possible with DIRAC.
+Activation of modules
+=====================
+
+By default DIRAC only activates the generation of the basis set (e.g.  kinetic
+balance conditions for small component functions) and the one-electron modules.
+Two-electron integrals over the atomic basis functions will be calculated when
+needed by the job modules given below.
+
+We recommend that you use the `Dalton <http://www.daltonprogram.org>`_ program
+package if you want to e.g. save the two-electron integrals to disk for another
+purpose, this is not possible with DIRAC.
 
 
-`.WAVE FUNCTION`_
------------------
+.WAVE FUNCTION
+--------------
 
 Activates the wave function module(s).  This activates the reading of the
 :ref:`wave_function` section, where the desired wave function type(s) must be
-specified.
+specified.  If you read in converged MO coefficients from the file DFCOEF and
+you want to skip the SCF step and proceed directly to properties or the
+post-SCF step, then a trick to do this is to comment out (or remove) this
+keyword.
 
 
 .ANALYZE
 --------
 
-Activates the Hartree-Fock or Kohn-Sham analysis module.  This activates the
+Activates the Hartree--Fock or Kohn--Sham analysis module.  This activates the
 reading of the :ref:`analyze` section.
 
 
@@ -47,21 +55,16 @@ Activates the geometry optimization.  This activates the reading of the
 .4INDEX
 -------
 
-Explicitly activates transformation of integrals to molecular orbital basis.
-This activates the reading of the :ref:`moltra` section.
+Explicitly activates the transformation of integrals to molecular orbital
+basis.  This activates the reading of the :ref:`moltra` section.
 
-These transformed integrals are currently only used by the
-:ref:`relccsd`,
-:ref:`reladc`,
-:ref:`dirrci`, and
-:ref:`lucita`
-modules,
-and if one of these three modules
-are requested under :ref:`wave_function`, then this flag is automatically
-activated unless .NO4INDEX is specified in this input module.
+These transformed integrals are currently only used by the :ref:`relccsd`,
+:ref:`reladc`, :ref:`dirrci`, and :ref:`lucita` modules, and if one of these
+three modules are requested under :ref:`wave_function`, then this flag is
+automatically activated unless .NO4INDEX is specified in this input module.
 
 By default, molecular orbitals with orbital energy between -10 and +20 hartree
-(a.u.) are included, this can be modified in the :ref:`moltra` section.
+are included, this can be modified in the :ref:`moltra` section.
 
 
 .NO4INDEX
@@ -85,7 +88,6 @@ integral transformation.
 ------
 
 Title line (max. 50 characters).
-
 Example::
 
   .TITLE
@@ -116,10 +118,9 @@ are written to disk.
 
 Geometry optimization directives.
 
-This section controls the geometry optimization. The geometry
-optimization algorithm is based on the one of
-`DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_. The
-directives are therefore the same except for these few changes:
+This section controls the geometry optimization. The geometry optimization
+algorithm is based on the one of `Dalton <http://www.daltonprogram.org>`_. The
+directives are therefore similar except for these few changes:
 
 -  No second-order algorithms are available since the molecular Hessian
    is not implemented.
@@ -136,6 +137,9 @@ thresholds may be automatically adjusted.
 .NO SKIP
 --------
 
+This keyword forces the LS and SS two-electron gradient to always be evaluated
+in all geometry iterations (depending on the integral flag).
+
 The SL and SS two-electron integral contributions to the gradient are normally
 skipped if their contribution is estimated to be small. An "empirical" estimate
 of the norms of the LS and SS two-electron gradients based on the norm of the
@@ -143,9 +147,6 @@ LL two-electron gradient.  This trick is by default activated in a geometry
 optimization, since when the current geometry is far away from the equilibrium,
 e.g. the norm of the gradient is, say, 1.0, then there is no need to calculate
 the LS and/or SS two-electron gradient because they have a norm of, say, 0.001.
-
-This keywords forces the LS and SS two-electron gradient to always be evaluated
-in all geometry iterations (depending on the integral flag).
 
 
 .NUMGRA
@@ -158,7 +159,7 @@ Force the use of numerical gradient in geometry optimization.
 -------
 
 Include LL, SL, and SS integral contributions to the gradient
-(1 = on; 0 = off). Default::
+(1 = on; 0 = off). The default is to turn all on::
 
   .TWOGRD
    1 1 1
@@ -180,16 +181,16 @@ Default 1st order method will be used: BFGS update.
 .GRADIENT
 ---------
 
-Convergence threshold for the gradient. Default 1.0D-5.
+Convergence threshold for the gradient. The default is 1.0D-5.
 
 
 .ENERGY
 -------
 
-Convergence threshold for the energy. Default 1.0D-6.
+Convergence threshold for the energy. The default is 1.0D-6.
 
 
 .STEP THRESHOLD
 ---------------
 
-Convergence threshold for the step. Default 0.1D-4.
+Convergence threshold for the step. The default is 1.0D-5.

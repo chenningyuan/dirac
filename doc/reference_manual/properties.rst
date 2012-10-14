@@ -2,9 +2,9 @@
 
 .. _properties:
 
-=====================================================
-\*\*PROPERTIES -- Calculation of molecular properties
-=====================================================
+==============
+\*\*PROPERTIES
+==============
 
 This section allows for the evaluation of a large number of molecular
 properties. Available properties include:
