@@ -2,6 +2,7 @@ $ERROR 1.E-10
 nlines 12:TOTAL ENERGY
 
 $ERROR 1.E-6
+$IGNORESIGN
 nlines 7:All nonzero property elements
 
 $ERROR 1.E-6
