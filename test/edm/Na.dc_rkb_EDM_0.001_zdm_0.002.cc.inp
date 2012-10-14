@@ -19,6 +19,7 @@
  EDM
  COMFACTOR
  0.001
+.TRSMIX
 ### z dip.mom ###
 .OPERATOR
  ZDIPLEN
