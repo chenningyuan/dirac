@@ -1,8 +1,8 @@
-.. _relccsd:
 
-=============================================
-RELCCSD -- Coupled cluster module (old input)
-=============================================
+
+===================
+RELCCSD (old input)
+===================
 
 *Relativistic Coupled Cluster module RELCCSD* written by Lucas Visscher
 

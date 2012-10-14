@@ -1,8 +1,10 @@
+
+
 .. _analyze:
 
-========================================
-\*\*ANALYZE -- Analyze the wave function
-========================================
+===========
+\*\*ANALYZE
+===========
 
 Wave function analyzing tool.
 

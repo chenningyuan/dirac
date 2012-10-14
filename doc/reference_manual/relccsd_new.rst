@@ -1,8 +1,10 @@
 
 
-=============================================
-RELCCSD -- Coupled cluster module (new input)
-=============================================
+.. _relccsd:
+
+=======
+RELCCSD
+=======
 
 The old namelist style input (described above) used in DIRAC10 will be
 replaced by an input that is more consistent with the rest of the input
