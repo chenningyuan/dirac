@@ -2,8 +2,9 @@
 
 .. _\*\*HAMILTONIAN:
 
-\*\*HAMILTONIAN
-===============
+===================================================
+\*\*HAMILTONIAN -- Specification of the Hamiltonian
+===================================================
 
 Specification of the Hamiltonian.
 
@@ -80,7 +81,7 @@ relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
 
 DIRAC runs in 2-component mode. One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
-default in the development version unless :ref:`.NOAMFI` specified. 
+default in the development version unless :ref:`.NOAMFI` specified.
 See also the warning there.
 
 .. _.X2Cmmf:
@@ -99,7 +100,7 @@ with the .GAUNT keyword which activates the inclusion of
 spin-other-orbit contributions in the Hamiltonian. The
 X2Cmmf-Hamiltonian can at present (DIRAC11 release) only be used for
 post-HF calculation within the RELCCSD module. Patches for other
-correlation modules in DIRAC are planned to be released soon. 
+correlation modules in DIRAC are planned to be released soon.
 
 For further information and a detailed guideline please consult our FAQ
 page.
@@ -113,7 +114,7 @@ Use Dyall's spinfree Hamiltonian, Ref. [Dyall1994]_ ,
 to obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
 keyword works also for two-component relativistic Hamiltonians where one
-can choose between two spin-free schemes - see the :ref:`.BSS` 
+can choose between two spin-free schemes - see the :ref:`.BSS`
 keyword.
 
 Note that this option should not be used for response calculations with
@@ -376,7 +377,7 @@ Integer (3,4,5) should be specified in free format on the line following
     .CONT2C
      3
 
-.. _.ZORA:	 
+.. _.ZORA:
 
 .ZORA
 -----
@@ -624,7 +625,7 @@ potential is shifted in order to reproduce the desired IP (see reference [Grunin
     0.5 40.0 0.79248 1.0D-6
 
 .. _.SAOP!:
-	
+
 .SAOP!
 ------
 
@@ -776,7 +777,7 @@ full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
 
 .. _\*AMFI:
 
-\*AMFI 
+\*AMFI
 ======
 
 Specification of the AMFI, RELSCF directives.

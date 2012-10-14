@@ -175,25 +175,17 @@ Reference manual
    reference_manual/dirac.rst
    reference_manual/general.rst
    reference_manual/integrals.rst
-   reference_manual/optimize.rst
    reference_manual/molecule.rst
    reference_manual/hamiltonian.rst
    reference_manual/wavefunction.rst
-   reference_manual/scf.rst
-   reference_manual/resolve.rst
    reference_manual/goscip.rst
-   reference_manual/mcscf.rst
    reference_manual/analyze.rst
    reference_manual/properties.rst
-   reference_manual/mp2cal.rst
-   reference_manual/mvocal.rst
    reference_manual/moltra.rst
    reference_manual/dirrci.rst
-   reference_manual/relccsd.rst
+   reference_manual/relccsd_old.rst
+   reference_manual/relccsd_new.rst
    reference_manual/reladc.rst
-   reference_manual/krci.rst
-   reference_manual/lucita.rst
-   reference_manual/luciarel.rst
 
    reference_manual/grid.rst
 
