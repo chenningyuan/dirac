@@ -2,8 +2,10 @@
 
 .. _\*\*INTEGRALS:
 
-\*\*INTEGRALS 
-=============
+
+====================================
+\*\*INTEGRALS -- Integral directives
+====================================
 
 Set directives for integrals.
 
@@ -34,7 +36,7 @@ methods should give precisely the same energies.
 
 For the Gaussian charge distribution the default exponents are in
 accordance with values proposed by Visscher and Dyall [Visscher1997b]_
-see also the 
+see also the
 `web-site <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
 If desired, other exponents may be specified in the `basis
 file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
