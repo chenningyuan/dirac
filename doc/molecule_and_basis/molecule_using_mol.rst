@@ -19,6 +19,10 @@ of!
    information correctly.  Until you get familiar with the format, we recommend to
    copy existing mol files and adapt them.
 
+.. warning::
+
+   add info about automatic augmentation
+
 We will learn the mol file format using the following example::
 
   DIRAC

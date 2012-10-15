@@ -155,12 +155,12 @@ div.sphinxsidebar input {
 /* -- body styles ----------------------------------------------------------- */
 
 a {
-    color: #348613;
+    color: #666666;
     text-decoration: underline;
 }
 
 a:hover {
-    color: #59B833;
+    color: #ff3300;
     text-decoration: underline;
 }
 
@@ -355,7 +355,7 @@ ul {
 }
 
 pre {
-    background: #F0FFEB;
+    background: #b8eeff;
     padding: 7px 10px;
     margin: 15px 0;
     border: 1px solid #C7ECB8;
