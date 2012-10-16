@@ -523,6 +523,7 @@ DIIS using AO-basis. The error vector is
 where the :math:`\mathbf{f}` is given by
 
 .. math::
+
    \mathbf{f}=\mathbf{C}^{\dagger}\cdot\mathbf{S}_{AO}\cdot \left[ \mathbf{D}^{C}_{AO}\cdot\mathbf{F}^{D}_{AO}+
    \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{{AO}}\cdot ( \mathbf{F}^{D}_{{AO}}+
    (a_{O}-1)\mathbf{Q}^{V,O}_{{AO}} ) \right] \mathbf{C}
