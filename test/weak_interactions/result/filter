@@ -6,6 +6,7 @@ $IGNORESIGN
 nlines 7:All nonzero property elements
 
 $ERROR 1.E-6
+$IGNORE_BELOW 1.E-20
 nlines 16:Expectation value for individual orbitals
 
 $ERROR 1.E-6

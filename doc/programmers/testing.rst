@@ -122,8 +122,9 @@ Note that runtest compares relative errors (DIRAC) and absolute errors (Dalton).
 The default accepted relative/absolute error (DIRAC/Dalton) is 0.0001.
 You can modify this using $ERROR. If you want to ignore sign, use $IGNORESIGN.
 Also not that $ERROR and $IGNORESIGN are only valid for the next subtest.
-Example::
 
+Example 1: 
+ ::
   $ERROR 0.000000001
   nlines 8:Electronic energy
 
@@ -135,9 +136,21 @@ In this example we have two subtests. First we test Electronic energy and 7
 following lines using tolerance 0.000000001, then we test Eigenvalues using
 tolerance 1.E-5.  We need to specify 1.E-5 for the second subtest otherwise
 runtest defaults to 0.0001.
-Possible keywords are::
+
+Example 2:
+ ::
+ $ERROR 1.E-6
+ $IGNORE_BELOW 1.E-20
+ nlines 16:Expectation value for individual orbitals
+
+In this case we compare expectation values for individual orbitals, and allow 
+maximum differences of 1.E-6. We also specify "zero" limit for compared values of 1.E-20 (as $IGNORE_BELOW),
+what means numbers below this threshold are simply ignored.
+
+List of all possible filter keywords is here: ::
 
   $ERROR          # accepted error
+  $IGNORE_BELOW   # ignore if numbers are below limit
   $IGNORESIGN     # ignore sign
   from:STRING     # start from string STRING
   fromre:STRING   # start from regex STRING
