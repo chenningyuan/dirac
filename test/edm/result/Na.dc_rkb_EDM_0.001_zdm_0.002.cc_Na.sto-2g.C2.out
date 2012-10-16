@@ -1,4 +1,4 @@
-DIRAC pam run in /home/ilias/qch_work/qch_software/dirac_git/devel_trunk/test/edm
+DIRAC pam run in /home/ilias/Documents/Work/qch_softvare/dirac/trunk/test/edm
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
@@ -153,40 +153,34 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | ilias@miro
- System                   | Linux-2.6.30-1-amd64
+ Who compiled             | ilias@lpqlx131
+ System                   | Linux-2.6.32-5-amd64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | ON
  MPI                      | OFF
- Fortran compiler         | /opt/intel/composer_xe_2011_sp1.9.293/bin/intel64/
-                          | ifort
- Fortran compiler version | ifort (IFORT) 12.1.3 20120212
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
-                          | -O0
- C compiler               | /opt/intel/composer_xe_2011_sp1.9.293/bin/intel64/
-                          | icc
- C compiler version       | icc (ICC) 12.1.3 20120212
- C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
-                          | 7 -O0
- BLAS                     | -Wl,--start-group;-limf;/opt/intel/mkl/lib/intel64
-                          | /libmkl_core.so;/opt/intel/mkl/lib/intel64/libmkl_
-                          | intel_thread.so;/usr/lib/x86_64-linux-gnu/libpthre
-                          | ad.so;/usr/lib/x86_64-linux-gnu/libm.so;/opt/intel
-                          | /mkl/lib/intel64/libmkl_intel_ilp64.so;-openmp;-Wl
-                          | ,--end-group
- LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_lapack95_ilp64.a;-Wl,--end-group
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Debian 4.4.5-8) 4.4.5
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -fdefault-integer-8 -O0
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
+ C flags                  | -g -O0
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Debian 4.4.5-8) 4.4.5
+ C++ flags                | -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -W
+                          | overloaded-virtual -Wwrite-strings -Wno-unused -O0
+                          |  -DDEBUG
  Static linking           | OFF
- Last Git revision        | 83a29ae
- Configuration time       | 2012-08-01 10:37:46.966799
+ Last Git revision        | 0986782
+ Configuration time       | 2012-10-16 14:50:49.930763
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Aug  1 11:28:21 2012
+     Date and time (Linux)  : Tue Oct 16 18:02:33 2012 
      Host name              : not found                               
 
 
@@ -214,6 +208,7 @@ Contents of the input file
  EDM                                                                                                
  COMFACTOR                                                                                          
  0.001                                                                                              
+.TRSMIX                                                                                             
 ### z dip.mom ###                                                                                   
 .OPERATOR                                                                                           
  ZDIPLEN                                                                                            
@@ -240,9 +235,10 @@ all
 energy -30.0 3000.0 1.0                                                                             
 *END OF                                                                                             
                                                                                                     
+# use open-shell orbital energies instead of recalculated diagonal matrix elements !                
  &RELCCSD DOFSPC=F  DOENER=T  IPRNT=1  NELEC=4,5  INTERFACE="DIRAC" DEBUG=F  &END                   
  &CCENER  DOMP2=T  DOCCSD=T  DOCCSDT=T  NTOL=11  &END                                               
- &CCSORT  USEOE=F   &END                                                                            
+ &CCSORT  USEOE=T   &END                                                                            
 
 
 Contents of the molecule file
@@ -448,7 +444,7 @@ Point group: C2
   -------------------------------------------
 
     1
- 
+
 Na     0.0000000000   0.0000000000   0.0000000000
 
 
@@ -532,7 +528,7 @@ Na     0.0000000000   0.0000000000   0.0000000000
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
-  EDM operator: operator strenght multiplied by -4*CVAL, PFAC(1)=-.548144D+00
+  4c EDM2 operator: strength multiplied by -4*CVAL, PFAC(1)=-.548144D+00
  EDM: PLABEL SET to KINENERG, factor -4*c*field_strenght
  * Print level:    2
  * Dirac-Coulomb Hamiltonian
@@ -559,11 +555,19 @@ Na     0.0000000000   0.0000000000   0.0000000000
 ---------------------------------------------------------------------------
     Operator no.  1:   Heff_EDM        
 ---------------------------------------------------------------------------
-    1  Heff_EDM             A       T+
+    1  Heff_EDM             A       T-
 ...........................................................................
       Operator type BETAGAMMA5 : i[beta gamma5]P
       Labels and factors     : KINENERG 0+-0    -0.5481439992378 (imaginary)
 ...........................................................................
+    ***** HAMINP WARNING *****
+    The operator Heff_EDM is not totally symmetric under time reversal !
+    * Possible actions:
+      1. Use it with Kramers unrestricted wave functions (RelCC).
+      2. Include operator as perturbation for response methods.
+
+  *** Mixing of T+ and T- operators allowed at user's risk ! ***
+
 ---------------------------------------------------------------------------
     Operator no.  2:   ZDIPLEN         
 ---------------------------------------------------------------------------
@@ -704,7 +708,6 @@ Na     0.0000000000   0.0000000000   0.0000000000
 No. of positive energy orbitals (NESH):    18
 No. of negative energy orbitals (NPSH):    18
 Total no. of orbitals           (NORB):    36
- >>> Time used in PAMSET is   0.23 seconds
 
 
     **************************************************************************
@@ -723,10 +726,10 @@ Total no. of orbitals           (NORB):    36
      ************************************************************************
 
 
- Transformation started at : Wed Aug  1 11:28:21 2012
+ Transformation started at : Tue Oct 16 18:02:33 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -155.866369658574968
-* Heading : Na, DCrkb-SCF                                    Wed Aug  1 11:27:29 2012
+* REACMO: Coefficients read from file DFCOEF - Total energy: -155.866369658579345
+* Heading : Na, DCrkb-SCF                                    Tue Oct 16 18:02:33 2012
      Energy selection of active orbitals :      -30.00 < Eps. <      3000.00 with a mininum gap of     1.0000 au.
      Energy selection of active orbitals :      -30.00 < Eps. <      3000.00 with a mininum gap of     1.0000 au.
      Energy selection of active orbitals :      -30.00 < Eps. <      3000.00 with a mininum gap of     1.0000 au.
@@ -778,15 +781,15 @@ Total no. of orbitals           (NORB):    36
        ********************************************************************
 
 
- Transformation started at : Wed Aug  1 11:28:21 2012
+ Transformation started at : Tue Oct 16 18:02:33 2012
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -155.866369658574968
-* Heading : Na, DCrkb-SCF                                    Wed Aug  1 11:27:29 2012
+* REACMO: Coefficients read from file DFCOEF - Total energy: -155.866369658579345
+* Heading : Na, DCrkb-SCF                                    Tue Oct 16 18:02:33 2012
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   63.79%   21.32%    4.85%   19.34%   0.00799999s
-SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
+SOfock:LL  1.00D-12   63.79%   21.32%    4.85%   19.34%   0.00000000s
+SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.00400000s
 *** WARNING *** GTCFC1: No 1-Fock found. Regenerating.
  cp DFCOEF DFCOEF.BEST
 
@@ -806,13 +809,13 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
    - Beginning task   4 of   5 after      0. seconds and      0. CPU-seconds
    - Beginning task   5 of   5 after      0. seconds and      0. CPU-seconds
 
- Node    0 finished first half transformation          483797 HT integrals written ( 66.85%,      0.01 GB)
+ Node    0 finished first half transformation          474379 HT integrals written ( 65.55%,      0.01 GB)
   
- <<< Starting 2HT on node                      0
+ <<< Starting 2HT on node                     0
   
   
- >>> Finished 2HT on node                      0
- >>> Time used in 2HT_all is   3.10 seconds
+ >>> Finished 2HT on node                     0
+ >>> Time used in 2HT_all is   4.13 seconds
   
  - Binary  file MDCINT was written.
 * Screening statistics:
@@ -822,14 +825,14 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformation            0.440 seconds
- Time in  Second halftransformation           3.104 seconds
+ Time in  First halftransformation            0.892 seconds
+ Time in  Second halftransformation           4.128 seconds
 
 
  Total wall time used in PAMTRA :   00:00:10
- Total CPU  time used in PAMTRA (master only) :   00:00:04
+ Total CPU  time used in PAMTRA (master only) :   00:00:05
 
- Transformation ended at : Wed Aug  1 11:28:31 2012
+ Transformation ended at : Tue Oct 16 18:02:43 2012
 
 
 ---< Process     1 of     1----<
@@ -854,8 +857,8 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
 
 
- Today is :    1 Aug 12 
- The time is :  11:28:31
+ Today is :   16 Oct 12 
+ The time is :  18:02:43
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
@@ -894,7 +897,7 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
 
  Memory for reading and sorting integrals :          370978 8-byte words
  Core used for calculating amplitudes :              228720 8-byte words
- Core used for in core evaluation of triples :       178860 8-byte words
+ Core used for in core evaluation of triples :       189708 8-byte words
  Memory used for active modules :                    370978 8-byte words
 
  Expanding and sorting integrals to unique types :
@@ -904,28 +907,28 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
  Type VOVO :           25313 integrals
  Type VOVV :           33756 integrals
  Type VVVV :           45072 integrals
- 
- Start sorting of integral classes at  1 Aug 12 11:28:31
- 
- 
- Sorting of first 4 classes done at  1 Aug 12 11:28:32
+
+ Start sorting of integral classes at 16 Oct 12 18:02:43
+
+
+ Sorting of first 4 classes done at 16 Oct 12 18:02:43
 
  Need      1 passes to sort VOVV integrals
- 
-  Pass     1 ended at  1 Aug 12 11:28:32
- 
- VOVV sorting done at  1 Aug 12 11:28:32
+
+  Pass     1 ended at 16 Oct 12 18:02:43
+
+ VOVV sorting done at 16 Oct 12 18:02:43
 
  Need      1 passes to sort VVVV integrals
- 
-  Pass     1 ended at  1 Aug 12 11:28:33
- 
- VVVV sorting done at  1 Aug 12 11:28:33
+
+  Pass     1 ended at 16 Oct 12 18:02:43
+
+ VVVV sorting done at 16 Oct 12 18:02:43
 
  Reading Coulomb integrals :
- File date :      1 Aug 12 
- File time :       11:28:33
- # of integrals              279722
+ File date :     16 Oct 12 
+ File time :       18:02:43
+ # of integrals              270652
 
  Finished sorting of integrals
 
@@ -937,40 +940,40 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
  Spinor   Abelian Rep.         Energy   Recalc. Energy
   O    1    1    1E       -2.8175164502   -2.8113367971
   O    2    2    1E       -1.3800496339   -1.3811207660
-  O    3    3    1E       -1.3767451848   -1.3790490664
-  O    4    4    1E       -1.3767451848   -1.3765876300
+  O    3    3    1E       -1.3767451848   -1.3786259179
+  O    4    4    1E       -1.3767451848   -1.3770107784
   O    1    5    2E       -2.8175164502   -2.8236961032
   O    2    6    2E       -1.3800496339   -1.3789785019
-  O    3    7    2E       -1.3767451848   -1.3744413032
-  O    4    8    2E       -1.3767451848   -1.3769027396
+  O    3    7    2E       -1.3767451848   -1.3748644517
+  O    4    8    2E       -1.3767451848   -1.3764795912
   O    5    9    2E       -0.1537263982   -0.1537263982
   V    1   10    1E       -0.1537263982    0.1323656274
-  V    2   11    1E        0.1839548139    0.1742856654
-  V    3   12    1E        0.1840584378    0.1716627590
-  V    4   13    1E        0.1840584378    0.1771225940
-  V    5   14    1E        1.0437408352    1.0396970428
-  V    6   15    1E        1.0446079219    1.0387082145
-  V    7   16    1E        1.0446079219    1.0424172941
-  V    8   17    1E        1.0688086747    1.0854528021
-  V    9   18    1E        5.8246663321    5.8239265124
-  V   10   19    1E        5.8303850333    5.8302391235
-  V   11   20    1E        5.8303850333    5.8290516784
-  V   12   21    1E        9.3866682617    9.3913040402
-  V   13   22    1E       88.1836123823   88.1856894024
-  V    1   23    2E        0.1839548139    0.1936239624
-  V    2   24    2E        0.1840584378    0.1964541166
-  V    3   25    2E        0.1840584378    0.1909942816
-  V    4   26    2E        1.0437408352    1.0477846276
-  V    5   27    2E        1.0446079219    1.0505076293
-  V    6   28    2E        1.0446079219    1.0467985498
-  V    7   29    2E        1.0688086747    1.0521645472
-  V    8   30    2E        5.8246663321    5.8254061517
-  V    9   31    2E        5.8303850333    5.8305309429
-  V   10   32    2E        5.8303850333    5.8317183881
-  V   11   33    2E        9.3866682617    9.3820324831
-  V   12   34    2E       88.1836123823   88.1815353623
+  V    2   11    1E        0.1839548139    0.1742856637
+  V    3   12    1E        0.1840584378    0.1912409145
+  V    4   13    1E        0.1840584378    0.1575444402
+  V    5   14    1E        1.0437408352    1.0396970429
+  V    6   15    1E        1.0446079220    1.0328993995
+  V    7   16    1E        1.0446079220    1.0482261090
+  V    8   17    1E        1.0688086746    1.0854528021
+  V    9   18    1E        5.8246663321    5.8239265125
+  V   10   19    1E        5.8303850333    5.8309753370
+  V   11   20    1E        5.8303850333    5.8283154649
+  V   12   21    1E        9.3866682618    9.3913040402
+  V   13   22    1E       88.1836123825   88.1856894024
+  V    1   23    2E        0.1839548139    0.1936239641
+  V    2   24    2E        0.1840584378    0.1768759612
+  V    3   25    2E        0.1840584378    0.2105724354
+  V    4   26    2E        1.0437408352    1.0477846275
+  V    5   27    2E        1.0446079220    1.0563164443
+  V    6   28    2E        1.0446079220    1.0409897349
+  V    7   29    2E        1.0688086746    1.0521645472
+  V    8   30    2E        5.8246663321    5.8254061516
+  V    9   31    2E        5.8303850333    5.8297947295
+  V   10   32    2E        5.8303850333    5.8324546015
+  V   11   33    2E        9.3866682618    9.3820324831
+  V   12   34    2E       88.1836123825   88.1815353623
 
- The diagonal elements of the recomputed Fock matrix (right column) are used in perturbation expressions.
+ The original energies (left column) are used in perturbation expressions.
 
  Use the perturbative values (MP2, CCSD[T]/(T)/-T) with care, especially
  in  open shell calculations because the orbitals need not always be
@@ -978,11 +981,11 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
  The missing terms may be important !
 
 
- Nuclear repulsion + core energy :          -109.964140152602866
- Zero order electronic energy :              -14.055839305625582
- First order electronic energy :             -31.846390200348818
- Electronic energy :                         -45.902229505974404
- SCF energy :                               -155.866369658577270
+ Nuclear repulsion + core energy :          -109.964140152602397
+ Zero order electronic energy :              -14.055839305638285
+ First order electronic energy :             -31.846390200336298
+ Electronic energy :                         -45.902229505974582
+ SCF energy :                               -155.866369658576986
 
 
  Energy calculations
@@ -993,10 +996,10 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
 
   MP2 results
 
- SCF energy :                               -155.866369658577270
- MP2 correlation energy :                     -0.103806187183119
- Total MP2 energy :                         -155.970175845760394
- T1 diagnostic :                               0.007912628964561
+ SCF energy :                               -155.866369658576986
+ MP2 correlation energy :                     -0.103915024048375
+ Total MP2 energy :                         -155.970284682625362
+ T1 diagnostic :                               0.007968533339700
 
 
  CCSD options :
@@ -1004,135 +1007,130 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
  Maximum size of DIIS space :              8
  Convergence criterium :             0.1E-10
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000453195949
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000511654155
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.103785645684293   1.000000000000000   0.00791
+    0       -0.103894660610562   1.000000000000000   0.00797
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000521632804
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000586117783
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000993195243
-    1       -0.105615231340756   0.018768920922586   0.01226
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001028194614
+    1       -0.105631413895192   0.023881190361757   0.01233
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000874243926
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000913064300
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001270030214
-    2       -0.107344713638370   0.009531511654942   0.01386
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001297046405
+    2       -0.107349867101644   0.005936448032129   0.01392
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001237499810
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001267470395
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001487151670
-    3       -0.107611257339759   0.003587550920439   0.01530
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001491792977
+    3       -0.107611640031951   0.003572402795930   0.01537
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001520917227
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001521247661
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001595356263
-    4       -0.107525058617045   0.001509578038049   0.01623
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001598731053
+    4       -0.107526099699360   0.001587476570772   0.01626
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001565591673
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001565246005
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001603150201
-    5       -0.107532678679620   0.000196444951594   0.01643
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001599802040
+    5       -0.107533098414202   0.000267556862213   0.01643
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001561471810
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001560821853
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001597377216
-    6       -0.107536878826444   0.000051791805912   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001598190365
+    6       -0.107536762818089   0.000068785987630   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001560166230
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001560424874
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596597988
-    7       -0.107536386172689   0.000011256104874   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596489766
+    7       -0.107536408787843   0.000007125099716   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559955103
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001560007631
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596684011
-    8       -0.107536424787293   0.000007364867786   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596795226
+    8       -0.107536421651690   0.000001532758876   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559866978
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559949534
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596747164
-    9       -0.107536434712526   0.000002042034812   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596735598
+    9       -0.107536439963559   0.000000371371169   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559818510
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559880428
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596783704
-   10       -0.107536447051962   0.000000653680705   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596758951
+   10       -0.107536443701240   0.000000108084683   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559796671
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559840820
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596763245
-   11       -0.107536440568262   0.000000054826445   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757026
+   11       -0.107536443183608   0.000000041381387   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559792335
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559802285
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757901
-   12       -0.107536442712987   0.000000028880584   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757607
+   12       -0.107536442773472   0.000000025980930   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791747
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559792010
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757444
-   13       -0.107536442954241   0.000000003189564   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757053
+   13       -0.107536442947775   0.000000005810031   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791514
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791289
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757218
-   14       -0.107536443070216   0.000000001850527   0.01644
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757102
+   14       -0.107536443027892   0.000000001642423   0.01644
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791463
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791348
+
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757186
+   15       -0.107536443049171   0.000000001159294   0.01644
+
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791413
+
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757212
+   16       -0.107536443046068   0.000000000382050   0.01644
+
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791426
+
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757200
+   17       -0.107536443043691   0.000000000025391   0.01644
+
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791425
 
  WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757201
-   15       -0.107536443049230   0.000000000832320   0.01644
-
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791439
-
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757207
-   16       -0.107536443038945   0.000000000332611   0.01644
-
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791439
-
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757211
-   17       -0.107536443043114   0.000000000063021   0.01644
-
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791439
-
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757212
-   18       -0.107536443044418   0.000000000014085   0.01644
-
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000001559791439
-
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000001596757212
-   19       -0.107536443044568   0.000000000002484   0.01644
+   18       -0.107536443044253   0.000000000009478   0.01644
 
 
   CCSD results
 
- SCF energy :                               -155.866369658577270
- CCSD correlation energy :                    -0.107536443044568
- Total CCSD energy :                        -155.973906101621850
- T1 diagnostic :                               0.016444214103677
- Convergence :                                 0.000000000002484
- Number or iterations used :                                  19
+ SCF energy :                               -155.866369658576986
+ CCSD correlation energy :                    -0.107536443044253
+ Total CCSD energy :                        -155.973906101621225
+ T1 diagnostic :                               0.016444214102509
+ Convergence :                                 0.000000000009478
+ Number or iterations used :                                  18
 
 
   Perturbative treatment of triple excitations
 
- SCF energy :                               -155.866369658577270
- CCSD correlation energy :                    -0.107536443044568
- 4th order triples correction :               -0.001119307979213
- 5th order triples (T) correction :            0.000153140863376
- 5th order triples -T  correction :            0.000224262243459
- Total CCSD+T  energy :                     -155.975025409601074
- Total CCSD(T) energy :                     -155.974872268737698
- Total CCSD-T  energy :                     -155.974801147357624
+ SCF energy :                               -155.866369658576986
+ CCSD correlation energy :                    -0.107536443044253
+ 4th order triples correction :               -0.001122262842946
+ 5th order triples (T) correction :            0.000153444744819
+ 5th order triples -T  correction :            0.000224262243420
+ Total CCSD+T  energy :                     -155.975028364464180
+ Total CCSD(T) energy :                     -155.974874919719355
+ Total CCSD-T  energy :                     -155.974804102220759
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :    1 Aug 12 
- The time is :  11:28:33
+ Today is :   16 Oct 12 
+ The time is :  18:02:45
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -1143,73 +1141,72 @@ SOfock:SL  1.00D-12   55.84%   25.76%    6.03%   12.39%   0.02400202s
  CCSD(T) energy calculation :          Completed, restartable        
 
  Overview of calculated energies
-@ SCF energy :                              -155.866369658577270
-@ MP2 correlation energy :                    -0.103806187183119
-@ CCSD correlation energy :                   -0.107536443044568
-@ 4th order triples correction :              -0.001119307979213
-@ 5th order triples (T) correction :           0.000153140863376
-@ 5th order triples -T  correction :           0.000224262243459
-@ Total MP2 energy :                        -155.970175845760394
-@ Total CCSD energy :                       -155.973906101621850
-@ Total CCSD+T  energy :                    -155.975025409601074
-@ Total CCSD(T) energy :                    -155.974872268737698
-@ Total CCSD-T  energy :                    -155.974801147357624
+@ SCF energy :                              -155.866369658576986
+@ MP2 correlation energy :                    -0.103915024048375
+@ CCSD correlation energy :                   -0.107536443044253
+@ 4th order triples correction :              -0.001122262842946
+@ 5th order triples (T) correction :           0.000153444744819
+@ 5th order triples -T  correction :           0.000224262243420
+@ Total MP2 energy :                        -155.970284682625362
+@ Total CCSD energy :                       -155.973906101621225
+@ Total CCSD+T  energy :                    -155.975028364464180
+@ Total CCSD(T) energy :                    -155.974874919719355
+@ Total CCSD-T  energy :                    -155.974804102220759
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals                 1.792 seconds
- Time in CCSD equations                       0.752 seconds
- Time in - T1 equations                       0.124 seconds
+ Time in Sorting of integrals                 0.344 seconds
+ Time in CCSD equations                       1.300 seconds
+ Time in - T1 equations                       0.112 seconds
  Time in --- T1EQNS HOV*T2(A,C,I,K            0.012 seconds
- Time in --- T1EQNS VOOO*TAU                  0.012 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.004 seconds
  Time in --- T1EQNS VOVV contribution         0.044 seconds
  Time in --- T1EQNS VOVO * T(C,K)             0.004 seconds
- Time in - T2 equations                       0.560 seconds
- Time in -- GOINTM                            0.008 seconds
- Time in -- GVINTM                            0.024 seconds
- Time in -- AINTM                             0.012 seconds
- Time in -- HINTM                             0.200 seconds
- Time in --- HINTM: VOVV*T                    0.044 seconds
- Time in --- HINTM: VVOO contribution         0.072 seconds
- Time in -- T2 EQNS                           0.224 seconds
- Time in --- T2EQNS: TAU*AINTM contract       0.004 seconds
- Time in --- T2EQNS: VOVV*T1                  0.052 seconds
- Time in --- T2EQNS: HINTM*T2                 0.116 seconds
- Time in -- BINTM                             0.088 seconds
- Time in - DIIS extrapolation                 0.040 seconds
- Time in CCSD(T) evaluation                   0.100 seconds
- Time in -- T3CORR: VOVV contraction          0.068 seconds
- Time in -- T3CORR: energy calculation        0.028 seconds
+ Time in - T2 equations                       1.160 seconds
+ Time in -- GVINTM                            0.004 seconds
+ Time in -- AINTM                             0.020 seconds
+ Time in -- HINTM                             0.428 seconds
+ Time in --- HINTM: VOVV*T                    0.040 seconds
+ Time in --- HINTM: VVOO contribution         0.336 seconds
+ Time in -- T2 EQNS                           0.492 seconds
+ Time in --- T2EQNS: TAU*AINTM contract       0.020 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.040 seconds
+ Time in --- T2EQNS: HINTM*T2                 0.368 seconds
+ Time in -- BINTM                             0.216 seconds
+ Time in - DIIS extrapolation                 0.012 seconds
+ Time in CCSD(T) evaluation                   0.156 seconds
+ Time in -- T3CORR: VOVV contraction          0.136 seconds
+ Time in -- T3CORR: energy calculation        0.020 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :                 10.00                     3.99
- Initialization :                    0.00                     0.11
- Integral sorting :                  2.00                     1.79
- Energy calculation :                0.00                     0.96
+ Before CC driver :                 10.00                     5.27
+ Initialization :                    0.00                     0.12
+ Integral sorting :                  0.00                     0.34
+ Energy calculation :                2.00                     1.53
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
  Untimed parts :                     0.00                     0.00
- Total time in CC driver :             2.                     2.86
+ Total time in CC driver :             2.                     1.99
 
  Statistics for the word-addressable I/O
- Number of write calls                                1075.
- Number of read calls                                 1084.
- Megabytes written                                    3.325
- Megabytes read                                      62.507
+ Number of write calls                                1013.
+ Number of read calls                                 1022.
+ Megabytes written                                    3.198
+ Megabytes read                                      59.129
  Seconds spent in reads                               0.000
  Seconds spent in writes                              0.000
  average I/O speed for write (Mb/s)                   0.000
  average I/O speed for read  (Mb/s)                   0.000
 
 
- CPU time (seconds) used in RELCCSD:                     2.8562
- CPU time (seconds) used before RELCCSD:                 3.9882
- CPU time (seconds) used in total sofar:                 6.8444
+ CPU time (seconds) used in RELCCSD:                     1.9921
+ CPU time (seconds) used before RELCCSD:                 5.2683
+ CPU time (seconds) used in total sofar:                 7.2605
 
   --- Normal end of RELCCSD Run ---
 
@@ -1264,25 +1261,25 @@ Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small
  alpha    0.9997  |      0.0001         0.0000         0.0000         0.9996
  beta     0.0003  |      0.0000         0.0001         0.0001         0.0000
 
-* Positronic eigenvalue no.  4: -37579.011637130       (Occupation : f = 0.0000)           
+* Positronic eigenvalue no.  4: -37579.011637131       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     A  Na _small   B  Na _small
 -----------------------------------------------------------------------------------
- alpha    0.6406  |      0.0001         0.0000         0.6405         0.0000
- beta     0.3594  |      0.0000         0.0003         0.0000         0.3591
+ alpha    0.6275  |      0.0001         0.0000         0.6274         0.0000
+ beta     0.3725  |      0.0000         0.0003         0.0000         0.3722
 
-* Positronic eigenvalue no.  5: -37579.011637130       (Occupation : f = 0.0000)           
+* Positronic eigenvalue no.  5: -37579.011637131       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na py     A  Na _small   B  Na _small
 -----------------------------------------------------------------------------------
- alpha    0.5592  |      0.0002         0.0000         0.5590         0.0000
- beta     0.4408  |      0.0000         0.0002         0.0000         0.4406
+ alpha    0.5723  |      0.0002         0.0000         0.5722         0.0000
+ beta     0.4277  |      0.0000         0.0002         0.0000         0.4274
 
 * Positronic eigenvalue no.  6: -37575.548579457       (Occupation : f = 0.0000)           
 ==========================================================================================
@@ -1311,8 +1308,8 @@ Gross     Total   |    A  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.4015  |      0.4014         0.0000
- beta     0.5985  |      0.0000         0.5985
+ alpha    0.4906  |      0.4906         0.0000
+ beta     0.5094  |      0.0000         0.5093
 
 * Positronic eigenvalue no.  9: -37562.299392383       (Occupation : f = 0.0000)           
 ==========================================================================================
@@ -1321,8 +1318,8 @@ Gross     Total   |    A  Na _small   B  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.7984  |      0.7984         0.0000
- beta     0.2016  |      0.0000         0.2015
+ alpha    0.7093  |      0.7093         0.0000
+ beta     0.2907  |      0.0000         0.2906
 
 * Positronic eigenvalue no. 10: -37561.842850401       (Occupation : f = 0.0000)           
 ==========================================================================================
@@ -1351,8 +1348,8 @@ Gross     Total   |    A  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.4143  |      0.4143         0.0000
- beta     0.5857  |      0.0000         0.5857
+ alpha    0.6410  |      0.6410         0.0000
+ beta     0.3590  |      0.0000         0.3590
 
 * Positronic eigenvalue no. 13: -37558.790323911       (Occupation : f = 0.0000)           
 ==========================================================================================
@@ -1361,10 +1358,10 @@ Gross     Total   |    A  Na _small   B  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.7857  |      0.7857         0.0000
- beta     0.2143  |      0.0000         0.2143
+ alpha    0.5590  |      0.5590         0.0000
+ beta     0.4410  |      0.0000         0.4410
 
-* Positronic eigenvalue no. 14: -37558.627131437       (Occupation : f = 0.0000)           
+* Positronic eigenvalue no. 14: -37558.627131438       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1391,8 +1388,8 @@ Gross     Total   |    A  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.4921  |      0.4921         0.0000
- beta     0.5079  |      0.0000         0.5079
+ alpha    0.6376  |      0.6376         0.0000
+ beta     0.3624  |      0.0000         0.3624
 
 * Positronic eigenvalue no. 17: -37557.962470737       (Occupation : f = 0.0000)           
 ==========================================================================================
@@ -1401,10 +1398,10 @@ Gross     Total   |    A  Na _small   B  Na _small
 
 Gross     Total   |    A  Na _small   B  Na _small
 -----------------------------------------------------
- alpha    0.7079  |      0.7079         0.0000
- beta     0.2921  |      0.0000         0.2921
+ alpha    0.5624  |      0.5624         0.0000
+ beta     0.4376  |      0.0000         0.4376
 
-* Positronic eigenvalue no. 18: -37557.880596323       (Occupation : f = 0.0000)           
+* Positronic eigenvalue no. 18: -37557.880596322       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1414,7 +1411,7 @@ Gross     Total   |    A  Na _small   B  Na _small
  alpha    0.3333  |      0.3333         0.0000
  beta     0.6667  |      0.0000         0.6667
 
-* Electronic eigenvalue no.  1: -39.303513139889       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  1: -39.303513139876       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1424,7 +1421,7 @@ Gross     Total   |    L A  Na s      A  Na _small   B  Na _small
  alpha    0.9991  |      0.9987         0.0004         0.0000
  beta     0.0009  |      0.0000         0.0000         0.0009
 
-* Electronic eigenvalue no.  2: -2.8175164501564       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  2: -2.8175164501527       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1434,7 +1431,7 @@ Gross     Total   |    L A  Na s      B  Na _small
  alpha    0.9999  |      0.9998         0.0000
  beta     0.0001  |      0.0000         0.0001
 
-* Electronic eigenvalue no.  3: -1.3800496339403       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  3: -1.3800496339464       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1444,27 +1441,27 @@ Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small
  alpha    0.3334  |      0.3333         0.0000         0.0000         0.0001
  beta     0.6666  |      0.0000         0.3333         0.3333         0.0000
 
-* Electronic eigenvalue no.  4: -1.3767451847990       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  4: -1.3767451848051       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.1423  |      0.1422         0.0000         0.0000
- beta     0.8577  |      0.0000         0.6555         0.2022
+ alpha    0.2080  |      0.2079         0.0000         0.0000
+ beta     0.7920  |      0.0000         0.5940         0.1980
 
-* Electronic eigenvalue no.  5: -1.3767451847931       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  5: -1.3767451847992       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.5245  |      0.5244         0.0000         0.0000
- beta     0.4755  |      0.0000         0.0111         0.4643
+ alpha    0.4588  |      0.4587         0.0000         0.0000
+ beta     0.5412  |      0.0000         0.0726         0.4686
 
-* Electronic eigenvalue no.  6: -0.1537263982318       (Occupation : f = 0.5000)           
+* Electronic eigenvalue no.  6: -0.1537263982347       (Occupation : f = 0.5000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1474,7 +1471,7 @@ Gross     Total   |    L A  Na s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  7:  0.1839548139025       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.  7:  0.1839548138896       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1484,27 +1481,27 @@ Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py
  alpha    0.3333  |      0.3333         0.0000         0.0000
  beta     0.6667  |      0.0000         0.3333         0.3333
 
-* Electronic eigenvalue no.  8:  0.1840584378088       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.  8:  0.1840584378022       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.2863  |      0.2863         0.0000         0.0000
- beta     0.7137  |      0.0000         0.6334         0.0803
+ alpha    0.6238  |      0.6238         0.0000         0.0000
+ beta     0.3762  |      0.0000         0.3272         0.0489
 
-* Electronic eigenvalue no.  9:  0.1840584378187       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.  9:  0.1840584378077       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.3804  |      0.3804         0.0000         0.0000
- beta     0.6196  |      0.0000         0.0333         0.5863
+ alpha    0.0428  |      0.0428         0.0000         0.0000
+ beta     0.9572  |      0.0000         0.3394         0.6177
 
-* Electronic eigenvalue no. 10:  1.0437408351781       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 10:  1.0437408352203       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1514,27 +1511,27 @@ Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py
  alpha    0.3334  |      0.3333         0.0000         0.0000
  beta     0.6666  |      0.0000         0.3333         0.3333
 
-* Electronic eigenvalue no. 11:  1.0446079219373       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 11:  1.0446079219647       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.2569  |      0.2569         0.0000         0.0000
- beta     0.7431  |      0.0000         0.6370         0.1061
+ alpha    0.0176  |      0.0176         0.0000         0.0000
+ beta     0.9824  |      0.0000         0.5234         0.4589
 
-* Electronic eigenvalue no. 12:  1.0446079219456       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 12:  1.0446079219680       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py  
 --------------------------------------------------------------------
- alpha    0.4098  |      0.4097         0.0000         0.0000
- beta     0.5902  |      0.0000         0.0297         0.5606
+ alpha    0.6491  |      0.6490         0.0000         0.0000
+ beta     0.3509  |      0.0000         0.1432         0.2077
 
-* Electronic eigenvalue no. 13:  1.0688086746693       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 13:  1.0688086746499       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1544,7 +1541,7 @@ Gross     Total   |    L A  Na s
  alpha    0.9999  |      0.9999
  beta     0.0001  |      0.0000
 
-* Electronic eigenvalue no. 14:  5.8246663321338       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 14:  5.8246663321308       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1554,27 +1551,27 @@ Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small
  alpha    0.3336  |      0.3332         0.0000         0.0000         0.0003
  beta     0.6664  |      0.0000         0.3332         0.3332         0.0000
 
-* Electronic eigenvalue no. 15:  5.8303850333136       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 15:  5.8303850333082       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small   B  Na _small
 --------------------------------------------------------------------------------------------------
- alpha    0.4671  |      0.4670         0.0000         0.0000         0.0002         0.0000
- beta     0.5329  |      0.0000         0.0134         0.5193         0.0000         0.0002
+ alpha    0.6329  |      0.6328         0.0000         0.0000         0.0001         0.0000
+ beta     0.3671  |      0.0000         0.3049         0.0619         0.0000         0.0002
 
-* Electronic eigenvalue no. 16:  5.8303850333218       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 16:  5.8303850333238       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small   B  Na _small
---------------------------------------------------------------------------------------------------
- alpha    0.1997  |      0.1995         0.0000         0.0000         0.0002         0.0000
- beta     0.8003  |      0.0000         0.6530         0.1472         0.0000         0.0001
+Gross     Total   |    L A  Na pz     L B  Na px     L B  Na py     A  Na _small
+-----------------------------------------------------------------------------------
+ alpha    0.0339  |      0.0336         0.0000         0.0000         0.0003
+ beta     0.9661  |      0.0000         0.3615         0.6045         0.0000
 
-* Electronic eigenvalue no. 17:  9.3866682616942       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 17:  9.3866682617500       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1584,7 +1581,7 @@ Gross     Total   |    L A  Na s      A  Na _small   B  Na _small
  alpha    0.9995  |      0.9993         0.0002         0.0000
  beta     0.0005  |      0.0000         0.0000         0.0005
 
-* Electronic eigenvalue no. 18:  88.183612382342       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no. 18:  88.183612382455       (Occupation : f = 0.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -1607,33 +1604,33 @@ Gross      Total    |    L A  Na s      L A  Na pz     L B  Na px     L B  Na py
 
 
  
-     Date and time (Linux)  : Wed Aug  1 11:28:33 2012
+     Date and time (Linux)  : Tue Oct 16 18:02:45 2012 
      Host name              : not found                               
 
+>>>> Node 0, utime: 6, stime: 0, minflt: 111713, majflt: 0, nvcsw: 790, nivcsw: 618, maxrss: 24064
+>>>> Total WALL time used in DIRAC: 12s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         0.40
+  Mean allocation size (Mb) :         1.55
   
-  Largest                    10  allocations
+  Largest                   10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x887                               for work array at main                        
-        0.99 Mb at subroutine ccseti_+0x6b5                              for ibuf                                      
-        0.99 Mb at subroutine ccseti_+0x6b5                              for ibuf                                      
-        0.72 Mb at subroutine ccseti_+0xd6f                              for vta                                       
-        0.72 Mb at subroutine ccseti_+0xd2b                              for vt                                        
-        0.72 Mb at subroutine ccseti_+0xd6f                              for vta                                       
-        0.72 Mb at subroutine ccseti_+0xd2b                              for vt                                        
-        0.52 Mb at subroutine ccener_+0x1d5a                             for vvvo                                      
-        0.52 Mb at subroutine ccener_+0x1d5a                             for vvvo                                      
-        0.39 Mb at subroutine ccener_+0xf53                              for buf3                                      
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        7.63 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in READIN                            
+        0.99 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+        0.99 Mb at subroutine __allocator_track_if_MOD_allocator_registe for ibuf                                      
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.72 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        0.72 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
   
-  Peak memory usage    (Mb) :       491.00
-       reached at subroutine : ccseti_+0xd6f                             
-              for variable   : vta                                       
+  Peak memory usage    (Mb) :       488.00
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : unnamed variable                          
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 6, stime: 2, minflt: 114209, majflt: 0, nvcsw: 507, nivcsw: 235, maxrss: 0
->>>> Total WALL time used in DIRAC: 12s
