@@ -51,8 +51,8 @@ For PVC operator we keep factors of 1.0D0.
 MgF molecule
 ------------
 
-Table: 1,2 matrix elements
-GNUC:
+Table: matrix elements +/- omega states of the valence open-shell spinor, GNuc model
+
                  F                   Mg
      PVC:  -0.0020102470       -0.0044718635
       FC:  -0.0020102465       -0.0044718611
@@ -61,11 +61,12 @@ RnF(65+) MgF-like molecule (21 electrons)
 -----------------------------------------
 
 We simulated diatomic open-shell system with heavy nucleus (Z=86 - Rn atom), RnF,
-but with 21 electrons only, having thus charge of 65+.
+but with 21 electrons only, having thus high charge of 65+.
 
 MO-transformed matrix elements of alpha*rho operators:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-GNUC:
+
+Table: matrix elements between +/- omega states of the valence open-shell spinor, GNuc model
 
                 F                  Rn
       PVC   0.0000799991       -0.0000165875
@@ -74,14 +75,13 @@ GNUC:
 Density at the nucleus (scalar) operators :
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Gnuc, valence spinor (#11) exp.val. (in a.u.):
+GNuc model, valence spinor (#11) exp.val. (in a.u.):
                 F                  Rn
       PVC   0.29382975D-03   0.26175495D-03
        FC   0.29383985D-03   0.26190598D-03
 
-Total exp.val, GNUC (in a.u.):
+Total exp.val, GNuc model (in a.u.):
                 F                  Rn
       PVC   190.2191404628     1564150.328748
        FC   190.2190907103     1562379.047052
-
 
