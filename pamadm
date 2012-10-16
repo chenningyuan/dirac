@@ -367,7 +367,6 @@ dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_export_density')
 dirac_modules[this_module].add_test('weak_interactions')
-dirac_modules[this_module].add_test('edm')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'pcm'
