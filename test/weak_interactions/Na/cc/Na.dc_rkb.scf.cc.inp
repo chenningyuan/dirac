@@ -42,6 +42,7 @@
 .VECPOP
 all
 **MOLTRA
+# 1s(2) shell frozen
 .ACTIVE
 energy -30.0 3000.0 1.0
 *END OF
