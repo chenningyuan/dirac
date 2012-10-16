@@ -165,33 +165,6 @@ we get the average energy of 20 possible electronic states:
  \end{array}\right) 
  \cdot = 10 \cdot 2 = 20.
 
-- testing math  (http://www.bruunisejs.dk/PythonHacks/rstFiles/400%20Mathematical%20notes.html#examples)...
-
-.. math::
- \left(\begin{array}{cc} a & b \\
-     c & d \end{array}\right)
-
-.. math::
- \left(\begin{matrix} 10  \\ 9   \end{matrix}\right)
-
-.. math::
- \left(
-  10 \\
-   9  
- \right)
-
-.. math::
-  a & = (x + y)^2 
-    & = x^2 + 2xy + y^2
-
-.. math::
-
-  :nowrap:
-
-  \begin{eqnarray}
-  10 9 
-  \end{eqnarray}
-
 All 20 states are arising from the :math:`s^{1} d^{9}` configuration.
 
 In the second input:
