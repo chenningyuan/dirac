@@ -1,3 +1,0 @@
-Na.dc_rkb.scf.inp                          Na.sto-2g.C2.mol      --outcmo
-Na.dc_rkb_EDM_0.001_zdm_0.002.cc.inp       Na.sto-2g.C2.mol      --incmo
-rm DFCOEF
