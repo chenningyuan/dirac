@@ -957,7 +957,6 @@ C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP = 0
 C
-      CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
       NHTYPF = 0
@@ -1429,10 +1428,11 @@ C
 C              Check if large component basis is contracted
 C              ============================================
 C
-               DO 210 JBLCK = 1, NBLCK(I,1)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(1), NBLCK(I,1)+IBLOCK(1)-1
                   IF ((NUC(JBLCK,1).NE.NRC(JBLCK,1)).AND.
      &                (NRC(JBLCK,1).GT.0)) CNTBAS = .TRUE.
-  210          CONTINUE
+               END DO
                IF ( CNTBAS .AND.
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
                   DIRCON(1) = .TRUE.
@@ -1598,7 +1598,8 @@ C
 C              Check if small component basis is contracted
 C              ============================================
 C
-               DO JBLCK = 1, NBLCK(I,2)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(2), NBLCK(I,2)+IBLOCK(2)-1 
                   IF ((NUC(JBLCK,2).NE.NRC(JBLCK,2)).AND.
      &                (NRC(JBLCK,2).GT.0)) CNTBAS = .TRUE.
                END DO
