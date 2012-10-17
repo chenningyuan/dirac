@@ -409,6 +409,12 @@ C
             IBD = IBD + 1
             IF((IDOWN(ISGEN(IBD)).EQ.1).OR.(ISGEN(IBD).EQ.0))  THEN
               IF (CNTBAS) THEN
+                JSBEG = 0
+                JSEND = NUC(IBD,1)
+                IBS = IBS + 1
+                CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+              ELSE
 C               Collect the uncontracted small component
 C               basis functions in chunks of about 50 basis
 C               functions for higher efficiency in integral
@@ -428,12 +434,6 @@ C               evaluation.
                   CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
      &                        SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
                 ENDDO
-              ELSE
-                JSBEG = 0
-                JSEND = NUC(IBD,1)
-                IBS = IBS + 1
-                CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
               ENDIF
             ENDIF
           ENDDO
@@ -446,6 +446,12 @@ C
             IBU = IBU + 1
             IF((IUP(ISGEN(IBU)).EQ.1).OR.(ISGEN(IBU).EQ.0)) THEN
               IF (CNTBAS) THEN
+                JSBEG = 0
+                JSEND = NUC(IBU,1)
+                IBS = IBS + 1
+                CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+              ELSE
 C               See note above.
                 MXDUM = 50 - MOD(50, KHK(J))
                 MAXS = MAX((MXDUM/KHK(J)),1)
@@ -462,12 +468,6 @@ C               See note above.
                   CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
      &                        SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
                 ENDDO
-              ELSE
-                JSBEG = 0
-                JSEND = NUC(IBU,1)
-                IBS = IBS + 1
-                CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
               ENDIF
             ENDIF
           ENDDO
