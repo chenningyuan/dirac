@@ -56,6 +56,14 @@ Molecule and basis set
    molecule_and_basis/howto_uncontract.rst
 
 
+SCF - calculations
+==================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/atomic_start.rst
+
 Restarting and multi-step jobs
 ==============================
 
@@ -99,8 +107,8 @@ DFT and TDDFT
    tutorials/dft_cam.rst
 
 
-Calculating the properties
-============================
+Calculating molecular properties
+================================
 
 .. toctree::
    :maxdepth: 1
