@@ -1,6 +1,20 @@
 .. _goscip:
 
-&GOSCIP 
+
+======================
+GOSCIP -- COSCI module
+======================
+
+General Open Shell CI Program written by Olivier Visser
+
+This module allows for small full configuration interaction calculations. It is invoked from within DIRRCI if the namelist GOSCIP is present in the input, or if .RESOLVE is specified when doing open shell HF calculations.
+
+The input should be given in namelist form.
+
+Historical note: This program was originally written for MOLFDIR [1] and was later also included in DIRAC.
+
+
+&GOSCIP
 =======
 
 Specify the CI space.
@@ -44,7 +58,7 @@ Print level.
 
 .. _popana:
 
-&POPANA 
+&POPANA
 =======
 
 Analyze the CI wave function.

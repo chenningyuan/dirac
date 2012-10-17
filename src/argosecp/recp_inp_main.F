@@ -31,12 +31,10 @@
       common /parmi/
      & mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
       integer
-     & mconsu, mru,  mcru, msfu, 
-     & msfru,  mnru, ngcs, nu,   
+     & mconsu, mru,  mcru, msfu, msfru,  ngcs, nu,   
      & lxyzir, inam, nnam, mdum
       common /ntgr/
-     & mconsu, mru,  mcru, msfu, 
-     & msfru,  mnru, ngcs, nu,   
+     & mconsu, mru,  mcru, msfu, msfru,  ngcs, nu,   
      & lxyzir(3),inam(5),nnam,mdum(32)
 !     # dummy:
       integer ierr
@@ -214,8 +212,6 @@
 !             # assign the mnl(*) values to the so functions.
 !             # 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g,...
               mnl(iso) = ( lmnp1(icons)**2 + 2 * leig + 5 ) / 4
-!             IF (RECP_DBG.GE.1) THEN
-!             ENDIF
 
               iau = nd(lai)
               do ia = 1,iau

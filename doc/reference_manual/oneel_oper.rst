@@ -13,7 +13,7 @@ from linear combinations of the basic form
 
   \hat{P} = f M_{4 \times 4} \Omega
 
-with the scalar factor :math:`f`  and the scalar operator :math:`\Omega`, and where 
+with the scalar factor :math:`f`  and the scalar operator :math:`\Omega`, and where
 
 .. math::
 
@@ -40,13 +40,13 @@ Operator types
 There are 19 basic operator types used in DIRAC.
 
 +------------------+--------------------------------------------------------------------------------+-----------------+
-|      Keyword     |                           Operator form                                        |  Nr. Factors    | 
+|      Keyword     |                           Operator form                                        |  Nr. Factors    |
 +==================+================================================================================+=================+
 |  DIAGONAL        | :math:`f I_{4 \times 4} \Omega`                                                |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
 |    GAMMA5        | :math:`f \gamma_5 \Omega`                                                      |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
-|     XALPHA       | :math:`f \alpha_x \Omega`                                                      |  1              | 
+|     XALPHA       | :math:`f \alpha_x \Omega`                                                      |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
 |    YALPHA        | :math:`f \alpha_y \Omega`                                                      |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
@@ -68,7 +68,7 @@ There are 19 basic operator types used in DIRAC.
 +------------------+--------------------------------------------------------------------------------+-----------------+
 |    XBETASIG      |        :math:`f \beta \Sigma_x \Omega`                                         |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
-|    YBETASIG      |        :math:`f \beta \Sigma_y \Omega`                                         |  1              |   
+|    YBETASIG      |        :math:`f \beta \Sigma_y \Omega`                                         |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
 |    ZBETASIG      |        :math:`f \beta \Sigma_z \Omega`                                         |  1              |
 +------------------+--------------------------------------------------------------------------------+-----------------+
@@ -108,7 +108,7 @@ List of one-electron operators
 **Keyword**  **Components**
 
 
-| MOLFIELD      | Nuclear attraction integrals           | *(Symmetric)*        | MOLFIELD  
+| MOLFIELD      | Nuclear attraction integrals           | *(Symmetric)*        | MOLFIELD
 
 | OVERLAP       | Overlap integrals              | *(Symmetric)*        | OVERLAP       | Ω\ :sub:`1`\  = 1                                |
 
@@ -123,14 +123,14 @@ List of one-electron operators
 |               |                                      |                      | ZDIPVEL                                                                |
 | QUADRUP       | Quadrupole moments integrals        | *(Symmetric)*        | XXQUADRU                           |
 |               |                                     |                      | XYQUADRU                                        |
-|                                                      |                      | XZQUADRU                                                             
-|                                                      |                      | YYQUADRU                                                       
-|                                                     |                      | YZQUADRU                                               
-|               |                                      |                      | ZZQUADRU                                              
-| SPNORB        | Spatial spin-orbit integrals         | *(Anti-symmetric)*   | X1SPNORB                                              
-|               |                                                             | Y1SPNORB                                
-|                |                                      |                      | Z1SPNORB                                                  
-| SECMOM        | Second moments integrals             | *(Symmetric)*        | XXSECMOM         | Ω\ :sub:`1`\  = *x**x*                 
+|                                                      |                      | XZQUADRU
+|                                                      |                      | YYQUADRU
+|                                                     |                      | YZQUADRU
+|               |                                      |                      | ZZQUADRU
+| SPNORB        | Spatial spin-orbit integrals         | *(Anti-symmetric)*   | X1SPNORB
+|               |                                                             | Y1SPNORB
+|                |                                      |                      | Z1SPNORB
+| SECMOM        | Second moments integrals             | *(Symmetric)*        | XXSECMOM         | Ω\ :sub:`1`\  = *x**x*
 |               |                                      |                      | XYSECMOM         | Ω\ :sub:`1`\  = *x**y*                                          |
 |               |                                      |                      | XZSECMOM         | Ω\ :sub:`1`\  = *x**z*                                          |
 |               |                                      |                      | YYSECMOM         | Ω\ :sub:`1`\  = *y**y*                                          |
@@ -139,21 +139,21 @@ List of one-electron operators
 | THETA         | Traceless theta quadrupole integrals                    |                      |                                                                         |
 
 | CARMOM        | Cartesian moments integrals,Symmetric integrals,(l + 1)(l + 2)/2 components ( l = i + j + k) ; see also the example further below   |    | Ω\ :sub:`*l*`\  = *x*\ :sup:`*i*`\ *y*\ :sup:`*j*`\ *z*\ :sup:`*k*`\    |
-| SPHMOM        | Spherical moments integrals (real combinations), symmetric integrals, (2l+1) components, ( m = + 0, - 1, + 1,..., + l)              
-| SOLVENT       | Electronic solvent integrals            
-| FERMI C       | One-electron Fermi contact integrals                                                                                              
-| PSO           | Paramagnetic spin-orbit integrals                                                                                                   
-| SPIN-DI       | Spin-dipole integrals                                                                                                              
-| DSO           | Diamagnetic spin-orbit integrals                                                                                                    
-| SDFC          | Spin-dipole + Fermi contact integrals                                                                                               
-| HDO           | Half-derivative overlap integrals                                                                                                   
-| S1MAG         | Second order contribution from overlap matrix to magnetic properties                                                                
-| ANGLON        | Angular momentum around the nuclei                                                                                                  
-| ANGMOM        | Electronic angular momentum around the origin                                                                                       
-| LONMOM        | London orbital contribution to angular momentum                                                                                     
-| MAGMOM        | One-electron contributions to magnetic moment                                                                                       
-| KINENER       | Electronic kinetic energy                                                                                                          
-| DSUSNOL       | Diamagnetic susceptibility without London contribution                                                                              
+| SPHMOM        | Spherical moments integrals (real combinations), symmetric integrals, (2l+1) components, ( m = + 0, - 1, + 1,..., + l)
+| SOLVENT       | Electronic solvent integrals
+| FERMI C       | One-electron Fermi contact integrals
+| PSO           | Paramagnetic spin-orbit integrals
+| SPIN-DI       | Spin-dipole integrals
+| DSO           | Diamagnetic spin-orbit integrals
+| SDFC          | Spin-dipole + Fermi contact integrals
+| HDO           | Half-derivative overlap integrals
+| S1MAG         | Second order contribution from overlap matrix to magnetic properties
+| ANGLON        | Angular momentum around the nuclei
+| ANGMOM        | Electronic angular momentum around the origin
+| LONMOM        | London orbital contribution to angular momentum
+| MAGMOM        | One-electron contributions to magnetic moment
+| KINENER       | Electronic kinetic energy
+| DSUSNOL       | Diamagnetic susceptibility without London contribution
 
 add more from
 `http://dirac.chem.sdu.dk/dirlab/Dirlabdoc/Master.html <http://dirac.chem.sdu.dk/dirlab/Dirlabdoc/Master.html>`_
@@ -258,8 +258,8 @@ calculating the density at the nucleus.
     -0.000000001
 
 ... and here is next example of how-to calculate the electron density at
-the nucleus as an expectation value 
-:math:`\langle 0 \vert \delta(r-R) \vert 0 \rangle` 
+the nucleus as an expectation value
+:math:`\langle 0 \vert \delta(r-R) \vert 0 \rangle`
 for a Dirac-Coulomb HF wave function including a
 decomposition of the molecular orbital contributions to the density:
 
@@ -281,8 +281,8 @@ Cartesian moment expectation value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the following example I am calculating a cartesian moment expectation
-value 
-:math:`\langle 0 \vert x^1 y^2 z^3 \vert 0 \rangle` 
+value
+:math:`\langle 0 \vert x^1 y^2 z^3 \vert 0 \rangle`
 for a
 Levy-Leblond HF wave function:
 

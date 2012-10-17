@@ -34,16 +34,6 @@ Installing and configuring libraries used by DIRAC
    installation/mkl.rst
 
 
-Basis sets
-==========
-
-.. toctree::
-   :maxdepth: 1
-
-   basis_sets/basis.rst
-   basis_sets/howto_uncontract.rst
-
-
 First steps in DIRAC territory
 ==============================
 
@@ -53,6 +43,26 @@ First steps in DIRAC territory
    tutorials/getting_started.rst
    tutorials/reproducing_nr_results.rst
 
+
+Molecule and basis set
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   molecule_and_basis/molecule_using_mol.rst
+   molecule_and_basis/molecule_using_xyz.rst
+   molecule_and_basis/basis.rst
+   molecule_and_basis/howto_uncontract.rst
+
+
+SCF - calculations
+==================
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/atomic_start.rst
 
 Restarting and multi-step jobs
 ==============================
@@ -97,8 +107,8 @@ DFT and TDDFT
    tutorials/dft_cam.rst
 
 
-Calculating the properties
-============================
+Calculating molecular properties
+================================
 
 .. toctree::
    :maxdepth: 1
@@ -170,32 +180,20 @@ Reference manual
 .. toctree::
    :maxdepth: 1
 
-   reference_manual/ref_man_old.rst
-
    reference_manual/dirac.rst
-   reference_manual/molecule.rst
-   reference_manual/basis_ref.rst
    reference_manual/general.rst
    reference_manual/integrals.rst
-   reference_manual/optimize.rst
    reference_manual/molecule.rst
    reference_manual/hamiltonian.rst
    reference_manual/wavefunction.rst
-   reference_manual/scf.rst
-   reference_manual/resolve.rst
    reference_manual/goscip.rst
-   reference_manual/mcscf.rst
    reference_manual/analyze.rst
    reference_manual/properties.rst
-   reference_manual/mp2cal.rst
-   reference_manual/mvocal.rst
    reference_manual/moltra.rst
    reference_manual/dirrci.rst
-   reference_manual/relccsd.rst
+   reference_manual/relccsd_old.rst
+   reference_manual/relccsd_new.rst
    reference_manual/reladc.rst
-   reference_manual/krci.rst
-   reference_manual/lucita.rst
-   reference_manual/luciarel.rst
 
    reference_manual/grid.rst
 
@@ -210,6 +208,8 @@ For DIRAC programmers
    :maxdepth: 1
 
    programmers/documentation_howto.rst
+   programmers/release_preparation.rst
+   programmers/beta_testing.rst
    programmers/testing.rst
    programmers/cdash.rst
    programmers/input_reading.rst
@@ -232,5 +232,5 @@ Bibliography
 
 .. toctree::
    :maxdepth: 1
-   
+
    bib.rst

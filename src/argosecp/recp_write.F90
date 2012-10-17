@@ -257,10 +257,10 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array
   ENDDO
 
   IF (PRINT_LEVEL .GE. 5) THEN 
-     PRINT *,'   INT_TYPE       =',INT_TYPE
-     PRINT *,'   N_INTEGRAL     =',N_INTEGRAL(LBLOP)
-     PRINT *,'   N_SYM          =',N_SYM
-     PRINT *,'   MN_INTEGRAL    =',MN_INTEGRAL
+     WRITE(RECP_OUT,*)'   INT_TYPE       =',INT_TYPE
+     WRITE(RECP_OUT,*)'   N_INTEGRAL     =',N_INTEGRAL(LBLOP)
+     WRITE(RECP_OUT,*)'   N_SYM          =',N_SYM
+     WRITE(RECP_OUT,*)'   MN_INTEGRAL    =',MN_INTEGRAL
   ENDIF
 ! make sym_bfn 
   n_tot  = 0

@@ -143,8 +143,8 @@ SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
 #include "inc_print.h"
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
-  integer        mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir,inam,nnam,mdum
-  common /ntgr/  mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir(3),inam(5),nnam,mdum(32)
+  integer        mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
+  common /ntgr/  mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir(3),inam(5),nnam,mdum(32)
   INTEGER     LMNP1(*), I
   REAL*8      ZET(MCONU,*), ETA(MRCRU,MCONU,*)
   INTEGER     ICONS, ICONU, ICON

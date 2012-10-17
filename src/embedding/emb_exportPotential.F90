@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module FDE_exportPotentials
@@ -48,7 +48,7 @@ module FDE_exportPotentials
          real(kind=8), allocatable :: dmat(:)
 
          call fde_old_density_matrix_generator(dmat)
-         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
+         call fde_calculate_active_elpot(dmat,fde_export_grid,gf_export%elpot,gf_export%nucpot)
          call dealloc(dmat)
       end subroutine fde_export_write_data_to_memory
 
@@ -83,6 +83,7 @@ module FDE_exportPotentials
         real(kind=8), allocatable :: dmat(:)
         integer :: mat_dim
 
+        CALL TITLER('Preparing FDE data for export','*',118)
 !! calculate vc, density and gradient
 !         call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
 !         call fde_get_active_density(dmat, mat_dim, .true.)
@@ -90,9 +91,7 @@ module FDE_exportPotentials
 ! not so nice solution: while i don't get around to writing the ones above,
 ! just reuse the old code in the routine below
          call fde_old_density_matrix_generator(dmat)
-         call fde_test_export_density
-         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
-
+         call fde_calculate_active_elpot(dmat,fde_export_grid,gf_export%elpot,gf_export%nucpot)
          call dealloc(dmat)
 
       end subroutine fde_prepare_export
@@ -109,7 +108,9 @@ module FDE_exportPotentials
 !not handling hessian now
 !        character(len=132) :: csizehesrho1
          type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:), hes(:,:)
+         real(kind=8), pointer :: gp(:,:)                   ! the grid
+         real(kind=8), pointer :: np(:), gnp(:,:), hes(:,:) ! density, its gradient and hessian
+         real(kind=8), pointer :: vcp(:), vnp(:)            ! electrostatic (hartree+nuclear), nuclear potentials
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
@@ -140,6 +141,7 @@ module FDE_exportPotentials
          
          if (associated(gf_export%elpot)) then
             vcp => gf_export%elpot
+            vnp => gf_export%nucpot
          else
             call quit('potential not available in fde export')
          endif
@@ -154,10 +156,10 @@ module FDE_exportPotentials
          log_name    = ftmp%logfile%name
          
 
-         CALL TITLER('Output of density to XML file','*',118)
-         WRITE(log_unit,*) 'Name of the outputfile:', trim(export_name)
-         call fde_test_export_density
-         WRITE(log_unit,*) 'Writing data to xml_file:', export_name
+         CALL TITLER('Output FDE data to XML file','*',118)
+         WRITE(log_unit,*) 'Writing data to xml_file:', trim(export_name)
+
+         call fde_test_export
 
          write (csizept1,*)     size(gp,1) 
          write (csizept2,*)     size(gp,2)
@@ -168,7 +170,6 @@ module FDE_exportPotentials
          csizegrdrho1 = adjustl(csizegrdrho1)
 
          tag=>xml_open(export_name)
-           write(log_unit,*) 'tst'
            tag=>xml_tag_open(tag,'grid')
              call set_attribute(tag,'size',csizept2)
              tag=>xml_tag_open(tag,'dataset','gridpoints')
@@ -193,25 +194,23 @@ module FDE_exportPotentials
                 tag=>xml_tag_close(tag)
              endif
 
-!
-! export a dummy hessian
-!
-!           call allocp(hes, 6,int(SIZE(gp,2)))
-!           hes  = 0.0d0
-
              tag=>xml_tag_open(tag,'dataset','hessian')
                call set_attribute(tag,'size',  csizept2)
                call set_attribute(tag,'width', '6')    
                call xml_add_data(tag,hes)
              tag=>xml_tag_close(tag)
 
-!            call deallocp(hes)
-
              if (etmp%ex_coulomb) then
                 tag=>xml_tag_open(tag,'dataset','vc')
                   call set_attribute(tag,'size',  csizept2)
                   call set_attribute(tag,'width', '1')
                   call xml_add_data(tag,vcp)
+                tag=>xml_tag_close(tag)
+
+                tag=>xml_tag_open(tag,'dataset','nuc')
+                  call set_attribute(tag,'size',  csizept2)
+                  call set_attribute(tag,'width', '1')
+                  call xml_add_data(tag,vnp)
                 tag=>xml_tag_close(tag)
              endif
 
@@ -224,6 +223,7 @@ module FDE_exportPotentials
          tag=>xml_close(export_name)
 
 !aspg come back to this later         CALL TIME()
+          call dealloc(fde_export_grid)
 
       end subroutine fde_export_data_as_xml
 

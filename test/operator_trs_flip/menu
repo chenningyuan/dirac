@@ -1,8 +1,0 @@
-quick
-MgF.dc_rkb.scf_1fs_xalyalzal_fc.inp      MgF.sto-2g.C2v.mol 
-
-regular
-MgF+.dc_rkb.scf_1fs_xalyalzal_fc.inp     MgF.sto-2g.C2v.mol
-MgF.dc_rkb.scf_1fs_xalyalzal_fc.inp      MgF.sto-2g.C1.mol
-MgF.dc_rkb.scf_1fs_xalyalzal_fc.inp      MgF.sto-2g.lsym.mol
-MgF.dc_rkb.scf_1fs_xalyalzal_ovlp.inp    MgF.sto-2g.C2v.mol

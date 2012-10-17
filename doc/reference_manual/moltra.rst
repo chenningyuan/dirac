@@ -1,6 +1,6 @@
 .. _moltra:
 
-\*\*MOLTRA 
+\*\*MOLTRA
 ==========
 
 Integral transformation module.

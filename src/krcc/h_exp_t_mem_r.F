@@ -1,4 +1,4 @@
-      SUBROUTINE EXP_MT_H_EXP_TC_MEM_KRCC(WORK,KFREE,LFREE)
+      SUBROUTINE EXP_MT_H_EXP_TC_MEM_KRCC(IWAY,WORK,KFREE,LFREE)
 *
 * A lot has to be done to allocate arrays of correct length
 *
@@ -10,6 +10,13 @@
 * Pointers to scratch are returned in CC_SCR
 *
 *. Jeppe Olsen, May 2000
+*
+*
+* May want to move this to opct1234M_rel and then allocate for the type
+* of operator that is being used. That should give the correct
+* dimensions unlike now!
+*                               
+* Lasse 2012
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -24,6 +31,10 @@
 *
 *
       DIMENSION WORK(*)
+*
+* Allocate the temp arrays.
+
+      IF(IWAY.EQ.1) THEN
 *
 * Setting a default batch length. Increase or decrease according to
 * memory available and speed. Moved to input and default is set there!
@@ -171,6 +182,10 @@ C     LEN = 4*MXTSOB_P**2 * MXTSOB_H**2
       LEN = 4*NGAS
       CALL MEMGET('INTE',KLOCK1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLOCL1,LEN,WORK,KFREE,LFREE)
+*
+      ELSE
+      CALL MEMREL('TEMP',WORK,KIX1_CA,KIX1_CA,KFREE,LFREE)
+      END IF
 *
       RETURN
       END

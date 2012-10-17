@@ -28,11 +28,11 @@
      & mrcru, mstu, msu,   ng,   ns,   nst
       integer
      & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
+     & msfru,  ngcs,  nu,   
      & lxyzir,         inam,        nnam, mdum
       common /ntgr/
      & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
+     & msfru,  ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
       integer mcxu,mcxu2,mblu,mgcsu,CX_TEMP, IPQ_TEMP
 
@@ -175,9 +175,8 @@
                     npru = iru * jru
                   endif
  
-                  if ( npru .gt. mnru ) then
-                    call bummer('change mnrup (one place) to ',
-     &               npru,2)
+                  if (npru.gt.mnrup) then
+                    call bummer('change mnrup (one place) to ',npru,2)
                   endif
  
                   npr = 0

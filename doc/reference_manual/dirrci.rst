@@ -1,7 +1,8 @@
 .. _dirrci:
 
-DIRRCI
-======
+==========================
+DIRRCI -- Direct CI module
+==========================
 
 *Relativistic RASCI module* written by Lucas Visscher
 

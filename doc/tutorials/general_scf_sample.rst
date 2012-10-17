@@ -151,10 +151,9 @@ In the first example:
      9/10,0
      1/2,0
 
-we get the average energy of 20 states:
+we get the average energy of 20 possible electronic states:
 
 .. math::
-
  \left(\begin{array}{c}
    10  \\
    9 

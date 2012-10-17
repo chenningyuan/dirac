@@ -11,6 +11,7 @@ public :: generate_test, unit_test_generator_destructor
 public :: add_inp_variable, add_out_variable, add_opt_variable
 
 interface add_inp_variable
+  module procedure add_inp_character_variable
   module procedure add_inp_logical_variable
   module procedure add_inp_integer_variable
   module procedure add_inp_integer_1d_array
@@ -21,6 +22,9 @@ interface add_inp_variable
   module procedure add_inp_real_3d_array
   module procedure add_inp_real_4d_array
   module procedure add_inp_real_5d_array
+  module procedure add_inp_complex_variable
+  module procedure add_inp_complex_1d_array
+  module procedure add_inp_complex_2d_array
 end interface add_inp_variable
 
 interface add_out_variable
@@ -33,6 +37,9 @@ interface add_out_variable
   module procedure add_out_real_3d_array
   module procedure add_out_real_4d_array
   module procedure add_out_real_5d_array
+  module procedure add_out_complex_variable
+  module procedure add_out_complex_1d_array
+  module procedure add_out_complex_2d_array
 end interface add_out_variable
 
 interface set_suffix
@@ -43,12 +50,14 @@ end interface set_suffix
 
 private :: init_string, add_string, errall, erropen, i2c, l2c, gets, csize, change_string
 private :: add_data_routine, find_name, strip_blank, str_size, add_compare_info
-private :: write_data, write_integer_array, write_real_array
+private :: write_data, write_integer_array, write_real_array, write_complex_array
 
 interface write_data
+  module procedure write_character_variable
   module procedure write_logical_variable
   module procedure write_integer_variable
   module procedure write_real_variable
+  module procedure write_complex_variable
 end interface write_data
 
 private
@@ -147,7 +156,7 @@ contains
     call erropen(ier,'add_inp_real_array',gets(input_files(1)%str))
 
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dtmp
+    write(iunit,'(3D25.17)') dtmp
 
     close(iunit,status='keep')
 
@@ -204,6 +213,44 @@ contains
   call add_string('own_name',var_value)
 
   end subroutine add_out_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_character_variable(cvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, cvar
+
+  ! Internal variables
+  integer :: ier
+
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_character_variable',gets(input_files(1)%str))
+
+    write(iunit,'(a)') vname
+    write(iunit,'(a)') cvar
+
+    close(iunit,status='keep')
+  else
+    call write_data(cvar,vname)
+  endif
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('character(70)',var_type)
+  call add_string('0',var_dim)
+  call add_string('input',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_inp_character_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -388,7 +435,7 @@ contains
     call erropen(ier,'add_inp_real_variable',gets(input_files(1)%str))
   
     write(iunit,'(a)')      vname
-    write(iunit,'(D24.16)') dvar
+    write(iunit,'(D25.17)') dvar
   
     close(iunit,status='keep')
   else
@@ -430,7 +477,7 @@ contains
     call erropen(ier,'add_inp_real_1d_array',gets(input_files(1)%str))
 
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dvar
+    write(iunit,'(3D25.17)') dvar
 
     close(iunit,status='keep')
   else
@@ -472,7 +519,7 @@ contains
     call erropen(ier,'add_inp_real_2d_array',gets(input_files(1)%str))
 
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dvar
+    write(iunit,'(3D25.17)') dvar
 
     close(iunit,status='keep')
   else
@@ -515,7 +562,7 @@ contains
     call erropen(ier,'add_inp_real_3d_array',gets(input_files(1)%str))
 
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dvar
+    write(iunit,'(3D25.17)') dvar
 
     close(iunit,status='keep')
   else
@@ -559,7 +606,7 @@ contains
     call erropen(ier,'add_inp_real_4d_array',gets(input_files(1)%str))
   
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dvar
+    write(iunit,'(3D25.17)') dvar
   
     close(iunit,status='keep')
   else
@@ -604,7 +651,7 @@ contains
     call erropen(ier,'add_inp_real_5d_array',gets(input_files(1)%str))
 
     write(iunit,'(a)')       vname
-    write(iunit,'(3D24.16)') dvar
+    write(iunit,'(3D25.17)') dvar
 
     close(iunit,status='keep')
   else
@@ -620,6 +667,157 @@ contains
   call add_string('own_name',var_value)
 
   end subroutine add_inp_real_5d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_complex_variable(dvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar
+
+  ! Internal variables
+  integer :: ier
+
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_complex_variable',gets(input_files(1)%str))
+  
+    write(iunit,'(a)')       vname
+    write(iunit,'(2D25.17)') dvar
+  
+    close(iunit,status='keep')
+  else
+    call write_data(dvar,vname)
+  endif
+
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('complex*16',var_type)
+  call add_string('0',var_dim)
+  call add_string('input',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_inp_complex_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_complex_1d_array(dvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar(:)
+
+  ! Internal variables
+  integer :: n1, ier
+
+  n1 = size(dvar,1)
+
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_complex_1d_array',gets(input_files(1)%str))
+
+    write(iunit,'(a)')       vname
+    write(iunit,'(4D25.17)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_complex_array(dvar,n1,vname)
+  endif
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('complex*16, allocatable, dimension(:)',var_type)
+  call add_string( '(' // i2c(n1) // ')' , var_dim )
+  call add_string('input',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_inp_complex_1d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_inp_complex_2d_array(dvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar(:,:)
+
+  ! Internal variables
+  integer :: n1, n2, ier
+
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+
+  ! store input data to the file
+  !   1.) input file which will be read at the beginning of the test routine
+  !   2.) temporary file from which will be created subroutine which will return the input data
+  if(associated(input_files))then
+    open(iunit,file=gets(input_files(1)%str),status='unknown',form='formatted', &
+         access='sequential',position='append',iostat=ier)
+    call erropen(ier,'add_inp_complex_2d_array',gets(input_files(1)%str))
+
+    write(iunit,'(a)')       vname
+    write(iunit,'(4D25.17)') dvar
+
+    close(iunit,status='keep')
+  else
+    call write_complex_array(dvar,n1*n2,vname)
+  endif
+
+  ! add name, type, dimension, info and order in driver call
+  !   of the variable to the corresponding list
+  call add_string(vname,var_name)
+  call add_string('complex*16, allocatable, dimension(:,:)',var_type)
+  call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
+  call add_string('input',var_info)
+  call add_string('own_name',var_value)
+
+  end subroutine add_inp_complex_2d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_character_variable(cvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname, cvar
+
+  ! Internal variables
+  integer :: ier
+
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_character_variable',vname)
+  rewind iunit
+
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  character(*) :: ',vname
+  write(iunit,'(a)')
+  write(iunit,'(a,a,a,a,a)')"  ", vname, " = '", cvar, "'"
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+
+  close(iunit,status='keep')
+
+  end subroutine write_character_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -704,13 +902,42 @@ contains
   write(iunit,'(a)')        '  implicit none'
   write(iunit,'(a,a)')      '  real*8 :: ',vname
   write(iunit,'(a)')
-  write(iunit,'(2x,a,a,D24.16)') vname, ' = ', dvar
+  write(iunit,'(2x,a,a,D25.17)') vname, ' = ', dvar
   write(iunit,'(a)')
   write(iunit,'(a)')        '  end subroutine'
  
   close(iunit,status='keep')
 
   end subroutine write_real_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_complex_variable(dvar,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar
+
+  ! Internal variables
+  integer :: ier
+
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_complex_variable',vname)
+  rewind iunit
+ 
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  complex*16 :: ',vname
+  write(iunit,'(a)')
+  write(iunit,'(2x,a,a,D25.17,a,D25.17,a)') vname, ' = (', dreal(dvar), ',', dimag(dvar), ')'
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+ 
+  close(iunit,status='keep')
+
+  end subroutine write_complex_variable
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -766,7 +993,7 @@ contains
   write(iunit,'(a,a)')      '  real*8, dimension(*) :: ',vname
   write(iunit,'(a)')
   do i=1,ndim
-    write(iunit,'(2x,a,a,i12,a,3D24.16)') vname, '(', i, ') = ', dvar(i)
+    write(iunit,'(2x,a,a,i12,a,D25.17)') vname, '(', i, ') = ', dvar(i)
   enddo
   write(iunit,'(a)')
   write(iunit,'(a)')        '  end subroutine'
@@ -774,6 +1001,39 @@ contains
   close(iunit,status='keep')
 
   end subroutine write_real_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine write_complex_array(dvar,ndim,vname)
+  implicit none
+
+  ! External variables
+  character(*), intent(in) :: vname
+  integer,      intent(in) :: ndim
+  complex*16,   intent(in) :: dvar(*)
+
+  ! Internal variables
+  integer :: i, ier
+
+  open(iunit,file=vname,status='unknown',form='formatted',access='sequential',iostat=ier)
+  call erropen(ier,'write_complex_array',vname)
+  rewind iunit
+
+  write(iunit,'(a,a,a,a,a)')'  subroutine get_data_', vname, '(', vname, ')'
+  write(iunit,'(a)')        '  implicit none'
+  write(iunit,'(a,a)')      '  complex*16, dimension(*) :: ',vname
+  write(iunit,'(a)')
+  do i=1,ndim
+    write(iunit,'(2x,a,a,i12,a,D25.17,a,D25.17,a)') &
+      vname, '(', i, ') = (', dreal(dvar(i)), ',', dimag(dvar(i)), ')'
+  enddo
+  write(iunit,'(a)')
+  write(iunit,'(a)')        '  end subroutine'
+
+  close(iunit,status='keep')
+
+  end subroutine write_complex_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1270,6 +1530,121 @@ contains
   endif
 
   end subroutine add_out_real_5d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_complex_variable(dvar,vname,compare,threshold,file)
+  implicit none
+
+  ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('complex*16',var_type)
+    call add_string('0',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,0,compare,threshold,file)
+  else
+    call add_compare_info(vname,0,'array-array',threshold,file)
+    call write_data(dvar,strip_blank(vname) // '_ref')
+    write(6,*) ' STOP: output real variable is not yet implemented'
+    stop
+  endif
+
+  end subroutine add_out_complex_variable
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_complex_1d_array(dvar,vname,compare,threshold,file)
+  implicit none
+
+  ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar(:)
+
+  ! Internal variables
+  integer :: n1
+
+  n1 = size(dvar,1)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('complex*16, allocatable, dimension(:)',var_type)
+    call add_string( '(' // i2c(n1) // ')' , var_dim )
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1,'array-array',threshold,file)
+    call write_complex_array(dvar,n1,strip_blank(vname) // '_ref')
+  endif
+
+  end subroutine add_out_complex_1d_array
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine add_out_complex_2d_array(dvar,vname,compare,threshold,file)
+  implicit none
+
+  ! External variables
+  character(*), intent(in), optional :: compare, threshold, file
+  character(*), intent(in) :: vname
+  complex*16,   intent(in) :: dvar(:,:)
+
+  ! Internal variables
+  integer :: n1, n2
+
+  n1 = size(dvar,1)
+  n2 = size(dvar,2)
+
+  ! if vname is already defined just change its status to "inout" variable and write the data
+  if(find_name(vname) == 0)then
+    ! add name, type, dimension, info and order in driver call
+    !   of the variable to the corresponding list
+    call add_string(vname,var_name)
+    call add_string('complex*16, allocatable, dimension(:,:)',var_type)
+    call add_string('('//i2c(n1)//','//i2c(n2)//')',var_dim)
+    call add_string('output',var_info)
+    call add_string('own_name',var_value)
+  else
+    call change_string(var_info,'inout',find_name(vname))
+  endif
+
+  ! set what you want to compare
+  if(present(compare))then
+    call add_compare_info(vname,n1*n2,compare,threshold,file)
+  else
+    call add_compare_info(vname,n1*n2,'array-array',threshold,file)
+    call write_complex_array(dvar,n1*n2,strip_blank(vname) // '_ref')
+  endif
+
+  end subroutine add_out_complex_2d_array
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!

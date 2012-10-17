@@ -2,8 +2,9 @@
 
 .. _properties:
 
-PROPERTIES
-===========
+==============
+\*\*PROPERTIES
+==============
 
 This section allows for the evaluation of a large number of molecular
 properties. Available properties include:
@@ -205,7 +206,7 @@ Other predefined properties
 .MOLGRD
 -------
 
-Evaluate the molecular gradient, i.e. 
+Evaluate the molecular gradient, i.e.
 
 ..|{\\frac{{\\partial E}}{{\\partial X\_A}}}|
 
@@ -1094,7 +1095,7 @@ Give the number of "left" and "right" states in each boson symmetry.
     5 5 5 5
     0 0 0 0
 
-Compute the transition moments \|\\langle i\|\\hat{A}\|i\\rangle|, 
+Compute the transition moments \|\\langle i\|\\hat{A}\|i\\rangle|,
 where i goes from 1 to 5 in each symmetry (four symmetries in this case). The
 zeros can be substituted for positive integers to generate elements \|\\langle i\|\\hat{A}\|j\\rangle|.
 
@@ -1150,7 +1151,7 @@ Threshold for convergence of reduced system.
 ::
 
     .THRESH
-     1.0D-5 
+     1.0D-5
 
 Control integral contributions
 ==============================
@@ -1279,7 +1280,7 @@ use overlap selection and possibly orbital freezing.
 #. The STEX calculation is run with the specified hole orbitals,
 starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
 files.\
- 
+
 please provide an
    example !
 
