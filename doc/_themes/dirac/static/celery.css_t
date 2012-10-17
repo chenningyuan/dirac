@@ -155,7 +155,7 @@ div.sphinxsidebar input {
 /* -- body styles ----------------------------------------------------------- */
 
 a {
-    color: #666666;
+    color: #8C2E50;
     text-decoration: underline;
 }
 
