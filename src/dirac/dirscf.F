@@ -1273,8 +1273,11 @@ C*****************************************************************************
 #ifdef PCM_MODULE
       use pcm_interface
 #endif
+
+ 
+
 #ifdef MOD_PEQM
-      use polarizable_embedding, only: pe_master
+      use polarizable_embedding, only: pe_master 
 #endif
 
 #include "implicit.h"
@@ -1306,6 +1309,8 @@ C
 #endif
 #ifdef MOD_PEQM
       real(8) :: Epe(1)
+      real(8), allocatable :: dmat_triangle(:)
+      real(8), allocatable :: fmat_triangle(:)
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1504,27 +1509,71 @@ C
 
 #ifdef MOD_PEQM
 
-!        if (bla) then
-!           later we will the keyword for that
 
 !        *** edh: "Polarizable playground" ***  
 
       write(lupri,*) '*** Polarizable Embedding Playground ***'    
 
-         !      call pe_master('fock',
-         !      denmats=wrk(kdentf:kdentf+nnbasx-1),
-!     &               fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
-!     &               Epe=wrk(kwrk1:kwrk1),
-!     &               dalwrk=wrk(kwrk1+1:kwrk1+1+lwrk1))
-!      eqmmm = wrk(kwrk1)
+!     edh: Its is neccesary to construct a triangular matrix for
+!     pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
+      allocate(dmat_triangle(nnbbasx))
+      allocate(fmat_triangle(nnbbasx))
+      dmat_triangle = 0.0d0
+      fmat_triangle = 0.0d0
+ 
+! edh: Note that there is a factor 2 difference for diagonal elem.
+! in DALTON and DIRAC. For non-diagonal elem it is a factor 4. 
+      k = 1    
+      do i = 1, ntbas(1)
+!        do j = i, ntbas(1)
+         do j = 1, i
+            if (i == j) then
+               dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+            else
+               dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+            end if
+            k = k + 1
+         end do
+      end do
 
-      call pe_master('fock', denmats=dmat(1:n2bbasxq),
-     &               fckmats=fock(1:n2bbasxq), nmats=1,
+
+
+      call pe_master('fock', denmats=dmat_triangle,
+     &               fckmats=fmat_triangle, nmats=1,
      &               Epe=Epe,
      &               dalwrk=work(kfree:kfree + lfree))
       eqmmm = work(kfree)
 
-!        end if
+!      print *, 'raboof fock before'
+!      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             1,(/1, 2, 3, 4/),LUPRI)
+       ! F = F + M
+       k = 1    
+       do i = 1, ntbas(1)
+!          do j = i, ntbas(1)
+          do j = 1, i
+             if (i == j) then ! edh: Conversion from DALTON to DIRAC
+                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                   + 2.0d0*fmat_triangle(k)
+             else
+                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                   + 2.0d0*fmat_triangle(k)
+               fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+     &                                   + 2.0d0*fmat_triangle(k)
+             end if !           k = k + 1
+             k = k + 1
+          end do
+       end do
+!      stop 1
+!      print *, 'raboof fock after'
+!      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             1,(/1, 2, 3, 4/),LUPRI)
+
+      deallocate(dmat_triangle)
+      deallocate(fmat_triangle)
+
+
+
 #endif
 
 
@@ -1725,6 +1774,11 @@ C*****************************************************************************
       use pcm_interface
 #endif
 
+#ifdef MOD_PEQM
+      use polarizable_embedding, only: pe_master
+#endif
+
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
@@ -1746,7 +1800,7 @@ C
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
-     &          DMAT(N2BBASX,NZ,NFMAT),
+     &          DMAT(N2BBASX,NZ,NFMAT), 
      &          E(4,2,0:MXOPEN),WORK(LWORK)
       DATA M/'AR','AI','BR','BI'/
 c     besterg is the lowest energy we encountered so far
@@ -1755,6 +1809,11 @@ c     besterg is the lowest energy we encountered so far
       real(kind=8) :: fde_energy
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
+#endif
+#ifdef MOD_PEQM
+      real(8) :: Epe(1)
+      real(8), allocatable :: dmat_triangle(:)
+      real(8), allocatable :: fmat_triangle(:)
 #endif
       data besterg /1.0D100/
       save besterg
@@ -1839,6 +1898,60 @@ C
         dhferg = dhferg + pcm_energy
       endif 
 #endif
+
+#ifdef MOD_PEQM
+
+!     edh: Its is neccesary to construct a triangular matrix for
+!     pe_module - DIRAC SCF uses square matrices (DALTON uses
+!     triangular)
+!     allocate(dmat_triangle(nnbbasx))
+!     allocate(fmat_triangle(nnbbasx))
+!     dmat_triangle = 0.0d0
+!     fmat_triangle = 0.0d0
+
+!     k = 1
+!     do i = 1, ntbas(1)
+!        do j = i, ntbas(1)
+!           if (i == j) then
+!              dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+!           else
+!              dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+!           end if
+!           k = k + 1
+!        end do
+!     end do
+
+!     call pe_master('fock', denmats=dmat_triangle,
+!    &               fckmats=fmat_triangle, nmats=1,
+!    &               Epe=Epe,
+!    &               dalwrk=work(kfree:kfree + lfree))
+!     eqmmm = work(kfree)
+
+!      ! F = F + M
+!      fock(1:ntbas(0)*ntbas(0)) = 0.0d0
+!      k = 1
+!      do i = 1, ntbas(1)
+!         do j = i, ntbas(1)
+!            if (i == j) then ! edh: Conversion from DALTON to DIRAC
+!               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+!    &                                   + fmat_triangle(k)
+!            else
+!               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+!    &                                   + fmat_triangle(k)
+!               fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+!    &                                   + fmat_triangle(k)
+!            end if 
+!            k = k + 1
+!         end do
+!      end do
+
+!      Epe = ddot(ntbas(0)*ntbas(0), fock, 1, dmat, 1)
+!      dhferg = dhferg + Epe
+
+!      deallocate(dmat_triangle)
+!      deallocate(fmat_triangle)
+#endif
+
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0

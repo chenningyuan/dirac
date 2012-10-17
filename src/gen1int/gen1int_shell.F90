@@ -373,6 +373,7 @@ module gen1int_shell
   !> \return idx_first is the index of the first orbital
   !> \return idx_last is the index of the last orbital
   subroutine Gen1IntShellGetRangeAO(sub_shell, idx_first, idx_last)
+
     type(sub_shell_t), intent(in) :: sub_shell
     integer, intent(out) :: idx_first
     integer, intent(out) :: idx_last

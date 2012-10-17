@@ -1367,7 +1367,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
 
     work => dalwrk
 
-     write(luout,*) '*** edh: Entering pe_module ***'
+     print *, '*** edh: Entering pe_master ***'
 
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
@@ -2717,7 +2717,8 @@ subroutine pe_fock(denmats, fckmats, Epe)
     end if
 
 !   edh: Print energy Epe
-    write(luout,*) '*** edh: Epe =', Epe
+!    print *, '*** edh: Epe:', Epe
+!    print *, '*** edh: Ees:', Ees
     
 end subroutine pe_fock
 
@@ -2855,10 +2856,10 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
 #endif
             if (myid == 0) then
-                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
-                rewind(lu)
-                write(lu) Esave, fckmats
-                close(lu)
+              ! call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+              ! rewind(lu)
+              ! write(lu) Esave, fckmats
+              ! close(lu)
             end if
             if (myid == 0 .and. ncores > 1) then
                 fckmats = tmpfcks
@@ -2962,11 +2963,19 @@ end subroutine es_polarizable_densities
 
 subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
 
+!edh: for debugging
+#include "priunit.h"
+
     real(dp), dimension(:,:), intent(in) :: Mks
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
     real(dp), dimension(:), intent(out) :: Eel
     real(dp), intent(out) :: Enuc
+!edh temp.
+    real(dp) :: Eel_2
+    integer :: kfoo
+    integer :: jfoo
+    integer :: ifoo
 
     integer :: site, ncomps
     integer :: i, j, k, l, m, n
@@ -2990,6 +2999,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     allocate(Mk_ints(nnbas,ncomps))
 
     Eel = 0.0d0; Enuc = 0.0d0
+    Eel_2 = 0.0d0
 
     i = 1
     do site = nsites(myid-1)+1, nsites(myid)
@@ -3008,19 +3018,41 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
             end do
         end do
 
+!    write(luout,*) '***edh: In es_multipoles routine'
+!    write(luout,*) ' Enuc', Enuc
+
         ! electron - multipole interaction energy
         call Mk_integrals(Mk_ints, Rs(:,site), Mks(:,i))
+
+        kfoo = 0
+        do ifoo = 1, 12
+           do jfoo = ifoo, 12
+              kfoo = kfoo + 1
+              Eel_2  = Eel_2 + denmats(kfoo) * Mk_ints(kfoo,1)
+           write(lupri,*) '*** edh: denmats, Mk_ints(kfoo,1), Eel_2', denmats(kfoo), Mk_ints(kfoo,1)
+           enddo
+        enddo
+
+      write(lupri,*) 'ncomps', ncomps
+      write(lupri,*) 'ndens', ndens
+
+        kfoo = 0              
         do j = 1, ncomps
             do l = 1, ndens
                 m = (l - 1) * nnbas + 1
                 n = l * nnbas
                 Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
-!edh              if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
+                do kfoo = m, n
+                 write(lupri,*) '*** edh: denmats(1), Mk_ints(1,1), El(l)', denmats(kfoo), Mk_ints(kfoo,j)
+                end do
+                if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do
         end do
         i = i + 1
     end do
-    print *, "raboof", Eel(1), Enuc
+
+    write(lupri,*) '***edh: Eel, Eel_2', Eel(1), Eel_2
+
     deallocate(Tsm, symfacs, Mk_ints)
 
 end subroutine es_multipoles

@@ -72,9 +72,11 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     call OnePropGetSymmetry(one_prop=prop_operator, &
                             prop_sym=prop_sym)
     if (num_prop /= ncomps) stop 'Wrong number of components.'
+       call Gen1IntAPIGetNumAO(num_ao=num_ao)
 
-    call Gen1IntAPIGetNumAO(num_ao=num_ao)
     if (num_ao /= nbas) stop 'Array size inconsistency.'
+
+
 
     select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)

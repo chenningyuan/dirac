@@ -729,7 +729,8 @@ C
 #endif
      &            DOOWN,blk)
 
-#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
+! edh: && defined (BUILD_OPENRSP) removed
+#if defined (BUILD_GEN1INT) 
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
@@ -4811,6 +4812,9 @@ C
 
       use codata
 
+      use polarizable_embedding, only: pe_read_potential, peqm,
+     &                                 pe_savden, pe_mep
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4979,6 +4983,14 @@ C
 C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(A,F18.12)')
      &   '  Nuclear repulsion energy :',POTNUC
+
+!edh: Reading a x.pot file
+!      if (peqm .or. pe_mep) then
+        call pe_read_potential(cord(:,1:natoms), charge(1:natoms))
+!      else if (pe_savden) then
+!        call pe_read_potential()
+!      end if
+
       RETURN
       END
 C  /* Deck priord */
