@@ -1094,11 +1094,18 @@ contains
   function strip_blank(string) result(str)
   implicit none
   character*(*), intent(in) :: string
-  character(len=str_size(string)) :: str
-  integer :: i
+  !character(len=str_size(string)) :: str ! please never use this construct 
+  character(:), allocatable  :: str(:)
+
+  integer :: i,istat
+
+  allocate(str(len=str_size(string)),stat=istat)
+  if (istat.ne.0) call quit('error in strip_blank: allocate !')
+
   do i=1,len(str)
     str(i:i) = string(i:i)
   enddo
+
   end function strip_blank
 
   pure function str_size(string) result(is)
@@ -1994,7 +2001,11 @@ contains
   function i2c(i) result(c)
   implicit none
   integer, intent(in) :: i
-  character(len=csize(i)) :: c
+  integer :: istat
+  !character(len=csize(i)) :: c
+  character(:), allocatable :: c(:)
+  allocate(c(len=csize(i)),stat=istat)
+  if (istat.ne.0) call quit('error in i2c: allocate !')
   write(c,'(i0)')i
   end function i2c
 
