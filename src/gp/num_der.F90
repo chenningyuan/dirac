@@ -35,7 +35,7 @@ contains
   !     [1]:  F.B. Hildebrand, Introduction to Numerical Analysis, DPI, Inc.,    !
   !           New York, 1974.                                                    !
   !------------------------------------------------------------------------------!
-  use unit_test_generator
+! use unit_test_generator
   implicit none
 
 #include "unit-test.h"
