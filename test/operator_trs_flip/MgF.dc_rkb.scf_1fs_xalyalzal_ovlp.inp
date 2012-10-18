@@ -1,0 +1,70 @@
+**DIRAC
+.TITLE
+  MgF
+.WAVE F ! Activate integral and wave functions modules
+.PROPERTIES ! Activate property module (dipole moment; polarizability...)
+.ANALYZE
+**GENERAL
+.DIRECT
+1 1 1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+2
+.INTFLG
+1 1 0
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
+.SCF
+*SCF
+.CLOSED SHELL
+20  
+.OPEN SHELL
+1
+1/2
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-8  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all  
+**PROPERTIES ! Calculating of properties...
+.PRINT
+2
+*EXPECTATION
+.ORBANA
+.PRINT 
+1
+# operator alpha*overlap = alpha_x*S + alpha_y*S+alpha_x*S
+# forsing time reversal flip of alpha_x,y,z *S 
+.OPERATOR
+ 'xalpha ovlp' 
+ XALPHA
+ OVERLAP
+ COMFACTOR
+ 1.00D0
+ TRS_FLIP
+.OPERATOR
+ 'yalpha ovlp'
+ YALPHA
+ OVERLAP
+ COMFACTOR
+ 1.0D00
+ TRS_FLIP
+.OPERATOR
+ 'zalpha ovlp'
+ ZALPHA
+ OVERLAP
+ COMFACTOR
+ 1.0D00
+ TRS_FLIP
+*END OF
