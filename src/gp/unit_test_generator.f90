@@ -1094,13 +1094,13 @@ contains
   function strip_blank(string) result(str)
   implicit none
   character*(*), intent(in) :: string
-  !character(len=str_size(string)) :: str ! please never use this construct 
-  character(:), allocatable  :: str(:)
+  character(len=str_size(string)) :: str 
+  !!character, allocatable  :: str(:)
 
   integer :: i,istat
 
-  allocate(str(len=str_size(string)),stat=istat)
-  if (istat.ne.0) call quit('error in strip_blank: allocate !')
+  !!allocate(str(str_size(string)),stat=istat)
+  !!if (istat.ne.0) call quit('error in strip_blank: allocate !')
 
   do i=1,len(str)
     str(i:i) = string(i:i)
@@ -2002,10 +2002,10 @@ contains
   implicit none
   integer, intent(in) :: i
   integer :: istat
-  !character(len=csize(i)) :: c
-  character(:), allocatable :: c(:)
-  allocate(c(len=csize(i)),stat=istat)
-  if (istat.ne.0) call quit('error in i2c: allocate !')
+  character(len=csize(i)) :: c
+  !!character, allocatable :: c(:)
+  !!allocate(c(csize(i)),stat=istat)
+  !!if (istat.ne.0) call quit('error in i2c: allocate !')
   write(c,'(i0)')i
   end function i2c
 
