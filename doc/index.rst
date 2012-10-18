@@ -116,7 +116,7 @@ Developers
 ==========
 
 * **Releasing:**
-  :doc:`Release preparation <programmers/documentation_howto>` |
+  :doc:`Release preparation <programmers/release_preparation>` |
   :doc:`Beta testing <programmers/beta_testing>`
 
 * **Programming:**
