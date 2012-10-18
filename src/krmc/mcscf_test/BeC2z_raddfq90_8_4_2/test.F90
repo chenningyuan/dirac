@@ -92,7 +92,7 @@ program test
          ,fq     = fq     &
          )
 
-  call compare_files(60,'raddfq90.out_8_4_2','raddfq90.out_8_4_2_ref',1.0d-15)
+  call compare_files(60,'raddfq90.out','raddfq90.out_8_4_2_ref',1.0d-15)
 
   deallocate( ipqtoq )
   deallocate( h2xy   )

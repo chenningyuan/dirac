@@ -23,7 +23,6 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
-option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
@@ -300,6 +299,7 @@ if(ENABLE_TESTS)
 endif()
 
 # create unit tests (set header for unit testing)
+set(ENABLE_UNIT_TESTS OFF)  # creation of unit tests is disabled for now
 if(ENABLE_UNIT_TESTS)
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()
