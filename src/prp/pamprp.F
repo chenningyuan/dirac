@@ -5079,7 +5079,7 @@ C    ==================================================
 C
       IF(IPRINT.GE.1) THEN
         WRITE(LUPRI,'(1X,A)')
-     & 'Diamagnetic susceptibility expectation value terms (no LAO):'
+     & 'Diamagnetic susceptibility expectation value terms (CGO):'
         DO I = 1, 6
           INDXPR = LEXPP(IPDSUSC(I))
           CALL PRSYMB(LUPRI,'.',75,0)
@@ -5091,15 +5091,15 @@ C
       ENDIF
 
       ELSE IF ((.NOT.MSUSCDIA).AND.(.NOT.LONDON)) THEN
-C    ... DO not calculate exp. value - diamag.term 
+C    ... Do not calculate exp. value - diamag.term 
 C        which is fully  involved in paramag. term when using URKBAL !
 
         DOEXP = .FALSE. 
         WRITE(LUPRI,'(1X,A)')
-     & 'Diamagnetic susceptibility expectation value term'//
+     & 'Diamagnetic CGO susceptibility expectation value term'//
      & ' is  not calculated (MSUSCDIA=.false.)!'
 
-C ... the case of London orbitals - do always calculate the exp.value !
+! ... London atomic orbitals - always calculate the expectation value
       ELSE IF (LONDON) THEN
 #if defined MOD_MAGNETIZ
 C  ... Here take care of one-electron terms 
@@ -5415,12 +5415,13 @@ C ... off-diagonal terms need to be symmetrized !
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
         CALL OP1IND('ZZRDSUL',IPDSUSC(27),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
-C-----------------------------------------------------------------
-C ... RDSUSNL terms,  pointers in IPDSUSC(28-33)
-C   are TRUE diamagnetic terms according to the Sternheim  
-C-----------------------------------------------------------------
-C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
-       IF (MSUSCDIA) THEN
+!-----------------------------------------------------------------
+! RDSUSNL terms,  pointers  IPDSUSC(28-33),
+! represent  Sternheim diamagnetic term for LAO-magnetizabilities
+!
+! include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
+!-----------------------------------------------------------------
+      IF (MSUSCDIA) THEN
         PNAME     = 'LAO-XXRDSUSNL'
         IPTYP     = 1
         NPCOMP    = 1
@@ -5481,69 +5482,70 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         CALL OP1IND('ZZDSUSN',IPDSUSC(33),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-C ... we need also DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
+C ... for diamagnetic terms, we also need DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
 
-      PNAME     = 'DSUSC_CGO-XX'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XXSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME     = 'DSUSC_CGO-XX'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XXSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XXDSUSC',IPDSUSC(34),LEXPP,NEXPP,INDXPR,MAXEXP)
+        CALL OP1IND('XXDSUSC',IPDSUSC(34),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-XY'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XYSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME     = 'DSUSC_CGO-XY'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XYSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XYDSUSC',IPDSUSC(35),LEXPP,NEXPP,INDXPR,MAXEXP)
+        CALL OP1IND('XYDSUSC',IPDSUSC(35),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-XZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME     = 'DSUSC_CGO-XZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XZDSUSC',IPDSUSC(36),LEXPP,NEXPP,INDXPR,MAXEXP)
+        CALL OP1IND('XZDSUSC',IPDSUSC(36),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-YY'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'YYSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME     = 'DSUSC_CGO-YY'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'YYSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YYDSUSC',IPDSUSC(37),LEXPP,NEXPP,INDXPR,MAXEXP)
-C
-      PNAME     = 'DSUSC_CGO-YZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'YZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        CALL OP1IND('YYDSUSC',IPDSUSC(37),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+        PNAME     = 'DSUSC_CGO-YZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'YZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YZDSUSC',IPDSUSC(38),LEXPP,NEXPP,INDXPR,MAXEXP)
-C
-      PNAME     = 'DSUSC_CGO-ZZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'ZZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        CALL OP1IND('YZDSUSC',IPDSUSC(38),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+        PNAME     = 'DSUSC_CGO-ZZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'ZZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
-       ENDIF
+        CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+      ENDIF ! of MSUSCDIA
 C
 C      Print section for LAO exp.values susceptibilities
 C    =======================================================
 C
        IF(IPRINT.GE.1) THEN
          WRITE(LUPRI,'(2X,A)') 'DEF_MSUSCP'//
-     &': Expec.value terms term for the magnet. susc with LAO:'
+     &': Expec.value terms for the magnetizabilities with LAO:'
          IF (MSUSCDIA) THEN 
            NOP_DSUSC=39
          ELSE 
@@ -5778,14 +5780,14 @@ C ... This is needed for compatibility with Dalton
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
-         IJX = IPDSUSC(IJ) 
+          IJX = IPDSUSC(IJ) 
           SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
           SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
          ENDDO
         ENDIF
 
-C ... Write output - always print out partial results
+! ... Write output - always print out partial results for compatibility with Dalton
        IF (IPRPRP.GE.0) THEN
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
@@ -5874,8 +5876,8 @@ CMI  ...    extract first character, like 'X magnetic field'
           KA = IPMSUSC(1,IA)
           SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1)
           IF (.NOT.XLR_SKIPEP) THEN
-C   .... save e-e "paramagnetic" and e-p "diamagnetic"
-C        contributions from the linear response function
+C          save e-e "paramagnetic" and e-p "diamagnetic"
+C          contributions from the linear response function
            SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),1) = ABLRF(IFREQ,KA,KB,2)
            SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),2) = ABLRF(IFREQ,KA,KB,3)
           ENDIF
@@ -5910,7 +5912,7 @@ C ....write out e-e and e-p contributions...
           WRITE(LUPRI,'(/,1X,A,F12.6,4X,A,F12.6)')
      &    'e-p "diamagnetic" contribution:',AVERAG_EP,
      &    'e-e "paramagnetic":',AVERAG_EE
-C        ... write out MSUSCDIA diamagnetic terms for comparison
+!        ... write out MSUSCDIA diamagnetic terms for comparison
           IF (MSUSCDIA) THEN
            CALL HEADER('.MSUSCD diamagnetic term for comparison '//
      &                 'with e-p "diamagnetic" term (au):',1)
@@ -5945,7 +5947,7 @@ C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
             SUSTOT(I,J)  = SUSDIA(I,J) + SUSREL(I,J)
          ENDDO
          ENDDO
-       ELSE 
+      ELSE 
 #if defined MOD_MAGNETIZ
 C        ... the case with London atomic orbitals ...
          DO I = 1, 3

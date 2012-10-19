@@ -111,7 +111,7 @@ cmi: restore to fix tests, later to be refined throughout the code
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
 C of all 3 integral classed (LL+LS+SS)
-!miro TODO: take the integral default from HAMINP
+!!! miro TODO: take the integral default from HAMINP !
       INTNMR = 7  
 C
 C     Process input 
@@ -201,15 +201,15 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
                DOEPRN = .FALSE.
                GO TO 100
    10          CONTINUE
-C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
+C&&&& .LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
                GO TO 100
    11          CONTINUE
-C&&&& USECM: use center of mass as a default gauge origin
+C&&&& .USECM: use center of mass as a default gauge origin
                USECM = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
+C&&&& .MLLSUS: Activate the modification of the relativistic RDSUSLL term
                RDSUSLLMOD = .TRUE.
                MODRDSUSLL = .TRUE.
                GO TO 100

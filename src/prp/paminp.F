@@ -354,7 +354,7 @@ CMI ... at present it is not implemented
             DOXLR = .TRUE.
             GO TO 100
   127    CONTINUE 
-C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
+C&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
             GO TO 100
