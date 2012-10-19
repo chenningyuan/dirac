@@ -2598,9 +2598,7 @@ C
 C     Manipulation of DFCOEF after a wave function calculation
 C
 C***********************************************************************
-
       use memory_allocator
-
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3557,7 +3555,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck acmout */
+C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
 C*****************************************************************************
 C
@@ -3568,62 +3566,10 @@ C     Written by T. Saue Mar 3 2008
 C
 C***********************************************************************
       use memory_allocator
-
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "cbirea.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-
-      integer, parameter   :: LWORK = 1000000
-      real(8), allocatable :: WORK(:)
-
-      CALL QENTER('ACMOIN')
-
-#include "memint.h"
-C
-C     Memory allocation
-      call alloc(WORK,LWORK,id='WORK in ACMOIN')
-      CALL MEMGET('REAL',KCMO1,N2BBASX*4 ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO2,N2BBASX*4 ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG1,NORBT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG2,NORBT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG1,NORBT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG2,NORBT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINUC,NTBAS(0)  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NTBAS(0)*2,WORK,KFREE,LFREE)
-C
-      CALL ACMOI1(WORK(KCMO1),WORK(KEIG1),WORK(KIBG1),
-     &            WORK(KCMO2),WORK(KEIG2),WORK(KIBG2),
-     &            WORK(KINUC),WORK(KIBUF),IPREAD,
-     &            WORK(KFREE),LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('ACMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
-      call dealloc(WORK)
-C
-      CALL QEXIT('ACMOIN')
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck acmou1 */
-      SUBROUTINE ACMOI1(CMO1,EIG1,IBEIG1,CMO2,EIG2,IBEIG2,INUC,
-     &                  IBUF,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Read coefficients from unformatted DFCOEF, 
-C     take out symmetry and write to unformatted DFACMO 
-C
-C     Written by T.Saue May 26 2003
-C
-C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(DM1 = -1.0D0)
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -3634,11 +3580,15 @@ C
 #include "nuclei.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
-     &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
-     &          INUC(*),IBUF(*),WORK(LWORK)
       DIMENSION IDIM(3),NBF(2)
-#include "memint.h"
+      real(8), allocatable :: CMO1(:)
+      real(8), allocatable :: CMO2(:)
+      real(8), allocatable :: EIG1(:)
+      real(8), allocatable :: EIG2(:)
+      integer, allocatable :: IBEIG1(:)
+      integer, allocatable :: IBEIG2(:)
+      integer, allocatable :: INUC(:)
+      integer, allocatable :: IBUF(:)
 C
 C     First check if file DFACMO is there
 C
@@ -3648,6 +3598,14 @@ C
      &      'ACMOIN: Unformatted file DFACMO not found !'
           CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
       ENDIF
+C     Allocate arrays
+      call alloc(CMO1,  N2BBASX*4, id="CMO1 in ACMOIN")
+      call alloc(CMO2,  N2BBASX*4, id="CMO2 in ACMOIN")
+      call alloc(EIG1,  NORBT,     id="EIG1 in ACMOIN")
+      call alloc(EIG2,  NORBT,     id="EIG1 in ACMOIN")
+      call alloc(IBEIG1,NORBT,     id="IBEIG1 in ACMOIN")
+      call alloc(IBEIG2,NORBT,     id="IBEIG2 in ACMOIN")
+      call alloc(IBUF,  NTBAS(0)*2,id="IBUF in ACMOIN")
 C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
@@ -3669,6 +3627,7 @@ C
 C
 C     Find correct ordering of nuclei
 C
+      call alloc(INUC,NTBAS(0),id="INUC in ACMOIN")
       CALL LSQMA1(INUC)
       I1 = 0
       I2 = 0
@@ -3683,6 +3642,7 @@ C
         ENDDO
         I1 = I1 + NTBAS(IC)
       ENDDO
+      call dealloc(INUC)
 C
 C     Get correct row ordering (NBAS) --> stored in CMO1     
 C     ==================================================
@@ -3742,6 +3702,15 @@ C     now I simply set IBEIG1 to zero.
       CALL ICOPY (NORBT,0,0,IBEIG1,1) 
       CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     De-allocate arrays
+      call dealloc(CMO1,  id="CMO1 in ACMOIN")
+      call dealloc(CMO2,  id="CMO2 in ACMOIN")
+      call dealloc(EIG1,  id="EIG1 in ACMOIN")
+      call dealloc(EIG2,  id="EIG1 in ACMOIN")
+      call dealloc(IBEIG1,id="IBEIG1 in ACMOIN")
+      call dealloc(IBEIG2,id="IBEIG2 in ACMOIN")
+      call dealloc(IBUF,  id="IBUF in ACMOIN")
 C
       RETURN
       END
@@ -3940,7 +3909,6 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0)
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
