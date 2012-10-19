@@ -1,0 +1,43 @@
+Linear response test of magnetizabilities
+=========================================
+
+We calculate magnetizabilities (in a.u.) for the LiH molecule with 
+London atomic orbitals (LAO) and without them - in common gauge origin scheme (CGO).
+
+For comparison of Levy-Leblond data we utilized the Dalton progam suite (daltonprogram.org).
+
+Small testing (uncontracted) basis is employed with point nucleus.
+
+                      Isotropic         Anisotropy
+-----------------------------------------------------------------
+LL-LAO(GO=0)          -1.9809            -0.4603
+LL-LAO(GO=1)          -1.9809            -0.4603
+LL-LAO(GO=CM)         -1.9809            -0.4603
+
+DalLAO(GO=CM)         -1.9809            -0.4603
+DalLAO(GO=1)          -1.9809            -0.4603
+DalLAO(GO=0)           
+
+DalCGO(GO=CM)         -2.4712             0.2752
+DalCGO(GO=1)          -68.6812           -68.1754 (1st),99.5966 (2nd)
+
+LL-CGO(GO=1)          -68.6812           -68.1754 (1st),99.5966 (2nd)
+LL-CGO(GO=CM)         -2.4712             0.2752
+
+RKB-LAO(GO=CM)
+RKB-LAO(GO=1)
+
+RKB-CGO(GO=CM)
+RKB-CGO(GO=0)
+RKB-CGO(GO=1)
+
+UKB-LAO(GO=1)         -1.7451            -0.8138
+UKB-LAO(GO=CM)        -1.7451            -0.8138
+
+UKB-CGO(GO=1)
+UKB-CGO(GO=CM)
+--------------------------------------------------------
+Used positions of the gauge origin:
+CM = center of mass of the LiH molecule
+0 = (0.000,0.000,0.000)
+1 = (11.000000,-4.500000,5.750000)
