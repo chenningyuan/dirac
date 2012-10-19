@@ -24,7 +24,7 @@ DalCGO(GO=1)          -68.6812           -68.1754 (1st),99.5966 (2nd)
 LL-CGO(GO=1)          -68.6812           -68.1754 (1st),99.5966 (2nd)
 LL-CGO(GO=CM)         -2.4712             0.2752
 
-RKB-LAO(GO=CM)
+RKB-LAO(GO=CM)        -2.4839             0.2943
 RKB-LAO(GO=1)
 
 RKB-CGO(GO=CM)        -2.4713             0.2754

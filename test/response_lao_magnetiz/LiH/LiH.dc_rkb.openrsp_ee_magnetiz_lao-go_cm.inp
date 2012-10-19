@@ -29,7 +29,7 @@
 **PROPERTIES ! Calculating of properties...
 .PRINT
 1
-.MAGNET
+#.MAGNET
 *NMR
 .INTFLG
 1 1 0
