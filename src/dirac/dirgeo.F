@@ -133,15 +133,10 @@ C
 C     Always do wave function
       DOPSI = .TRUE.
 C
-C
-      CALL PCMOIN()
-C
 C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
 C
       CALL PAMPSI()
-      IF(DOACUT) CALL ACMOUT()
-      IF(DOPUT) CALL PCMOUT()
 C
 C
 C*****************************************************************************
