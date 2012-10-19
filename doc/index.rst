@@ -154,8 +154,8 @@ Rest - move it to the right place
    tutorials/general_scf_sample.rst
 
 
-Does not belong here - will be moved elsewhere
-==============================================
+Does not belong here - will be moved elsewhere else
+===================================================
 
 .. toctree::
    :maxdepth: 1
