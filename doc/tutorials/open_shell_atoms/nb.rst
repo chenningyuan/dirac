@@ -122,14 +122,14 @@ in the Mulliken population analysis::
    alpha    1.0000  |      0.2500         0.2500         0.5000
    beta     0.0000  |      0.0000         0.0000         0.0000
 
-We see significant mixing of *4d* and *5s* orbitals for m\ :sub:`j`\  = 1/2.
-This mixing is forbidden from atomic symmetry. The problem is that we run the
-atom only in linear supersymmetry and so the mixing is introduced by numerical
-noise due to the energetic proximity of these orbitals.
+We see significant mixing of *4d* and *5s* orbitals.  This mixing is forbidden
+from atomic symmetry. The problem is that we run the atom only in linear
+supersymmetry and so the mixing is introduced by numerical noise due to the
+energetic proximity of these orbitals.
 
-An efficient way to handle such a case is to strip off the open-shell
-electrons and simply calculate first Nb\ :sup:`5+`\  with the electron
-configuration of Kr and to save the converged DFCOEF file::
+An efficient way to handle such a case is to strip off the open-shell electrons
+and simply calculate first Nb\ :sup:`5+`\  with the electron configuration of
+Kr and to save the converged DFCOEF file::
 
   **DIRAC
   .WAVE FUNCTION
@@ -196,7 +196,7 @@ This makes sure that the orbitals obtained in the calculation on
 Nb\ :sup:`5+`\  stay in place. Again, we keep the DFCOEF file
 for further restart.
 
-The final step is again to restart from DFCOEF and this time
+The final step is again to restart from DFCOEF but this time
 we relax the SCF by removing overlap selection::
 
   **DIRAC
@@ -226,8 +226,8 @@ we relax the SCF by removing overlap selection::
    1..oo
   *END OF
 
-We obtain convergence and our open-shell orbitals are pure *d* and *s*::
-
+We obtain convergence and our open-shell orbitals are pure *d* and *s*. This is
+what we wanted::
 
   * Electronic eigenvalue no. 10: -0.2557501903224       (Occupation : f = 0.4000)  m_j= -3/2
   ==========================================================================================
