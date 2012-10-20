@@ -8,9 +8,9 @@ rather an average-of-configuration calculation, which amounts to the
 optimization of the average energy of a set of configurations (or determinants)
 generated from the specification of a given number of open shells and their
 electron occupations. As an example of such a calculation, showing in
-particular tricks to help convergence, we consider the niobium atom.
+particular tricks to help convergence, we consider the Nb atom.
 
-The ground state configuration of niobium is
+The ground state configuration of Nb is
 [Kr].4d\ :sup:`4`\ .5s\ :sup:`1`\  and so a reasonable input for an
 average Hartree--Fock calculation would be::
 
