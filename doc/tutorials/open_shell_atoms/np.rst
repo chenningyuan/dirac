@@ -3,9 +3,8 @@
 Np atom
 =======
 
-In this tutorial we will try to get the [Rn] 5f4 6d1 7s2 configuration.
-This is a tough cookie.
-First we prepare the mol file::
+In this tutorial we will try to get the [Rn] 5f4 6d1 7s2 configuration of Np.
+This is a tough cookie.  First we prepare the mol file::
 
   DIRAC
 
@@ -72,14 +71,15 @@ selection like this::
    1..oo
   *END OF
 
-However this does not converge. Why not? To understand this have a look at the
-Mulliken population analysis of the [Rn] configuration.  In there you will see
-that gerade orbitals 22--26 are *d*, and 27 is an *s*.  It is important to know
-that DIRAC assumes that open-shell orbitals come at the end, after closed-shell
-orbitals. In this case DIRAC would occupy the *d* orbital 22 fully and then
-distribute one electron over 4 *d* and 1 *s* orbital. But this is not what we
-want. What we will do is to restart from [Rn] DFCOEF and reorder the virtual
-gerade orbitals. We move the empty *d* orbitals after the empty *s* orbital::
+However this does not converge (please try). Why not? To understand this have a
+look at the Mulliken population analysis of the [Rn] configuration (first
+calculation).  In there you will see that gerade orbitals 22--26 are *d*, and
+27 is an *s*.  It is important to know that DIRAC assumes that open-shell
+orbitals come at the end, after closed-shell orbitals. In this case DIRAC would
+occupy the *d* orbital 22 fully and then distribute one electron over 4 *d* and
+1 *s* orbital. But this is not what we want. What we will do is to restart from
+[Rn] DFCOEF and reorder the virtual gerade orbitals. We move the empty *d*
+orbitals after the empty *s* orbital::
 
   **DIRAC
   .WAVE FUNCTION
