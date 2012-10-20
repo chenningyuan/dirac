@@ -78,9 +78,8 @@ Tutorials and walkthrus
   :doc:`DIRRCI <tutorials/dirrci_sample>` |
   :doc:`GOSCIP <tutorials/goscip_sample>` |
   :doc:`Open-shell examples <tutorials/open_shells>` |
-  :doc:`Nb atom <tutorials/open_shell_atoms/nb>` |
-  :doc:`Np atom <tutorials/open_shell_atoms/np>` |
-  :doc:`SCF convergence <tutorials/scf_conv>`
+  :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
+  :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
 
 * **Troubleshooting:**
   :doc:`Memory problems <getting_help/memory>` |
