@@ -84,7 +84,6 @@ Tutorials and walkthrus
 * **Troubleshooting:**
   :doc:`Memory problems <getting_help/memory>` |
   :doc:`Known problems <getting_help/known_problems>` |
-  :doc:`Known bugs <getting_help/known_bugs>` |
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
