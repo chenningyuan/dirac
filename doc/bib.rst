@@ -25,7 +25,9 @@ or popular Google-Books web-space.
    J. Chem. Phys. **136**, 150902 (2012)
    <http://dx.doi.org/10.1063/1.3702628>
 
-.. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
+.. [Bast2011] Radovan Bast,  Anton Koers,  André Severo Pereira Gomes,  Miroslav Iliaš,  Lucas Visscher,  Peter Schwerdtfeger and Trond Saue
+   *Analysis of parity violation in chiral molecules*, PCCP **13**, 864 (2011)
+   <http://dx.doi.org/10.1039/c0cp01483d>
 
 .. [Barysz2010]  Barysz, Maria; Ishikawa, Yasuyuki (Eds.),
    *Relativistic Methods for Chemists*,
