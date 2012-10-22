@@ -5728,7 +5728,13 @@ C aspg, 20070909
          ENDIF
 
       ENDIF
-      IF(DOLVC) ISSINT = 0
+
+      IF(DOLVC) THEN
+         IF (ISSINT.NE.0) WRITE(LUPRI,"(2X,A)")
+     &   "WARNING: Chosen LVCORR as strong default,"//
+     &   " not calculating wanted SS-integrals class !"
+         ISSINT = 0
+      ENDIF
 C
 C     Reset MC if necessary
 CMI/Febr.2006 for BSS/TWOCOMP it is set up later
