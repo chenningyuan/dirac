@@ -7,7 +7,7 @@ preferably labeled as London atomic orbitals (LAO) in our cirles.
 Testing the effect of moving the gauge origin (GO), effects of relativity by modifying the speed of light
 and other parameters.
 
-We have chosen heavy diatomic RnH(77+), HF-like molecule, Gaussian nucleus.
+We have chosen heavy diatomic, RnH(77+),a HF-like molecule, with Gaussian type of nucleus.
 Small, 'sucked-out-of-finger' decontracted basis set to have MOs of this system converged.
 All values in ppm.
 
@@ -20,6 +20,9 @@ ukb-ep-lao-go_1
     ee+ep-rn         10322.7416          20.7567
     ee+ep-rn,symcon  10322.7416          20.7567
    
+rkbimp-ep-lao-go_cm
+    ee+ep-rn         10322.7416          20.7567
+
 rkb-ep-lao-go_cm
     ee-rn            9515.5269           14.5035
     ee+ep-rn         9515.5266           14.5036
