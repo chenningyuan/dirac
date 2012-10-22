@@ -1,4 +1,4 @@
-!dirac_copyright_start
+!  updates bydirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -1337,7 +1337,8 @@ C
         CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
-C     Magnetizabilities
+C     Magnetizabilities (magnetic susceptibilities), relaxation,expectation value,
+C     and if wished, diamagnetic terms
 C
       IF(MSUSCP) THEN
         CALL DEF_MSUSCP(WORK,LWORK)
@@ -1366,6 +1367,10 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
+      ELSE
+        WRITE(LUPRI,'(2X,A)')
+     &  '...Aucars diamagnetic'//
+     &  ' contribution to shieldings not calculating'
       ENDIF
 C
       IF (ROTG) THEN
@@ -3839,7 +3844,7 @@ C  /* Deck def_shield1 */
       SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Define operators for shieldings
+C     Define operators for shieldings or ESR
 C     DEF_SPNSP1 by T. Saue used as skeleton
 C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
@@ -3977,11 +3982,13 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
      &                          CHRXYZ(ICOORP2)
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                          INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-                    IF(IPRINT.GE.1) THEN
+                    IF (IPRINT.GE.5) THEN
+                       !  print out assiged operators of wanted property
+                       write(LUPRI,'(4X,A)')
+     &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
                     ENDIF
-                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,
-     &                          INDXPR,MAXEXP)
+                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,INDXPR,MAXEXP) 
                     IPRNST(NNSTIN) = IPIND
                  END DO
               END IF
@@ -3994,12 +4001,11 @@ C
 C     Define right hand operators
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
-
       IF (LONDON) THEN
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
       ELSE
 C
-C         Conventional atomic orbitals
+C  Conventional atomic orbitals (common gauge origin approach)
 C
       NCOMP = 2
       PFAC(1)  = -DMI2*CVAL
@@ -4102,15 +4108,18 @@ C
 C     Print section for NMR shielding:
 C
       IF (SHIELD) THEN
-        CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(A)') ' NMR shieldings:'
-        CALL PRSYMB(LUPRI,'=',75,0)
 C
 C     A operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(A)') ' ** A operators for shielding **'
+        IF (LONDON) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '** A operators for NMR shielding, LAO approach **'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &   '** A operators for NMR shielding, CGO approach **'
+        ENDIF
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
           INDOP1 = IPSHIELD(I)
@@ -4125,7 +4134,8 @@ C     B operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(A)') ' ** B operators for shielding or ESR **'
+        !WRITE(LUPRI,'(A)') ' ** B operators for NMR shielding or ESR **'
+        WRITE(LUPRI,'(A)') ' ** B operators for NMR shielding **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,3
           INDOP1 = IPSHIELD(I+MXCOOR)
@@ -4171,7 +4181,7 @@ C
       IF (LONDON) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
-     & ' ** NMR shieldings expectation values (London) **'
+     & ' ** NMR shieldings expectation values, LAO **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NNSTIN
           INDOP1 = IPRNST(I)
@@ -4704,8 +4714,9 @@ C
 C     Define diamagnetic contribution to shieldings
 C     (based on the Sternheimer approximation, see
 C      Aucar et al., JCP 110 (1999) 6208) )
-C     Written by T. Enevoldsen Oct. 1997
-C    MI&HJJ 2003,2004
+!
+!     Written by T. Enevoldsen Oct. 1997,
+!     updates by MI&HJJ 2003,2004
 C
 C***********************************************************************
 #include "implicit.h"
