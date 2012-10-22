@@ -35,20 +35,20 @@ and the molecular input ``hg-porphyrin.mol`` reads : ::
   --------------------------------------------------------
   C   4    3  X Y Z
           7.    2
-  N1    0.000000   4.1196801826    0.000000
-  N2    4.1196801826    0.000000    0.000000
+  N1    0.000000        4.1196801826    0.000000
+  N2    4.1196801826    0.000000        0.000000
   LARGE BASIS 6-31G
           6.    5
-  C1       4.642960672  4.642960672    0.000000
-  C2       2.127242869  5.577562894  0.000000
-  C3       1.2976452113 8.20576858026  0.000000
-  C4       8.20576858026  1.2976452113  0.000000
-  C5       5.577562894  2.127242869  0.000000
+  C1       4.642960672    4.642960672    0.000000
+  C2       2.127242869    5.577562894    0.000000
+  C3       1.2976452113   8.20576858026  0.000000
+  C4       8.20576858026  1.2976452113   0.000000
+  C5       5.577562894    2.127242869    0.000000
   LARGE BASIS 6-31G
           1.    3
-  H1        6.1040918256  6.1040918256    0.000000
-  H2        2.536971561  9.84908074236  0.000000
-  H3        9.84908074236  2.536971561  0.000000
+  H1        6.1040918256  6.1040918256   0.000000
+  H2        2.536971561   9.84908074236  0.000000
+  H3        9.84908074236 2.536971561    0.000000
   LARGE BASIS 6-31G
            80.    1
   Hg    0.000000     0.000000     0.000000
@@ -188,7 +188,7 @@ Unfortunately, this HF does not converge: ::
   It.   20    -16289.37827128      9.92D+00 -2.58D-01  2.74D+02   DIIS   9    3min42.223s   LL SL          Fri Oct 19
 
 We see that the corrected bare nucleus start is quite far from the energies of subsequent iterations. Although the energy in the second iteration
-drops considerably it bounces back and gets stuck. We will therefore switch to a atomic start [vanLenthe2006]_ .
+drops considerably it bounces back and gets stuck. We will therefore switch to an atomic start [vanLenthe2006]_ .
 
 
 Preparing the atomic start
