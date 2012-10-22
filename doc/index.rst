@@ -78,13 +78,12 @@ Tutorials and walkthrus
   :doc:`DIRRCI <tutorials/dirrci_sample>` |
   :doc:`GOSCIP <tutorials/goscip_sample>` |
   :doc:`Open-shell examples <tutorials/open_shells>` |
-  :doc:`Niobium atom <tutorials/niobium>` |
-  :doc:`SCF convergence <tutorials/scf_conv>`
+  :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
+  :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
 
 * **Troubleshooting:**
   :doc:`Memory problems <getting_help/memory>` |
   :doc:`Known problems <getting_help/known_problems>` |
-  :doc:`Known bugs <getting_help/known_bugs>` |
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
@@ -116,7 +115,7 @@ Developers
 ==========
 
 * **Releasing:**
-  :doc:`Release preparation <programmers/documentation_howto>` |
+  :doc:`Release preparation <programmers/release_preparation>` |
   :doc:`Beta testing <programmers/beta_testing>`
 
 * **Programming:**
@@ -154,8 +153,8 @@ Rest - move it to the right place
    tutorials/general_scf_sample.rst
 
 
-Does not belong here - will be moved elsewhere
-==============================================
+Does not belong here - will be moved elsewhere else
+===================================================
 
 .. toctree::
    :maxdepth: 1

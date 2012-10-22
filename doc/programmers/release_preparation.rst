@@ -130,6 +130,18 @@ MOD_UNRELEASED. Do this on the release branch and merge to master::
   $ git push                      # push changes to master
 
 
+How to "remove" tests?
+----------------------
+
+Look in pamadm and search for "unreleased". All the tests
+listed there will be removed by the release preparation script.
+All tests listed under modules which are not part of::
+
+  ./pamadm --release
+
+are removed as well.
+
+
 How to release or export the code
 ---------------------------------
 
