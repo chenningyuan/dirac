@@ -392,6 +392,11 @@ or popular Google-Books web-space.
    molecules*, J. Chem. Phys. **105**, *6505* (1996) 
    <http://dx.doi.org/10.1063/1.472460>
 
+.. [vanLenthe2006] J. H. van Lenthe, R. Zwaans, H. J. J. Van Dam and M. F. Guest,
+   *Starting SCF calculations by superposition of atomic densities*, 
+   J. Comp. Chem. **27**, *926* (2006)
+   <http://dx.doi.org/10.1002/jcc.20393>
+
 .. [Varga1999] S. Varga, E. Engel, W.-D. Sepp, and B. Fricke,
    *Systematic study of the Ib diatomic molecules Cu\ :sub:`2`\ , Ag\ :sub:`2`\ , and Au\ :sub:`2`\  
    using advanced relativistic density functionals*,
