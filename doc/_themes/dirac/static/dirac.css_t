@@ -6,8 +6,8 @@
  * :license: BSD, see LICENSE for details.
  */
 
-{% set page_width = 940 %}
-{% set sidebar_width = 220 %}
+{% set page_width = 1150 %}
+{% set sidebar_width = 160 %}
 {% set body_font_stack = 'Optima, Segoe, "Segoe UI", Candara, Calibri, Arial, sans-serif' %}
 {% set headline_font_stack = 'Futura, "Trebuchet MS", Arial, sans-serif' %}
 {% set code_font_stack = "'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace" %}
