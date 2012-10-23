@@ -1367,10 +1367,11 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
-      ELSE
+      ELSE IF (SHIELD) THEN
+      ! message has relevance if wanted NMR shieldings
         WRITE(LUPRI,'(2X,A)')
      &  '...Aucars diamagnetic'//
-     &  ' contribution to shieldings not calculating'
+     &  ' contribution to NMR shieldings not calculated.'
       ENDIF
 C
       IF (ROTG) THEN
@@ -5102,8 +5103,8 @@ C
       ENDIF
 
       ELSE IF ((.NOT.MSUSCDIA).AND.(.NOT.LONDON)) THEN
-C    ... Do not calculate exp. value - diamag.term 
-C        which is fully  involved in paramag. term when using URKBAL !
+C  ... Do not calculate exp. value - diamag.term 
+C  which is fully  involved in paramag. term when rotating electrons and positrons
 
         DOEXP = .FALSE. 
         WRITE(LUPRI,'(1X,A)')
@@ -5551,18 +5552,14 @@ C
 
       ENDIF ! of MSUSCDIA
 C
-C      Print section for LAO exp.values susceptibilities
+C       Print section for LAO exp.values magnetizabilities
 C    =======================================================
 C
        IF(IPRINT.GE.1) THEN
-         WRITE(LUPRI,'(2X,A)') 'DEF_MSUSCP'//
-     &': Expec.value terms for the magnetizabilities with LAO:'
-         IF (MSUSCDIA) THEN 
-           NOP_DSUSC=39
-         ELSE 
-           NOP_DSUSC=27
-         ENDIF
-         DO I = 1, NOP_DSUSC
+         WRITE(LUPRI,'(2X,A)') '*** Expectation value terms '//
+     &'for magnetizabilities with LAO ***'
+         NTERMS_EXP=27
+         DO I = 1, NTERMS_EXP
            INDXPR = LEXPP(IPDSUSC(I))
            CALL PRSYMB(LUPRI,'.',75,0)
            WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
@@ -5570,7 +5567,24 @@ C
            CALL PRSYMB(LUPRI,'.',75,0)
            CALL WRIXPR(I,INDXPR)
          ENDDO
+         IF (MSUSCDIA) THEN 
+           WRITE(LUPRI,'(2X,A)') '*** Aucars diamagnetic terms '//
+     &'for magnetizabilities with LAO ***'
+           NTERMS_EXP_DIAMAG=39
+           DO I = NTERMS_EXP+1,NTERMS_EXP_DIAMAG
+             INDXPR = LEXPP(IPDSUSC(I))
+             CALL PRSYMB(LUPRI,'.',75,0)
+             WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+             CALL PRSYMB(LUPRI,'.',75,0)
+             CALL WRIXPR(I,INDXPR)
+           ENDDO
+         ELSE
+           WRITE(LUPRI,'(2X,A)') 'No Aucars diamagnetic terms '//
+     &     'for magnetizabilities with LAO. Good so.'
         ENDIF
+
+       ENDIF
 #endif
       ENDIF
 
@@ -5718,7 +5732,7 @@ C              22  23  24
 C              25  26  27
 C
 
-C       ...     symmetrize off-diagonal terms ...
+C       ...     symmetrize resulting off-diagonal terms ...
         PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
         PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
         PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
