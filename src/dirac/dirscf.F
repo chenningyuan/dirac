@@ -1895,7 +1895,6 @@ CMI      ... print out matrixes ...
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
-         write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
 #if defined SYS_WINDOWS
          call system('copy DFCOEF DFCOEF.BEST')
 #else
