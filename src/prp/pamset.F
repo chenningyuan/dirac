@@ -187,8 +187,8 @@ C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
         ILLINT = IBTAND(INTFLG,1)
         ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/3,1)
-        IGTINT = IBTAND(INTFLG/4,1)
+        ISSINT = IBTAND(INTFLG/4,1)
+        IGTINT = IBTAND(INTFLG/8,1)
         WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
