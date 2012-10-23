@@ -4534,7 +4534,7 @@ C
 #include "cbieri.h"
 #endif
 C
-      LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
+      LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
@@ -6288,7 +6288,7 @@ C
       IF (SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
      &                     ' molecular point group symmetry!')
       IF (TRSSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
-     &                ' time-reversal symmetry (T+ and T- mixing) !')
+     &          ' time-reversal symmetry (T+ and T- mixing) !')
       
 C
       CALL QEXIT('HAMINP')
