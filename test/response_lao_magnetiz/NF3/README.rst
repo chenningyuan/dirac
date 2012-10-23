@@ -58,10 +58,10 @@ RKBIMP-ep-CGO(go=cm)
 
 UKB-ep-CGO(go=cm)
    LL+SL                -25.7754             -14.6864
-   LL+SL+SS
+   LL+SL+SS             -25.7754             -14.6864
 ----------------------------------------------------------------------------------
 go=cm  : gauge orgin (go) is the center of mass
 go=1   : go is  (-3.00,4.00,-5.00)
 LL+SL, LL+SL+SS : selected classes of integrals in all methods
-for "ep" reorthonornamlization over negative and positive states
+for "ep"-LAO reorthonormalization sums go over both negative and positive states
 
