@@ -327,9 +327,9 @@ C ... call the routine in abacus/hergp.F
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
          IF (INTNMR_SET) THEN
-           WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
-     &     'Hamiltonian include only LL integrals '//
-     &     ' for the dg(1,2)/dB terms !'
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
+     &     'Hamiltonian only LL integrals '//
+     &     ' for the dg(1,2)/dB terms are needed !'
          ENDIF
        ENDIF
 
@@ -363,8 +363,11 @@ C ... call the routine in abacus/hergp.F
          IF(LBIT(INTNMR,2)) WRITE(LUPRI,'(6X,A)') '- SL-integrals'
          IF(LBIT(INTNMR,3)) WRITE(LUPRI,'(6X,A)') '- SS-integrals'
          IF (.NOT.INTNMR_SET) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &   "--> These are default values from the Hamiltonian input."
+         ELSE
            WRITE(LUPRI,"(2X,A)")
-     &   "--> These are the default values from the Hamiltonian input."
+     &   "--> These are accepted values from user's .INTFLG input."
          ENDIF
        ENDIF
 
