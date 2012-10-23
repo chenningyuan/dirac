@@ -389,7 +389,7 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 C
-      LOGICAL SET, NEWDEF, RESET, FINTER, FLIST
+      LOGICAL SET, NEWDEF, RESET, FINTER, FLIST, INTFLG_CHANGE
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          MXFORM*6,FMT*6
       DIMENSION WORK(LWORK)
@@ -427,6 +427,7 @@ C
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
+      INTFLG_CHANGE = .FALSE.
 C
 C
 C     Initialize /XCBLR/
@@ -444,7 +445,9 @@ C
       INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
 CMI ... set up only LL class of integrals 
 C        as the default for LevyLe/BSS
-      IF (LEVYLE.OR.BSS.or.x2c) INTXLR = ILLINT
+      IF (LEVYLE.OR.BSS.or.x2c) THEN
+         INTXLR = ILLINT
+      ENDIF
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0
@@ -632,6 +635,7 @@ C&&&& INTFLG: specify what two-electron integrals to include
                      READ(LUCMD,*) ILLINT,ISLINT,ISSINT
                      INTXLR = ILLINT+2*ISLINT+4*ISSINT
                   ENDIF
+                  INTFLG_CHANGE=.TRUE.
                GOTO 100
  16            CONTINUE
 C&&&& NOPREC: no preconditioning of initial trial vectors
@@ -961,11 +965,13 @@ C
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF ((LEVYLE.OR.BSS.or.x2c).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
         WRITE(LUPRI,'(3X,A)')
-     & 'Only LL integrals are allowed for LevyLe/BSS!'
+     & 'WARNING: Only LL integrals are allowed for LevyLe,BSS,x2c - '//
+     & 'deactivating SL,SS,GT class.'
         ISLINT=0
         ISSINT=0
         IGTINT=0
         INTXLR=1
+        INTFLG_CHANGE = .FALSE. ! deactivate indicator of integrals setting
       ENDIF
       IF(ISLINT.EQ.1) THEN
         IF(CNVXLR(1).LT.DUMMY) THEN
@@ -984,6 +990,13 @@ C
           WRITE(LUPRI,'(3X,A,I4)')
      +    '- SS-integrals from iteration ',ITRILR(2)
         ENDIF
+      ENDIF
+      IF (INTFLG_CHANGE) THEN
+        WRITE(LUPRI,"(4X,A)")
+     & "---> accepted user's setting through .INTFLG"
+      ELSE
+        WRITE(LUPRI,"(4X,A)")
+     & "---> these are default values from Hamiltonian input"
       ENDIF
       IF(.NOT.XLR_LSFG(1)) WRITE(LUPRI,'(A)')
      &     ' * Debug: Only calling FMOLI in sigma-vector routine...'
