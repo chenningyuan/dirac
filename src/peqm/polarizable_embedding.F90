@@ -1367,7 +1367,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
 
     work => dalwrk
 
-     print *, '*** edh: Entering pe_master ***'
+     print *, '*** edh: Entering pe_master ***', runtype
 
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
@@ -2716,10 +2716,12 @@ subroutine pe_fock(denmats, fckmats, Epe)
         end do
     end if
 
-!   edh: Print energy Epe
-!    print *, '*** edh: Epe:', Epe
-!    print *, '*** edh: Ees:', Ees
-    
+!    edh: Print energy Epe
+    if (energy) then
+       write(luout,*) '*** edh: Epe:', Epe
+       write(luout,*)'*** edh: Ees:', Ees
+    end if    
+
 end subroutine pe_fock
 
 !------------------------------------------------------------------------------
@@ -3024,17 +3026,17 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         ! electron - multipole interaction energy
         call Mk_integrals(Mk_ints, Rs(:,site), Mks(:,i))
 
-        kfoo = 0
-        do ifoo = 1, 12
-           do jfoo = ifoo, 12
-              kfoo = kfoo + 1
-              Eel_2  = Eel_2 + denmats(kfoo) * Mk_ints(kfoo,1)
-           write(lupri,*) '*** edh: denmats, Mk_ints(kfoo,1), Eel_2', denmats(kfoo), Mk_ints(kfoo,1)
-           enddo
-        enddo
+!        kfoo = 0
+!        do ifoo = 1, 12
+!           do jfoo = ifoo, 12
+!              kfoo = kfoo + 1
+!              Eel_2  = Eel_2 + denmats(kfoo) * Mk_ints(kfoo,1)
+!           write(lupri,*) '*** edh: denmats, Mk_ints(kfoo,1), Eel_2', denmats(kfoo), Mk_ints(kfoo,1)
+!           enddo
+!        enddo
 
-      write(lupri,*) 'ncomps', ncomps
-      write(lupri,*) 'ndens', ndens
+!      write(lupri,*) 'ncomps', ncomps
+!      write(lupri,*) 'ndens', ndens
 
         kfoo = 0              
         do j = 1, ncomps
@@ -3043,7 +3045,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
                 n = l * nnbas
                 Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
                 do kfoo = m, n
-                 write(lupri,*) '*** edh: denmats(1), Mk_ints(1,1), El(l)', denmats(kfoo), Mk_ints(kfoo,j)
+!                 write(lupri,*) '*** edh: denmats(1), Mk_ints(1,1), El(l)', denmats(kfoo), Mk_ints(kfoo,j)
                 end do
                 if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do

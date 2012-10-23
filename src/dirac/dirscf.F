@@ -1509,7 +1509,6 @@ C
 
 #ifdef MOD_PEQM
 
-
 !        *** edh: "Polarizable playground" ***  
 
       write(lupri,*) '*** Polarizable Embedding Playground ***'    
@@ -1529,20 +1528,14 @@ C
          do j = 1, i
             if (i == j) then
                dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+!               write(lupri, *) 'diagonal 2', dmat_triangle(k)
             else
                dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+!               write(lupri, *) 'off-diagonal 2', dmat_triangle(k)
             end if
             k = k + 1
          end do
       end do
-
-
-
-      call pe_master('fock', denmats=dmat_triangle,
-     &               fckmats=fmat_triangle, nmats=1,
-     &               Epe=Epe,
-     &               dalwrk=work(kfree:kfree + lfree))
-      eqmmm = work(kfree)
 
 !      print *, 'raboof fock before'
 !      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
@@ -1560,10 +1553,19 @@ C
      &                                   + 2.0d0*fmat_triangle(k)
                fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
      &                                   + 2.0d0*fmat_triangle(k)
-             end if !           k = k + 1
+             end if 
              k = k + 1
           end do
        end do
+
+      call pe_master('fock', denmats=dmat_triangle,
+     &               fckmats=fmat_triangle, nmats=1,
+     &               Epe=Epe,
+     &               dalwrk=work(kfree:kfree + lfree))
+      eqmmm = work(kfree)
+
+      write(lupri,*), 'Epe in SCFCY1', Epe
+
 !      stop 1
 !      print *, 'raboof fock after'
 !      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
@@ -1811,9 +1813,8 @@ c     besterg is the lowest energy we encountered so far
       real(8)      :: pcm_energy
 #endif
 #ifdef MOD_PEQM
-      real(8) :: Epe(1)
+      real*8, dimension(1) :: pe_energy
       real(8), allocatable :: dmat_triangle(:)
-      real(8), allocatable :: fmat_triangle(:)
 #endif
       data besterg /1.0D100/
       save besterg
@@ -1904,52 +1905,40 @@ C
 !     edh: Its is neccesary to construct a triangular matrix for
 !     pe_module - DIRAC SCF uses square matrices (DALTON uses
 !     triangular)
-!     allocate(dmat_triangle(nnbbasx))
-!     allocate(fmat_triangle(nnbbasx))
-!     dmat_triangle = 0.0d0
-!     fmat_triangle = 0.0d0
 
-!     k = 1
-!     do i = 1, ntbas(1)
-!        do j = i, ntbas(1)
-!           if (i == j) then
-!              dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-!           else
-!              dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-!           end if
-!           k = k + 1
-!        end do
-!     end do
+      allocate(dmat_triangle(nnbbasx))
+      dmat_triangle = 0.0d0
 
-!     call pe_master('fock', denmats=dmat_triangle,
-!    &               fckmats=fmat_triangle, nmats=1,
-!    &               Epe=Epe,
-!    &               dalwrk=work(kfree:kfree + lfree))
-!     eqmmm = work(kfree)
-
-!      ! F = F + M
-!      fock(1:ntbas(0)*ntbas(0)) = 0.0d0
-!      k = 1
-!      do i = 1, ntbas(1)
+! Onversion of density matrix to triangukar form: 
+      k = 1
+      do i = 1, ntbas(1)
 !         do j = i, ntbas(1)
-!            if (i == j) then ! edh: Conversion from DALTON to DIRAC
-!               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-!    &                                   + fmat_triangle(k)
-!            else
-!               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-!    &                                   + fmat_triangle(k)
-!               fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-!    &                                   + fmat_triangle(k)
-!            end if 
-!            k = k + 1
-!         end do
-!      end do
+            do j = 1, i
+              if (i == j) then
+                 dmat_triangle(k) = 2.0d0*dmat(((i-1)*ntbas(0) + j), 
+     &                                        1, 1 )
+!              write(lupri, *) 'diagonal 1:', dmat_triangle(k)
+              else
+                 dmat_triangle(k) = 4.0d0*dmat(( (i-1)*ntbas(0) + j ),
+     &                                        1, 1 )
+!              write(lupri, *) 'off-diagonal 1:', dmat_triangle(k)
+              end if
+              k = k + 1
+           end do
+        end do
 
-!      Epe = ddot(ntbas(0)*ntbas(0), fock, 1, dmat, 1)
+      call pe_master(runtype='energy', 
+     &               denmats=dmat_triangle,
+     &               nmats=1,Epe=pe_energy,
+     &               dalwrk=work(kwork:lwork) )
+!      Epe=work(kwork)
+
+      write(lupri,*) 'edh: Epe from ERGCAL', pe_energy
+
+!       Epe = ddot(ntbas(0)*ntbas(0), fock, 1, dmat, 1)
 !      dhferg = dhferg + Epe
 
-!      deallocate(dmat_triangle)
-!      deallocate(fmat_triangle)
+       deallocate(dmat_triangle)
 #endif
 
       IF(LVCON) THEN
