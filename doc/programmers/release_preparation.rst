@@ -61,14 +61,16 @@ Again, do not commit to master, commit to the release branch::
   $ git checkout release-12
   $ git pull                      # update the local release-12 branch
   $ git commit                    # commit your modifications
-  $ git push                      # push changes to release-12
-  $ git checkout master
-  $ git pull                      # update your local master branch
-  $ git merge --no-ff release-12  # merge changes to master
-  $ git push                      # push changes to master
+  $ git checkout master           # switch immediately to the master branch
+  $ git merge --no-ff release-12  # merge changes to master, fix conflicts if any
+  $ git push                      # pushes changes both to master and to branch
 
 If you have no time, you don't have to merge to master yourself, you can wait
 until somebody else does it for his/her commits. No commit can get lost.
+
+Note that by merging your changes to master you might get conflicts. Git points
+them out clearly. In such cases open conflicting file(s) and fix discrepancies 
+inside manually. They are marked with "<<<<<<" and ">>>>>>" strings.
 
 O.K. what if you accidentally committed something to master which belongs to
 the release? In this case do *not* merge master to the release branch, but
