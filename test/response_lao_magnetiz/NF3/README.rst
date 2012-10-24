@@ -19,6 +19,7 @@ LevyLe-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
 
 Dalton-LAO(go=cm)        -5.2733             0.5431
 Dalton-LAO(go=1 )        -5.2733             0.5431
+Dalton-LAO(go=1 )        -5.2733             0.5431 (symm.connection)
 
 Dalton-CGO(go=cm)       -26.1709            -14.6105
 Dalton-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
@@ -31,6 +32,8 @@ RKB-ee-LAO+dia(go=cm), increasing speed of light to get nonrelativ.limit
                          -5.2733             0.5431 (nonrelativ. RDSUSLL form with factor 2)
 RKB-ee-LAO+dia(go=1)
   cvalue=2000            -5.2733             0.5431 (nonrelativ. RDSUSLL form with factor 2)
+RKB-ee-LAO+dia(go=1),SymCon
+  cvalue=2000            -5.2732a            0.5431  (nonrelativ. RDSUSLL form with factor 2)
 
 RKB-ee-CGO+dia(go=cm)   -26.1706            -14.6131
 
