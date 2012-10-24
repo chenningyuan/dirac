@@ -1651,6 +1651,10 @@ C
 C   Routine that calculates two-electron expectation value contribution
 C to magnetic susceptibility when using London atomic orbitals.
 C
+C     This is the pure London-contribution to the second B-derivative.
+C
+C     Resulting tensor is stored in SUS2EL of dcbsusc.h
+C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
@@ -1737,16 +1741,11 @@ C
 #endif
 CLV   ... temporary fix for parallel runs...
       PARCAL_SAVE = PARCAL
-CMI   IF (PARCAL) PARCAL = .FALSE.
-CMI   IF (PARCAL_SAVE) WRITE (LUPRI,*) 
-CMI  &   " WARNING: Running in serial, parallel code not ready yet"
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-CMI        CALL QUIT('Parallel suscpeptibilities not ready!')
-
             CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
 CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
             CALL DIRAC_PARCTL( 1 )
@@ -1796,10 +1795,12 @@ C   with London atomic orbitals.
 C   In the Levy-Leblond case this is identical
 C   with the nonrelativistic DALTON counterpart.
 C
+C   Resulting tensor is stored in SUSFS of dcbsusc.h
+C
 C   Definition:
 C -------------
 C   The exact form (Ruud et al, JCP...) is -1/2{S(2),H(0)} 
-C   (for both connections beacuse the S(2) operator is unique)
+C   (for both connections because the S(2) operator is unique)
 C
 C   On input:  CMO - MO coefficients, IBEIG - boson irreps info
 C
@@ -1963,11 +1964,14 @@ C                 J.Chem.Phys. Vol. 99  (1993) 3847 )
 C
 C        Using the symmetric connection :
 C -------------------------------------------------------
-C   1/2{ S(1)S(1),H(0)} - {S(1),H(1)} + 1/4{S(1),S(1),H(0)}
+C   1/2{ S(1)S(1),F(0)} - {S(1),F(1)} + 1/4{S(1),S(1),F(0)}
 C
 C        Using the natural connection:
 C -------------------------------------------------------
-C   { S(1)W(1), H(0)} - {W(1),H(1)} + {W(1),W(1),H(0)}
+C   { S(1)W(1), F(0)} - {W(1),F(1)} + {W(1),W(1),F(0)}
+C
+C
+C Resulting tensor is stored in SUSFSY of dcbsusc.h 
 C
 C On input:  CMO - MO coefficients, IBEIG - boson irreps info
 C
@@ -2174,7 +2178,7 @@ C    - {W(1)/S(1),H(1)} = {S(1)/W(1),F(1)},
 C           where F(1)=h(1)+u(1)...
 C===================================================
 
-C     ====   Get h(1) and 2*u(1) MO terms ====
+C     ====   Get F(1)=h(1)+u(1) MO terms ====
 
       DO IW1 = 1, 3  ! Components of W(1)
        IF (.NOT.SYMCON) THEN
@@ -2202,7 +2206,6 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
         DO IH1 = 1, 3 ! Components of H(1)
-C       DO IH1 = IW1, 3 ! Components of H(1)
           IB = 3 ! 0011 ... get ONELON + TWOLON
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
           ISYM1 = IPRPSYM(INDXPR1) 
@@ -2212,7 +2215,7 @@ C       DO IH1 = IW1, 3 ! Components of H(1)
           CALL GETDHB(IB,D0,WORK(KSMAT),
      &           INDXPR1,IOPSY,WORK,KFREE,LFREE,IPRINT)
 
-C ... call TTRA for {W/S(1),F(1)} .. get all into KSWMAT
+C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
           CALL TTRA(EPMIX,AH,ISYM2,ISYM1,WORK(KWMAT),
      &            WORK(KSMAT),WORK(KSWMAT),IPRINT)
@@ -2220,10 +2223,10 @@ C ... call TTRA for {W/S(1),F(1)} .. get all into KSWMAT
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
             CALL HEADER(
-     &     'LORDRNT: Transformed Fock-LAO matrix, {W(1),F(1)}',-1)
+     &  'LORDRNT: Transformed Fock-LAO matrix,nat.conn.{W(1),F(1)}',-1)
            ELSE
             CALL HEADER(
-     &     'LORDRNT: Transformed Fock-LAO matrix, {S(1),F(1)}',-1)
+     & 'LORDRNT: Transformed Fock-LAO matrix,symm.conn. {S(1),F(1)}',-1)
            ENDIF
            WRITE(LUPRI,'(2X,A,2I2)')
      & '*** tensor component: ',IW1,IH1
@@ -2263,6 +2266,7 @@ C      into SUSFSY(3,3)
         ENDIF
        ENDIF
 
+        ! store
         SUSFSY(IPTAX(IW1,2),IPTAX(IH1,2)) = 
      &  SUSFSY(IPTAX(IW1,2),IPTAX(IH1,2)) + EXPVAL
          
@@ -2307,7 +2311,6 @@ C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 
-C       DO I2  =  I1, 3
         DO I2  =  1, 3
 C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
          INDXPR2 = IPLONDON(1,I2) ! Get index of RM1H1_comp
@@ -2328,10 +2331,10 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
            CALL HEADER(
-     & 'LORDRNT: TOTAL transformed matrix {W(1),W(1),H(0)}',-1)
+     & 'LORDRNT: TOTAL transformed matrix {W(1),W(1),F(0)}',-1)
           ELSE
            CALL HEADER(
-     & 'LORDRNT: TOTAL transformed matrix {S(1),S(1),H(0)}',-1)
+     & 'LORDRNT: TOTAL transformed matrix {S(1),S(1),F(0)}',-1)
           ENDIF
           WRITE(LUPRI,'(2X,A,2I2)')
      & '*** tensor component: ',I1,I2
