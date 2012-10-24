@@ -6696,6 +6696,8 @@ C  Integrals for 1/4 * <A_m | (Qmn r)(r Qmn)~ (c \alpha \cdot p) |B_n>
 C
 C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
 C
+C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
+C
 C*********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -6857,6 +6859,8 @@ C  RDSUSLL:
 C  Integrals for i c Qmn <mi_M| r (r_N x alpha) |ni_N>
 C
 C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
+C
+C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
 #include "implicit.h"
@@ -7030,6 +7034,8 @@ C*******************************************************************************
 C     K.Ruud, Feb. 1992
 C     H.J.Aa.Jensen (&MI) Mar 2003: new flag DOEKIN, if false omit kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
+C
+C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulting in -1/4
 C
 C***************************************************************************************
 #include "implicit.h"

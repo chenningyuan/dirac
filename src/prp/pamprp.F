@@ -5119,6 +5119,9 @@ C ... first 3 terms from the <r r~ hd> - RM2H1+RM2H2+RM2H3
 C  ... 6 terms  Qmn.<r r~ beta' c^2>.Qmn - 6 diagonal operators
 C     RM2H1 terms, IPDSUSC(1-6)
 
+!MI note, Oct.2012: factor -1/2 = (1/4)*(-2),where 1/4 is from integral
+! definition (1/4Q_MN<rr^T h_D>Q_MN),-2 is in beta' prescription
+
         PNAME     = 'LAO-XXRM2H1'
         IPTYP     = 1
         NPCOMP    = 1
@@ -5174,6 +5177,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RM2H2 terms, IPDSUSC(7-12)
+!MI note,Oct.2012: in abacus(routine RM2H2) they already have factor 1/4
         PNAME     = 'LAO-XXRM2H2'
         IPTYP     = 1
         NPCOMP    = 1
@@ -5230,6 +5234,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
 
 C -----------------------------------
 C ... RM2H3 terms, IPDSUSC(13-18)
+! MI note, Oct.2012: factor of 1/4 is in corresponding abacus routine RM2H3
 C -----------------------------------
         PNAME     = 'LAO-XXRM2H3'
         IPTYP     = 8
@@ -5311,6 +5316,7 @@ C -----------------------------------
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
 C ... off-diagonal terms need to be symmetrized !
+! see abacus/RDSUSAN, where they are multiplied with 1/2 factor
         IF (RDSUSLLMOD) THEN
            FACLL = -2.0D0
         ELSE
