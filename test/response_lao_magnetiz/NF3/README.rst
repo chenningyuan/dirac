@@ -29,6 +29,8 @@ RKB-ee-LAO+dia(go=cm)    -5.8300             0.4137
 RKB-ee-LAO+dia(go=cm), increasing speed of light to get nonrelativ.limit 
    cvalue=2000           -5.8363             0.4126 (full RDSUSLL form)
                          -5.2733             0.5431 (nonrelativ. RDSUSLL form with factor 2)
+RKB-ee-LAO+dia(go=1)
+  cvalue=2000            -5.2733             0.5431 (nonrelativ. RDSUSLL form with factor 2)
 
 RKB-ee-CGO+dia(go=cm)   -26.1706            -14.6131
 
