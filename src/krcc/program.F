@@ -733,9 +733,10 @@ C?    CALL WRTVCD(WORK(KVEC1),LUHC,1,-1)
       IF(I_DO_CC_EXC_E.EQ.1) THEN
 C
 C Linear response works only for real groups. Lasse
-C
+C At the moment we will have an extra vector in memory!!!
 *
-        CALL KRCC_EXC_E(WORK(KCC1),WORK(KCC2),ECC,
+        CALL MEMGET('REAL',KCC_RESP,IMULTFAC*LENNY,WORK,KFREE,LFREE)
+        CALL KRCC_EXC_E(WORK(KCC_RESP),WORK(KCC2),WORK(KCC1),ECC,
      &                WORK,KFREE,LFREE)
       END IF
 *

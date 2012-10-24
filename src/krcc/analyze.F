@@ -285,7 +285,7 @@ C               IF(IUSLAB.EQ.0) THEN
                   WRITE(6,*) ' Annihilator beta '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
-                END IF
+C               END IF
               END IF
 *             ^ End if could and should be printed
              END DO

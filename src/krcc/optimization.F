@@ -131,7 +131,6 @@ C**************************************************************
 C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
         CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,ITER,
-     &                       I_WRITE_INTERMEDIATES,
      &                       WORK,KFREE,LFREE)
 C       stop 'after CC_VEC_FNC_KRCC'
         CALL MEMCHK_KRCC(WORK)
@@ -182,11 +181,6 @@ C Notice the identety is now number one and not the last element!
 * (LU is not active)
         END IF
         IF(XNORM.GE.50) STOP 'NOT CONVERGING'
-        IF(XNORM/CCCONV.LE.10) THEN
-* We are now close to converging and we can then start to write
-* intermediates to disc if we want to do linear response
-          I_WRITE_INTERMEDIATES = 1
-        END IF
 *
 * =========================
 * Obtain  correction vector 

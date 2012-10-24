@@ -86,11 +86,13 @@
       LUSC3 = 72
       LUSC4 = 73 !For intermediates
       LUSC5 = 74 !For intermediates
+      LUSC6 = 75 !For lrcc
       Open(Unit=LUSC1,File='LUSC1',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC2,File='LUSC2',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC3,File='LUSC3',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC4,File='LUSC4',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC5,File='LUSC5',Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LUSC6,File='LUSC6',Status='UNKNOWN',Form='UNFORMATTED')
 *. Scratch space for subspace handling
       LUSC41 = 79
       Open(Unit=LUSC41,File='LUSC41',Status='UNKNOWN',
@@ -102,6 +104,8 @@
       LU_M02 = 81
       LU_M11 = 82
       LU_M01 = 83
+      LU_M12 = 84
+      LU_M11_TO_M01 = 85
       Open(Unit=LU_M10,File='LU_M10',
      &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LU_M02,File='LU_M02',
@@ -109,6 +113,10 @@
       Open(Unit=LU_M11,File='LU_M11',
      &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LU_M01,File='LU_M01',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LU_M12,File='LU_M12',
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+      Open(Unit=LU_M11_TO_M01,File='LU_M11_TO_M01',
      &     Status='UNKNOWN',Form='UNFORMATTED')
 *.
 * =================
