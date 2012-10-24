@@ -152,6 +152,9 @@ else
   echo -e "\n\n"
 fi # of DO_UPDATE
 
+echo -e "\n Done. Tarball with static execs ready."
+exit 0
+
 ######################################################## 
 #
 # initialize your certificate from grid computing
