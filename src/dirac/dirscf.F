@@ -1933,6 +1933,13 @@ C
      &               dalwrk=work(kwork:lwork) )
 !      Epe=work(kwork)
 
+       do i = 1, len_array
+          if (array(i) /= array(i)) then
+             print *, 'error found nan in element', i
+             stop 1
+         end if
+      end do
+
       write(lupri,*) 'edh: Epe from ERGCAL', pe_energy
 
 !       Epe = ddot(ntbas(0)*ntbas(0), fock, 1, dmat, 1)
