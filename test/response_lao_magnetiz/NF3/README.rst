@@ -53,8 +53,15 @@ RKBIMP-ep-LAO(go=cm)
    LL+SL                -4.8265              0.4864 (C1 symmetry)
    LL+SL                -4.8264              0.4863 (automatic symmetry detection)
 
+RKBIMP-ep-LAO(go=cm),LL+SL
+   cvalue=2000          -4.8323              0.4856
+   cvalue=2000          -4.2693              0.6161 (nonrel.for of RDSUSLL)
+RKBIMP-ep-LAO(go=cm)+diamag,LL+SL <-- wrong, ep terms are confused
+   cvalue=2000          -10.4380             0.8024 (nonrel.for of RDSUSLL)
+
 UKB-ep-LAO(go=cm)
    LL+SL                -5.0942              0.3767
+   LL+SL,cval=2000      -5.1003              0.3758
    LL+SL+SS             -5.0942              0.3767
 
 RKBIMP-ep-CGO(go=cm)  
