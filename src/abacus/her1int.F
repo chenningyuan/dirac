@@ -6858,7 +6858,8 @@ C
 C  RDSUSLL:
 C  Integrals for i c Qmn <mi_M| r (r_N x alpha) |ni_N>
 C
-C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
+C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen,
+C  after routine DSUSAN by Kenneth Ruud.
 C
 C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
