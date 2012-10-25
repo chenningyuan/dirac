@@ -1,0 +1,12 @@
+INTGRL
+ MgF molecule 
+ small test basis  
+C   2  
+       9.0   1 1.0D+120
+F      .0000000000        0.0000000000        2.0000000000
+LARGE BASIS STO-2G
+      12.0    1    1.0D+120
+Mg    0.0000000000        0.0000000000         0.0000000
+LARGE BASIS STO-2G 
+FINISH
+

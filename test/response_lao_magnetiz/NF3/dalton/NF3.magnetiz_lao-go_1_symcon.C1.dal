@@ -1,0 +1,49 @@
+BASIS 
+STO-2G
+  NF3, experimental geometry
+  STO-2G, smallest basis set
+Atomtypes=2 Generators=0  Angstrom Set=1
+Charge=7.0 Atoms=1 Spherical=true 
+N     0.0000000000        0.0000000000         0.000000000
+Charge=9.0  Atoms=3  Spherical=true
+F1     0.0000000000       0.0000000000        1.3676000000
+F2     1.3385030000       0.0000000000        -.2806030000
+F3     -.3455290000       1.293136000         -.2806030000
+
+**DALTON INPUT
+.RUN PROPERTIES
+*MOLBAS
+# decontracted basis set for compatibility with Dirac
+.UNCONT
+**INTEGRALS
+.NUCMOD
+1
+**WAVE FUNCTIONS
+.HF
+!.MP2
+!.MCSCF
+*SCF INPUT
+#.DOUBLY OCCUPIED
+#2 0 0 0
+.THRESH
+1.0D-9
+#*ORBITAL INPUT
+#.NOSUPSYM
+**PROPERTIES
+# modify gauge origin
+.GAUGEO
+ -3.00  4.00  -5.00
+.PRINT
+3 
+!.NOLOND
+!.SHIELD
+.MAGNET
+.NODIFC
+*LINRES
+.PRINT
+3
+.THRESH
+1.0D-9
+.MAX IT
+100
+*END OF INPUT

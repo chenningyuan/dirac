@@ -30,6 +30,7 @@ module input_reader
       module procedure kw_read_r3
       module procedure kw_read_r4
       module procedure kw_read_ivec
+      module procedure kw_read_ivec_all
    end interface
 
    integer, parameter :: max_nr_kw   = 200
@@ -252,6 +253,32 @@ contains
       integer                           :: j
 
       read(file_unit, *,err=1) (v(j), j=1,k)
+      return
+
+1     call kw_read_error(kw_input)
+
+   end subroutine
+
+   subroutine kw_read_ivec_all (kw_input, v)
+
+      character(kw_length), intent(in)  :: kw_input
+      integer,              intent(out) :: v(:)
+      integer                           :: i, j, start
+      character(line_length)            :: line
+
+      read(file_unit,'(a)',err=1) line
+      start = verify(line,' ,;') ! finds first non-separator character
+
+      j = 1
+      do  while (len_trim(line) > 0 .and. start /= 0) 
+         read (line,*,err=1) v(j)
+         j = j + 1
+         do i = 1, start         ! blank out the part that we already read
+            line(i:i) = ' '
+         end do
+         start = verify(line,' ,;') 
+      end do
+
       return
 
 1     call kw_read_error(kw_input)

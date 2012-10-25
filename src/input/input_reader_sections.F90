@@ -771,11 +771,11 @@
       end if
 
       if (kw_matches(word, '.NEL_F1')) then
-         call kw_read(word, relcc_nelec_f1, 2*nfsym)
+         call kw_read(word, relcc_nelec_f1)
       end if
 
       if (kw_matches(word, '.NEL_F2')) then
-         call kw_read(word, relcc_nelec_f2, 2*nfsym)
+         call kw_read(word, relcc_nelec_f2)
       end if
 
       if (kw_matches(word, '.NFROZ ')) then

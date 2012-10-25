@@ -24,8 +24,6 @@
 !         0 for s-type vectors, 1 for p-type vectors, etc.
 !         the eigenvalue is given by (leig*(leig+1)) to within numerical
 !         precision.
-!  28-oct-96 account for nonorthogonality of cartesian gaussians (rmp)
-!  11-jun-91 written by ron shepard with suggestions from r. m. pitzer.
  
       USE RECP_IPT
       USE RECP_FUNCTION
@@ -198,18 +196,16 @@
       return
       end
 
-
-
       subroutine hermit(nn,x,a,eps)
-c    calculates the zeros  x(i)  of the nn-th order
-c  hermite polynomial.  the largest zero will be
-c  stored in x(1).  also calculates the corresponding
-c  coefficients  a(i)  of the nn-th order gauss-hermite
-c  quadrature formula of degree 2*nn-1.  the factor of
-c  sqrt(pi) has been removed from the a(i).
-c
-c  a. h. stroud & d. secrest, gaussian quadrature formulas,
-c  prentice-hall, 1966
+!  calculates the zeros  x(i)  of the nn-th order
+!  hermite polynomial.  the largest zero will be
+!  stored in x(1).  also calculates the corresponding
+!  coefficients  a(i)  of the nn-th order gauss-hermite
+!  quadrature formula of degree 2*nn-1.  the factor of
+!  sqrt(pi) has been removed from the a(i).
+!
+!  a. h. stroud & d. secrest, gaussian quadrature formulas,
+!  prentice-hall, 1966
       USE RECP_OUTPUT 
       implicit real*8 (a-h,o-z)
 #include "inc_print.h"
@@ -217,7 +213,6 @@ c  prentice-hall, 1966
       dimension x(*), a(*)
 
       CALL OUTPUT_LOC('HERMIT','E')
-c
       fn = (nn)
       n1 = nn - 1
       n2 = (nn+1)/2
@@ -230,26 +225,26 @@ c
       s  = (2.0d0*fn+1.0d0)**sixth
       do 30 i=1,n2
         if( i.eq.1 ) then
-c         # largest zero
+!         # largest zero
           xt = s**3 - 1.85575d0/s
         elseif( i.eq.2 ) then
-c         # second zero
+!         # second zero
           xt = xt - 1.14d0*fn**0.426d0/xt
         elseif( i.eq.3 ) then
-c         # third zero
+!         # third zero
           xt = 1.86d0*xt - 0.86d0*x(1)
         elseif( i.eq.4 ) then
-c         # fourth zero
+!         # fourth zero
           xt = 1.91d0*xt - 0.91d0*x(2)
         else
-c         # all other zeros
+!         # all other zeros
           xt = 2.0d0*xt - x(i-2)
         endif
-c
+ 
         call hroot(xt,nn,dpn,pn1,eps)
         x(i) = xt
         a(i) = cc/dpn/pn1
-c       write (6,'(2i4,2d25.17)') nn, i, xt, a(i)
+!       write (6,'(2i4,2d25.17)') nn, i, xt, a(i)
         ni = nn-i+1
         x(ni) = -xt
         a(ni) = a(i)
@@ -257,36 +252,33 @@ c       write (6,'(2i4,2d25.17)') nn, i, xt, a(i)
       CALL OUTPUT_LOC('HERMIT','X')
       return
       end
-*deck hroot
+
       subroutine hroot(x,nn,dpn,pn1,eps)
-c     improves the approximate root  x
-c     in addition we also obtain
-c         dpn = derivative of h(n) at x
-c         pn1 = value of h(n-1) at x
+!     improves the approximate root  x
+!     in addition we also obtain
+!         dpn = derivative of h(n) at x
+!         pn1 = value of h(n-1) at x
 
       implicit real*8 (a-h,o-z)
 
-c     # iter = 5 sufficient for 8-byte accuracy up to nn = 7
-      do 14 iter=1,10
+!     # iter = 5 sufficient for 8-byte accuracy up to nn = 7
+      do iter=1,10
         call hrecur_argos(p,dp,pn1,x,nn)
         d  = p/dp
         x  = x - d
-        if( abs(d).le.eps ) go to 16
-   14 continue
+        if(abs(d).le.eps) goto 16
+      enddo
    16 dpn = dp
       return
       end
 
-*deck hrecur_argos
       subroutine hrecur_argos(pn,dpn,pn1,x,nn)
-c
       implicit real*8 (a-h,o-z)
-c
       p1 = 1.0d0
       p  = x
       dp1 = 0.0d0
       dp  = 1.0d0
-      do 20 j=2,nn
+      do j=2,nn
         fj = (j)
         fj2 = 0.5d0*(fj-1.0d0)
         q  = x*p - fj2*p1
@@ -295,7 +287,7 @@ c
         p  = q
         dp1 = dp
         dp  = dq
-   20 continue
+      enddo
       pn  = p
       dpn = dp
       pn1 = p1
@@ -303,66 +295,66 @@ c
       end
 
       subroutine cortab(eps,lmax,lmn1u,lproju,ndfac)
-c     # tables for core potential and spin-orbit integrals.
+!     # tables for core potential and spin-orbit integrals.
       USE RECP_IPT
       implicit real*8 (a-h,o-z)
 #include "inc_print.h"
       parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
 
-c     # compute gauss-hermite points and weights for c, z integrals.
+!     # compute gauss-hermite points and weights for c, z integrals.
       igh =1
       nn = 5
-      do 120 i = 1, 3
+      do i = 1, 3
         call hermit(nn,IPT_SH_HPT(igh),IPT_SH_HWT(igh),eps)
         igh = igh + nn
         nn = 2*nn
-  120 continue
-c     # compute double factorials.
+      enddo
+!     # compute double factorials.
       IPT_SH_DFAC(1)=a1
       IPT_SH_DFAC(2)=a1
       fi=a0
-      do 130 i=1,ndfac-2
+      do i=1,ndfac-2
         fi=fi+a1
         IPT_SH_DFAC(i+2)=fi * IPT_SH_DFAC(i)
-  130 continue
-c     # compute binomial coefficients.
+      enddo
+!     # compute binomial coefficients.
       inew=1
       IPT_SH_BINOM(1)=a1
-      do 150 j=1,lmn1u-1
+      do j=1,lmn1u-1
         inew=inew+1
         IPT_SH_BINOM(inew)=a1
-        do 140 i=1,j-1
+        do i=1,j-1
           inew=inew+1
           IPT_SH_BINOM(inew)=((j-i+1)*IPT_SH_BINOM(inew-1))/(i)
-  140   continue
+        enddo
         inew=inew+1
         IPT_SH_BINOM(inew)=a1
-  150 continue
-c     # compute tables by recursion for real spherical harmonics.  they
-c     # are indexed by l, m and sigma.  the sequence number of the
-c     # harmonic with quantum numbers l, m and sigma is given by
-c     #            l**2+2*m+1-sigma
-c     # IPT_SH_LMF(index) and IPT_SH_LML(index) hold the positions 
-c     # of the first and last terms of the harmonic in the 
-c     # IPT_SH_LMX, IPT_SH_LMY, IPT_SH_LMZ, and IPT_SH_ZLM arrays.
-c     # the harmonics with angular momentum l are generated from those
-c     # with angular momenta l-1 and l-2.
-c     # for m = 0,1,2,...,l-1, the recursion relation
-c     z*Z(l-1,m,s) = sqrt(((l-m)*(l+m))/((2*l-1)*(2*l+1)))*Z(l,m,s)+
-c                  sqrt(((l+m-1)*(l-m-1))/((2*l-3)*(2*l-1)))*Z(l-2,m,s)
-c     # is used.
-c     # for m = l, the recursion relation
-c     x*Z(l-1,l-1,s)+(-1)**(1-s)*y*Z(l-1,l-1,1-s) =
-c                  sqrt((2*l))/((2*l+1)))*Z(l,l,s)
-c     # is used.
-c     # l=0
+      enddo
+!     # compute tables by recursion for real spherical harmonics.  they
+!     # are indexed by l, m and sigma.  the sequence number of the
+!     # harmonic with quantum numbers l, m and sigma is given by
+!     #            l**2+2*m+1-sigma
+!     # IPT_SH_LMF(index) and IPT_SH_LML(index) hold the positions 
+!     # of the first and last terms of the harmonic in the 
+!     # IPT_SH_LMX, IPT_SH_LMY, IPT_SH_LMZ, and IPT_SH_ZLM arrays.
+!     # the harmonics with angular momentum l are generated from those
+!     # with angular momenta l-1 and l-2.
+!     # for m = 0,1,2,...,l-1, the recursion relation
+!     z*Z(l-1,m,s) = sqrt(((l-m)*(l+m))/((2*l-1)*(2*l+1)))*Z(l,m,s)+
+!                  sqrt(((l+m-1)*(l-m-1))/((2*l-3)*(2*l-1)))*Z(l-2,m,s)
+!     # is used.
+!     # for m = l, the recursion relation
+!     x*Z(l-1,l-1,s)+(-1)**(1-s)*y*Z(l-1,l-1,1-s) =
+!                  sqrt((2*l))/((2*l+1)))*Z(l,l,s)
+!     # is used.
+!     # l=0
       IPT_SH_LMF(1) = 1
       IPT_SH_LML(1) = 1
       IPT_SH_LMX(1) = 0
       IPT_SH_LMY(1) = 0
       IPT_SH_LMZ(1) = 0
       IPT_SH_ZLM(1) = a1
-c     # l=1
+!     # l=1
       IPT_SH_LMF(2) = 2
       IPT_SH_LML(2) = 2
       IPT_SH_LMX(2) = 0
@@ -445,8 +437,8 @@ c     # l=1
         indexh=lang**2+2*mang+1-isigma
         IPT_SH_LMF(indexh)=IPT_SH_LML(indexh-1)+1
         IPT_SH_LML(indexh)=IPT_SH_LML(indexh-1)
-c       # isig:  index of the harmonic (l-1),(m-1),sigma
-c       # isigm: index of the harmonic (l-1),(m-1),(1-sigma)
+!       # isig:  index of the harmonic (l-1),(m-1),sigma
+!       # isigm: index of the harmonic (l-1),(m-1),(1-sigma)
         isig=(lang-1)**2+2*(mang-1)+1-isigma
         isigm=(lang-1)**2+2*(mang-1)+isigma
         k=IPT_SH_LMF(isigm)
@@ -471,8 +463,8 @@ c       # isigm: index of the harmonic (l-1),(m-1),(1-sigma)
         endif
         isigma=0
         indexh=lang**2+2*mang+1-isigma
-c       # isig:  index of the harmonic (l-1),(m-1),sigma
-c       # isigm: index of the harmonuc (l-1),(m-1),(1-sigma)
+!       # isig:  index of the harmonic (l-1),(m-1),sigma
+!       # isigm: index of the harmonuc (l-1),(m-1),(1-sigma)
         isig=(lang-1)**2+2*(mang-1)+1-isigma
         isigm=(lang-1)**2+2*(mang-1)+isigma
         IPT_SH_LMF(indexh)=IPT_SH_LML(indexh-1)+1
@@ -529,7 +521,7 @@ c       # isigm: index of the harmonuc (l-1),(m-1),(1-sigma)
         iz=iz+1
         IPT_SH_FLMTX(3,iz) = -(lang)
   300 enddo
-c     # column and row indices for angular momentum matrix elements.
+!     # column and row indices for angular momentum matrix elements.
       iadd = 1
       do 310 i=1,2*lproju-1
         IPT_SH_MC(1,i) = i
@@ -545,25 +537,23 @@ c     # column and row indices for angular momentum matrix elements.
 
 ! iodfac -> FN_IODFAC 
       function iodfac(l1,l2,m1,m2,n1,n2)
-c
-c  compute the product of odd number factorials which gives the
-c  one-center overlaps of cartesian gaussian aos.
-c
+!  compute the product of odd number factorials which gives the
+!  one-center overlaps of cartesian gaussian aos.
       if(mod(l1+l2,2).eq.1 .or.
      &   mod(m1+m2,2).eq.1 .or.
      &   mod(n1+n2,2).eq.1) then
         iodfac = 0
       else
         iprd = 1
-        do 20 i=3,l1+l2-1,2
+        do i=3,l1+l2-1,2
           iprd = i*iprd
-   20   continue
-        do 30 i=3,m1+m2-1,2
+        enddo
+        do i=3,m1+m2-1,2
           iprd = i*iprd
-   30   continue
-        do 40 i=3,n1+n2-1,2
+        enddo
+        do i=3,n1+n2-1,2
           iprd = i*iprd
-   40   continue
+        enddo
         iodfac = iprd
       endif
       return

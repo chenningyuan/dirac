@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module fde_data
@@ -459,9 +459,9 @@ module fde_data
 
       
       do i = 1, fde_export_grid_np 
-         exp_int_n  = exp_int_n  + fde_export_grid(4,i)*gf_export%n(i) 
-         exp_int_vc = exp_int_vc + 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*gf_export%elpot(i) 
-         exp_int_vn = exp_int_vn + fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
+         exp_int_n  = exp_int_n  +       fde_export_grid(4,i)*gf_export%n(i) 
+         exp_int_vc = exp_int_vc - 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*(gf_export%elpot(i)-gf_export%nucpot(i)) 
+         exp_int_vn = exp_int_vn -       fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
       end do
       
       write (*,*) ' '

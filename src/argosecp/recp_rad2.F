@@ -8,7 +8,7 @@
       parameter (a0=0.0d0, eps1=1.0d-15, a1=1.0d0, a2=2.0d0,
      1  a4=4.0d0, a50=50.0d0)
       common /parmr/ tol
-      common /one/dxij,dyij,dzij,fnfct,rr,xij,xijm,yij,yijm,zij,zijm,
+      common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,
      1  ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic,
      2  icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl,
      3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
@@ -166,34 +166,36 @@ c               # lama recursion
       lmlo=max(l,nu)
       lmaphi=lmahi-num1
       lmbphi=lmbhi-num1
-      fcta=rka/(alpha+alpha)
-      fct=rka*fcta
-      fctb=rkb/(alpha+alpha)
+
+      fcta = rka/(alpha+alpha)
+      fctb = rkb/(alpha+alpha)
+
+!     Set BPREF
       IPT_P23_BPREF(1)=fctb**num1
-      do 24 lambp=2,lmbphi
-        IPT_P23_BPREF(lambp)=fctb*IPT_P23_BPREF(lambp-1)
-   24 continue
+      DO lambp=2,lmbphi
+         IPT_P23_BPREF(lambp)=fctb*IPT_P23_BPREF(lambp-1)
+      ENDDO
+
+!     Set APWR 
+      fct = rka*fcta
       IPT_P23_APWR(1)=1.0d0
-!     FIXME : 1
-      if (ljt.eq.1) then
-         IPT_P23_ATERM1(1)=fct
-      else
+      IF (ljt.NE.1) THEN
          IPT_P23_APWR(2)=fct
-      endif
-      do 28 lambp=3,lmbphi
-        IPT_P23_APWR(lambp)=fct*IPT_P23_APWR(lambp-1)
-   28 continue
-      fct=rkb*fctb
+      ENDIF
+      DO lambp=3,lmbphi
+         IPT_P23_APWR(lambp)=fct*IPT_P23_APWR(lambp-1)
+      ENDDO
+
+!     Set BPWR 
+      fct = rkb*fctb
       IPT_P23_BPWR(1)=1.0d0
-!     FIXME : 2
-      if (lit.eq.1) then
-         IPT_P23_BTERM1(1)=fct
-      else
+      IF (lit.NE.1) THEN
          IPT_P23_BPWR(2)=fct
-      endif
-      do 32 lamap=3,lmaphi
-        IPT_P23_BPWR(lamap)=fct*IPT_P23_BPWR(lamap-1)
-   32 continue
+      ENDIF
+      DO lamap=3,lmaphi
+         IPT_P23_BPWR(lamap)=fct*IPT_P23_BPWR(lamap-1)
+      ENDDO
+
       lmihi=lmaphi+lmbphi+(nu-2)
       call ssibfn(lmihi-1,rka*fctb,IPT_P23_SSI)
       do 36 lami=1,lmihi
@@ -211,7 +213,6 @@ c               # lama recursion
         fctrud=(2*(lamap+num1)+1)
         do 40 iu=1,lmbphi
           IPT_P23_ATERM1(iu)=fctru*IPT_P23_APWR(iu)
-!         ATERM1(iu)=fctru*APWR(iu)
           fctru=fctru*fctrun/fctrud
           fctrun=fctrun+a2
           fctrud=fctrud+a2
@@ -233,15 +234,15 @@ c               # lama recursion
           fctrt=a1
           fctrtn=(nu+num1)
           fctrtd=(2*(lambp+num1)+1)
-          do 56 it=1,lamap
-            do 52 iu=1,lambp
-              sum=sum+IPT_P23_ATERM2(iu)*(fctrt*IPT_P23_BTERM1(it))*
-     &          IPT_P23_SSI((it+(nu-2))+iu)
-   52       continue
-            fctrt=fctrt*fctrtn/fctrtd
-            fctrtn=fctrtn+a2
-            fctrtd=fctrtd+a2
-   56     continue
+          DO it=1,lamap
+             DO iu=1,lambp
+                sum=sum+IPT_P23_ATERM2(iu)*(fctrt*IPT_P23_BTERM1(it))*
+     &              IPT_P23_SSI((it+(nu-2))+iu)
+             ENDDO
+             fctrt=fctrt*fctrtn/fctrtd
+             fctrtn=fctrtn+a2
+             fctrtd=fctrtd+a2
+          ENDDO
           IPT_P23_QSUM(n,lambp+num1,lamap+num1)
      &     =IPT_P23_QSUM(n,lambp+num1,lamap+num1)+
      &      fctrb * IPT_P23_BPREF(lambp) * sum

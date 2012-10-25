@@ -1,0 +1,28 @@
+INTGRL
+   Z86_Mg_like F (65+) molecule
+   ... to simulate molecule with heavy element...    
+C   2   
+       9.0   1             
+F      .0000000000        0.0000000000        2.0000000000
+LARGE BASIS STO-2G
+       86.    1
+Rn     .0000000000        0.0000000000        0.0000000000
+LARGE    3   1   1   1  
+f   6    0
+ 200000
+  90000
+  45000
+   9500
+   2500
+    900  
+f   5    0    
+    95000
+    62000
+     8500
+     2500
+      550 
+f   2    0
+    2500 
+     900 
+FINISH
+

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# you can run this script independently on cmake,
+#  examle:  get_compiler_version.py gfortran
+
 import sys
 import os
 import subprocess
@@ -33,6 +36,7 @@ command_d['xlc']          = 'xlc          -qversion'
 # C++ compilers
 command_d['mpiCC']        = 'mpiCC        --version'
 command_d['g++']          = 'g++          --version'
+command_d['c++']          = 'c++          --version'
 command_d['g++44']        = 'g++44        --version'
 command_d['iCC']          = 'iCC          --version'
 command_d['icpc']         = 'icpc         --version'
@@ -47,7 +51,10 @@ if sys.version >= '2.4':
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = p.communicate()[0]
         if out != '':
-            # use only first line, not the copyright stuff
-            version = out.split('\n')[0]
-
+            if compiler_name != 'pgf90' and compiler_name != 'pgcc' and  compiler_name != 'pgCC':
+                # use only first line, not the copyright stuff
+                version = out.split('\n')[0]
+            else:
+                # for Portland compilers, however, use the second line (the first line is empty)
+                version = out.split('\n')[1]
 print(version)

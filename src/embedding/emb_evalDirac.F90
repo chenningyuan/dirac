@@ -72,16 +72,24 @@ module fde_eval_dirac
          
          np = size(grid,2)
 
-         allocate(r(np,3))
+         allocate(r(3,np))
 
          do i = 1, np
-            r(i,1) = grid(1,i)
-            r(i,2) = grid(2,i)
-            r(i,3) = grid(3,i)
+            r(1,i) = grid(1,i) 
+            r(2,i) = grid(2,i) 
+            r(3,i) = grid(3,i) 
          enddo 
           
+!
+! calculating the hartree potential first
+! 
          write (*,*) 'Generating the Hartree potential over the grid'
-
+!
+! aspg, 11/10/2012
+! important here: get_esp expects to get a density matrix
+!                 that is not scaled wih the occupation numbers
+!                 (so like what one would get from calling DENMAT).
+!                 
          nuc_part = .false.    
          ele_part = .true.    
          call get_esp(np,            &
@@ -92,8 +100,9 @@ module fde_eval_dirac
                       r,             &
                       nuc_part,      &
                       ele_part)
-         vc = -vc
-
+!
+! now the nuclear potential
+!
          write (*,*) 'Generating the nuclear potential over the grid'
 
          nuc_part = .true.    
@@ -106,8 +115,13 @@ module fde_eval_dirac
                       r,             &
                       nuc_part,      &
                       ele_part)
-         vnuc = -vnuc
-
+!
+! assemble the final electrostatic potential
+!
+         vc   =  vnuc + vc 
+!
+! cleanup
+!
          deallocate(r)
                            
       end subroutine fde_calculate_active_elpot  
@@ -303,6 +317,10 @@ module fde_eval_dirac
          gf_export%hn(6,i) = hes_rho(6,i)
       END DO
 
+      ! scale the density matrix back to what it was originally
+      dmat = 0.5d0*dmat
+
+      ! and now deallocate everything but dmat
       call dealloc (cmo)
       call dealloc (buf)
       call dealloc (gao)

@@ -3,14 +3,16 @@ WARNING: Unable to read mpd.hosts or list of hosts isn't provided. MPI job will 
   ** interface to 32-bit integer MPI enabled **
 
 DIRAC master    (cluster1.univ-lille1.fr) starts by allocating             80000000 words (           610 MB) of memory
-DIRAC node    1 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    2 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    2 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
 DIRAC master    (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
  
+DIRAC node    1 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    3 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    1 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
-DIRAC node    2 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
+DIRAC node    3 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -184,15 +186,15 @@ Binary information
                           | --start-group -lmkl_intel_lp64 -lmkl_intel_thread 
                           | -lmkl_core -Wl,--end-group -openmp -lpthread -lm
  Static linking           | OFF
- Last Git revision        | 5b123ed
- Configuration time       | 2012-10-03 18:27:06.006258
+ Last Git revision        | e678617
+ Configuration time       | 2012-10-11 14:15:13.885005
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct  3 18:35:04 2012
+     Date and time (Linux)  : Thu Oct 11 14:17:17 2012
      Host name              : cluster1.univ-lille1.fr                 
 
 
@@ -682,47 +684,45 @@ Total no. of orbitals           (NORB):    14
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Oct  3 18:35:04 2012
+########## START ITERATION NO.   1 ##########   Thu Oct 11 14:17:18 2012
 
 
 => Calculating sum of orbital energies
-It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Oct  3
+It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Oct 11
 
-########## START ITERATION NO.   2 ##########   Wed Oct  3 18:35:04 2012
+########## START ITERATION NO.   2 ##########   Thu Oct 11 14:17:18 2012
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-DIRAC node    3 (cluster1.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC node    3 (cluster1.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
 
   QM-QM nuclear repulsion energy :      8.980370229500
 
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
 SOfock:SL  1.00D-12    0.00%   50.66%    0.00%    0.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   2 ##########   Wed Oct  3 18:35:04 2012
+########## END ITERATION NO.   2 ##########   Thu Oct 11 14:17:18 2012
 
-It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.00000000s   LL SL          Wed Oct  3
+It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   3 ##########   Wed Oct  3 18:35:05 2012
+########## START ITERATION NO.   3 ##########   Thu Oct 11 14:17:18 2012
 
     3 *** Differential density matrix. DCOVLP     = 0.9929
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
 SOfock:SL  1.00D-12    0.00%   50.88%    0.00%    0.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   3 ##########   Wed Oct  3 18:35:05 2012
+########## END ITERATION NO.   3 ##########   Thu Oct 11 14:17:18 2012
 
-It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.00000000s   LL SL          Wed Oct  3
+It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   4 ##########   Wed Oct  3 18:35:05 2012
+########## START ITERATION NO.   4 ##########   Thu Oct 11 14:17:19 2012
 
     4 *** Differential density matrix. DCOVLP     = 0.9995
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -732,53 +732,53 @@ SOfock:SL  1.00D-12    0.00%   51.29%    0.00%    0.24%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU time : 1.00000000s
 
-########## END ITERATION NO.   4 ##########   Wed Oct  3 18:35:05 2012
+########## END ITERATION NO.   4 ##########   Thu Oct 11 14:17:19 2012
 
-It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    1.00000000s   LL SL          Wed Oct  3
+It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    1.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   5 ##########   Wed Oct  3 18:35:05 2012
+########## START ITERATION NO.   5 ##########   Thu Oct 11 14:17:19 2012
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   51.80%    0.00%    0.24%   1.00000000s
+SOfock:SL  1.00D-12    0.00%   51.80%    0.00%    0.24%   0.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Wed Oct  3 18:35:05 2012
+########## END ITERATION NO.   5 ##########   Thu Oct 11 14:17:19 2012
 
-It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.00000000s   LL SL          Wed Oct  3
+It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   6 ##########   Wed Oct  3 18:35:06 2012
+########## START ITERATION NO.   6 ##########   Thu Oct 11 14:17:19 2012
 
     6 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
 SOfock:SL  1.00D-12    0.00%   52.11%    0.00%    0.26%   0.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 1.00000000s
 
-########## END ITERATION NO.   6 ##########   Wed Oct  3 18:35:06 2012
+########## END ITERATION NO.   6 ##########   Thu Oct 11 14:17:19 2012
 
-It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    1.00000000s   LL SL          Wed Oct  3
+It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    1.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   7 ##########   Wed Oct  3 18:35:06 2012
+########## START ITERATION NO.   7 ##########   Thu Oct 11 14:17:20 2012
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
 SOfock:SL  1.00D-12    0.00%   52.80%    0.00%    0.28%   0.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   7 ##########   Wed Oct  3 18:35:06 2012
+########## END ITERATION NO.   7 ##########   Thu Oct 11 14:17:20 2012
 
-It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.00000000s   LL SL          Wed Oct  3
+It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   8 ##########   Wed Oct  3 18:35:07 2012
+########## START ITERATION NO.   8 ##########   Thu Oct 11 14:17:20 2012
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
@@ -788,23 +788,23 @@ SOfock:SL  1.00D-12    0.00%   55.71%    0.00%    0.78%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   8 ##########   Wed Oct  3 18:35:07 2012
+########## END ITERATION NO.   8 ##########   Thu Oct 11 14:17:20 2012
 
-It.    8    -75.72707965866      3.52D-12 -4.39D-07  9.08D-07   DIIS   7    0.00000000s   LL SL          Wed Oct  3
+It.    8    -75.72707965866      3.72D-12 -4.39D-07  9.08D-07   DIIS   7    0.00000000s   LL SL          Thu Oct 11
 
-########## START ITERATION NO.   9 ##########   Wed Oct  3 18:35:07 2012
+########## START ITERATION NO.   9 ##########   Thu Oct 11 14:17:20 2012
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   56.27%    0.00%    1.25%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   56.27%    0.00%    1.25%   1.00000000s
  cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU time : 0.00000000s
 
-########## END ITERATION NO.   9 ##########   Wed Oct  3 18:35:07 2012
+########## END ITERATION NO.   9 ##########   Thu Oct 11 14:17:20 2012
 
-It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00000000s   LL SL          Wed Oct  3
+It.    9    -75.72707965866      2.27D-13  4.52D-07  3.03D-08   DIIS   7    0.00000000s   LL SL          Thu Oct 11
 
 
                                    SCF - CYCLE
@@ -820,15 +820,15 @@ It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Oct  3
-It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.00000000s   LL SL          Wed Oct  3
-It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.00000000s   LL SL          Wed Oct  3
-It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    1.00000000s   LL SL          Wed Oct  3
-It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.00000000s   LL SL          Wed Oct  3
-It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    1.00000000s   LL SL          Wed Oct  3
-It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.00000000s   LL SL          Wed Oct  3
-It.    8    -75.72707965866      3.52D-12 -4.39D-07  9.08D-07   DIIS   7    0.00000000s   LL SL          Wed Oct  3
-It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00000000s   LL SL          Wed Oct  3
+It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Oct 11
+It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.00000000s   LL SL          Thu Oct 11
+It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.00000000s   LL SL          Thu Oct 11
+It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    1.00000000s   LL SL          Thu Oct 11
+It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.00000000s   LL SL          Thu Oct 11
+It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    1.00000000s   LL SL          Thu Oct 11
+It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.00000000s   LL SL          Thu Oct 11
+It.    8    -75.72707965866      3.72D-12 -4.39D-07  9.08D-07   DIIS   7    0.00000000s   LL SL          Thu Oct 11
+It.    9    -75.72707965866      2.27D-13  4.52D-07  3.03D-08   DIIS   7    0.00000000s   LL SL          Thu Oct 11
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
@@ -839,14 +839,14 @@ It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -84.707449916292859
+   Electronic energy                        :    -84.707449916292646
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      8.980370229500169
    SS Coulombic correction                  :      0.000000028129738
 
    Sum of all contributions to the energy
-   Total energy                             :    -75.727079658662944
+   Total energy                             :    -75.727079658662745
 
 
                                    Eigenvalues
@@ -855,9 +855,9 @@ It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.52426137425421  ( 2)    -1.26567104794215  ( 2)    -0.60561177051521  ( 2)    -0.45587852902703  ( 2)    -0.39423379115120  ( 2)
+-20.52426137424655  ( 2)    -1.26567104795114  ( 2)    -0.60561177050481  ( 2)    -0.45587852902138  ( 2)    -0.39423379114813  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.58055972065503  ( 2)     0.70711842713230  ( 2)
+  0.58055972065163  ( 2)     0.70711842713333  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.58055972 au (symmetry E1 )
@@ -912,8 +912,8 @@ It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00
                                                    s0 t0
 ----------------------------------------------------------------------------
     Dipole length: X :     0.39301409D-12 a.u.      F   F
-    Dipole length: Y :     0.35279629D-09 a.u.      F   F
-    Dipole length: Z :     3.356199936892 a.u.      F   F
+    Dipole length: Y :     0.35279840D-09 a.u.      F   F
+    Dipole length: Z :     3.356199936890 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -926,6 +926,10 @@ It.    9    -75.72707965866      5.12D-13  4.52D-07  3.03D-08   DIIS   7    0.00
 x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
 y         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
 z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
+----------------------------------------------------------------------------
+x         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+y         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+z         3.35619994 a.u.         -2.66482600 a.u.          0.69137394 a.u.
 ----------------------------------------------------------------------------
 
  1 a.u =   2.54177000 Debye
@@ -949,8 +953,8 @@ z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
   
  Exported quantities (over         8884 grid points) integrate to:
  - electron density    :         0.014790 electrons
- - Hartree      energy :         0.034809 a.u.
- - n.-el. attr. energy :        -0.039653 a.u.
+ - Hartree      energy :         0.019112 a.u.
+ - n.-el. attr. energy :        -0.039050 a.u.
  writing xml file
  closing xml file
  Deleting children
@@ -962,15 +966,17 @@ z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
 
 
  
-     Date and time (Linux)  : Wed Oct  3 18:35:15 2012
+     Date and time (Linux)  : Thu Oct 11 14:17:28 2012
      Host name              : cluster1.univ-lille1.fr                 
 
->>>> Node 0, utime: 9, stime: 2, minflt: 79809, majflt: 0, nvcsw: 25, nivcsw: 357, maxrss: 53316
+>>>> Node 0, utime: 9, stime: 1, minflt: 79763, majflt: 0, nvcsw: 15, nivcsw: 529, maxrss: 53180
 >>>> Total WALL time used in DIRAC: 11s
+  
   
   Dynamical Memory Usage Summary
   
   Mean allocation size (Mb) :        59.85
+  
   
   Largest          10  allocations
   
@@ -989,9 +995,7 @@ z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
        reached at subroutine : fde_eval_dirac_mp_fde_old_density_matrix_g
               for variable   : unnamed variable                          
   
-  
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-  
   
