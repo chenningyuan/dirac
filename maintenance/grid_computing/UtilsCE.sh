@@ -1,5 +1,4 @@
-#!/bin/sh
-#
+############################################################################
 # List of specific function in shell language related to execution of DIRAC 
 # software in grid environment.
 #
@@ -10,6 +9,13 @@
 #
 ############################################################################
 
+get_nprocs_CE()
+{ # function , http://www.linuxjournal.com/content/return-values-bash-functions
+  local result=$1 # store variable name
+  unser nprocs
+  local nprocs=`cat /proc/cpuinfo | grep processor | wc -l`
+  eval $result="'$nprocs'"
+}
 
 print_CE_info ()
 { # prints basic info about given CE
@@ -20,11 +26,15 @@ if [[ -z $THIS_HOSTNAME ]]; then
 fi
 echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
 echo -e "Server specification: \c";  uname -a
+
 ######################################################
 #     get number of CPUs on the given node
 ######################################################
-nprocs_all=`cat /proc/cpuinfo | grep processor | wc -l`
+get_nprocs_CE nprocs_all
+
+if [[ -n $PBS_NODEFILE ]]; then
 nprocs_PBS=`cat $PBS_NODEFILE | wc -l`
+fi
 nprocs=$nprocs_all
 echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
 echo -e "==== Number of all CPUs     :  $nprocs   ";
@@ -38,36 +48,50 @@ echo -e "\n ---- server's total memory :\c"; cat /proc/meminfo | grep MemTotal
 echo -e "\n--- Server's filesystem (df): "; df -h .
 echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
-
 echo -e "\n\n ****  server environment:  set command  **** \n" 
 set
-
 echo -e "\n\n Is there cmake ? which cmake="; which cmake
 echo -e "Python present : \c"; which python; python -V
 
 } # Function declaration must precede call.
 
-
-querry_CE_attributes ()
+querry()
 {
-echo -e "\n Checking long-term proxy with myproxy-info -v : "; myproxy-info -v
-echo -e "\n Checking short-term proxy with voms-proxy-info --all : "; voms-proxy-info --all
+echo "..."
+if [[ "$1" == "voce" ]]; then
+  echo -e "\n Checking long-term proxy with myproxy-info -v : "
+  myproxy-info -v -d --pshost px.ui.savba.sk
+fi
+}
+
+querry_CE_attributes()
+{
+echo "..."
+if [[ "$1" == "voce" ]]; then
+  echo -e "\n Checking long-term proxy with myproxy-info -v : "
+  myproxy-info -v -d --pshost px.ui.savba.sk
+fi
+if [[ "$1" == "compchem" ]]; then
+  echo -e "\n Checking long-term proxy with myproxy-info -v : "
+  myproxy-info -v -d --pshost myproxy.cnaf.infn.it
+fi
+echo -e "\n Checking short-term proxy with voms-proxy-info --all : "
+voms-proxy-info --all
+if [[ -n $CE_ID ]]; then
 # get info about CE #
 echo -e "\n querry attribute SMPSize, CE=$CE_ID:"
 date
 lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
 date
-
 echo -e "\n querry attribute PlatformArch:"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
 echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
-
-# better: 
 echo -e "\n faster querrying using CE_BDII=$CE_BDII....";date
 CE_BDII=${CE_ID/:*/:2170}
 lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
 date
+fi
 }
 
 check_file_on_SE()
@@ -88,16 +112,22 @@ lfc-getacl  /grid/$VO/ilias
 }
 
 download_from_SE()
-{
-#####################################
-###  download file to the current CE 
-#####################################
+{ # download file to the current CE
 VO=$1
 echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
 lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
 
 echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
 ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in local directory - error exit !"; exit -3;}
-echo " ---------------------------------------------------------------------------------------------------------------------"
+echo " ----------------------------------------------------------------------------------------------------"
 }
 
+final_message()
+{ # flush out final message
+echo -e "\n -------------------------------------------------------"
+echo -e "Job finished at: \c"; date
+echo -e "I am here: \c"; pwd
+echo -e "My space: "; df -h .
+echo -e "\n All files:"; ls -lt
+echo -e "\n Total occupied space: \c"; du -h -s .
+}

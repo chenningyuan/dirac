@@ -55,6 +55,8 @@ Create and store a long-term proxy (default 7 days):
   myproxy-init  --pshost myproxy.cnaf.infn.it -d -n # compchem
   myproxy-init  --pshost px.ui.savba.sk  -d -n       # voce
 
+  myproxy-init  --pshost px.ui.savba.sk  -d -n -c 1440       # voce, 60 days
+
 where "--pshost <myproxy_server>" specifies the hostname of the machine where a MyProxy Server runs, 
 the -d option instructs the server to associate the user DN to the proxy, 
 and the -n option avoids the use of a passphrase to access the long-term proxy, 
