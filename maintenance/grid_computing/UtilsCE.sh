@@ -43,9 +43,15 @@ echo -e "==== Number of allowed CPUs :  $nprocs_PBS  ";
 if [[ -n $PBS_NODEFILE ]]; then
   echo -e "PBS_NODEFILE=$PBS_NODEFILE"
   echo -e "PBS_NUM_PPN=$PBS_NUM_PPN"
-fi 
+fi
+#####################
+###  memory of CE ###
+#####################
 echo -e "\n ---- server's total memory :\c"; cat /proc/meminfo | grep MemTotal
-# check space
+echo -e "through the 'free -t -m' command (values in MB): "; free -m -t
+#####################
+# check space on CE #
+#####################
 echo -e "\n--- Server's filesystem (df): "; df -h .
 echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
