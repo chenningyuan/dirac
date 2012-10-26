@@ -51,8 +51,8 @@ BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
-#unset DO_UPDATE
-DO_UPDATE=1
+unset DO_UPDATE
+#DO_UPDATE=1
 
 cd $DIRAC
 
@@ -147,7 +147,7 @@ ls -lt dirac_grid_suite.tgz
 
 #another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
 echo -e "\n\n packing slim DIRAC suite for grid computations..."
-tar czf dirac_grid_suite_slim.tgz   pam runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION maintenance/grid_computing/diracrc_grid 
 echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
 ls -lt dirac_grid_suite_slim.tgz
 echo -e "\n Done. Tarball with static execs ready."
@@ -159,7 +159,7 @@ else
 fi # of DO_UPDATE
 
 # exit here, don't do other stuff
-exit 0
+#exit 0
 
 ######################################################## 
 #
@@ -198,7 +198,7 @@ lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once ag
 
 # upload the fresh tar-ball onto the SE
 echo -e "\n uploading lcg-cr -d $VO_SE  -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz...."
-lcg-cr -d $VO_SE -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
+lcg-cr -d $VO_SE  file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
 
 ###   Check your copied file on the grid SE:  ###
 echo -e "\n After uploading, list of files on grid SE, lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz"
@@ -207,6 +207,7 @@ lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
+
 # change ACL, see https://edms.cern.ch/file/722398/1.4/gLite-3-UserGuide.pdf
 lfc-setacl -m group::0,other:0  /grid/$VO/ilias
 
@@ -219,7 +220,7 @@ cd maintenance/grid_computing
 echo -e "Now I am in the directory $PWD"
 
 # launch through the cycle #
-for i in {1..7} 
+for i in {1..8} 
 do
   glite-wms-job-submit -o JOB_$VO.$timestamp.no$i -a submit_$VO.jdl
   sleep 5 # wait after each launch

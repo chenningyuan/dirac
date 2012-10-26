@@ -184,10 +184,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
+ # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
 
-  echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
+  #echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  #python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
 
 
 if [[ -n $DO_CMAKE ]]; then
@@ -213,10 +214,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
-  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
+  #python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
+  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
 
-  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
-  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
+#  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
+#  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
 
 ### Again, do the buildup using serial standalone executable ###
 if [[ -n $DO_CMAKE ]]; then
@@ -237,10 +239,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching serial runtest - GNU - with selected tests  --- \n "; date
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
+  #python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
 
-  echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
-  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
+  #echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
+  #python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
 
 
 # ----------------------------------------- #
@@ -387,8 +390,7 @@ fi
    #make ExperimentalConfigure
    #make ExperimentalBuild
    #make ExperimentalSubmit
-
-       # return to the main directory
+   # return to the main directory
    cd ..
  fi
 
@@ -396,7 +398,8 @@ fi
  if [ -f "$dirac_file" ]; then
    echo -e "\n\n --- Launching  runtest - selected tests - of own dirac.x buildup on CE --- \n "; date
    echo -e "dirac.x file: \c "; ls -lt $dirac_file
-   python ./runtest --verbose --backup --binary=$dirac_file --tests="$regular_subset"
+   #python ./runtest --verbose --backup --binary=$dirac_file --tests="$regular_subset"
+   python ./runtest --verbose --backup --binary=$dirac_file --quick
    BUILD_LOCAL=build
  else
    echo -e "\n own buildup of dirac.x failed, no tests run \n"
