@@ -3365,6 +3365,9 @@ C  /* Deck dsusan */
 C
 C     K.Ruud, Feb. 1992
 C
+C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
+C the article
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
