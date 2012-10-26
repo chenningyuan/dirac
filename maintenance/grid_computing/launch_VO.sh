@@ -10,65 +10,50 @@
 # check the parameter - VO name
 if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; then
  echo -e "\n wrong parameter - VO name : $1 "
- exit -12
+ exit 12
 else
  VO=$1
  echo -e "OK, you specified properly the VO=$VO"
- #exit 0
 fi
 
+# include all external functions
 source ./UtilsCE.sh
 
-print_CE_info;
+print_CE_info
 querry_CE_attributes $VO
 check_file_on_SE $VO
+# download & unpack tar-file onto CE - MUST be successfull or exit
 download_from_SE $VO
+RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
 # get number of procs #
 get_nprocs_CE nprocs
-echo -e "\n Number of #CPU from function: $nprocs"
+RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
+echo -e "\n Number of #CPU obtained from the function: $nprocs"
 
 ##########################################
-##  make it executable and finally launch
+#  make it executable and finally launch
 ##########################################
-echo -e "\n Job started at : \c"; date
-
 # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
- export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
- export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
- export BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
+export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
+export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
+export BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
- unset OPAL_PREFIX
- export OPAL_PREFIX=$PWD/$BUILD
- echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
- export PATH=$PWD/$BUILD:$PATH
+unset OPAL_PREFIX
+export OPAL_PREFIX=$PWD/$BUILD
+echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
+export PATH=$PWD/$BUILD:$PATH
  #export PATH=$PWD/$BUILD_SERIAL:$PWD/$BUILD:$PATH
- echo -e "Modified PATH=$PATH"
- echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+echo -e "Modified PATH=$PATH"
+echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
+unpack_DIRAC
+RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
 
-# here exit
-#exit
-
-echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "; which tar;  tar --version
-echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz
-echo -e "done; see the content of $PWD :"; ls -lt
-
-#echo -e "\n making executables:"
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-
-# create diracrc file for paralle run on the grid CE
-cp maintenance/grid_computing/diracrc_grid  diracrc
-echo -e "\n ---- diracrc created: "; cat diracrc
+echo -e "\n Job started at : \c"; date
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
 #           specify tests for two runtest runs
@@ -358,6 +343,6 @@ echo " "
 tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL
 echo -e "\n selected files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
 
-final_message()
+final_message
 
 exit 0
