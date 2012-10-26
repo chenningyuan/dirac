@@ -602,15 +602,25 @@ C
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
          IF (IPROPT .GE. 1) THEN
-            IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+              IF( OPT_CIPROGRAM .EQ. 'LUCIAREL' )THEN
+                IDENSLR_STATE = 1
+                NATOLCR       = .TRUE.
+              END IF
               IPRNO = 3*IPROPT
               CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+
+C             erase old occupation numbers
+              CALL DZERO(WORK(KOCCNO),NORBT)
+              CALL DZERO(WORK(KUNO),N2ASHXQ)
+
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
-            END IF
+              IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+                IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+              END IF
          END IF
 C
          CALL FLSHFO(LUPRI)
