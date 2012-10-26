@@ -52,6 +52,7 @@ BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
 unset DO_UPDATE
+#DO_UPDATE=1
 
 cd $DIRAC
 
@@ -76,6 +77,7 @@ cd $DIRAC/$BUILD
 
  ls -lt $DIRAC/$BUILD/dirac.x
  ldd $DIRAC/$BUILD/dirac.x
+ cmake .. > VERSION  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
@@ -93,6 +95,7 @@ cd $DIRAC/$BUILD_SERIAL
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL/dirac.x
+ cmake .. > VERSION  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
@@ -112,8 +115,10 @@ cd $DIRAC/$BUILD_GNU_SERIAL
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_GNU_SERIAL/dirac.x
-timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
+ cmake .. > VERSION  2>&1  # get version
+
+ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+ echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
 
 #################################################
 ### continue with the launching for the grid  ###
@@ -122,35 +127,39 @@ echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
 # create the reduced tar-file containing all important stuff ...
 cd $DIRAC
 # copy there the cmake static
-cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD/.
-#cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_SERIAL/.
-#cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_GNU_SERIAL/.
+cp -R /home/ilias/bin/cmake_static/*                                 $DIRAC/$BUILD/.
 
 # copy there the mpirun static with related directpries & files
-cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
+cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun         $DIRAC/$BUILD/.
 /bin/rm -rf $BUILD/share
 mkdir $BUILD/share
 cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/share/.
-cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc  $DIRAC/$BUILD/.
+cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BUILD/.
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
 /bin/rm test/*/*.out*
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing DIRAC suite for grid computations..."
-
 tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
-
-echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
+echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
-#echo -e "\n This tarball contains :"
-#tar -tvf dirac_grid_suite.tgz
+
+#another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
+echo -e "\n\n packing slim DIRAC suite for grid computations..."
+tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION maintenance/grid_computing/diracrc_grid 
+echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
+ls -lt dirac_grid_suite_slim.tgz
+echo -e "\n Done. Tarball with static execs ready."
 
 else
   echo -e "\n\n ===  No local buildup of DIRAC done ! ==== "
   echo -e "Using the last tar-ball of  :"; ls -lt dirac_grid_suite.tgz
   echo -e "\n\n"
 fi # of DO_UPDATE
+
+# exit here, don't do other stuff
+#exit 0
 
 ######################################################## 
 #
@@ -189,7 +198,7 @@ lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once ag
 
 # upload the fresh tar-ball onto the SE
 echo -e "\n uploading lcg-cr -d $VO_SE  -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz...."
-lcg-cr -d $VO_SE -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
+lcg-cr -d $VO_SE  file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
 
 ###   Check your copied file on the grid SE:  ###
 echo -e "\n After uploading, list of files on grid SE, lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz"
@@ -198,6 +207,9 @@ lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
+
+# change ACL, see https://edms.cern.ch/file/722398/1.4/gLite-3-UserGuide.pdf
+lfc-setacl -m group::0,other:0  /grid/$VO/ilias
 
 ##########################################################################
 #             submit external launching script with glite                #
@@ -208,7 +220,7 @@ cd maintenance/grid_computing
 echo -e "Now I am in the directory $PWD"
 
 # launch through the cycle #
-for i in {1..7} 
+for i in {1..8} 
 do
   glite-wms-job-submit -o JOB_$VO.$timestamp.no$i -a submit_$VO.jdl
   sleep 5 # wait after each launch

@@ -18,14 +18,16 @@ All values in ppm.
 Method/Atom                                    
 ---------------------------------------------------------------
 ukb-ep-lao-go_cm 
-    ee+ep-rn        
+ ee+ep-rn, LL+SL         0.032
+ ee+ep-rn, LL+SL+SS 
+       
 ukb-ep-lao-go_1  
     ee+ep-rn    
     ee+ep-rn,symcon  
    
 rkbimp-ep-lao-go_cm, ee+ep-rn:
-  2-Fock LL+SL+SS   
-  2-Fock LL+SL
+   LL+SL                            0.0137    -0.0253
+   LL+SL+SS   
 
 rkb-ep-lao-go_cm
     ee-rn           
@@ -38,7 +40,7 @@ rkb-ee-cgo_go_cm
 rkb-ee-cgo_go_1    
 
 rkb-ee-lao-go_1     
-rkb-ee-lao-go_cm     
+rkb-ee-lao-go_cm             -0.0047         
  cval=2000           
  cval=4000           
  cval=10000          
@@ -71,7 +73,7 @@ Another diatomic, Rn2(154+), the F2-like molecule, was chosen to simulate proper
 of relativistic systems with two heavy elements, especially effect of SS-class of integrals,
 which is numerically not observable for a molecule composed of heavy-atom -- light-atom.
 
-Method/Atom                            Rn                
+Method/Atom                  isotropic   anisotropic                
 ---------------------------------------------------------------------------
 rkb-ep-lao-go_cm, ee+ep-rn:                    (all methods with LL+SL) 
                                                (all methods with LL+SL+SS)

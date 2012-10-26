@@ -781,7 +781,7 @@ C***********************************************************************
 C
 C   PURPOSE:
 C ==========
-C  Get the total one-electron magnetic field property gradient dh~(B)/dB
+C  Get the total one-electron magnetic field property gradient dh_{D}(B)/dB
 C  in MO basis when using London orbitals and write it to the DA file ONELON.
 C
 C  Expression:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
@@ -842,7 +842,7 @@ C Allocate memory for storing components of dh(B)/dB_c
 
       DO ICOMP = 1, 3
        CALL DZERO(WORK(KDHB),N2ORBXQ)
-       DO IX = 1, 4
+       DO IX = 1, 4 ! run over all 4 integral types RM1...
          CALL DZERO(WORK(KDHBIX),N2ORBXQ)
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
