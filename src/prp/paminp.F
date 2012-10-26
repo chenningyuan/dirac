@@ -1412,8 +1412,8 @@ CMI (&TEC): RM1H1/RM2H1 is first/second London derivative of BETAMAT
          PCOMB = '000+'
 CMI/HJAaJ
 C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
-C      to get compatibility with DALTON
-C     ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
+C      to get compatibility with DALTON, plus doubled factor
+!  nonrelativistic adaptation has to be set up explicitly 
       ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.RDSUSLLMOD) THEN
 C ... fix the LS block for the LevyLe option
          PCOMB = '00+0'

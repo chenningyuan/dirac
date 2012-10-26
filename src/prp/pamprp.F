@@ -5315,14 +5315,16 @@ C -----------------------------------
         CALL OP1IND('ZZRM2H3',IPDSUSC(18),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
-C ... off-diagonal terms need to be symmetrized !
+C ... off-diagonal tensor elements have to be symmetrized !
 ! see abacus/RDSUSAN, where they are multiplied with 1/2 factor
         IF (RDSUSLLMOD) THEN
+           ! factor for Dalton-nonrelatic form
            FACLL = -2.0D0
         ELSE
 !radovan:  why is this factor different?
 !          in which situation is this needed?
-!miro: this is to be carefully examined
+!miro: this is to be carefully examined, at least this is
+! factor of the full relativistic form of the RDSUSLL operator
            FACLL = -1.0D0
         ENDIF
 
@@ -5435,7 +5437,8 @@ C ... off-diagonal terms need to be symmetrized !
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 !-----------------------------------------------------------------
 ! RDSUSNL terms,  pointers  IPDSUSC(28-33),
-! represent  Sternheim diamagnetic term for LAO-magnetizabilities
+! represent gauge-origin independent Sternheim diamagnetic term 
+! for LAO-magnetizabilities
 !
 ! include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
 !-----------------------------------------------------------------
@@ -5728,7 +5731,8 @@ C
         ENDDO
 
 C -------------------------------------------------------
-C  ...  RDSUSLL - 9 terms which have to be symmetrized 
+C     RDSUSLL - 9 tensor terms, of which nondiagonal
+C have to be symmetrized according to derived formulas
 C -------------------------------------------------------
 C
 C      ...  EXPVAL(IPDSUSC(19..27))
@@ -5738,7 +5742,7 @@ C              22  23  24
 C              25  26  27
 C
 
-C       ...     symmetrize resulting off-diagonal terms ...
+C  ...   so, symmetrize resulting off-diagonal RDSUSLL terms ...
         PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
         PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
         PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
@@ -5758,26 +5762,26 @@ C ......... store RDSUSLL symmetrized off-diagonal terms ...
         EXPVAL(IPDSUSC(24))=PLLYZ
         EXPVAL(IPDSUSC(26))=PLLYZ
 
-C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as well
-        IF (IPRPRP.GE.2) THEN
+C    ... control print-out of both symmetrized and nosymmetrized RDSUSLL terms
+        IF (IPRPRP.GE.3) THEN
          WRITE(LUPRI,'(/,10X,A)')
-     &   'RDSUSLL contributions to the expect.values:'
+     &   'RDSUSLL contributions to the one-electron expectation values:'
          WRITE(LUPRI,'(A)')
      &   '-----------------------------------------------------------'//
      &   '------------'
          WRITE(LUPRI,'(4X,A)')
-     &   ' Operator             '//
-     &   '  symmetrized       diff. from unsymmetrized'
+     &   ' Operator          nonsymmetrized (original)'//
+     &   '                   symmetrized (for results)   '
          IIC = 1
          DO II = 19, 27
            INDXPR = LEXPP(IPDSUSC(II))
-           WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
-     &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),
-     &     ( EXPVAL(IPDSUSC(II))-EXPVAL_NS(IIC) )
+           WRITE(LUPRI,'(2X,A16,1X,D15.8,4X,D15.8)')
+     &     PRPNAM(INDXPR),EXPVAL_NS(IIC),EXPVAL(IPDSUSC(II))
            IIC = IIC + 1
          ENDDO
         ENDIF
 
+        ! store the RDSUSLL expectation value contributions
         DO I = 1, 3
         DO J = 1, 3 
          IJ = IJ + 1
@@ -5787,9 +5791,9 @@ C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as w
         ENDDO
         ENDDO
 
-C ----------------------------------------------------------------------
-C         LAST 6 true diamagnetic terms (RDSUSNL) 
-C ----------------------------------------------------------------------
+C ------------------------------------------------------------------------------
+C  LAST 6 Aucars (Sternheim) diamagnetic terms, RDSUSNL, extracted if wanted
+C ------------------------------------------------------------------------------
         IF (MSUSCDIA) THEN  
          DO I = 1, 3
          DO J = I, 3 

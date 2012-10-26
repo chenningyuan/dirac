@@ -26,7 +26,7 @@ C*****************************************************************************
 C
 C     Input section for magnetic properties:
 C --------------------------------------------
-C  NMR shielding, magnetizabilities with/ without London atomic orbitals ...
+C  NMR shielding, magnetizabilities with/without London atomic orbitals 
 C 
 C     Written by T.Enevoldsen - Nov 1997
 C
@@ -50,7 +50,7 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 15)
-      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM, MODRDSUSLL
+      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
       LOGICAL :: DOEPRN_SET, INTNMR_SET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8
@@ -94,12 +94,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOONEI = .FALSE.
       GORG   = .FALSE.
       USECM  = .FALSE.
-      IF (LEVYLE) THEN
-       RDSUSLLMOD = .TRUE.
-      ELSE
-       RDSUSLLMOD = .FALSE.
-      ENDIF
-      MODRDSUSLL = .FALSE.
+      RDSUSLLMOD = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
@@ -213,9 +208,10 @@ C&&&& .USECM: use center of mass as a default gauge origin
                USECM = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&&& .MLLSUS: Activate the modification of the relativistic RDSUSLL term
+C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDSUSLL term
+!miro: this is required to reproduce Dalton nonrelativistic results with the Levy-Leblond
+! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
-               MODRDSUSLL = .TRUE.
                GO TO 100
 
 !              .GO_ANG
@@ -370,27 +366,21 @@ C ... call the routine in abacus/hergp.F
      &   "--> These are accepted values from user's .INTFLG input."
          ENDIF
        ENDIF
+       ENDIF
 
 C =========================================================================
 CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
        IF (MSUSCP) THEN
-        IF (LEVYLE.AND.MODRDSUSLL) THEN
-         WRITE(LUPRI,'(1X,A)') 
-     &  '...Though the Levy-Lebl mode the full form of the RDSUSLL '//
-     &  'operator used to achieve the compatibility with rel. calcul.'
-          RDSUSLLMOD = .FALSE.
-        ELSE
           IF (RDSUSLLMOD) THEN
             WRITE(LUPRI,'(1X,A)') 
-     &  '...SL block only for the RDSUSLL operator used to achieve'//
-     &  ' the non-relativistic limit of the magnetizability !'
+     &'WARNING: Used the LS block of the RDSUSLL operator'//
+     &' with factor -2 to achieve '//
+     &'the Dalton nonrelativistic limit of the magnetizability !'
           ELSE
             WRITE(LUPRI,'(1X,A)') 
-     &  '...Full relativistic form of the RDSUSLL operator used!'
+     &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
-        ENDIF
-       ENDIF
       ELSE 
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
