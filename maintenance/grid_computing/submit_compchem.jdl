@@ -5,9 +5,8 @@
 #
 #
 ##############################################################
-
 Executable = "launch_VO.sh";
-InputSandbox = {"launch_VO.sh"};
+InputSandbox = {"launch_VO.sh","UtilsCE.sh"};
 #Arguments = "voce";
 Arguments = "compchem";
 #Arguments = "osg";

@@ -8,7 +8,6 @@
 #######################################################################################################
 
 # check the parameter - VO name
-
 if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; then
  echo -e "\n wrong parameter - VO name : $1 "
  exit -12
@@ -18,83 +17,16 @@ else
  #exit 0
 fi
 
-unset THIS_HOSTNAME
-THIS_HOSTNAME=`hostname -f`
-if [[ -z $THIS_HOSTNAME ]]; then
- THIS_HOSTNAME=`hostname`
-fi
+source ./UtilsCE.sh
 
-echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
-echo -e "Server specification: \c";  uname -a
-######################################################
-#     get number of CPUs on the given node
-######################################################
-nprocs_all=`cat /proc/cpuinfo | grep processor | wc -l`
-nprocs_PBS=`cat $PBS_NODEFILE | wc -l`
-nprocs=$nprocs_all
-echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
-echo -e "==== Number of all CPUs     :  $nprocs   ";
-echo -e "==== Number of allowed CPUs :  $nprocs_PBS  ";
-if [[ -n $PBS_NODEFILE ]]; then
-  echo -e "PBS_NODEFILE=$PBS_NODEFILE"
-  echo -e "PBS_NUM_PPN=$PBS_NUM_PPN"
-fi 
+print_CE_info;
+querry_CE_attributes $VO
+check_file_on_SE $VO
+download_from_SE $VO
 
-echo -e "\n ---- server's total memory :\c"; cat /proc/meminfo | grep MemTotal
-# check space
-echo -e "\n--- Server's filesystem (df): "; df -h .
-echo -e "--- My current directory :  $PWD "
-echo -e "--- Occupied space by me (du) : \c"; du -h -s
-
-echo -e "\n Checking long-term proxy with myproxy-info -v : "; myproxy-info -v
-echo -e "\n Checking short-term proxy with voms-proxy-info --all : "; voms-proxy-info --all
-
-# get info about CE #
-echo -e "\n querry attribute SMPSize, CE=$CE_ID:"
-date
-lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
-date
-
-echo -e "\n querry attribute PlatformArch:"
-lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
-echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
-lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
-
-# better: 
-echo -e "\n faster querrying using CE_BDII=$CE_BDII....";date
-CE_BDII=${CE_ID/:*/:2170}
-lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
-date
-
-echo -e "\n\n ****  server environment:  set command  **** \n" 
-set
-
-echo -e "\n\n Is there cmake ? which cmake="; which cmake
-echo -e "Python present : \c"; which python; python -V
-
-###########################
-### Check files on SE: ####
-###########################
-echo -e "\n\n On the host CE, checking variable LFC_HOST=$LFC_HOST"
-if [[ -z $LFC_HOST ]];  then
-  echo -e "The LFC_HOST environmental variable is not defined !"
-fi
-echo -e "Trying command lcg-infosites --vo $VO lfc :"; lcg-infosites --vo $VO lfc
-
-echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
-lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
-echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
-echo " ------------------------------------------------------ "
-#####################################
-###  download file to the current CE 
-#####################################
-echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
-
-echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in local directory - error exit !"; exit -3;}
-echo " ---------------------------------------------------------------------------------------------------------------------"
+# get number of procs #
+get_nprocs_CE nprocs
+echo -e "\n Number of #CPU from function: $nprocs"
 
 ##########################################
 ##  make it executable and finally launch
@@ -340,7 +272,6 @@ fi
    ls -lt $MPI_OPENMPI_PATH
  fi
 
-
 ### check presence of parallel MPI compilers ###
  MPISWITCH='off'; MPISWITCH_F90='off'; MPISWITCH_CC='off'; MPISWITCH_CXX='off';
  if [[ -n `which mpif90` ]]; then
@@ -427,14 +358,6 @@ echo " "
 tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL
 echo -e "\n selected files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
 
-############################
-#  print out some info .. 
-############################
-echo -e "\n -------------------------------------------------------"
-echo -e "Job finished at: \c"; date
-echo -e "I am here: \c"; pwd
-echo -e "My space: "; df -h .
-echo -e "\n All files:"; ls -lt
-echo -e "\n Total occupied space: \c"; du -h -s .
+final_message()
 
 exit 0

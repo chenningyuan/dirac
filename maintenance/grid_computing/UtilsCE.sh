@@ -1,4 +1,5 @@
 ############################################################################
+#
 # List of specific function in shell language related to execution of DIRAC 
 # software in grid environment.
 #
@@ -112,13 +113,13 @@ lfc-getacl  /grid/$VO/ilias
 }
 
 download_from_SE()
-{ # download file to the current CE
+{ # download file to the current CE, parameter - name of VO
 VO=$1
 echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
+lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tgz failed - once again" ; lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || {echo -e "Download failed second time ! Exit !!! "; exit -4} }
 
 echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in local directory - error exit !"; exit -3;}
+ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in CE current directory - error exit !"; exit -3;}
 echo " ----------------------------------------------------------------------------------------------------"
 }
 
