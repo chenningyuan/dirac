@@ -13,7 +13,7 @@ All values in a.u.
 
                             nonrelativistic results
 
-LevyLe-LAO(go=cm)        -5.2733             0.5431
+LevyLe-LAO(go=cm)        -5.2733             0.5431 (nonrelativ. RDSUSLL form)
 LevyLe-CGO(go=cm)       -26.1709           -14.6105
 LevyLe-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
 
@@ -23,6 +23,8 @@ Dalton-LAO(go=1 )        -5.2733             0.5431 (symm.connection)
 
 Dalton-CGO(go=cm)       -26.1709            -14.6105
 Dalton-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
+
+LevyLe-LAO(go=cm)        -5.8363             0.4126 (full RDSUSLL form)
 
                            relativistic results
 
@@ -75,5 +77,4 @@ UKB-ep-CGO(go=cm)
 go=cm  : gauge orgin (go) is the center of mass
 go=1   : go is  (-3.00,4.00,-5.00)
 LL+SL, LL+SL+SS : selected classes of integrals in all methods
-for "ep"-LAO reorthonormalization sums go over both negative and positive states
-
+"ep" label: LAO reorthonormalization sums are over both negative and positive states
