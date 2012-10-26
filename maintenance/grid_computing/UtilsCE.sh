@@ -93,10 +93,10 @@ date
 echo -e "\n querry attribute PlatformArch:"
 lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
 echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
-lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
+lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime
 echo -e "\n faster querrying using CE_BDII=$CE_BDII....";date
 CE_BDII=${CE_ID/:*/:2170}
-lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
+lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster,VOInfoVOs
 date
 fi
 }
