@@ -30,7 +30,8 @@
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATV,
      &                  LBATV,LEBATV,I1BATV,IBATV,RCCTOS,SCRRED,
-     &                  IGROUPLIST,IPROCLIST,IT_TTPL,IT_TTOL)
+     &                  IGROUPLIST,IPROCLIST,IT_TTPL,IT_TTOL,
+     &                  AMATC,RWORK,EVL)
 *
 *     Davidson algorithm , requires two blocks in core
 *     parallel Multi root version
@@ -76,13 +77,14 @@
 #include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
-       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXVEC,MAXIT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
        DIMENSION T_CC(*), SCRRED(*), T_BUFF(*)
        INTEGER   RCCTOS(*)
        DIMENSION IT_TTPL(*) 
        INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
+       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -250,19 +252,22 @@ CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
 *      diagonalize initial projected matrix
        CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
-       CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
-       DO 20 IROOT = 1, NROOT
-         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
-   20  CONTINUE
+!      CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       CALL EIGEN_NEW(WORK(KAPROJ),NINVEC,EIG(1,1),AVEC,AMATC,
+     &                RWORK,EVL)
+
+!      DO 20 IROOT = 1, NROOT
+!        EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+!  20  CONTINUE
 *
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
          WRITE(LUWRT,'(5F18.13)')
-     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
+     &   ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
        END IF
        IF( IPRT  .GE. 5 ) THEN
          WRITE(LUWRT,*) ' Initial set of eigen values (no shift) '
-         CALL WRTMATMN(EIG(1,1),1,NROOT,MAXIT,NROOT,LUWRT)
+         CALL WRTMATMN(EIG(1,1),1,NROOT,NROOT,MAXIT,LUWRT)
        END IF
 CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
        NVEC = NINVEC
@@ -308,7 +313,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
          CALL IZERO(LU4LIST,IALL_LU4)
          CALL IZERO(LU5LIST,IALL_LU5)
 *
-         EIGAPR = EIG(ITER-1,IROOT)
+         EIGAPR = EIG(IROOT,ITER-1)
 *
 *        calculate residues ...
 *
@@ -316,7 +321,8 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
      &                      EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
      &                      IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,LBATV,
      &                      LEBATV,I1BATV,IBATV,MY_LU2_OFF,MY_LU1_OFF,
-     &                      MY_LU5_OFF,SCRRED,NVEC,ILU2,ILU1,ILU5)
+     &                      MY_LU5_OFF,SCRRED,NVEC,ILU2,ILU1,ILU5,
+     &                      MAXVEC)
 *
          IF( ITER .GT. MAXIT) GOTO 100
 *
@@ -472,7 +478,10 @@ C       end of timing
 *
       NVEC = NVEC + IADD
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
-      CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
+!     CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
+      CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
+     &               RWORK,EVL)
+
 *
       endtime      = interface_MPI_WTIME()
       tottime      = 0.0D0
@@ -502,16 +511,16 @@ C     TIMING FOR PARTS 2.1 - 2.2
 *
 *     store new eigenvalues
 *
-      DO 160 IROOT = 1, NROOT
-        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
- 160  CONTINUE
+!     DO 160 IROOT = 1, NROOT
+!       EIG(IROOT,ITER) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+!160  CONTINUE
 *
 *      debug printings
 *
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
          WRITE(LUWRT,'(5F18.13)')
-     &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+     &   ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
          WRITE(LUWRT,'(A)') ' Norm of Residuals (Previous it) '
          WRITE(LUWRT,'(5F18.13)')
      &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
@@ -520,7 +529,7 @@ C     TIMING FOR PARTS 2.1 - 2.2
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(LUWRT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(LUWRT,'(2X,E13.7)') (EIG(IROOT,ITER),IROOT = 1, NROOT)
         CALL WRTMATMN(AVEC,NVEC,NROOT,MAXVEC,NROOT,LUWRT)
       END IF
 *
@@ -611,7 +620,7 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *
         DO IROOT = 1,NROOT
           AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
-          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(IROOT,ITER)
         END DO
 C
 C       write to check point file KRCI_CVECS.x (unit 61 see io_r.F)
@@ -676,7 +685,7 @@ C
           WRITE(LUWRT,*)
      &    '============================================'
           WRITE(LUWRT,*)
-          FINEIG(IROOT) = EIG(ITER,IROOT)
+          FINEIG(IROOT) = EIG(IROOT,ITER)
           IF (RTCNV(IROOT)) THEN
              WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
           ELSE
@@ -691,14 +700,14 @@ C
  1310     FORMAT
      &    (1H0,' Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
- 1330     WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
         write(LUWRT,'(/A/)')
      &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
         DO 1601 IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
           IF (RTCNV(IROOT)) THEN
              WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
           ELSE
@@ -722,7 +731,7 @@ C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       IF( MYPROC .eq. MASTER ) THEN
         DO I = 1, NROOT
-           FINEIG(I) = EIG(ITER,I)+EIGSHF
+           FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
         WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
@@ -748,7 +757,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
      &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,T_BUFF,
      &                      APROJI,APROJR,AVEC,WORK,IPRT,
      &                      NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                      IHAM12,SIGDEN_ROUTE,
+     &                      IHAM12,
      &                      CONVLIM,IBLOCKL,NPARBLOCK,NBLOCKS,
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
@@ -806,7 +815,6 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
-      character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
       CHARACTER WPART22*12, FILELAB*8
       LOGICAL CONVER,RTCNV(100),EXSTOP
