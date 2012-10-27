@@ -13,18 +13,23 @@ if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; th
  exit 12
 else
  VO=$1
- echo -e "OK, you specified properly the VO=$VO"
+ echo -e "OK, you specified properly the VO=$VO, continuing \n"
 fi
 
 # include all external functions
-source ./UtilsCE.sh
+if [ -e "UtilsCE.sh" ]
+then
+  source ./UtilsCE.sh
+  #declare -F # list function
+else
+  echo "Source file UtilsCE not found! Error exit !"
+  exit 333
+fi
 
 print_CE_info
 querry_CE_attributes $VO
 check_file_on_SE $VO
-
 # download & unpack tar-file onto CE - MUST be successfull or exit
-source ./UtilsCE.sh
 download_from_SE $VO
 RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
