@@ -102,9 +102,11 @@ local VO=$1
 local getcmd="lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
 echo -e "\n Going to download from SE, 1st attempt, $getcmd "
 $getcmd
+RETVAL=$?
 # this does not work..each time it's repeating download..
-RETVAL=$?; [ $RETVAL -ne 0 ] && echo "some error, downloading once again ";$getcmd 
-RETVAL=$?; [ $RETVAL -ne 0 ] && echo "downloading failed - exit now "; exit 17
+#RETVAL=$?; [ $RETVAL -ne 0 ] && echo "some error, downloading once again ";$getcmd 
+#RETVAL=$?; [ $RETVAL -ne 0 ] && echo "downloading failed - exit now "; exit 17
+echo -e "FYI: downloading ended with code $RETVAL"
 
 # this command does not work in bash - too compicated !
 #$getcmd || { echo "once again"; {$getcm || {echo -e "Download failed second time ! Exit !!! "; exit 41} }}
