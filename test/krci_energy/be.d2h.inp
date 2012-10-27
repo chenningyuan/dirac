@@ -2,6 +2,8 @@
 .TITLE
  Testing KR-CI for Be in Pierloot basis
 .WAVE FUNCTION
+**HAMILTONIAN
+.DOSSSS
 **WAVE FUNCTION
 .SCF
 .KR CI
