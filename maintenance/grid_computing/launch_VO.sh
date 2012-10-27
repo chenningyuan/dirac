@@ -31,11 +31,11 @@ querry_CE_attributes $VO
 check_file_on_SE $VO
 # download & unpack tar-file onto CE - MUST be successfull or exit
 download_from_SE $VO
-RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
 # get number of procs #
 get_nprocs_CE nprocs
-RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
 echo -e "\n Number of #CPU obtained from the function: $nprocs"
 
 ##########################################
@@ -55,7 +55,7 @@ echo -e "Modified PATH=$PATH"
 echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
 unpack_DIRAC
-RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
 
 echo -e "\n Job started at : \c"; date
 
