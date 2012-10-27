@@ -238,7 +238,7 @@ C
          CALL QUIT('*** ERROR in RCIGRD1 ***')
       END IF
 C
-      IF ( IPRINT .GE. 20 ) THEN
+      IF ( IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(/A)')
      &        ' (RCIGRD1) H|0>'
          CALL OUTPUT(GCI(1,1),1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
@@ -367,7 +367,7 @@ C
 C
 CSK      IPRINT = 20
 C
-      IF (IPRINT .GE. 20) THEN
+      IF (IPRINT .GE. 5) THEN
          WRITE(LUPRI,'(A)')
      &        ' (RCIGRD1) CI gradient'
          CALL OUTPUT(GCI(1,1),1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
@@ -390,7 +390,7 @@ C
      &           + D2 * GCI(I,2) * CREF(I,2)
          END IF
       END DO
-      IF (IPRINT .GE. 20) THEN
+      IF (IPRINT .GE. 5) THEN
          WRITE(LUPRI,'(A)')
      &        ' (RCIGRD1) configurational E[2] diagonal'
          CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)

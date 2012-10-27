@@ -288,9 +288,9 @@ C
  9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
  9003 FORMAT(/'   Sum =',T15,F14.9)
  9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9)/)
+     &            //,(5F14.9))
 C
-      IF ( IPRINT .GE. 5 .AND. .NOT. MOISNO ) THEN
+      IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
             WRITE(LUPRI,'(/1X,A,I3)')
      &           '(RGETNO) Transformation to NO '//

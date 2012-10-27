@@ -2735,7 +2735,7 @@ C     output -- transfer information to common block
       MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
 C
 C     print section
-      IF(IPRNT .gt. 0)THEN
+      IF(IPRNT .gt. 2000)THEN
         WRITE(LUWRT,'(/A )')'  *** OUTPUT FROM SET_HOP_DBG *** ' 
         WRITE(LUWRT,'( A/)')'      _______________________     ' 
         WRITE(LUWRT,'(A,I20)')'  symmetry of T op. :',ISYM_T

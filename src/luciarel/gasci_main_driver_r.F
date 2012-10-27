@@ -137,7 +137,7 @@ C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
       DIAGONAL_ALLOC = .FALSE.
 C
 CSK   NTEST = 3
-      IF(NTEST.GE.3) THEN
+      IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ====================================='
         WRITE(LUWRT,*) ' Control has been transferred to GASCI'
@@ -172,7 +172,8 @@ CSK    NTEST = 0
 C
       ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
-      write(LUWRT,*) ' Number of determinants/combinations  ',NDET
+      IF(NTEST > 25) 
+     &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET
 C     transfer NDET to common block LUCIPARREL
       L_COMBI     = NDET
       L_COMBI_MAX = NDET

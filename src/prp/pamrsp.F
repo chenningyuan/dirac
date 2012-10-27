@@ -1725,10 +1725,14 @@ C
      &           XRS_CIPROGRAM,THRZER,LUPRI)
          END DO
          END IF
+         IF (NZXOPE .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-e sigma vectors'
          CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
+         END IF
+         IF (NZXOPP .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-p sigma vectors'
          CALL PRBVEC(LUPRI,SPVEC,NTSIM,NZXOPP)
+         END IF
       END IF
 C
 C     Memory check
@@ -1749,7 +1753,7 @@ C
      &              IBTYP,IBCVC,IBEVC,IBPVC)
         CALL DSCAL(NTSIM,DM1,REDGP(IZRED+1),1)
         IF(IPRXRS.GE.4) THEN
-          WRITE(LUPRI,'(A)') '* XRSRED: Minus reduced gradient:'
+          WRITE(LUPRI,'(/A)') '* XRSRED: Minus reduced gradient:'
           CALL PRIRVC(REDGP,NZRED,IBTYP)
         ENDIF
       ENDIF
@@ -1851,7 +1855,7 @@ C       Print section
 C       =============
 C
         IF(IPRXRS.GE.4) THEN
-          WRITE(LUPRI,'(A,I5)') 
+          WRITE(LUPRI,'(/A,I5)') 
      &      '* XRSRED: Reduced metric. Dimension:',NZRED
           CALL PRIRMT(REDS,NREDM,NZRED,NZRED,IBTYP)
         ENDIF
@@ -2587,11 +2591,11 @@ C     Print section
 C     =============
 C
       IF(IPRXRS.GE.4) THEN
-        WRITE(LUPRI,'(A,I5)') 
+        WRITE(LUPRI,'(/A,I5)') 
      &    'XRSSOL: Reduced Hessian. Dimension:',NZRED
         CALL PRIRMT(REDE,NREDM,NZRED,NZRED,IBTYP)
         IF(.NOT.STATIC) THEN
-          WRITE(LUPRI,'(A,I5)') 
+          WRITE(LUPRI,'(/A,I5)') 
      &      'XRSSOL: Reduced metric. Dimension:',NZRED
           CALL PRIRMT(REDS,NREDM,NZRED,NZRED,IBTYP)
         ENDIF
@@ -2776,7 +2780,7 @@ C
 C     Place G in buffer X
 C
       CALL DCOPY(N,G,1,X,1)
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced E[2] - WS[2] matrix'
         CALL PRIRMT(A2,LDA,N,N,IBTYP)
         WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced gradient'
@@ -2794,7 +2798,7 @@ C
 C       Print section
 C
       ENDIF
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,'(A,F12.5,A)') 
      &      'XRSLINRED: Solution vector at frequency:',W,' a.u.'
         CALL PRIRVC(X,N,IBTYP)
@@ -3383,7 +3387,11 @@ C           An extra factor two (see E2ODI1 for details)
            CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
      &             WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
          ENDIF
-         CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
+         IF (FKRMC) THEN
+            SEDIAG(1:NZXOPE) = 1.0D0
+         ELSE
+            CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
+         END IF
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
      &         '** E2ODIA: Diagonal Hessian and metric (e-e):'
@@ -3405,7 +3413,11 @@ C           An extra factor two (see E2ODI1 for details)
             CALL E2ODI1(HPDIAG,WORK(KFC),WORK(KFV),
      &           WORK(KDV),WORK(KFGENPV),JXOPP,NZXOPP)
          ENDIF
-         CALL S2ODI1(SPDIAG,WORK(KDV),JXOPP,NZXOPP)
+         IF (FKRMC) THEN
+            SPDIAG(1:NZXOPP) = 1.0D0
+         ELSE
+            CALL S2ODI1(SPDIAG,WORK(KDV),JXOPP,NZXOPP)
+         END IF
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
      &         '** E2ODIA: Diagonal Hessian and metric (e-p):'
