@@ -4535,6 +4535,119 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbkrmc_itinfo.h"
+C
+      DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
+      DIMENSION REDGP(NREDM), EVECR(NREDM)
+      DIMENSION IBTYP(*), INERTIA(3)
+      DIMENSION WORK(*)
+C
+      IF (IOPT_ISTATE .NE. 1)
+     &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
+C
+      RTRMAX = RTRUST*RTTOL
+      RTRMIN = RTRUST/RTTOL
+C
+      CALL DUNIT(REDS,NREDM)
+      DLVLMAX = D0
+      DLVLMIN = D0
+      DLVLSH  = D0
+      ITER = 0
+C
+C
+C     Start bisection iterations to find level-shift
+C     ----------------------------------------------
+C
+ 100  CONTINUE
+      CALL XRSLINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
+     &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
+      ITER = ITER + 1
+      STPL = DP5 * DNRM2(NREDM,EVECR,1)
+      INONPOS = INERTIA(2) + INERTIA(3)
+C
+C     Save electronic Hessian's index for zero level shift
+C     (used in RCNVTHR below)
+C
+      IF (ITER .EQ. 1) JHESSIAN = INONPOS - NPRED
+C
+C     Don't iterate if Newton-Raphson is requested.
+C
+      IF (DONR) GOTO 200
+C
+      IF (INONPOS .GT. NPRED .OR. STPL .GE. RTRMAX) THEN
+         DLVLMAX = DLVLSH
+         IF (DLVLMIN .EQ. D0) THEN
+            DLVLSH = DLVLSH - DLVLSTEP
+         ELSE
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         END IF
+#ifdef UNDEF
+         write(6,*) 'krmcsol: inonpos, steplen (>?), new level shift',
+     &        inonpos,STPL,DLVLSH
+#endif
+         GOTO 100
+      ELSE IF (STPL .LE. RTRMIN .AND. DLVLSH .NE. D0) THEN
+         DLVLMIN = DLVLSH
+         DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+#ifdef UNDEF
+         write(6,*) 'krmcsol: steplen<, new level shift',STPL,DLVLSH
+#endif
+         GOTO 100
+#ifdef UNDEF
+      ELSE
+         write(6,*) 'krmcsol: steplen accepted, level shift',
+     &        STPL,DLVLSH
+#endif
+      END IF
+C
+C     Iterations finished.
+C
+ 200  CONTINUE
+      RBETA = STPL
+      EVALR = DLVLSH
+      IPAR = INERTIA(3)
+      IF (IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/A,I3,A,F15.8)')
+     &        ' (KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
+     &        DLVLSH
+      END IF
+      IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
+         IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(A,F12.5,A)')
+     &           ' (KRMCSOL) Solution vector'
+            CALL PRIRVC(EVECR,NZRED,IBTYP)
+         ENDIF
+         WRITE(LUPRI,'(/3X,A,F12.5)')
+     &      '* Reduced matrix. Level shift:',DLVLSH
+         WRITE(LUPRI,'(5X,A,I5)')
+     &        '* Number of positive eigenvalues:',INERTIA(1),
+     &        '* Number of zero     eigenvalues:',INERTIA(3),
+     &        '* Number of negative eigenvalues:',INERTIA(2)
+      ENDIF
+C
+      DINFO(22) = DLVLSH
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcsol */
+      SUBROUTINE KRMCSOL_new_to_come(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+     &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C     Written by J. Thyssen - Nov 22 2000
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
+C
+      PARAMETER (DLVLSTEP = 0.2D0)
+C
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbkrmc_itinfo.h"
 #include "dcbibn.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
