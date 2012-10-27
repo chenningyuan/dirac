@@ -4,6 +4,8 @@
  Testing 4-component CI calculation on F atom in C2h, complex CMICDV optimization
 .WAVE FUNCTION
 #################################
+**HAMILTONIAN
+.DOSSSS
 **WAVE FUNCTION
 .SCF
 .KR CI
