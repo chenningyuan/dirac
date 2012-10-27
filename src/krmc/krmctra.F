@@ -71,8 +71,9 @@ C        Print orbital strings
 C
          DO I = 1, 4
             DO J = 1,NFSYM
+               K = LNBLNK(SZTRA(J,I))
                WRITE(LUPRI,'(A,I2,A,I2,2A)')
-     &            '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)
+     &         '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)(1:K)
             END DO
          END DO
       END IF
@@ -691,7 +692,8 @@ C
       ITRA_INTFLG = INTFLG
       ITRA_INTFL2 = INTFLG
       ITRA_INTFL4 = INTFLG
-      IPRTRA = IPRINT - 2
+      IPRTRA = IPRINT - 5
+      if(iprtra < 0) iprtra = 0
 C TODO debug : extra print because no integrals for Levy-Leblond
 C              /hjaaj aug 2002
 C     print*,'+++++++++++++++++++++++++++++++++++++'
