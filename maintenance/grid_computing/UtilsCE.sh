@@ -142,15 +142,12 @@ return 0
 
 function unpack_DIRAC()
 { # unpack and check the freshly downloaded DIRAC tarball
-echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "; which tar;  tar --version
+echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "
+which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz || {echo "problem in unpacking!"; exit 12}
-echo -e "unpacking done; see the content of $PWD :"; ls -lt
-#echo -e "\n making executables:"
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-# create diracrc file for parallel runs on the grid CE
+tar xfz dirac_grid_suite.tgz || { echo "some problem in tarball unpacking!"; exit 12 }
+echo -e "unpacking done; see the content of $PWD :"; ls -lt 
+echo -e "\n content of build directories: "; ls -lt build*
 cp maintenance/grid_computing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created: "; cat diracrc
 return 0
@@ -167,5 +164,5 @@ echo -e "\n ------------------------------------------------------------------"
 return 0
 }
 
-echo -e "List of declated bash shell functions in sourced file $0 :"
+echo -e " List of all declated bash shell functions in this sourced file $0 :"
 declare -F
