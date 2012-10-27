@@ -34,9 +34,10 @@ download_from_SE $VO
 #RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
 # get number of procs #
+unset nprocs
 get_nprocs_CE nprocs
 #RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
-echo -e "\n Number of #CPU obtained from the function: $nprocs"
+echo -e "\n Number of #CPU obtained from the function: $nprocs \n"
 
 ##########################################
 #  make it executable and finally launch

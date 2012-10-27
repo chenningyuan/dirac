@@ -15,8 +15,9 @@ echo -e "\n Going to source - include - file with bash shell functions, $0 ."
 function get_nprocs_CE()
 { # function , http://www.linuxjournal.com/content/return-values-bash-functions
   local result=$1 # store variable name
-  unset nprocs
+  #unset nprocs
   local nprocs=`cat /proc/cpuinfo | grep processor | wc -l`
+  RETVAL=$?; [ $RETVAL -ne 0 ] && exit 42
   eval $result="'$nprocs'"
 }
 
@@ -33,17 +34,17 @@ echo -e "\n shell version, sh --version:"; sh --version
 ######################################################
 #     get number of CPUs on the given node
 ######################################################
-get_nprocs_CE nprocs_all
-if [[ -n $PBS_NODEFILE ]]; then
-nprocs_PBS=`cat $PBS_NODEFILE | wc -l`
-fi
-nprocs=$nprocs_all
+local np
+get_nprocs_CE np
 echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
-echo -e "==== Number of all CPUs     :  $nprocs   ";
-echo -e "==== Number of allowed CPUs :  $nprocs_PBS  ";
+echo -e  "==== Number of all CPUs     :  $np   ";
 if [[ -n $PBS_NODEFILE ]]; then
-  echo -e "PBS_NODEFILE=$PBS_NODEFILE"
-  echo -e "PBS_NUM_PPN=$PBS_NUM_PPN"
+  local np_PBS=`cat $PBS_NODEFILE | wc -l`
+  echo -e  "==== Number of allowed CPUs :  $np_PBS  ";
+  echo -e "-- PBS_NODEFILE=$PBS_NODEFILE"
+  echo -e "-- PBS_NUM_PPN =$PBS_NUM_PPN"
+else
+  echo -e "\n No PBS variables on this server...\n"
 fi
 #####################
 ###  memory of CE ###
@@ -56,10 +57,9 @@ echo -e "through the 'free -t -m' command (values in MB): "; free -m -t
 echo -e "\n--- Server's filesystem (df): "; df -h .
 echo -e "--- My current directory :  $PWD "
 echo -e "--- Occupied space by me (du) : \c"; du -h -s
-echo -e "\n\n ****  server environment:  set command  **** \n" 
-set
+echo -e "\n\n ****  server environment:  set command  ****"; set 
 echo -e "\n\n Is there cmake ? which cmake="; which cmake
-echo -e "Python present : \c"; which python; python -V
+echo -e "Is python present ? \c"; which python; python -V
 return 0
 } 
 
