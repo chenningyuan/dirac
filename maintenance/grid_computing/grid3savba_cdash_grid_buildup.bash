@@ -159,7 +159,8 @@ else
 fi # of DO_UPDATE
 
 # exit here, don't do other stuff
-#exit 0
+echo -e "leaving here, you will have to upload tarball onto SE"
+exit 0
 
 ######################################################## 
 #
