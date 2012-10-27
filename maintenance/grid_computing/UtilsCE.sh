@@ -117,8 +117,9 @@ lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once ag
 echo -e "\n File attributes lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
 echo " ------------------------------------------------------ "
-# for this command we need LFC_HOST ...
+# for these commands we need the LFC_HOST variable
 lfc-getacl  /grid/$VO/ilias
+lfc-getacl  /grid/$VO/ilias/dirac_grid_suite.tgz
 }
 
 download_from_SE()
@@ -129,7 +130,7 @@ lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suit
 
 echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
 ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in CE current directory - error exit !"; exit 32;}
-echo " ----------------------------------------------------------------------------------------------------"
+echo " -----------------------------------------------------------------------------------------"
 exit 0
 }
 
@@ -153,11 +154,11 @@ exit 0
 }
 
 final_message()
-{ # flush out final message
+{ # flush out the final message
 echo -e "\n -------------------------------------------------------"
 echo -e "Job finished at: \c"; date
-echo -e "I am here: \c"; pwd
-echo -e "My space: "; df -h .
+echo -e "Filesystem on my space: "; df -h $PWD
 echo -e "\n All files:"; ls -lt
-echo -e "\n Total occupied space: \c"; du -h -s .
+echo -e "\n Total occupied space: \c"; du -h -s $PWD
+echo -e "\n ------------------------------------------------------------------"
 }
