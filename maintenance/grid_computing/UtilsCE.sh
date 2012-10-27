@@ -81,15 +81,14 @@ voms-proxy-info --all
 if [[ -n $CE_ID ]]; then
 # get info about CE #
   echo -e "\n querrying attribute on this CE=$CE_ID:"
-  date
   echo -e "querry attributes, like  PlatformArch, TotalCPUs, Memory, ClockSpeed, MaxCPUTime...."
   lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime
   CE_BDII=${CE_ID/:*/:2170}
-  echo -e "\n Now do faster querrying using CE_BDII=$CE_BDII";date
-  lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster,VOInfoVOs
-  date
+  echo -e "\n Now do faster querrying using CE_BDII=$CE_BDII"
+  lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster
 else
-  echo -e "\n No querrying of attributes as CE_ID not defined !"
+  echo -e "\n No querrying of attributes as the CE_ID variable is not defined !"
+  echo -e " This means that we are not on a CE ! \n"
 fi
 return 0
 }
@@ -99,7 +98,7 @@ function download_from_SE()
 local VO=$1
 #local getcmd="lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
 # remove verbose mode to eliminate stderr streams which are occuring 
-local getcmd="lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
+local getcmd="lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
 echo -e "\n Going to download from SE, 1st attempt, $getcmd "
 $getcmd
 RETVAL=$?
@@ -107,13 +106,12 @@ RETVAL=$?
 #RETVAL=$?; [ $RETVAL -ne 0 ] && echo "some error, downloading once again ";$getcmd 
 #RETVAL=$?; [ $RETVAL -ne 0 ] && echo "downloading failed - exit now "; exit 17
 echo -e "FYI: downloading ended with code $RETVAL"
-
-# this command does not work in bash - too compicated !
-#$getcmd || { echo "once again"; {$getcm || {echo -e "Download failed second time ! Exit !!! "; exit 41} }}
+# this command works ... don't forget ";" and spaces between "{","}" and commands
+#$getcmd || { echo "once again"; { $getcm || { echo -e "Download failed second time ! Exit !!! "; exit 41; } } }
 #
 echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded file found in CE current directory - exit !"; exit 32;}
-echo " -----------------------------------------------------------------------------------------"
+ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded file found in CE current directory,exit !"; exit 32; }
+echo -e " -------------------------------------------------------------------------------------\n"
 return 0
 }
 
@@ -129,12 +127,12 @@ fi
 echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n File attributes lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
+lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz; }
 echo " ------------------------------------------------------ "
 # for these commands we need the LFC_HOST variable
-echo -e "\n check users's LFC-directory, lfc-getacl  /grid/$VO/ilias:"
+echo -e "\n check users's LFC-directory, lfc-getacl /grid/$VO/ilias:"
 lfc-getacl  /grid/$VO/ilias
-echo -e "\n check user's LFC-file,  lfc-getacl  /grid/$VO/ilias/dirac_grid_suite.tgz:"
+echo -e "\n check user's LFC-file, lfc-getacl /grid/$VO/ilias/dirac_grid_suite.tgz:"
 lfc-getacl  /grid/$VO/ilias/dirac_grid_suite.tgz
 echo -e "-----------------------------------------------------------\n"
 return 0
@@ -145,7 +143,7 @@ function unpack_DIRAC()
 echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "
 which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz || { echo "some problem in tarball unpacking!"; exit 12 }
+tar xfz dirac_grid_suite.tgz || { echo "some problems with tarball unpacking!"; exit 113; }
 echo -e "unpacking done; see the content of $PWD :"; ls -lt 
 echo -e "\n content of build directories: "; ls -lt build*
 cp maintenance/grid_computing/diracrc_grid  diracrc

@@ -36,9 +36,9 @@ querry_CE_attributes $VO
 #RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
 # get number of procs #
-get_nprocs_CE nprocs
+get_nprocs_CE ntprocs
 RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
-echo -e "\n Number of #CPU obtained from the function: $nprocs"
+echo -e "\n Number of #CPU obtained from the function: $ntprocs"
 final_message
 
 exit 0
