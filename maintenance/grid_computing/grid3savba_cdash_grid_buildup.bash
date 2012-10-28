@@ -51,8 +51,8 @@ BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
-unset DO_UPDATE
-#DO_UPDATE=1
+#unset DO_UPDATE
+DO_UPDATE=1
 
 cd $DIRAC
 
@@ -159,7 +159,8 @@ else
 fi # of DO_UPDATE
 
 # exit here, don't do other stuff
-#exit 0
+echo -e "leaving here, you will have to upload tarball onto SE"
+exit 0
 
 ######################################################## 
 #

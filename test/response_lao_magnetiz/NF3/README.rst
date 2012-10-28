@@ -13,7 +13,7 @@ All values in a.u.
 
                             nonrelativistic results
 
-LevyLe-LAO(go=cm)        -5.2733             0.5431
+LevyLe-LAO(go=cm)        -5.2733             0.5431 (nonrelativ. RDSUSLL form)
 LevyLe-CGO(go=cm)       -26.1709           -14.6105
 LevyLe-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
 
@@ -23,6 +23,8 @@ Dalton-LAO(go=1 )        -5.2733             0.5431 (symm.connection)
 
 Dalton-CGO(go=cm)       -26.1709            -14.6105
 Dalton-CGO(go=1)        -260.3916           -183.0540(1st),357.1151(2nd)
+
+LevyLe-LAO(go=cm)        -5.8363             0.4126 (full RDSUSLL form)
 
                            relativistic results
 
@@ -71,9 +73,19 @@ RKBIMP-ep-CGO(go=cm)
 UKB-ep-CGO(go=cm)
    LL+SL                -25.7754             -14.6864
    LL+SL+SS             -25.7754             -14.6864
+
+         OpenRSP-ee-lao(Go=cm)+diamag; C1 symm. :
+London Magnetizability = Ebb w:  0.000  0.000
+ -5.844574004         0.160554026         0.100120776
+  0.160554026        -5.758773468         0.130385923
+  0.100120776         0.130385923        -5.886553460
+         RKB-ee-lao(go=cm); C1 symmetry :
+ -5.844570248197      0.160558500304      0.100123566256
+  0.160558500240     -5.758767322001      0.130389556087
+  0.100123566384      0.130389556333     -5.886550873651
+
 ----------------------------------------------------------------------------------
 go=cm  : gauge orgin (go) is the center of mass
 go=1   : go is  (-3.00,4.00,-5.00)
 LL+SL, LL+SL+SS : selected classes of integrals in all methods
-for "ep"-LAO reorthonormalization sums go over both negative and positive states
-
+"ep" label: LAO reorthonormalization sums are over both negative and positive states

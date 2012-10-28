@@ -5,9 +5,8 @@
 #
 #
 ##############################################################
-
 Executable = "launch_VO.sh";
-InputSandbox = {"launch_VO.sh"};
+InputSandbox = {"launch_VO.sh","UtilsCE.sh"};
 #Arguments = "voce";
 Arguments = "compchem";
 #Arguments = "osg";
@@ -31,7 +30,7 @@ HostNumber = 1;
 ##############################################
 StdOutput = "DIRAC_runs.std_oe.log";
 StdError  = "DIRAC_runs.std_oe.log";
-OutputSandbox = {"DIRAC_runs.std_oe.log", "dirac_grid_suite_back.tgz"};
+OutputSandbox = {"DIRAC_runs.std_oe.log"};
 
 ## to be able to reach intermediate results of your job
 # see http://goc.grid.auth.gr/wiki/bin/view/Groups/ALL/MonitoringTheOutputOfYourJob

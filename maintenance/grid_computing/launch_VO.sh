@@ -8,135 +8,60 @@
 #######################################################################################################
 
 # check the parameter - VO name
-
 if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; then
  echo -e "\n wrong parameter - VO name : $1 "
- exit -12
+ exit 12
 else
  VO=$1
- echo -e "OK, you specified properly the VO=$VO"
- #exit 0
+ echo -e "OK, you specified properly the VO=$VO, continuing \n"
 fi
 
-unset THIS_HOSTNAME
-THIS_HOSTNAME=`hostname -f`
-if [[ -z $THIS_HOSTNAME ]]; then
- THIS_HOSTNAME=`hostname`
+# include all external functions
+if [ -e "UtilsCE.sh" ]
+then
+  source ./UtilsCE.sh
+  #declare -F # list function
+else
+  echo "Source file UtilsCE not found! Error exit !"
+  exit 333
 fi
 
-echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
-echo -e "Server specification: \c";  uname -a
-######################################################
-#     get number of CPUs on the given node
-######################################################
-nprocs_all=`cat /proc/cpuinfo | grep processor | wc -l`
-nprocs_PBS=`cat $PBS_NODEFILE | wc -l`
-nprocs=$nprocs_all
-echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
-echo -e "==== Number of all CPUs     :  $nprocs   ";
-echo -e "==== Number of allowed CPUs :  $nprocs_PBS  ";
-if [[ -n $PBS_NODEFILE ]]; then
-  echo -e "PBS_NODEFILE=$PBS_NODEFILE"
-  echo -e "PBS_NUM_PPN=$PBS_NUM_PPN"
-fi 
+print_CE_info
+querry_CE_attributes $VO
+check_file_on_SE $VO
+# download & unpack tar-file onto CE - MUST be successfull or exit
+download_from_SE $VO
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
-echo -e "\n ---- server's total memory :\c"; cat /proc/meminfo | grep MemTotal
-# check space
-echo -e "\n--- Server's filesystem (df): "; df -h .
-echo -e "--- My current directory :  $PWD "
-echo -e "--- Occupied space by me (du) : \c"; du -h -s
-
-echo -e "\n Checking long-term proxy with myproxy-info -v : "; myproxy-info -v
-echo -e "\n Checking short-term proxy with voms-proxy-info --all : "; voms-proxy-info --all
-
-# get info about CE #
-echo -e "\n querry attribute SMPSize, CE=$CE_ID:"
-date
-lcg-info --list-ce --query "CE=$CE_ID" --attrs SMPSize
-date
-
-echo -e "\n querry attribute PlatformArch:"
-lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch
-echo -e "querry attributes TotalCPUs, Memory, ClockSpeed, MaxCPUTime :"
-lcg-info --list-ce --query "CE=$CE_ID" --attrs TotalCPUs,Memory,ClockSpeed,MaxCPUTime
-
-# better: 
-echo -e "\n faster querrying using CE_BDII=$CE_BDII....";date
-CE_BDII=${CE_ID/:*/:2170}
-lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,ClockSpeed,MaxCPUTime
-date
-
-echo -e "\n\n ****  server environment:  set command  **** \n" 
-set
-
-echo -e "\n\n Is there cmake ? which cmake="; which cmake
-echo -e "Python present : \c"; which python; python -V
-
-###########################
-### Check files on SE: ####
-###########################
-echo -e "\n\n On the host CE, checking variable LFC_HOST=$LFC_HOST"
-if [[ -z $LFC_HOST ]];  then
-  echo -e "The LFC_HOST environmental variable is not defined !"
-fi
-echo -e "Trying command lcg-infosites --vo $VO lfc :"; lcg-infosites --vo $VO lfc
-
-echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
-lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
-echo -e "\n  File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz;  }
-echo " ------------------------------------------------------ "
-#####################################
-###  download file to the current CE 
-#####################################
-echo -e "\n Going to download from SE, lcg-cp lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz...."
-lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz || { echo "Error exit,downloading of dirac_grid_suite.tg failed" ; exit -2; }
-
-echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded dirac_grid_suite.tgz file found in local directory - error exit !"; exit -3;}
-echo " ---------------------------------------------------------------------------------------------------------------------"
+# get number of procs #
+unset nprocs
+get_nprocs_CE nprocs
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 5
+echo -e "\n Number of #CPU obtained from the function: $nprocs \n"
 
 ##########################################
-##  make it executable and finally launch
+#  make it executable and finally launch
 ##########################################
-echo -e "\n Job started at : \c"; date
-
 # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
- export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
- export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
- export BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
+export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
+export BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
+export BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
- unset OPAL_PREFIX
- export OPAL_PREFIX=$PWD/$BUILD
- echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
- export PATH=$PWD/$BUILD:$PATH
+unset OPAL_PREFIX
+export OPAL_PREFIX=$PWD/$BUILD
+echo -e "Variable OPAL_PREFIX=$OPAL_PREFIX"
+export PATH=$PWD/$BUILD:$PATH
  #export PATH=$PWD/$BUILD_SERIAL:$PWD/$BUILD:$PATH
- echo -e "Modified PATH=$PATH"
- echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+echo -e "Modified PATH=$PATH"
+echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
+unpack_DIRAC
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
 
-# here exit
-#exit
-
-echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "; which tar;  tar --version
-echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz
-echo -e "done; see the content of $PWD :"; ls -lt
-
-#echo -e "\n making executables:"
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#chmod  u+x  $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-#ls -lt $BUILD/dirac.x  $BUILD/cmake  $BUILD/ctest $BUILD/mpirun  pam  runtest pamadm setup
-
-# create diracrc file for paralle run on the grid CE
-cp maintenance/grid_computing/diracrc_grid  diracrc
-echo -e "\n ---- diracrc created: "; cat diracrc
+echo -e "\n Job started at : \c"; date
 
 echo -e "\n --- Launching simple pam test  --- \n "; 
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=8
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo 
-#python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --scratch=$PWD --outcmo 
 
 #####################################################################
 #           specify tests for two runtest runs
@@ -184,11 +109,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
- # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
+ # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
 
-  #echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  #python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
 
 
 if [[ -n $DO_CMAKE ]]; then
@@ -214,11 +139,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
-  #python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
+  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
+ # python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
 
-#  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
-#  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
 
 ### Again, do the buildup using serial standalone executable ###
 if [[ -n $DO_CMAKE ]]; then
@@ -239,11 +164,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching serial runtest - GNU - with selected tests  --- \n "; date
-  #python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
+  #python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
 
-  #echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
-  #python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
 
 
 # ----------------------------------------- #
@@ -340,7 +265,6 @@ fi
    ls -lt $MPI_OPENMPI_PATH
  fi
 
-
 ### check presence of parallel MPI compilers ###
  MPISWITCH='off'; MPISWITCH_F90='off'; MPISWITCH_CC='off'; MPISWITCH_CXX='off';
  if [[ -n `which mpif90` ]]; then
@@ -424,17 +348,11 @@ echo -e "\n we have to pack (ls -lt) :"
 ls -lt
 echo " "
 #tar cvzf dirac_suite_back.tgz test *
-tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL
+tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL *.out
 echo -e "\n selected files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
 
-############################
-#  print out some info .. 
-############################
-echo -e "\n -------------------------------------------------------"
-echo -e "Job finished at: \c"; date
-echo -e "I am here: \c"; pwd
-echo -e "My space: "; df -h .
-echo -e "\n All files:"; ls -lt
-echo -e "\n Total occupied space: \c"; du -h -s .
+upload_to_SE $VO
+
+final_message
 
 exit 0
