@@ -348,8 +348,10 @@ echo -e "\n we have to pack (ls -lt) :"
 ls -lt
 echo " "
 #tar cvzf dirac_suite_back.tgz test *
-tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL
+tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL *.out
 echo -e "\n selected files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
+
+upload_to_SE $VO
 
 final_message
 

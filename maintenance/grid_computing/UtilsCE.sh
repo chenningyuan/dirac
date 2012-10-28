@@ -15,10 +15,10 @@ echo -e "\n Going to source - include - file with bash shell functions, $0 ."
 function get_nprocs_CE()
 { # function , http://www.linuxjournal.com/content/return-values-bash-functions
   local result=$1 # store variable name
-  #unset nprocs
-  local nprocs=`cat /proc/cpuinfo | grep processor | wc -l`
+  #unset npr
+  local npr=`cat /proc/cpuinfo | grep processor | wc -l`
   RETVAL=$?; [ $RETVAL -ne 0 ] && exit 42
-  eval $result="'$nprocs'"
+  eval $result="'$npr'"
 }
 
 function print_CE_info ()
@@ -113,6 +113,33 @@ echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
 ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded file found in CE current directory,exit !"; exit 32; }
 echo -e " -------------------------------------------------------------------------------------\n"
 return 0
+}
+
+function upload_to_SE()
+{ # upload tar-file from to the current CE local directory to the assigned SE, parameter - name of VO
+  local VO=$1
+  if [[ $VO == "compchem" ]]; then
+     #VO_SE="aliserv6.ct.infn.it" - does not work, try other SE...
+     VO_SE="grid2.fe.infn.it"
+     echo -e "set storage element of VO=$VO, VO_SE=$VO_SE"
+  elif [[ $VO == "voce" ]]; then
+     VO_SE="se.ui.savba.sk"
+     echo -e "set storage element of VO=$VO, VO_SE=$VO_SE"
+  else
+     echo -e "no storage element found for VO=$VO"
+     exit 39
+  fi
+  # timestamp
+  local timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};a
+  echo "...extracted timestamp=$timestamp"
+  # command 
+  local putcmd="lcg-cr -d $VO_SE file:$PWD/dirac_grid_suite_back.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite_back_$VO_${timestamp}.tgz"
+  echo -e "\n Going to upload to SE, 1st attempt, command: $putcmd "
+  $putcmd
+  local RETVAL=$?
+  echo -e "FYI: uploadig ended with code $RETVAL"
+  echo -e " -------------------------------------------------------------------------------------\n"
+  return $RETVAL
 }
 
 function check_file_on_SE()
