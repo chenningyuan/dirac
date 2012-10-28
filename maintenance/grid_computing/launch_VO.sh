@@ -109,11 +109,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
- # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
+ # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
 
-  #echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
-  #python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
+  python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
 
 
 if [[ -n $DO_CMAKE ]]; then
@@ -139,11 +139,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
-  #python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
+  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
+ # python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
 
-#  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
-#  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
 
 ### Again, do the buildup using serial standalone executable ###
 if [[ -n $DO_CMAKE ]]; then
@@ -164,11 +164,11 @@ if [[ -n $DO_CMAKE ]]; then
 fi
 
   echo -e "\n\n --- Launching serial runtest - GNU - with selected tests  --- \n "; date
-  #python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
+  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
+  #python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
 
-  #echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
-  #python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
+  echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
+  python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
 
 
 # ----------------------------------------- #
