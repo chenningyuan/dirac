@@ -1537,9 +1537,15 @@ C
          end do
       end do
 
-!      print *, 'raboof fock before'
-!      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             1,(/1, 2, 3, 4/),LUPRI)
+      print *, 'raboof fock before'
+      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &            1,(/1, 2, 3, 4/),LUPRI)
+
+      call pe_master('fock', denmats=dmat_triangle,
+     &               fckmats=fmat_triangle, nmats=1,
+     &               Epe=Epe,
+     &               dalwrk=work(kfree:kfree + lfree))
+      eqmmm = work(kfree)
        ! F = F + M
        k = 1    
        do i = 1, ntbas(1)
@@ -1547,29 +1553,27 @@ C
           do j = 1, i
              if (i == j) then ! edh: Conversion from DALTON to DIRAC
                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                   + 2.0d0*fmat_triangle(k)
+     &                                   + fmat_triangle(k)
              else
                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                   + 2.0d0*fmat_triangle(k)
+     &                                   + fmat_triangle(k)
                fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                   + 2.0d0*fmat_triangle(k)
+     &                                   + fmat_triangle(k)
              end if 
              k = k + 1
           end do
        end do
 
-      call pe_master('fock', denmats=dmat_triangle,
-     &               fckmats=fmat_triangle, nmats=1,
-     &               Epe=Epe,
-     &               dalwrk=work(kfree:kfree + lfree))
-      eqmmm = work(kfree)
+!       call output(fmat_triangle,1,nbast,1,nbast,nbast,nbast,1,lupri)
+!      write(lupri,*), 'fmat_triangle'
+!      call outpak(fmat_triangle,nbast,1,lupri)
 
       write(lupri,*), 'Epe in SCFCY1', Epe
 
 !      stop 1
-!      print *, 'raboof fock after'
-!      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             1,(/1, 2, 3, 4/),LUPRI)
+      print *, 'raboof fock after'
+      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &             1,(/1, 2, 3, 4/),LUPRI)
 
       deallocate(dmat_triangle)
       deallocate(fmat_triangle)
@@ -1777,9 +1781,9 @@ C*****************************************************************************
 #endif
 
 #ifdef MOD_PEQM
-      use polarizable_embedding, only: pe_master
+      use polarizable_embedding, only: peqm, pe_master, Ees, Epol,
+     &                                 lmul, lpol
 #endif
-
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1815,6 +1819,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef MOD_PEQM
       real*8, dimension(1) :: pe_energy
       real(8), allocatable :: dmat_triangle(:)
+      logical :: lmuls
 #endif
       data besterg /1.0D100/
       save besterg
@@ -1909,7 +1914,7 @@ C
       allocate(dmat_triangle(nnbbasx))
       dmat_triangle = 0.0d0
 
-! Onversion of density matrix to triangukar form: 
+! Conversion of density matrix to triangukar form: 
       k = 1
       do i = 1, ntbas(1)
 !         do j = i, ntbas(1)
@@ -1929,23 +1934,19 @@ C
 
       call pe_master(runtype='energy', 
      &               denmats=dmat_triangle,
-     &               nmats=1,Epe=pe_energy,
-     &               dalwrk=work(kwork:lwork) )
-!      Epe=work(kwork)
+     &               nmats=1,dalwrk=work(kwork:lwork))
 
-       do i = 1, len_array
-          if (array(i) /= array(i)) then
-             print *, 'error found nan in element', i
-             stop 1
-         end if
-      end do
+      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
+!     Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
-      write(lupri,*) 'edh: Epe from ERGCAL', pe_energy
-
-!       Epe = ddot(ntbas(0)*ntbas(0), fock, 1, dmat, 1)
+      write(lupri,*) 'dhferg before Epe', dhferg
+      write(lupri,*) 'Epe', Epe
+     
 !      dhferg = dhferg + Epe
 
-       deallocate(dmat_triangle)
+      write(lupri,*) 'dhferg after Epe', dhferg
+
+      deallocate(dmat_triangle)
 #endif
 
       IF(LVCON) THEN
@@ -1969,8 +1970,13 @@ C
 !        write (*,*) 'FDE energy: ',fde_energy
 !     endif
 
+      write(lupri,*) 'dhferg before ELERGY', dhferg
+      write(lupri,*) 'ELERGY', ELERGY
+
       DHFERG = DHFERG + ELERGY
 C
+      write(lupri,*) 'dhferg after ELERGY', dhferg
+      
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
 CMI      ... print out matrixes ...
@@ -2008,6 +2014,11 @@ CMI      ... print out matrixes ...
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
+#ifdef MOD_PEQM
+          write(lupri,'(3X,A,'//FMT//')')
+     +  'PE energy                         :   ',Epe
+#endif
+
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
