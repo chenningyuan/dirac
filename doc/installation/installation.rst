@@ -243,6 +243,10 @@ This can be fixed by creating soft links with .so suffix::
   lrwxrwxrwx. 1 root root      21 Oct 30 14:41 libptf77blas.so.3 -> ./libptf77blas.so.3.0
   -rwxr-xr-x. 1 root root  119824 Sep  2  2011 libptf77blas.so.3.0
 
+Finally set::
+
+  $ export MATH_ROOT=/usr/lib64/atlas
+
 Now DIRAC will correctly detect them.
 
 
