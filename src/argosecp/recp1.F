@@ -26,14 +26,9 @@
       RECP_DBG    = ECPINT_DEBUG ! .DEBUG
       RECP_OUT    = LUPRI        ! DIRAC output
 
-!     Print title
-      CALL OUTPUT_TITLE   
-
-!     Check consistency
-      CALL RECP_CHK_MAIN
-
-!     Main part
-      CALL RECP_ONE
+      CALL OUTPUT_TITLE   ! Print title
+      CALL RECP_CHK_MAIN  ! Check consistency
+      CALL RECP_1E        ! Main part
 
 !     Exit RECP
       CALL TITLER('RECP integral end','*',126)
@@ -43,11 +38,15 @@
 ! ------------------------------------------------
 
 
-      SUBROUTINE RECP_ONE 
+      SUBROUTINE RECP_1E 
 !  read the user input and compute the 1-e integrals.
+      USE RECP_CSO_TABLE
+      USE RECP_INP
       USE RECP_IPT
       USE RECP_NTR
+      USE RECP_ONE
       USE RECP_OUTPUT
+      USE RECP_SOCFPD
       implicit logical(a-z)
 #include "inc_mxvalue.h"
 #include "inc_print.h" 
@@ -60,8 +59,6 @@
       common /ntgr/
      & mconsu,mru,mcru,msfu,msfru,ngcs,nu,   
      & lxyzir(3),inam(5),nnam,mdum(32)
-
-!     # dummy:
       integer
      & ica(mcup,msup,mgup),icb(4,24,mccup),icxst(2,mnsfup),
      & iprst(mnsfup),lmnp1(mconsp),mcons(msfup),nc(msup),
@@ -92,7 +89,7 @@
 
       ALLOCATE (IPT_A(10))
 
-!     # input processing.
+!     input processing.
       CALL RECP_INP_MAIN( IPT_A,      ccr,    chg,    eta,
      &   ica,    idp,    ityp,   la,     lb,     lcr,
      &   lls,    lmnp1,  lmn1u,  lproju, maords, mcons,
@@ -100,39 +97,34 @@
      &   ncon,   ncr,    ncru,   nct,    nd,     nf,     nir,
      &   nkcrl,  nkcru,  nklsl,  nklsu,  nrcr,   nso,    nsopr,
      &   nt,     ntl,    ntu,    x,      y,      z,      zcr,
-     &   zet,    N1MAX,  L1REC,CX_TEMP)
+     &   zet,    CX_TEMP)
 
       ALLOCATE(IPT_IL(nnbft))  !allocate space for il(*)
 
 !     Compute symmetry coefficient products.
-      call RECP_SOCFPD( mgcsu,icxast,icxst,
-     &   icxsv1, icxsv2, idp,  iprst, la,
-     &   lb,     maords, mau,  mcons, mgcs,   mics,
-     &   mjcs,   nblpr,  nc,   nd,    nf,     nir,
-     &   npair,  nprir,  nrcr, nsopr, nt,     ntl,
-     &   ntu, CX_TEMP )
+      CALL RECP_SOCFPD_MAIN(mgcsu,icxast,icxst,
+     &     icxsv1,icxsv2,idp,iprst,la,
+     &     lb,maords,mau,mcons,mgcs,mics,
+     &     mjcs,nblpr,nc,nd,nf,nir,
+     &     npair,nprir,nrcr,nsopr,nt,ntl,
+     &     ntu,CX_TEMP)
 
 !     Allocate variables
-      CALL RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
       eps = 1.0d-12
-      CALL CORTAB(eps,lmax,lmn1u,lproju,ndfac)
+      CALL RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
+      CALL RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
 
 !     # compute the one-electron integrals.
       INT_AREP = 0
       IF (nu.eq.4) INT_AREP = 1
 
       DO n = 4, nu
-        nnam  = inam(n)
-        CALL RECP_ONE_MAIN(
-     &        IPT_A,     ccr,        chg,       eta,        ica,
-     &        icb,       icxast,     icxst,     ilxyz,
-     &        iprst,     lcr,       lls,        lmnp1,
-     &        lproju,    mcons,      mcrs,      nc,         ncon,
-     &        ncr,       nf,         nfct,      ngw,        nkcrl,
-     &        nkcru,     nklsl,      nklsu,     nopir,      npair,
-     &        nprir,     nrcr,       nt,        ntl,        ntu,
-     &        x,         y,          z,         zcr,        zet,
-     &        nso, INT_AREP, N1MAX,  L1REC )
+         nnam  = inam(n)
+         CALL RECP_ONE_MAIN(IPT_A,ccr,chg,eta,ica,
+     &        icb,icxast,icxst,ilxyz,iprst,lcr,lls,lmnp1,
+     &        lproju,mcons,mcrs,nc,ncon,ncr,nf,nfct,ngw,nkcrl,
+     &        nkcru,nklsl,nklsu,nopir,npair,nprir,nrcr,nt,ntl,
+     &        ntu,x,y,z,zcr,zet,nso,INT_AREP)
       ENDDO
 
 !     Deallocate variables
