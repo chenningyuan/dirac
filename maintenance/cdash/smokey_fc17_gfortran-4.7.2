@@ -1,7 +1,9 @@
 #!/bin/bash
 
-TMP_DIR=/scratch/scratch-nightly-compile
-SCRATCH_DIR=/scratch/scratch-nightly-run
+export MATH_ROOT=/usr/lib64/atlas
+
+TMP_DIR=/home/bast/trash/scratch-nightly-compile
+SCRATCH_DIR=/home/bast/trash/scratch-nightly-run
 mkdir -p $TMP_DIR
 
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
@@ -18,7 +20,7 @@ make release
 tar xvzf DIRAC-12.0.0-Source.tar.gz
 cd DIRAC-12.0.0-Source
 
-./setup --fc=gfortran --cc=gcc -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5"
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="smokey_fc17_gfortran-4.7.2"
 cd build
 make Nightly
 

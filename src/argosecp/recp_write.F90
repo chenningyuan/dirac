@@ -71,9 +71,10 @@ END SUBROUTINE RECP_WRITE_ISA
 
 ! ------------------------------------------------
 
-SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
+SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
                            N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,mpru,nbft,nnbft,nst)
   USE RECP_IPT
+  USE RECP_FUNCTION2
   USE RECP_OUTPUT
 ! write 1-e integral arrays, Y.C. Park
   IMPLICIT NONE
@@ -85,7 +86,6 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   INTEGER :: mpru, nbft, nnbft, nst   ! common block (parmi)
   INTEGER :: nnam                     ! common block (ntgr)
   INTEGER :: INT_AREP
-  INTEGER :: N1MAX,  L1REC
   INTEGER :: N_INTEGRAL(3) ! number of integral element of each type
   INTEGER :: MN_INTEGRAL   ! maximum of N_INTEGRAL(i,i=1-3)
   INTEGER :: nop, iapt(3), ipr, ipr1, ipr2
@@ -221,6 +221,7 @@ END SUBROUTINE RECP_WRITE_MAIN
 SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
                              values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
 ! From cnvrt_stvz, Y.C. Park
+  USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "inc_mxvalue.h"
@@ -244,39 +245,41 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array
   integer :: n_n_skp(8)   ! n! of n_skip
   integer :: i_lab, j_lab
   integer :: SYM1, SYM2, SYM_12   ! isym, jsym, ijsym
-  integer :: nbfmx=100000     ! FIXME 
   integer, ALLOCATABLE :: sym_bfn(:) ! symb(1:nbft) symmetry index of each basis function 'n_bfn_sym' is needed
-
   integer :: nndxf
-  nndxf(i) = ( i * ( i - 1 ) ) / 2     ! define nndxf
+  nndxf(i) = (i*(i-1))/2     ! define nndxf
 
   CALL OUTPUT_LOC('RECP_WRITE_ARRAY','E')
-  ALLOCATE ( sym_bfn(nbfmx) )
-  DO I = 1, nbfmx
-     sym_bfn(i) = 0
-  ENDDO
-
   IF (PRINT_LEVEL .GE. 5) THEN 
      WRITE(RECP_OUT,*)'   INT_TYPE       =',INT_TYPE
      WRITE(RECP_OUT,*)'   N_INTEGRAL     =',N_INTEGRAL(LBLOP)
      WRITE(RECP_OUT,*)'   N_SYM          =',N_SYM
      WRITE(RECP_OUT,*)'   MN_INTEGRAL    =',MN_INTEGRAL
   ENDIF
+
+! Check and allocate sym_bfn  
+  n_tot  = 0
+  DO SYM1 = 1, n_sym 
+     n_tot = n_tot + n_bfn_sym(SYM1)               
+  ENDDO
+  ALLOCATE ( sym_bfn(n_tot) )  !nbfmx(100000)->n_tot
+  CALL RECP_SETZERO_I1(sym_bfn,n_tot)
+
 ! make sym_bfn 
   n_tot  = 0
   n_n_tot = 0
-  do SYM1 = 1, n_sym
+  DO SYM1 = 1, n_sym
      n_skp(SYM1)   = n_tot  
      n_n_skp(SYM1) = n_n_tot 
-     n_tot          = n_tot   + n_bfn_sym(SYM1)               
-     n_n_tot        = n_n_tot + nndxf(n_bfn_sym(SYM1) + 1)  
+     n_tot         = n_tot   + n_bfn_sym(SYM1)               
+     n_n_tot       = n_n_tot + nndxf(n_bfn_sym(SYM1) + 1)  
 !    print *, '1-n_bfn_sym :',SYM1,n_bfn_sym(SYM1)
-     do j = (n_skp(SYM1)+1), n_tot
+     DO j = (n_skp(SYM1)+1), n_tot
         sym_bfn(j)  =SYM1
-     enddo
-  enddo
+     ENDDO
+  ENDDO
 
-  if (INT_TYPE .le. 4) then
+  IF (INT_TYPE.LE.4) THEN
 ! # symmetric matrix, totally symmetric operator.
 !    #  initialize matrix element 
      array_stvc = 0
@@ -287,7 +290,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array
        SYM1  = sym_bfn(i_lab)
        SYM2  = sym_bfn(j_lab)
        SYM_12 = nndxf(SYM1) + SYM2
-       if ( SYM1 .eq. SYM2 ) then
+       if (SYM1.eq.SYM2) then
 !         # only valid array(*) elements are referenced.
           ij  =  n_n_skp(SYM1) + nndxf(i_lab - n_skp(SYM1)) + j_lab - n_skp(SYM1)
 !       | ij  :  skip for       +                             +       -              |
