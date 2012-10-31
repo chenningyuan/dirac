@@ -1781,8 +1781,8 @@ C*****************************************************************************
 #endif
 
 #ifdef MOD_PEQM
-      use polarizable_embedding, only: peqm, pe_master, Ees, Epol,
-     &                                 lmul, lpol
+      use polarizable_embedding, only: peqm, pe_master, Ees, Epol, 
+     &                                 Eelsav,lmul, lpol
 #endif
 
 #include "implicit.h"
@@ -1910,11 +1910,9 @@ C
 !     edh: Its is neccesary to construct a triangular matrix for
 !     pe_module - DIRAC SCF uses square matrices (DALTON uses
 !     triangular)
-
       allocate(dmat_triangle(nnbbasx))
       dmat_triangle = 0.0d0
-
-! Conversion of density matrix to triangukar form: 
+! Conversion of density matrix to triangular form: 
       k = 1
       do i = 1, ntbas(1)
 !         do j = i, ntbas(1)
@@ -1922,11 +1920,9 @@ C
               if (i == j) then
                  dmat_triangle(k) = 2.0d0*dmat(((i-1)*ntbas(0) + j), 
      &                                        1, 1 )
-!              write(lupri, *) 'diagonal 1:', dmat_triangle(k)
               else
                  dmat_triangle(k) = 4.0d0*dmat(( (i-1)*ntbas(0) + j ),
      &                                        1, 1 )
-!              write(lupri, *) 'off-diagonal 1:', dmat_triangle(k)
               end if
               k = k + 1
            end do
@@ -1939,12 +1935,11 @@ C
       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
 !     Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
-      write(lupri,*) 'dhferg before Epe', dhferg
-      write(lupri,*) 'Epe', Epe
+!     E2PART = 1/2*(Gij *Dij) - Eel (Eelsav) from the 
+!     PE module is added to this part: Here it is substracted again         
+      E2PART = E2PART - (0.5d0 * Eelsav)
      
-!      dhferg = dhferg + Epe
-
-      write(lupri,*) 'dhferg after Epe', dhferg
+      dhferg = dhferg + Epe
 
       deallocate(dmat_triangle)
 #endif

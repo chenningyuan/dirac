@@ -107,6 +107,9 @@ module polarizable_embedding
     ! energy contributions
     ! electrostatic
     real(dp), dimension(:,:), allocatable, public, save :: Ees
+    ! edh: We need "access" to Eel to substract it 
+!   from the two electron part in DIRAC
+    real(dp), public, save :: Eelsav
     ! polarization
     real(dp), dimension(:,:), allocatable, public, save :: Epol
 
@@ -3026,18 +3029,6 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         ! electron - multipole interaction energy
         call Mk_integrals(Mk_ints, Rs(:,site), Mks(:,i))
 
-!        kfoo = 0
-!        do ifoo = 1, 12
-!           do jfoo = ifoo, 12
-!              kfoo = kfoo + 1
-!              Eel_2  = Eel_2 + denmats(kfoo) * Mk_ints(kfoo,1)
-!           write(lupri,*) '*** edh: denmats, Mk_ints(kfoo,1), Eel_2', denmats(kfoo), Mk_ints(kfoo,1)
-!           enddo
-!        enddo
-
-!      write(lupri,*) 'ncomps', ncomps
-!      write(lupri,*) 'ndens', ndens
-
         kfoo = 0              
         do j = 1, ncomps
             do l = 1, ndens
@@ -3052,6 +3043,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         end do
         i = i + 1
     end do
+    Eelsav = Eel(1)
 
     write(lupri,*) '***edh: Eel, Eel_2', Eel(1), Eel_2
 
