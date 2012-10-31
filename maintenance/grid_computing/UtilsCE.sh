@@ -23,12 +23,16 @@ function get_nprocs_CE()
 
 function print_CE_info ()
 { # prints basic info about given CE
-unset THIS_HOSTNAME
-THIS_HOSTNAME=`hostname -f`
-if [[ -z $THIS_HOSTNAME ]]; then
- THIS_HOSTNAME=`hostname`
+unset HOSTNAME
+HOSTNAME=`hostname -f`
+if [[ -z $HOSTNAME ]]; then
+ HOSTNAME=`hostname`
 fi
-echo -e "\n --- Hostname: $THIS_HOSTNAME "; 
+echo -e "\n --- Hostname: $HOSTNAME "; 
+echo -e "\n --- Hostname: $GLITE_WMS_LOG_DESTINATION "; 
+# ----
+THIS_HOSTNAME=$GLITE_WMS_LOG_DESTINATION 
+# ----
 echo -e "Server specification: \c";  uname -a
 echo -e "\n shell version, sh --version:"; sh --version
 ######################################################
@@ -84,7 +88,7 @@ if [[ -n $CE_ID ]]; then
   echo -e "querry attributes, like  PlatformArch, TotalCPUs, Memory, ClockSpeed, MaxCPUTime...."
   lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime
   CE_BDII=${CE_ID/:*/:2170}
-  echo -e "\n Now do faster querrying using CE_BDII=$CE_BDII"
+  echo -e "\n Now do faster querrying of attributes using CE_BDII=$CE_BDII"
   lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster
 else
   echo -e "\n No querrying of attributes as the CE_ID variable is not defined !"

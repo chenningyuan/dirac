@@ -23,10 +23,22 @@ SUBROUTINE RECP_CHK_PRP
 #include "dcbprp.h"
 #include "inc_print.h"
   IF (DOPRP) THEN
-     IF (SHIELD) THEN
+     IF (DSO) THEN
+        WRITE(RECP_OUT,'(10X,A)')'>>> RECP error' 
+        WRITE(RECP_OUT,'(10X,A)')'DSO is not supported in RECP calculation'
+        CALL QUIT('RECP_CHK_PRP: DSO is not supported in RECP') 
+     ELSEIF (MGRAD) THEN
+        WRITE(RECP_OUT,'(10X,A)')'>>> RECP error' 
+        WRITE(RECP_OUT,'(10X,A)')'Molecular gradient is not supported in RECP calculation'
+        CALL QUIT('RECP_CHK_PRP: Molecular gradient is not supported in RECP') 
+     ELSEIF (SHIELD) THEN
         WRITE(RECP_OUT,'(10X,A)')'>>> RECP error' 
         WRITE(RECP_OUT,'(10X,A)')'NMR is not supported in RECP calculation'
         CALL QUIT('RECP_CHK_PRP: NMR is not supported in RECP') 
+     ELSEIF (PVC) THEN
+        WRITE(RECP_OUT,'(10X,A)')'>>> RECP error' 
+        WRITE(RECP_OUT,'(10X,A)')'PVC is not supported in RECP calculation'
+        CALL QUIT('RECP_CHK_PRP: PVC is not supported in RECP') 
      ENDIF
   ENDIF
 END SUBROUTINE RECP_CHK_PRP

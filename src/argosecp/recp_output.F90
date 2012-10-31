@@ -18,6 +18,9 @@ SUBROUTINE OUTPUT_TITLE
   WRITE(RECP_OUT,'(10X,A)')'Electronic mail:'
   WRITE(RECP_OUT,'(10X,A)')'YoonSupLee@kaist.ac.kr'
   WRITE(RECP_OUT,'(10X,A)')'youngc@kaist.ac.kr'
+  WRITE(RECP_OUT,'(10X,A)')''
+  WRITE(RECP_OUT,'(10X,A)')'Reference:'
+  WRITE(RECP_OUT,'(10X,A)')'Bull.Korean.Chem.Soc. v.33, p.803 (2012)'
   WRITE(RECP_OUT,'(10X,A)')'-----------------------------------------------------------'
   WRITE(RECP_OUT,'(/)')
 END SUBROUTINE OUTPUT_TITLE

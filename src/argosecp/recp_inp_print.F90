@@ -16,11 +16,12 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
 !                 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g
 !   map(1:2,1:nbft) = temporary scratch array for writing the output map(*) vectors.
   USE RECP_IPT
+  USE RECP_FUNCTION2
   implicit logical(a-z)
 #include "inc_print.h"
-  integer    nbfmx,     nmap,   nenrgy,   nrtype
+  integer    nbfmx,      nmap,   nenrgy,   nrtype
   parameter( nbfmx=1000, nmap=2, nenrgy=1, nrtype=-1 )
-! parameter( nbfmx=500, nmap=2, nenrgy=1, nrtype=-1 )
+! parameter( nbfmx=500,  nmap=2, nenrgy=1, nrtype=-1 )
   integer nsym, ns, nbft
 ! real*8        repnuc
   character*3   ityp(1:nsym)
@@ -34,12 +35,11 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
   integer      clip, i, j
   character*8  bfnlab(nbfmx)
   character*4  slabel(8)
-! real*8       energy(nenrgy)
   integer      ietype(nenrgy)
   integer      imtype(nmap)
   character*2  btype(bmin:bmax)
-  real*8   sifsce
-  external sifsce
+! real*8   sifsce
+! external sifsce
 ! # map vector types.
   data imtype/ 3, 4 /
 ! # basis function types.
@@ -70,10 +70,10 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
   ENDDO    
  
 ! # create the output symmetry labels.
-  do i = 1, nsym
-    slabel(i)(1:1) = ' '
-    slabel(i)(2:4) = ityp(i)
-  enddo
+  DO i = 1, nsym
+     slabel(i)(1:1) = ' '
+     slabel(i)(2:4) = ityp(i)
+  ENDDO
 
   IF (PRINT_LEVEL.GE.2) THEN
 !     write(RECP_OUT,6100)'RECP integral information:'
