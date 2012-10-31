@@ -1,6 +1,7 @@
 
 
 .. _dirac:
+.. index:: **DIRAC
 
 ==============================
 \*\*DIRAC -- Job specification

@@ -1,6 +1,7 @@
 
 
 .. _integrals:
+.. index:: **INTEGRALS
 
 =============
 \*\*INTEGRALS
@@ -9,6 +10,9 @@
 
 General directives
 ==================
+
+
+.. index:: .NUCMOD
 
 .NUCMOD
 -------
@@ -34,6 +38,8 @@ For the Gaussian charge distribution the default exponents are in
 accordance with values proposed by Visscher and Dyall [Visscher1997b]_.
 
 
+.. index:: .SELECT
+
 .SELECT
 -------
 
@@ -50,6 +56,8 @@ Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8
    8
 
 
+.. index:: .PHASEORIGIN
+
 .PHASEORIGIN
 ------------
 
@@ -64,6 +72,8 @@ Origin appearing in the London atomic orbital phase-factors. Default::
   other integrals, in the code in her1int.F it is the final "else" option.
 
 
+.. index:: .GAUGEORIGIN
+
 .GAUGEORIGIN
 ------------
 
@@ -72,6 +82,8 @@ Set the gauge origin. By default it is set to the coordinate origin::
   .GAUGEORIGIN
    0.0 0.0 0.0
 
+
+.. index:: .DIPORG
 
 .DIPORG
 -------
@@ -84,6 +96,8 @@ origin::
    0.0 0.0 0.0
 
 
+.. index:: .MAGCOR
+
 .MAGCOR
 -------
 
@@ -91,6 +105,8 @@ Print the symmetrized nuclear magnetic moments. This corresponds to taking
 symmetry combinations of rotations, not coordinates, at each nuclear center.
 The numbering is used in labels of various magnetic integrals.
 
+
+.. index:: .PRINT
 
 .PRINT
 ------
@@ -101,6 +117,8 @@ General print level in the integral module. Default::
    1
 
 
+.. index:: *ONEINT
+
 \*ONEINT
 ========
 
@@ -109,6 +127,8 @@ integrals. Based on input in the other section, the program will
 determine what integrals to calculate.
 
 
+.. index:: .PRINT
+
 .PRINT
 ------
 
@@ -116,11 +136,15 @@ Print level in one-electron integral routines. By default
 print level is taken from \*\*INTEGRALS.
 
 
+.. index:: *READIN
+
 \*READIN
 ========
 
 This subsection allows changes of defaults in the reading of the mol file.
 
+
+.. index:: .UNCONTRACT
 
 .UNCONTRACT
 -----------
@@ -132,12 +156,16 @@ quasirelativistic Hamiltonians (like X2C) work only with decontracted basis
 set. By default only the small component is decontracted.
 
 
+.. index:: .PRINT
+
 .PRINT
 ------
 
 Print level in the reading of the mol file. By default
 print level is taken from \*\*INTEGRALS.
 
+
+.. index:: .MAXPRI
 
 .MAXPRI
 -------
@@ -149,6 +177,8 @@ Default::
    22
 
 
+.. index:: *TWOINT
+
 \*TWOINT
 ========
 
@@ -156,6 +186,8 @@ This subsection gives directives for the generation of two-electron integrals.
 It also gives directives for the construction of Fock matrices, such as
 screening.
 
+
+.. index:: .SCREEN
 
 .SCREEN
 -------
@@ -174,6 +206,8 @@ Choosing a negative value for the screening turns the integral screening
 completely off.
 
 
+.. index:: .ICEDIF
+
 .ICEDIF
 -------
 
@@ -184,6 +218,8 @@ Default: Coulomb and exchange on (1 = on; off = 0)::
   .ICEDIF
    1 1
 
+
+.. index:: .THRFAC
 
 .THRFAC
 -------
@@ -197,6 +233,8 @@ the factors given here. Default::
    1.0 1.0
 
 
+.. index:: .SOFOCK
+
 .SOFOCK
 -------
 
@@ -206,6 +244,8 @@ By default the direct Fock matrix construction in performed AO basis using the
 skeleton matrix approach. This may give better screening, but is more memory
 intensive.
 
+
+.. index:: .PRINT
 
 .PRINT
 ------
@@ -227,6 +267,8 @@ sets the print level to 4 for all shell quadruplets.
 Use with care to avoid massive output! At print level 15 the individual
 integrals are printed.
 
+
+.. index:: .TIME
 
 .TIME
 -----
