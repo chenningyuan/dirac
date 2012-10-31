@@ -26,43 +26,44 @@ echo "My own CMake is in PATH."
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
 echo "My PATH=$PATH"
-#echo "which make:"; which make
+echo "which make:"; which make
+echo "Running on host `hostname`"
+echo "Time is `date`"
+echo "Directory is `pwd`"
+echo "This jobs runs on the following processors:"
+echo `cat $PBS_NODEFILE`
+# Define number of processors
+NPROCS=`wc -l < $PBS_NODEFILE`
+echo "This node has $NPROCS CPUs."
+echo "PBS_SERVER=$PBS_SERVER"
+echo "PBS_O_QUEUE=$PBS_O_QUEUE"
+echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
+
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 #
-#BUILD=build_GNU_OpenMPI_MKL_ILP64
+#BUILD_GNU=build_GNU_OpenMPI_MKL_ILP64
 BUILD=build_Intel_OpenMPI_MKL_ILP64
-
 cd $DIRAC
-
 #./pamadm -a --hscc --hsfsdyn --auto
 ./pamadm -a 
-
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
-
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=4 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD
-
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD
 cd $DIRAC/$BUILD
-
-cmake ..
 make Experimental
-#make ExperimentalTest
 #make ExperimentalSubmit
 
 #
 # run static dirac
 #
-#BUILD_STATIC=build_ompi_ifort_icc_ilp64_static
-#cd $DIRAC
-#/bin/rm -rf $BUILD_STATIC
-#./setup --fc=ifort --cc=icc --cpp=icpc  --int64 --static -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build-dir=$BUILD_STATIC
-#cd $DIRAC/$BUILD_STATIC
-#make dirac.x
-#make info_ext
-#make Experimental 
+BUILD_STATIC=build_Intel_OpenMPI_MKL_ILP64_static
+cd $DIRAC
+./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x  -D RUNTEST_NR_PROC=8 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_MAGNETIZ_FIX=ON  --force $BUILD_STATIC
+cd $DIRAC/$BUILD_STATIC
+make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
