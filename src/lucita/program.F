@@ -1066,6 +1066,7 @@ C
       KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
       K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
       IF (K8BASE_LUCITA .ne. KADD) THEN
+         print *, 'controlled stop: only int64'
          CALL QUIT(
      &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
       END IF

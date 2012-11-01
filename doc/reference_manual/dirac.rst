@@ -1,6 +1,7 @@
 
 
 .. _dirac:
+.. index:: **DIRAC
 
 ==============================
 \*\*DIRAC -- Job specification
@@ -20,6 +21,8 @@ package if you want to e.g. save the two-electron integrals to disk for another
 purpose, this is not possible with DIRAC.
 
 
+.. index:: .WAVE FUNCTION
+
 .WAVE FUNCTION
 --------------
 
@@ -31,12 +34,16 @@ post-SCF step, then a trick to do this is to comment out (or remove) this
 keyword.
 
 
+.. index:: .ANALYZE
+
 .ANALYZE
 --------
 
 Activates the Hartree--Fock or Kohn--Sham analysis module.  This activates the
 reading of the :ref:`analyze` section.
 
+
+.. index:: .PROPERTIES
 
 .PROPERTIES
 -----------
@@ -45,12 +52,16 @@ Activates the property module (which will call the integral module for property
 integrals).  This activates the reading of the :ref:`properties` section.
 
 
+.. index:: .OPTIMIZE
+
 .OPTIMIZE
 ---------
 
 Activates the geometry optimization.  This activates the reading of the
 :ref:`optimize` subsection.
 
+
+.. index:: .4INDEX
 
 .4INDEX
 -------
@@ -66,6 +77,8 @@ automatically activated unless .NO4INDEX is specified in this input module.
 By default, molecular orbitals with orbital energy between -10 and +20 hartree
 are included, this can be modified in the :ref:`moltra` section.
 
+
+.. index:: .NO4INDEX
 
 .NO4INDEX
 ---------
@@ -84,6 +97,8 @@ This keyword is utilized when repeating correlated CC or CI calculations
 integral transformation.
 
 
+.. index:: .TITLE
+
 .TITLE
 ------
 
@@ -94,6 +109,8 @@ Example::
    my first DIRAC calculation
 
 
+.. index:: .INPTEST
+
 .INPTEST
 --------
 
@@ -102,6 +119,8 @@ It is often useful to start a new set of calculations with an input test in
 order to check that input file processing is correct before submitting your
 (long-term run) job.
 
+
+.. index:: .ONLY INTEGRALS
 
 .ONLY INTEGRALS
 ---------------
@@ -112,6 +131,7 @@ are written to disk.
 
 
 .. _optimize:
+.. index:: *OPTIMIZE
 
 \*OPTIMIZE
 ==========
@@ -134,6 +154,8 @@ Depending on convergence criteria for energies and gradients the values of the
 thresholds may be automatically adjusted.
 
 
+.. index:: .NO SKIP
+
 .NO SKIP
 --------
 
@@ -149,11 +171,15 @@ e.g. the norm of the gradient is, say, 1.0, then there is no need to calculate
 the LS and/or SS two-electron gradient because they have a norm of, say, 0.001.
 
 
+.. index:: .NUMGRA
+
 .NUMGRA
 -------
 
 Force the use of numerical gradient in geometry optimization.
 
+
+.. index:: .TWOGRD
 
 .TWOGRD
 -------
@@ -165,6 +191,8 @@ Include LL, SL, and SS integral contributions to the gradient
    1 1 1
 
 
+.. index:: .BAKER
+
 .BAKER
 ------
 
@@ -172,11 +200,15 @@ Baker's convergence criteria [J. Comp. Chem. 14 (1993) 1085] will be
 used.
 
 
+.. index:: .1STORD
+
 .1STORD
 -------
 
 Default 1st order method will be used: BFGS update.
 
+
+.. index:: .GRADIENT
 
 .GRADIENT
 ---------
@@ -184,11 +216,15 @@ Default 1st order method will be used: BFGS update.
 Convergence threshold for the gradient. The default is 1.0D-5.
 
 
+.. index:: .ENERGY
+
 .ENERGY
 -------
 
 Convergence threshold for the energy. The default is 1.0D-6.
 
+
+.. index:: .STEP THRESHOLD
 
 .STEP THRESHOLD
 ---------------

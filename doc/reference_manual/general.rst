@@ -1,6 +1,7 @@
 
 
 .. _general:
+.. index:: **GENERAL
 
 ===========
 \*\*GENERAL
@@ -10,6 +11,8 @@
 General input specification
 ===========================
 
+
+.. index:: .DIRECT
 
 .DIRECT
 -------
@@ -24,6 +27,8 @@ directly; 0 = do not evaluate directly)::
   .DIRECT
    1 1 1
 
+
+.. index:: .SPHTRA
 
 .SPHTRA
 -------
@@ -43,6 +48,8 @@ components is modified, however, in accordance with the restricted kinetic
 balance relation.
 
 
+.. index:: .PCMOUT
+
 .PCMOUT
 -------
 
@@ -50,11 +57,15 @@ Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
 coefficients between machines with different binary structure.
 
 
+.. index:: .ACMOUT
+
 .ACMOUT
 -------
 
 Write coefficients in C1 symmetry to the unformatted file DFACMO.
 
+
+.. index:: .ACMOIN
 
 .ACMOIN
 -------
@@ -63,6 +74,8 @@ Import coefficients in C1 symmetry from the unformatted file DFACMO to current
 symmetry. This assumes that the current symmetry is lower than the symmetry
 used for obtaining the original coefficients.
 
+
+.. index:: .LOWJACO
 
 .LOWJACO
 --------
@@ -78,6 +91,8 @@ default.
    also the DIRAC08 info should be removed
 
 
+.. index:: .DOJACO
+
 .DOJACO
 -------
 
@@ -88,6 +103,8 @@ degenerate eigenvectors of different symmetries. The Jacobi method is currently
 limited to real groups.
 
 
+.. index:: .QJACO
+
 .QJACO
 ------
 
@@ -95,6 +112,8 @@ Employ pure Jacobi diagonalization of quaternion matrixes. Properly handles
 degenerate eigenvectors. Slower than .DOJACO and exclusive.  Experimental
 option.
 
+
+.. index:: .LINDEP
 
 .LINDEP
 -------
@@ -107,6 +126,8 @@ The default is::
    1.0D-6 1.0D-8
 
 
+.. index:: .RKBIMP
+
 .RKBIMP
 -------
 
@@ -116,6 +137,8 @@ add the UKB component (all small component). This option is a nice way to get
 magnetic field (e.g. NMR shielding and magnetizability), in particular when
 combined with London orbitals, which makes the magnetic balance *atomic*.
 
+
+.. index:: .PRJTHR
 
 .PRJTHR
 -------
@@ -129,6 +152,8 @@ The default is::
   1.0D-5
 
 
+.. index:: .PRINT
+
 .PRINT
 ------
 
@@ -140,6 +165,8 @@ By default set to::
    0
 
 
+.. index:: .CVALUE
+
 .CVALUE
 -------
 
@@ -149,6 +176,8 @@ Speed of light in a.u. Default::
    137.0359998
 
 
+.. index:: .LOGMEM
+
 .LOGMEM
 -------
 
@@ -156,11 +185,15 @@ Write out a line in the output for each memory allocation done by DIRAC.  This
 is mainly useful for programmers or for solving out-of-memory issues.
 
 
+.. index:: *PARALLEL
+
 \*PARALLEL
 ==========
 
 Parallelization directives.
 
+
+.. index:: .PRINT
 
 .PRINT
 ------
@@ -174,6 +207,8 @@ A print level of at least 2 is needed in order to be able to evaluate
 the parallelization efficiency. A complete timing for all nodes will be
 given if the print level is 4 or higher.
 
+
+.. index:: .NTASK
 
 .NTASK
 ------
