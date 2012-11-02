@@ -36,8 +36,8 @@ if sys.version < '2.4':
 
 global install_dir
 
-name_of_this_script = os.path.realpath(__file__).split('/')[-1]
-install_dir_default = os.path.realpath(__file__)[:-len(name_of_this_script)]
+name_of_this_script = os.path.basename(os.path.realpath(__file__))
+install_dir_default = os.path.dirname(os.path.realpath(__file__))
 install_dir = install_dir_default
 
 class pam_enviroment:
