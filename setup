@@ -205,9 +205,9 @@ def gen_cmake_command():
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
-    # fix for Windows
+    # fix for Windows (plus supress warnings)
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' cmake -Wno-dev'
     else:
         command = ' cmake ' + command
 
