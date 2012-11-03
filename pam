@@ -403,7 +403,8 @@ class pam_enviroment:
                 try:
                     shutil.rmtree(self.scratch_dir)
                 except:
-                    print_error_message('can not delete scratch directory due to system reasons !')
+                    #miro: happens on Windows only. why ? has to be explored deeply
+                    print_error_message('can not delete scratch directory '+self.scratch_dir+' for to some system reasons !')
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'

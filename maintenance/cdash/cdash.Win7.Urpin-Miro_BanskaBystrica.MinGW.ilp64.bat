@@ -17,7 +17,7 @@ rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias
 rem download fresh Dirac - MUST HAVE full path of git
 rem C:\Git\bin\git.exe pull 
 
-#python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=%DIRAC%\%BUILD%\dirac.x.exe -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
+rem python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=%DIRAC%\%BUILD%\dirac.x.exe -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
 python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
 
 cd %BUILD%
