@@ -10,7 +10,7 @@ dirac_copyright_fortran_start = '!dirac_copyright_start'
 dirac_copyright_fortran_end   = '!dirac_copyright_end'
 
 dirac_copyright_fortran = '''
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -27,7 +27,7 @@ dirac_copyright_fortran = '''
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 '''
 
 dirac_copyright_c_start = '/\* dirac_copyright_start \*/'
@@ -35,7 +35,7 @@ dirac_copyright_c_end   = '/\* dirac_copyright_end \*/'
 
 dirac_copyright_c = '''
 /*
- *     Copyright (c) 2011 by the authors of DIRAC.
+ *     Copyright (c) 2012 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -52,7 +52,7 @@ dirac_copyright_c = '''
  *
  *     For information on how to get a license, as well as the
  *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://dirac.chem.vu.nl
+ *     DIRAC program, see: http://www.diracprogram.org
  */
 '''
 

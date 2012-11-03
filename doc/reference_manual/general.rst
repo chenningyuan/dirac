@@ -1,26 +1,34 @@
-.. _general:
 
-\*\*GENERAL 
+
+.. _general:
+.. index:: **GENERAL
+
+===========
+\*\*GENERAL
 ===========
 
-General input specification.
 
-**Advanced options**
+General input specification
+===========================
+
+
+.. index:: .DIRECT
 
 .DIRECT
 -------
 
-Direct evaluation of two-electron integrals for Fock matrices (all
-two-electron integrals for other uses, e.g. CI, CCSD, MCSCF, are always
-evaluated directly, i.e. never read from disk).
+Direct evaluation of two-electron integrals for Fock matrices (all two-electron
+integrals for other uses, e.g. CI, CCSD, MCSCF, are always evaluated directly,
+i.e. never read from disk).
 
-*Default:* Evaluate LL, SL, and SS integrals directly (1 = evaluate
-directly; 0 = do not evaluate directly).
+The default is to evaluate LL, SL, and SS integrals directly (1 = evaluate
+directly; 0 = do not evaluate directly)::
 
-::
+  .DIRECT
+   1 1 1
 
-    .DIRECT
-     1 1 1
+
+.. index:: .SPHTRA
 
 .SPHTRA
 -------
@@ -28,50 +36,46 @@ directly; 0 = do not evaluate directly).
 Transformation to spherical harmonics embedded in the transformation to
 orthonormal basis; totally symmetric contributions are deleted.
 
-*Default:*
+The default is a spherical transformation of large and small components,
+respectively (1 = on; 0 = off)::
 
-::
+  .SPHTRA
+   1 1
 
-    .SPHTRA
-     1 1
+The transformation of the large components is a standard transformation from
+Cartesian functions to spherical harmonics. The transformation of the small
+components is modified, however, in accordance with the restricted kinetic
+balance relation.
 
-Spherical transformation of large and small components, respectively (1
-= on; 0 = off).
 
-The transformation of the large components is a standard transformation
-from Cartesian functions to spherical harmonics. The transformation of
-the small components is modified, however, in accordance with the
-restricted kinetic balance relation.
+.. index:: .PCMOUT
 
 .PCMOUT
 -------
 
-Write MO coefficients to the formatted file DFPCMO.
+Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
+coefficients between machines with different binary structure.
 
-This is useful for porting coefficients between machines with different
-binary structure, for example, between Silicon Graphics and IBM.
 
+.. index:: .ACMOUT
 
 .ACMOUT
 -------
 
-Dump coefficients in *C*\ :sub:`1`\  symmetry to the unformatted file
-DFACMO.
+Write coefficients in C1 symmetry to the unformatted file DFACMO.
 
-This can be useful, e.g. when doing a projection analysis: The molecule
-is calculated at its highest symmetry, each constituent atom type is
-calculated in linear symmetry (specifying no symmetry operations in the
-`basis file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_), and
-then the analysis is carried out in *C*\ :sub:`1`\  symmetry, or the
-coefficients are adapted to current symmetry (see
-`.ACMOIN <#.ACMOIN>`_).
+
+.. index:: .ACMOIN
 
 .ACMOIN
 -------
 
-Import coefficients in *C*\ :sub:`1`\  symmetry from unformatted file
-DFACMO to current symmetry. This assumes that the current symmetry is
-lower than the symmetry used for obtaining the original coefficients.
+Import coefficients in C1 symmetry from the unformatted file DFACMO to current
+symmetry. This assumes that the current symmetry is lower than the symmetry
+used for obtaining the original coefficients.
+
+
+.. index:: .LOWJACO
 
 .LOWJACO
 --------
@@ -82,44 +86,59 @@ case of block-diagonal overlap matrix. This keyword is only available in
 the development version, DIRAC 08 uses Jacobi diagonalization by
 default.
 
+.. warning::
+   .LOWJACO text is confusing - is this now default or not?
+   also the DIRAC08 info should be removed
+
+
+.. index:: .DOJACO
+
 .DOJACO
 -------
 
-The default method is to use the
-`Householder <http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_
-diagonalization method, which is generally more efficient. This method
-may, however, mix degenerate eigenvectors of different symmetries. The
-Jacobi method is currently limited to real groups.
+The default method is to use the `Householder
+<http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_ diagonalization
+method, which is generally more efficient. This method may, however, mix
+degenerate eigenvectors of different symmetries. The Jacobi method is currently
+limited to real groups.
+
+
+.. index:: .QJACO
 
 .QJACO
 ------
 
-Employ pure Jacobi diagonalization of quaternion matrixes. Properly
-handles degenerate eigenvectors. Slower than .DOJACO and exclusive.
-Experimental option.
+Employ pure Jacobi diagonalization of quaternion matrixes. Properly handles
+degenerate eigenvectors. Slower than .DOJACO and exclusive.  Experimental
+option.
+
+
+.. index:: .LINDEP
 
 .LINDEP
 -------
 
 Thresholds for linear dependence in large and small components; refer to
 the smallest acceptable values of eigenvalues of the overlap matrix.
+The default is::
 
-*Default:*
+  .LINDEP
+   1.0D-6 1.0D-8
 
-::
 
-    .LINDEP
-     1.0D-6 1.0D-8
+.. index:: .RKBIMP
 
 .RKBIMP
 -------
 
-Read in SCF coefficients calculated using restricted kinetic balance
-(RKB) and add the UKB component (all small component). This option is a
-nice way to get (unrestricted) magnetic balance in response calcualtions
-involving a uniform magnetic field (e.g. NMR shielding and
-magnetizability), in particular when combined with London orbitals,
-which makes the magnetic balance *atomic*.
+Import SCF coefficients calculated using restricted kinetic balance (RKB) and
+add the UKB component (all small component). This option is a nice way to get
+(unrestricted) magnetic balance in response calculations involving a uniform
+magnetic field (e.g. NMR shielding and magnetizability), in particular when
+combined with London orbitals, which makes the magnetic balance *atomic*.
+
+
+.. index:: .PRJTHR
 
 .PRJTHR
 -------
@@ -127,90 +146,84 @@ which makes the magnetic balance *atomic*.
 RKBIMP projects out the RKB coefficients transformed to orthonormal
 basis and then adds the remained, corresponding to the UKB complement.
 With the keyword you can set the threshold for projection.
+The default is::
 
-*Default:*
+  .PRJTHR
+  1.0D-5
 
-::
 
-    .PRJTHR
-    1.0D-5
-
-**Programmers options**
+.. index:: .PRINT
 
 .PRINT
 ------
 
 General print level. The higher the number is, the more output the user
 gets. Option of this type is useful for code debugging.
+By default set to::
 
-*Default:*
+  .PRINT
+   0
 
-::
 
-    .PRINT
-     0
+.. index:: .CVALUE
 
 .CVALUE
 -------
 
-Speed of light in a.u.
+Speed of light in a.u. Default::
 
-*Default:*
+  .CVALUE
+   137.0359998
 
-::
 
-    .CVALUE
-     137.0359998
+.. index:: .LOGMEM
 
 .LOGMEM
 -------
 
-Write out a line in the output for each memory allocation done by Dirac.
-This is mainly useful for programmers or for solving out-of-memory
-issues.
+Write out a line in the output for each memory allocation done by DIRAC.  This
+is mainly useful for programmers or for solving out-of-memory issues.
 
 
-\*PARALLEL 
+.. index:: *PARALLEL
+
+\*PARALLEL
 ==========
 
 Parallelization directives.
 
-**Programmers options**
+
+.. index:: .PRINT
 
 .PRINT
 ------
 
-Print level for the parallel calculation.
+Print level for the parallel calculation. Default::
 
-*Default:*
-
-::
-
-    .PRINT
-     0
+  .PRINT
+   0
 
 A print level of at least 2 is needed in order to be able to evaluate
 the parallelization efficiency. A complete timing for all nodes will be
 given if the print level is 4 or higher.
 
+
+.. index:: .NTASK
+
 .NTASK
 ------
 
 Number of tasks to send to each node when distributing the calculation
-of two-electron integrals.
+of two-electron integrals. Default::
 
-*Default:*
+  .NTASK
+   1
 
-::
-
-    .NTASK
-     1
-
-A task is defined as a shell of atomic integrals, a shell being an input
-block. One may therefore increase the number of shells given to each
-node in order to reduce the amount of communication. However, the
-program uses dynamical allocation of work to each node, and thus this
-option should be used with some care, as too large tasks may cause the
-dynamical load balancing to fail, giving an overall decrease in
-efficiency. The parallelization is also very coarse grained, so that the
-amount of communication seldom represents any significant problem.
+A task is defined as a shell of atomic integrals, a shell being an input block.
+One may therefore increase the number of shells given to each node in order to
+reduce the amount of communication. However, the program uses dynamical
+allocation of work to each node, and thus this option should be used with some
+care, as too large tasks may cause the dynamical load balancing to fail, giving
+an overall decrease in efficiency. The parallelization is also very coarse
+grained, so that the amount of communication seldom represents any significant
+problem.

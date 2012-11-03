@@ -25,7 +25,9 @@ or popular Google-Books web-space.
    J. Chem. Phys. **136**, 150902 (2012)
    <http://dx.doi.org/10.1063/1.3702628>
 
-.. [Bast2011]  http://dx.doi.org/10.1039/c0cp01483d
+.. [Bast2011] Radovan Bast,  Anton Koers,  André Severo Pereira Gomes,  Miroslav Iliaš,  Lucas Visscher,  Peter Schwerdtfeger and Trond Saue
+   *Analysis of parity violation in chiral molecules*, PCCP **13**, 864 (2011)
+   <http://dx.doi.org/10.1039/c0cp01483d>
 
 .. [Barysz2010]  Barysz, Maria; Ishikawa, Yasuyuki (Eds.),
    *Relativistic Methods for Chemists*,
@@ -258,6 +260,17 @@ or popular Google-Books web-space.
    Chapman and Hall, London, 1973
    `Google Boooks URL <http://goo.gl/11Esq>`_
 
+.. [Mukherjee2009] Debashis Mukherjee,B. K. Sahoo,H. S. Nataraj and B. P. Das,
+   *Relativistic Coupled Cluster (RCC) Computation of the Electric Dipole Moment
+   Enhancement Factor of Francium Due to the Violation of Time Reversal Symmetry*,
+   J. Phys. Chem. A 2009, **113**, 12549–12557,
+   <http://dx.doi.org/10.1021/jp904020s>
+
+.. [Nataraj2007] H. S. Nataraj, B. K. Sahoo, B. P. Das, R. K. Chaudhuri and D. Mukherjee,
+   *The electron electric dipole moment enhancement factors of Rubidium and Caesium atoms*,
+   Journal of Physics: Conference Series **80** (2007) 012050
+   <http://dx.doi.org/10.1088/1742-6596/80/1/012050>
+
 .. [Olsen1990] J. Olsen and P. Joergensen and J. Simons,
    *Passing the one-billion limit in Full CI calculations*, 
    Chem. Phys. Lett. **169**, *463* (1990)
@@ -392,6 +405,11 @@ or popular Google-Books web-space.
    molecules*, J. Chem. Phys. **105**, *6505* (1996) 
    <http://dx.doi.org/10.1063/1.472460>
 
+.. [vanLenthe2006] J. H. van Lenthe, R. Zwaans, H. J. J. Van Dam and M. F. Guest,
+   *Starting SCF calculations by superposition of atomic densities*, 
+   J. Comp. Chem. **27**, *926* (2006)
+   <http://dx.doi.org/10.1002/jcc.20393>
+
 .. [Varga1999] S. Varga, E. Engel, W.-D. Sepp, and B. Fricke,
    *Systematic study of the Ib diatomic molecules Cu\ :sub:`2`\ , Ag\ :sub:`2`\ , and Au\ :sub:`2`\  
    using advanced relativistic density functionals*,
@@ -442,5 +460,5 @@ or popular Google-Books web-space.
    *Accurate Spin-Dependent Electron Liquid Correlation Energies for Local Spin
    Density Calculations: A Critical Analysis*, 
    Can. J. Phys. **58**, *1200* (1980)
-   <http://www.nrcresearchpress.com/doi/abs/10.1139/p80-159>
+   <http://dx.doi.org/10.1139/p80-159>
 

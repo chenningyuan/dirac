@@ -6,7 +6,7 @@ cmake_policy(SET CMP0010 OLD)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-project(DIRAC Fortran C)
+project(DIRAC Fortran C CXX)
 
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
@@ -24,7 +24,6 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
-option(ENABLE_UNIT_TESTS      "Enable creation of unit tests"                             OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
@@ -134,15 +133,9 @@ if(ENABLE_PCMMOD)
         )
 endif()
 
-# copy pam to build dir as pam and pam-dirac
 configure_file(
     ${CMAKE_SOURCE_DIR}/pam
     ${CMAKE_BINARY_DIR}/pam
-    COPYONLY
-    )
-configure_file(
-    ${CMAKE_SOURCE_DIR}/pam
-    ${CMAKE_BINARY_DIR}/pam-dirac
     COPYONLY
     )
 
@@ -204,10 +197,10 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-# get size of static allocations, specify executable, ex: make info EX=dirac.x
+# get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py \${EX}
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dirac.x
     )
 
 set(LIST_OF_EXECUTABLES)
@@ -229,7 +222,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
     compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
@@ -307,6 +300,7 @@ if(ENABLE_TESTS)
 endif()
 
 # create unit tests (set header for unit testing)
+set(ENABLE_UNIT_TESTS OFF)  # creation of unit tests is disabled for now
 if(ENABLE_UNIT_TESTS)
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()

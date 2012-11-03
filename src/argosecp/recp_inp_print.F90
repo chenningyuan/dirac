@@ -16,11 +16,12 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
 !                 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g
 !   map(1:2,1:nbft) = temporary scratch array for writing the output map(*) vectors.
   USE RECP_IPT
+  USE RECP_FUNCTION2
   implicit logical(a-z)
 #include "inc_print.h"
-  integer    nbfmx,     nmap,   nenrgy,   nrtype
+  integer    nbfmx,      nmap,   nenrgy,   nrtype
   parameter( nbfmx=1000, nmap=2, nenrgy=1, nrtype=-1 )
-! parameter( nbfmx=500, nmap=2, nenrgy=1, nrtype=-1 )
+! parameter( nbfmx=500,  nmap=2, nenrgy=1, nrtype=-1 )
   integer nsym, ns, nbft
 ! real*8        repnuc
   character*3   ityp(1:nsym)
@@ -34,12 +35,11 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
   integer      clip, i, j
   character*8  bfnlab(nbfmx)
   character*4  slabel(8)
-! real*8       energy(nenrgy)
   integer      ietype(nenrgy)
   integer      imtype(nmap)
   character*2  btype(bmin:bmax)
-  real*8   sifsce
-  external sifsce
+! real*8   sifsce
+! external sifsce
 ! # map vector types.
   data imtype/ 3, 4 /
 ! # basis function types.
@@ -48,12 +48,12 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
  
   ALLOCATE(IPT_WTHEAD_MAP(nbft,2))
 
-  if ( nbft .gt. nbfmx ) then
+  IF (nbft.GT.nbfmx) THEN
      WRITE(RECP_OUT,'(A)') ' * Error : In this version of ECP integral routine,'
      WRITE(RECP_OUT,'(3X,A,X,I4)') 'the number of basis function are limited to',nbfmx
      WRITE(RECP_OUT,'(3X,I4,X,A)') (nbft-nbfmx),'basis functions are exceed'
      CALL QUIT('Number of basis function are exceed.')
-  endif
+  ENDIF
  
 ! # set map(*,*) and create bfnlab(*) from the input arrays.
  
@@ -70,12 +70,12 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
   ENDDO    
  
 ! # create the output symmetry labels.
-  do i = 1, nsym
-    slabel(i)(1:1) = ' '
-    slabel(i)(2:4) = ityp(i)
-  enddo
+  DO i = 1, nsym
+     slabel(i)(1:1) = ' '
+     slabel(i)(2:4) = ityp(i)
+  ENDDO
 
-  IF (PRINT_LEVEL .GE. 2) THEN
+  IF (PRINT_LEVEL.GE.2) THEN
 !     write(RECP_OUT,6100)'RECP integral information:'
 !     write(RECP_OUT,6100)'output energy(*) values:'
 !6100 format(/1x,a,(1x,10i10))
@@ -83,23 +83,23 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
 !     write(RECP_OUT,6200)'total core energy :',sifsce( nenrgy, energy, ietype )
 !6200 format(/1x,a,(1x,1p4e20.12))
 
-     write(RECP_OUT,'(/,3x,a,2x,i2)') 'number of symmetry operator = ',nsym
-     write(RECP_OUT,'(3x,a,i4)') 'number of basis functions   = ',nbft
-     write(RECP_OUT,'(3x,a,8i5)')'symmetry number  = ',(i,i=1,nsym)
-     write(RECP_OUT,'(3x,a,8(1x,a4))') 'symmetry label   = ',(slabel(i),i=1,nsym)
-     write(RECP_OUT,'(3x,a,8i5)') 'basis function   = ',(nbpsy(i),i=1,nsym)
+     WRITE(RECP_OUT,'(/,3x,a,2x,i2)') ' * number of symmetry operator = ',nsym
+     WRITE(RECP_OUT,'(3x,a,i4)') ' * number of basis functions   = ',nbft
+     WRITE(RECP_OUT,'(3x,a,8i5)')' * symmetry number  = ',(i,i=1,nsym)
+     WRITE(RECP_OUT,'(3x,a,8(1x,a4))') ' * symmetry label   = ',(slabel(i),i=1,nsym)
+     WRITE(RECP_OUT,'(3x,a,8i5)') ' * basis function   = ',(nbpsy(i),i=1,nsym)
 
 !     orbital labels
-     write(RECP_OUT,'(/,a)') ' output orbital labels (i:bfnlab(i))'
-     write(RECP_OUT,'(5(i4,a1,a8))') (i,':',bfnlab(i),i=1,nbft)
+     WRITE(RECP_OUT,'(/,a)') ' * output orbital labels (i:bfnlab(i))'
+     WRITE(RECP_OUT,'(5(i4,a1,a8))') (i,':',bfnlab(i),i=1,nbft)
 
 !     basis function to atomic center map
-     write(RECP_OUT,'(/,a)') ' basis function to center (i:map(i))'
-     write(RECP_OUT,'(5(i4,a1,i4,4x))') (i,':',IPT_WTHEAD_MAP(i,1),i=1,nbft)
+     WRITE(RECP_OUT,'(/,a)') ' * basis function to center (i:map(i))'
+     WRITE(RECP_OUT,'(5(i4,a1,i4,4x))') (i,':',IPT_WTHEAD_MAP(i,1),i=1,nbft)
 
 !     basis function to orbital type map
-     write(RECP_OUT,'(/,a)') ' basis function to orbital type (i:map(i))'
-     write(RECP_OUT,'(5(i4,a1,i4,4x))') (i,':',IPT_WTHEAD_MAP(i,2),i=1,nbft)
+     WRITE(RECP_OUT,'(/,a)') ' * basis function to orbital type (i:map(i))'
+     WRITE(RECP_OUT,'(5(i4,a1,i4,4x))') (i,':',IPT_WTHEAD_MAP(i,2),i=1,nbft)
   ENDIF
 
   DEALLOCATE(IPT_WTHEAD_MAP)
@@ -143,8 +143,8 @@ SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
 #include "inc_print.h"
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
-  integer        mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir,inam,nnam,mdum
-  common /ntgr/  mconsu,mru,mcru,msfu,msfru,mnru,ngcs,nu,lxyzir(3),inam(5),nnam,mdum(32)
+  integer        mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir,inam,nnam,mdum
+  common /ntgr/  mconsu,mru,mcru,msfu,msfru,ngcs,nu,lxyzir(3),inam(5),nnam,mdum(32)
   INTEGER     LMNP1(*), I
   REAL*8      ZET(MCONU,*), ETA(MRCRU,MCONU,*)
   INTEGER     ICONS, ICONU, ICON
@@ -160,25 +160,26 @@ SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
 
   IF (PRINT_LEVEL.LE.1) RETURN
 
-  write (RECP_OUT,'(/,10X,60A)') ('-', I=1,60)
+  WRITE (RECP_OUT,'(/,10X,60A)') ('-', I=1,60)
 
 ! # orbital exponents  contraction coefficients for each orbital
-  WRITE (RECP_OUT,'(/,I21,A1,3(X,A))') lmnp1(icons), lblsh(lmnp1(icons)), & 
-        'orbitals','orbital exponents',' contraction coefficients'
+! WRITE (RECP_OUT,'(/,I21,A1,X,A)') lmnp1(icons), LBLSH(lmnp1(icons)),'orbitals'
+  WRITE (RECP_OUT,'(/,36X,A1,X,A)') LBLSH(lmnp1(icons)),'orbitals'
+  WRITE (RECP_OUT,'(/,10X,A,X,A)') 'orbital exponents',' contraction coefficients'
 ! use larger value than 4 for output lines longer than 80
   ircrh = min(4,ircru)
   DO icon = 1,iconu
-     write (RECP_OUT,'(8(1pg16.7))') zet(icon,icons),(eta(ircr,icon,icons), ircr=1,ircrh)
+     WRITE (RECP_OUT,'(10X,8(1pg16.7))') zet(icon,icons),(eta(ircr,icon,icons), ircr=1,ircrh)
   ENDDO   
 
 ! # symmetry orbital labels
-  write (RECP_OUT,"(/21x,'symmetry orbital labels')")
+  write (RECP_OUT,"(/,10X,'symmetry orbital labels')")
   jsfr = isfr
   do ir = 1,iru
      jsfr = jsfr + 1
      lai = la(ir,iaords)
      do ia = 1,nd(lai)
-        write (RECP_OUT,'(10x,7(i12,a3,i1))')  & 
+        write (RECP_OUT,'(10x,7(i5,a3,i1))')  & 
               (lb(jsfr+(ircr-1)*icsu),ityp(lai),ia, ircr=1,ircrh)
      enddo
   enddo
@@ -204,7 +205,7 @@ SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
      goto 724
   endif
 
-  write (RECP_OUT,"(/11x,'symmetry orbitals')")
+  WRITE (RECP_OUT,"(/10x,'symmetry orbitals')")
   icsr = 0
   ncol = 0
   do ir = 1,iru
@@ -215,13 +216,13 @@ SUBROUTINE RECP_INP_INFO2(LMNP1,ICONS,IRCRU,ICONU,ZET,ETA,ICSU,IGCS,  &
         ltyp(ncol) = ityp(lai)
         lbla(ncol) = ia
         if ( ncol.ne.10 .and. (ir.ne.iru .or. ia.ne.iau) ) go to 756
-        write (RECP_OUT,'(A,16(3X,A3,I1))') ' ctr, ao',  &
+        write (RECP_OUT,'(10X,A,16(3X,A3,I1))') 'ctr, ao',  &
               (ltyp(icol),lbla(icol), icol=1,ncol)
         ict = 0
         do ic = 1,icu
            do it = itl,itu
               ict = ict+1
-              write (RECP_OUT,'(i3,a2,3i1,16f7.3)') ic,', ',(lmnv(i,it), i=1,3),  &
+              write (RECP_OUT,'(9X,i3,a2,3i1,16f7.3)') ic,', ',(lmnv(i,it), i=1,3),  &
                     (IPT_AO2SO(ict,icsr+icol,igcs), icol=1,ncol)
            enddo   
         enddo   

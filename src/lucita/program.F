@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -1066,6 +1066,7 @@ C
       KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
       K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
       IF (K8BASE_LUCITA .ne. KADD) THEN
+         print *, 'controlled stop: only int64'
          CALL QUIT(
      &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
       END IF

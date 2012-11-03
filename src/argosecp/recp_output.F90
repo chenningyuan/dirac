@@ -5,17 +5,24 @@ CONTAINS
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_TITLE
-!  OUTPUT : print title
-   IMPLICIT NONE
+! OUTPUT : print title
+  IMPLICIT NONE
 #include "inc_print.h"
-
-   IF (PRINT_LEVEL.GE.1) THEN
-      WRITE(RECP_OUT,'(3X,A)')'Relativistic Effective Core Potential Integral routine'
-      WRITE(RECP_OUT,'(3X,A)')'This routine is based on ARGOS integral'
-      WRITE(RECP_OUT,'(3X,A)')'with the permission of R. M. Pitzer (Ohio State University)'
-      WRITE(RECP_OUT,'(3X,A)')'and maintained by Y. C. Park (KAIST, youngc@kaist.ac.kr)'
-      WRITE(RECP_OUT,'(/)')
-   ENDIF
+  WRITE(RECP_OUT,'(/)')
+  WRITE(RECP_OUT,'(10X,A)')'-----------------------------------------------------------'
+  WRITE(RECP_OUT,'(10X,A)')'Relativistic Effective Core Potential Integral routine'
+  WRITE(RECP_OUT,'(10X,A)')'This routine is based on ARGOS integral'
+  WRITE(RECP_OUT,'(10X,A)')'with the permission of R. M. Pitzer (Ohio State University)'
+  WRITE(RECP_OUT,'(10X,A)')'and maintained by Y. S. Lee and Y. C. Park (KAIST)' 
+  WRITE(RECP_OUT,'(10X,A)')''
+  WRITE(RECP_OUT,'(10X,A)')'Electronic mail:'
+  WRITE(RECP_OUT,'(10X,A)')'YoonSupLee@kaist.ac.kr'
+  WRITE(RECP_OUT,'(10X,A)')'youngc@kaist.ac.kr'
+  WRITE(RECP_OUT,'(10X,A)')''
+  WRITE(RECP_OUT,'(10X,A)')'Reference:'
+  WRITE(RECP_OUT,'(10X,A)')'Bull.Korean.Chem.Soc. v.33, p.803 (2012)'
+  WRITE(RECP_OUT,'(10X,A)')'-----------------------------------------------------------'
+  WRITE(RECP_OUT,'(/)')
 END SUBROUTINE OUTPUT_TITLE
 
 ! ---------------------------------------------------------------

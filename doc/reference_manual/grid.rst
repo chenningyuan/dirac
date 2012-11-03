@@ -1,5 +1,8 @@
-Manual:GRID
-===========
+
+
+========
+\*\*GRID
+========
 
 The numerical integration scheme uses the Becke partitioning [Becke1988a]_
 of the molecular volume

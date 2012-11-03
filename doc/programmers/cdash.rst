@@ -31,9 +31,10 @@ To get inspired have a look at the cdash example recipes in the repository
 under ``maintenance/cdash``. Then put it under crontab. Here is an example::
 
   # m  h  dom mon dow command
-    05 00 *   *   *   /home/bast/nightly/smokey_debian-6.0_gfortran-4.4.5
+  
+    05 00 *   *   *   /home/bast/nightly/smokey_fc17_gfortran-4.7.2
     00 02 *   *   *   killall -9 dirac.x
-    05 02 *   *   *   /home/bast/nightly/smokey_debian-6.0_gfortran-4.4.5_i8
+    05 02 *   *   *   /home/bast/nightly/smokey_fc17_gfortran-4.7.2_i8
     00 04 *   *   *   killall -9 dirac.x
-    05 04 *   *   *   /home/bast/nightly/smokey_debian-6.0_gfortran-4.4.5_i8_mpi
+    05 04 *   *   *   /home/bast/nightly/smokey_fc17_gfortran-4.7.2_mpi
     00 06 *   *   *   killall -9 dirac.x

@@ -8,9 +8,9 @@ iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.
 
 If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
 propagator you invoke both by setting the .RELADC keyword in the \*\*WAVE FUNCTION
-Section. 
+Section.
 
-The RELADC/LANCZOS calculation is then individually controlled in the 
+The RELADC/LANCZOS calculation is then individually controlled in the
 \*\*RELADC and \*\*LANCZOS input sections.
 
 \*\*RELADC
@@ -19,7 +19,7 @@ The RELADC/LANCZOS calculation is then individually controlled in the
 .DOSIPS
 -------
 
-Do Single Ionization Potentials. 
+Do Single Ionization Potentials.
 If you intend to do single ionization spectra calculations then set this keyword.
 Closely related to SIP calculations is the keyword
 
@@ -53,7 +53,7 @@ Here you determine the perturbational order for a SIP calculation.
 
 Integer array of length 32. Specifies the symmetries of the one-hole
 final states (SIP) to be calculated. If you do not enter this array
-all symmetries are checked for possible final states and those are 
+all symmetries are checked for possible final states and those are
 calculated in the respective perturbational order. You can also specify
 symmetries individually if you are interested only in a few by listing the
 number of requested symmetries followed by the individual irrep numbers.
@@ -91,7 +91,7 @@ increases speed considerably. Not recommended for production runs.
 .VCONV
 ------
 
-Determines convergence of the inverse iteration in the calculation of 
+Determines convergence of the inverse iteration in the calculation of
 the constant diagrams. If these iterations take much time you can reduce
 tightness by setting VCONV to 1.0E-05, 1.0E-04 asf. Check accuracy
 of results when you activate this option.
@@ -123,12 +123,12 @@ by GNUPLOT (this module is work in progress and will be finished soon).
 Lanczos is automatically invoked when RELADC is active. If you want to invoke an additional
 full diagonalizer set this keyword. Attention: ADC matrices can become very large. A full
 diagonalization is therefore supported only for matrix dimensions up to 5000 x 5000 and is useful
-for test purposes only. 
+for test purposes only.
 
 .DODIPS
 -------
 
-Do Double Ionization Potentials. 
+Do Double Ionization Potentials.
 If you intend to do double ionization spectra calculations then set this keyword.
 The keyword .ADCLEVEL does not apply to DIP runs because the perturbational order
 is set fixed to 'extended second order'.
@@ -144,7 +144,7 @@ is set fixed to 'extended second order'.
 
 Integer array of length 32. Specifies the symmetries of the two-hole
 final states (DIP) to be calculated. If you do not enter this array
-all symmetries are checked for possible final states and those are 
+all symmetries are checked for possible final states and those are
 calculated in the respective perturbational order. You can also specify
 symmetries individually if you are interested only in a few. Input is
 analogous to SIPREPS.
@@ -158,12 +158,12 @@ analogous to SIPREPS.
 .ADCTHR
 --------
 
-In DIP calculations only matrix elements whose amount is larger than ADCTHR 
+In DIP calculations only matrix elements whose amount is larger than ADCTHR
 will be written to disk. This is due to the large matrices occurring in DIP
 runs. Tests have shown that you can reduce matrix
 size by a factor of two setting ADCTHR to 1.0E-05 with an accuracy loss
-in the meV region. Perform accuracy tests for production runs since 
-the behavior is system-dependent. 
+in the meV region. Perform accuracy tests for production runs since
+the behavior is system-dependent.
 
 *Default:*
 
@@ -181,9 +181,9 @@ the behavior is system-dependent.
 \*\*LANCZOS
 ===========
 
-Once the ADC matrices are stored in packed form on disk they are diagonalized 
-by the iterative Lanczos algorithm. The spectral information is written to 
-the files SSPEC.#irrep (SIPs) and DSPEC.#irrep (DIPs). 
+Once the ADC matrices are stored in packed form on disk they are diagonalized
+by the iterative Lanczos algorithm. The spectral information is written to
+the files SSPEC.#irrep (SIPs) and DSPEC.#irrep (DIPs).
 Hereby the ionization potential, the pole strength
 and the error estimate are written in a line terminated by the '@' for
 grep purposes. Immediately after this line follows the (indented)
@@ -196,7 +196,7 @@ refer to the intermediate state basis.
 -------------------
 
 Determines the number of Lanczos iterations in a SIP
-or DIP calculation for all symmetries. 
+or DIP calculation for all symmetries.
 There is no need to specify the number of iterations
 per symmetry because the convergence behaviour is similar within a
 specific ionization class. However, DIP calculations can require
@@ -245,7 +245,7 @@ interested in a few lowest IPs and the screen output suffices.
 ::
 
     .SIPPRNT
-    20.0 
+    20.0
     .DIPPRNT
     100.0
 
@@ -298,10 +298,10 @@ DIPREPS array, of course.
 .DOINCORE
 ---------
 
-This keyword activates an incore Lanczos diagonalization. If you run jobs on machines with 
+This keyword activates an incore Lanczos diagonalization. If you run jobs on machines with
 large core memory you can speed up the diagonalization considerably by transferring large parts
 of the ADC matrix to memory. This is especially noticeable in DIP jobs because the matrices
-are much larger than in the single ionization case. 
+are much larger than in the single ionization case.
 Attention: Be aware that the operating system allows you to allocate as much memory as you want.
 If there is not enough physical memory the OS starts to swap portions of the memory to disk.
 You have to avoid this situation since your job will not terminate in time. Check carefully that

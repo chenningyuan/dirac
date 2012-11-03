@@ -41,7 +41,8 @@
       print*,'LC2,MXSOOB_AS',LC2,MXSOOB_AS
 *
 * 2 : Length of vectors used in CC 
-      MXCJ = LCCB ** 4 ! changed to LCCB. Lasse 2012
+C     MXCJ = LCCB ** 4 ! changed to LCCB. Lasse 2012
+      MXCJ = LCCB ** 2 ! changed to LCCB. Lasse 2012
       LBLOCK = MXSOOB_AS
       print*,' BEFORE COMPARISON.'
       print*,' LBLOCK,LVEC1,LC2 ',LBLOCK,LVEC1,LC2

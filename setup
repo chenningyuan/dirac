@@ -19,8 +19,8 @@ if sys.version < '2.4':
     print('requires python version >= 2.4')
     sys.exit(1)
 
-root_directory = os.path.realpath(__file__)[:-5]
-default_path = root_directory + 'build/'
+root_directory = os.path.dirname(os.path.realpath(__file__))
+default_path = os.path.join(root_directory,'build')
 
 # initialize parser
 
@@ -132,14 +132,6 @@ group.add_argument('--release',
         action='store_false',
         dest='debug',
         help='build in release mode (full optimization) [default: %(default)s]')
-group.add_argument('--unit-tests',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        dest='unit_tests',
-        help='Create unit tests [default: %(default)s]')
 group.add_argument('--tests',
         nargs='?',
         action='store',
@@ -213,9 +205,9 @@ def gen_cmake_command():
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
-    # fix for Windows
+    # fix for Windows (plus supress warnings)
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' cmake -Wno-dev'
     else:
         command = ' cmake ' + command
 
@@ -232,7 +224,6 @@ def gen_cmake_command():
     command += ' -DENABLE_BLAS=%s'           % args.blas.upper()
     command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
-    command += ' -DENABLE_UNIT_TESTS=%s'     % args.unit_tests.upper()
     command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
 
     if args.blas_dir:

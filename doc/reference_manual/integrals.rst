@@ -1,45 +1,44 @@
+
+
 .. _integrals:
+.. index:: **INTEGRALS
 
-.. _\*\*INTEGRALS:
-
-\*\*INTEGRALS 
+=============
+\*\*INTEGRALS
 =============
 
-Set directives for integrals.
+
+General directives
+==================
+
+
+.. index:: .NUCMOD
 
 .NUCMOD
 -------
 
 Specify nuclear model.
 
-*Point nucleus:*
+Point nucleus::
 
-::
+  .NUCMOD
+   1
 
-    .NUCMOD
-     1
+Gaussian charge distribution (default)::
 
-*Gaussian charge distribution (default):*
+  .NUCMOD
+   2
 
-::
-
-    .NUCMOD
-     2
-
-The point nucleus model is useful to compare Lévy-Leblond type
-calculations with regular nonrelativistic calculations done with another
-code, e.g.
-`DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_. The two
-methods should give precisely the same energies.
+The point nucleus model is useful to compare Lévy-Leblond type calculations
+with regular nonrelativistic calculations done with another code, e.g. `Dalton
+<http://www.daltonprogram.org>`_.  The two methods should give precisely the
+same energies.
 
 For the Gaussian charge distribution the default exponents are in
-accordance with values proposed by Visscher and Dyall [Visscher1997b]_
-see also the 
-`web-site <http://dirac.chem.sdu.dk/doc/FiniteNuclei/FiniteNuclei.shtml>`_.
-If desired, other exponents may be specified in the `basis
-file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
+accordance with values proposed by Visscher and Dyall [Visscher1997b]_.
 
-**Advanced options**
+
+.. index:: .SELECT
 
 .SELECT
 -------
@@ -47,235 +46,231 @@ file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
 Restrict range of nuclei in one-electron integrals involving single
 atomic centers, for example electric field gradients.
 
-*Example:* Restrict range to four nuclei, the nuclei 1, 3, 7, and 8.
+Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8::
 
-::
+  .SELECT
+   4
+   1
+   3
+   7
+   8
 
-    .SELECT
-     4
-     1
-     3
-     7
-     8
 
-.PHASEO
--------
+.. index:: .PHASEORIGIN
 
-Origin appearing in the London atomic orbital phase-factors.
+.PHASEORIGIN
+------------
 
-*Default:*
+Origin appearing in the London atomic orbital phase-factors. Default::
 
-::
+  .PHASEORIGIN
+   0.0 0.0 0.0
 
-    .PHASEO
-     0.0 0.0 0.0
+.. warning::
 
-This is the text from the DALTON manual. We wonder if it is used for
-other integrals, in the code in her1int.F it is the final "else" option.
+  This is the text from the DALTON manual. We wonder if it is used for
+  other integrals, in the code in her1int.F it is the final "else" option.
 
-.GAUGEO
--------
 
-Gauge origin.
+.. index:: .GAUGEORIGIN
 
-*Default:*
+.GAUGEORIGIN
+------------
 
-::
+Set the gauge origin. By default it is set to the coordinate origin::
 
-    .GAUGEO
-     0.0 0.0 0.0
+  .GAUGEORIGIN
+   0.0 0.0 0.0
+
+
+.. index:: .DIPORG
 
 .DIPORG
 -------
 
-Origin for all moment integrals, including the dipole (dipole is
-independent of origin only for neutral systems).
+Origin for all moment integrals, including the dipole (dipole is independent of
+origin only for neutral systems). By default it is set to the coordinate
+origin::
 
-*Default:*
+  .DIPORG
+   0.0 0.0 0.0
 
-::
 
-    .DIPORG
-     0.0 0.0 0.0
+.. index:: .MAGCOR
 
 .MAGCOR
 -------
 
-Print the symmetrized nuclear magnetic moments; this corresponds to
-taking symmetry combinations of rotations, not coordinates, at each
-nuclear center. The numbering is used in labels of various magnetic
-integrals.
+Print the symmetrized nuclear magnetic moments. This corresponds to taking
+symmetry combinations of rotations, not coordinates, at each nuclear center.
+The numbering is used in labels of various magnetic integrals.
 
-**Programmers options**
+
+.. index:: .PRINT
 
 .PRINT
 ------
 
-General print level in HERMIT.
+General print level in the integral module. Default::
 
-*Default:*
+  .PRINT
+   1
 
-::
 
-    .PRINT
-     1
+.. index:: *ONEINT
 
-\*ONEINT -- One-electron integrals
-==================================
+\*ONEINT
+========
 
 This subsection gives directives for the generation of one-electron
 integrals. Based on input in the other section, the program will
 determine what integrals to calculate.
 
-**Programmers options**
+
+.. index:: .PRINT
 
 .PRINT
 ------
 
-Print level in one-electron integral routines (abacus).
-
-*Default:* Print level taken from
-:ref:`\*\*INTEGRALS`.
+Print level in one-electron integral routines. By default
+print level is taken from \*\*INTEGRALS.
 
 
-\*READIN -- Reading basis set file
-==================================
+.. index:: *READIN
 
-This subsection allows changes of defaults in the reading of the `basis
-file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_.
+\*READIN
+========
 
-**Advanced options**
+This subsection allows changes of defaults in the reading of the mol file.
+
+
+.. index:: .UNCONTRACT
 
 .UNCONTRACT
 -----------
 
 Decontract basis sets specified as contracted (when being read from the
-library, for example). In the case of using non-relativistically
-contracted basis set the decontraction is necessary for heavy elements.
-Two-component quasirelativistic Hamiltonians (like IOTC) work only with
-decontracted basis set.
+library, for example). In the case of using non-relativistically contracted
+basis set the decontraction is necessary for heavy elements.  Two-component
+quasirelativistic Hamiltonians (like X2C) work only with decontracted basis
+set. By default only the small component is decontracted.
 
-*Default:* Decontract only the small component.
 
-**Programmers options**
+.. index:: .PRINT
 
 .PRINT
 ------
 
-Print level in the reading of the basis file.
+Print level in the reading of the mol file. By default
+print level is taken from \*\*INTEGRALS.
 
-*Default:* Print level from :ref:`\*\*INTEGRALS`.
+
+.. index:: .MAXPRI
 
 .MAXPRI
 -------
 
 Maximum number of primitive functions in a given block in basis file.
+Default::
 
-*Default:*
-
-::
-
-    .MAXPRI
-     22
+  .MAXPRI
+   22
 
 
-\*TWOINT -- Two-electron integrals
-==================================
+.. index:: *TWOINT
 
-This subsection gives directives for the generation of two-electron
-integrals.It also gives directives for the construction of Fock
-matrices, such as screening.
+\*TWOINT
+========
 
-**Advanced options**
+This subsection gives directives for the generation of two-electron integrals.
+It also gives directives for the construction of Fock matrices, such as
+screening.
+
+
+.. index:: .SCREEN
 
 .SCREEN
 -------
 
 Screening threshold for integral direct calculations of Fock matrices [Saue1997]_.
+Default::
 
-*Default:*
+  .SCREEN
+   1.0D-12
 
-::
-
-    .SCREEN
-     1.0D-12
-
-Note that the screening threshold may influence the convergence. In
-general, the screening threshold must be about three orders of magnitude
-smaller than the desired norm of the electronic gradient at convergence.
+Note that the screening threshold may influence the convergence. In general,
+the screening threshold must be about three orders of magnitude smaller than
+the desired norm of the electronic gradient at convergence.
 
 Choosing a negative value for the screening turns the integral screening
 completely off.
+
+
+.. index:: .ICEDIF
 
 .ICEDIF
 -------
 
 Separate screening of Coulomb and exchange contributions [Saue1997]_.
-Useful for fine regulation of the
-convergence process.
+Useful for fine regulation of the convergence process.
+Default: Coulomb and exchange on (1 = on; off = 0)::
 
-*Default:* Coulomb and exchange on (1 = on; off = 0).
+  .ICEDIF
+   1 1
 
-::
 
-    .ICEDIF
-     1 1
-
-.. _.THRFAC:
+.. index:: .THRFAC
 
 .THRFAC
 -------
 
 Adjust the integral thresholds for SL and SS integrals. For conventional
-integral calculations only integrals above the threshold given in the
-`basis file </dirac/index.php/Manual:Basis:Title_and_symmetry>`_ are
-written to disk. The thresholds for the SL and SS integrals are divided
-by the factors given here.
+integral calculations only integrals above the threshold given in the mol file
+are written to disk. The thresholds for the SL and SS integrals are divided by
+the factors given here. Default::
 
-*Default:*
+  .THRFAC
+   1.0 1.0
 
-::
 
-    .THRFAC
-     1.0 1.0
+.. index:: .SOFOCK
 
 .SOFOCK
 -------
 
 Do direct Fock matrix construction in symmetry-adapted basis (SO basis).
 
-*Default:* Direct Fock matrix construction in AO basis using the
-skeleton matrix approach. This may give better screening, but is more
-memory intensive.
+By default the direct Fock matrix construction in performed AO basis using the
+skeleton matrix approach. This may give better screening, but is more memory
+intensive.
 
-**Programmers options**
+
+.. index:: .PRINT
 
 .PRINT
 ------
 
 Set the print level in two-electron integral routines for the
 calculation of a particular shell quadruplet. The print level is changed
-only for the given shell quadruplet. A zero matches all shells, thus
+only for the given shell quadruplet. A zero matches all shells, thus::
 
-::
+  .PRINT
+   4 0 0 0 0
 
-    .PRINT
-     4 0 0 0 0
+or just::
 
-or just
-
-::
-
-    .PRINT
-     4
+  .PRINT
+   4
 
 sets the print level to 4 for all shell quadruplets.
 
 Use with care to avoid massive output! At print level 15 the individual
 integrals are printed.
 
+
+.. index:: .TIME
+
 .TIME
 -----
 
 Give detailed timing for integral calculation.
-

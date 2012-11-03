@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -26,7 +26,7 @@ C*****************************************************************************
 C
 C     Input section for magnetic properties:
 C --------------------------------------------
-C  NMR shielding, magnetizabilities with/ without London atomic orbitals ...
+C  NMR shielding, magnetizabilities with/without London atomic orbitals 
 C 
 C     Written by T.Enevoldsen - Nov 1997
 C
@@ -41,6 +41,7 @@ C*****************************************************************************
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "nuclei.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -49,7 +50,8 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 15)
-      LOGICAL SET, NEWDEF, RESET, GORG, LBIT, USECM, MODRDSUSLL
+      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
+      LOGICAL :: DOEPRN_SET, INTNMR_SET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
@@ -92,27 +94,22 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOONEI = .FALSE.
       GORG   = .FALSE.
       USECM  = .FALSE.
-      IF (LEVYLE) THEN
-       RDSUSLLMOD = .TRUE.
-      ELSE
-       RDSUSLLMOD = .FALSE.
-      ENDIF
-      MODRDSUSLL = .FALSE.
+      RDSUSLLMOD = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
-!        DOEPRN = .FALSE.
+!       DOEPRN = .FALSE.
 !     else
 !        DOEPRN = .TRUE.
 !     end if
 cmi: restore to fix tests, later to be refined throughout the code
        DOEPRN=.FALSE.
+       DOEPRN_SET=.FALSE.
 
-C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
-C  so it has its own default value
-C of all 3 integral classed (LL+LS+SS)
-!miro TODO: take the integral default from HAMINP
-      INTNMR = 7  
+! The INTNMR parameter here is read before INTXLR (in XLRINP) 
+! assign top level default value from dcbgen.h instead of previous INTNMR = 7
+      INTNMR = INTGEN
+      INTNMR_SET = .FALSE.
 C
 C     Process input 
 C     =========================
@@ -180,6 +177,7 @@ C         for the two-electron London contibution g(B)_mnpq
      & 'NMRINP: Error in reading ILLINT,ISLINT,ISSINT!')
                  ENDIF
                  INTNMR = ILLINT + 2*ISLINT + 4*ISSINT
+                 INTNMR_SET = .TRUE.
                GO TO 100
     6          CONTINUE
 C  ... do not calculate two-electron London contribution, g(B)_mnpq
@@ -194,6 +192,7 @@ C      for the property gradient H(B)
 C  ...  do summations in reorthonormalization terms
 C  over both electronic and positronic states
                DOEPRN = .TRUE.
+               DOEPRN_SET = .TRUE.
                GO TO 100
     9          CONTINUE
 C ... NOEPRN: deactivate the DOEPRN keyword which is by default set to true
@@ -201,17 +200,18 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
                DOEPRN = .FALSE.
                GO TO 100
    10          CONTINUE
-C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
+C&&&& .LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
                GO TO 100
    11          CONTINUE
-C&&&& USECM: use center of mass as a default gauge origin
+C&&&& .USECM: use center of mass as a default gauge origin
                USECM = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
+C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDSUSLL term
+!miro: this is required to reproduce Dalton nonrelativistic results with the Levy-Leblond
+! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
-               MODRDSUSLL = .TRUE.
                GO TO 100
 
 !              .GO_ANG
@@ -279,7 +279,6 @@ C ... header:
      &     'WARNING: User defined gauge '//
      &     'may give wrong results when using symmetry !'   
          end if
-
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ELSE
@@ -323,18 +322,21 @@ C ... call the routine in abacus/hergp.F
 
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
-         WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
-     &'Hamiltonian include only LL integrals for the dg(1,2)/dB terms!'
+         IF (INTNMR_SET) THEN
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
+     &     'Hamiltonian only LL integrals '//
+     &     ' for the dg(1,2)/dB terms are needed !'
+         ENDIF
        ENDIF
 
        IF (.NOT.DOEPRN) THEN
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over '//
-     & 'electronic shells'
+     & 'electronic shells.'
        ELSE
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over both '//
-     & 'positronic and electronic shells '
+     & 'positronic and electronic shells. '
        ENDIF
 
        IF (SYMCON) THEN
@@ -347,7 +349,8 @@ C ... call the routine in abacus/hergp.F
 
        IF (NOTWOL) THEN
          WRITE(LUPRI,'(1X,A)')
-     & ': No two-electron London contribution to magn.prop. gradient!'
+     & ': No two-electron London contribution '//
+     & '  to magnetic property gradient!'
        ELSE
          WRITE(LUPRI,'(1X,A)')
      & ': Include London magnet.prop.grad.contributions from '//
@@ -355,28 +358,29 @@ C ... call the routine in abacus/hergp.F
          IF(LBIT(INTNMR,1)) WRITE(LUPRI,'(6X,A)') '- LL-integrals'
          IF(LBIT(INTNMR,2)) WRITE(LUPRI,'(6X,A)') '- SL-integrals'
          IF(LBIT(INTNMR,3)) WRITE(LUPRI,'(6X,A)') '- SS-integrals'
+         IF (.NOT.INTNMR_SET) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &   "--> These are default values from the Hamiltonian input."
+         ELSE
+           WRITE(LUPRI,"(2X,A)")
+     &   "--> These are accepted values from user's .INTFLG input."
+         ENDIF
+       ENDIF
        ENDIF
 
 C =========================================================================
 CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
        IF (MSUSCP) THEN
-        IF (LEVYLE.AND.MODRDSUSLL) THEN
-         WRITE(LUPRI,'(1X,A)') 
-     &  '...Though the Levy-Lebl mode the full form of the RDSUSLL '//
-     &  'operator used to achieve the compatibility with rel. calcul.'
-          RDSUSLLMOD = .FALSE.
-        ELSE
           IF (RDSUSLLMOD) THEN
             WRITE(LUPRI,'(1X,A)') 
-     &  '...SL block only for the RDSUSLL operator used to achieve'//
-     &  ' the non-relativistic limit of the magnetizability !'
+     &'WARNING: Used the LS block of the RDSUSLL operator'//
+     &' with factor -2 to achieve '//
+     &'the Dalton nonrelativistic limit of the magnetizability !'
           ELSE
             WRITE(LUPRI,'(1X,A)') 
-     &  '...Full relativistic form of the RDSUSLL operator used!'
+     &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
-        ENDIF
-       ENDIF
       ELSE 
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
@@ -767,7 +771,7 @@ C***********************************************************************
 C
 C   PURPOSE:
 C ==========
-C  Get the total one-electron magnetic field property gradient dh~(B)/dB
+C  Get the total one-electron magnetic field property gradient dh_{D}(B)/dB
 C  in MO basis when using London orbitals and write it to the DA file ONELON.
 C
 C  Expression:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
@@ -828,7 +832,7 @@ C Allocate memory for storing components of dh(B)/dB_c
 
       DO ICOMP = 1, 3
        CALL DZERO(WORK(KDHB),N2ORBXQ)
-       DO IX = 1, 4
+       DO IX = 1, 4 ! run over all 4 integral types RM1...
          CALL DZERO(WORK(KDHBIX),N2ORBXQ)
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
@@ -2427,26 +2431,27 @@ C
 #include "memint.h"
       IPRINT = IPRPRP
 
+      IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
         IF(SHIELD) CALL HEADER(
-     &'DEF_D1HBLOND: Operators for NMR shieldings with LAO!',-1)
+     &'All individual operators for NMR shieldings with LAO',-1)
         IF(OPTROT) CALL HEADER(
-     &'DEF_D1HBLOND: Operators for optical rotation with LAO!',-1)
+     &'All individual operators for optical rotation with LAO',-1)
       ELSE IF (IMP.EQ.2) THEN
        CALL HEADER(
-     &'DEF_D1HBLOND: Operators for magnetic'//
-     &' susceptibility with LAO!',-1)
+     &'All individual operators for magnetic susceptibility'//
+     &' (magnetizability) with LAO',-1)
       ELSE IF (IMP.EQ.3) THEN
         CALL HEADER(
-     &'DEF_D1HBLOND: Operators for perturbation from '//
-     &' one component of magnetic field with LAO!',-1)
+     &'Individual operators for perturbation from '//
+     &' one component of magnetic field with LAO',-1)
       ELSE
        WRITE(LUPRI,'(2X,A)')
      & 'DEF_D1HBLOND: Entering magnetic property IMP '//
      & ' has to be 1 or 2 or 3!'
        CALL QUIT('DEF_D1HBLOND: wrong IMP value!')
       ENDIF
-
+      ENDIF
 C------------------------------------------------
 C          X component of the B-field
 C------------------------------------------------
@@ -2460,6 +2465,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,1))
 
       IF (IMP.EQ.1) THEN
         CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2489,6 +2495,7 @@ C--------------------------------------------------------------
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,1))
 C--------------------------------------------------------------
 C       RM1H3  operator ... i c Q_MN < r_vec (alp.p) >
 C--------------------------------------------------------------
@@ -2504,6 +2511,7 @@ C--------------------------------------------------------------
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(3,1))
 C
 C  RM1RN-X operator of +(c/2).< r_n x alpha >
 C
@@ -2517,6 +2525,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(4,1))
 
 #if !defined (XH4)
 C-------------------------------------------------------------
@@ -2533,6 +2542,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,2))
 
       IF (IMP.EQ.1) THEN
        CALL OP1IND('XSHIELB',IPSHIELD(2+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2561,6 +2571,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,2))
 C
 C       RM1H3-Y operator
 C
@@ -2576,6 +2587,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPLONDON(3,2))
 C
 C          RM1RN-Y operator
 C
@@ -2589,6 +2601,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(4,IPLONDON(4,2))
 
 C-------------------------------------------------------------
 C     Z component of B-field
@@ -2604,6 +2617,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,3))
 
       IF (IMP.EQ.1) THEN
         CALL OP1IND('XSHIELB',IPSHIELD(3+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2632,6 +2646,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,3))
 C
 C         RM1H3-Z operator
 C
@@ -2647,6 +2662,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPLONDON(3,3))
 C
 C        RM1RN-Z operator of +(c/2).< r_n x alpha >
 C
@@ -2660,6 +2676,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(4,IPLONDON(4,3))
 #endif
 
 C----------------------------------------------------------------
@@ -2685,6 +2702,8 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bxlao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON(1))
+
       PNAME     = LABELC(1:ILABELC)//'Y'
       PLABEL(1) = LABELC(1:ILABELC)//'Y'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -2693,6 +2712,8 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bylao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON(2))
+
       PNAME     = LABELC(1:ILABELC)//'Z'
       PLABEL(1) = LABELC(1:ILABELC)//'Z'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -2701,6 +2722,7 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bzlao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON(3))
 
 ! if (imp == 3) only ipcon(1) is important, lines below are to catch errors 
       if (imp .eq. 3) then
@@ -2710,7 +2732,7 @@ C----------------------------------------------------------------
 
 C----------------------------------------------------------------
 C   Define connection matrixes T(1),T(2) for 
-C   the second derivate d2H/dB2 
+C   the second derivate d2H/dB2 - for magnetic suscpetibilities
 C----------------------------------------------------------------
       IF (IMP.EQ.2) THEN
 
@@ -2726,16 +2748,21 @@ C      PFAC(1) = DMI2
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON21(1))
+
        PNAME     = LABELC(1:ILABELC)//'Y'
        PLABEL(1) = LABELC(1:ILABELC)//'Y'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON21(2))
+
        PNAME     = LABELC(1:ILABELC)//'Z'
        PLABEL(1) = LABELC(1:ILABELC)//'Z'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON21(3))
 
 C ... Natural connection term T(1)=W(1)
 C      PFAC(1) = -D1
@@ -2747,16 +2774,21 @@ C      PFAC(1) = -D1
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON22(1))
+
        PNAME     = LABELC(1:ILABELC)//'Y'
        PLABEL(1) = LABELC(1:ILABELC)//'Y'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON22(2))
+
        PNAME     = LABELC(1:ILABELC)//'Z'
        PLABEL(1) = LABELC(1:ILABELC)//'Z'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON22(3))
 
 C Define d2S/dBXX,XY,...
 C Specify latter PFAC(1)!!!
@@ -2770,31 +2802,42 @@ C Specify latter PFAC(1)!!!
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON23(1))
+
        PNAME     = LABELC(1:ILABELC)//'XY'
        PLABEL(1) = LABELC(1:ILABELC)//'XY'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON23(2))
+
        PNAME     = LABELC(1:ILABELC)//'XZ'
        PLABEL(1) = LABELC(1:ILABELC)//'XZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON23(3))
+
        PNAME     = LABELC(1:ILABELC)//'YY'
        PLABEL(1) = LABELC(1:ILABELC)//'YY'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(4) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(4,IPCON23(4))
+
        PNAME     = LABELC(1:ILABELC)//'YZ'
        PLABEL(1) = LABELC(1:ILABELC)//'YZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(5) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(5,IPCON23(5))
+
        PNAME     = LABELC(1:ILABELC)//'ZZ'
        PLABEL(1) = LABELC(1:ILABELC)//'ZZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(6) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(6,IPCON23(6))
       ENDIF
 
       CALL QEXIT('DEF_D1HBLOND')

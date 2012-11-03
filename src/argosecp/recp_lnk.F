@@ -314,8 +314,8 @@
      &           IQM,JCO,KATOM,KANG)
 !     Write geometry data for RECP integral
       USE RECP_NTR
-!     IMPLICIT NONE
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       INTEGER      KATOM,KANG
@@ -410,7 +410,8 @@
 !     Error message
 !     =============
  8000 CONTINUE
-      WRITE(*,*) 'Maximum symmetry of RECP integral is D2h' 
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(A)')   'Maximum symmetry of RECP integral is D2h' 
       CALL QUIT('Error in geometry reading')
  9000 CONTINUE
       END
@@ -884,15 +885,16 @@ C     continue in inquiring:
         ENDIF
       ENDIF
       IF (EXST) THEN
-        IF (.NOT.USE_BASNAM) THEN
-         OPEN(LUBAS, FILE=STRING)
-        ELSE
-         OPEN(LUBAS, FILE=BASNAM)
-        ENDIF
+         IF (.NOT.USE_BASNAM) THEN
+            OPEN(LUBAS, FILE=STRING)
+         ELSE
+            OPEN(LUBAS, FILE=BASNAM)
+         ENDIF
 C     
 C
 C        Searching the file for the element.
 C
+         REWIND(LUBAS)  
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
@@ -937,13 +939,15 @@ C
 C Error messages 
 C
  2000 CONTINUE
-      WRITE (LUPRI,'(/2A/A,I5)')
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(2A/A,I5)')
      &   'FINDEL: Error when reading from ECP file ',STRING(1:IEND),
      &   ' IOSTAT =',IOERR
       CALL QUIT('I/O error in FINDEL in HERBAS')
  200  CONTINUE
-      WRITE (LUPRI,'(/I3,2A)') INTQ0,
-     &     ' is an unsupported element for ECP ',BASNAM
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(I3,2A)') INTQ0,
+     &     ' is an unsupported element in',BASNAM
       CALL QUIT('Unsupported ECP element')
       END
 
@@ -977,10 +981,12 @@ C
       ENDIF
  
  8100 CONTINUE
-      WRITE (LUPRI,'(/A)') 'Error in reading following line'
-      WRITE (LUPRI,'(A)') STRING
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(A)') 'Error in reading following line'
+      WRITE(LUPRI,'(A)') STRING
       CALL QUIT('Error in reading ECP file')
  8110 CONTINUE
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
       WRITE (LUPRI,'(/A)') 'Error in reading file, your ECP '//
      &     'is not complete.'
       CALL QUIT('Incomplete ECP file')
@@ -1002,11 +1008,13 @@ C
       GOTO 9000
 !     Error message
  8100 CONTINUE
-      WRITE (LUPRI,'(/A)') 'Error in reading following line'
-      WRITE (LUPRI,'(A)') ELINE
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(A)') 'Error in reading following line'
+      WRITE(LUPRI,'(A)') ELINE
       CALL QUIT('Error in reading ECP file')
  8110 CONTINUE
-      WRITE (LUPRI,'(/A)') 'Error in reading file, your ECP '//
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(A)') 'Error in reading file, your ECP '//
      &     'is not complete.'
       CALL QUIT('Incomplete ECP file')
  9000 CONTINUE
@@ -1060,7 +1068,8 @@ C
       GOTO 2000
 !     Error message
  3011 CONTINUE
-      WRITE(LUPRI,'(/,A,I7)') ' .PRINT value error : ',ECPINT_PRINT
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(A,I7)') ' .PRINT value error : ',ECPINT_PRINT
       GOTO 9000
 
 ! Reading vaues : .DEBUG 
@@ -1080,10 +1089,12 @@ C
 ! Error message
 ! -------------
  9000 CONTINUE
-      WRITE(LUPRI,'(/,2A)') ' Error in reading menu file : ',WORD
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(2A)') ' Error in reading menu file : ',WORD
       CALL QUIT('Error in reading line')
  9100 CONTINUE
-      WRITE (LUPRI,'(/,3A)') ' Keyword ',WORD,
+      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+      WRITE(LUPRI,'(3A)') ' Keyword ',WORD,
      &      ' is not recognized in ECP'
       CALL QUIT('Wrong input')
  9900 CONTINUE

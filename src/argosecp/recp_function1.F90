@@ -1,4 +1,4 @@
-MODULE RECP_FUNCTION
+MODULE RECP_FUNCTION1
 CONTAINS
 
 SUBROUTINE RECP_FUNCTION_FACAB (binom,An,Bn,crda,crdb,xab)
@@ -6,10 +6,7 @@ SUBROUTINE RECP_FUNCTION_FACAB (binom,An,Bn,crda,crdb,xab)
 ! variables : global
   INTEGER :: An, Bn
 ! dimension binom(*), crda(*), crdb(*), xab(*)
-  REAL(8) :: binom
-  REAL(8) :: crda
-  REAL(8) :: crdb
-  REAL(8) :: xab
+  REAL(8) :: binom,crda,crdb,xab
   DIMENSION binom(*), crda(*), crdb(*), xab(*)
 ! variables : local
   INTEGER :: I,Ai,Bi,SUM_A,SUM_B
@@ -49,6 +46,19 @@ SUBROUTINE RECP_SETZERO_I2(A,D1,D2)
 END SUBROUTINE RECP_SETZERO_I2
 
 
+SUBROUTINE RECP_SETZERO_I3(A,D1,D2,D3)
+  IMPLICIT NONE
+  INTEGER :: I,J,K,D1,D2,D3,A(D1,D2,D3)
+  DO I = 1,D1
+     DO J = 1,D2
+        DO K = 1,D3
+           A(I,J,K) = 0
+        ENDDO
+     ENDDO
+  ENDDO
+END SUBROUTINE RECP_SETZERO_I3
+
+
 SUBROUTINE RECP_SETZERO_R1(A,D1)
   IMPLICIT NONE
   REAL(8) :: A(:)
@@ -58,4 +68,4 @@ SUBROUTINE RECP_SETZERO_R1(A,D1)
   ENDDO
 END SUBROUTINE RECP_SETZERO_R1
 
-END MODULE RECP_FUNCTION
+END MODULE RECP_FUNCTION1
