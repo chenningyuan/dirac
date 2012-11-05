@@ -2,7 +2,6 @@
 
 .. _general:
 .. index:: **GENERAL
-
 ===========
 \*\*GENERAL
 ===========
@@ -13,7 +12,6 @@ General input specification
 
 
 .. index:: .DIRECT
-
 .DIRECT
 -------
 
@@ -29,7 +27,6 @@ directly; 0 = do not evaluate directly)::
 
 
 .. index:: .SPHTRA
-
 .SPHTRA
 -------
 
@@ -49,7 +46,6 @@ balance relation.
 
 
 .. index:: .PCMOUT
-
 .PCMOUT
 -------
 
@@ -58,7 +54,6 @@ coefficients between machines with different binary structure.
 
 
 .. index:: .ACMOUT
-
 .ACMOUT
 -------
 
@@ -66,7 +61,6 @@ Write coefficients in C1 symmetry to the unformatted file DFACMO.
 
 
 .. index:: .ACMOIN
-
 .ACMOIN
 -------
 
@@ -76,7 +70,6 @@ used for obtaining the original coefficients.
 
 
 .. index:: .LOWJACO
-
 .LOWJACO
 --------
 
@@ -92,7 +85,6 @@ default.
 
 
 .. index:: .DOJACO
-
 .DOJACO
 -------
 
@@ -104,7 +96,6 @@ limited to real groups.
 
 
 .. index:: .QJACO
-
 .QJACO
 ------
 
@@ -114,7 +105,6 @@ option.
 
 
 .. index:: .LINDEP
-
 .LINDEP
 -------
 
@@ -127,7 +117,6 @@ The default is::
 
 
 .. index:: .RKBIMP
-
 .RKBIMP
 -------
 
@@ -139,7 +128,6 @@ combined with London orbitals, which makes the magnetic balance *atomic*.
 
 
 .. index:: .PRJTHR
-
 .PRJTHR
 -------
 
@@ -153,7 +141,6 @@ The default is::
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -166,7 +153,6 @@ By default set to::
 
 
 .. index:: .CVALUE
-
 .CVALUE
 -------
 
@@ -177,7 +163,6 @@ Speed of light in a.u. Default::
 
 
 .. index:: .LOGMEM
-
 .LOGMEM
 -------
 
@@ -185,8 +170,35 @@ Write out a line in the output for each memory allocation done by DIRAC.  This
 is mainly useful for programmers or for solving out-of-memory issues.
 
 
-.. index:: *PARALLEL
+.. index:: .ECP
+.ECP
+----
 
+.. warning:: documentation missing
+
+
+.. index:: .NOSET
+.NOSET
+------
+
+.. warning:: documentation missing
+
+
+.. index:: .FAMILY
+.FAMILY
+------
+
+.. warning:: documentation missing
+
+
+.. index:: .SKIP2E
+.SKIP2E
+-------
+
+.. warning:: documentation missing
+
+
+.. index:: *PARALLEL
 \*PARALLEL
 ==========
 
@@ -194,7 +206,6 @@ Parallelization directives.
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -209,7 +220,6 @@ given if the print level is 4 or higher.
 
 
 .. index:: .NTASK
-
 .NTASK
 ------
 

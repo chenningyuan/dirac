@@ -92,9 +92,13 @@ Reference manual
 
 * **Input sections:**
   :doc:`DIRAC <reference_manual/dirac>` |
+  :doc:`OPTIMIZE <reference_manual/optimize>` |
   :doc:`GENERAL <reference_manual/general>` |
   :doc:`INTEGRALS <reference_manual/integrals>` |
   :doc:`HAMILTONIAN <reference_manual/hamiltonian>` |
+  :doc:`DFT <reference_manual/dft>` |
+  :doc:`AMFI <reference_manual/amfi>` |
+  :doc:`FDE <reference_manual/fde>` |
   :doc:`WAVE FUNCTION <reference_manual/wavefunction>` |
   :doc:`GOSCIP <reference_manual/goscip>` |
   :doc:`ANALYZE <reference_manual/analyze>` |
