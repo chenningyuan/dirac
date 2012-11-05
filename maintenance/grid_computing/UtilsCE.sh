@@ -44,11 +44,11 @@ echo -e "\n==== CPU \c"; cat /proc/cpuinfo | grep "model name"  | tail -n 1
 echo -e  "==== Number of all CPUs     :  $np   ";
 if [[ -n $PBS_NODEFILE ]]; then
   local np_PBS=`cat $PBS_NODEFILE | wc -l`
-  echo -e  "==== Number of allowed CPUs :  $np_PBS  ";
+  echo -e  "==== Number of allowed CPUs, from PBS_NODEFILE :  $np_PBS  ";
   echo -e "-- PBS_NODEFILE=$PBS_NODEFILE"
   echo -e "-- PBS_NUM_PPN =$PBS_NUM_PPN"
 else
-  echo -e "\n No PBS variables on this server...\n"
+  echo -e "\n No PBS variables found on this server...\n"
 fi
 #####################
 ###  memory of CE ###
@@ -64,6 +64,8 @@ echo -e "--- Occupied space by me (du) : \c"; du -h -s
 echo -e "\n\n ****  server environment:  set command  ****"; set 
 echo -e "\n\n Is there cmake ? which cmake="; which cmake
 echo -e "Is python present ? \c"; which python; python -V
+echo -e "\n Is lcg-cp ? \c"; which lcg-cp
+echo -e "\n Is lcg-cr ? \c"; which lcg-cr
 return 0
 } 
 
@@ -79,7 +81,7 @@ else
   echo -e "\n What is your VO ? Neither voce,nor compchem..."
 fi
 #
-echo -e "\n Checking short-term proxy, voms-proxy-info --all : "
+echo -e "\n Checking short-term proxy, stamped with myproxy, voms-proxy-info --all : "
 voms-proxy-info --all
 #
 if [[ -n $CE_ID ]]; then
@@ -119,8 +121,14 @@ echo -e " ----------------------------------------------------------------------
 return 0
 }
 
+#
+# uploads resulting tar-file from to the current CE's local directory to the assigned SE
+#
+# entering parameter - name of VO
+#
 function upload_to_SE()
-{ # upload tar-file from to the current CE local directory to the assigned SE, parameter - name of VO
+{ 
+  echo -e "\n Going to upload resulting tarball onto SE."
   local VO=$1
   if [[ $VO == "compchem" ]]; then
      #VO_SE="aliserv6.ct.infn.it" - does not work, try other SE...
@@ -134,14 +142,23 @@ function upload_to_SE()
      exit 39
   fi
   # timestamp
-  local timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};a
-  echo "...extracted timestamp=$timestamp"
-  # command 
-  local putcmd="lcg-cr -d $VO_SE file:$PWD/dirac_grid_suite_back.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite_back_$VO_${timestamp}.tgz"
-  echo -e "\n Going to upload to SE, 1st attempt, command: $putcmd "
+  local timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+  echo "...created file timestamp=$timestamp"
+  # find version
+  echo -e "\n Get lcg-cr --version:"; lcg-cr --version
+  # own command, must have proper form ! 
+  local putcmd="lcg-cr -v --vo $VO -d $VO_SE -l lfn://grid/$VO/ilias/dirac_grid_suite_back_$VO_${timestamp}.tgz  file:$PWD/dirac_grid_suite_back.tgz"
+  echo -e "\n Going to upload resulting tab-ball onto SE, command: $putcmd "
   $putcmd
   local RETVAL=$?
-  echo -e "FYI: uploadig ended with code $RETVAL"
+  echo -e "FYI: this uploadig ended with code $RETVAL"
+  if [ $RETVAL -eq 0 ]
+  then
+    echo "the output tarfile file was successfully copied to the SE=$VO_SE :"
+    lcg-ls -l lfn://grid/$VO/ilias/
+  else
+    echo "unable to copy output file to the SE !" 
+  fi
   echo -e " -------------------------------------------------------------------------------------\n"
   return $RETVAL
 }
@@ -159,7 +176,7 @@ echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n File attributes lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz; }
-echo " ------------------------------------------------------ "
+echo " ------------------------------------------------------------------------- "
 # for these commands we need the LFC_HOST variable
 echo -e "\n check users's LFC-directory, lfc-getacl /grid/$VO/ilias:"
 lfc-getacl  /grid/$VO/ilias
@@ -177,6 +194,7 @@ echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
 tar xfz dirac_grid_suite.tgz || { echo "some problems with tarball unpacking!"; exit 113; }
 echo -e "unpacking done; see the content of $PWD :"; ls -lt 
 echo -e "\n content of build directories: "; ls -lt build*
+# created diracrc file with pam defaults:
 cp maintenance/grid_computing/diracrc_grid  diracrc
 echo -e "\n ---- diracrc created: "; cat diracrc
 return 0
@@ -189,9 +207,13 @@ echo -e "Job finished at: \c"; date
 echo -e "Filesystem on my space: "; df -h $PWD
 echo -e "\n All files:"; ls -lt
 echo -e "\n Total occupied space: \c"; du -h -s $PWD
-echo -e "\n ------------------------------------------------------------------"
+echo -e "\n ----------------------------------------------------------------------------------"
+echo -e "\n Finally, checking short-term proxy, stamped with myproxy, voms-proxy-info --all : "
+voms-proxy-info --all
+echo -e "\n ----------------------------------------------------------------------------------"
 return 0
 }
 
+# flush out at the beginning
 echo -e " List of all declated bash shell functions in this sourced file $0 :"
 declare -F
