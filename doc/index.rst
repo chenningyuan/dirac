@@ -164,4 +164,3 @@ Does not belong here - will be moved elsewhere else
    :maxdepth: 1
 
    welcome/features.rst
-   programmers/grasp.rst
