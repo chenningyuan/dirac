@@ -110,6 +110,7 @@ module polarizable_embedding
     ! edh: We need "access" to Eel to substract it 
 !   from the two electron part in DIRAC
     real(dp), public, save :: Eelsav
+!    real(dp), dimension(:,:), allocatable, public, save :: Eelsav
     ! polarization
     real(dp), dimension(:,:), allocatable, public, save :: Epol
 
@@ -1834,6 +1835,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         i = 1
         do point = npoints(myid-1)+1, npoints(myid)
+! edh: Note that Tk integrals have been modified (not changed here)
             call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
             Vqm(1,i) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
@@ -2194,6 +2196,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
+! edh: Note that Tk_integrals have been modified (not changed here)
                 call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
                 do j = 1, 3
                     Fqm(j,i) = dot(denmats, Tk_ints(:,j))
@@ -2943,7 +2946,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zpd(1,j) * Tfm(1)
             end do
-            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), .false., gauss) 
+! Edh:      Tk_integrals changed -large-large component option added
+            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), .false., gauss, .true., .true., .false., .false.)
             Zpd_ints = Zpd(1,j) * Zpd_ints
 !            call Mk_integrals(Zpd_ints, Rpd(:,j), Zpd(:,j))
             do m = 1, ndens
@@ -2981,6 +2985,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     integer :: kfoo
     integer :: jfoo
     integer :: ifoo
+!    real(dp) :: Eelsav
 
     integer :: site, ncomps
     integer :: i, j, k, l, m, n
@@ -3043,9 +3048,14 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         end do
         i = i + 1
     end do
-    Eelsav = Eel(1)
+    Eelsav = sum(Eel(:))
 
-    write(lupri,*) '***edh: Eel, Eel_2', Eel(1), Eel_2
+!     Eelsav = Eel(1)
+
+    write(lupri,*) '***edh: Eel(1), Eel_2', Eel(1), Eel_2
+    write(lupri,*) '***edh: Eel(2), Eel_2', Eel(2), Eel_2
+    write(lupri,*) '***edh: Eel(3), Eel_2', Eel(3), Eel_2
+    write(lupri,*) '***edh: Eel(4), Eel_2', Eel(4), Eel_2
 
     deallocate(Tsm, symfacs, Mk_ints)
 
@@ -3122,6 +3132,7 @@ subroutine pe_polarization(denmats, fckmats)
         i = 0
         do site = nsites(myid-1)+1, nsites(myid)
             if (zeroalphas(site)) cycle
+!       Edh: Tk_integrals routine have been modified (not adapted here)
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
             do j = 1, 3
                 do k = 1, ndens
@@ -3471,6 +3482,7 @@ subroutine electron_fields(Fels, denmats)
                 cycle
             end if
         end if
+!       Edh: Tk_integrals routine have been modified (not adapted here)
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
         do j = 1, 3
             do k = 1, ndens
@@ -4002,8 +4014,8 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
     end if
 
     ncomps = size(Mk_ints, 2)
-
-    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
+!   Edh: Tk_integrals routine have been modified
+    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0,.true., .true., .false., .false.)
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -4159,7 +4171,8 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
+!       Edh: Tk_integrals routine have been modified
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0,.true., .true.)
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do

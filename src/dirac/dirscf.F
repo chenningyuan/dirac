@@ -1309,8 +1309,11 @@ C
 #endif
 #ifdef MOD_PEQM
       real(8) :: Epe(1)
-      real(8), allocatable :: dmat_triangle(:)
-      real(8), allocatable :: fmat_triangle(:)
+      real(8), allocatable :: dlmat_triangle(:)
+      real(8), allocatable :: dsmat_triangle(:)
+      real(8), allocatable :: flmat_triangle(:)
+      real(8), allocatable :: fsmat_triangle(:)
+      logical :: ketlrg, bralrg, ketsml, brasml
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1509,16 +1512,21 @@ C
 
 #ifdef MOD_PEQM
 
-!        *** edh: "Polarizable playground" ***  
-
       write(lupri,*) '*** Polarizable Embedding Playground ***'    
+     
+!    edh: For large-large part   
 
-!     edh: Its is neccesary to construct a triangular matrix for
-!     pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
-      allocate(dmat_triangle(nnbbasx))
-      allocate(fmat_triangle(nnbbasx))
-      dmat_triangle = 0.0d0
-      fmat_triangle = 0.0d0
+      ketlrg = .true. 
+      bralrg = .true.      
+      ketsml = .false.
+      brasml = .false.
+
+!       edh: Its is neccesary to construct a triangular matrix for
+!       pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
+        allocate(dlmat_triangle(nnbbasx))
+        allocate(flmat_triangle(nnbbasx))
+        dlmat_triangle = 0.0d0
+        flmat_triangle = 0.0d0
  
 ! edh: Note that there is a factor 2 difference for diagonal elem.
 ! in DALTON and DIRAC. For non-diagonal elem it is a factor 4. 
@@ -1527,56 +1535,79 @@ C
 !        do j = i, ntbas(1)
          do j = 1, i
             if (i == j) then
-               dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+               dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
 !               write(lupri, *) 'diagonal 2', dmat_triangle(k)
             else
-               dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+               dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
 !               write(lupri, *) 'off-diagonal 2', dmat_triangle(k)
             end if
             k = k + 1
          end do
       end do
 
-      print *, 'raboof fock before'
-      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &            1,(/1, 2, 3, 4/),LUPRI)
+!      if (ketlrg .and. bralrg) then
+!        print *, 'raboof fock before'
+!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &             1,(/1, 2, 3, 4/),LUPRI)
 
-      call pe_master('fock', denmats=dmat_triangle,
-     &               fckmats=fmat_triangle, nmats=1,
+        call pe_master('fock', denmats=dlmat_triangle,
+     &               fckmats=flmat_triangle, nmats=1,
      &               Epe=Epe,
      &               dalwrk=work(kfree:kfree + lfree))
-      eqmmm = work(kfree)
-       ! F = F + M
-       k = 1    
-       do i = 1, ntbas(1)
+        eqmmm = work(kfree)
+        ! F = F + M
+        k = 1    
+        do i = 1, ntbas(1)
 !          do j = i, ntbas(1)
-          do j = 1, i
-             if (i == j) then ! edh: Conversion from DALTON to DIRAC
-                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                   + fmat_triangle(k)
-             else
-                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                   + fmat_triangle(k)
-               fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                   + fmat_triangle(k)
+           do j = 1, i
+              if (i == j) then ! edh: Conversion from DALTON to DIRAC
+                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                    + flmat_triangle(k)
+              else
+                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                    + flmat_triangle(k)
+                 fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+     &                                    + flmat_triangle(k)
              end if 
              k = k + 1
           end do
        end do
 
-!       call output(fmat_triangle,1,nbast,1,nbast,nbast,nbast,1,lupri)
-!      write(lupri,*), 'fmat_triangle'
-!      call outpak(fmat_triangle,nbast,1,lupri)
+!         call output(flmat_triangle,1,nbast,1,nbast,nbast,nbast,1,lupri)
+!        write(lupri,*), 'flmat_triangle'
+!        call outpak(flmat_triangle,nbast,1,lupri)
 
-      write(lupri,*), 'Epe in SCFCY1', Epe
+        write(lupri,*), 'Epe in SCFCY1', Epe
 
-!      stop 1
-      print *, 'raboof fock after'
-      CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &             1,(/1, 2, 3, 4/),LUPRI)
+!       stop 1
+!        print *, 'raboof fock after'
+!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              1,(/1, 2, 3, 4/),LUPRI)
 
-      deallocate(dmat_triangle)
-      deallocate(fmat_triangle)
+        deallocate(dlmat_triangle)
+        deallocate(flmat_triangle)
+
+!    edh: For small-small part   
+
+!      ketlrg = .true. 
+!      bralrg = .true.
+!      ketsml = .false.
+!      brasml = .false.
+
+!      k = 1
+!      do i = 1, ntbas(1)
+!        do j = i, ntbas(1)
+!         do j = 1, i
+!            if (i == j) then
+!               dsmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(2) + j)
+!               write(lupri, *) 'diagonal 2', dmat_triangle(k)
+!            else
+!               dsmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(2) + j)
+!               write(lupri, *) 'off-diagonal 2', dmat_triangle(k)
+!            end if
+!            k = k + 1
+!         end do
+!      end do
 
 
 
@@ -1935,10 +1966,12 @@ C
       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
 !     Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
-!     E2PART = 1/2*(Gij *Dij) - Eel (Eelsav) from the 
+!     E2PART = 1/2*(Gij *Dij). As the DFT potential Eel (Eelsav) from the 
 !     PE module is added to this part: Here it is substracted again         
       E2PART = E2PART - (0.5d0 * Eelsav)
-     
+
+      write(lupri,*)'Eelsav', Eelsav
+
       dhferg = dhferg + Epe
 
       deallocate(dmat_triangle)

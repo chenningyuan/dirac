@@ -1,4 +1,4 @@
-subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
+subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp, ketlrg, bralrg, ketsml, brasml)
 
     ! Gen1Int API
     use gen1int_api
@@ -13,6 +13,8 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     real(dp), dimension(nnbas,ncomps), intent(out) :: Tk_ints
     logical, intent(in) :: gauss
     real(dp), dimension(1), intent(in) :: gauexp
+
+    logical, intent(in) :: ketlrg, bralrg, ketsml, brasml
 
     integer :: num_ao
     integer :: num_prop
@@ -125,13 +127,21 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
         end do
     end do
 
+
+    ! 
     ! sets the non-zero components for the one-electron operator, here we only
-    ! consider the (large,large) part
-    nnz_comp(1,1) = 1
-    nnz_comp(2,1) = 1
+    ! consider the (large,large) and (small,small) part (no magnetic coupling)
+    if (ketlrg .and. bralrg) then
+      nnz_comp(1,1) = 1
+      nnz_comp(2,1) = 1
+    end if
+    if (ketsml .and. brasml) then     
+       nnz_comp(1,1) = 2
+       nnz_comp(2,1) = 2
+    end if
 
     ! calculates the integrals, please refer to the comments in subroutine
-    ! \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
+!    \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
     call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
                                   one_prop=prop_operator, &
                                   num_ints=num_prop,      &
