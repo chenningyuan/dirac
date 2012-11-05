@@ -91,28 +91,28 @@ Reference manual
 ================
 
 * **Input sections:**
-  :doc:`DIRAC <reference_manual/dirac>` |
-  :doc:`OPTIMIZE <reference_manual/optimize>` |
-  :doc:`GENERAL <reference_manual/general>` |
-  :doc:`INTEGRALS <reference_manual/integrals>` |
-  :doc:`HAMILTONIAN <reference_manual/hamiltonian>` |
-  :doc:`DFT <reference_manual/dft>` |
-  :doc:`AMFI <reference_manual/amfi>` |
-  :doc:`FDE <reference_manual/fde>` |
-  :doc:`WAVE FUNCTION <reference_manual/wavefunction>` |
-  :doc:`GOSCIP <reference_manual/goscip>` |
-  :doc:`ANALYZE <reference_manual/analyze>` |
-  :doc:`PROPERTIES <reference_manual/properties>` |
-  :doc:`MOLTRA <reference_manual/moltra>` |
-  :doc:`DIRRCI <reference_manual/dirrci>` |
-  :doc:`RELCCSD (old) <reference_manual/relccsd_old>` |
-  :doc:`RELCCSD <reference_manual/relccsd_new>` |
-  :doc:`RELADC <reference_manual/reladc>` |
-  :doc:`GRID <reference_manual/grid>`
+  :doc:`DIRAC <manual/dirac>` |
+  :doc:`OPTIMIZE <manual/optimize>` |
+  :doc:`GENERAL <manual/general>` |
+  :doc:`INTEGRALS <manual/integrals>` |
+  :doc:`HAMILTONIAN <manual/hamiltonian>` |
+  :doc:`DFT <manual/dft>` |
+  :doc:`AMFI <manual/amfi>` |
+  :doc:`FDE <manual/fde>` |
+  :doc:`WAVE FUNCTION <manual/wavefunction>` |
+  :doc:`GOSCIP <manual/goscip>` |
+  :doc:`ANALYZE <manual/analyze>` |
+  :doc:`PROPERTIES <manual/properties>` |
+  :doc:`MOLTRA <manual/moltra>` |
+  :doc:`DIRRCI <manual/dirrci>` |
+  :doc:`RELCCSD (old) <manual/relccsd_old>` |
+  :doc:`RELCCSD <manual/relccsd_new>` |
+  :doc:`RELADC <manual/reladc>` |
+  :doc:`GRID <manual/grid>`
 
 * **Operators and strings:**
-  :doc:`One-electron operators <reference_manual/oneel_oper>` |
-  :doc:`Orbital strings <reference_manual/orb_strings>`
+  :doc:`One-electron operators <manual/oneel_oper>` |
+  :doc:`Orbital strings <manual/orb_strings>`
 
 
 Developers
@@ -144,7 +144,7 @@ Developers
 Bibliography
 ============
 
-* :doc:`References <bib>`
+* :doc:`References <references>`
 
 
 Rest - move it to the right place
