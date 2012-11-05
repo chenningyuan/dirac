@@ -122,7 +122,9 @@ return 0
 }
 
 #
-# upload resulting tar-file from to the current CE's local directory to the assigned SE, parameter - name of VO
+# uploads resulting tar-file from to the current CE's local directory to the assigned SE
+#
+# entering parameter - name of VO
 #
 function upload_to_SE()
 { 
@@ -144,12 +146,19 @@ function upload_to_SE()
   echo "...created file timestamp=$timestamp"
   # find version
   echo -e "\n Get lcg-cr --version:"; lcg-cr --version
-  # own command 
-  local putcmd="lcg-cr --vo $VO -d $VO_SE -l lfn://grid/$VO/ilias/dirac_grid_suite_back_$VO_${timestamp}.tgz file:$PWD/dirac_grid_suite_back.tgz"
+  # own command, must have proper form ! 
+  local putcmd="lcg-cr -v --vo $VO -d $VO_SE -l lfn://grid/$VO/ilias/dirac_grid_suite_back_$VO_${timestamp}.tgz  file:$PWD/dirac_grid_suite_back.tgz"
   echo -e "\n Going to upload resulting tab-ball onto SE, command: $putcmd "
   $putcmd
   local RETVAL=$?
   echo -e "FYI: this uploadig ended with code $RETVAL"
+  if [ $RETVAL -eq 0 ]
+  then
+    echo "the output tarfile file was successfully copied to the SE=$VO_SE :"
+    lcg-ls -l lfn://grid/$VO/ilias/
+  else
+    echo "unable to copy output file to the SE !" 
+  fi
   echo -e " -------------------------------------------------------------------------------------\n"
   return $RETVAL
 }
@@ -167,7 +176,7 @@ echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n File attributes lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz; }
-echo " ------------------------------------------------------ "
+echo " ------------------------------------------------------------------------- "
 # for these commands we need the LFC_HOST variable
 echo -e "\n check users's LFC-directory, lfc-getacl /grid/$VO/ilias:"
 lfc-getacl  /grid/$VO/ilias
