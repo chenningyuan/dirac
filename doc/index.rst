@@ -164,5 +164,4 @@ Does not belong here - will be moved elsewhere else
    :maxdepth: 1
 
    welcome/features.rst
-   installation/licensing.rst
    programmers/grasp.rst
