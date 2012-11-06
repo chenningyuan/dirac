@@ -13,7 +13,6 @@ General directives
 
 
 .. index:: .NUCMOD
-
 .NUCMOD
 -------
 
@@ -39,7 +38,6 @@ accordance with values proposed by Visscher and Dyall [Visscher1997b]_.
 
 
 .. index:: .SELECT
-
 .SELECT
 -------
 
@@ -57,7 +55,6 @@ Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8
 
 
 .. index:: .PHASEORIGIN
-
 .PHASEORIGIN
 ------------
 
@@ -73,7 +70,6 @@ Origin appearing in the London atomic orbital phase-factors. Default::
 
 
 .. index:: .GAUGEORIGIN
-
 .GAUGEORIGIN
 ------------
 
@@ -84,7 +80,6 @@ Set the gauge origin. By default it is set to the coordinate origin::
 
 
 .. index:: .DIPORG
-
 .DIPORG
 -------
 
@@ -97,7 +92,6 @@ origin::
 
 
 .. index:: .MAGCOR
-
 .MAGCOR
 -------
 
@@ -107,7 +101,6 @@ The numbering is used in labels of various magnetic integrals.
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -118,7 +111,6 @@ General print level in the integral module. Default::
 
 
 .. index:: *ONEINT
-
 \*ONEINT
 ========
 
@@ -128,7 +120,6 @@ determine what integrals to calculate.
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -137,7 +128,6 @@ print level is taken from \*\*INTEGRALS.
 
 
 .. index:: *READIN
-
 \*READIN
 ========
 
@@ -145,7 +135,6 @@ This subsection allows changes of defaults in the reading of the mol file.
 
 
 .. index:: .UNCONTRACT
-
 .UNCONTRACT
 -----------
 
@@ -157,7 +146,6 @@ set. By default only the small component is decontracted.
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -166,7 +154,6 @@ print level is taken from \*\*INTEGRALS.
 
 
 .. index:: .MAXPRI
-
 .MAXPRI
 -------
 
@@ -178,7 +165,6 @@ Default::
 
 
 .. index:: *TWOINT
-
 \*TWOINT
 ========
 
@@ -188,7 +174,6 @@ screening.
 
 
 .. index:: .SCREEN
-
 .SCREEN
 -------
 
@@ -207,7 +192,6 @@ completely off.
 
 
 .. index:: .ICEDIF
-
 .ICEDIF
 -------
 
@@ -220,7 +204,6 @@ Default: Coulomb and exchange on (1 = on; off = 0)::
 
 
 .. index:: .THRFAC
-
 .THRFAC
 -------
 
@@ -234,7 +217,6 @@ the factors given here. Default::
 
 
 .. index:: .SOFOCK
-
 .SOFOCK
 -------
 
@@ -246,7 +228,6 @@ intensive.
 
 
 .. index:: .PRINT
-
 .PRINT
 ------
 
@@ -269,7 +250,6 @@ integrals are printed.
 
 
 .. index:: .TIME
-
 .TIME
 -----
 
