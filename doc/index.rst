@@ -155,12 +155,3 @@ Rest - move it to the right place
 
    tutorials/reproducing_nr_results.rst
    tutorials/general_scf_sample.rst
-
-
-Does not belong here - will be moved elsewhere else
-===================================================
-
-.. toctree::
-   :maxdepth: 1
-
-   welcome/features.rst
