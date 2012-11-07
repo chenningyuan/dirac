@@ -220,6 +220,9 @@ C       ERGCAL routine
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +      'Total energy plus H-H                    :   ',DHFERG +
+     &                                         1.0d0/2.870289686d0
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap
