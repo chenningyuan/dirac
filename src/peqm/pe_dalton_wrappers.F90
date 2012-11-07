@@ -133,12 +133,12 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     ! sets the non-zero components for the one-electron operator, here we only
     ! consider the (large,large) and (small,small) part (no magnetic coupling)
 !    if (ketlrg .and. bralrg) then
-!      nnz_comp(1,1) = 1
-!      nnz_comp(2,1) = 1
+       nnz_comp(1,1) = 1
+       nnz_comp(2,1) = 1
 !     end if
 !     if (ketsml .and. brasml) then     
-      nnz_comp(1,2) = 2
-      nnz_comp(2,2) = 2
+!     nnz_comp(1,2) = 2
+!     nnz_comp(2,2) = 2
 !     end if
 
     ! calculates the integrals, please refer to the comments in subroutine
