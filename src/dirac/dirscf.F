@@ -1537,29 +1537,25 @@ C
          do j = 1, i
             if (i == j) then
                 dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-!              write(lupri,*) 'diag LL', 0.5d0*dlmat_triangle(k)
             else
                 dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-!              write(lupri,*) 'non-diag LL', 0.5d0*dlmat_triangle(k)
             end if
             k = k + 1
          end do
       end do
 !     ! SS block
-!     do i = ntbas(1) + 1, ntbas(0)
-!        do j = 1, i
-!           if (j > ntbas(1)) then
-!              if (i == j) then
-!                  dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-!              write(lupri,*) 'diag SS, j', 0.5d0*dlmat_triangle(k), j
-!              else
-!                  dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-!           write(lupri,*) 'non-diag SS, j', 0.25d0*dlmat_triangle(k), j
-!              end if
-!           end if
-!           k = k + 1
-!        end do
-!     end do
+      do i = ntbas(1) + 1, ntbas(0)
+         do j = 1, i
+            if (j > ntbas(1)) then
+               if (i == j) then
+                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+               else
+                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+               end if
+            end if
+            k = k + 1
+         end do
+      end do
 
         write(lupri,*), 'DENSITY MATRIX'
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
@@ -1583,40 +1579,32 @@ C
               if (i == j) then ! edh: Conversion from DALTON to DIRAC
                  fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
      &                                    + flmat_triangle(k)
-!        write(lupri,*) 'diag LL Fock',fock((i-1)*ntbas(0) + j)
-!          write(lupri,*) 'fock contrib.', flmat_triangle(k)
               else
                  fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
      &                                    + flmat_triangle(k)
                  fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
      &                                    + flmat_triangle(k)
-!        write(lupri,*) 'non-diag LL  Fock',fock((i-1)*ntbas(0) + j)
-!        write(lupri,*) 'fock contrib.', flmat_triangle(k)
               end if
               k = k + 1 
            end do
         end do
         ! SS block
-!       do i = ntbas(1) + 1, ntbas(0)
-!          do j = 1, i
-!             if (j > ntbas(1)) then
-!                 if (i == j) then
-!                    fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-!    &                                               + flmat_triangle(k)
-!            write(lupri,*) 'diag SS Fock', fock((i-1)*ntbas(0) + j)
-!            write(lupri,*) 'fock contrib.', flmat_triangle(k)
-!                else
-!                fock((i-1)*ntbas(0) + j) =fock((i-1)*ntbas(0) + j)
-!    &                                  + flmat_triangle(k)
-!                fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-!    &                                   + flmat_triangle(k)
-!            write(lupri,*) 'non-diag SS Fock', fock((i-1)*ntbas(0) + j)
-!            write(lupri,*) 'fock contrib.', flmat_triangle(k)
-!                end if
-!           end if 
-!           k = k + 1
-!          end do
-!       end do
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                  if (i == j) then
+                     fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                        + flmat_triangle(k)
+                 else
+                    fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                       + flmat_triangle(k)
+                    fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+     &                                       + flmat_triangle(k)
+                 end if
+            end if 
+            k = k + 1
+           end do
+        end do
 
         do k = 1, nnbbasx
         write(lupri,*) 'k, dmat(k), fock(k), flmat_tri(k)',k, dmat(k), 
