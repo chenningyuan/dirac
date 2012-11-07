@@ -109,8 +109,8 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, public, save :: Ees
     ! edh: We need "access" to Eel to substract it 
 !   from the two electron part in DIRAC
-    real(dp), public, save :: Eelsav
-!    real(dp), dimension(:,:), allocatable, public, save :: Eelsav
+!    real(dp), public, save :: Eelsav
+    real(dp), dimension(:), allocatable, public, save :: Eelsav
     ! polarization
     real(dp), dimension(:,:), allocatable, public, save :: Epol
 
@@ -2985,7 +2985,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     integer :: kfoo
     integer :: jfoo
     integer :: ifoo
-!    real(dp) :: Eelsav
+!    real(dp), dimension(:) :: Eelsav
 
     integer :: site, ncomps
     integer :: i, j, k, l, m, n
@@ -3007,11 +3007,13 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     allocate(Tsm(ncomps))
     allocate(symfacs(ncomps))
     allocate(Mk_ints(nnbas,ncomps))
+    allocate(Eelsav(ndens))
 
     Mk_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
     Eel_2 = 0.0d0
+    Eelsav = 0.0d0
 
     i = 1
     do site = nsites(myid-1)+1, nsites(myid)
@@ -3043,23 +3045,21 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
                 n = l * nnbas
                 Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
                 do kfoo = m, n
-!               write(lupri,*) '*** edh: denmats(1), Mk_ints(1,1), El(l)', denmats(kfoo), Mk_ints(kfoo,j)
+!                write(lupri,*) '*** edh: denmats, Mk_ints, El(l)', kfoo, denmats(kfoo), Mk_ints(kfoo,j)
                 end do
                 if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do
         end do
         i = i + 1
     end do
+
     Eelsav = sum(Eel(:))
 
-!     Eelsav = Eel(1)
+    write(lupri,*) '***edh: Eel(1)', Eel(1)
+    write(lupri,*) '***edh: Enuc', Enuc
 
-    write(lupri,*) '***edh: Eel(1), Eel_2', Eel(1), Eel_2
-    write(lupri,*) '***edh: Eel(2), Eel_2', Eel(2), Eel_2
-    write(lupri,*) '***edh: Eel(3), Eel_2', Eel(3), Eel_2
-    write(lupri,*) '***edh: Eel(4), Eel_2', Eel(4), Eel_2
 
-    deallocate(Tsm, symfacs, Mk_ints)
+    deallocate(Tsm, symfacs, Mk_ints, Eelsav)
 
 end subroutine es_multipoles
 
@@ -3353,10 +3353,11 @@ subroutine induced_dipoles(M1inds, Fs)
                                                     & iter, ' iterations.'
                         converged = .true.
                     else if (iter > 50) then
+                        write(luout,*) 'norm', norm
                         write(luout,*) 'ERROR: could not converge induced&
                                        & dipole moments.'
                         stop 'ERROR: could not converge induced dipole&
-                             & moments.'
+                             & moments.' 
                     else
                         converged = .false.
                         iter = iter + 1

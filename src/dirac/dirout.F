@@ -198,8 +198,7 @@ C            leave this to authors of this part) Done, hjaaj.
      &                                     'Multipole       ', Epol(3,1)
         end if
         write(lupri,'(/3x,a18,9x,f20.12)')
-     &          '@ Total PE energy: ',
-     &                    sum(Ees(:,1)) + sum(Epol(:,1)) 
+     &                    sum(Ees(:,1)) + sum(Epol(:,1))
 !     &          '@ Total PE energy: ',
 !     &                    sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 #endif
@@ -220,9 +219,6 @@ C       ERGCAL routine
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
-        WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Total energy plus H-H                    :   ',DHFERG +
-     &                                         1.0d0/2.870289686d0
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap

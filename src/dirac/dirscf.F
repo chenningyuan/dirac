@@ -1957,6 +1957,7 @@ C
 !     pe_module - DIRAC SCF uses square matrices (DALTON uses
 !     triangular)
       allocate(dmat_triangle(nnbbasx))
+!      allocate(Eelsav(ndens))
       dmat_triangle = 0.0d0
 ! Conversion of density matrix to triangular form: 
 
@@ -1990,18 +1991,21 @@ C
      &               denmats=dmat_triangle,
      &               nmats=1,dalwrk=work(kwork:lwork))
 
+      allocate(Eelsav(ndens))
+
       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
 !     Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
+      Eel = sum(Eelsav(:))
 
-!     E2PART = 1/2*(Gij *Dij). As the DFT potential Eel (Eelsav) from the 
-!     PE module is added to this part: Here it is substracted again         
-      E2PART = E2PART - (0.5d0 * Eelsav)
+!     E2PART = 1/2*(Gij *Dij). As the DFT potential, Eel (Eelsav) from the 
+!     PE module is added to the E2PART: Here it is substracted again         
+      E2PART = E2PART - (0.5d0 * Eel)
 
-      write(lupri,*)'Eelsav', Eelsav
+      write(lupri,*)'Eelsav', Eel
 
       dhferg = dhferg + Epe
 
-      deallocate(dmat_triangle)
+      deallocate(dmat_triangle, Eelsav)
 #endif
 
       IF(LVCON) THEN
