@@ -4516,7 +4516,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcsol */
-      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+!     SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL_old(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4629,7 +4630,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcsol */
-      SUBROUTINE KRMCSOL_new_to_come(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+!     SUBROUTINE KRMCSOL_new_to_come(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4654,19 +4656,20 @@ C
       DIMENSION REDGP(NREDM), EVECR(NREDM)
       DIMENSION IBTYP(2,*), INERTIA(3)
       DIMENSION WORK(*)
-      PARAMETER (STPL_EP_MAX = 0.0300D0)
+      PARAMETER (STPL_EP_MAX = 0.0100D0)
 C
       IF (IOPT_ISTATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
-      IF (IPRINT .GE. 5) THEN
-         WRITE(LUPRI,'(/A,2I5,L10)')
-     &   ' KRMCSOL entry. NZRED, NPRED, DONR:',NZRED,NPRED,DONR
-      END IF
-C
       RTRMAX = RTRUST*RTTOL
       RTRMIN = RTRUST/RTTOL
       STPL_EP_MIN = STPL_EP_MAX/RTTOL
+C
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(/A,2I5,L10/A,3F15.10)')
+     &   ' KRMCSOL entry. NZRED, NPRED, DONR:',NZRED,NPRED,DONR,
+     &   '             RTTOL, RTRMAX, RTRMIN:',RTTOL,RTRMAX,RTRMIN
+      END IF
 C
       CALL DUNIT(REDS,NREDM)
       DLVLMAX = D0
@@ -4686,18 +4689,30 @@ C
      &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
       ITER = ITER + 1
       STPL = DP5 * DNRM2(NZRED,EVECR,1)
+      STPL_CI = D0
+      STPL_EE = D0
       STPL_EP = D0
       IF (NPRED .GT. 0) THEN
          DO I = 1, NZRED
-            IF (IBTYP(1,I) .EQ. JBPNDX) THEN
+            IF (IBTYP(1,I) .EQ. JBCNDX) THEN
+               STPL_CI = STPL_CI + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBENDX) THEN
+               STPL_EE = STPL_EE + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBPNDX) THEN
                STPL_EP = STPL_EP + EVECR(I)**2
+            ELSE
+               CALL QUIT('unknown IBTYP')
             END IF
          END DO
-         STPL_EP = SQRT(STPL_EP)
+         STPL_CI = DP5 * SQRT(STPL_CI)
+         STPL_EE = DP5 * SQRT(STPL_EE)
+         STPL_EP = DP5 * SQRT(STPL_EP)
       END IF
       INONPOS = INERTIA(2) + INERTIA(3)
-      IF (IPRINT .GE. 5) WRITE (LUPRI,'(A,I5,1P,G10.2,I5)')
-     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS
+      IF (IPRINT .GE. 5)
+     &   WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
+     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
+     &   'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
 C
 C     Save electronic Hessian's index for zero level shift
 C     (used in RCNVTHR below)
@@ -4725,8 +4740,10 @@ C
 
       END IF
 C
-      IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX) THEN ! too long step
-         IF (STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
+      IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX .OR.    ! too long step
+     &    INONPOS .NE. NPRED ) THEN                              ! wrong number of negative eigenvalues
+         IF (ITER .LE. 2 .AND.
+     &       STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
             INCREASE_SHIFT = -INCREASE_SHIFT
             DLVLMAX = D0
             DLVLMIN = D0
@@ -4750,8 +4767,10 @@ C
          END IF
          IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
      &      'krmcsol: steplen (>?), new level shift', STPL,DLVLSH
-      ELSE IF ( (STPL .GE. RTRMIN .AND. INONPOS .EQ. NPRED) .OR.
-     &          STPL_EP .GE. STPL_EP_MIN ) THEN ! step accepted
+      ELSE IF ( DLVLSH .EQ. 0.0D0 .OR.                                 ! Newton step
+     &          (STPL .GE. RTRMIN .AND. INONPOS .EQ. NPRED) .OR.       ! restricted step too short
+     &           STPL_EP .GE. STPL_EP_MIN )                            ! e-p in allowed range
+     &   THEN ! step accepted
          IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
      &      'krmcsol: steplen accepted, level shift', STPL,DLVLSH
          GOTO 200
