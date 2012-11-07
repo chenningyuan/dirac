@@ -1561,11 +1561,6 @@ C
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &              1,(/1, 2, 3, 4/),LUPRI)
 
-!      if (ketlrg .and. bralrg) then
-!        print *, 'raboof fock before'
-!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!     &             1,(/1, 2, 3, 4/),LUPRI)
-
         call pe_master('fock', denmats=dlmat_triangle,
      &               fckmats=flmat_triangle, nmats=1,
      &               Epe=Epe,
@@ -1606,9 +1601,11 @@ C
            end do
         end do
 
+        write(lupri,*) 'raboof'
         do k = 1, nnbbasx
-        write(lupri,*) 'k, dmat(k), fock(k), flmat_tri(k)',k, dmat(k), 
-     &                                        fock(k), flmat_triangle(k)
+        write(lupri,*) 'k, dlmat_triangle(k), flmat_tri(k)',k,
+     &                               dlmat_triangle(k), 
+     &                               flmat_triangle(k)
         end do
 
         write(lupri,*), 'FOCK MATRIX'
@@ -1962,20 +1959,32 @@ C
       allocate(dmat_triangle(nnbbasx))
       dmat_triangle = 0.0d0
 ! Conversion of density matrix to triangular form: 
-      k = 1
+
+      k = 1    
+      ! LL block
       do i = 1, ntbas(1)
-!         do j = i, ntbas(1)
-            do j = 1, i
-              if (i == j) then
-                 dmat_triangle(k) = 2.0d0*dmat(((i-1)*ntbas(0) + j), 
-     &                                        1, 1 )
-              else
-                 dmat_triangle(k) = 4.0d0*dmat(( (i-1)*ntbas(0) + j ),
-     &                                        1, 1 )
-              end if
-              k = k + 1
-           end do
-        end do
+         do j = 1, i
+            if (i == j) then
+                dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
+            else
+                dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
+            end if
+            k = k + 1
+         end do
+      end do
+!     ! SS block
+      do i = ntbas(1) + 1, ntbas(0)
+         do j = 1, i
+            if (j > ntbas(1)) then
+            if (i == j) then
+                dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
+            else
+                dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
+            end if
+            end if
+            k = k + 1
+         end do
+      end do
 
       call pe_master(runtype='energy', 
      &               denmats=dmat_triangle,

@@ -36,7 +36,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     ! non-zero components for the operator, the first dimension is for bra and
     ! ket sub-shells, the last is the number of non-zero components, which should
     ! be 1 for non-relativistic calcualtions
-    integer nnz_comp(2,1)
+    integer nnz_comp(2, 2)
 
     Tk_ints = 0.0d0
 
@@ -132,14 +132,12 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     ! 
     ! sets the non-zero components for the one-electron operator, here we only
     ! consider the (large,large) and (small,small) part (no magnetic coupling)
-!    if (ketlrg .and. bralrg) then
-       nnz_comp(1,1) = 1
-       nnz_comp(2,1) = 1
-!     end if
-!     if (ketsml .and. brasml) then     
-!     nnz_comp(1,2) = 2
-!     nnz_comp(2,2) = 2
-!     end if
+
+      nnz_comp(1, 1) = 1
+      nnz_comp(2, 1) = 1
+
+      nnz_comp(1, 2) = 2
+      nnz_comp(2, 2) = 2
 
     ! calculates the integrals, please refer to the comments in subroutine
 !    \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
