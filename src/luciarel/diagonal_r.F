@@ -82,7 +82,7 @@
 *
 !     NTEST =  5000 ! debug
       NTEST =  0 
-      NTEST = MAX(NTEST,IPRNT)
+      NTEST = MAX(NTEST,IPRNT/1000)
 *
       IF(PSSIGN.EQ.-1.0D0) THEN
          XADD = 1000000.0
@@ -378,7 +378,7 @@ C?          WRITE(6,*)  ' IA = ', IA
       CALL QENTER('CIDIA')
 *
       NTEST = 000
-      NTEST = MAX(NTEST,IPRDIA)
+      NTEST = MAX(NTEST,IPRDIA/1000)
 *. Largest Number of electrons around
       MAXNEL = 0
       DO IMK2 = 1, NMS2VAL
@@ -578,7 +578,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 *
 !     NTESTL = 120 ! debug
       NTESTL = 000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 *
       if(NTEST.ge.2) then
         write(6,*) ' //////////////////////////////////// '
@@ -839,7 +839,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 
 !     NTESTL = 0100 ! debug
       NTESTL = 0000
-      NTEST = MAX(NTESTL,IPRDIA)
+      NTEST = MAX(NTESTL,IPRDIA/1000)
 *
       if(NTEST.gt.1)then
         write(LUWRT,*) '----------------------------------------'
@@ -957,7 +957,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 *
 !     NTESTL = 100 ! debug
       NTESTL = 000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 *
       is_zero = 0
       ICT = 1
@@ -1034,7 +1034,7 @@ C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
       dimension XINT(NINT12), T_BUFF(*)
 *
       NTESTL = 000
-      NTEST  = max(NTESTL,IPRNT)
+      NTEST  = max(NTESTL,IPRNT/1000)
 *
       IERROR = 1
       do INT = N1DIAINT+1,NDIAINT,1

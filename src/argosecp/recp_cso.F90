@@ -1,277 +1,243 @@
 MODULE RECP_CSO
 CONTAINS
-
-!------------------------------------------------------------------------------
-SUBROUTINE RECP_CSO_INIT1(iu,lit,mrcru,fctr1,etai,etaj,esfc,igueq1,jgueq1)
-  USE RECP_IPT
-  IMPLICIT NONE
+SUBROUTINE CINTS(a,ccr,etai,etaj,g2,lcr,lambu, & 
+           ltot1,mcrs,mproju,nc,ncr,nkcrl,nkcru,x,y,z,zcr,zet,tmp_ic0,tmp_ic1)
+! lcru is the max l value + 1 for the potential.
+! ncr contains the value of n for each term.
+! zcr contains the value of alpha for each term.
+! ccr contains the coefficient of each term.
+  USE RECP_CSO_PS 
+  USE RECP_CSO_SUB 
+  USE RECP_IPT 
+  USE RECP_OUTPUT 
+  implicit real*8 (a-h,o-z)
 #include "inc_print.h"
-  INTEGER iu,lit,mrcru
-  REAL(8) fctr1,etai(mrcru,*),etaj(mrcru,*)
-  LOGICAL esfc,igueq1,jgueq1
-  INTEGER i
-! set CRDA/CRDB
-  DO i=1,3
-     IPT_CZ_CRDA(1,i)=1.0D0
-     IPT_CZ_CRDB(1,i)=1.0D0
-  ENDDO
+  logical esf, esfc, igueq1, jgueq1
+  parameter (a1s2=0.5d0, a1=1.0d0, a4=4.0d0)
+  common /parmr/ tol
+  integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
+  common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
+  common /one/ fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic, &
+               icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl, &
+               jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
+  common /stv/ xint,yint,zint,t,x0,y0,z0,xi,yi,zi,xj,yj,zj,ni,nj
+  common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa, &
+                  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
+  dimension a(*),ccr(*),etai(mrcru,*),etaj(mrcru,*),g2(*),lcr(*), &
+            mcrs(*),nc(*),ncr(*),nkcrl(6,*),nkcru(6,*),x(mcu,*),  &
+            y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
+  integer i 
+  integer tmp_ic0,tmp_ic1
+  CALL OUTPUT_LOC('cint','E')
 
-! set iu
-  IF (esfc) iu=(lit+1)*lit/2
+  CALL RECP_CSO_INIT1(iu,lit,mrcru,fctr1,etai,etaj,esfc,igueq1,jgueq1)
+ 
+!     i primitive
+!     -----------
+      do 490 ig=1,igu
 
-! set fctr1
-  IF (igueq1) THEN
-     fctr1=4.0D0*etai(1,1)
-  ELSE
-     fctr1=4.0D0
-  ENDIF
-  IF (jgueq1) THEN
-     fctr1=fctr1*etaj(1,1)
-  ENDIF
-END SUBROUTINE RECP_CSO_INIT1
+      CALL RECP_CSO_G1ZERO(nc1,tmp_ic0,igueq1)
+      ai=zet(ig,icons)
+      tai=ai+ai
+ 
+!     j primitive
+!     -----------
+      if(esfc) jgu=ig
+      do 390 jg=1,jgu
 
-!------------------------------------------------------------------------------
+      CALL RECP_CSO_GOUTZERO(ij,jgueq1)
+      aj=zet(jg,jcons)
+      taj=aj+aj
+      aa=ai+aj
+      taa=aa+aa
+      aaa=(ai-aj)/aa
+      apr=ai*aj/aa
+      aarr1=apr*rr
+ 
+!     form core potential integrals
+!     =============================
+      xp=xij+aaa*xijm
+      yp=yij+aaa*yijm
+      zp=zij+aaa*zijm
+      fctr2=fctr1
+      if((esfc.and..not.igueq1).and.ig.eq.jg) fctr2=a1s2*fctr2
+      do 350 ks=1,ns
+        kcrs=mcrs(ks)
+        if(kcrs.eq.0) goto 350
+        lcru=lcr(kcrs)
+        if(lcru.lt.0) goto 340
+        do kc=1,nc(ks)
+           xc=x(kc,ks)
+           yc=y(kc,ks)
+           zc=z(kc,ks)
+           CALL RECP_CSO_SETCRDA(xka,yka,zka,xc,yc,zc,xi,yi,zi,ca,lit)
+           CALL RECP_CSO_SETCRDB(xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb,ljt)
 
-SUBROUTINE RECP_CSO_G1ZERO(nc1,tmp_ic0,igueq1)
-! Set G1(and GOUT) zero in i primitive
-! Called by cints,lsints
+!          type1 pseudo
+!          ------------
+           if(aarr1.le.tol) then
+             xk=xp-xc
+             yk=yp-yc
+             zk=zp-zc
+             call pseud1(ccr,IPT_CZ_CRDA,IPT_CZ_CRDB,IPT_CZ_GOUT, &
+                  IPT_LMNV,ltot1,ncr,nkcrl,nkcru,zcr)
+           endif
+
+!          type2 pseudo
+!          ------------
+           aarr2=apr*(ca-cb)**2
+           if (aarr2.le.tol.and.lcru.ne.0) then
+              call pseud2(a,ccr,IPT_CZ_CRDA,IPT_CZ_CRDB, &
+                   IPT_CZ_GOUT,lambu,ltot1,mproju,ncr,nkcrl,nkcru,zcr)
+           endif
+        enddo
+  340   continue
+  350 continue
+ 
+!     j transformation
+!     ----------------
+      if(jgueq1) goto 400
+ 
+      j1=0
+      DO jrcr=1,jrcru
+         DO i=1,ij
+!           IF ((j1+i).GT.tmp_ic0) WRITE(RECP_OUT,*) 'G1 exceed(J)',(j1+1),'>',tmp_ic0
+            IPT_CZ_G1(j1+i)=IPT_CZ_G1(j1+i)+IPT_CZ_GOUT(i)*etaj(jrcr,jg)
+!           WRITE(RECP_OUT,*)'G1/GOUT',(j1+i),IPT_CZ_G1(j1+i), i,IPT_CZ_GOUT(i)
+         ENDDO
+         j1=j1+ij
+      ENDDO
+  390 continue
+ 
+!     i transformation
+!     ----------------
+  400 if(igueq1) return
+ 
+      if(esfc) i1=0
+      ij2=0
+      DO ircr=1,ircru
+         j1=0
+         IF (esfc) THEN
+           CALL RECP_CSO_G2CAL1(ircr,ig,iu,i1,j1,ij2,tmp_ic0,tmp_ic1,mrcru,g2,etai)
+           i1=i1+ij
+         ELSE
+           CALL RECP_CSO_G2CAL3(ircr,jrcru,ig,ij,ij2,j1,tmp_ic0,tmp_ic1,mrcru,g2,etai)
+         ENDIF
+      ENDDO
+      
+  490 continue
+  CALL OUTPUT_LOC('RECP_CINT','X')
+END SUBROUTINE CINTS
+
+
+SUBROUTINE LSINTS(a,ccr,etai,etaj,g2,lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl, &
+           nklsu,x,y,z,zcr,zet,tmp_ic0,tmp_ic1)
+! lcru is the max l value + 1 for the potential.
+! ncr contains the value of n for each term.
+! zcr contains the value of alpha for each term.
+! ccr contains the coefficient of each term.
+  USE RECP_CSO_PS
+  USE RECP_CSO_SUB
   USE RECP_IPT
-  IMPLICIT NONE
+  USE RECP_OUTPUT
+  implicit real*8 (a-h,o-z)
 #include "inc_print.h"
-  INTEGER nc1,tmp_ic0
-  LOGICAL igueq1
-  INTEGER i  !local variable
+  logical esf, esfc, igueq1, jgueq1
+  parameter (a1s2=0.5d0, a1=1.0d0, a4=4.0d0)
+  common /parmr/ tol
+  integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
+  common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
+  common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic,  &
+              icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl,  &
+              jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
+  common /stv/ xint,yint,zint,t,x0,y0,z0,xi,yi,zi,xj,yj,zj,ni,nj
+  common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa, &
+                  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
+  dimension a(*),ccr(*),etai(mrcru,*),etaj(mrcru,*),g2(*),lls(*),mcrs(*),nc(*),ncr(*), &
+            nklsl(4,*),nklsu(4,*),x(mcu,*),y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
+  integer i,tmp_ic0,tmp_ic1
 
-! size of variables  
-! +--G1---+-----GOUT-------+
-! i       tmp_ic0    nc1   (imp_ic0+ij)
+  CALL OUTPUT_LOC('LSINTS','E') 
+  CALL RECP_CSO_INIT1(iu,lit,mrcru,fctr1,etai,etaj,esfc,igueq1,jgueq1)
+ 
+!     i primitive
+!     -----------
+      do 490 ig=1,igu
 
-  IF (.NOT.igueq1) THEN
-     DO i = 1, tmp_ic0  
-        IPT_CZ_G1(i) = 0.0D0
-     ENDDO
-     IF (nc1.GT.tmp_ic0) THEN
-        DO i = 1,(nc1-tmp_ic0)
-            IPT_CZ_GOUT(i) = 0.0D0
-        ENDDO
-     ENDIF
-  ENDIF
-END SUBROUTINE RECP_CSO_G1ZERO
+      CALL RECP_CSO_G1ZERO(nc1,tmp_ic0,igueq1)
+      ai=zet(ig,icons)
+      tai=ai+ai
+ 
+!     j primitive
+!     -----------
+      if(esfc) jgu=ig
+      do 390 jg=1,jgu
 
-!------------------------------------------------------------------------------
+      CALL RECP_CSO_GOUTZERO(ij,jgueq1)
+      aj=zet(jg,jcons)
+      taj=aj+aj
+      aa=ai+aj
+      taa=aa+aa
+      apr=ai*aj/aa
+ 
+!     form spin-orbit potential integrals
+!     ===================================
+      fctr2=fctr1
+      if((esfc.and..not.igueq1).and.ig.eq.jg) fctr2=a1s2*fctr2
+      do 350 ks=1,ns
+      kcrs=mcrs(ks)
+      if (kcrs.eq.0) goto 350
+      lcru=lls(kcrs)+1
+      if (lcru.le.1) goto 340
+      DO kc=1,nc(ks)
+         xc=x(kc,ks)
+         yc=y(kc,ks)
+         zc=z(kc,ks)
 
-SUBROUTINE RECP_CSO_GOUTZERO(ij,jgueq1)
-! Set GOUT zero in j primitive
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  INTEGER ij
-  LOGICAL jgueq1
-  INTEGER i  !local variable
+         CALL RECP_CSO_SETCRDA(xka,yka,zka,xc,yc,zc,xi,yi,zi,ca,lit)
+         CALL RECP_CSO_SETCRDB(xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb,ljt)
 
-  IF (.NOT.jgueq1) THEN
-     DO i = 1, ij
-        IPT_CZ_GOUT(i) = 0.0d0
-     ENDDO
-  ENDIF
-END SUBROUTINE RECP_CSO_GOUTZERO
+         aarr2=apr*(ca-cb)**2
+         IF (aarr2.LE.tol) THEN
+            CALL PSEUD3(a,ccr,IPT_CZ_CRDA,IPT_CZ_CRDB,IPT_CZ_GOUT,lambu, &
+                 ltot1,mproju,ncr,nklsl,nklsu,zcr)
+         ENDIF
+      ENDDO
+  340 continue
+  350 continue
+ 
+!     j transformation
+!     ----------------
+      if (jgueq1) goto 400
+ 
+      j1=0
+      DO jrcr=1,jrcru
+         DO i=1,ij
+            IPT_CZ_G1(j1+i)=IPT_CZ_G1(j1+i)+IPT_CZ_GOUT(i)*etaj(jrcr,jg)
+         ENDDO   
+         j1=j1+ij
+      ENDDO
+  390 continue
+  400 continue
+ 
+!     i transformation
+!     ----------------
+      IF (igueq1) GOTO 500
+ 
+      IF (esfc) i1=0
+      ij2=0
+      DO ircr=1,ircru
+         j1=0
+         IF (esfc) THEN
+            CALL RECP_CSO_G2CAL2(ircr,ig,i1,j1,iu,tmp_ic0,tmp_ic1,ij2,mrcru,g2,etai)
+            i1=i1+ij
+         ELSE
+            CALL RECP_CSO_G2CAL3(ircr,jrcru,ig,ij,ij2,j1,tmp_ic0,tmp_ic1,mrcru,g2,etai) 
+         ENDIF
+      ENDDO
+  490 continue
 
-!------------------------------------------------------------------------------
-
-SUBROUTINE RECP_CSO_SETCRDA(xka,yka,zka,xc,yc,zc,xi,yi,zi,ca,lit)
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  REAL(8) xka,yka,zka,xc,yc,zc,xi,yi,zi,ca
-  INTEGER lit
-  INTEGER i,j  !local variables
-  xka=xc-xi
-  yka=yc-yi
-  zka=zc-zi
-  ca=SQRT(xka*xka+yka*yka+zka*zka)
-  IF (lit.GE.2) THEN
-     IPT_CZ_CRDA(2,1)=xka
-     IPT_CZ_CRDA(2,2)=yka
-     IPT_CZ_CRDA(2,3)=zka
-     IF (lit.GE.3) THEN
-        DO i=1,3
-           DO j=3,lit
-              IPT_CZ_CRDA(j,i)=IPT_CZ_CRDA(2,i)*IPT_CZ_CRDA(j-1,i)
-           ENDDO
-        ENDDO
-     ENDIF
-  ENDIF
-END SUBROUTINE RECP_CSO_SETCRDA
-
-!------------------------------------------------------------------------------
-
-SUBROUTINE RECP_CSO_SETCRDB(xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb,ljt)
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  REAL(8) xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb
-  INTEGER ljt
-  INTEGER i,j  !local variables 
-  xkb=xc-xj
-  ykb=yc-yj
-  zkb=zc-zj
-  cb=SQRT(xkb*xkb+ykb*ykb+zkb*zkb)
-  IF (ljt.GE.2) THEN
-     IPT_CZ_CRDB(2,1)=xkb
-     IPT_CZ_CRDB(2,2)=ykb
-     IPT_CZ_CRDB(2,3)=zkb
-     IF (ljt.GE.3) THEN
-        DO i=1,3
-           DO j=3,ljt
-              IPT_CZ_CRDB(j,i)=IPT_CZ_CRDB(2,i)*IPT_CZ_CRDB(j-1,i)
-           ENDDO
-        ENDDO
-     ENDIF
-  ENDIF
-END SUBROUTINE RECP_CSO_SETCRDB
-
-!------------------------------------------------------------------------------
-
-SUBROUTINE RECP_CSO_G2CAL1(ircr,ig,iu,i1,j1,ij2,tmp_ic0,tmp_ic1,mrcru,g2,etai)
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  INTEGER ircr,ig,iu,i1,j1,ij2,tmp_ic0,tmp_ic1,mrcru
-  REAL(8) g2(*),etai(mrcru,*)
-! DIMENSION g2(*),etai(mrcru,*)
-! local variables
-  INTEGER jrcr,i,j,i1n
-  REAL(8) G1MOD1,G1MOD2
-
-  DO jrcr=1,ircr
-     DO i=1,iu
-        i1n=i1+i
-        DO j=1,iu
-!          * Check G1 index
-           IF ((j1+j).GT.tmp_ic0) THEN
-              IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G1 index exceed(i11)',(j1+j),'>',tmp_ic0
-              G1MOD1 = IPT_CZ_GOUT((j1+j)-tmp_ic0)
-           ELSE
-              G1MOD1 = IPT_CZ_G1(j1+j)
-           ENDIF
-
-!          * Check G1 index
-           IF (i1n.GT.tmp_ic0) THEN
-              IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G1 index exceed(i12)',i1n,'>',tmp_ic0
-              G1MOD2 = IPT_CZ_GOUT(i1n-tmp_ic0)
-           ELSE
-              G1MOD2 = IPT_CZ_G1(i1n)
-           ENDIF
-
-!          * Check G2 index
-           IF ((ij2+j).GT.tmp_ic1) THEN
-              IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G2 index exceed(i11)',(ij2+j),'>',tmp_ic1
-!             Error termination
-!             CALL RECP_EXIT
-           ENDIF
-
-!          * Get G2 
-           g2(ij2+j) = g2(ij2+j) + G1MOD1*etai(ircr,ig) + G1MOD2*etai(jrcr,ig)
-!          IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'g1/g1',(j1+j),G1MOD1,(i1n),G1MOD2
-
-           i1n=i1n+iu
-        ENDDO
-        ij2=ij2+iu
-        j1=j1+iu
-     ENDDO   
-  ENDDO   
-END SUBROUTINE RECP_CSO_G2CAL1
-
-!------------------------------------------------------------------------------
-
-SUBROUTINE RECP_CSO_G2CAL2(ircr,ig,i1,j1,iu,tmp_ic0,tmp_ic1,ij2,mrcru,g2,etai)
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  INTEGER ircr,ig,i1,j1,iu,tmp_ic0,tmp_ic1,ij2,mrcru
-  REAL(8) g2(*),etai(mrcru,*)
-! local variables
-  INTEGER jrcr,i1m,i1n,i,j,k
-  REAL(8) G1MOD1,G1MOD2
-  DO jrcr=1,ircr
-     i1m=i1
-     DO i=1,iu
-        i1n=i1m
-        DO j=1,iu
-           DO k=1,3
-!             * Check G1 index
-              IF ((j1+k).GT.tmp_ic0) THEN
-                 IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G1 index exceed(i11)',(j1+k),'>',tmp_ic0
-                 G1MOD1 = IPT_CZ_GOUT((j1+k)-tmp_ic0)
-              ELSE
-                 G1MOD1 = IPT_CZ_G1(j1+k)
-              ENDIF
-
-!             * Check G1 index
-              IF ((i1n+k).GT.tmp_ic0) THEN
-                 IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G1 index exceed(i12)',(i1n+k),'>',tmp_ic0
-                 G1MOD2 = IPT_CZ_GOUT((i1n+k)-tmp_ic0)
-              ELSE
-                 G1MOD2 = IPT_CZ_G1(i1n+k)
-              ENDIF
-
-!             * Check G2 index
-              IF ((ij2+k).GT.tmp_ic1) THEN
-                 IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G2 index exceed(i11)',(ij2+k),'>',tmp_ic1
-!                Error termination
-!                CALL RECP_EXIT
-              ENDIF
-
-!             * Get G2              
-              g2(ij2+k)=g2(ij2+k) + G1MOD1*etai(ircr,ig) - G1MOD2*etai(jrcr,ig)
-!             IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'g1/g1',(j1+k),G1MOD1,(i1n+k),G1MOD2
-           ENDDO
-           ij2=ij2+3
-           j1=j1+3
-           i1n=i1n+(3*iu)
-        ENDDO
-        i1m=i1m+3
-     ENDDO
-  ENDDO
-END SUBROUTINE RECP_CSO_G2CAL2
-
-!------------------------------------------------------------------------------
-
-SUBROUTINE RECP_CSO_G2CAL3(ircr,jrcru,ig,ij,ij2,j1,tmp_ic0,tmp_ic1,mrcru,g2,etai)
-  USE RECP_IPT
-  IMPLICIT NONE
-#include "inc_print.h"
-  INTEGER ircr,jrcru,ig,ij,ij2,j1,tmp_ic0,tmp_ic1,mrcru
-  REAL(8) g2(*),etai(mrcru,*)
-! DIMENSION g2(*),etai(mrcru,*)
-! local variables
-  INTEGER jrcr,i
-  REAL(8) G1MOD
-  DO jrcr=1,jrcru
-     DO i=1,ij
-!       * Check G1 index
-        IF ((j1+i).GT.tmp_ic0) THEN
-           IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G1 index exceed(i21)',(j1+i),'>',tmp_ic0
-           G1MOD = IPT_CZ_GOUT((j1+i)-tmp_ic0)
-        ELSE
-           G1MOD = IPT_CZ_G1(j1+i)
-        ENDIF
-
-!       * Check G2 index
-        IF ((ij2+i).GT.tmp_ic1) THEN
-           IF(RECP_DBG.GE.5) WRITE(RECP_OUT,*)'G2 index exceed(i21)',(ij2+i),'>',tmp_ic1
-        ENDIF
-
-        g2(ij2+i)=g2(ij2+i)+G1MOD*etai(ircr,ig)
-!       WRITE(RECP_OUT,*)'2* g2/g1',(ij2+i),g2(ij2+i),(j1+i),G1MOD
-     ENDDO
-     ij2=ij2+ij
-     j1=j1+ij
-  ENDDO
-END SUBROUTINE RECP_CSO_G2CAL3
-
-!------------------------------------------------------------------------------
-
-
-
+  500 CONTINUE 
+      CALL OUTPUT_LOC('LSINTS','X') 
+END SUBROUTINE LSINTS
 END MODULE RECP_CSO

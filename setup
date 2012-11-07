@@ -19,8 +19,8 @@ if sys.version < '2.4':
     print('requires python version >= 2.4')
     sys.exit(1)
 
-root_directory = os.path.realpath(__file__)[:-5]
-default_path = root_directory + 'build/'
+root_directory = os.path.dirname(os.path.realpath(__file__))
+default_path = os.path.join(root_directory,'build')
 
 # initialize parser
 
@@ -205,9 +205,9 @@ def gen_cmake_command():
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
-    # fix for Windows
+    # fix for Windows (plus supress warnings)
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' cmake -Wno-dev'
     else:
         command = ' cmake ' + command
 

@@ -556,7 +556,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
       DIMENSION VE(*)
 *
       NTESTL = 00
-      NTEST = max(NTESTL,IPRT)
+      NTEST = max(NTESTL,IPRT/1000)
 *
       CALL REWINE(LU,LBLK)
 *

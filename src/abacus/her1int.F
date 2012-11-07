@@ -3365,6 +3365,9 @@ C  /* Deck dsusan */
 C
 C     K.Ruud, Feb. 1992
 C
+C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
+C the article
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -6858,7 +6861,8 @@ C
 C  RDSUSLL:
 C  Integrals for i c Qmn <mi_M| r (r_N x alpha) |ni_N>
 C
-C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
+C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen,
+C  after routine DSUSAN by Kenneth Ruud.
 C
 C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C

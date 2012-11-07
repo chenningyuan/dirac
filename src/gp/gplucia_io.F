@@ -442,7 +442,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
 *
       NTESTL = 0000
-      NTEST = MAX(NTESTG,NTESTL)
+      NTEST = MAX(NTESTG/1000,NTESTL)
 *
       IBLK = 0
       IBASE = 1

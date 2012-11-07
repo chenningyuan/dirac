@@ -1895,7 +1895,7 @@ C***********************************************************************
 *
       NTESTL = 00
 CSK      IPRNT = 000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 *
       if (NTEST.ge.5) then
 *   Print section:

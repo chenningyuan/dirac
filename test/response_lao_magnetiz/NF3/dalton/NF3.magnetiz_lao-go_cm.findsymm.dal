@@ -16,6 +16,8 @@ F3     -.3455290000       1.293136000         -.2806030000
 # decontracted basis set for compatibility with Dirac
 .UNCONT
 **INTEGRALS
+.PRINT
+1
 # point nucleus
 .NUCMOD
 1
@@ -34,7 +36,7 @@ F3     -.3455290000       1.293136000         -.2806030000
 !.GAUGEO
 ! 0.00  0.00  0.00
 .PRINT
-3 
+2 
 !.NOLOND
 !.SHIELD
 .MAGNET
