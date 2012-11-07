@@ -16,6 +16,9 @@ rem enable keyring....
 
 rem initialize GIT_SSH to make PuTTy keyring work
 set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
+echo "I have GIT_SSH=%GIT_SSH%"
+echo "I have SVN_SSH=%SVN_SSH%"
+echo "I have PLINK_PROTOCOL=%PLINK_PROTOCOL%"
 
 rem download fresh Dirac - MUST HAVE full path of git
 C:\Git\bin\git.exe pull 
