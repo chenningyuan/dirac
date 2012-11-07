@@ -1514,12 +1514,12 @@ C
 
       write(lupri,*) '*** Polarizable Embedding Playground ***'    
      
-!    edh: For large-large part   
+!    edh: For large-large part (not needed for now) 
 
-      ketlrg = .true. 
-      bralrg = .true.      
-      ketsml = .false.
-      brasml = .false.
+!      ketlrg = .true. 
+!      bralrg = .true.      
+!      ketsml = .false.
+!      brasml = .false.
 
 !       edh: Its is neccesary to construct a triangular matrix for
 !       pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
@@ -1530,20 +1530,40 @@ C
  
 ! edh: Note that there is a factor 2 difference for diagonal elem.
 ! in DALTON and DIRAC. For non-diagonal elem it is a factor 4. 
+
       k = 1    
-      do i = 1, ntbas(1)
-!        do j = i, ntbas(1)
+!     ! LL block
+!     do i = 1, ntbas(1)
+!        do j = 1, i
+!           if (i == j) then
+!               dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+!              write(lupri,*) 'diag LL', 0.5d0*dlmat_triangle(k)
+!           else
+!               dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+!              write(lupri,*) 'non-diag LL', 0.5d0*dlmat_triangle(k)
+!           end if
+!           k = k + 1
+!        end do
+!     end do
+      ! SS block
+      do i = ntbas(1) + 1, ntbas(0)
          do j = 1, i
-            if (i == j) then
-               dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-!               write(lupri, *) 'diagonal 2', dmat_triangle(k)
-            else
-               dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-!               write(lupri, *) 'off-diagonal 2', dmat_triangle(k)
+            if (j > ntbas(1)) then
+               if (i == j) then
+                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+               write(lupri,*) 'diag SS, j', 0.5d0*dlmat_triangle(k), j
+               else
+                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+            write(lupri,*) 'non-diag SS, j', 0.25d0*dlmat_triangle(k), j
+               end if
             end if
             k = k + 1
          end do
       end do
+
+        write(lupri,*), 'DENSITY MATRIX'
+        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &              1,(/1, 2, 3, 4/),LUPRI)
 
 !      if (ketlrg .and. bralrg) then
 !        print *, 'raboof fock before'
@@ -1556,22 +1576,57 @@ C
      &               dalwrk=work(kfree:kfree + lfree))
         eqmmm = work(kfree)
         ! F = F + M
-        k = 1    
-        do i = 1, ntbas(1)
+       ! LL block
+        k = 1
+!       do i = 1, ntbas(1)
 !          do j = i, ntbas(1)
+!          do j = 1, i
+!             if (i == j) then ! edh: Conversion from DALTON to DIRAC
+!                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+!    &                                    + flmat_triangle(k)
+!           write(lupri,*) 'diag LL Fock',fock((i-1)*ntbas(0) + j)
+!             write(lupri,*) 'fock contrib.', flmat_triangle(k)
+!             else
+!                fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+!    &                                    + flmat_triangle(k)
+!                fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+!    &                                    + flmat_triangle(k)
+!           write(lupri,*) 'non-diag LL  Fock',fock((i-1)*ntbas(0) + j)
+!           write(lupri,*) 'fock contrib.', flmat_triangle(k)
+!               end if
+!               k = k + 1 
+!            end do
+!       end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
            do j = 1, i
-              if (i == j) then ! edh: Conversion from DALTON to DIRAC
-                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                    + flmat_triangle(k)
-              else
-                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                    + flmat_triangle(k)
+              if (j > ntbas(1)) then
+                  if (i == j) then
+                     fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                               + flmat_triangle(k)
+             write(lupri,*) 'diag SS Fock', fock((i-1)*ntbas(0) + j)
+             write(lupri,*) 'fock contrib.', flmat_triangle(k)
+                 else
+                 fock((i-1)*ntbas(0) + j) =fock((i-1)*ntbas(0) + j)
+     &                                  + flmat_triangle(k)
                  fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                    + flmat_triangle(k)
-             end if 
-             k = k + 1
-          end do
-       end do
+     &                                   + flmat_triangle(k)
+             write(lupri,*) 'non-diag SS Fock', fock((i-1)*ntbas(0) + j)
+             write(lupri,*) 'fock contrib.', flmat_triangle(k)
+                 end if
+            end if 
+            k = k + 1
+           end do
+        end do
+
+        do k = 1, nnbbasx
+        write(lupri,*) 'k, dmat(k), fock(k), flmat_tri(k)',k, dmat(k), 
+     &                                        fock(k), flmat_triangle(k)
+        end do
+
+        write(lupri,*), 'FOCK MATRIX'
+        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &              1,(/1, 2, 3, 4/),LUPRI)
 
 !         call output(flmat_triangle,1,nbast,1,nbast,nbast,nbast,1,lupri)
 !        write(lupri,*), 'flmat_triangle'
@@ -1581,35 +1636,11 @@ C
 
 !       stop 1
 !        print *, 'raboof fock after'
-!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!        CALL PRQMAT(DMAT,NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),
 !     &              1,(/1, 2, 3, 4/),LUPRI)
 
         deallocate(dlmat_triangle)
         deallocate(flmat_triangle)
-
-!    edh: For small-small part   
-
-!      ketlrg = .true. 
-!      bralrg = .true.
-!      ketsml = .false.
-!      brasml = .false.
-
-!      k = 1
-!      do i = 1, ntbas(1)
-!        do j = i, ntbas(1)
-!         do j = 1, i
-!            if (i == j) then
-!               dsmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(2) + j)
-!               write(lupri, *) 'diagonal 2', dmat_triangle(k)
-!            else
-!               dsmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(2) + j)
-!               write(lupri, *) 'off-diagonal 2', dmat_triangle(k)
-!            end if
-!            k = k + 1
-!         end do
-!      end do
-
-
 
 #endif
 

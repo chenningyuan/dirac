@@ -1835,7 +1835,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         i = 1
         do point = npoints(myid-1)+1, npoints(myid)
-! edh: Note that Tk integrals have been modified (not changed here)
+! edh: Note that Tk integrals may have to be modified (not changed here)
             call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
             Vqm(1,i) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
@@ -2196,7 +2196,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
-! edh: Note that Tk_integrals have been modified (not changed here)
+! edh: Note that Tk_integrals may have to be modified (not changed here)
                 call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
                 do j = 1, 3
                     Fqm(j,i) = dot(denmats, Tk_ints(:,j))
@@ -2946,8 +2946,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zpd(1,j) * Tfm(1)
             end do
-! Edh:      Tk_integrals changed -large-large component option added
-            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), .false., gauss, .true., .true., .false., .false.)
+! Edh:      Tk_integrals may have to modified
+            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), .false., gauss)
             Zpd_ints = Zpd(1,j) * Zpd_ints
 !            call Mk_integrals(Zpd_ints, Rpd(:,j), Zpd(:,j))
             do m = 1, ndens
@@ -3007,6 +3007,8 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     allocate(Tsm(ncomps))
     allocate(symfacs(ncomps))
     allocate(Mk_ints(nnbas,ncomps))
+
+    Mk_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
     Eel_2 = 0.0d0
@@ -4014,8 +4016,8 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
     end if
 
     ncomps = size(Mk_ints, 2)
-!   Edh: Tk_integrals routine have been modified
-    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0,.true., .true., .false., .false.)
+!   edh: Tk_integrals routine may have to be modified
+    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
 
     ! get symmetry factors
     allocate(factors(ncomps))
