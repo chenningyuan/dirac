@@ -171,10 +171,7 @@ list_of_tests_to_run = []
 executed_from_subdir = os.path.isfile('%s/menu' % current_directory)
 if len(sys.argv) == 1:
     if executed_from_subdir:
-        #list_of_tests_to_run.append(root_directory + '/test/' + current_directory.split('/')[-1])
-        test_to_append=os.path.join(root_directory,'test',current_directory.split)
-        #print 'test_to_append=',test_to_append
-        list_of_tests_to_run.append(test_to_append)
+        list_of_tests_to_run.append(root_directory + '/test/' + current_directory.split('/')[-1])
     else:
         # user has given no arguments and we are not in a test subdir: print help and exit
         print(parser.format_help().strip())
