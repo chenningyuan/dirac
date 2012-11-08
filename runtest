@@ -185,17 +185,14 @@ if options.individual:
         for w in options.individual.split():
             test_to_append=os.path.join(root_directory, 'test', w)
             list_of_tests_to_run.append(test_to_append)
-            #print 'test_to_append=',test_to_append
 
 if options.all or (options.quick and not options.individual):
     file = os.path.join(root_directory,'test','list_of_tests')
-    #print 'list_of_test=',file
     if os.path.isfile(file):
         f = open(file, 'r')
         for line in f.readlines():
             test_to_append=os.path.join(root_directory,'test',line.strip('\n'))
             list_of_tests_to_run.append(test_to_append)
-            #print 'test to append=',test_to_append
         f.close()
     else:
         print('file %s does not exist' % file)
@@ -590,7 +587,6 @@ class run:
          # run the launcher
          if program_is_dirac:
              launcher = os.path.join(root_directory, "pam")
-             #print  "launcher=",launcher
              command = 'python ' + launcher + ' --inp=%s --mol=%s %s' % (self.inp, self.mol, self.launcher_flags)
          if program_is_dalton:
              if options.launcher:
@@ -611,8 +607,6 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
-         #print  "command=",command
-
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(shlex.split(command),
