@@ -107,11 +107,11 @@ module polarizable_embedding
     ! energy contributions
     ! electrostatic
     real(dp), dimension(:,:), allocatable, public, save :: Ees
-    ! edh: We need "access" to Eel to substract it 
-!   from the two electron part in DIRAC
-!    real(dp), public, save :: Eelsav
-    real(dp), dimension(:), allocatable, public, save :: Eelsav
-    ! polarization
+    ! edh: Ees = Eel + Enuc: We need "access" to Eel to substract it 
+    ! from the two electron part in DIRAC
+!    real(dp), dimension(:), allocatable, public, save :: Eelsav
+    real(dp), public, save :: Eelsav 
+   ! polarization
     real(dp), dimension(:,:), allocatable, public, save :: Epol
 
     ! multipole moments
@@ -2734,6 +2734,9 @@ end subroutine pe_fock
 
 subroutine pe_electrostatic(denmats, fckmats)
 
+!edh: for debugging
+#include "priunit.h"
+
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
 
@@ -2742,6 +2745,7 @@ subroutine pe_electrostatic(denmats, fckmats)
     integer :: i, j, k
     real(dp) :: Enuc, Esave
     real(dp), dimension(ndens) :: Eel
+    real(dp), dimension(6) :: Eeltmp
     real(dp), dimension(:), allocatable :: tmpfcks
 
     if (myid == 0) then
@@ -2768,11 +2772,13 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
     else
         Esave = 0.0d0
+        Eeltmp = 0.0d0
         if (lmul(0)) then
             if (fock) then
                 call es_multipoles(M0s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M0s, denmats, Eel, Enuc)
+                Eeltmp(1) = Eel(1)
             end if
             do i = 1, ndens
                 Ees(0,i) = Ees(0,i) + Eel(i) + Enuc
@@ -2784,6 +2790,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 call es_multipoles(M1s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M1s, denmats, Eel, Enuc)
+                Eeltmp(2) = Eel(1)
             end if
             do i = 1, ndens
                 Ees(1,i) = Ees(1,i) + Eel(i) + Enuc
@@ -2795,6 +2802,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 call es_multipoles(M2s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M2s, denmats, Eel, Enuc)
+                Eeltmp(3) = Eel(1)
             end if
             do i = 1, ndens
                 Ees(2,i) = Ees(2,i) + Eel(i) + Enuc
@@ -2806,6 +2814,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 call es_multipoles(M3s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M3s, denmats, Eel, Enuc)
+                Eeltmp(4) = Eel(1)
             end if
             do i = 1, ndens
                 Ees(3,i) = Ees(3,i) + Eel(i) + Enuc
@@ -2817,6 +2826,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 call es_multipoles(M4s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M4s, denmats, Eel, Enuc)
+                Eeltmp(5) = Eel(1)
             end if
             do i = 1, ndens
                 Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
@@ -2828,6 +2838,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 call es_multipoles(M5s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
                 call es_multipoles(M5s, denmats, Eel, Enuc)
+                Eeltmp(6) = Eel(1) 
             end if
             do i = 1, ndens
                 Ees(5,i) = Ees(5,i) + Eel(i) + Enuc
@@ -2884,6 +2895,11 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
 #endif
     end if
+
+!    Save the electronic energy from multipoles 
+     if (energy) then
+         Eelsav = sum(Eeltmp) 
+     end if
 
 end subroutine pe_electrostatic
 
@@ -2985,7 +3001,6 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     integer :: kfoo
     integer :: jfoo
     integer :: ifoo
-!    real(dp), dimension(:) :: Eelsav
 
     integer :: site, ncomps
     integer :: i, j, k, l, m, n
@@ -3007,14 +3022,10 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
     allocate(Tsm(ncomps))
     allocate(symfacs(ncomps))
     allocate(Mk_ints(nnbas,ncomps))
-    allocate(Eelsav(ndens))
 
     Mk_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
-    Eel_2 = 0.0d0
-    Eelsav = 0.0d0
-
     i = 1
     do site = nsites(myid-1)+1, nsites(myid)
         if (abs(maxval(Mks(:,i))) < zero) then
@@ -3052,14 +3063,16 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         end do
         i = i + 1
     end do
+    
+!        do i = 1, ndens
+!            Epe(i) = sum(Ees(:,i)) + sum(Epol(:,i)) + sum(Epd(:,i))
+!        end do
 
-    Eelsav = sum(Eel(:))
-
-    write(lupri,*) '***edh: Eel(1)', Eel(1)
-    write(lupri,*) '***edh: Enuc', Enuc
+!    write(lupri,*) '***edh: Eel', sum(Eel(:))
+!    write(lupri,*) '***edh: Enuc', Enuc
 
 
-    deallocate(Tsm, symfacs, Mk_ints, Eelsav)
+    deallocate(Tsm, symfacs, Mk_ints)
 
 end subroutine es_multipoles
 
@@ -3096,6 +3109,8 @@ subroutine pe_polarization(denmats, fckmats)
             end if
             do i = 1, ndens
                 Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Fpd
+! edh:
+            write(luout,*) 'Fels', Fels(:,i) 
             end do
         end if
         call induced_dipoles(M1inds, Ftots)
@@ -3153,6 +3168,9 @@ end subroutine pe_polarization
 
 subroutine induced_dipoles(M1inds, Fs)
 
+!edh: for debugging
+#include "priunit.h"
+
     real(dp), dimension(:,:), intent(out) :: M1inds
     real(dp), dimension(:,:), intent(in) :: Fs
 
@@ -3169,6 +3187,7 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
     if (pe_iter) then
+    write(luout,*) 'edh:pe_iter true in ind. dip routine?'
         if (myid == 0) then
             if (fock .and. scfcycle <= 5) then
                 redthr = 10**(5-scfcycle)
@@ -3214,12 +3233,14 @@ subroutine induced_dipoles(M1inds, Fs)
                                      &0, MPI_COMM_WORLD, ierr)
                 end if
 #endif
-
+                ! edh: spmv FORTRAN routine y := a*A*x + b*y, call spmv(ap, x, y,uplo,a,b) 
+                ! a, b: scalars (here 1 and not written?); ap: nxn symmetric, packed ('uplo': L = lower triangular); x,y: n-vectors                 
                 l = 1
                 do i = nsites(myid-1)+1, nsites(myid)
                     if (zeroalphas(i)) cycle
                     call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
                     l = l + 3
+                write(lupri,*) 'P1s,', P1s(:,i)
                 end do
 
 #if defined(VAR_MPI)
@@ -3324,7 +3345,7 @@ subroutine induced_dipoles(M1inds, Fs)
                     if (myid == 0) then
                         M1tmp = M1inds(l:l+2,n)
                         Ftmp = Ftmp + Fs(l:l+2,n)
-                        call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
+!edh                    call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
                         norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
                     end if
 

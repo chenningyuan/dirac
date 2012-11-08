@@ -36,6 +36,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     ! non-zero components for the operator, the first dimension is for bra and
     ! ket sub-shells, the last is the number of non-zero components, which should
     ! be 1 for non-relativistic calcualtions
+
 !    integer nnz_comp(2, 2)
     integer nnz_comp(2, 1)
     Tk_ints = 0.0d0

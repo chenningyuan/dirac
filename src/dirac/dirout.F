@@ -197,8 +197,6 @@ C            leave this to authors of this part) Done, hjaaj.
             if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Multipole       ', Epol(3,1)
         end if
-        write(lupri,'(/3x,a18,9x,f20.12)')
-     &                    sum(Ees(:,1)) + sum(Epol(:,1))
 !     &          '@ Total PE energy: ',
 !     &                    sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 #endif

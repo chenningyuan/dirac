@@ -1536,9 +1536,9 @@ C
       do i = 1, ntbas(1)
          do j = 1, i
             if (i == j) then
-                dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+!                dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
             else
-                dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+!                dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
             end if
             k = k + 1
          end do
@@ -1548,18 +1548,18 @@ C
          do j = 1, i
             if (j > ntbas(1)) then
                if (i == j) then
-                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+!                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
                else
-                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+!                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
                end if
             end if
             k = k + 1
          end do
       end do
 
-        write(lupri,*), 'DENSITY MATRIX'
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &              1,(/1, 2, 3, 4/),LUPRI)
+!        write(lupri,*), 'DENSITY MATRIX'
+!        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              1,(/1, 2, 3, 4/),LUPRI)
 
         call pe_master('fock', denmats=dlmat_triangle,
      &               fckmats=flmat_triangle, nmats=1,
@@ -1601,22 +1601,18 @@ C
            end do
         end do
 
-        write(lupri,*) 'raboof'
-        do k = 1, nnbbasx
-        write(lupri,*) 'k, dlmat_triangle(k), flmat_tri(k)',k,
-     &                               dlmat_triangle(k), 
-     &                               flmat_triangle(k)
-        end do
+!        write(lupri,*) 'raboof'
+!        do k = 1, nnbbasx
+!        write(lupri,*) 'k, dlmat_triangle(k), flmat_tri(k)',k,
+!     &                               dlmat_triangle(k), 
+!     &                               flmat_triangle(k)
+!        end do
 
-        write(lupri,*), 'FOCK MATRIX'
-        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &              1,(/1, 2, 3, 4/),LUPRI)
+!        write(lupri,*), 'FOCK MATRIX'
+!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              1,(/1, 2, 3, 4/),LUPRI)
 
-!         call output(flmat_triangle,1,nbast,1,nbast,nbast,nbast,1,lupri)
-!        write(lupri,*), 'flmat_triangle'
-!        call outpak(flmat_triangle,nbast,1,lupri)
-
-        write(lupri,*), 'Epe in SCFCY1', Epe
+        write(lupri,*), 'Epol in SCFCY1', Epol
 
 !       stop 1
 !        print *, 'raboof fock after'
@@ -1627,8 +1623,6 @@ C
         deallocate(flmat_triangle)
 
 #endif
-
-
  
 C
 C        Read one-electron Fock matrix from file into CMO
@@ -1957,7 +1951,6 @@ C
 !     pe_module - DIRAC SCF uses square matrices (DALTON uses
 !     triangular)
       allocate(dmat_triangle(nnbbasx))
-!      allocate(Eelsav(ndens))
       dmat_triangle = 0.0d0
 ! Conversion of density matrix to triangular form: 
 
@@ -1991,21 +1984,18 @@ C
      &               denmats=dmat_triangle,
      &               nmats=1,dalwrk=work(kwork:lwork))
 
-      allocate(Eelsav(ndens))
+      write(lupri,*)'Eelsav in dirscf', Eelsav
 
       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
-!     Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
-      Eel = sum(Eelsav(:))
+!      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
 !     E2PART = 1/2*(Gij *Dij). As the DFT potential, Eel (Eelsav) from the 
 !     PE module is added to the E2PART: Here it is substracted again         
-      E2PART = E2PART - (0.5d0 * Eel)
-
-      write(lupri,*)'Eelsav', Eel
+      E2PART = E2PART - (0.5d0 * Eelsav)
 
       dhferg = dhferg + Epe
 
-      deallocate(dmat_triangle, Eelsav)
+      deallocate(dmat_triangle)
 #endif
 
       IF(LVCON) THEN
