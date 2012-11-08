@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -288,9 +288,9 @@ C
  9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
  9003 FORMAT(/'   Sum =',T15,F14.9)
  9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9)/)
+     &            //,(5F14.9))
 C
-      IF ( IPRINT .GE. 5 .AND. .NOT. MOISNO ) THEN
+      IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
             WRITE(LUPRI,'(/1X,A,I3)')
      &           '(RGETNO) Transformation to NO '//

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# export MKL_NUM_THREADS=N
+# export MKL_DYNAMIC=FALSE
+# export OMP_NUM_THREADS=1
+
+export MATH_ROOT=/usr/lib64/atlas
+
+export PATH=$PATH':/home/bast/openmpi/gfortran/bin'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran/lib'
+
+TMP_DIR=/home/bast/trash/scratch-nightly-compile
+SCRATCH_DIR=/home/bast/trash/scratch-nightly-run
+mkdir -p $TMP_DIR
+
+git clone git@repo.ctcc.no:dirac.git $TMP_DIR
+
+cd $TMP_DIR
+
+git checkout release-12
+./pamadm --release
+
+mkdir build
+cd build
+cmake ..
+make release
+tar xvzf DIRAC-12.0.0-Source.tar.gz
+cd DIRAC-12.0.0-Source
+
+./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc17_gfortran-4.7.2_mpi" -D RUNTEST_NR_PROC=2
+cd build
+make Nightly
+
+rm -rf $TMP_DIR $SCRATCH_DIR
+
+exit 0

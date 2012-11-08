@@ -12,11 +12,21 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 rem enable keyring....
-rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias_private_key.ppk
+"C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias_private_key.ppk
+
+rem check the server:
+rem plink -agent git@repo.ctcc.no
+
+rem initialize GIT_SSH to make PuTTy keyring work
+set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
+rem echo "I have GIT_SSH=%GIT_SSH%"
+rem echo "I have SVN_SSH=%SVN_SSH%"
+rem echo "I have PLINK_PROTOCOL=%PLINK_PROTOCOL%"
 
 rem download fresh Dirac - MUST HAVE full path of git
-rem C:\Git\bin\git.exe pull 
+C:\Git\bin\git.exe pull 
 
+rem python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=%DIRAC%\%BUILD%\dirac.x.exe -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
 python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD%
 
 cd %BUILD%

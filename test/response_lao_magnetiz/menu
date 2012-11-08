@@ -1,7 +1,11 @@
 quick
-LiH.dc_ukb.suscp_lao_go=cm.inp LiH.lsym.dir.mol 
-LiH.dc_rkb.suscp_nolao.inp     LiH.lsym.dir.mol 
+LiH/LiH.dc_ukb.linresp_ep_magnetiz_lao-go_cm.inp       LiH/LiH.lsym.mol 
+LiH/LiH.dc_rkb.linresp_ee_magnetiz_lao-go_cm.inp       LiH/LiH.lsym.mol 
+LiH/LiH.levyle.linresp_magnetiz_lao-go_cm.inp          LiH/LiH.lsym.mol 
 
 regular
-LiH.dc_rkb.suscp_lao_go=cm.inp LiH.lsym.dir.mol 
-LiH.levyle.suscp_lao_go=cm.inp LiH.lsym.dir.mol 
+LiH/LiH.dc_ukb.linresp_ep_magnetiz_lao-go_1.inp        LiH/LiH.C1.mol 
+LiH/LiH.dc_rkb.linresp_ee_magnetiz_lao-go_1.inp        LiH/LiH.C1.mol 
+LiH/LiH.levyle.linresp_magnetiz_lao-go_1.inp           LiH/LiH.C1.mol
+LiH/LiH.dc_rkb.openrsp_ee_magnetiz_lao-go_cm.inp       LiH/LiH.C1.mol 
+

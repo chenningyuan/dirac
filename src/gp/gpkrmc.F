@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -905,7 +905,7 @@ C
 C
       CALL QENTER('ROTCMO')
       CALL GETTIM(CPU1,WALL1)
-      IF (IPRINT .GE. 5) CALL HEADER('Output from ROTCMO',-1)
+      IF (IPRINT .GE. 20) CALL HEADER('Output from ROTCMO',-1)
 C
 #ifndef OLDCODE
 C
@@ -925,7 +925,7 @@ C
      &           'N','N',IP,XKAPPA,NORBT,NORBT,NZ,
      &           D0,IP,WORK(KKSQ),NORBI,NORBI,NZ)
 C
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: -kappa^2',-1)
          CALL PRQMAT(WORK(KKSQ),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -936,7 +936,7 @@ C
       CALL QDIAG(NZ,NORBI,WORK(KKSQ),NORBI,NORBI,
      &           WORK(KEIG),1,WORK(KV),NORBI,NORBI,
      &           WORK(KFREE),LFREE,IERR)
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: V matrix (eigenvector)',-1)
          CALL PRQMAT(WORK(KV),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO: eigenvalues',-1)
@@ -973,7 +973,7 @@ C
             WORK(KSIN+IADDR) = SIN(SQEIG)/SQEIG
          END IF
       END DO
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: sin(d)/d',-1)
          CALL PRQMAT(WORK(KSIN),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO: cos(d)',-1)
@@ -992,7 +992,7 @@ C
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KFREE),LFREE,IPRINT)
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
          CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1007,7 +1007,7 @@ C
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KFREE),LFREE,IPRINT)
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
          CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1019,7 +1019,7 @@ C
      &           'N','N',IP,WORK(KCOS),NORBI,NORBI,NZ,
      &           'N','N',IP,XKAPPA,NORBT,NORBT,NZ,
      &           D1,IP,WORK(KTMP),NORBI,NORBI,NZ)
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: exp(-kappa)',-1)
          CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1063,7 +1063,7 @@ C
 C     Calculate new orbitals: CMO_{old} exp(-kappa)
 C     ---------------------------------------------
 C
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: old orbitals',-1)
          CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1073,12 +1073,12 @@ CSK   CALL DZERO(WORK(KCOS),NORBXQ)
      &           'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ,
      &           D0,IP,WORK(KCOS),NBASI,NORBI,NZ)
       CALL DCOPY(NBASI*NORBI*NZ,WORK(KCOS),1,CMO,1)
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 20) THEN
          CALL HEADER('ROTCMO: new orbitals',-1)
          CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU4,WALL4)
-      IF (IPRINT .GE. 2) THEN
+      IF (IPRINT .GE. 20) THEN
          CPUTID = SECTID(CPU4-CPU1)
          WALLTID = SECTID(WALL4-WALL1)
          WRITE(LUPRI,9020) CPUTID,WALLTID

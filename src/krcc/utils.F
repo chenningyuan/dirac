@@ -33,6 +33,236 @@ C
       RETURN
       END
 *
+      SUBROUTINE VEC_FROM_DISC_KRCC(VEC,LENGTH,IREW,LBLK,LU)
+*
+* Read vector VEC of length LENGTH from discfile LU in
+* standard LUCIA form, as for example written by VEC_TO_DISC
+*
+* Jeppe Olsen, March 2000
+*
+#include "implicit.inc"
+*. Input
+      DIMENSION VEC(LENGTH)
+*
+      IF(IREW.EQ.1) THEN
+        CALL REWINO(LU)
+      END IF
+      CALL IFRMDS_KRCC(LENGTH2,LBLK2,LU)
+      IF(LENGTH2.NE.LENGTH.OR.LBLK.NE.LBLK2) THEN
+        print*,'LENGTH,LBLK,LENGTH2,LBLK2',LENGTH,LBLK,LENGTH2,LBLK2
+        STOP 'CHECK VEC_FROM_DISC_KRCC'
+      END IF
+C     CALL FRMDSC(VEC,LENGTH,LBLK,LU,IAMZERO,IAMPACKED)
+      READ(LU) (VEC(I),I=1,LENGTH)
+*. Skip the -1 at end
+      IONEM = -1
+      CALL IFRMDS_KRCC(IONEM,LBLK,LU)
+*
+      RETURN
+      END
+*
+      SUBROUTINE ADD_VEC_FROM_DISC_TO_VEC(VEC,LENGTH,IREW,LBLK,LU)
+*
+* Read and add to vector VEC of length LENGTH from discfile LU in
+* standard KRCC form, as for example written by VEC_TO_DISC_KRCC
+*
+* Lasse 2012
+*
+#include "implicit.inc"
+*. Input
+      DIMENSION VEC(LENGTH)
+* Scratch
+      DIMENSION SCR(LBLK)
+*
+      IF(IREW.EQ.1) THEN
+        CALL REWINO(LU)
+      END IF
+*
+      CALL IFRMDS_KRCC(LENGTH2,LBLK2,LU)
+      print*,'LENGTH2,LBLK2',LENGTH2,LBLK2
+      IF(LENGTH2.NE.LENGTH.OR.LBLK.NE.LBLK2) THEN
+        print*,'LENGTH,LBLK,LENGTH2,LBLK2',LENGTH,LBLK,LENGTH2,LBLK2
+        STOP 'CHECK ADD_VEC_FROM_DISC_TO_VEC'
+      END IF
+*
+C     print*,'LENGTH,LBLK',LENGTH,LBLK
+C     IF(LENGTH.GT.LBLK) THEN
+C       IDIVIDE = LENGTH/LBLK
+C       ICHECK = IDIVIDE*LBLK
+C       IDIFF = LENGTH - ICHECK
+C       ISTART = 1
+C       DO I=1,IDIVIDE
+C         IEND = ISTART + LBLK
+C         READ(LU) (SCR(J),J=1,LBLK)
+C         DO J =1,LBLK
+C           print*,'VEC(ISTART +J),SCR(J),J',VEC(ISTART +J),SCR(J),J
+C           VEC(ISTART +J) = VEC(ISTART +J) + SCR(J)
+C         END DO
+C         ISTART = IEND + 1
+C       END DO
+C       IEND = ISTART + IDIFF
+C       READ(LU) (SCR(I),I=1,IDIFF)
+C       DO J =1,IDIFF
+C         VEC(ISTART +J) = VEC(ISTART +J) + SCR(J)
+C       END DO
+C     ELSE
+C       READ(LU) (SCR(I),I=1,LENGTH)
+C       DO I =1,LENGTH
+C         print*,'VEC(I),SCR(I),I',VEC(I),SCR(I),I
+C         VEC(I) = SCR(I)
+C         VEC(I) = VEC(I) + SCR(I)
+C       END DO
+C     END IF
+      CALL ADD_FRMDSC(VEC,LENGTH,LBLK,LU)
+*. Skip the -1 at end
+      IONEM = -1
+      CALL IFRMDS_KRCC(IONEM,LBLK,LU)
+*
+      RETURN
+      END
+*
+      SUBROUTINE IFRMDS_KRCC(NDIM,LBLK,LU)
+* Will just read the dimension (NDIM) and the blocksize (LBLK) to check
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+      IF(NDIM.NE.-1) THEN
+        READ(LU) NDIM
+        READ(LU) LBLK
+        print*,'NDIM,LBLK',NDIM,LBLK
+      ELSE
+        READ(LU) NDIM
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE ADD_FRMDSC(VEC,NDIM,MBLOCK,IFIL)
+C
+C     ADD VEC FROM DISK FILE IFIL TO VEC
+C
+*. Version allowing zero or more blocks 
+*
+* Lasse 2012
+* 
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION VEC(NDIM)
+* Scratch
+      DIMENSION SCR(MBLOCK)
+*
+C     print*,'NDIM,MBLOCK',NDIM,MBLOCK
+      IF(NDIM.GT.MBLOCK) THEN
+        IDIVIDE = NDIM/MBLOCK
+        ICHECK = IDIVIDE*MBLOCK
+        IDIFF = NDIM - ICHECK
+        ISTART = 1
+C       print*,'IDIVIDE,ICHECK,IDIFF',IDIVIDE,ICHECK,IDIFF
+        DO I=1,IDIVIDE
+          IEND = ISTART + MBLOCK - 1
+C         print*,'ISTART,IEND',ISTART,IEND
+          READ(IFIL) (SCR(J),J=1,MBLOCK)
+          DO J =1,MBLOCK
+C           print*,'VEC(ISTART +J),SCR(J),J',VEC(ISTART +J),SCR(J),J
+            VEC(ISTART +J -1) = VEC(ISTART +J -1) + SCR(J)
+C        print*,'VEC(ISTART +J),SCR(J),J after',VEC(ISTART +J),SCR(J),J
+          END DO
+          ISTART = IEND + 1
+        END DO
+        IEND = ISTART + IDIFF - 1
+C       print*,'ISTART,IEND',ISTART,IEND
+        READ(IFIL) (SCR(I),I=1,IDIFF)
+        DO J =1,IDIFF
+          VEC(ISTART +J -1) = VEC(ISTART +J -1) + SCR(J)
+C         print*,'ISTART +J -1',ISTART +J -1
+        END DO
+      ELSE
+        READ(IFIL) (SCR(I),I=1,NDIM)
+        DO I =1,NDIM
+C         print*,'VEC(I),SCR(I),I',VEC(I),SCR(I),I
+C         VEC(I) = SCR(I)
+          VEC(I) = VEC(I) + SCR(I)
+C         print*,'VEC(I),SCR(I),I after',VEC(I),SCR(I),I
+        END DO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE VEC_TO_DISC_KRCC(VEC,LENGTH,IREW,LBLK,LU)
+*
+* Write vector VEC of length LENGTH to discfile LU in
+* standard LUCIA form
+*
+* 1 : Length as written by ITODSC
+* 2 : The vector as written by TODSC
+* 3 : End of vector, -1 written by ITODSC
+*
+* Jeppe Olsen, March 2000
+*
+* New routine by Lasse 2012 with slightly different format and where the
+* block structure is written in the file. This should give more
+* possibilities for reading in files.
+*
+*
+#include "implicit.inc"
+*. Input
+      DIMENSION VEC(LENGTH)
+*
+      IF(IREW.EQ.1) THEN
+        CALL REWINO(LU)
+      END IF
+      print*,'LENGTH,LBLK',LENGTH,LBLK
+      CALL ITODS_KRCC(LENGTH,LBLK,LU)
+      CALL TODSC_KRCC(VEC,LENGTH,LBLK,LU)
+      IONEM = -1
+      CALL ITODS_KRCC(IONEM,LBLK,LU)
+*
+      RETURN
+      END
+*
+      SUBROUTINE ITODS_KRCC(NDIM,MBLOCK,IFIL)
+C Write the length (NDIM) of the file (IFIL) and the blocksize (MBLOCK)
+      IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER NDIM,MBLOCK
+*
+      IF(NDIM.GE.0) THEN
+        WRITE(IFIL) NDIM
+        WRITE(IFIL) MBLOCK
+      ELSE
+        WRITE(IFIL) NDIM
+      END IF
+C
+      RETURN
+      END
+*
+      SUBROUTINE TODSC_KRCC(VEC,NDIM,MBLOCK,IFIL)
+C Write the vector (VEC) of length (NDIM) of the file (IFIL) and the blocksize (MBLOCK)
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION VEC(NDIM)
+      INTEGER NDIM,MBLOCK
+*
+C     print*,'NDIM,MBLOCK',NDIM,MBLOCK
+      IF(NDIM.GT.MBLOCK) THEN
+        IDIVIDE = NDIM/MBLOCK
+        ICHECK = IDIVIDE*MBLOCK
+        IDIFF = NDIM - ICHECK
+C       print*,'IDIVIDE,ICHECK,IDIFF',IDIVIDE,ICHECK,IDIFF
+        ISTART = 1
+        DO I=1,IDIVIDE
+          IEND = ISTART + MBLOCK - 1
+C         print*,'ISTART,IEND',ISTART,IEND
+          WRITE(IFIL) (VEC(J),J=ISTART,IEND)
+          ISTART = IEND + 1
+        END DO
+        IEND = ISTART + IDIFF - 1
+C       print*,'ISTART,IEND',ISTART,IEND
+        WRITE(IFIL) (VEC(I),I=ISTART,IEND)
+      ELSE
+        WRITE(IFIL) (VEC(I),I=1,NDIM)
+      END IF
+*
+      RETURN
+      END
+*
       SUBROUTINE VEC_TO_DISC(VEC,LENGTH,IREW,LBLK,LU)
 *
 * Write vector VEC of length LENGTH to discfile LU in

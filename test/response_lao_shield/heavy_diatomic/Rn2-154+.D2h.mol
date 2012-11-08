@@ -1,0 +1,24 @@
+INTGRL
+ arbitray basis for RnRn_154+ F2-like molecule
+ just to simulate diatomic with heavy elements
+C   1154 3  X  Y  Z
+       86.    1
+Rn     .0000000000        0.0000000000        2.0000000000
+LARGE    3   1   1   1
+f   6    0
+ 500000
+ 120000
+  70000
+   9000
+   3000
+    900  
+f   5    0    
+    55000
+    12000
+     7000
+     1000
+      600 
+f   2    0
+    1900 
+     900 
+FINISH

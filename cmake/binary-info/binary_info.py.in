@@ -25,6 +25,13 @@ if '@CMAKE_BUILD_TYPE@' == 'Debug':
 elif '@CMAKE_BUILD_TYPE@' == 'Release':
     s.append(['C flags', r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_RELEASE@'])
 
+s.append(['C++ compiler'        , r'@CMAKE_CXX_COMPILER@'  ])
+s.append(['C++ compiler version', r'@CXX_COMPILER_VERSION@'])
+if '@CMAKE_BUILD_TYPE@' == 'Debug':
+    s.append(['C++ flags', r'@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_DEBUG@'])
+elif '@CMAKE_BUILD_TYPE@' == 'Release':
+    s.append(['C++ flags', r'@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_RELEASE@'])
+
 s.append(['BLAS'             , r'@BLAS_LIBRARIES@'       ])
 s.append(['LAPACK'           , r'@LAPACK_LIBRARIES@'     ])
 s.append(['Explicit libs'    , r'@EXPLICIT_LIBS@'        ])

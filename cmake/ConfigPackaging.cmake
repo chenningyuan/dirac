@@ -13,8 +13,8 @@ foreach(
 endforeach()
 
 install(
-    FILES ${PROJECT_BINARY_DIR}/pam-dirac
-    DESTINATION bin
+    FILES ${PROJECT_BINARY_DIR}/pam
+    DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
     GROUP_READ             GROUP_EXECUTE
@@ -105,6 +105,8 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
+        COMMAND echo "DIRAC version: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" > ${EXPORT_DIR}/VERSION
+        COMMAND echo "Git hash:      ${GIT_REVISION}" >> ${EXPORT_DIR}/VERSION
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
