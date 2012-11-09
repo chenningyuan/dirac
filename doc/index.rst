@@ -64,9 +64,9 @@ Tutorials and walkthrus
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
 
 * **DFT:**
-  :doc:`TDDFT <tutorials/tddft>` |
-  :doc:`BSSE <tutorials/bsse>` |
-  :doc:`CAM functional <tutorials/dft_cam>`
+  :doc:`TDDFT <tutorials/dft/tddft>` |
+  :doc:`BSSE <tutorials/dft/bsse>` |
+  :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Molecular properties:**
   :doc:`Example calculation <tutorials/prop_sample>`
