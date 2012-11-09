@@ -8,16 +8,17 @@ Setting up DIRAC
   :doc:`Linux, Unix, Mac <installation/installation>` |
   :doc:`Windows <installation/windows>`
 
-* **Testing:**
-  :doc:`Running the test set <installation/tests>` |
-  :doc:`How it works <programmers/testing>`
+* **Math libraries:**
+  :doc:`Detection and linking <installation/math>` |
+  :doc:`MKL environment variables <installation/mkl>` |
+  :doc:`64bit integer support <installation/math_int64>`
 
 * **MPI:**
   :doc:`64bit integer support <installation/mpi_int64>`
 
-* **Math libraries:**
-  :doc:`64bit integer support <installation/math_int64>` |
-  :doc:`MKL environment variables <installation/mkl>`
+* **Testing:**
+  :doc:`Running the test set <installation/tests>` |
+  :doc:`How it works <programmers/testing>`
 
 
 First steps in DIRAC territory
@@ -59,13 +60,19 @@ Tutorials and walkthrus
 * **Modeling the solvent:**
   :doc:`Polarizable continuum model <tutorials/pcm>`
 
+* **Switching relativistic effects off:**
+  :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
+
 * **DFT:**
-  :doc:`TDDFT <tutorials/tddft>` |
-  :doc:`BSSE <tutorials/bsse>` |
-  :doc:`CAM functional <tutorials/dft_cam>`
+  :doc:`TDDFT <tutorials/dft/tddft>` |
+  :doc:`BSSE <tutorials/dft/bsse>` |
+  :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Molecular properties:**
   :doc:`Example calculation <tutorials/prop_sample>`
+
+* **Electronic occupation:**
+  :doc:`Atoms <tutorials/general_scf_sample>`
 
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
@@ -94,21 +101,22 @@ Reference manual
   :doc:`DIRAC <manual/dirac>` |
   :doc:`OPTIMIZE <manual/optimize>` |
   :doc:`GENERAL <manual/general>` |
-  :doc:`INTEGRALS <manual/integrals>` |
   :doc:`HAMILTONIAN <manual/hamiltonian>` |
   :doc:`DFT <manual/dft>` |
-  :doc:`AMFI <manual/amfi>` |
   :doc:`FDE <manual/fde>` |
+  :doc:`GRID <manual/grid>` |
+  :doc:`INTEGRALS <manual/integrals>` |
   :doc:`WAVE FUNCTION <manual/wavefunction>` |
+  :doc:`AMFI <manual/amfi>` |
   :doc:`GOSCIP <manual/goscip>` |
-  :doc:`ANALYZE <manual/analyze>` |
-  :doc:`PROPERTIES <manual/properties>` |
   :doc:`MOLTRA <manual/moltra>` |
   :doc:`DIRRCI <manual/dirrci>` |
+  :doc:`RELADC <manual/reladc>` |
   :doc:`RELCCSD (old) <manual/relccsd_old>` |
   :doc:`RELCCSD <manual/relccsd_new>` |
-  :doc:`RELADC <manual/reladc>` |
-  :doc:`GRID <manual/grid>`
+  :doc:`PROPERTIES <manual/properties>` |
+  :doc:`ANALYZE <manual/analyze>` |
+  :doc:`VISUAL <manual/visual>`
 
 * **Operators and strings:**
   :doc:`One-electron operators <manual/oneel_oper>` |
@@ -145,13 +153,3 @@ Bibliography
 ============
 
 * :doc:`References <references>`
-
-
-Rest - move it to the right place
-=================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/reproducing_nr_results.rst
-   tutorials/general_scf_sample.rst
