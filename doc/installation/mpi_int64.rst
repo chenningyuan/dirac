@@ -26,7 +26,7 @@ For this, type::
 
 if the output is::
 
-  Fort integer size: 8 
+  Fort integer size: 8
 
 then you have a suitable 64-bit Open MPI installation which uses 64-bit
 integers by default.
