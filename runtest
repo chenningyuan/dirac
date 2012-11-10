@@ -168,10 +168,13 @@ parser.add_option_group(group)
 
 list_of_tests_to_run = []
 
-executed_from_subdir = os.path.isfile('%s/menu' % current_directory)
+# miro: replace os.path.isfile('%s/menu' % current_directory) with platform independent command
+executed_from_subdir = os.path.isfile(os.path.join(current_directory,'menu'))
 if len(sys.argv) == 1:
     if executed_from_subdir:
-        list_of_tests_to_run.append(root_directory + '/test/' + current_directory.split('/')[-1])
+        # miro: replace 'root_directory+'/test/'+current_directory.split('/')[-1]' with platform independent command
+        test_to_append=os.path.join(root_directory,'test',os.path.dirname(current_directory))
+        list_of_tests_to_run.append(test_to_append)
     else:
         # user has given no arguments and we are not in a test subdir: print help and exit
         print(parser.format_help().strip())
