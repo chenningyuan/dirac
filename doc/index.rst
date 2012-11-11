@@ -116,8 +116,7 @@ Reference manual
   :doc:`MOLTRA <manual/moltra>` |
   :doc:`DIRRCI <manual/dirrci>` |
   :doc:`RELADC <manual/reladc>` |
-  :doc:`RELCCSD (old) <manual/relccsd_old>` |
-  :doc:`RELCCSD <manual/relccsd_new>` |
+  :doc:`RELCCSD <manual/relccsd>` |
   :doc:`PROPERTIES <manual/properties>` |
   :doc:`ANALYZE <manual/analyze>` |
   :doc:`VISUAL <manual/visual>`
