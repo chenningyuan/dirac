@@ -560,15 +560,15 @@ class run:
              if pgid_dirac is not None:
                  print('runtest: got signal #%s, passing #2 (SIGINT) on to children' % str(signum))
                  if sys.platform != 'win32':
-                     os.killpg(pgid_dirac,signum_kill) 
-                 else: 
+                     os.killpg(pgid_dirac,signum_kill)
+                 else:
                      kill_win(pgid_dirac)
                  if not executed_from_subdir:
                      # time delay for killing
                      # don't delay if this is interactive run from subdir
                      time.sleep(2)
              sys.exit()
-			 
+
          if sys.platform != 'win32':
              signal.signal(signal.SIGHUP,child_signaller)
              signal.signal(signal.SIGPIPE,child_signaller)
@@ -580,7 +580,7 @@ class run:
             signal.signal(signal.SIGFPE,child_signaller)
             signal.signal(signal.SIGILL,child_signaller)
             signal.signal(signal.SIGSEGV,child_signaller)
- 
+
          #miro: platform independent signals
          signal.signal(signal.SIGTERM,child_signaller)
          signal.signal(signal.SIGINT,child_signaller)
@@ -602,7 +602,7 @@ class run:
                  error_message += '\n       try to specify path to your launcher with ./runtest --launcher=path'
                  print(error_message)
                  sys.exit(1)
-          
+
              output_prefix = '%s_%s' % (string.replace(self.inp, '.dal', ''), string.replace(self.mol, '.mol', ''))
              command = launcher + \
                  ' -d %s %s %s 1> %s.stdout 2> %s.stderr' % (self.launcher_flags, \
@@ -806,7 +806,7 @@ class python_command:
      def is_python_command(self):
          return True
      def is_shell_command(self):
-         return False 
+         return False
      def is_run(self):
          return False
 
