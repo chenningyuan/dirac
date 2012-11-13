@@ -4,7 +4,7 @@ rem
 rem True DOS written script for the DIRAC buildup !
 rem
 
-rem cls
+cls
 
 rem  http://www.robvanderwoude.com/batchfiles.php
 rem the directory where your DIRAC sits
@@ -17,8 +17,8 @@ rem set BUILD_STATIC=build_gnu_i8_static
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-rem initialize GIT_SSH to make PuTTy keyring work
-set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
+rem initialize GIT_SSH to make PuTTy keyring work - 
+rem set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
 rem echo "I have GIT_SSH=%GIT_SSH%"
 rem echo "I have SVN_SSH=%SVN_SSH%"
 rem echo "I have PLINK_PROTOCOL=%PLINK_PROTOCOL%"
