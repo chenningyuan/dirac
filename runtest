@@ -18,7 +18,7 @@ from optparse import OptionParser, OptionGroup
 # global variables
 program_is_dirac  = True
 program_is_dalton = False
-pgid_dirac=None # DIRAC process group id of the program process (not the launcher)
+pgid_dirac = None # DIRAC process group id of the program process (not the launcher)
 
 def kill_win(pid):
     """
@@ -36,7 +36,6 @@ if sys.version < '2.4':
     print('runtest requires python version >= 2.4')
     sys.exit(1)
 
-#root_directory = os.path.realpath(__file__)[:-8]
 root_directory = os.path.dirname(os.path.realpath(__file__))
 current_directory = os.path.realpath('.')
 
@@ -168,11 +167,9 @@ parser.add_option_group(group)
 
 list_of_tests_to_run = []
 
-# miro: replace os.path.isfile('%s/menu' % current_directory) with platform independent command
 executed_from_subdir = os.path.isfile(os.path.join(current_directory,'menu'))
 if len(sys.argv) == 1:
     if executed_from_subdir:
-        # miro: replace 'root_directory+'/test/'+current_directory.split('/')[-1]' with platform independent command
         test_to_append=os.path.join(root_directory,'test',os.path.dirname(current_directory))
         list_of_tests_to_run.append(test_to_append)
     else:
@@ -234,7 +231,7 @@ class filter_task:
 
 def set_filter_defaults():
     precision         = 0.0001
-    ignore_below_limit= 1.0e-40 # miro: agreed with Radovan
+    ignore_below_limit= 1.0e-40
     ignore_sign       = False
     start_string      = ''
     start_is_regex    = False
@@ -904,8 +901,6 @@ def main(*args):
                 if os.path.isfile(output_file):
                     # overwrite reference files
                     if options.overwrite:
-                        # miro: replace with platform universal python command
-                        #os.system('cp %s %s' % (task.get_output_name(), output_file))
                         shutil.copy(task.get_output_name(), output_file)
                     # create directory where outputs are compared
                     if not os.path.isdir('compare'):
