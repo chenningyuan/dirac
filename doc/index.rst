@@ -62,7 +62,7 @@ Tutorials and walkthrus
 
 * **Visualization:**
   :doc:`Vector fields <tutorials/visual/visualize>` |
-  :doc:`Orbital densities <tutorials/visual/plotting_orbital_densities>`
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Analysis:**
   :doc:`Mulliken and projection analysis <tutorials/analyze_sample>`
