@@ -39,30 +39,35 @@ echo "PBS_SERVER=$PBS_SERVER"
 echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "PBS_O_QUEUE=$PBS_O_QUEUE"
 echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
+
+
 NPROCS=4 # set number of procs for computations
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo "Running DIRAC cdash buildup at "$timestamp
+echo -e "\n Running DIRAC cdash buildups at "$timestamp
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 #
 #BUILD_GNU=build_GNU_OpenMPI_MKL_ILP64
 BUILD=build_Intel_OpenMPI_MKL_ILP64
 cd $DIRAC
+
 #./pamadm -a --hscc --hsfsdyn --auto
 ./pamadm -a 
+
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+export MKL_NUM_THREADS=$NPROCS; echo "set MKL_NUM_THREADS=$MKL_NUM_THREADS"
+
+echo -e "\n\n Running OpenMPI parallel, dynamic DIRAC buildup in build_Intel_OpenMPI_MKL_ILP64"
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64 -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD
 cd $DIRAC/$BUILD
 make Experimental
-#make ExperimentalSubmit
 
 #
-#  serial DIRAC buildup
+#  serial DIRAC buildup, Intel MKL
 #
-export MKL_NUM_THREADS=$NPROCS
-echo "set MKL_NUM_THREADS=$MKL_NUM_THREADS"
 BUILD_SERIAL=build_Intel_MKL_ILP64_serial
+echo -e "\n\n Running serial, dynamic DIRAC buildup in build_Intel_MKL_ILP64_serial "
 cd $DIRAC
 ./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD_SERIAL/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_MAGNETIZ_FIX=ON  --force $BUILD_SERIAL
 cd $DIRAC/$BUILD_SERIAL
@@ -72,17 +77,22 @@ make Experimental
 #  serial,static DIRAC buildup
 #
 BUILD_SERIAL_STATIC=build_Intel_MKL_ILP64_serial_static
+echo -e "\n\n Running serial, static DIRAC buildup in build_Intel_MKL_ILP64_serial_static"
 cd $DIRAC
 ./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD_SERIAL_STATIC/dirac.x  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_MAGNETIZ_FIX=ON  --force $BUILD_SERIAL_STATIC
 cd $DIRAC/$BUILD_SERIAL_STATIC
 make Experimental 
 
-#BUILD_STATIC=build_Intel_OpenMPI_MKL_ILP64_static
-#cd $DIRAC
-#./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x  -D RUNTEST_NR_PROC=8 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_MAGNETIZ_FIX=ON  --force $BUILD_STATIC
-#cd $DIRAC/$BUILD_STATIC
-#make Experimental 
+#
+# OpenMPI parallel, static
+#
+BUILD_STATIC=build_Intel_OpenMPI_MKL_ILP64_static
+echo -e "\n\n Running OpenMPI parallel, static DIRAC buildup in build_Intel_OpenMPI_MKL_ILP64_static"
+cd $DIRAC
+./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00" -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x  -D RUNTEST_NR_PROC=8 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_MAGNETIZ_FIX=ON  --force $BUILD_STATIC
+cd $DIRAC/$BUILD_STATIC
+make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo "buildup finished at "$timestamp
+echo -e "\n\n All buildups finished at "$timestamp
 exit 0
