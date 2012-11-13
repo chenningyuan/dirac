@@ -29,7 +29,8 @@ First steps in DIRAC territory
 
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
-  :doc:`xyz format <molecule_and_basis/molecule_using_xyz>`
+  :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
@@ -42,13 +43,22 @@ Tutorials and walkthrus
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start>`
 
-* **2- and 4-component Hamiltonians:**
-  :doc:`Sample inputs <tutorials/ham_sample>` |
-  :doc:`2-component Hamiltonians <tutorials/ham2c>` |
-  :doc:`AMFI <tutorials/amfi>`
+* **Restarting and multi-step jobs:**
+  :doc:`SCF <tutorials/restart/scf>` |
+  :doc:`X2C <tutorials/restart/x2c>` |
+  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
-* **Restart:**
-  :doc:`Restarting and multi-step jobs <tutorials/restart>`
+* **2-component Hamiltonians:**
+  :doc:`Menu of 2-component Hamiltonians <tutorials/2c_hamiltonians>`
+
+* **Nonrelativistic limit:**
+  :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
+
+* **DFT:**
+  :doc:`TDDFT <tutorials/dft/tddft>` |
+  :doc:`BSSE <tutorials/dft/bsse>` |
+  :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Visualization:**
   :doc:`Vector fields <tutorials/visualize>` |
@@ -59,17 +69,6 @@ Tutorials and walkthrus
 
 * **Modeling the solvent:**
   :doc:`Polarizable continuum model <tutorials/pcm>`
-
-* **Switching relativistic effects off:**
-  :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
-
-* **DFT:**
-  :doc:`TDDFT <tutorials/dft/tddft>` |
-  :doc:`BSSE <tutorials/dft/bsse>` |
-  :doc:`CAM functional <tutorials/dft/cam>`
-
-* **Molecular properties:**
-  :doc:`Example calculation <tutorials/prop_sample>`
 
 * **Electronic occupation:**
   :doc:`Atoms <tutorials/general_scf_sample>`
@@ -88,9 +87,15 @@ Tutorials and walkthrus
   :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
   :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
 
+
+Getting help
+============
+
 * **Troubleshooting:**
-  :doc:`Memory problems <getting_help/memory>` |
   :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
+
+* **Move somewhere else:**
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
@@ -112,8 +117,7 @@ Reference manual
   :doc:`MOLTRA <manual/moltra>` |
   :doc:`DIRRCI <manual/dirrci>` |
   :doc:`RELADC <manual/reladc>` |
-  :doc:`RELCCSD (old) <manual/relccsd_old>` |
-  :doc:`RELCCSD <manual/relccsd_new>` |
+  :doc:`RELCCSD <manual/relccsd>` |
   :doc:`PROPERTIES <manual/properties>` |
   :doc:`ANALYZE <manual/analyze>` |
   :doc:`VISUAL <manual/visual>`
