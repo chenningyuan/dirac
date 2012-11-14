@@ -205,10 +205,10 @@ def gen_cmake_command():
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
-    # fix for Windows (plus supress warnings)
     if sys.platform != "win32":
-        command += ' cmake -Wno-dev'
+        command += ' cmake'
     else:
+        # fix for windows
         command = ' cmake ' + command
 
     # if compiler starts with 'mp' turn on mpi

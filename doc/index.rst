@@ -61,8 +61,8 @@ Tutorials and walkthrus
   :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Visualization:**
-  :doc:`Vector fields <tutorials/visualize>` |
-  :doc:`Orbital densities <tutorials/plotting_orbital_densities>`
+  :doc:`Vector fields <tutorials/visual/visualize>` |
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Analysis:**
   :doc:`Mulliken and projection analysis <tutorials/analyze_sample>`
