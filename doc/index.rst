@@ -64,14 +64,8 @@ Tutorials and walkthrus
   :doc:`Vector fields <tutorials/visual/visualize>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
-* **Analysis:**
-  :doc:`Mulliken and projection analysis <tutorials/analyze_sample>`
-
 * **Modeling the solvent:**
   :doc:`Polarizable continuum model <tutorials/pcm>`
-
-* **Electronic occupation:**
-  :doc:`Atoms <tutorials/general_scf_sample>`
 
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
