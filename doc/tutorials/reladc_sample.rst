@@ -23,8 +23,18 @@ the spurious (already converged) eigenvalues are projected out. For the
 
 ::
 
-    $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1, VCONV=1.0D-05 $END
-    $LANINP SIPITER=1000, SIPPRNT=100.0 $END
+    **RELADC
+    .DOSIPS
+    .SIPREPS
+     1
+     1
+    .VCONV
+     1.0E-05
+    **LANCZOS
+    .SIPITER
+     1000
+    .SIPPRNT
+     100.0
 
 Since we do not activate DIPs nothing else needs to be specified in the
 &LANINP Namelist.
@@ -86,7 +96,15 @@ diagrams and 600 Lanczos iterations we would have an input like this:
     .ACTIVE
     9..25
     7..22
+    **RELADC
+    .DOSIPS
+    .ADCLEVEL
+     3
+    .SIPREPS
+     8
+     1,2,3,4,5,6,7,8
+   **LACNZOS
+    .SIPITER
+     600
     *END OF
-    $RELADC DOSIPS=T, ADCLEVEL=3, XREPS=1,2,3,4,5,6,7,8, $END
-    $LANINP SIPITER=600 $END
 
