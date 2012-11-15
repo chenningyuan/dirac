@@ -568,9 +568,9 @@ if sys.platform != "win32":
     join_path_dirac='${PROJECT_BINARY_DIR}/dirac.x'
 else:
 #miro: ${PROJECT_BINARY_DIR} contains "/", can not use os.path.join under Windows as this spoils path string with "\"!
-    #join_path_dirac=os.path.join('${PROJECT_BINARY_DIR}','dirac.x.exe')  
+    #join_path_dirac=os.path.join('${PROJECT_BINARY_DIR}','dirac.x.exe')
     join_path_dirac='${PROJECT_BINARY_DIR}/dirac.x.exe'
-	
+
 for test in list_of_tests:
     f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --binary=%s --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, join_path_dirac, test))
 f.close()
