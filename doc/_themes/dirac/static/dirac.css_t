@@ -6,7 +6,7 @@
  * :license: BSD, see LICENSE for details.
  */
 
-{% set page_width = 1000 %}
+{% set page_width = 960 %}
 {% set sidebar_width = 160 %}
 {% set body_font_stack = 'Optima, Segoe, "Segoe UI", Candara, Calibri, Arial, sans-serif' %}
 {% set headline_font_stack = 'Futura, "Trebuchet MS", Arial, sans-serif' %}
@@ -266,7 +266,7 @@ p.admonition-title:after {
 
 pre, tt {
     font-family: {{ code_font_stack }};
-    font-size: 0.9em;
+    font-size: 0.7em;
 }
 
 img.screenshot {
