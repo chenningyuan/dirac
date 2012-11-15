@@ -11,8 +11,8 @@
 .LIST
 -----
 
-Calculate various densities for
-a list of points. Example (3 points; coordinates in bohr)::
+Calculate various densities in few points. Example (3 points; coordinates in
+bohr)::
 
   .LIST
    3
@@ -54,16 +54,18 @@ Example (coordinates in bohr)::
 .2DINT
 ------
 
-Integrate various densities in a plane.
+Integrate various densities in a plane
+using Gauss-Lobatto quadrature.
 The plane is specified using 3 points that have to form a right angle.
 Example (coordinates in bohr)::
 
   .2DINT
    0.0  0.0  0.0     !origin
    0.0  0.0 10.0     !"right"
-   200               !nr of points origin-"right"
+   10                !nr of tiles to the "right"
    0.0 10.0  0.0     !"top"
-   200               !nr of points origin-"top"
+   10                !nr of tiles to the "right"
+   5                 !order of the Legendre polynomial for each tile
 
 
 .. index:: .3D
@@ -92,7 +94,7 @@ Example (coordinates in bohr)::
 .3DADD
 ------
 
-Add space around the cube file
+Add space around the cube file.
 Default (coordinates in bohr)::
 
   .3D_ADD
@@ -286,9 +288,6 @@ Another example (nitrogen atom)::
    2
    1 1-2 1.0
    2 1-3 0.5
-
-Using dominating orbital rotation amplitudes you can use this to plot
-transition densities.
 
 
 .. index:: .LONDON
