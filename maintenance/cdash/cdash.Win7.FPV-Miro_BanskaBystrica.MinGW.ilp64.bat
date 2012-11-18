@@ -23,6 +23,8 @@ rem python setup -D BUILDNAME="Miro-Desktop-Win7_32" -D RUNTEST_TIMEOUT="00:18:0
 python setup -D BUILDNAME="Miro-Desktop-Win7_32_release" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD%
 
 cd %BUILD%
+cmake ..
+mingw32-make clean
 mingw32-make Experimental
 
 rem return to the top of the DIRAC directory
