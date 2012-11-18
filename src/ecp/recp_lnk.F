@@ -1,3 +1,25 @@
+!dirac_copyright_start
+!      Copyright (c) 2012 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the
+!      research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://www.diracprogram.org
+!dirac_copyright_end
+
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0)
 !     Read ECP parameters
       USE RECP_NTR
@@ -273,8 +295,8 @@
 !     P1 X P2 = P3
 !     ============
       RECP_NDPT(1) = ndptag 
-      DO I = 0, nstag-1
-         DO J = 0, nstag-1
+      DO I = 0, MAXREP
+         DO J = 0, MAXREP
             IF (itypag(I).EQ.IRTAB(IGRPAG*10 + J)) 
      &         RECP_IRREP(J+1) = (I+1)
          ENDDO

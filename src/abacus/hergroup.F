@@ -268,13 +268,12 @@ C             it works !!!
 C
       IGROUP = MIN(7,NINT((4*NROTS+8*NINVC+6*NREFL)/3.0))
       GROUP  = GROUPS(IGROUP)
-
-c     export it to ARGOS
-c     ==================
-#ifdef MOD_ECP
+C
+C     export it to ECP module
+C     =======================
+C
       ndptag = ndptags(IGROUP)
       IGRPAG = IGROUP
-#endif
 C
 C     Generate character table
 C     ========================
@@ -409,11 +408,9 @@ C
           WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,I3,1X))')
      &      REP(I),'|',(IXVAL(JSOP(J),I),J=0,MAXREP)
 c           
-c     For ARGOS
-c     =========
-#ifdef MOD_ECP
+c     For ECP module
+c     ==============
             itypag(i) = REP(I)
-#endif            
 c    
   130   CONTINUE
 C

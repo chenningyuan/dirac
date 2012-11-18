@@ -17,11 +17,14 @@ cd %DIRAC%
 rem download fresh Dirac - MUST HAVE full path of git
 C:\Git\bin\git.exe pull origin release-12
 
-python pamadm -a 
+python pamadm --release
 
-python setup -D BUILDNAME="Miro-PC-Desktop-Win7" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64 --force %BUILD%
+rem python setup -D BUILDNAME="Miro-Desktop-Win7_32" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64 --force %BUILD%
+python setup -D BUILDNAME="Miro-Desktop-Win7_32_release" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD%
 
 cd %BUILD%
+cmake ..
+mingw32-make clean
 mingw32-make Experimental
 
 rem return to the top of the DIRAC directory
