@@ -36,8 +36,8 @@ if sys.version < '2.4':
 
 global install_dir
 
-name_of_this_script = os.path.realpath(__file__).split('/')[-1]
-install_dir_default = os.path.realpath(__file__)[:-len(name_of_this_script)]
+name_of_this_script = os.path.basename(os.path.realpath(__file__))
+install_dir_default = os.path.dirname(os.path.realpath(__file__))
 install_dir = install_dir_default
 
 class pam_enviroment:
@@ -393,17 +393,22 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
-                print
-                self.list_scratch_dir()
+                 self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
                 if not self.silent:
-                    print '  deleting the scratch directory \n'
-                try:
-                    shutil.rmtree(self.scratch_dir)
-                except:
-                    print_error_message('can not delete scratch directory due to system reasons !')
+                    sys.stdout.write('  going to delete the scratch directory...')
+                count=1
+                #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
+                # remaining 'alive' even after its ending 
+                while os.path.isdir(self.scratch_dir):
+                    try:
+                        shutil.rmtree(self.scratch_dir)
+                    except:
+                        count = count + 1
+                sys.stdout.write('done (after '+str(count)+' attempts)')
+                print
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
@@ -413,6 +418,7 @@ class pam_enviroment:
         '''prints message on the DIRAC executable exit according to the input parameter'''
         self.elapsed_time=(time.time() - self.start_time)
         elapsed_time_str = time.strftime('%Hh%Mm%Ss', time.gmtime(self.elapsed_time))
+        print
         print '  exit date      :', datetime.datetime.now()
         print '  elapsed time   :', elapsed_time_str
         print '  exit code      :', self.returncode

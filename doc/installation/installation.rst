@@ -21,7 +21,7 @@ It is your machine and you have Ubuntu or Debian::
 
   $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
 
-Similar mechanisms exist for other distributions or 
+Similar mechanisms exist for other distributions or
 operating systems. Please consult Google.
 
 If it is a cluster, please ask the Administrator to install/upgrade CMake.
@@ -80,7 +80,7 @@ Configure for sequential compilation using gfortran/gcc::
   $ ./setup --fc=gfortran --cc=gcc
 
 You get the idea. The configuration is normally pretty good at detecting math libraries
-automatically, provided you export proper paths, see :ref:`linking_math`.
+automatically, provided you export proper environment variables, see :ref:`linking_math`.
 
 
 Out of source compilation
@@ -151,43 +151,6 @@ You can do this instead::
   $ cd /buildpath
   $ cmake /sourcepath
   $ make
-
-
-.. _linking_math:
-
-Linking to external math libraries
-----------------------------------
-
-Typically you will want to link to external math (BLAS and LAPACK) libraries,
-for instance provided by MKL or Atlas.
-
-The CMake configuration script will automatically find them if you define MATH_ROOT::
-
-  $ export MATH_ROOT='/opt/intel/mkl'
-
-Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
-correct paths depending on the processor and the default integer type.  If the
-MKL libraries that you want to use reside in
-/opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
-
-  $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
-
-Then::
-
-  $ ./setup [--flags]                 # do not need to define --math
-  $ cd build
-  $ make
-
-Alternatively::
-
-  $ cd build
-  $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
-  $ make
-
-If automatic detection of math libraries fails for whatever reason, you can
-always call the libraries explicitly like here::
-
-  $ ./setup --explicit-libs="-L/path -lfoo -lbar"
 
 
 Running CMake using GUI

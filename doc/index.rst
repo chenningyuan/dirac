@@ -8,16 +8,17 @@ Setting up DIRAC
   :doc:`Linux, Unix, Mac <installation/installation>` |
   :doc:`Windows <installation/windows>`
 
-* **Testing:**
-  :doc:`Running the test set <installation/tests>` |
-  :doc:`How it works <programmers/testing>`
+* **Math libraries:**
+  :doc:`Detection and linking <installation/math>` |
+  :doc:`MKL environment variables <installation/mkl>` |
+  :doc:`64bit integer support <installation/math_int64>`
 
 * **MPI:**
   :doc:`64bit integer support <installation/mpi_int64>`
 
-* **Math libraries:**
-  :doc:`64bit integer support <installation/math_int64>` |
-  :doc:`MKL environment variables <installation/mkl>`
+* **Testing:**
+  :doc:`Running the test set <installation/tests>` |
+  :doc:`How it works <programmers/testing>`
 
 
 First steps in DIRAC territory
@@ -28,7 +29,8 @@ First steps in DIRAC territory
 
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
-  :doc:`xyz format <molecule_and_basis/molecule_using_xyz>`
+  :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
@@ -41,31 +43,29 @@ Tutorials and walkthrus
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start>`
 
-* **2- and 4-component Hamiltonians:**
-  :doc:`Sample inputs <tutorials/ham_sample>` |
-  :doc:`2-component Hamiltonians <tutorials/ham2c>` |
-  :doc:`AMFI <tutorials/amfi>`
+* **Restarting and multi-step jobs:**
+  :doc:`SCF <tutorials/restart/scf>` |
+  :doc:`X2C <tutorials/restart/x2c>` |
+  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
-* **Restart:**
-  :doc:`Restarting and multi-step jobs <tutorials/restart>`
+* **2-component Hamiltonians:**
+  :doc:`Menu of 2-component Hamiltonians <tutorials/2c_hamiltonians>`
+
+* **Nonrelativistic limit:**
+  :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
+
+* **DFT:**
+  :doc:`TDDFT <tutorials/dft/tddft>` |
+  :doc:`BSSE <tutorials/dft/bsse>` |
+  :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Visualization:**
-  :doc:`Vector fields <tutorials/visualize>` |
-  :doc:`Orbital densities <tutorials/plotting_orbital_densities>`
-
-* **Analysis:**
-  :doc:`Mulliken and projection analysis <tutorials/analyze_sample>`
+  :doc:`Vector fields <tutorials/visual/visualize>` |
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Modeling the solvent:**
   :doc:`Polarizable continuum model <tutorials/pcm>`
-
-* **DFT:**
-  :doc:`TDDFT <tutorials/tddft>` |
-  :doc:`BSSE <tutorials/bsse>` |
-  :doc:`CAM functional <tutorials/dft_cam>`
-
-* **Molecular properties:**
-  :doc:`Example calculation <tutorials/prop_sample>`
 
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
@@ -81,9 +81,15 @@ Tutorials and walkthrus
   :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
   :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
 
+
+Getting help
+============
+
 * **Troubleshooting:**
-  :doc:`Memory problems <getting_help/memory>` |
   :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
+
+* **Move somewhere else:**
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
@@ -91,24 +97,28 @@ Reference manual
 ================
 
 * **Input sections:**
-  :doc:`DIRAC <reference_manual/dirac>` |
-  :doc:`GENERAL <reference_manual/general>` |
-  :doc:`INTEGRALS <reference_manual/integrals>` |
-  :doc:`HAMILTONIAN <reference_manual/hamiltonian>` |
-  :doc:`WAVE FUNCTION <reference_manual/wavefunction>` |
-  :doc:`GOSCIP <reference_manual/goscip>` |
-  :doc:`ANALYZE <reference_manual/analyze>` |
-  :doc:`PROPERTIES <reference_manual/properties>` |
-  :doc:`MOLTRA <reference_manual/moltra>` |
-  :doc:`DIRRCI <reference_manual/dirrci>` |
-  :doc:`RELCCSD (old) <reference_manual/relccsd_old>` |
-  :doc:`RELCCSD <reference_manual/relccsd_new>` |
-  :doc:`RELADC <reference_manual/reladc>` |
-  :doc:`GRID <reference_manual/grid>`
+  :doc:`DIRAC <manual/dirac>` |
+  :doc:`OPTIMIZE <manual/optimize>` |
+  :doc:`GENERAL <manual/general>` |
+  :doc:`HAMILTONIAN <manual/hamiltonian>` |
+  :doc:`DFT <manual/dft>` |
+  :doc:`FDE <manual/fde>` |
+  :doc:`GRID <manual/grid>` |
+  :doc:`INTEGRALS <manual/integrals>` |
+  :doc:`WAVE FUNCTION <manual/wavefunction>` |
+  :doc:`AMFI <manual/amfi>` |
+  :doc:`GOSCIP <manual/goscip>` |
+  :doc:`MOLTRA <manual/moltra>` |
+  :doc:`DIRRCI <manual/dirrci>` |
+  :doc:`RELADC <manual/reladc>` |
+  :doc:`RELCCSD <manual/relccsd>` |
+  :doc:`PROPERTIES <manual/properties>` |
+  :doc:`ANALYZE <manual/analyze>` |
+  :doc:`VISUAL <manual/visual>`
 
 * **Operators and strings:**
-  :doc:`One-electron operators <reference_manual/oneel_oper>` |
-  :doc:`Orbital strings <reference_manual/orb_strings>`
+  :doc:`One-electron operators <manual/oneel_oper>` |
+  :doc:`Orbital strings <manual/orb_strings>`
 
 
 Developers
@@ -140,26 +150,4 @@ Developers
 Bibliography
 ============
 
-* :doc:`References <bib>`
-
-
-Rest - move it to the right place
-=================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/reproducing_nr_results.rst
-   tutorials/general_scf_sample.rst
-
-
-Does not belong here - will be moved elsewhere else
-===================================================
-
-.. toctree::
-   :maxdepth: 1
-
-   welcome/features.rst
-   welcome/citing.rst
-   installation/licensing.rst
-   programmers/grasp.rst
+* :doc:`References <references>`

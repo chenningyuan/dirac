@@ -114,10 +114,10 @@ C
       CALL QENTER('idistdrv')
 *
       NTESTL = 00
-      NTEST = max(iprtra,NTESTL)
+      NTEST = max(iprtra/100,NTESTL)
 !     NTEST = 000
 *
-      IF( NTEST .ge. 1 ) THEN
+      IF( NTEST .ge. 5 ) THEN
       WRITE(LUWRT,*) ' ************************************************'
       WRITE(LUWRT,*) ' *                                              *'
       WRITE(LUWRT,*) ' *  Transformer man                             *'
@@ -318,7 +318,7 @@ C
 ************************************************
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
-      if (NTEST.ge.1) then
+      if (NTEST.ge.7) then
        write(LUWRT,*)
        write(LUWRT,*) '********************************************'
        write(LUWRT,*) '* Distributing MOLTRA transformed          *'
@@ -629,7 +629,7 @@ C
       integer :: is_zero
 *
       NTESTL = 0000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 !     NTEST = 1
  
 !     constant
@@ -728,13 +728,13 @@ C     NOINT_FILE = .TRUE.
             write(LUWRT,*) 'Current type: ',IXTP
             call abend2('Quitting.')
           end if
-!         if (NTEST.ge.1) then
+          if (NTEST.ge.1) then
             write(LUWRT,*) '======================'
             write(LUWRT,*) 'Processing type ',IXTP
             write(LUWRT,*) '======================'
             write(LUWRT,*) 'ISOBEX partition:'
             call iwrtma(ISOBEX(1,1,IXTP),NGAS,4,NGAS,4)
-!         end if
+          end if
 *
 * write statement about next integral type (to file)
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
@@ -792,10 +792,10 @@ C     NOINT_FILE = .TRUE.
             ISMCAEND = NIRR_PN
           end if
 *
-!         if (NTEST.ge.5.and.IRI.eq.1) then
+          if (NTEST.ge.5.and.IRI.eq.1) then
             write(LUWRT,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
             write(LUWRT,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
-!         end if
+          end if
 *
 * Symmetry loops
           do ISM_C=ISMCSTA,ISMCEND,1
@@ -804,14 +804,14 @@ C     NOINT_FILE = .TRUE.
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-!               if (NTEST.ge.2000.and.IRI.eq.1) then
+                if (NTEST.ge.2000.and.IRI.eq.1) then
                   write(LUWRT,*) 'Creator symm.      :',ISM_C
                   write(LUWRT,*) 'Annihilator symm.  :',ISM_A
                   write(LUWRT,*) 'Creator alpha symm.:',ISM_CA
                   write(LUWRT,*) 'Creator beta symm. :',ISM_CB
                   write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
                   write(LUWRT,*) 'Annihi. beta symm. :',ISM_AB
-!               end if
+                end if
 *
 *. Generate strings of these symmetries
 *. obtain strings
@@ -1205,7 +1205,7 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-                              if (NTEST.ge.1) then
+                              if (NTEST.ge.4) then
                                  write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)')
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',
      &                              (INDEX(M),M=1,4),
@@ -1333,7 +1333,7 @@ C
 !#define LUCI_DEBUG
 !     NTESTL = 5000
       NTESTL = 0000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
  
 !     constant
       is_zero = 0
@@ -1364,7 +1364,7 @@ C     NOINT_FILE = .TRUE.
       if(ISPINFREE.eq.1.or.nz.eq.1) IRILP = 1
 !
 !     open ASCII file for checking integral sorting information
-      if (NTEST.ge.1) then
+      if (NTEST.ge.2) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
           open(unit=LUINGR,file=NLUSC94_MPI(1:LUSC94_MPIL),
@@ -1402,7 +1402,7 @@ C     NOINT_FILE = .TRUE.
 !     Loop over real/imaginary part
 !
       do IRI=1,IRILP,1
-        if (NTEST.ge.1) then
+        if (NTEST.ge.2) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
             if (IRI.eq.1.and.NTEST.ge.2) write(LUWRT,*) 'REAL LOOP'
             if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
@@ -1441,9 +1441,9 @@ C     NOINT_FILE = .TRUE.
 *
 * write statement about next integral type (to file)
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-            if (NTEST.ge.1) 
+            if (NTEST.ge.2) 
      &          call integral_type(ISOBEX(1,1,IXTP),NGAS,ITPSV,LUINGR)
-            if (NTEST.ge.1) 
+            if (NTEST.ge.2) 
      &        write(LUINGR,'(A,I5)') 'Type ',IXTP
           end if
 *
@@ -1919,7 +1919,7 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-                              if (NTEST.ge.1) then
+                              if (NTEST.ge.2) then
                                 write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)') 
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',
      &                              (INDEX(M),M=1,4),
@@ -1973,14 +1973,14 @@ C FIXME !! Uncommented sign here!!
 *       ^ End loop over excitation types
       end do
 *     ^ End loop over real/imaginary
-      if (NTEST.ge.1.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
+      if (NTEST.ge.2.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
      &   close(LUINGR)
       close(LUINSV)
       NALLINT = ICOUNT_I8 - 1
 C
  300  CONTINUE
 C
-      if (NTEST.ge.1) then
+      if (NTEST.ge.2) then
         write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
         write(LUWRT,*) '  Total number of integrals   : ',NALLINT
         write(LUWRT,*) '  Number of diagonal integrals: ',NDIAINT
@@ -2030,7 +2030,7 @@ C
       end do
 *
       NTESTL = 0
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/100)
 *
       if (IRI.eq.1) then
         MZ = 1

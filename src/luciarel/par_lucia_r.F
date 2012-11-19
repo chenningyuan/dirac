@@ -6323,7 +6323,7 @@ C
      &                      IROOT,LUIN1LIST,LUIN2LIST,LUOUTLIST,
      &                      NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                      MY_IOFF_LUIN1,MY_IOFF_LUIN2,MY_IOFF_LUOUT,
-     &                      SCRRED,NVEC,LUIN1,LUIN2,LUOUT)
+     &                      SCRRED,NVEC,LUIN1,LUIN2,LUOUT,MAXVEC)
 C
 C     Written by  S. Knecht         - June 4 2007
 C
@@ -6347,7 +6347,7 @@ C
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
-      DIMENSION RNRM(MAXIT,*), EIG(MAXIT,*)
+      DIMENSION RNRM(MAXIT,*), EIG(MAXVEC,MAXIT)
       DIMENSION SCRRED(*)
       LOGICAL CONVER, RTCNV(*)
       INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
@@ -6513,7 +6513,7 @@ C
 C     check for convergence
 C
       IF(RNORM.LT. TEST .OR. (ITER.GT.2.AND. 
-     &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+     &  ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.E_CONV)) THEN
 C
         RTCNV(IROOT) = .TRUE.
       ELSE
