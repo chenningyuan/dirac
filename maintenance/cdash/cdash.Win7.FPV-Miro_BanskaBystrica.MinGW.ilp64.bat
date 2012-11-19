@@ -20,7 +20,7 @@ C:\Git\bin\git.exe pull origin release-12
 python pamadm --release
 
 rem python setup -D BUILDNAME="Miro-Desktop-Win7_32" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64 --force %BUILD%
-python setup -D BUILDNAME="Miro-Desktop-Win7_32_release" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Desktop-Win7_32_release" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD%
 
 cd %BUILD%
 cmake ..
