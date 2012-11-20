@@ -942,8 +942,9 @@ def main(*args):
 
             if options.showdiff:
                 if result_text == 'FAIL':
-                    #miro: replace with platform universal python command
-                    os.system('more compare/%s.diff' % task.get_output_name())
+                    #miro: more command is common for both Linux and Windows, heureka !
+                    compare_cmd='more '+os.path.join('compare',str(task.get_output_name())+'.diff')
+                    os.system(compare_cmd)
 
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print('')
