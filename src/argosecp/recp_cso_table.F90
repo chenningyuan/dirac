@@ -93,6 +93,7 @@ END SUBROUTINE RECP_CSO_TABLE_HRECUR
 SUBROUTINE RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
 ! # tables for core potential and spin-orbit integrals.
   USE RECP_IPT
+  USE RECP_FUNCTION1
   implicit real*8 (a-h,o-z)
 #include "inc_print.h"
   parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
@@ -101,19 +102,13 @@ SUBROUTINE RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
   igh =1
   nn = 5
   do i = 1, 3
-    CALL RECP_CSO_TABLE_HERMIT(nn,IPT_SH_HPT(igh),IPT_SH_HWT(igh),eps)
-    igh = igh + nn
-    nn = 2*nn
+     CALL RECP_CSO_TABLE_HERMIT(nn,IPT_SH_HPT(igh),IPT_SH_HWT(igh),eps)
+     igh = igh + nn
+     nn = 2*nn
   enddo
 
-! # compute double factorials.
-  IPT_SH_DFAC(1)=a1
-  IPT_SH_DFAC(2)=a1
-  fi=a0
-  do i=1,ndfac-2
-    fi=fi+a1
-    IPT_SH_DFAC(i+2)=fi * IPT_SH_DFAC(i)
-  enddo
+! compute double factorials.
+  CALL RECP_FN1_DFAC(ndfac)
 
 ! # compute binomial coefficients.
   inew=1
