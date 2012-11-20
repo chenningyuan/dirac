@@ -950,13 +950,10 @@ def main(*args):
 
             if options.showdiff:
                 if result_text == 'FAIL':
-<<<<<<< HEAD
                     #miro: more command is common for both Linux and Windows, heureka !
-                    compare_cmd='more '+os.path.join('compare',str(task.get_output_name())+'.diff')
+                    compare_cmd='more '+os.path.join('compare',
+                                                      str(task.get_output_name())+'.diff')
                     os.system(compare_cmd)
-=======
-                    os.system('more compare/%s.diff' % task.get_output_name())
->>>>>>> 06c2fac835a271506704c5e7500ca362b131e1a1
 
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print('')
