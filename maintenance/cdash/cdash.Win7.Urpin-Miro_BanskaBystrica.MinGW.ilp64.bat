@@ -8,7 +8,7 @@ set DIRAC=C:\Users\milias\Documents\Work\QCH\dirac_git\trunk
 
 set BUILD=build_MinGW64_ilp64_serial
 set BUILD_DBG=build_MinGW64_ilp64_serial_debug
-set BUILD_STATIC=build_MinGW64_ilp64_serial_debug_static
+set BUILD_STATIC=build_MinGW64_ilp64_serial_debug_check_static
 set BUILD_I32LP64=build_MinGW64_i32lp64_serial
 
 rem go to the local DIRAC directory
@@ -32,7 +32,7 @@ rem mingw32-make Experimental
 
 rem return to the top of the DIRAC directory
 cd %DIRAC%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-static-release" --debug --static  -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=%DIRAC%\%BUILD_STATIC%\dirac.x.exe  --generator="MinGW Makefiles" --int64=on --force %BUILD_STATIC%
+python setup --check -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-check-static-release" --debug --static  -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=%DIRAC%\%BUILD_STATIC%\dirac.x.exe  --generator="MinGW Makefiles" --int64=on --force %BUILD_STATIC%
 cd %BUILD_STATIC%
 mingw32-make Experimental
 
