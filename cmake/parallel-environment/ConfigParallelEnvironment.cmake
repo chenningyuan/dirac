@@ -3,7 +3,6 @@ include(CheckFortranSourceCompiles)
 if(ENABLE_SGI_MPT)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -lmpi")
     set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -lmpi")
-    set(MPI_FOUND TRUE) # radovan: not so nice hack
 endif()
 
 if(ENABLE_MPI)
@@ -13,7 +12,7 @@ if(ENABLE_MPI)
     endif()
 endif()
 
-if(MPI_FOUND)
+if(MPI_FOUND OR ENABLE_SGI_MPT)
 
     # test whether we are able to compile a simple MPI program
     # if not, we stop configuration
