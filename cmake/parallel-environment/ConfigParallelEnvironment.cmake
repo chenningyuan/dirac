@@ -14,6 +14,22 @@ if(ENABLE_MPI)
 endif()
 
 if(MPI_FOUND)
+
+    # test whether we are able to compile a simple MPI program
+    # if not, we stop configuration
+    exec_program(
+        cat
+        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90
+        OUTPUT_VARIABLE _source
+        )
+    check_fortran_source_compiles(
+        ${_source}
+        MPI_COMPATIBLE
+        )
+    if(NOT MPI_COMPATIBLE)
+        message(FATAL_ERROR "Your compiler is not MPI compatible")
+    endif()
+
     add_definitions(-DVAR_MPI)
     include_directories(${MPI_INCLUDE_PATH})
 
