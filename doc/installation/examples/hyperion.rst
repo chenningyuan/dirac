@@ -49,7 +49,7 @@ For maximum performance we will add hardware-specific optimization flags::
 
 Finally we configure and build the binary::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --int64 --sgi-mpt -D MPI_INCLUDE_PATH=/divers/sgi_mpt/opt/sgi/mpt/mpt-1.26/include
+  $ ./setup --fc=ifort --cc=icc --cxx=icpc --int64 --sgi-mpt
   $ make
 
 
