@@ -170,8 +170,7 @@ list_of_tests_to_run = []
 executed_from_subdir = os.path.isfile(os.path.join(current_directory,'menu'))
 if len(sys.argv) == 1:
     if executed_from_subdir:
-        test_to_append=os.path.join(root_directory,'test',os.path.dirname(current_directory))
-        list_of_tests_to_run.append(test_to_append)
+        list_of_tests_to_run.append(current_directory)
     else:
         # user has given no arguments and we are not in a test subdir: print help and exit
         print(parser.format_help().strip())
@@ -607,6 +606,7 @@ class run:
                                                              self.mol,            \
                                                              output_prefix,       \
                                                              output_prefix)
+
          if program_is_dirac:
              if sys.platform != 'win32':
                  p = subprocess.Popen(shlex.split(command),
@@ -614,7 +614,7 @@ class run:
                                       stdout=subprocess.PIPE,
                                       preexec_fn=os.setsid)
              else:
-                 p = subprocess.Popen(command,
+                 p = subprocess.Popen(shlex.split(command),
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
              pgid_dirac = p.pid # save DIRAC process group id for latter killing of subprocesses
@@ -670,9 +670,10 @@ class run:
              filter_name['out'] = 'filter'
          if program_is_dalton:
              # dalton has several outputs and thus several filters
-             output_suffix_l = ['out', 'stdout']
-             filter_name['out']    = 'filter.out'
-             filter_name['stdout'] = 'filter.stdout'
+             output_suffix_l = ['out', 'stdout', 'rsp_tensor']
+             filter_name['out']        = 'filter.out'
+             filter_name['stdout']     = 'filter.stdout'
+             filter_name['rsp_tensor'] = 'filter.rsp_tensor'
 
          if program_is_dirac:
              output_prefix = string.replace(self.get_output_name(), '.out', '')
@@ -685,6 +686,13 @@ class run:
 
          for output_suffix in output_suffix_l:
              output_name = output_prefix + '.' + output_suffix
+
+             if program_is_dalton:
+                 # in dalton we can have out, stdout and rsp_tensor
+                 # very often we do not have all 3 outputs
+                 # so we check whether such an output exists
+                 if not os.path.isfile('result/%s' % filter_name[output_suffix]):
+                     break
 
              # read filter and get list of filter tasks
              filter_task_l = read_filter('result/%s' % filter_name[output_suffix])
@@ -899,11 +907,11 @@ def main(*args):
             if exit == 'NORMAL':
                 output_file = os.path.join('result', task.get_output_name())
                 if os.path.isfile(output_file):
-                    # overwrite reference files
                     if options.overwrite:
+                        # overwrite reference files
                         shutil.copy(task.get_output_name(), output_file)
-                    # create directory where outputs are compared
                     if not os.path.isdir('compare'):
+                        # create directory where outputs are compared
                         os.mkdir('compare')
 
                     task.apply_filter()
