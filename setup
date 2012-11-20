@@ -11,6 +11,7 @@ import sys
 import string
 import re
 import subprocess
+import shutil
 
 sys.path.append('cmake')
 from argparse import ArgumentParser
@@ -326,7 +327,14 @@ def main():
     command = gen_cmake_command()
     status = run_cmake(command, build_path)
 
-    if not 'Configuring incomplete' in status:
+    if 'Configuring incomplete' in status:
+        # configuration was not successful
+        if (build_path == default_path):
+            # remove build_path iff not set by the user
+            # otherwise removal can be dangerous
+            shutil.rmtree(default_path)
+    else:
+        # configuration was successful
         save_setup_command(sys.argv, build_path)
         print_build_help(build_path)
 

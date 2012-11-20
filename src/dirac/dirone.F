@@ -623,15 +623,14 @@ C
 C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
-
-#ifdef MOD_ECP
-c
+C
 C      *********************************************
 C      **                                         **
-C      **      this part adds ARGOS ARPP          **
+C      **      this part adds ECP AREP            **
 C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
+C
       IF (ECPCALC) then
          OPEN(59,FORM='UNFORMATTED',FILE='RECP_INT_C')
          CALL MEMGET('REAL',KARPP,NNBBAST,WORK,KFREE,LFREE)
@@ -642,7 +641,7 @@ C      *********************************************
          ENDDO
          CALL MEMREL('NUCAT1.ECPCALC',WORK,KWORK,KARPP,KFREE,LFREE)
       ENDIF
-#endif
+C
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 
 C
