@@ -1240,7 +1240,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
-                line = line[:-1]
+                line = line.split()[0]   # first entry is each line should the the name of the node
                 if line != self.master:  # append only slaves different from the master
                     self.nodes.append(line)
             # make a unique list of nodes - remove all duplicities from the list
