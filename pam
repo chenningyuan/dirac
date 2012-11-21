@@ -1536,13 +1536,17 @@ Options are also read from the ~/.dirac and .diracrc files."""
         """
         archive (pack) working files at the end of the DIRAC program run
         """
+
         # set name of the archive file
-
-        archive_name = self.output_name + '.tgz'
+        archive_name = self.output_name + '.' + self.output_suffix
+        archive_name = '.'.join(archive_name.split('.')[:-1]) + '.tgz'
         archive_full_name = os.path.join(self.input_directory,archive_name)
-        tar = tarfile.open(archive_full_name, 'w:gz')
 
-      # select existing files in self.archive_files for the archive
+        # backup
+        if not self.nobackup:
+            backup_file(some_file=archive_full_name, upto=None)
+
+        # select existing files in self.archive_files for the archive
 
         existing_archive_files = []
         for p in self.archive_files:
@@ -1553,11 +1557,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files
 
-      # backup
-
-        if not self.nobackup:
-            backup_file(some_file=archive_full_name, upto=None)
-
+        tar = tarfile.open(archive_full_name, 'w:gz')
         for filename in existing_archive_files:
             tar.add(filename)
         tar.close()
