@@ -20,6 +20,9 @@ Setting up DIRAC
   :doc:`Running the test set <installation/tests>` |
   :doc:`How it works <programmers/testing>`
 
+* **Example installations and run scripts:**
+  :doc:`Hyperion (Toulouse) <installation/examples/hyperion>`
+
 
 First steps in DIRAC territory
 ==============================
