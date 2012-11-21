@@ -21,7 +21,7 @@ python pamadm --release
 
 rem No Integer*8 - we are on 32-bit Windows !
 rem python setup -D BUILDNAME="Miro-Desktop-Win7_32" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64 --force %BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Desktop-Win7_32-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" -D RUNTEST_BINARY=%DIRAC%\%BUILD%\dirac.x.exe --force %BUILD%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Desktop-Win7_32-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD%
 cd %BUILD%
 cmake ..
 mingw32-make clean
@@ -29,7 +29,7 @@ mingw32-make Experimental
 
 rem go to the local DIRAC directory
 cd %DIRAC%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Desktop-Win7_32-check-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles"  -D RUNTEST_BINARY=%DIRAC%\%BUILD_CHECK%\dirac.x.exe --force %BUILD_CHECK%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Desktop-Win7_32-check-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --force %BUILD_CHECK%
 cd %BUILD_CHECK%
 cmake ..
 mingw32-make clean
