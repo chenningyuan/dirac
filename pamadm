@@ -570,7 +570,7 @@ else:
     join_path_dirac='${PROJECT_BINARY_DIR}/dirac.x.exe'
 
 for test in list_of_tests:
-    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --binary=%s --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, join_path_dirac, test))
+    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --binary=%s --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} --tests=%s)\n' % (test, join_path_dirac, test))
 f.close()
 
 # write pamadm flags to file
