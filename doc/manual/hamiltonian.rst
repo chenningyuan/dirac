@@ -1,11 +1,11 @@
 
 
 .. _hamiltonian:
-.. index:: **HAMILTONIAN
+
 ===============
 \*\*HAMILTONIAN
 ===============
-
+.. index:: **HAMILTONIAN
 Specification of the Hamiltonian.
 
 This section defines the electronic Hamiltonian that is to be used.  Internally
@@ -23,10 +23,13 @@ point group and time reversal symmetry. The latter requirement precludes the
 introduction of external magnetic fields.
 
 
+
+
 .. _.LVCORR:
-.. index:: .LVCORR
+
 .LVCORR
 -------
+.. index:: .LVCORR
 
 This keyword activates the Dirac--Coulomb Hamiltonian in which (SS|SS) integrals
 are neglected and replaced by an interatomic SS correction (calculated
@@ -41,10 +44,10 @@ is the default Hamiltonian choice since DIRAC11.
 
 
 .. _.GAUNT:
-.. index:: .GAUNT
+
 .GAUNT
 ------
-
+.. index:: .GAUNT
 Add the Gaunt interaction to the Hamiltonian. This will increase the
 computational time significantly but is important when studying
 spin-orbit splittings and/or performing accurate studies of light
@@ -63,10 +66,11 @@ with AMFI contributions it uses both spin-same and spin-other orbit
 mean-field parts.
 
 
-.. index:: .DOSSSS
+
+.. _.DOSSSS:
 .DOSSSS
 -------
-
+.. index:: .DOSSSS
 This keyword gives unmodified Dirac-Coulomb Hamiltonian which was
 the default untill the DIRAC11 release. Explicitly including (SS\|SS) type
 Coulomb integrals does give the most accurate description of the system
@@ -77,9 +81,10 @@ interaction.
 
 
 .. _.X2C:
-.. index:: .X2C
+
 .X2C
 ----
+.. index:: .X2C
 
 Keyword referring to the new module for the Exact 2-Component
 relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
@@ -90,9 +95,10 @@ default in the development version unless :ref:`.NOAMFI` is specified.
 
 
 .. _.X2Cmmf:
-.. index:: .X2Cmmf
+
 .X2Cmmf
 -------
+.. index:: .X2Cmmf
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian approach
 within the new module for the Exact 2-Component relativistic Hamiltonian, Refs.
@@ -106,11 +112,11 @@ The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC are
 planned to be released soon.
 
+.. _.ECP:
 
-.. index:: .ECP
 .ECP
 ----
-
+.. index:: .ECP
 .. warning:: documentation missing
 
 
@@ -122,10 +128,10 @@ planned to be released soon.
 
 
 .. _.SPINFREE:
-.. index:: .SPINFREE
+
 .SPINFREE
 ---------
-
+.. index:: .SPINFREE
 Use Dyall's spin-free Hamiltonian, Ref. [Dyall1994]_ ,
 to obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
@@ -139,9 +145,10 @@ contributions.
 
 
 .. _.LEVY-LEBLOND:
-.. index:: .LEVY-LEBLOND
+
 .LEVY-LEBLOND
 -------------
+.. index:: .LEVY-LEBLOND
 
 Use the nonrelativistic Lévy-Leblond Hamiltonian [Levy1967]_.
 
@@ -150,10 +157,10 @@ because it redefines the metric used in the calculation.
 
 
 .. _.NONREL:
-.. index:: .NONREL
+
 .NONREL
 -------
-
+.. index:: .NONREL
 Standard nonrelativistic calculation based on the Schrodinger equation.  Should
 give identical energy results as with the :ref:`.LEVY-LEBLOND` keyword.
 
@@ -162,9 +169,9 @@ traditional one-component mode.
 
 
 .. _.DFT:
-.. index:: .DFT
 .DFT
 ----
+.. index:: .DFT
 
 Perform a Kohn--Sham density functional theory calculation. In the following line you must specify
 the desired DFT functional.
@@ -205,20 +212,21 @@ functionals together with their weights::
 -  PBE
 -  PBE0
 
+.. _.DFTAUTO:
 
-.. index:: .DFTAUTO
 .DFTAUTO
 --------
-
+.. index:: .DFTAUTO
 Perform a Kohn--Sham calculation using functionals provided by the XCFun
 library. In the following line you must specify the desired DFT
 functional.
 
 
 .. _.LVNEW:
-.. index:: .LVNEW
+
 .LVNEW
 ------
+.. index:: .LVNEW
 
 Modification of :ref:`.LVCORR` that obtains the atomic small
 component charge via a Mulliken analysis instead of the original table
@@ -227,11 +235,11 @@ in the molecule will be wrong if you have specified a basis set which
 does not give the correct small-electron charge because of deficiencies
 in the core region.)
 
+.. _.X2COLD:
 
-.. index:: .X2COLD
 .X2COLD
 -------
-
+.. index:: .X2COLD
 One-step Exact (infinite order) 2-Component relativistic Hamiltonian
 [Ilias2007]_.  This keyword was called .X2C prior to DIRAC10.  DIRAC runs in
 the (memory saving) 2-component mode. Note that one should combine this option
@@ -242,10 +250,10 @@ version unless :ref:`.NOAMFI` specified.
 
 
 .. _.X2C4:
-.. index:: .X2C4
+
 .X2C4
 -----
-
+.. index:: .X2C4
 One-step Exact (infinite order) 2-Component relativistic Hamiltonian
 [Ilias2007]_ .
 
@@ -253,31 +261,31 @@ DIRAC runs in the 4-component mode. This mode is useful if you wish to restart
 from a previous 4-component calculation and vice versa. AMFI is added in the
 development version unless :ref:`.NOAMFI` specified.
 
+.. _.NOSPIN:
 
-.. index:: .NOSPIN
 .NOSPIN
 -------
-
+.. index:: .NOSPIN
 Implies :ref:`.SPINFREE`, but also remove all spin-symmetry-breaking
 (quaternion "imaginary" or "triplet" terms) from property gradients in response
 calculations. Used for analyzing magnetic properties similarly to how it is
 done with non-relativistic methods.
 
+.. _.HFXFAC:
 
-.. index:: .HFXFAC
 .HFXFAC
 -------
-
+.. index:: .HFXFAC
 Weight of exchange in Fock matrix construction. Default::
 
   .HFXFAC
    1.0
 
+.. _.OPERATOR:
 
-.. index:: .OPERATOR
 .OPERATOR
 ---------
-
+.. index:: .OPERATOR
 Specification of an additional one-electron operator in the Hamiltonian.
 The operator must be totally symmetric both under the molecular point
 group and time reversal symmetry. The field strength of the operator is
@@ -292,10 +300,10 @@ more information and explicit examples.
 
 
 .. _.INTFLG:
-.. index:: .INTFLG
+
 .INTFLG
 -------
-
+.. index:: .INTFLG
 Specify what two-electron integrals to include. All other modules use
 this as the default value. By default
 include LL and SL, exclude SS integrals (1 = include; 0 = do not
@@ -306,30 +314,31 @@ include)::
 
 
 .. _.BSS:
-.. index:: .BSS
+
 .BSS
 ----
+.. index:: .BSS
 
 Use the 2-component relativistic Hamiltonian obtained after the
 Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite
 basis set, see Ref. [Ilias2005]_. Calculations using the 2-component BSS
 Hamiltonian are running only with large component basis functions.
 
+.. _.ONESTEP:
 
-.. index:: .ONESTEP
 .ONESTEP
 --------
-
+.. index:: .ONESTEP
 Together with the :ref:`.BSS` keyword - for the infinite order only
 - invokes the one-step infinite order method (which is otherwise called
 by :ref:`.X2C`, :ref:`.X2C4` keywords).
 
 
 .. _.NOAMFI:
-.. index:: .NOAMFI
+
 .NOAMFI
 -------
-
+.. index:: .NOAMFI
 Do not include the AMFI contribution where
 AMFI is the default. This holds also for keywords :ref:`.X2C` and
 :ref:`.X2C4`). In the DIRAC08 distribution version .NOAMFI was the
@@ -340,11 +349,11 @@ default.
              overestimation of spin-orbit effects since these would be represented by
              one-electron terms only, without two-electron shielding.
 
+.. _.DO2C4C:
 
-.. index:: .DO2C4C
 .DO2C4C
 -------
-
+.. index:: .DO2C4C
 After iterations at the two-component level ascend to the
 four-component level.
 
@@ -352,20 +361,20 @@ four-component level.
 
 
 .. _.DO4C2C:
-.. index:: .DO4C2C
+
 .DO4C2C
 -------
-
+.. index:: .DO4C2C
 After iterations at the four-component level do the relativistic
 transformation to the two-component level.
 
 .. warning :: only in development version
 
+.. _.USE\_DF:
 
-.. index:: .USE_DF
 .USE\_DF
 --------
-
+.. index:: .USE_DF
 .. warning :: only in development version
 
 After the four-component DC-SCF method do the infinite order transformation
@@ -376,10 +385,10 @@ Used only with keyword :ref:`.DO4C2C`.
 
 
 .. _.CONT2C:
-.. index:: .CONT2C
+
 .CONT2C
 -------
-
+.. index:: .CONT2C
 .. warning :: only in development version
 
 After four-component DC-SCF continue with two-component iterations.
@@ -396,10 +405,10 @@ Integer (3,4,5) should be specified in free format on the line following
 
 
 .. _.ZORA:
-.. index:: .ZORA
+
 .ZORA
 -----
-
+.. index:: .ZORA
 Use the zeroth-order regular approximation [vanLenthe1994]_,[vanLenthe1996]_,[Visscher2000]_,
 of the Dirac Hamiltonian in
 the Hartree-Fock procedure. Works only for closed-shell systems. The
@@ -419,19 +428,19 @@ the 2-component (0; ZORA) or 4-component metric (1; ZORA4).
 The second number specifies whether the orbital energies should be
 unmodified (0; normal ZORA) or scaled (1; scaled ZORA).
 
+.. _.SOLVENT:
 
-.. index:: .SOLVENT
 .SOLVENT
 --------
-
+.. index:: .SOLVENT
 Model solvent effects by placing the molecule in a spherical cavity in a
 dielectric continuum.
 
+.. _.FDE:
 
-.. index:: .FDE
 .FDE
 ----
-
+.. index:: .FDE
 Activates the frozen density embedding (FDE) functionality. Options can
 be specified under the \*FDE menu.
 
@@ -439,11 +448,11 @@ In order to use FDE, the user must generated an embedding potential with
 the ADF code (see the developer's website http://www.scm.com
 for further information).
 
+.. _.NOSFMU:
 
-.. index:: .NOSFMU
 .NOSFMU
 -------
-
+.. index:: .NOSFMU
 In spin-free correlated calculations group multiplication tables are by
 default set up as direct products of spatial and spin symmetries. This
 flag turns off this, and so the spin-free case is treated similar to the
@@ -451,31 +460,31 @@ spin-orbit case.
 
 .. warning :: only in development version
 
+.. _.PRINT:
 
-.. index:: .PRINT
 .PRINT
 ------
-
+.. index:: .PRINT
 Print level. Default::
 
   .PRINT
    0
 
+.. _.ONESYS:
 
-.. index:: .ONESYS
 .ONESYS
 -------
-
+.. index:: .ONESYS
 Ignore two-particle interactions.
 
 The keyword ensures the diagonalization of the bare nuclei Hamiltonian
 matrix without proceeding to the iterative SCF method.
 
+.. _.URKBAL:
 
-.. index:: .URKBAL
 .URKBAL
 -------
-
+.. index:: .URKBAL
 Unrestricted kinetic balance.
 
 The default is restricted kinetic balance. This is imposed by deleting
@@ -485,41 +494,41 @@ preprojection is sensitive to linear dependencies and should therefore
 preferably be used in conjunction with the spherical transformation of
 both large and small components.
 
+.. _.FREEPJ:
 
-.. index:: .FREEPJ
 .FREEPJ
 -------
-
+.. index:: .FREEPJ
 Project out all free positronic solutions from the MO space.
 
+.. _.VEXTPJ:
 
-.. index:: .VEXTPJ
 .VEXTPJ
 -------
-
+.. index:: .VEXTPJ
 Project out all external field positronic solutions from the MO space.
 
+.. _.NOSMLV:
 
-.. index:: .NOSMLV
 .NOSMLV
 -------
-
+.. index:: .NOSMLV
 Delete SS nuclear attraction integrals. This will take out contributions
 to the one-electron spin-orbit interaction and the Darwin interaction.
 
+.. _.SMLV1C:
 
-.. index:: .SMLV1C
 .SMLV1C
 -------
-
+.. index:: .SMLV1C
 Neglect potential for multi-center SS blocks, i.e. multi-center SS
 nuclear attraction integrals and multi-center SS two-electron integrals.
 
+.. _.ONECAP:
 
-.. index:: .ONECAP
 .ONECAP
 -------
-
+.. index:: .ONECAP
 Consider taking the `.SMLV1C <#.SMLV1C>`_ model one step further. Only
 one-center contributions to the LS and SS two-electron integrals and SS
 nuclear attraction integrals are calculated explicitly. The
@@ -531,11 +540,11 @@ molecular gradient.
 
 .. warning:: broken link
 
+.. _.ONECNV:
 
-.. index:: .ONECNV
 .ONECNV
 -------
-
+.. index:: .ONECNV
 Employ the one-center model as given by :ref:`.ONECAP` until
 convergence to a specified THRESHOLD, whereafter the full set of
 two-electron integrals will be used::
@@ -546,11 +555,11 @@ two-electron integrals will be used::
 This threshold applies to whatever
 convergence criteria has been selected (:ref:`.EVCCNV`, :ref:`.ERGCNV` or :ref:`.FCKCNV`).
 
+.. _.CMPEIG:
 
-.. index:: .CMPEIG
 .CMPEIG
 -------
-
+.. index:: .CMPEIG
 When some two-component relativistic Hamiltonian is chosen, compare
 eigenvalues between the 'parent' four-component Dirac and derived
 two-component one-electron Hamiltonians.
@@ -560,156 +569,159 @@ eigenvalues are identical with four-component Dirac counterparts. For
 the second-order (and lower order) Douglas--Kroll--Hess Hamiltonian they
 slightly differ.
 
+.. _.SCQSET:
 
-.. index:: .SCQSET
 .SCQSET
 -------
-
+.. index:: .SCQSET
 .. warning:: documentation missing
 
+.. _.SPINF2:
 
-.. index:: .SPINF2
 .SPINF2
 -------
-
+.. index:: .SPINF2
 .. warning:: documentation missing
 
+.. _.HFXMU:
 
-.. index:: .HFXMU
 .HFXMU
 ------
-
+.. index:: .HFXMU
 .. warning:: documentation missing
 
+.. _.YREQ1:
 
-.. index:: .YREQ1
 .YREQ1
 ------
-
+.. index:: .YREQ1
 .. warning:: documentation missing
 
+.. _.BLOCKD:
 
-.. index:: .BLOCKD
 .BLOCKD
 -------
-
+.. index:: .BLOCKD
 .. warning:: documentation missing
 
+.. _.BEG_2C:
 
-.. index:: .BEG_2C
 .BEG_2C
 -------
-
+.. index:: .BEG_2C
 .. warning:: documentation missing
 
+.. _.VACPOL:
 
-.. index:: .VACPOL
 .VACPOL
 -------
-
+.. index:: .VACPOL
 .. warning:: documentation missing
 
+.. _.MIXVAC:
 
-.. index:: .MIXVAC
 .MIXVAC
 -------
-
+.. index:: .MIXVAC
 .. warning:: documentation missing
 
+.. _.CAP:
 
-.. index:: .CAP
 .CAP
 ----
-
+.. index:: .CAP
 .. warning:: documentation missing
 
+.. _.NOVREF:
 
-.. index:: .NOVREF
 .NOVREF
 -------
-
+.. index:: .NOVREF
 .. warning:: documentation missing
 
+.. _.POSVAC:
 
-.. index:: .POSVAC
 .POSVAC
 -------
-
+.. index:: .POSVAC
 .. warning:: documentation missing
 
+.. _.IOTC4:
 
-.. index:: .IOTC4
 .IOTC4
 ------
-
+.. index:: .IOTC4
 .. warning:: documentation missing
 
+.._.BSS4:
 
-.. index:: .BSS4
 .BSS4
 -----
-
+.. index:: .BSS4
 .. warning:: documentation missing
 
+.. _.DKH2:
 
-.. index:: .DKH2
 .DKH2
 -----
-
+.. index:: .DKH2
 .. warning:: documentation missing
 
+.. _.DKH1:
 
-.. index:: .DKH1
 .DKH1
 -----
-
+.. index:: .DKH1
 .. warning:: documentation missing
 
+.. _.QDOTS:
 
-.. index:: .QDOTS
 .QDOTS
 ------
-
+.. index:: .QDOTS
 .. warning:: documentation missing
 
+.. _.ECP:
 
-.. index:: .IOTC
 .ECP
----------------
+----
+.. index:: .IOTC
 
 .. warning:: documentation missing
 
+.. _.MMF:
 
-.. index:: .MMF
 .MMF
 ----
-
+.. index:: .MMF
 .. warning:: documentation missing
 
+.. _.MO4C2C:
 
-.. index:: .MO4C2C
 .MO4C2C
 -------
-
+.. index:: .MO4C2C
 .. warning:: documentation missing
 
+.. _.HFXATT:
 
-.. index:: .HFXATT
 .HFXATT
 -------
-
+.. index:: .HFXATT
 .. warning:: documentation missing
 
+.. _.xB:
 
-.. index:: .xB
 .xB
 ---
+.. index:: .xB
 
 .. warning:: documentation missing
 
+.. _.xC:
 
-.. index:: .xC
 .xC
----------------
+---
+.. index:: .xC
 
 .. warning:: documentation missing
