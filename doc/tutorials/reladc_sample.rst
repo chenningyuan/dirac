@@ -3,7 +3,7 @@ RELADC:Sample inputs
 
 Example 1:
 ----------
-A bent triatomic molecule in *C*\ :sub:`*s*`\  symmetry. We have only
+We consider a bent triatomic molecule in :math:`C_{s}` symmetry. We have only
 one fermionic IRREP and complex MOs. This is indicated in the ADC output
 reporting complex ADC matrices. We want to do single ionizations
 (DOSIPS=T) at the ADC(3) level (ADCLEVEL=3) including constant diagrams
@@ -19,7 +19,7 @@ spectrum converge very fast and are reproduced for high iteration
 numbers. In order to get higher eigenvalues equally tightly converged
 the number of iterations has to be increased accordingly. In this case
 the spurious (already converged) eigenvalues are projected out. For the
-*C*\ :sub:`*s*`\  molecule the ADC input would then look like this:
+:math:`C_{s}` molecule the ADC input would then look like this:
 
 ::
 
@@ -41,16 +41,16 @@ Since we do not activate DIPs nothing else needs to be specified in the
 
 Example 2:
 ----------
-The cadmium atom in *D*\ :sub:`2*h*`\  with .SPINFREE Hamiltonian. The
-*D*\ :sub:`2*h*`\  double group has two fermionic IRREPS (g and u)
+Nex we turn to the cadmium atom in :math:`D_{2h}` with the .SPINFREE Hamiltonian. The
+:math:`D_{2h}` double group has two fermionic IRREPS (g and u)
 leading to XREPS=1,2. By using the .SPINFREE option a real calculation
-in the ordinary *D*\ :sub:`2*h*`\  point group is performed in DIRAC
+in the ordinary :math:`D_{2h}` point group is performed in DIRAC
 leading to eight symmetries as known from the character table. Therefore
 we set XREPS=1,2,3,4,5,6,7,8 if we need all symmetries. The relation of
 the irrep name to the number can be obtained from the Dirac output and
 is reproduced in the ADC code as well. After the calculation the
-*A*\ :sub:`1*g*`\  final states are the in SSPEC.01, the
-*B*\ :sub:`2*g*`\  in SSPEC.02 asf. The complete spectrum is then the
+:math:`A_{1g}`  final states are the in SSPEC.01, the
+:math:`B_{2g}` in SSPEC.02 asf. The complete spectrum is then the
 merge of SSPEC.01 ... SSPEC.08. Remember that for the plot we only need
 the IP and the corresponding pole strength. We therefore do a grep '@'
 on the merged SSPEC.X files (cat SSPEC.\* > SPEC.all) and obtain all
