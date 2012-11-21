@@ -23,14 +23,15 @@ rem download fresh Dirac - MUST HAVE full path of git
 C:\Git\bin\git.exe pull origin release-12
 python pamadm --release
 
-rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=%DIRAC%\%BUILD%\dirac.x.exe  --generator="MinGW Makefiles" --int64=on --force %BUILD%
 python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-release"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=on --force %BUILD%
 cd %BUILD%
+cmake ..
+mingw32-make clean
 mingw32-make Experimental
 
 rem return to the top of the DIRAC directory
 rem cd %DIRAC%
-rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-release" --debug  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=%DIRAC%\%BUILD_DBG%\dirac.x.exe  --generator="MinGW Makefiles" --int64=on --force %BUILD_DBG%
+rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-release" --debug  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD_DBG%
 rem cd %BUILD_DBG%
 rem mingw32-make Experimental
 
