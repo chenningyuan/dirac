@@ -82,6 +82,7 @@
         LOGICAL :: ADDSYM=.TRUE.
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
+        INTEGER :: natoms_given
 
       CONTAINS
 
@@ -1325,14 +1326,24 @@
         LOGICAL, INTENT(IN) :: HERMIT
 
         INTEGER             :: inpfile
+        INTEGER             :: ios
 
 !       Driver for reading coordinates and basis set information from xyz file and DIRAC.INP
 
 !       In the XYZ format coordinates are supposed to start at the third line
         REWIND (molfile)
-        CALL RDLINE(molfile)
+!       Check whether the first line has a number that can be used to check the number of atoms
+        natoms_given = 0
+        READ (molfile,*,iostat=ios) natoms_given
+!       Skip the comment line
         CALL RDLINE(molfile)
         CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+!       Check number of atoms
+        IF (natoms_given .NE. count_atoms(firstatom)) THEN
+          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
+     &                   " but expected ",natoms_given," atoms"
+          CALL QUIT(' *** ERROR (READXYZ) wrong number of atoms')
+        END IF
 
 !       Read the basis set information from DIRAC.INP
         inpfile=OPEN_FILE('DIRAC.INP',cmdfile,'FORMATTED',LUPRI)

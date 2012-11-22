@@ -393,18 +393,22 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
-                print
-                self.list_scratch_dir()
+                 self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
                 if not self.silent:
-                    print '  deleting the scratch directory \n'
-                try:
-                    shutil.rmtree(self.scratch_dir)
-                except:
-                    #miro: happens on Windows only. why ? has to be explored deeply
-                    print_error_message('can not delete scratch directory '+self.scratch_dir+' for to some system reasons !')
+                    sys.stdout.write('  going to delete the scratch directory...')
+                count=1
+                #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
+                # remaining 'alive' even after its ending 
+                while os.path.isdir(self.scratch_dir):
+                    try:
+                        shutil.rmtree(self.scratch_dir)
+                    except:
+                        count = count + 1
+                sys.stdout.write('done (after '+str(count)+' attempts)')
+                print
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
@@ -414,6 +418,7 @@ class pam_enviroment:
         '''prints message on the DIRAC executable exit according to the input parameter'''
         self.elapsed_time=(time.time() - self.start_time)
         elapsed_time_str = time.strftime('%Hh%Mm%Ss', time.gmtime(self.elapsed_time))
+        print
         print '  exit date      :', datetime.datetime.now()
         print '  elapsed time   :', elapsed_time_str
         print '  exit code      :', self.returncode
@@ -1235,7 +1240,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
-                line = line[:-1]
+                line = line.split()[0]   # first entry is each line should the the name of the node
                 if line != self.master:  # append only slaves different from the master
                     self.nodes.append(line)
             # make a unique list of nodes - remove all duplicities from the list
@@ -1529,13 +1534,17 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         """
         archive (pack) working files at the end of the DIRAC program run
         """
+
         # set name of the archive file
-
-        archive_name = self.output_name + '.tgz'
+        archive_name = self.output_name + '.' + self.output_suffix
+        archive_name = '.'.join(archive_name.split('.')[:-1]) + '.tgz'
         archive_full_name = os.path.join(self.input_directory,archive_name)
-        tar = tarfile.open(archive_full_name, 'w:gz')
 
-      # select existing files in self.archive_files for the archive
+        # backup
+        if not self.nobackup:
+            backup_file(some_file=archive_full_name, upto=None)
+
+        # select existing files in self.archive_files for the archive
 
         existing_archive_files = []
         for p in self.archive_files:
@@ -1546,11 +1555,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files
 
-      # backup
-
-        if not self.nobackup:
-            backup_file(some_file=archive_full_name, upto=None)
-
+        tar = tarfile.open(archive_full_name, 'w:gz')
         for filename in existing_archive_files:
             tar.add(filename)
         tar.close()

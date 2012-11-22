@@ -28,15 +28,15 @@ git pull
 
 BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
 # configure step
-./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_GNU/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
-cd $DIRAC/$BUILD_GNU
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
+cd $BUILD_GNU
 make Experimental
 
 cd $DIRAC
 # now the second buildup with serial ifort
 BUILD_INTEL=build_ifort_mkl_int64
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_INTEL/dirac.x -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
 cd $DIRAC/$BUILD_INTEL
 make Experimental
 

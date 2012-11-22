@@ -6256,11 +6256,7 @@ CMI  ... reading input routine for AMFI+RELSCF
 
 !       *ECP
     8 CONTINUE
-#ifdef MOD_ECP
         CALL RECP_LNK_RDMENU(WORD)
-#else
-        CALL quit('*ECP not available in this version')
-#endif
         GO TO 200
   
 !       *PCM
@@ -6402,7 +6398,6 @@ CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
 c
-#ifdef MOD_ECP
         IF (ECPCALC) THEN
 c
 c     Spin-orbit integrals for ECP centres ...
@@ -6422,7 +6417,6 @@ c
 c      ... use IPSOPP defined in dcbham.h
         IPSOPP           = INDXPR
         END IF
-#endif
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
 C
