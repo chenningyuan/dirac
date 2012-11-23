@@ -37,7 +37,7 @@ is one of the following :math:`4 \times 4`  matrices:
 Operator types
 --------------
 
-There are 19 basic operator types used in DIRAC.
+There are 19 basic operator types (maybe more?) used in DIRAC, liste in this Table:
 
 +------------------+-------------------------------------------------------------------------------------+-----------------+
 |      Keyword     |                           Operator form                                             |  Nr. Factors    |
@@ -104,60 +104,130 @@ a blank. The arguments are optional, except for the operator label.
 
 List of one-electron operators
 ------------------------------
+Help me to arrange this list 
 
-**Keyword**  **Components**
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| **Keyword**   |   **Components**                       |                                    |                                                        |
++======================================================================================================================================================+
+| MOLFIELD      | Nuclear attraction integrals           | *(Symmetric)*        | MOLFIELD    | Omega_1=Sum_{K} V_{iK}                                 | 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| OVERLAP       | Overlap integrals                      | *(Symmetric)*        | OVERLAP     | Ω\ :sub:`1`\  = 1                                      |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| BETAMAT       | Overlap integrals, only SS-block       | *(Symmetric)*        | BETAMAT     | Ω\ :sub:`1`\  = 1                                      |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DIPLEN        | Dipole length integrals                | *(Symmetric)*        | XDIPLEN     | Ω\ :sub:`1`\  = *x*                                    |
+|               |                                        |                      | YDIPLEN     | Ω\ :sub:`2`\  = *y*                                    |
+|               |                                        |                      | ZDIPLEN     | Ω\ :sub:`3`\  = *z*                                    |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DIPVEL        | Dipole velocity integrals              | *(Anti-symmetric)*   | XDIPVEL     |                                                        |
+|               |                                        |                      | YDIPVEL     |                                                        |
+|               |                                        |                      | ZDIPVEL     |                                                        |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| QUADRUP       | Quadrupole moments integrals           | *(Symmetric)*        | XXQUADRU    |							       |
+|               |                                        |                      | XYQUADRU    |							       |
+|               |                                        |                      | XZQUADRU    | 						       |
+|               |                                        |                      | YYQUADRU    | 						       |
+|               |                                        |                      | YZQUADRU    |  						       |
+|               |                                        |                      | ZZQUADRU    |                                                        |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SPNORB        | Spatial spin-orbit integrals           | *(Anti-symmetric)*   | X1SPNORB    |							       | 
+|               |                                        |                      | Y1SPNORB    | 						       |
+|               |                                        |                      | Z1SPNORB    |                                                        |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SECMOM        | Second moments integrals               | *(Symmetric)*        | XXSECMOM    | Ω\ :sub:`1`\  = *x**x*                                 |
+|               |                                        |                      | XYSECMOM    | Ω\ :sub:`1`\  = *x**y*                                 |
+|               |                                        |                      | XZSECMOM    | Ω\ :sub:`1`\  = *x**z*                                 |
+|               |                                        |                      | YYSECMOM    | Ω\ :sub:`1`\  = *y**y*                                 |
+|               |                                        |                      | YZSECMOM    | Ω\ :sub:`1`\  = *y**z*                                 |
+|               |                                        |                      | ZZSECMOM    | Ω\ :sub:`1`\  = *z**z*                                 |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| THETA         | Traceless theta quadrupole integrals   |                      |             |                                                        |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| CARMOM        | Cartesian moments integrals,Symmetric integrals, (l + 1)(l + 2)/2 components ( l = i + j + k) ; see also the example further below   |   
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+|               |                    Ω\ :sub:`*l*`\  = *x*\ :sup:`*i*`\ *y*\ :sup:`*j*`\ *z*\ :sup:`*k*`\                                              |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-| MOLFIELD      | Nuclear attraction integrals           | *(Symmetric)*        | MOLFIELD
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SPHMOM        | Spherical moments integrals (real combinations), symmetric integrals, (2l+1) components, ( m = + 0, - 1, + 1,..., + l)               |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SOLVENT       | Electronic solvent integrals                                                                                                         |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| FERMI C       | One-electron Fermi contact integrals        											       | 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| PSO           | Paramagnetic spin-orbit integrals 												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SPIN-DI       | Spin-dipole integrals														       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DSO           | Diamagnetic spin-orbit integrals												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SDFC          | Spin-dipole + Fermi contact integrals												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| HDO           | Half-derivative overlap integrals												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| S1MAG         | Second order contribution from overlap matrix to magnetic properties								       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ANGLON        | Angular momentum around the nuclei												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ANGMOM        | Electronic angular momentum around the origin											       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| LONMOM        | London orbital contribution to angular momentum 										       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| MAGMOM        | One-electron contributions to magnetic moment											       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| KINENER       | Electronic kinetic energy													       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DSUSNOL       | Diamagnetic susceptibility without London contribution									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DSUSLH        |    Angular London orbital contribution to diamagnetic susceptibility            						       | 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DIASUS        |   Angular London orbital contribution to diamagnetic susceptibility                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NUCSNLO       | Nuclear shielding integrals without London orbital contribution                                                                      |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NUCSLO        |  London orbital contribution to nuclear shielding tensor integrals                                                                   |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NUCSHI        | Nuclear shielding tensor integrals  												       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NEFIELD       |  Electric field at the individual nuclei  											       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ELFGRDC       | Electric field gradient at the individual nuclei, cartesian 									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ELFGRDS       | Electric field gradient at the individual nuclei, spherical  									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| S1MAGL        | Bra-differentiation of overlap matrix with respect to magnetic field  							       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| S1MAGR        | Ket-differentiation of overlap matrix with respect to magnetic field  							       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| HDOBR         | Ket-differentation of HDO-integrals with respect to magnetic field    							       | 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NUCPOT        | Potential energy at the nuclei        											       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| HBDO          |  Half B-differentiated overlap matrix   											       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SQHDO         |  Half-derivative overlap integrals not to be antisymmetrized  							       	       | 
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DSUSCGO       |  Diamagnetic susceptibility with common gauge origin      									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| NSTCGO        | Nuclear shielding integrals with common gauge origin  									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| EXPIKR        | Cosine and sine integrals 													       |  
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| MASSVEL       |  Mass velocity integrals   													       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| DARWIN        | Darwin type integrals  													       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| CM1           | First order magnetic field derivatives of electric field  									       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| CM2           | Second order magnetic field derivatives of electric field 								               |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SQHDOR        |  Half-derivative overlap integrals not to be anti-symmetrized 								       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SQOVLAP       | Second order derivatives overlap integrals ??  										       |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-| OVERLAP       | Overlap integrals              | *(Symmetric)*        | OVERLAP       | Ω\ :sub:`1`\  = 1                                |
-
-| BETAMAT       | Overlap integrals, only SS-block            | *(Symmetric)*        | BETAMAT          | Ω\ :sub:`1`\  = 1                               |
-
-| DIPLEN        | Dipole length integrals              | *(Symmetric)*        | XDIPLEN                | Ω\ :sub:`1`\  = *x*                 |
-|               |                                                             | YDIPLEN                | Ω\ :sub:`2`\  = *y*                                             |
-|               |                                             |               | ZDIPLEN                | Ω\ :sub:`3`\  = *z*                                            |
-
-| DIPVEL        | Dipole velocity integrals            | *(Anti-symmetric)*   | XDIPVEL                                     |
-|               |                                                             | YDIPVEL                                         |
-|               |                                      |                      | ZDIPVEL                                                                |
-| QUADRUP       | Quadrupole moments integrals        | *(Symmetric)*        | XXQUADRU                           |
-|               |                                     |                      | XYQUADRU                                        |
-|                                                      |                      | XZQUADRU
-|                                                      |                      | YYQUADRU
-|                                                     |                      | YZQUADRU
-|               |                                      |                      | ZZQUADRU
-| SPNORB        | Spatial spin-orbit integrals         | *(Anti-symmetric)*   | X1SPNORB
-|               |                                                             | Y1SPNORB
-|                |                                      |                      | Z1SPNORB
-| SECMOM        | Second moments integrals             | *(Symmetric)*        | XXSECMOM         | Ω\ :sub:`1`\  = *x**x*
-|               |                                      |                      | XYSECMOM         | Ω\ :sub:`1`\  = *x**y*                                          |
-|               |                                      |                      | XZSECMOM         | Ω\ :sub:`1`\  = *x**z*                                          |
-|               |                                      |                      | YYSECMOM         | Ω\ :sub:`1`\  = *y**y*                                          |
-|               |                                      |                      | YZSECMOM         | Ω\ :sub:`1`\  = *y**z*                                          |
-|               |                                      |                      | ZZSECMOM         | Ω\ :sub:`1`\  = *z**z*                                          |
-| THETA         | Traceless theta quadrupole integrals                    |                      |                                                                         |
-
-| CARMOM        | Cartesian moments integrals,Symmetric integrals,(l + 1)(l + 2)/2 components ( l = i + j + k) ; see also the example further below   |    | Ω\ :sub:`*l*`\  = *x*\ :sup:`*i*`\ *y*\ :sup:`*j*`\ *z*\ :sup:`*k*`\    |
-| SPHMOM        | Spherical moments integrals (real combinations), symmetric integrals, (2l+1) components, ( m = + 0, - 1, + 1,..., + l)
-| SOLVENT       | Electronic solvent integrals
-| FERMI C       | One-electron Fermi contact integrals
-| PSO           | Paramagnetic spin-orbit integrals
-| SPIN-DI       | Spin-dipole integrals
-| DSO           | Diamagnetic spin-orbit integrals
-| SDFC          | Spin-dipole + Fermi contact integrals
-| HDO           | Half-derivative overlap integrals
-| S1MAG         | Second order contribution from overlap matrix to magnetic properties
-| ANGLON        | Angular momentum around the nuclei
-| ANGMOM        | Electronic angular momentum around the origin
-| LONMOM        | London orbital contribution to angular momentum
-| MAGMOM        | One-electron contributions to magnetic moment
-| KINENER       | Electronic kinetic energy
-| DSUSNOL       | Diamagnetic susceptibility without London contribution
-
-add more from
-`http://dirac.chem.sdu.dk/dirlab/Dirlabdoc/Master.html <http://dirac.chem.sdu.dk/dirlab/Dirlabdoc/Master.html>`_
-...
 
 Examples of using various operators
 -----------------------------------
