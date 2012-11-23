@@ -398,7 +398,7 @@ class pam_enviroment:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
                 if not self.silent:
-                    sys.stdout.write('  going to delete the scratch directory...')
+                    sys.stdout.write('  going to delete the scratch directory ... ')
                 count=1
                 #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
                 # remaining 'alive' even after its ending 
@@ -407,7 +407,10 @@ class pam_enviroment:
                         shutil.rmtree(self.scratch_dir)
                     except:
                         count = count + 1
-                sys.stdout.write('done (after '+str(count)+' attempts)')
+                if count > 1:
+                    sys.stdout.write('done (after %s attempts)' % count)
+                else:
+                    sys.stdout.write('done')
                 print
             else:
                 if not self.silent:
