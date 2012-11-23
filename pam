@@ -398,7 +398,7 @@ class pam_enviroment:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
                 if not self.silent:
-                    sys.stdout.write('  going to delete the scratch directory...')
+                    sys.stdout.write('  going to delete the scratch directory ... ')
                 count=1
                 #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
                 # remaining 'alive' even after its ending 
@@ -407,7 +407,10 @@ class pam_enviroment:
                         shutil.rmtree(self.scratch_dir)
                     except:
                         count = count + 1
-                sys.stdout.write('done (after '+str(count)+' attempts)')
+                if count > 1:
+                    sys.stdout.write('done (after %s attempts)' % count)
+                else:
+                    sys.stdout.write('done')
                 print
             else:
                 if not self.silent:
@@ -1579,7 +1582,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
             # we have all args here, therefore canceled printout of input file & molecule file
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  executable      :', self.dirac_exe
+                print '  executable     :', self.dirac_exe
             disk= disk_space_find(self.scratch_dir)
             if disk.available:
                 scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available)
