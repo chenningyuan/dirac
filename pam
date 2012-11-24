@@ -5,7 +5,7 @@
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
 #
-# Contributors:  Rado BAST, Norway
+# Contributors:  Rado Bast, France
 #                Ulf Ekstrom, Sweden
 #                Stefan Knecht, Denmark
 #                Andre Gomes, France
@@ -77,7 +77,7 @@ class pam_enviroment:
 
         # globally accessible scratch disk in parallel runs
         # this variable will decide whether files are distributed over local disks
-        self.global_scratch_disk = False
+        self.global_scratch_disk = True
 
         # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
@@ -695,14 +695,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='FULL_PATH',
             )
         group.add_option(
-            '--global-scratch-disk',
-            default=False,
-            action='store_true',
-            dest='dest_global_scratch_disk',
-            help='globally accessible scratch directory (parallel calculation) [default: %default]',
-            metavar='FULL_PATH',
-            )
-        group.add_option(
             '--installdir',
             type='string',
             action='store',
@@ -812,6 +804,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.mpiarg = options.dest_mpiarg
 
         if options.machfile:
+            self.global_scratch_disk = False
             self.machinefile = options.machfile
 
         if options.dest_mpi_workdir_argument:
@@ -831,9 +824,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 print 'Used the default instead:', install_dir
         elif install_dir_default is None:
             sys.exit('The installation directory is not set ! Error exit !')
-
-        if options.dest_global_scratch_disk:
-            self.global_scratch_disk = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
