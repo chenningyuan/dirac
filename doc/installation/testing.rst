@@ -1,24 +1,38 @@
-Description of the test procedure
-=================================
 
 
-How to run tests
-----------------
+Running the test set
+====================
 
-We use the runtest script to run tests.
-Go to the source root::
 
-  $ cd /path/to/source
+How to run tests using runtest
+------------------------------
 
-Then get a list of options::
+It is *very important* that you verify that your DIRAC installation correctly
+reproduces the reference test set *before* running any production calculations.
 
-  $ ./runtest --help
+To get documentation on the test set, run::
 
-To run all tests, type::
+  ./runtest --help
 
-  $ ./runtest --all
+With the following command you run the entire test set::
 
-You can also run individual tests. Have a look at the options.
+  ./runtest --all
+
+If everything goes well the script will report calculations completed
+and provide a summary (number of tests may be different)::
+
+  summary:   114 ok
+
+  total time: 00h03m42s
+
+If there is a problem the script will report that one or more tests failed
+(wrong output) or crashed (execution error).  You may also run individual tests
+with::
+
+  ./runtest --tests="test1 test2"
+
+where test1 and test2 should be replaced by the name(s) of the test(s)
+that you want to rerun.
 
 If you are in the subdirectory of an individual test (example: dft_ac), you can
 do this instead to run just this one test::
@@ -110,7 +124,7 @@ and execution times will be different, because insignificant last digits are
 different, or because output formatting has changed.
 
 To focus on relevant differences runscript extracts the relevant numbers
-according to keywords in result/filter.  Here you may either use strings or
+according to keywords in result/filter.out.  Here you may either use strings or
 regular expressions, examples of both can be found when looking at the filter
 files.  There are two possibilities, you either know in advance how many lines
 you want to test, or you don't (keep in mind that others may later introduce

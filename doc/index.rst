@@ -17,8 +17,7 @@ Setting up DIRAC
   :doc:`64bit integer support <installation/mpi_int64>`
 
 * **Testing:**
-  :doc:`Running the test set <installation/tests>` |
-  :doc:`How it works <programmers/testing>`
+  :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
   :doc:`Hyperion (Toulouse) <installation/examples/hyperion>`
