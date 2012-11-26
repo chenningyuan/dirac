@@ -29,7 +29,10 @@
       integer    :: slength
 #endif /* ifdef INT_STAR8 */
       character  :: str(slength)
-
-      write(6, *) str
-
+	  
+#if defined SYS_WINDOWS && defined INT_STAR8
+  write(6,*) "forrtwrt: Can not print str(slength) on Windows7 with Integer*8, slength=",slength       
+#else
+  write(6, *) str 
+#endif
       end subroutine

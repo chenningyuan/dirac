@@ -6240,8 +6240,9 @@ C
          END IF
          CALL WLKMOL(COONEW)
 C
-C     Write updated files.
+C     Write updated files. For convenience we will also write an XYZ file
 C
+         CALL PNCXYZ(COONEW)
          CALL PNCMOL
 C
 C     Memory trap has to be reinitialized.
@@ -6655,6 +6656,7 @@ C
 C
 C     Write updated geometry to files.
 C
+      CALL PNCXYZ(CORD)
       CALL PNCMOL
 C
 C     To mark that symmetry was broken, the index of the hessian is
@@ -7307,6 +7309,7 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -7323,22 +7326,24 @@ C
       CHARACTER*12 FILENM
       LOGICAL :: ex
 C
-C     ADJUST FOR XYZ FILES
       INQUIRE(file='MOLECULE.MOL',exist=ex)
       IF (.NOT.(ex)) THEN
-        INQUIRE(file='MOLECULE.XYZ', exist=ex)
-        IF (ex) WRITE(LUPRI,*)
-     &       'ERROR: abaopt.F PNCMOL not adjusted for XYZ files.'
-        CALL QUIT('ERROR: abaopt.F(PNCMOL): MOLECULE FILE NOT FOUND.')
+         INQUIRE(file='MOLECULE.XYZ', exist=ex)
+         IF (ex) THEN
+            RETURN ! This is fine, users need not use the archaic MOL format
+         ELSE
+!           In this case we need to stop
+            CALL QUIT('MOLECULE FILE NOT FOUND.')
+         END IF
       END IF
 
       LUMOL = -1
-      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ',
+     &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUMOL)
-      DO 200 IMLINE = 1,NMLINE
+      DO IMLINE = 1,NMLINE
          WRITE(LUMOL,'(A)') MLINE(IMLINE)
- 200  CONTINUE
+      END DO
       CALL GPCLOSE(LUMOL,'KEEP')
       FILENM = 'XXXX_mol.inp'
       WRITE(FILENM(1:4),'(I4)') (ITRNMR + 1)
@@ -7746,3 +7751,59 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE PNCXYZ (UNIQUE_CORD)
+
+C     Write an XYZ file
+C
+      use codata
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+      DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
+#include "ibtfun.h"
+C
+!     XYZ files are written in Angstroms
+!
+      FAC = XTANG
+!
+!     Count the number of atoms
+!
+      NATOM = 0
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               NATOM = NATOM + 1
+            END IF
+         END DO
+      END DO
+
+!     Write the file
+
+      LUXYZ = 540
+      OPEN (LUXYZ,FILE='MOLECULE.XYZ',FORM='FORMATTED')
+      WRITE (LUXYZ,*) NATOM
+      NATOM = 0
+      WRITE (LUXYZ,*) " "
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               NATOM = NATOM + 1
+               DO I = 1, 3
+                 XYZ(I) =
+     &           FAC*PT(IBTAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
+               END DO 
+               WRITE (LUXYZ,'(A4,3F30.15)') NAMN(ICENT),XYZ
+            END IF
+         END DO
+      END DO
+      CLOSE (LUXYZ,STATUS='KEEP')
+
+      RETURN
+      END
+

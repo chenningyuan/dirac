@@ -3,17 +3,6 @@
 Nightly testing dashboard
 -------------------------
 
-Before you start, set::
-
-  --scratch=/your/scratch/path
-
-in ``~/.diracrc``.
-In the case of a parallel DIRAC nightly run, you may have to set up more
-parameters, like::
-
-  --machfile=$PBS_NODEFILE
-  --global-scratch-disk
-
 It is very easy to contribute to the
 `DIRAC Dashboard <http://repo.ctcc.no/CDash/index.php?project=DIRAC>`_.
 You don't need to install anything extra except CMake.

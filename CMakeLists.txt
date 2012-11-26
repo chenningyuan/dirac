@@ -132,11 +132,10 @@ if(ENABLE_PCMMOD)
         )
 endif()
 
-configure_file(
-    ${CMAKE_SOURCE_DIR}/pam
-    ${CMAKE_BINARY_DIR}/pam
-    COPYONLY
-    )
+file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
 
 set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
