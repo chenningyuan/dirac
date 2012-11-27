@@ -64,9 +64,6 @@ class pam_enviroment:
 
         self.expert_mode = False # disable various safety checks
 
-        #  set installation directory 
-        self.dirac_home = install_dir
-
         # set the basis set directories
         self.set_basdir()
 
@@ -277,7 +274,6 @@ class pam_enviroment:
         '''
         print "Operating system:     ",  self.operating_system
         print "Current settings:"
-        print "  Install directory   ", self.dirac_home
         print "  Basis directories   ",  self.basdir
         disk= disk_space_find(self.scratch_dir)
         if disk.available:
