@@ -199,6 +199,7 @@ module pcm_interface
       real(8), allocatable :: lintra_ele_chg(:)
       character(13)        :: potName
       character(13)        :: chgName
+      integer              :: i
 
 ! Calculate one-index transformed potentials and charges
       if (nr_points <= 0) call pcm_initialize(pert_dmat, work, lwork)
@@ -211,6 +212,11 @@ module pcm_interface
       lintra_ele_chg = 0.0d0
       chgName = 'EleLinTraChg'//char(0)
       call pcm_electronic_charges(pert_dmat, lintra_ele_pot, lintra_ele_chg, work, lwork, potName, chgName)
+!TROND
+      WRITE(6,*) 'Perturbed electronic charges..'
+      do i = 1,nr_points
+        WRITE(6,*) i,lintra_ele_chg(i)
+      enddo
       call pcm_lintra(fock, lintra_ele_chg, factor, work, lwork)
 ! Free temporary allocated memory
       call pcm_finalize

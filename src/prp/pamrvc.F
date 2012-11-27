@@ -4152,7 +4152,10 @@ C
      &               'b-transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-            call pcm_lintra_driver(fao, fmo, -1.0d0, work(kfree), lfree)
+            DO I = 1,NDMAT
+            call pcm_lintra_driver(fao(1,I), fmo(1,I), -1.0d0, 
+     &      work(kfree), lfree)
+            ENDDO
         endif 
 #endif      
  
