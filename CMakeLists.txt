@@ -77,6 +77,9 @@ add_executable(
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
 add_dependencies(gen_fortran_interface_h run_pamadm)
+if(ENABLE_STATIC_LINKING)
+    target_link_libraries(gen_fortran_interface_h  -Wl,--no-export-dynamic)
+endif()
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
@@ -220,20 +223,20 @@ if(ENABLE_UTILITIES)
     compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
     compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${LIST_OF_EXECUTABLES}")
+    compile_standalone(vibcal.x                  utils/vibcal.F90                  "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
     if(ENABLE_SECQUANT)
-        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
+        compile_standalone(secquant.x utils/sec_quant.F90                  "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
-        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c      "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
-        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90   "${LIST_OF_EXECUTABLES}")
     endif()
-    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
+    compile_standalone(qjaco.x                       utils/qjaco.F90       "${LIST_OF_EXECUTABLES}")
 endif()
 foreach(
     EXECUTABLE
@@ -262,7 +265,10 @@ foreach(
     # static linking of all executables in the list
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
-    if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+    # these linking flags are also needed for Intel compiler; TODO: check for
+    # for Portland Group ?
+    if(ENABLE_STATIC_LINKING AND (CMAKE_Fortran_COMPILER_ID MATCHES GNU OR
+                                  CMAKE_Fortran_COMPILER_ID MATCHES Intel))
         target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
     endif()
 
@@ -270,9 +276,10 @@ endforeach()
 
 if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND
    BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+   # activate extra linking flags for dirac.x only if this bug occurs
    # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
    # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-   target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+   #target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
 endif()
 
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
