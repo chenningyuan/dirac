@@ -21,6 +21,23 @@ install(
     WORLD_READ             WORLD_EXECUTE
     )
 
+# workaround to install pam-dirac symlink:
+# 1) copy pam to pam-dirac
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/pam ${PROJECT_BINARY_DIR}/pam-dirac)")
+# 2) install real file pam-dirac
+install(
+    FILES ${PROJECT_BINARY_DIR}/pam-dirac
+    DESTINATION bin
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+# 3) remove real file
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
+# 4) create symlink
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
+
 if(ENABLE_PCMMOD)
     install( # Install PCMSolver input parsing script
         FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
