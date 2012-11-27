@@ -29,6 +29,7 @@ option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"   
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    OFF)
+option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -301,7 +302,6 @@ if(ENABLE_TESTS)
 endif()
 
 # create unit tests (set header for unit testing)
-set(ENABLE_UNIT_TESTS OFF)  # creation of unit tests is disabled for now
 if(ENABLE_UNIT_TESTS)
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()
