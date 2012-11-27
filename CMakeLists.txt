@@ -174,6 +174,12 @@ if(NOT "${CPP}" STREQUAL "")
 endif()
 
 include(SourcesList)
+if(ENABLE_UNIT_TESTS)
+    set(FREE_FORTRAN_SOURCES
+        ${FREE_FORTRAN_SOURCES}
+        src/gp/unit_testing.F90
+        )
+endif()
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
