@@ -50,7 +50,7 @@ class pam_enviroment:
     def __init__(self):
         '''Initialize the global set of variables'''
 
-        # own dirac executable file
+        # set up own dirac executable file
         if is_windows():
             self.dirac_exe_file="dirac.x.exe"
         else:
@@ -59,11 +59,12 @@ class pam_enviroment:
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
+        # default: do not show pam settings
         self.just_show_settings = False
 
         self.expert_mode = False # disable various safety checks
 
-        #  installation directory ...
+        #  set installation directory 
         self.dirac_home = install_dir
 
         # set the basis set directories
@@ -72,6 +73,7 @@ class pam_enviroment:
         # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
+        # scratch space, set up later in pam
         self.scratch_dir = None
 
         # globally accessible scratch disk in parallel runs
@@ -81,22 +83,21 @@ class pam_enviroment:
         # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
 
-    # ... current PID to have unique string for each pam run
+        # current PID to obtain unique string for each pam run (used for defining the name of scratch directory)
         self.current_pid=os.getpid()
 
-    # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
-        self.dirac_p=None
+        self.dirac_p=None # dirac.x/dirac mpi-launcher subprocess
         self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
 
-    # ... dirac error output (stderr stream), always filled
+        # dirac error output (stderr stream)
         self.dirac_stderr=None
 
-    # ... variables related to parallel calculations
+        # variables related to parallel calculations
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = None  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
-        self.distribute_files = False # if some distribution over different nodes
+        self.distribute_files = False # if there is some distribution of files over different nodes
 
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
@@ -107,41 +108,42 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
 
-    #   restrict distribution of working files over nodes by own flag/variable
+        #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
 
-    #   list of basic (core) DIRAC files to be distributed over nodes by default
+        #  list of basic (core) DIRAC files to be distributed over nodes by default
         self.core_dirac_files=[self.dirac_exe_file,'MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
-    # machine file
+        # machine file
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
         self.machinefile_content = None
 
-    # argument to pass the scratch directory location on to the nodes (rarely needed)
+        # argument to pass the scratch directory location on to the nodes (rarely needed)
         self.argument_to_pass_scratch_dir_to_slaves = None
 
-    # master name,IP
+        # master name
         self.master = get_hostname()  # short hostname
 
-    #  user login name
+        # user (login) name
         self.user_name=get_username()
 
-    # nodes (if any) - list; filled from self.machinefile
+        # nodes for parallel run (if any) - list; filled from self.machinefile
         self.nodes = []
 
-    # rcp, rsh for parallel, multinodes calculations
+        # rcp, rsh for parallel, multinodes calculations
         self.rsh = 'ssh'
         self.rcp = 'scp'
 
-    # dirac profiling
+       # dirac profiling
         self.profile = False
         self.profiler = None
         self.profiling_file = 'gmon.out'  # usuall output file
         self.profile_command = None  # command for profiling
-    # dirac executable command (set in own routine)
+
+       # dirac executable command (set in own routine)
         self.dirac_cmd = None
 
-    # dirac-executable position (could be reset after flag reading)
+       # dirac-executable position (could be reset after flag reading)
         exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
@@ -1148,6 +1150,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 os.putenv('GLBSCR', '1')
             else:
                 os.putenv('GLBSCR', '0')
+        else:
+            os.putenv('DIRPAR', '0')
 
     # Next line is for IBM only but will not hurt other systems
 
