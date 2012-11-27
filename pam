@@ -430,10 +430,8 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        # hierarchy - from closest to the farthest
-        paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
-                 os.path.join(install_dir,'diracrc'),
-                 os.path.join(os.path.expanduser('~'),'.diracrc')]
+        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
+                 os.path.join(install_dir, '.diracrc')]              # then try .diracrc in the same directory as pam script
         for path in paths:
             try:
                 f = open(path,'r')
@@ -465,7 +463,7 @@ class pam_enviroment:
             """%prog [options] --inp=*.inp --mol=*.mol
    or: %prog [options] --inp=*.inp --mol=*.xyz
    or: %prog [options] --fullrestart=ARCHIVE.tgz
-Options are also read from the ~/.dirac and .diracrc files."""
+Options are also read from the ~/.diracrc file."""
 
         parser = OptionParser(usage)
 
