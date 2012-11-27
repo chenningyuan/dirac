@@ -259,17 +259,20 @@ foreach(
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
-endforeach()
-
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
+    # static linking of all executables in the list
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
-    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
-    if (BLAS_TYPE MATCHES Atlas)
-        # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-        # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+        target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
     endif()
+
+endforeach()
+
+if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND
+   BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+   # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+   # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+   target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
 endif()
 
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
