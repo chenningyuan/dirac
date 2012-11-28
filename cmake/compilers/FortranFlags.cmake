@@ -30,7 +30,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -pg"
             )
     endif()
-    set(NOFORMAINF_FLAG " ")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
@@ -68,7 +67,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-    set(NOFORMAINF_FLAG "-nofor-main")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -90,7 +88,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             "${CMAKE_Fortran_FLAGS} "
             )
     endif()
-    set(NOFORMAINF_FLAG " ") # add me
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -111,7 +108,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
-    set(NOFORMAINF_FLAG " ") # add me
 endif()
 
 save_compiler_flags(Fortran)
