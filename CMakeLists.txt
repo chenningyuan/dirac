@@ -277,17 +277,16 @@ foreach(
     if(ENABLE_STATIC_LINKING AND (CMAKE_Fortran_COMPILER_ID MATCHES GNU OR
                                   CMAKE_Fortran_COMPILER_ID MATCHES Intel))
         target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
+        if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+            # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+            #target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+            target_link_libraries(${EXECUTABLE}  -lpthread )
+        endif()
     endif()
 
 endforeach()
-
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND
-   BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
-   # activate extra linking flags for dirac.x only if this bug occurs
-   # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-   # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-   #target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-endif()
 
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
 #  OK; i encountered on some platforms severe performance
