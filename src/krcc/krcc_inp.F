@@ -55,6 +55,7 @@ C     ===================
 C
 
       NGAS      = 0
+      INOCOVA   = 0
 C
 C     Initialize /CRUN/
 C     ===================
@@ -451,6 +452,10 @@ C
      &           IGSOCCX(1,I,1),'/',IGSOCCX(2,I,1),')'
           END DO
         END IF
+      END IF
+      IF(IKWSET(9).EQ.1) THEN
+        WRITE(6,*) ' Using NOCOVA approximation '
+        WRITE(6,*) ' External indices restricted to ',INOCOVA
       END IF
       IF(IKWSET(4).EQ.1) THEN
         WRITE(LUPRI,'(A,I4)')
