@@ -249,17 +249,11 @@ foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
-    if (${EXECUTABLE} STREQUAL "hsmrcc.x") # take care of non-fortran main source
-       set(EXTRA_LINK_FLAGS ${NOFORMAINF_FLAG})     
-    else()
-       set(EXTRA_LINK_FLAGS)     
-    endif()
-    #miro: changing LINK_FLAGS is overriding previous setting !
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
