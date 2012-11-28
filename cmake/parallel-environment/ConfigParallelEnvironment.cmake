@@ -18,7 +18,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     # if not, we stop configuration
     exec_program(
         cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F
+        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90
         OUTPUT_VARIABLE _source
         )
     check_fortran_source_compiles(
@@ -35,7 +35,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     # test whether MPI module is compatible with compiler
     exec_program(
         cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F
+        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90
         OUTPUT_VARIABLE _source
         )
     check_fortran_source_compiles(
@@ -52,7 +52,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     # test whether MPI integer type matches
     exec_program(
         cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F
+        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90
         OUTPUT_VARIABLE _source
         )
     check_fortran_source_compiles(
@@ -79,7 +79,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
         # test whether MPI-2 is available
         exec_program(
             cat
-            ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F
+            ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90
             OUTPUT_VARIABLE _source
             )
         check_fortran_source_compiles(
