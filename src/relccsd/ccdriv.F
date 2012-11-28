@@ -3175,7 +3175,7 @@ c
      &                             a_EIGENVECTORS(:,:)
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: mxcorr, mxcorr1
 C
 C---------------Executable code--------------------------------------
 C

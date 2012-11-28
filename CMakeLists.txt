@@ -29,6 +29,7 @@ option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"   
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    OFF)
+option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -176,6 +177,12 @@ if(NOT "${CPP}" STREQUAL "")
 endif()
 
 include(SourcesList)
+if(ENABLE_UNIT_TESTS)
+    set(FREE_FORTRAN_SOURCES
+        ${FREE_FORTRAN_SOURCES}
+        src/gp/unit_testing.F90
+        )
+endif()
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
@@ -242,17 +249,11 @@ foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
-    if (${EXECUTABLE} STREQUAL "hsmrcc.x") # take care of non-fortran main source
-       set(EXTRA_LINK_FLAGS ${NOFORMAINF_FLAG})     
-    else()
-       set(EXTRA_LINK_FLAGS)     
-    endif()
-    #miro: changing LINK_FLAGS is overriding previous setting !
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
@@ -270,17 +271,16 @@ foreach(
     if(ENABLE_STATIC_LINKING AND (CMAKE_Fortran_COMPILER_ID MATCHES GNU OR
                                   CMAKE_Fortran_COMPILER_ID MATCHES Intel))
         target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
+        if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+            # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+            #target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+            target_link_libraries(${EXECUTABLE}  -lpthread )
+        endif()
     endif()
 
 endforeach()
-
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND
-   BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
-   # activate extra linking flags for dirac.x only if this bug occurs
-   # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-   # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-   #target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-endif()
 
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
 #  OK; i encountered on some platforms severe performance
@@ -308,7 +308,6 @@ if(ENABLE_TESTS)
 endif()
 
 # create unit tests (set header for unit testing)
-set(ENABLE_UNIT_TESTS OFF)  # creation of unit tests is disabled for now
 if(ENABLE_UNIT_TESTS)
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()
