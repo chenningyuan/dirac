@@ -24,6 +24,7 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
+option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
@@ -224,6 +225,7 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     )
 endmacro()
 compile_standalone(dirac.x src/main/main.F90 "${LIST_OF_EXECUTABLES}")
+
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
     compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
@@ -233,18 +235,21 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F90                  "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
+    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
+    if(ENABLE_RELCCSD_STANDALONE)
+        compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
+    endif()
     if(ENABLE_SECQUANT)
-        compile_standalone(secquant.x utils/sec_quant.F90                  "${LIST_OF_EXECUTABLES}")
+        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
-        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c      "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
-        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90   "${LIST_OF_EXECUTABLES}")
+        compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    compile_standalone(qjaco.x                       utils/qjaco.F90       "${LIST_OF_EXECUTABLES}")
 endif()
+
 foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
