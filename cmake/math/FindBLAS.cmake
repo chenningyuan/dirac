@@ -60,7 +60,7 @@ if (NOT BLAS_FIND_COMPONENTS)
     elseif(ENABLE_64BIT_INTEGERS)
         set(BLAS_FIND_COMPONENTS MKL)
     else()
-        set(BLAS_FIND_COMPONENTS MKL Atlas ACML default)
+        set(BLAS_FIND_COMPONENTS MKL ESSL Atlas ACML default)
     endif()
 endif()
 

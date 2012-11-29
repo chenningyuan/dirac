@@ -62,7 +62,7 @@ if (NOT LAPACK_FIND_COMPONENTS)
     elseif(ENABLE_64BIT_INTEGERS)
         set(LAPACK_FIND_COMPONENTS MKL)
     else()
-        set(LAPACK_FIND_COMPONENTS MKL Atlas ACML default)
+        set(LAPACK_FIND_COMPONENTS MKL ESSL Atlas ACML default)
     endif()
 endif()
 
