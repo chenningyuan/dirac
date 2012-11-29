@@ -25,9 +25,9 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
         ${_source}
         MPI_COMPATIBLE
         )
-    if(NOT MPI_COMPATIBLE)
-        message(FATAL_ERROR "Your compiler is not MPI compatible")
-    endif()
+  # if(NOT MPI_COMPATIBLE)
+  #     message(FATAL_ERROR "Your compiler is not MPI compatible")
+  # endif()
 
     add_definitions(-DVAR_MPI)
     include_directories(${MPI_INCLUDE_PATH})
