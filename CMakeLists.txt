@@ -52,12 +52,13 @@ set(LIBS "stdc++")
 
 include(ConfigVersion)
 include(ConfigArchitecture)
+include(ConfigPamadm)
+include(SourcesList) # this has to come before ConfigCompilerFlags
 include(ConfigCompilerFlags)
 include(ConfigDocumentation)
 include(ConfigExternal)
 include(ConfigGPUMath)
 include(ConfigMath)
-include(ConfigPamadm)
 include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)
 include(ConfigTesting)
@@ -176,7 +177,6 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-include(SourcesList)
 if(ENABLE_UNIT_TESTS)
     set(FREE_FORTRAN_SOURCES
         ${FREE_FORTRAN_SOURCES}
