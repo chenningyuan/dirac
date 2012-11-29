@@ -102,7 +102,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
 
     set_source_files_properties(${FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
-        "-qfree"
+        "-qfree=f90"
         )
     set_source_files_properties(${FIXED_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
