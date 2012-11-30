@@ -79,6 +79,9 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
+if(ENABLE_STATIC_LINKING)
+    target_link_libraries(gen_fortran_interface_h  -Wl,--no-export-dynamic)
+endif()
 add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(

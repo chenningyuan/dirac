@@ -2232,8 +2232,7 @@ C
       DIMENSION NR(NREFS,NFSYM),NP(2,0:2),WORK(*)
       NCDIM = 0
       NBDIM = 0
-      READ(LUPRJ) MREFS
-      IF(NREFS.GT.MREFS) CALL QUIT('REAPRJ:MREFS.NE.NREFS !')
+      READ(LUPRJ) NREFS
       DO IFRP = 1,NFSYM
 C       Dimension....nref.......nmol......
         READ(LUPRJ) NP(IFRP,1),NP(IFRP,2),(NR(I,IFRP),I=1,NREFS)
