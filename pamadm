@@ -196,6 +196,7 @@ list_of_tests.append('zora')
 # then list directories that are to be skipped as whole
 
 files_never_compiled = []
+files_never_compiled.append('src/gp/unit_testing.F90')
 files_never_compiled.append('src/utils/cube2pov.c')
 files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('src/relccsd/ccints_nomemget.F')

@@ -24,11 +24,13 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
+option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    OFF)
+option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -51,12 +53,13 @@ set(LIBS "stdc++")
 
 include(ConfigVersion)
 include(ConfigArchitecture)
+include(ConfigPamadm)
+include(SourcesList) # this has to come before ConfigCompilerFlags
 include(ConfigCompilerFlags)
 include(ConfigDocumentation)
 include(ConfigExternal)
 include(ConfigGPUMath)
 include(ConfigMath)
-include(ConfigPamadm)
 include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)
 include(ConfigTesting)
@@ -172,7 +175,12 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-include(SourcesList)
+if(ENABLE_UNIT_TESTS)
+    set(FREE_FORTRAN_SOURCES
+        ${FREE_FORTRAN_SOURCES}
+        src/gp/unit_testing.F90
+        )
+endif()
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
@@ -214,16 +222,20 @@ macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     )
 endmacro()
 compile_standalone(dirac.x src/main/main.F90 "${LIST_OF_EXECUTABLES}")
+
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
-    compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
-    compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
-    compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
-    compile_standalone(relccsd.x                 src/relccsd/ccmain.F              "${LIST_OF_EXECUTABLES}")
+    compile_standalone(rspread.x                 utils/rspread.F90                 "${LIST_OF_EXECUTABLES}")
+    compile_standalone(labread.x                 utils/labread.F90                 "${LIST_OF_EXECUTABLES}")
+    compile_standalone(twofit.x                  utils/twofit.F90                  "${LIST_OF_EXECUTABLES}")
+    compile_standalone(cfread.x                  utils/cfread.F90                  "${LIST_OF_EXECUTABLES}")
+    compile_standalone(vibcal.x                  utils/vibcal.F90                  "${LIST_OF_EXECUTABLES}")
+    compile_standalone(polfit.x                  utils/polfit.F90                  "${LIST_OF_EXECUTABLES}")
+    compile_standalone(mx2fit.x                  utils/mx2fit.F90                  "${LIST_OF_EXECUTABLES}")
+    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
+    if(ENABLE_RELCCSD_STANDALONE)
+        compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
+    endif()
     if(ENABLE_SECQUANT)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
@@ -233,23 +245,17 @@ if(ENABLE_UTILITIES)
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
 endif()
+
 foreach(
     EXECUTABLE
     ${LIST_OF_EXECUTABLES}
     )
-    if (${EXECUTABLE} STREQUAL "hsmrcc.x") # take care of non-fortran main source
-       set(EXTRA_LINK_FLAGS ${NOFORMAINF_FLAG})     
-    else()
-       set(EXTRA_LINK_FLAGS)     
-    endif()
-    #miro: changing LINK_FLAGS is overriding previous setting !
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E ${EXTRA_LINK_FLAGS}")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
@@ -259,18 +265,24 @@ foreach(
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
-endforeach()
-
-if(ENABLE_STATIC_LINKING AND CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND LAPACK_FOUND)
+    # static linking of all executables in the list
     # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
     # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
-    target_link_libraries(dirac.x -Wl,--no-export-dynamic)
-    if (BLAS_TYPE MATCHES Atlas)
-        # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-        # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
-        target_link_libraries(dirac.x -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    # these linking flags are also needed for Intel compiler; TODO: check for
+    # for Portland Group ?
+    if(ENABLE_STATIC_LINKING AND (CMAKE_Fortran_COMPILER_ID MATCHES GNU OR
+                                  CMAKE_Fortran_COMPILER_ID MATCHES Intel))
+        target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
+        if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+            # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
+            # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
+            #target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+            target_link_libraries(${EXECUTABLE}  -lpthread )
+        endif()
     endif()
-endif()
+
+endforeach()
 
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
 #  OK; i encountered on some platforms severe performance
@@ -298,7 +310,6 @@ if(ENABLE_TESTS)
 endif()
 
 # create unit tests (set header for unit testing)
-set(ENABLE_UNIT_TESTS OFF)  # creation of unit tests is disabled for now
 if(ENABLE_UNIT_TESTS)
     execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
 else()

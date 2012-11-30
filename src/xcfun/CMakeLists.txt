@@ -93,12 +93,6 @@ if (VALGRIND_EXECUTABLE)
 	#set(MEMORYCHECK_SUPPRESSIONS_FILE ${CMAKE_BINARY_DIR}/valgrind.supp)
 endif()
 
-#radovan: seems unused
-#configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake.in
-#	        ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
-
-install(FILES include/xcfun.h DESTINATION include)
-
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
 	"XCFun")

@@ -1,3 +1,17 @@
+
+#ifdef USE_OWN_LAPACK
+#define USE_OWN_DLAPACK
+#define USE_OWN_DLAPACK_EXTRA
+#endif
+
+! ESSL LAPACK lacks some routines
+#ifndef USE_OWN_LAPACK
+#ifdef HAVE_ESSL_LAPACK
+#define USE_OWN_DLAPACK_EXTRA
+#endif
+#endif
+
+
 ! FILE : gp_dlapack.F
 !
 ! lapack double routines, taken from the netlib site on 20080612
@@ -7,7 +21,7 @@
 !
 ! $Id$
 !
-#ifdef USE_OWN_LAPACK
+#ifdef USE_OWN_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,
      $                   WORK, IWORK, INFO )
 *
@@ -79438,6 +79452,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DRSCL
 *
       END
+#endif /* USE_OWN_DLAPACK */
+#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSBEV( JOBZ, UPLO, N, KD, AB, LDAB, W, Z, LDZ, WORK,
      $                  INFO )
 *
@@ -79643,6 +79659,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSBEV
 *
       END
+#endif /* USE_OWN_DLAPACK_EXTRA */
+#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSBEVD( JOBZ, UPLO, N, KD, AB, LDAB, W, Z, LDZ, WORK,
      $                   LWORK, IWORK, LIWORK, INFO )
 *
@@ -92071,6 +92089,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYCON
 *
       END
+#endif /* USE_OWN_DLAPACK */
+#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSYEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO )
 *
 *  -- LAPACK driver routine (version 3.1) --
@@ -92282,6 +92302,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEV
 *
       END
+#endif /* USE_OWN_DLAPACK_EXTRA */
+#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSYEVD( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK,
      $                   LIWORK, INFO )
 *
@@ -92557,6 +92579,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEVD
 *
       END
+#endif /* USE_OWN_DLAPACK */
+#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSYEVR( JOBZ, RANGE, UPLO, N, A, LDA, VL, VU, IL, IU,
      $                   ABSTOL, M, W, Z, LDZ, ISUPPZ, WORK, LWORK,
      $                   IWORK, LIWORK, INFO )
@@ -93108,6 +93132,8 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEVR
 *
       END
+#endif /* USE_OWN_DLAPACK_EXTRA */
+#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSYEVX( JOBZ, RANGE, UPLO, N, A, LDA, VL, VU, IL, IU,
      $                   ABSTOL, M, W, Z, LDZ, WORK, LWORK, IWORK,
      $                   IFAIL, INFO )
@@ -218767,9 +218793,8 @@ CIBM           PREFER SCALAR
 *     End of STZRZF
 *
       END
-#else
-! dummy routine, in case the compiler doesnt like empy files
+#endif /* USE_OWN_DLAPACK */
+
+      ! dummy routine to avoid empty file
       subroutine dummy_dirac_dlapack()
       end
-#endif
-

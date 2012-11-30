@@ -64,8 +64,8 @@ subroutine wthead(nsym,ns,nbft,ityp,nbpsy,mtype,ms,mnl)
 ! # map vector types.
   data imtype/ 3, 4 /
 ! # basis function types.
-  data btype/'??','_s','_p','3s','_d','4p','_f','5s','5d',  &
-             '_g','6p','6f','_h','7s','7d','7g','_i','??' /
+  data btype/' ?','_s','_p','3s','_d','4p','_f','5s','5d',  &
+             '_g','6p','6f','_h','7s','7d','7g','_i',' ?' /
  
   ALLOCATE(IPT_WTHEAD_MAP(nbft,2))
 

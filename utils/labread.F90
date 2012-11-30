@@ -19,24 +19,24 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+!
       PROGRAM READLABL
-C
-C Written by Hans Jorgen Aa. Jensen, Nov. 1983
-C CRAY version 10. Oct. 1986
-C Alliant version 30. Dec. 1987
-C Linux/IBM, +updates, Joern Thyssen, Nov. 1999
-C
+!
+! Written by Hans Jorgen Aa. Jensen, Nov. 1983
+! CRAY version 10. Oct. 1986
+! Alliant version 30. Dec. 1987
+! Linux/IBM, +updates, Joern Thyssen, Nov. 1999
+!
 !#include "implicit.h"
 #include "../include/implicit.h"
-CTROND      DOUBLE PRECISION TIME, SECOND
+!TROND      DOUBLE PRECISION TIME, SECOND
       CHARACTER*8 B(4), STARS
       PARAMETER (STARS = '********')
       PARAMETER (LUINP = 1, LUPRI = 6)
       INTEGER   NARG,IARG,JARG
       CHARACTER*80 ARGC
-C
-C      TIME = SECOND()
+!
+!      TIME = SECOND()
       NARG = IARGC()
       IF (NARG .EQ. 0) THEN
          CALL GETARG(0,ARGC)
@@ -47,9 +47,9 @@ C      TIME = SECOND()
       DO IARG = 1,NARG
          CALL GETARG(IARG,ARGC)
          JARG = LNBLNK(ARGC)
-         WRITE (LUPRI, '(/2A/)') 
-     &      ' MOLECULE labels found on file :',ARGC(1:JARG)
-C
+         WRITE (LUPRI, '(/2A/)')                                        &
+       ' MOLECULE labels found on file :',ARGC(1:JARG)
+!
          OPEN(LUINP,FILE=ARGC,STATUS='UNKNOWN',FORM='UNFORMATTED')
          REWIND LUINP
          IREC = 0
@@ -59,7 +59,7 @@ C
          IF (B(1) .NE. STARS) GO TO 1
             WRITE (LUPRI, '(5X,I5,3X,4(2X,A8))')  IREC, B
          GO TO 1
-C
+!
     2    CONTINUE
          IREC = IREC + 1
          IERR = IERR + 1
@@ -73,14 +73,14 @@ C
             READ (LUINP,END=3) J
             IREC = IREC + 1
          GO TO 202
-C
+!
     3    CONTINUE
-C      TIME = SECOND() - TIME
-         WRITE (LUPRI,'(/I10,A)') IREC,
-     *      ' records read before EOF on file.'
-C        WRITE (LUPRI,'(F10.2,A)') TIME,' CPU seconds used.'
+!      TIME = SECOND() - TIME
+         WRITE (LUPRI,'(/I10,A)') IREC,                                 &
+       ' records read before EOF on file.'
+!        WRITE (LUPRI,'(F10.2,A)') TIME,' CPU seconds used.'
          CLOSE(LUINP)
       END DO
       STOP ' '
-C
+!
       END

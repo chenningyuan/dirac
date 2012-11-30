@@ -34,23 +34,17 @@ if sys.version < '2.4':
     print('pam requires python version >= 2.4')
     sys.exit(1)
 
-global install_dir
-
-name_of_this_script = os.path.basename(os.path.realpath(__file__))
-install_dir_default = os.path.dirname(os.path.realpath(__file__))
-install_dir = install_dir_default
+pam_directory = os.path.dirname(os.path.realpath(__file__))
 
 class pam_enviroment:
     """
     class for handling the pam-launched dirac run
     """
 
-    global install_dir
-
     def __init__(self):
         '''Initialize the global set of variables'''
 
-        # own dirac executable file
+        # set up own dirac executable file
         if is_windows():
             self.dirac_exe_file="dirac.x.exe"
         else:
@@ -59,12 +53,10 @@ class pam_enviroment:
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
+        # default: do not show pam settings
         self.just_show_settings = False
 
         self.expert_mode = False # disable various safety checks
-
-        #  installation directory ...
-        self.dirac_home = install_dir
 
         # set the basis set directories
         self.set_basdir()
@@ -72,6 +64,7 @@ class pam_enviroment:
         # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
+        # scratch space, set up later in pam
         self.scratch_dir = None
 
         # globally accessible scratch disk in parallel runs
@@ -81,22 +74,21 @@ class pam_enviroment:
         # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
 
-    # ... current PID to have unique string for each pam run
+        # current PID to obtain unique string for each pam run (used for defining the name of scratch directory)
         self.current_pid=os.getpid()
 
-    # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
-        self.dirac_p=None
+        self.dirac_p=None # dirac.x/dirac mpi-launcher subprocess
         self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
 
-    # ... dirac error output (stderr stream), always filled
+        # dirac error output (stderr stream)
         self.dirac_stderr=None
 
-    # ... variables related to parallel calculations
+        # variables related to parallel calculations
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = None  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
-        self.distribute_files = False # if some distribution over different nodes
+        self.distribute_files = False # if there is some distribution of files over different nodes
 
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
@@ -107,47 +99,48 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
 
-    #   restrict distribution of working files over nodes by own flag/variable
+        #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
 
-    #   list of basic (core) DIRAC files to be distributed over nodes by default
+        #  list of basic (core) DIRAC files to be distributed over nodes by default
         self.core_dirac_files=[self.dirac_exe_file,'MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
-    # machine file
+        # machine file
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
         self.machinefile_content = None
 
-    # argument to pass the scratch directory location on to the nodes (rarely needed)
+        # argument to pass the scratch directory location on to the nodes (rarely needed)
         self.argument_to_pass_scratch_dir_to_slaves = None
 
-    # master name,IP
+        # master name
         self.master = get_hostname()  # short hostname
 
-    #  user login name
+        # user (login) name
         self.user_name=get_username()
 
-    # nodes (if any) - list; filled from self.machinefile
+        # nodes for parallel run (if any) - list; filled from self.machinefile
         self.nodes = []
 
-    # rcp, rsh for parallel, multinodes calculations
+        # rcp, rsh for parallel, multinodes calculations
         self.rsh = 'ssh'
         self.rcp = 'scp'
 
-    # dirac profiling
+       # dirac profiling
         self.profile = False
         self.profiler = None
         self.profiling_file = 'gmon.out'  # usuall output file
         self.profile_command = None  # command for profiling
-    # dirac executable command (set in own routine)
+
+       # dirac executable command (set in own routine)
         self.dirac_cmd = None
 
-    # dirac-executable position (could be reset after flag reading)
-        exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
+       # dirac-executable position (could be reset after flag reading)
+        exec_position=os.path.join(pam_directory, self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
         else:
             # does not exist, try build directory
-            exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
+            exec_position=os.path.join(pam_directory, "build", self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
@@ -242,9 +235,6 @@ class pam_enviroment:
         self.start_time=time.time()
         self.elapsed_time=0.0
 
-    # pam script sitting in the installation directory (TODO: better specification)
-        self.pam_command = os.path.join(install_dir,"pam")
-
     #  read diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
@@ -259,8 +249,8 @@ class pam_enviroment:
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
         self.basdir='.:'
-        basis_dir= os.path.join(install_dir_default,'basis')
-        basis_dalton_dir=os.path.join(install_dir_default,'basis_dalton')
+        basis_dir= os.path.join(pam_directory, 'basis')
+        basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
         if os.path.isdir(basis_dir):
             self.basdir = self.basdir + basis_dir
         if os.path.isdir(basis_dalton_dir):
@@ -275,7 +265,6 @@ class pam_enviroment:
         '''
         print "Operating system:     ",  self.operating_system
         print "Current settings:"
-        print "  Install directory   ", self.dirac_home
         print "  Basis directories   ",  self.basdir
         disk= disk_space_find(self.scratch_dir)
         if disk.available:
@@ -435,10 +424,8 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        # hierarchy - from closest to the farthest
-        paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
-                 os.path.join(install_dir,'diracrc'),
-                 os.path.join(os.path.expanduser('~'),'.diracrc')]
+        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
+                 os.path.join(pam_directory, '.diracrc')]            # then try .diracrc in the pam directory
         for path in paths:
             try:
                 f = open(path,'r')
@@ -462,7 +449,6 @@ class pam_enviroment:
 
     def process_pam_arguments(self):
         ''' the longest method - reading and processing script flags  '''
-        global install_dir
 
         from optparse import OptionParser, OptionGroup
 
@@ -470,7 +456,7 @@ class pam_enviroment:
             """%prog [options] --inp=*.inp --mol=*.mol
    or: %prog [options] --inp=*.inp --mol=*.xyz
    or: %prog [options] --fullrestart=ARCHIVE.tgz
-Options are also read from the ~/.dirac and .diracrc files."""
+Options are also read from ~/.diracrc"""
 
         parser = OptionParser(usage)
 
@@ -694,15 +680,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='FULL_PATH',
             )
         group.add_option(
-            '--installdir',
-            type='string',
-            action='store',
-            dest='dest_install_dir',
-            default=install_dir_default,
-            help='directory where pam resides [default: %default]',
-            metavar='FULL_PATH',
-            )
-        group.add_option(
             '--basis',
             type='string',
             action='store',
@@ -814,15 +791,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # only if nr of proc is larger than 1 run through MPI
             if self.nr_proc > 1:
                 self.parallel_run = True
-
-        if options.dest_install_dir:
-            if os.path.isdir(str(options.dest_install_dir)):
-                install_dir = str(options.dest_install_dir)
-            else:
-                print 'Installation directory you inserted is non-existent !'
-                print 'Used the default instead:', install_dir
-        elif install_dir_default is None:
-            sys.exit('The installation directory is not set ! Error exit !')
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -1579,7 +1547,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  user           :', self.user_name
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
-            print '  pam command    :', self.pam_command
+            print '  pam command    :', os.path.join(pam_directory, 'pam')
             # we have all args here, therefore canceled printout of input file & molecule file
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
