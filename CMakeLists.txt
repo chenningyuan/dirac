@@ -45,7 +45,8 @@ set(CMAKE_MODULE_PATH
     )
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+# FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -Wl,--no-export-dynamic") 
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
@@ -79,9 +80,6 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
-if(ENABLE_STATIC_LINKING)
-    target_link_libraries(gen_fortran_interface_h  -Wl,--no-export-dynamic)
-endif()
 add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
@@ -268,20 +266,14 @@ foreach(
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
-    # static linking of all executables in the list
-    # Only newer versions of GNU-linkers have this flag ! Check "ld --help"
-    # does not work with gfortran44 : http://mailman.ucar.edu/pipermail/wrf-users/2011/002172.html
-    # these linking flags are also needed for Intel compiler; TODO: check for
-    # for Portland Group ?
-    if(ENABLE_STATIC_LINKING AND (CMAKE_Fortran_COMPILER_ID MATCHES GNU OR
-                                  CMAKE_Fortran_COMPILER_ID MATCHES Intel))
+    if(ENABLE_STATIC_LINKING)
+        # FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
         target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
-        if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND BLAS_FOUND AND BLAS_TYPE MATCHES Atlas)
+        if (BLAS_TYPE MATCHES Atlas AND ENABLE_64BIT_INTEGERS)
             # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-            # http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477
             #target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-            target_link_libraries(${EXECUTABLE}  -lpthread )
+            target_link_libraries(${EXECUTABLE}  -lpthread)
         endif()
     endif()
 
