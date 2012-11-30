@@ -269,11 +269,11 @@ foreach(
     if(ENABLE_STATIC_LINKING)
         # FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
         target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
-        if (BLAS_TYPE MATCHES Atlas AND ENABLE_64BIT_INTEGERS)
+        if (BLAS_TYPE MATCHES Atlas)
             # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-            #target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-            target_link_libraries(${EXECUTABLE}  -lpthread)
+            # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
+            target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
     endif()
 
