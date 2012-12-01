@@ -279,6 +279,11 @@ foreach(
 
 endforeach()
 
+#enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
+if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+    SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
+endif()
+
 #  stefan --> miro: please fix it properly or create a ticket but this is NOT
 #  OK; i encountered on some platforms severe performance
 #  degradation in parallel runs other than twoel. London integrals... (Jan
