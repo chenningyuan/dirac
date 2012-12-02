@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 subroutine printlogo
@@ -104,8 +104,8 @@ print *, '*                                                                     
 print *, '*                                                                            *'
 print *, '*    Written by:                                                             *'
 print *, '*                                                                            *'
-print *, '*    Radovan Bast             Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *'
+print *, '*    Radovan Bast             Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Trond Saue               Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Lucas Visscher           VU University Amsterdam           Netherlands  *'
 print *, '*                                                                            *'
@@ -159,8 +159,8 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                          *'
 print *, '*                                                                            *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,           *'
-print *, '*    Release DIRAC11 (2011),                                                 *'
-print *, '*    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *'
+print *, '*    Release DIRAC12 (2012),                                                 *'
+print *, '*    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,         *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *'
 print *, '*    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *'
@@ -168,7 +168,7 @@ print *, '*    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,  
 print *, '*    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *'
 print *, '*    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *'
 print *, '*    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *'
-print *, '*    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *'
+print *, '*    and S. Yamamoto (see http://www.diracprogram.org).                      *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
 end

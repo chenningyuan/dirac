@@ -205,9 +205,6 @@ C Notice the identety is now number one and not the last element!
 **  Convergence threshold
 ****************************************
 ****************************************
-Cori        CCCONV = 1.0D-6
-CDEBUG        CCCONV = 1.0D-13
-        CCCONV = 1.0D-10
 ****************************************
 ****************************************
         IF(XNORM.LE.CCCONV) IM_CONVERGED = 1
@@ -486,8 +483,9 @@ C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 *. Dump to LU_CCAMP
       OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
      &     Form='UNFORMATTED')
+C    &     Form='FORMATTED')
         CALL REWINO(LU_CCAMP)
-        I_FORMATTED = 0
+        I_FORMATTED = 2
 C        print*,'2*N_CC_AMP ',2*N_CC_AMP
         IF(I_FORMATTED.EQ.1) THEN
           WRITE(LU_CCAMP,'(I9)') N_CC_AMP
@@ -533,8 +531,10 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'CC_OPT')
 C FOR DIRTY FIX
 #include "implicit.inc"
 #include "dcbdhf.h"
+#include "cecore.inc"
       ECC=DHFERG
       print*,'ECC in GET_ECC',ECC
+      print*,'ECORE,E_TEMP',ECORE,E_TEMP
       RETURN
       END
 

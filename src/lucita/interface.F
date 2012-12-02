@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -5894,6 +5894,29 @@ CC        IVFLEV = 1               ! could be made more flexible
         Call Abend2( 'Quitting.' )
       end if
 *
+      
+!     disable particle-hole symmetry for the time being - needs further attention, something goes wrong for the As atom
+!     in the 4S ground state
+!     with the following GAS setup (13 determinants, easy to debug --> compare with DIRRCI) - stefan Nov 2012
+!     .NACTEL                                                                                             
+!      15                                                                                                 
+!     .GASSHE                                                                                             
+!      2                                                                                                  
+!      2, 0, 0, 1, 0, 1, 1, 0                                                                              
+!      1, 1, 1, 0, 1, 0, 0, 0                                                                              
+!     .GASSPC                                                                                             
+!      1                                                                                                  
+!       9 10                                                                                             
+!      15 15 
+!     .SYMMETRY
+!      8
+!     .MULTIP
+!      4
+!
+!     FIXME: enable p-h symmetry when bug has been found
+
+      IUSE_PH = 0
+
 *.................................................................
 *  4) Number of roots
 *.................................................................

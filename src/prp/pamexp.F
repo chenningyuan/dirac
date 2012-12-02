@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -233,6 +233,8 @@ C
           KPRMT = KFREE
         ELSE
           CALL OPNFIL(LUCOEF,'DFPRJC','OLD','PRPEXP')
+          READ(LUCOEF) NREFS
+          REWIND LUCOEF
           CALL MEMGET('INTE',KNR,NFSYM*NREFS,WORK,KFREE,LFREE)
           CALL REAPRJ(LUCOEF,NP,WORK(KNR),KRVEC,KBVEC,
      &                WORK,KFREE,LFREE)
@@ -1119,7 +1121,8 @@ C      CALL DSCAL(NTOT,D2,PM,1)
 C
 C     Make ordered list of contributions
 C
-      IF(IPRINT.GE.1) THEN
+!     IF(IPRINT.GE.1) THEN
+! We always want this list /hjaaj Sep 2012
         CALL HEADER('Ordered list of contributions',-1)            
         DO IJ = 1,NTRI
           PBUF(IJ) = -ABS(PTRI(IJ))
@@ -1139,11 +1142,11 @@ C
           II = INDX(2,I)
           TMP = TMP + PTRI(IJ)
           FAC = TMP/EXPVAL
-          WRITE(LUPRI,'(2(A6,I5,3X),2E16.8,E16.5)') 
+          WRITE(LUPRI,'(2(A6,I5,3X),1P,2E16.8,E16.5)')
      &          REFFIL(JR),JJ,REFFIL(IR),II,PTRI(IJ),TMP,FAC
         ENDDO
  10     CONTINUE
-      ENDIF
+!     ENDIF
 C      
       RETURN
       END

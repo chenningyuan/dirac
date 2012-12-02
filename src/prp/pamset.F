@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -187,8 +187,8 @@ C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
         ILLINT = IBTAND(INTFLG,1)
         ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/3,1)
-        IGTINT = IBTAND(INTFLG/4,1)
+        ISSINT = IBTAND(INTFLG/4,1)
+        IGTINT = IBTAND(INTFLG/8,1)
         WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT

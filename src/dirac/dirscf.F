@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1999,7 +1999,6 @@ CMI      ... print out matrixes ...
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
-         write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
 #if defined SYS_WINDOWS
          call system('copy DFCOEF DFCOEF.BEST')
 #else

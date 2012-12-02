@@ -3,34 +3,66 @@
 # cron prescription:
 # 10 00 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cmake buildup at "$timestamp ; DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.miro_pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64 > $DIRAC/maintenance/log_out.cdash_$timestamp 2>&1 || {echo "cront initiated cdash buildup failed at "$timestamp}
 
-
 # for crontab&queue system you have to set up enviroment !
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
+# STATIC GNU OpenMPI stuff
 export PATH=/home/ilias/bin/ompi_i32lp64_static/bin:$PATH
-export MANPATH=/home/ilias/bin/ompi_i32lp64_static/share/man:$MANPATH
+#export MANPATH=/home/ilias/bin/ompi_i32lp64_static/share/man:$MANPATH
 export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
+
+echo "PATH=$PATH"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
 
 # build dirs
 BUILD_OMPI_STATIC=build_ompi_static
+#
+BUILD_OMPI_INTEL_STATIC=build_ompi_intel_static
 
 # go to the local DIRAC directory
 cd $DIRAC
-#git pull origin master
-#git pull --rebase
-git pull 
-./pamadm -a 
-/bin/rm -rf $BUILD_OMPI_STATIC
+#git pull 
+
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-#./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x -D ENABLE_BOUNDS_CHECK=ON $BUILD_OMPI_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_OMPI_STATIC/dirac.x $BUILD_OMPI_STATIC
-cd $DIRAC/$BUILD_OMPI_STATIC
+#./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  -D ENABLE_BOUNDS_CHECK=ON $BUILD_OMPI_STATIC
+
+./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  --force $BUILD_OMPI_STATIC
+cd $BUILD_OMPI_STATIC
+make ExperimentalUpdate
+cmake ..
+make clean
 make Experimental
+
+
+#############################
+# own new Intel ompi static #
+#############################
+export PATH=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin:$PATH
+#export MANPATH=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/share/man:$MANPATH
+export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/lib:$LD_LIBRARY_PATH
+
+export MATH_ROOT=/opt/intel/mkl
+#
+
+cd $DIRAC
+
+#ls -lt /home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpif90
+#ls -lt /home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpicc
+#ls -lt /home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpiCC
+
+echo "PATH=$PATH"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+
+./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_dynamic/static_version/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_Intel_MKL_ilp64_STATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD_OMPI_INTEL_STATIC
+cd $BUILD_OMPI_INTEL_STATIC
+cmake ..
+make Experimental
+
 
 ###
 ###   now run the Nightly test suite

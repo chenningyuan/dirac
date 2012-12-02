@@ -13,6 +13,19 @@ foreach(
 endforeach()
 
 install(
+    FILES ${PROJECT_BINARY_DIR}/pam
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+
+# workaround to install pam-dirac symlink:
+# 1) copy pam to pam-dirac
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/pam ${PROJECT_BINARY_DIR}/pam-dirac)")
+# 2) install real file pam-dirac
+install(
     FILES ${PROJECT_BINARY_DIR}/pam-dirac
     DESTINATION bin
     PERMISSIONS
@@ -20,6 +33,10 @@ install(
     GROUP_READ             GROUP_EXECUTE
     WORLD_READ             WORLD_EXECUTE
     )
+# 3) remove real file
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
+# 4) create symlink
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
 
 if(ENABLE_PCMMOD)
     install( # Install PCMSolver input parsing script
@@ -105,6 +122,8 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
+        COMMAND echo "DIRAC version: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" > ${EXPORT_DIR}/VERSION
+        COMMAND echo "Git hash:      ${GIT_REVISION}" >> ${EXPORT_DIR}/VERSION
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM

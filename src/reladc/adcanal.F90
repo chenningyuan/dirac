@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1525,6 +1525,7 @@
       real*8                :: polethr = 0.001d0
       real*8                :: autoev = 27.2113957D0
       real*8                :: A0=0.0d0, A1=1.0d0
+      real*8                :: evltri,polestrtri
       integer, allocatable  :: no_offs(:)
       integer               :: i,j,ix,ivcount,iwwcount
       integer               :: n1,n2
@@ -1567,29 +1568,38 @@
                    N2,' on TMATEVC'
 !     WRITE(lupri,*) nocc,' of them are 2H states!'
 
-      allocate(thvecs(nocc,nocc), &
+      allocate(thvecs(nocc,N1), &
                evec(n2),          &
-               cevl(nocc),        &
-               polestr(nocc))
+               cevl(N1),        &
+               polestr(N1))
 
       thvecs = 0.0d0; evec = 0.0d0; cevl = 0.0d0; polestr = 0.0d0
-
+!
+! extract relevant vectors from TMATEVC, as long as spurious vectors are
+! still sitting there (will be changed in the future)
+!
+! only for the relevant vectors we keep the eigenvalue, the eigenvector and
+! the pole strength in the corresponding arrays.
+!
       iwwcount = 0
-      DO I=1,nocc
-        READ(IO_LAN) cevl(i)
+      DO I=1,N1   ! now check all vectors sitting in TMATEVC for suitable 2h analysis
+        READ(IO_LAN) evltri
         READ(IO_LAN) (evec(ix),ix=1,n2)
-        polestr(i)=dot_product(evec(1:nocc),evec(1:nocc))
-        if(polestr(i).gt.polethr) then
-              write(lupri,'(A,I5,A,2F16.6,A)')           &
-                  'Taking vector ',i,                    &
-                  ' with', cevl(i)*autoev,polestr(i),    &
+        polestrtri=dot_product(evec(1:nocc),evec(1:nocc))
+        if(polestrtri.gt.polethr) then
+              write(lupri,'(A,I5,2(A,F16.6),A)')    &
+                  'Taking vector ',i,             &
+                  ' of energy',evltri*autoev,     &
+                  ' and polestr.',polestrtri,     &
                   ' for population analysis'
               iwwcount = iwwcount + 1
-              thvecs(:,i) = evec(1:nocc)  ! copy corresponding components
+              thvecs(:,iwwcount) = evec(1:nocc)    ! copy corresponding hole components
+              cevl(iwwcount)     = evltri          ! copy corresponding eigenvalue (in a.u.)
+              polestr(iwwcount)  = polestrtri      ! copy corresponding eigenvalue (in a.u.)
         endif 
       ENDDO
       write(lupri,*) iwwcount, &
-        ' vectors have enough pole strength for 2H analysis'
+        ' vectors found from',N1,' vectors suitable for 2H analysis'
       CLOSE(IO_LAN,STATUS='DELETE')
 !|
 !|
@@ -1648,7 +1658,7 @@
       end select
 
 !  write relevant data in this symmetry to the DNM file
-!  symmetry, # of analyzed vectors, matrix dimension
+!  symmetry, # of analyzed vectors, sum of occupied orbitals
 
       write(IO_LAN) ibeta, iwwcount, no_sum
 
@@ -1657,9 +1667,7 @@
 !|  Loop over all vectors in the 2h/2h block possessing high enough 
 !|  pole strength
 
-      DO ivcount=1,nocc 
-
-        IF(polestr(ivcount).lt.polethr) cycle ! too small, no POPANA
+      DO ivcount=1,iwwcount 
 
         xmna = 0.0d0;  xmn2 = 0.0d0; xmnc = 0.0d0; xmnd = 0.0d0
 
@@ -1667,7 +1675,7 @@
         write(lupri,*) '   ** eigenvalue: ',cevl(ivcount)*autoev
 
 !
-!  found a vector, construct x_mn matrix
+!  construct x_mn matrix
 !
         ipoint = 0
         DO 14 JRP = 1, NREP

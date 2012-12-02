@@ -1,0 +1,17 @@
+$ERROR 1.E-10
+nlines 12:TOTAL ENERGY
+
+$ERROR 1.E-6
+$IGNORESIGN
+nlines 7:All nonzero property elements
+
+$ERROR 1.E-6
+$IGNORE_BELOW 1.E-20
+nlines 16:Expectation value for individual orbitals
+
+$ERROR 1.E-5 
+From:Energy     1
+To:Energy     2
+
+$ERROR 1.E-6
+nlines 10:Perturbative treatment of triple excitations

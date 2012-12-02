@@ -43,6 +43,7 @@ module fde_types
       real(kind=8), pointer :: n(:)
       real(kind=8), pointer :: gn(:,:)
       real(kind=8), pointer :: elpot(:)
+      real(kind=8), pointer :: nucpot(:)
       real(kind=8), pointer :: hn(:,:)
    end type
 
@@ -63,11 +64,13 @@ module fde_types
          allocate(gf%gn(3,size))
          allocate(gf%hn(6,size))
          allocate(gf%elpot(size))
+         allocate(gf%nucpot(size))
          
          gf%n  = 0.0d0
          gf%gn = 0.0d0
          gf%hn = 0.0d0
          gf%elpot = 0.0d0
+         gf%nucpot = 0.0d0
       end subroutine new_grid_function
 
 
@@ -80,6 +83,7 @@ module fde_types
          deallocate(gf%gn)
          deallocate(gf%hn)
          deallocate(gf%elpot)
+         deallocate(gf%nucpot)
       end subroutine del_grid_function
 
 

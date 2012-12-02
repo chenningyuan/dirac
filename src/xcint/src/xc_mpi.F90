@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module xc_mpi
@@ -74,8 +74,12 @@ module xc_mpi
    end interface
 #endif
 
+#ifdef VAR_MPI_32BIT_INT
+   integer(4)         :: ierr
+#else
    integer            :: ierr
-   integer, parameter :: irank_master        = 0
+#endif
+   integer, parameter :: irank_master = 0
 
 contains
 

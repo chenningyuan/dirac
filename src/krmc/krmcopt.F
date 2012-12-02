@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : krmcopt.F
@@ -602,15 +602,25 @@ C
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
          IF (IPROPT .GE. 1) THEN
-            IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+              IF( OPT_CIPROGRAM .EQ. 'LUCIAREL' )THEN
+                IDENSLR_STATE = 1
+                NATOLCR       = .TRUE.
+              END IF
               IPRNO = 3*IPROPT
               CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+
+C             erase old occupation numbers
+              CALL DZERO(WORK(KOCCNO),NORBT)
+              CALL DZERO(WORK(KUNO),N2ASHXQ)
+
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
-            END IF
+              IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+                IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+              END IF
          END IF
 C
          CALL FLSHFO(LUPRI)
@@ -989,7 +999,7 @@ C
          CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
       END IF
 C
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 5) THEN
          CALL HEADER('rGRAD: gradient:',-1)
          CALL RPRKAP(GOEE,GOEP,JXOPE,NZHOPE,
      &               JXOPP,NZXOPP,NZ,IPQTOQ(1,0),LUPRI)
@@ -1274,7 +1284,7 @@ C           TODO FIXME: check trace of PV
 C
          END IF
 C     END IF
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPROPT .GE. 7 ) THEN
          IF (CALCDV) THEN
             WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
             CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1557,7 +1567,7 @@ C
 
 
 C
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPROPT .GE. 10 ) THEN
          WRITE(LUPRI,9005)
          IF ( NISHT .GT. 0 ) THEN
             WRITE(LUPRI,9006) 'FCao'
@@ -1581,7 +1591,7 @@ C
       IF (NASHT .GT. 0) CALL DZERO(FV,N2ORBXQ)
       DO 100 I = 1,NFSYM
          IF (NORB(I) .EQ. 0) GOTO 100
-         IF (IPROPT .GE. 5) WRITE(LUPRI,9010) I
+         IF (IPROPT .GE. 10) WRITE(LUPRI,9010) I
          CALL QTRANS('AOMO','S',D0,
      &               NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &               WORK(KFCAO+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,
@@ -1592,7 +1602,7 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 5) THEN
+         IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1608,7 +1618,7 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 5) THEN
+         IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1774,7 +1784,7 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 6) THEN
+         IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -2542,7 +2552,7 @@ C       get orbital symmetry values - either from a previous MCSCF or HF run
         END IF
 C
 C       debug print
-        IF( IPRINT .ge. 2 )THEN
+        IF( IPRINT .ge. 7 )THEN
           WRITE(LUPRI,*) ' DEBUG info: symmetry-info vector of orbitals'
           CALL IWRTMAMN(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
         END IF
@@ -2612,7 +2622,7 @@ C
 C
 C     Print FCAC
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 7) THEN
          CALL HEADER('rGETAC: FCAC matrix',-1)
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -2663,7 +2673,7 @@ C
 C
 C     Print FCAC
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 8) THEN
          write(lupri,*) 'n2asht',N2ASHT
          CALL HEADER('rEnract: FCAC matrix',-1)
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
@@ -4134,7 +4144,7 @@ C
      &               get_orbital_rotation_indices_pn(),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-      IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
+      IF (IPROPT .GE. 10 .AND. NZCONF .GT. 0) THEN
          WRITE(LUPRI,'(A)') ' (GTNORB) CI delta vector'
          CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,
      &        OPT_CIPROGRAM,THRPCI,LUPRI)
@@ -4442,7 +4452,7 @@ C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
       DIMENSION IBTYP(2,*)
 C
-      IF ( IPROPT .GE. 20 ) THEN
+      IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)')
      &        ' (RSNRPRD) Reduced solution vector '
          CALL OUTPUT(EVECR,1,NZRED,1,1,NREDM,1,1,LUPRI)
@@ -4506,7 +4516,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcsol */
-      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+!     SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL_old(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4588,6 +4599,197 @@ C
      &        STPL,DLVLSH
 #endif
       END IF
+C
+C     Iterations finished.
+C
+ 200  CONTINUE
+      RBETA = STPL
+      EVALR = DLVLSH
+      IPAR = INERTIA(3)
+      IF (IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/A,I3,A,F15.8)')
+     &        ' (KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
+     &        DLVLSH
+      END IF
+      IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
+         IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(A,F12.5,A)')
+     &           ' (KRMCSOL) Solution vector'
+            CALL PRIRVC(EVECR,NZRED,IBTYP)
+         ENDIF
+         WRITE(LUPRI,'(/3X,A,F12.5)')
+     &      '* Reduced matrix. Level shift:',DLVLSH
+         WRITE(LUPRI,'(5X,A,I5)')
+     &        '* Number of positive eigenvalues:',INERTIA(1),
+     &        '* Number of zero     eigenvalues:',INERTIA(3),
+     &        '* Number of negative eigenvalues:',INERTIA(2)
+      ENDIF
+C
+      DINFO(22) = DLVLSH
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcsol */
+!     SUBROUTINE KRMCSOL_new_to_come(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+     &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C     Written by J. Thyssen - Nov 22 2000
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
+C
+      PARAMETER (DLVLSTEP = 0.2D0)
+C
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbkrmc_itinfo.h"
+#include "dcbibn.h"
+C
+      DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
+      DIMENSION REDGP(NREDM), EVECR(NREDM)
+      DIMENSION IBTYP(2,*), INERTIA(3)
+      DIMENSION WORK(*)
+      PARAMETER (STPL_EP_MAX = 0.0100D0)
+C
+      IF (IOPT_ISTATE .NE. 1)
+     &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
+C
+      RTRMAX = RTRUST*RTTOL
+      RTRMIN = RTRUST/RTTOL
+      STPL_EP_MIN = STPL_EP_MAX/RTTOL
+C
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(/A,2I5,L10/A,3F15.10)')
+     &   ' KRMCSOL entry. NZRED, NPRED, DONR:',NZRED,NPRED,DONR,
+     &   '             RTTOL, RTRMAX, RTRMIN:',RTTOL,RTRMAX,RTRMIN
+      END IF
+C
+      CALL DUNIT(REDS,NREDM)
+      DLVLMAX = D0
+      DLVLMIN = D0
+      DLVLSH  = D0
+      INCREASE_SHIFT = 0 ! 0=unknown, >0=increase, <0=decrease
+      ITER = 0
+      STPL = D0
+C
+C
+C     Start bisection iterations to find level-shift
+C     ----------------------------------------------
+C
+ 100  CONTINUE
+      STPL_OLD = STPL
+      CALL XRSLINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
+     &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
+      ITER = ITER + 1
+      STPL = DP5 * DNRM2(NZRED,EVECR,1)
+      STPL_CI = D0
+      STPL_EE = D0
+      STPL_EP = D0
+      IF (NPRED .GT. 0) THEN
+         DO I = 1, NZRED
+            IF (IBTYP(1,I) .EQ. JBCNDX) THEN
+               STPL_CI = STPL_CI + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBENDX) THEN
+               STPL_EE = STPL_EE + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBPNDX) THEN
+               STPL_EP = STPL_EP + EVECR(I)**2
+            ELSE
+               CALL QUIT('unknown IBTYP')
+            END IF
+         END DO
+         STPL_CI = DP5 * SQRT(STPL_CI)
+         STPL_EE = DP5 * SQRT(STPL_EE)
+         STPL_EP = DP5 * SQRT(STPL_EP)
+      END IF
+      INONPOS = INERTIA(2) + INERTIA(3)
+      IF (IPRINT .GE. 5)
+     &   WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
+     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
+     &   'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
+C
+C     Save electronic Hessian's index for zero level shift
+C     (used in RCNVTHR below)
+C
+      IF (ITER .EQ. 1) THEN
+         STPL_NR = STPL
+         JHESSIAN = INONPOS - NPRED
+         IF (IPRINT .GE. 5) WRITE(LUPRI,'(A,I5)')
+     &      ' KRMCSOL Newton-Raphson. JHESSIAN',JHESSIAN
+C
+         IF (DONR) GOTO 200 ! Do not iterate if Newton-Raphson is requested.
+C
+         IF (STPL_NR .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX
+     &       .OR. JHESSIAN .NE. 0) THEN
+            IF (JHESSIAN .GT. 0 .OR. NPRED .EQ. 0) THEN
+               INCREASE_SHIFT = -1
+            ELSE IF (JHESSIAN .LT. 0) THEN
+               INCREASE_SHIFT = 1
+            ELSE ! JHESSIAN .eq. 0 .and. NPRED .gt. 0
+               INCREASE_SHIFT = 1 ! TODO not always correct!!!! (I think)
+            END IF
+         ELSE
+            GO TO 200 ! Newton-Raphson is optimal
+         END IF
+
+      END IF
+C
+      IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX .OR.    ! too long step
+     &    INONPOS .NE. NPRED ) THEN                              ! wrong number of negative eigenvalues
+         IF (ITER .LE. 2 .AND.
+     &       STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
+            INCREASE_SHIFT = -INCREASE_SHIFT
+            DLVLMAX = D0
+            DLVLMIN = D0
+         END IF
+         IF (INCREASE_SHIFT .GT. 0) THEN
+            DLVLMIN = DLVLSH
+            IF (DLVLMAX .NE. D0) THEN
+               DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+            ELSE
+               DLVLSH  = DLVLSH + DLVLSTEP
+            END IF
+         ELSE IF (INCREASE_SHIFT .LT. 0) THEN
+            DLVLMAX = DLVLSH
+            IF (DLVLMIN .NE. D0) THEN
+               DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+            ELSE
+               DLVLSH  = DLVLSH - DLVLSTEP
+            END IF
+         ELSE
+            call quit('KRMCSOL: INCREASE_SHIFT=0 not programmed yet')
+         END IF
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
+     &      'krmcsol: steplen (>?), new level shift', STPL,DLVLSH
+      ELSE IF ( DLVLSH .EQ. 0.0D0 .OR.                                 ! Newton step
+     &          (STPL .GE. RTRMIN .AND. INONPOS .EQ. NPRED) .OR.       ! restricted step too short
+     &           STPL_EP .GE. STPL_EP_MIN )                            ! e-p in allowed range
+     &   THEN ! step accepted
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
+     &      'krmcsol: steplen accepted, level shift', STPL,DLVLSH
+         GOTO 200
+      ELSE
+         IF (INCREASE_SHIFT .GT. 0) THEN
+            DLVLMAX = DLVLSH
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         ELSE IF (INCREASE_SHIFT .LT. 0) THEN
+            DLVLMIN = DLVLSH
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         ELSE
+            call quit('KRMCSOL b: INCREASE_SHIFT=0 not programmed yet')
+         END IF
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,I5,1P,2G20.10)')
+     &      'krmcsol: inonpos, steplen (<), new level shift',
+     &      inonpos,STPL,DLVLSH
+      END IF
+      IF (ITER .GT. 100) CALL QUIT('KRMSOL: iterations not converged')
+      GOTO 100
 C
 C     Iterations finished.
 C
@@ -4865,7 +5067,7 @@ C
      &     WORK(KEVECR),WORK(KIBTYP),
      &     WORK(KIBEVC),WORK(KIBPVC),WORK(KIBCVC),NPRED)
 C
-      IF (IPROPT .GE. 20) THEN
+      IF (IPROPT .GE. 5) THEN
          WRITE(LUPRI,'(/A,3I4)')
      &        ' (RNRBSTP1) NZRED, NREDM, NPRED ',NZRED, NREDM, NPRED
          WRITE(LUPRI,'(A)') ' (RNRBSTP1) Reduced Hessian'

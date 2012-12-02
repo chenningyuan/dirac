@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -452,9 +452,7 @@ C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
       use codata
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -781,22 +779,13 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-C     ****************************************
-C     **** This is for generating ARGOSIN ****
-C     ****************************************
-#ifdef MOD_ECP
-      nsag   = NUCIND
-      naordsag = blk
-      ngcsag = blk
-      nstag = MAXREP + 1
-      do i = 0, nstag-1
-         ndag(i) = 1
-      enddo
+C     ********************************
+C     **** This is for ECP module ****
+C     ********************************
       CALL RECP_LNK_CHECKMOL(DOCART)
       CALL RECP_LNK_IRREP(MAXREP)
       CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
      &     IQM,JCO,KATOM,KANG)
-#endif
 C
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
@@ -959,7 +948,6 @@ C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP = 0
 C
-      CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
       NHTYPF = 0
@@ -1427,10 +1415,11 @@ C
 C              Check if large component basis is contracted
 C              ============================================
 C
-               DO 210 JBLCK = 1, NBLCK(I,1)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(1), NBLCK(I,1)+IBLOCK(1)-1
                   IF ((NUC(JBLCK,1).NE.NRC(JBLCK,1)).AND.
      &                (NRC(JBLCK,1).GT.0)) CNTBAS = .TRUE.
-  210          CONTINUE
+               END DO
                IF ( CNTBAS .AND.
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
                   DIRCON(1) = .TRUE.
@@ -1598,7 +1587,8 @@ C
 C              Check if small component basis is contracted
 C              ============================================
 C
-               DO JBLCK = 1, NBLCK(I,2)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(2), NBLCK(I,2)+IBLOCK(2)-1 
                   IF ((NUC(JBLCK,2).NE.NRC(JBLCK,2)).AND.
      &                (NRC(JBLCK,2).GT.0)) CNTBAS = .TRUE.
                END DO
@@ -1890,12 +1880,10 @@ C
 C       End of loop over small/large fitsets.
         ENDDO
 C
-#ifdef MOD_ECP
 C
 C       Read RECP parameter if exist
 C
         CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
-#endif
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -2147,12 +2135,10 @@ C*****************************************************************************
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-#ifdef MOD_ECP
 C      For ECP integeral
        CALL RECP_LNK_RDORB(IQM(1,1),JCO(1,1,1),NUC(1,1),NRC(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM)
-#endif /* ifdef MOD_ECP */ 
       NLRGSH = ISHELL
       NLARGE = IORBD
       NORBL  = IORB
@@ -4383,9 +4369,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4612,12 +4596,10 @@ C
           ENDDO
         ENDDO
       ENDDO
-#ifdef MOD_ECP
 C
 C     For ECP integral
 C
       CALL RECP_LNK_CTRAN(blk)
-#endif /* ifdef MOD_ECP */
 C
       RETURN
       END
