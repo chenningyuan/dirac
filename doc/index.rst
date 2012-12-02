@@ -136,7 +136,8 @@ Developers
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>`
+  :doc:`Debugging <programmers/debugging>` |
+  :doc:`Further development <programmers/further_development>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |
