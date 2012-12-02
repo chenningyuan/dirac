@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -90,11 +90,11 @@ contains
          if(mdirac) nzt_x2c    = nz ! default: 1
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
+         x2c_1e_system         = onesys
 
 !        set value for amfi module (if at all)
-         if(noamfi)then
-           x2c_add_amfi = -1
-         end if
+         if(noamfi)        x2c_add_amfi = -1
+         if(x2c_1e_system) x2c_add_amfi = -1 
 
 !        common block variables for AMFI(old +new(?))
          if(x2c_add_amfi > 0)then
@@ -178,7 +178,6 @@ contains
          x2c_linsym       = linear
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
-         x2c_1e_system    = onesys
          x2c_mdirac       = mdirac
          x2c_spinfree     = spinfr
   

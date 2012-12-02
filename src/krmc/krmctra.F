@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -71,8 +71,9 @@ C        Print orbital strings
 C
          DO I = 1, 4
             DO J = 1,NFSYM
+               K = LNBLNK(SZTRA(J,I))
                WRITE(LUPRI,'(A,I2,A,I2,2A)')
-     &            '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)
+     &         '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)(1:K)
             END DO
          END DO
       END IF
@@ -691,7 +692,8 @@ C
       ITRA_INTFLG = INTFLG
       ITRA_INTFL2 = INTFLG
       ITRA_INTFL4 = INTFLG
-      IPRTRA = IPRINT - 2
+      IPRTRA = IPRINT - 5
+      if(iprtra < 0) iprtra = 0
 C TODO debug : extra print because no integrals for Levy-Leblond
 C              /hjaaj aug 2002
 C     print*,'+++++++++++++++++++++++++++++++++++++'

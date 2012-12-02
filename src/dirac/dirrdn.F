@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -898,7 +898,7 @@ C***********************************************************************
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D0,
      &           DTHRS=1.0D-13, DP5 = 0.50D0)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTFLG_CHANGE
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER LINE*80, TEXT*20, CTEMP*72
       DIMENSION WORK(LWORK)
@@ -1029,6 +1029,7 @@ CMI  ... reduce the number iterations for preliminary BSS-SCF ...
       IGTINT    = IBTAND(INTGEN/8,1)
       INTBUF    = 0
       INTFLG    = 0
+      INTFLG_CHANGE = .FALSE.
       ITRINT(1) = 1
       ITRINT(2) = 1
       IPREIG    = 1
@@ -1240,6 +1241,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
                        CALL QUIT('SCFINP: Error in .INTFLG reading')
                      ENDIF
                   END IF
+                  INTFLG_CHANGE=.TRUE.
                GO TO 100
    16          CONTINUE
 C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
@@ -1846,10 +1848,12 @@ C
       ENDIF
 C
       IF(DOLVC .AND.
-     &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
+     &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) THEN 
+        ISSINT = 0
+      ENDIF
+
 C   .... discard calculation of LS/SS/GT integrals
 C          for the LevyLe/BSS/X2C Hamiltonians
-
       IF (LEVYLE.OR.
      &    ((BSS.or.x2c).AND..NOT.DO4C2C.AND..NOT.DO2C4C)
      &    .OR.TWOCOMP) THEN
@@ -2190,6 +2194,13 @@ C
           WRITE(LUPRI,'(3X,A,I4)')
      +    'Gaunt integrals from iteration ',ITRINT(2)
         ENDIF
+      ENDIF
+      IF (INTFLG_CHANGE) THEN
+        WRITE(LUPRI,"(4X,A)")
+     &  "---> accepted user's setting through .INTFLG"
+      ELSE
+        WRITE(LUPRI,"(4X,A)")
+     &  "---> this is default setting from Hamiltonian input"
       ENDIF
 C
 C     Rotations in QC DHF
@@ -4500,7 +4511,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 64,NDIR = 9)
+      PARAMETER (NTABLE = 68,NDIR = 9)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4522,8 +4533,8 @@ C
 #include "cbieri.h"
 #endif
 C
-      LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
-     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword
+      LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
+     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -4565,7 +4576,9 @@ C
 !                   57        58        59        60
      &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
+!                   65        66        67        68
+     &            '.TRSMIX','xxxxxxx','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4574,8 +4587,10 @@ C
 
       GAUNT = .FALSE.
       GAUNT_SAVE = GAUNT
+      INTFLG_CHANGE = .FALSE.
       IOTC = .FALSE.
       SYMSTP = .FALSE.
+      TRSSTP = .FALSE.
       INPERR = 0
       ICHANG  = 0 ! mi-to satisfy ifort runtime check
       CALL TITLER('Hamiltonian defined','*',127)
@@ -4667,6 +4682,8 @@ C ... get integral flags in advance
       ISLINT    = IBTAND(INTGEN/2,1)
       ISSINT    = IBTAND(INTGEN/4,1)
       IGTINT    = IBTAND(INTGEN/8,1)
+!mi:  by default do not allow mixing T+ with T-
+      TRS_MIX=.FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -4711,7 +4728,7 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164),I
+     &                161,162,163,164,165,166,167,168),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4920,9 +4937,9 @@ C&&& NOSPIN: Take out all spin-interactions
              ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
-C&&  USEDF: Do block-diagonalization of the converged Fock-Dirac operator
+C&&  USEDF: Do the block-diagonalization of the converged Fock-Dirac operator
 C     (and after that continue in two-component mode with non-canonical orbitals,
-C       or do continue SCF proces to get cannonical orbitals.)
+C       or continue SCF proces to get cannonical orbitals.)
             USEDF = .TRUE.
             GO TO 100
   125     CONTINUE
@@ -4939,6 +4956,7 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
                 CALL QUIT(
      &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT')
                ENDIF
+               INTFLG_CHANGE = .TRUE.
             END IF
             GO TO 100
   126     CONTINUE
@@ -5241,6 +5259,14 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
             MDIRAC=.TRUE.
 C..TODO: check for inconsistencies and add stops
+  165     CONTINUE
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+          TRS_MIX = .TRUE.
+  166     CONTINUE
+          GO TO 100
+  167     CONTINUE
+          GO TO 100
+  168     CONTINUE
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5251,7 +5277,6 @@ C..TODO: check for inconsistencies and add stops
         CALL QUIT('Illegal prompt in HAMINP.')
       END IF
   300 CONTINUE
-
 
 
       if (dirac_cfg_fde) then
@@ -5718,7 +5743,7 @@ C aspg, 20070909
          ENDIF
 
       ENDIF
-      IF(DOLVC) ISSINT = 0
+
 C
 C     Reset MC if necessary
 CMI/Febr.2006 for BSS/TWOCOMP it is set up later
@@ -5732,12 +5757,13 @@ C
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
+        INTFLG_CHANGE = .FALSE.
       ENDIF
       IF (ZORA.AND..NOT.ZORA4) THEN
         ISSINT = 0
         IGTINT = 0
+        INTFLG_CHANGE = .FALSE.
       ENDIF
-      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
 C     Write info about the modelling of SS interactions
 C
@@ -5758,7 +5784,20 @@ C
             WRITE(LUPRI,'(A)')
      &   '   using tabulated charges.'
          END IF
+         ! miro : print warning message, DOSSSS deactivates default
+         IF (ISSINT.NE.0.AND.INTFLG_CHANGE) THEN 
+           WRITE(LUPRI,"(2X,A)")
+     &   "WARNING:LVCORR default (deactivate with .DOSSSS) -"//
+     &   " not calculating wanted SS-integrals !"
+         ENDIF
+C
+         ISSINT = 0
+         INTFLG_CHANGE = .FALSE.
       END IF
+
+!miro: default integral flag passed to all modules (stored in dcbgen.h)
+      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
+
 C
 C     Write information about default integrals flags
 C
@@ -5767,6 +5806,8 @@ C
       WRITE(LUPRI,9002) '- LS-integrals: ',ISLINT
       WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
       WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
+      IF (INTFLG_CHANGE) WRITE(LUPRI,"(3X,A)")
+     & "--> chosen by user's setting of INTFLG"
  9001 FORMAT(1X,A)
  9002 FORMAT(3X,A,I5)
 
@@ -5983,7 +6024,9 @@ C
      &     'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'-',75,0)
           CALL WRIXPR(I,INDXPR)
-C         Operator must be totally symmetric
+
+! Added operator must be totally symmetric within molecular point group
+!
           ISYXPR = IPRPSYM(INDXPR)-1
           IF(ISYXPR.NE.0) THEN
              SYMSTP = .TRUE.
@@ -6000,25 +6043,28 @@ C         Operator must be totally symmetric
      &       GROUPS(IGROUP),' :{',
      &       (SYMOP(KSOP(J-1)),J=1,NELM),'} '
           ENDIF
-C         Operator must be symmetric under time reversal
+
+! Operator must be symmetric under time reversal only for Kramers restricted 
+!  wave-functions !
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
-           IF (PRPLBL(INDXPR).NE.'CAP_IM  '.AND.
-     &         PRPLBL(INDXPR).NE.'EDM ') THEN
-            SYMSTP = .TRUE.
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
-            WRITE(LUPRI,'(4X,A,A)')
-     &       'The operator is not totally symmetric under ',
-     &       'time reversal'
+            WRITE(LUPRI,'(4X,A)') '***** HAMINP WARNING *****'
+            WRITE(LUPRI,'(4X,A,A8,A)') 'The operator ',PRPNAM(INDXPR),
+     &      ' is not totally symmetric under time reversal !'
+
             WRITE(LUPRI,'(4X,A)') '* Possible actions:'
             WRITE(LUPRI,'(6X,A)')
-     &       '1. Include operator as perturbation.'
-           ELSE
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP NOTE *****'
-            WRITE(LUPRI,'(4X,A,A8,A)') 'Operator ',PRPLBL(INDXPR),
-     &      ' is time reversal antisymmetric - designed'//
-     &      ' only for the complex FSCC method.....'
-           ENDIF
+     &     '1. Use it with Kramers unrestricted wave functions (RelCC).'
+            WRITE(LUPRI,'(6X,A)')
+     &     '2. Include operator as perturbation for response methods.'
+            IF (.NOT.TRS_MIX) THEN 
+              WRITE(LUPRI,'(A)') 
+     &       'T+ and T- operators mixing not allowed !'
+              TRSSTP=.TRUE.
+            ELSE
+              WRITE(LUPRI,'(/,2X,A,/)')
+     &"*** Mixing of T+ and T- operators allowed at user's risk ! ***"
+            ENDIF
           ENDIF
         ENDDO
 CMI  ... treat the INPERR as in paminp.F - proper input is required
@@ -6212,11 +6258,7 @@ CMI  ... reading input routine for AMFI+RELSCF
 
 !       *ECP
     8 CONTINUE
-#ifdef MOD_ECP
         CALL RECP_LNK_RDMENU(WORD)
-#else
-        CALL quit('*ECP not available in this version')
-#endif
         GO TO 200
   
 !       *PCM
@@ -6241,7 +6283,11 @@ C
 C
  500  CONTINUE
 C
-      IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
+      IF (SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
+     &                     ' molecular point group symmetry!')
+      IF (TRSSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
+     &          ' time-reversal symmetry (T+ and T- mixing) !')
+      
 C
       CALL QEXIT('HAMINP')
       RETURN
@@ -6354,7 +6400,6 @@ CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
 c
-#ifdef MOD_ECP
         IF (ECPCALC) THEN
 c
 c     Spin-orbit integrals for ECP centres ...
@@ -6374,7 +6419,6 @@ c
 c      ... use IPSOPP defined in dcbham.h
         IPSOPP           = INDXPR
         END IF
-#endif
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
 C

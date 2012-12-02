@@ -19,8 +19,13 @@ VirtualOrganisation="voce";
 WholeNodes = True;
 # maximum number of nodes 
 HostNumber = 1;
-# maximum number of accessible CPU's (on one, or on more nodes) 
+# maximum number of accessible CPU's (on one or also on more nodes!) 
 #CpuNumber = 8;
+
+# myproxy server
+#MyProxyServer = "myproxy.cern.ch";
+#MyProxyServer = "myproxy.cnaf.infn.it";
+MyProxyServer = "px.ui.savba.sk";
 
 ##############################################
 # stdout,stderr output & other working files
@@ -30,8 +35,10 @@ StdError  = "DIRAC_runs.stderr";
 OutputSandbox = {"DIRAC_runs.stdout", "DIRAC_runs.stderr", "dirac_grid_suite_back.tgz"};
 
 ## to be able to reach intermediate results of your job
+# see http://goc.grid.auth.gr/wiki/bin/view/Groups/ALL/MonitoringTheOutputOfYourJob
 PerusalFileEnable=true;
-PerusalTimeInterval=30;
+# for VOCE this limit must be > 10000 sec (cca 17 min)
+PerusalTimeInterval=10005; 
 
 #################
 # Demands on CE #
@@ -44,4 +51,3 @@ Requirements = other.GlueCEPolicyMaxWallClockTime > 3600;
 # other.GlueCEUniqueID == "ce4.ui.savba.sk:8443/cream-pbs-voce" ||
 # other.GlueCEUniqueID == "ce3.ui.savba.sk:8443/cream-pbs-voce"
 #;
-

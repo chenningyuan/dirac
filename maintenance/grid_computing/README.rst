@@ -50,23 +50,31 @@ More advanced initialization:
   voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
 
-  myproxy-init  --pshost myproxy.cnaf.infn.it # compchem
-  myproxy-init  --pshost px.ui.savba.sk       # voce
-  myproxy-init -c 504 -k miro2 -l ilias -x -R "/C=SK/O=SlovakGrid/O=UMB/CN=Miroslav Ilias" # initialize for 504 hours
-
-Repeat for the certificate regeneration:
+Create and store a long-term proxy (default 7 days):
 ::
-  myproxy-get-delegation -v -l ilias -k miro2 -a /tmp/x509up_u501
-  voms-proxy-init --noregen --voms voce
+  myproxy-init  --pshost myproxy.cnaf.infn.it -d -n # compchem
+  myproxy-init  --pshost px.ui.savba.sk  -d -n       # voce
+
+  myproxy-init  --pshost px.ui.savba.sk  -d -n -c 1440       # voce, 60 days
+
+where "--pshost <myproxy_server>" specifies the hostname of the machine where a MyProxy Server runs, 
+the -d option instructs the server to associate the user DN to the proxy, 
+and the -n option avoids the use of a passphrase to access the long-term proxy, 
+so that the WMS renews the proxy automatically. 
+
+Verify your long-term certificate:
+::
+  myproxy-info -v -d --pshost px.ui.savba.sk
+  myproxy-info -v -d --pshost myproxy.cnaf.infn.it
 
 List of all valid proxies:
 ::
  voms-proxy-info --all
 
-Destroy currnt proxy: 
+Destroy current proxies: 
 ::
   voms-proxy-destroy
-  myproxy-destroy -v -l ilias -k miro2
+  myproxy-destroy 
 
 
 ------------------
@@ -143,13 +151,14 @@ Get job status:
  glite-wms-job-status  -i <JOB_ID_file>
 
 See intermediate results of your job:
+---------------------------------------
 Add two lines to your jdl-file: ::
  PerusalFileEnable=true;
  PerusalTimeInterval=30;
 Next, specify the files (here DIRAC_tests_std.out and DIRAC_tests_std.err) you want to view: ::  
- glite-wms-job-perusal --set -f DIRAC_tests_std.out -f DIRAC_tests_std.err -i JOB_id
+ glite-wms-job-perusal --set -f DIRAC_runs.stdout -f DIRAC_runs.stderr -i JOB_id
 And execute the following command to retrieve the current output: ::
- glite-wms-job-perusal --get -f DIRAC_tests_std.out -i JOB_id
+ glite-wms-job-perusal --get -f DIRAC_runs.stdout -i JOB_id
  
 Get job files back: ::
  glite-wms-job-output -i <JOB_ID_file>
@@ -169,6 +178,7 @@ Ask computing elements on selected attributes:
  lcg-info --list-ce  --query 'CE=*' --attrs EstRespTime,MaxCPUTime,TotalCPUs,Memory,ClockSpeed,Cluster,VMemory   --vo compchem
  lcg-info --list-ce --attrs MaxWCTime --vo voce
  lcg-info --list-ce --attrs RunningJobs,FreeCPUs,MaxWCTime,MaxCPUTime --vo voce
+ lcg-info --list-ce --attrs Memory,VMemory  --vo voce
  lcg-info --list-ce --attrs PlatformArch --vo voce
  lcg-info --list-ce --query 'PlatformArch=x86_64' --vo voce
 
@@ -179,3 +189,7 @@ Querry tag attributes :
  lcg-info --list-ce --query 'Tag=*MPICH*' --attrs 'CE' --vo voce
  lcg-info --list-ce --query 'Tag=*GCC*'   --attrs 'CE' --vo voce
 
+Launch your bash-script with the help of the nohup command: 
+::
+ nohup grid3savba_cdash_grid_buildup.bash voce     > nohup_voce 2>&1 & 
+ nohup grid3savba_cdash_grid_buildup.bash compchem > nohup_compchem 2>&1 & 

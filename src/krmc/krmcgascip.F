@@ -1,6 +1,6 @@
 #define not_GASCIP_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,7 +17,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ! FILE    : krmcgascip.F
@@ -681,7 +681,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#ifdef SYS_AIX
+      ! radovan: otherwise mod() type does not match
+      INTEGER   IA, IB, ID
+#else
       INTEGER*8 IA, IB, ID
+#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -2275,7 +2280,7 @@ C
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-6, RTHRCI**2 * 0.01D0)
+      THRSCR = MIN(1.0D-8, RTHRCI**2 * 0.01D0)
 C
 C     **********************************
 C     *** Start micro iteration loop ***

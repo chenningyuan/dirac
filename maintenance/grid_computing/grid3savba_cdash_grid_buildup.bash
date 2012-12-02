@@ -51,7 +51,12 @@ BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
+#unset DO_UPDATE
+DO_UPDATE=1
+
 cd $DIRAC
+
+if [[ -n $DO_UPDATE ]]; then
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
@@ -59,9 +64,9 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 echo -e "\n downloading the fresh clone..."
 git pull
 
-./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --force $BUILD
+./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD
 
-cd $DIRAC/$BUILD
+cd $BUILD
  #cmake ..
  #make -j2 dirac.x
  make depend
@@ -72,13 +77,14 @@ cd $DIRAC/$BUILD
 
  ls -lt $DIRAC/$BUILD/dirac.x
  ldd $DIRAC/$BUILD/dirac.x
+ cmake .. > VERSION  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
 
 cd $DIRAC
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_SERIAL/dirac.x --force $BUILD_SERIAL
-cd $DIRAC/$BUILD_SERIAL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD_SERIAL
+cd $BUILD_SERIAL
  #cmake ..
  #make -j2 dirac.x
  make depend
@@ -89,6 +95,7 @@ cd $DIRAC/$BUILD_SERIAL
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL/dirac.x
+ cmake .. > VERSION  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
@@ -96,8 +103,8 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 # cancel the variable #
 unset MATH_ROOT
 cd $DIRAC
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF -D RUNTEST_BINARY=$DIRAC/$BUILD_GNU_SERIAL/dirac.x --force $BUILD_GNU_SERIAL
-cd $DIRAC/$BUILD_GNU_SERIAL
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD_GNU_SERIAL
+cd $BUILD_GNU_SERIAL
  #cmake ..
  #make -j2 dirac.x
  make depend
@@ -108,8 +115,10 @@ cd $DIRAC/$BUILD_GNU_SERIAL
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_GNU_SERIAL/dirac.x
-timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
+ cmake .. > VERSION  2>&1  # get version
+
+ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+ echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
 
 #################################################
 ### continue with the launching for the grid  ###
@@ -118,28 +127,40 @@ echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
 # create the reduced tar-file containing all important stuff ...
 cd $DIRAC
 # copy there the cmake static
-cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD/.
-cp -R /home/ilias/bin/cmake_static/*                               $DIRAC/$BUILD_SERIAL/.
+cp -R /home/ilias/bin/cmake_static/*                                 $DIRAC/$BUILD/.
 
 # copy there the mpirun static with related directpries & files
-cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun      $DIRAC/$BUILD/.
+cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun         $DIRAC/$BUILD/.
 /bin/rm -rf $BUILD/share
 mkdir $BUILD/share
 cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BUILD/share/.
-cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc  $DIRAC/$BUILD/.
+cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BUILD/.
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
 /bin/rm test/*/*.out*
 /bin/rm -r test/*/compare
 
-echo -e "\n now packing stuff for grid computations..."
-
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
-
-echo -e "\n packing done, we have tar-ball file ready to be put on grid's SE : "
+echo -e "\n\n packing DIRAC suite for grid computations..."
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
+echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
-#echo -e "\n This tarball contains :"
-#tar -tvf dirac_grid_suite.tgz
+
+#another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
+echo -e "\n\n packing slim DIRAC suite for grid computations..."
+tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION maintenance/grid_computing/diracrc_grid 
+echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
+ls -lt dirac_grid_suite_slim.tgz
+echo -e "\n Done. Tarball with static execs ready."
+
+else
+  echo -e "\n\n ===  No local buildup of DIRAC done ! ==== "
+  echo -e "Using the last tar-ball of  :"; ls -lt dirac_grid_suite.tgz
+  echo -e "\n\n"
+fi # of DO_UPDATE
+
+# exit here, don't do other stuff
+echo -e "leaving here, you will have to upload tarball onto SE"
+exit 0
 
 ######################################################## 
 #
@@ -153,15 +174,32 @@ ls -lt dirac_grid_suite.tgz
 echo -e "\n ---  My valid certificate (voms-proxy-info --all)  ---"
 voms-proxy-info --all 
 
+### define variable for access to SE ###
+if [[ $VO == "voce" || $VO == "compchem" ]]; then
+   export LFC_HOST=`lcg-infosites --vo $VO lfc`
+   echo -e "\n defined variable LFC_HOST=$LFC_HOST"
+   echo "VO_VOCE_DEFAULT_SE=$VO_VOCE_DEFAULT_SE"
+   echo "VO_COMPCHEM_DEFAULT_SE=$VO_COMPCHEM_DEFAULT_SE"
+   # get list of SE with the command: lcg-infosites -vo compchem se
+   if [[  $VO == "compchem" ]]; then
+      #VO_SE="aliserv6.ct.infn.it" - does not work, try other SE...
+      VO_SE="grid2.fe.infn.it"
+      echo "set storage element of $VO, VO_SE=$VO_SE"
+   fi
+   if [[  $VO == "voce" ]]; then
+      VO_SE="se.ui.savba.sk"
+      echo "set storage element of $VO, VO_SE=$VO_SE"
+   fi
+fi
 # delete the old package from the SE
 echo -e "\n deleting the previous file, lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz ...."
-lcg-del -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz || { echo "FYI: did not succeed in deleting, maybe it is already deleted...";}
-echo -e "\n After deleting, checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
+lcg-del --force -a -v lfn:/grid/$VO/ilias/dirac_grid_suite.tgz || { echo "FYI: did not succeed in deleting, maybe the file is already deleted...";}
+echo -e "\n Then (possibly after deleting), checking emptyness of VO's storage space; lcg-ls -l lfn://grid/$VO/ilias"
 lcg-ls -l lfn://grid/$VO/ilias || { echo "lcg-ls command somehow failed, once again..."; lcg-ls -l lfn://grid/$VO/ilias;  }
 
 # upload the fresh tar-ball onto the SE
-echo -e "\n uploading lcg-cr -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/voce/ilias/dirac_grid_suite.tgz...."
-lcg-cr -v file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
+echo -e "\n uploading lcg-cr -d $VO_SE  -v file:$PWD/dirac_grid_suite.tgz -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz...."
+lcg-cr -d $VO_SE  file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo "Error exit, the uploading failed"; exit -4; }
 
 ###   Check your copied file on the grid SE:  ###
 echo -e "\n After uploading, list of files on grid SE, lcg-ls -l lfn://grid/$VO/ilias/dirac_grid_suite.tgz"
@@ -171,19 +209,23 @@ echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
 
-#############################################################################
-#            submit external launching script with glite
-#############################################################################
-timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n going to launch for grid, with timestamp=$timestamp..."
-cd maintenance/grid_computing
-echo -e "I am in the directory $PWD"
+# change ACL, see https://edms.cern.ch/file/722398/1.4/gLite-3-UserGuide.pdf
+lfc-setacl -m group::0,other:0  /grid/$VO/ilias
 
-glite-wms-job-submit -o JOB.$timestamp.$VO.1 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.2 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.3 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.4 -a submit_$VO.jdl
-glite-wms-job-submit -o JOB.$timestamp.$VO.5 -a submit_$VO.jdl
+##########################################################################
+#             submit external launching script with glite                #
+##########################################################################
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n going to launch jobs for grid, with timestamp=$timestamp..."
+cd maintenance/grid_computing
+echo -e "Now I am in the directory $PWD"
+
+# launch through the cycle #
+for i in {1..8} 
+do
+  glite-wms-job-submit -o JOB_$VO.$timestamp.no$i -a submit_$VO.jdl
+  sleep 5 # wait after each launch
+done
 
 echo -e "\n Done, script finished."
 
