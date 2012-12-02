@@ -27,74 +27,6 @@
 !
 ! routines written by tsaue march 2011, collected by sknecht sep 2012
 !
-module atom2molecule_utils
-
-  implicit none
-
-  public labcount
-  public ipmat
-  public revindex
-
-  private
-
-contains
-
-!***********************************************************************
-
-      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
-!-----------------------------------------------------------------------
-!     This routine will transfer elements from matrix B to matrix A
-!     according to row and column pointers INDR and INDC
-!
-!	Written by T.Saue, March 2011
-!
-!-----------------------------------------------------------------------
-  real(8), intent(out) :: a(lda,*)
-  real(8), intent(in)  :: b(ldb,nc)
-  integer, intent(in)  :: indr(nr)
-  integer, intent(in)  :: indc(nc)
-  integer, intent(in)  :: nc
-  integer, intent(in)  :: nr
-  integer, intent(in)  :: lda
-  integer, intent(in)  :: ldb
-!-----------------------------------------------------------------------
-  integer              :: i, j, ii, jj
-!-----------------------------------------------------------------------
-
-      DO J = 1,NC
-        JJ = INDC(J)
-        DO I = 1,NR
-          II = INDR(I)
-          A(II,JJ)=B(I,J)
-        END DO
-      END DO
-
-      END
-!***********************************************************************
-
-      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
-!-----------------------------------------------------------------------
-!     Make reverse indexing for elements of ILIST.GE.0
-!     Written by T. Saue March 31 2011
-!-----------------------------------------------------------------------
-  integer, intent(out) :: jlist(nj)
-  integer, intent(in)  :: ilist(ni)
-  integer, intent(in)  :: ni
-  integer, intent(in)  :: nj
-!-----------------------------------------------------------------------
-  integer              :: i, j
-!-----------------------------------------------------------------------
-
-      J = 0
-      DO I = 1, NI
-        IF(ILIST(I) > 0)THEN
-          J = J + 1
-          IF(J > NJ) CALL QUIT('REVINDEX: Out of bounds !')
-          JLIST(J) = I
-        ENDIF
-      END DO
-
-      END
 !***********************************************************************
 
       SUBROUTINE LABCOUNT(N,LIST,NBAS,ILAB,I1,I2,I3,I4)
@@ -122,8 +54,10 @@ contains
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcblab.h"
-#include "dcbibt.h"
       DIMENSION LIST(NBAS)
+      integer :: n, list,nbas,ilab,i1,i2,i3,i4
+      integer :: ival, itemp
+#include "dcbibt.h"
 
 !.....Initialize index array
       CALL ICOPY(NBAS,1,0,LIST,1)
@@ -189,4 +123,58 @@ contains
       END
 !***********************************************************************
 
-end module
+      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
+!-----------------------------------------------------------------------
+!     This routine will transfer elements from matrix B to matrix A
+!     according to row and column pointers INDR and INDC
+!
+!	Written by T.Saue, March 2011
+!
+!-----------------------------------------------------------------------
+      real(8), intent(out) :: a(lda,*)
+      real(8), intent(in)  :: b(ldb,nc)
+      integer, intent(in)  :: indr(nr)
+      integer, intent(in)  :: indc(nc)
+      integer, intent(in)  :: nc
+      integer, intent(in)  :: nr
+      integer, intent(in)  :: lda
+      integer, intent(in)  :: ldb
+!-----------------------------------------------------------------------
+      integer              :: i, j, ii, jj
+!-----------------------------------------------------------------------
+
+      DO J = 1,NC
+        JJ = INDC(J)
+        DO I = 1,NR
+          II = INDR(I)
+          A(II,JJ)=B(I,J)
+        END DO
+      END DO
+
+      END
+!***********************************************************************
+
+      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
+!-----------------------------------------------------------------------
+!     Make reverse indexing for elements of ILIST.GE.0
+!     Written by T. Saue March 31 2011
+!-----------------------------------------------------------------------
+      integer, intent(out) :: jlist(nj)
+      integer, intent(in)  :: ilist(ni)
+      integer, intent(in)  :: ni
+      integer, intent(in)  :: nj
+!-----------------------------------------------------------------------
+      integer              :: i, j
+!-----------------------------------------------------------------------
+
+      J = 0
+      DO I = 1, NI
+        IF(ILIST(I) > 0)THEN
+          J = J + 1
+          IF(J > NJ) CALL QUIT('REVINDEX: Out of bounds !')
+          JLIST(J) = I
+        ENDIF
+      END DO
+
+      END
+!***********************************************************************

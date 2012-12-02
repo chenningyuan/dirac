@@ -154,6 +154,9 @@ contains
                                   nint(atom(center_id)%charge), &
                                   aoo_fsoc                      &
                                  )
+!     distribute  atomic data in molecular hamiltonian block 
+!     use tronds put_atomic_block...
+      stop 'define distribution of atomic data in molecular hamiltonian block'
 
 !     release memory for atom type
       if(center_id == center_total)then 

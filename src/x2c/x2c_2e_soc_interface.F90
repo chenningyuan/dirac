@@ -545,6 +545,7 @@ contains
 !--------------------------------------------------------------
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
+     real(8), allocatable            :: wrk(:)
      integer                         :: i
      integer                         :: j
      integer                         :: iq
@@ -552,6 +553,10 @@ contains
      integer                         :: iz
      integer                         :: irepd
      integer                         :: nsphcm
+     integer                         :: nr_sph
+     integer                         :: nrows_frag
+     integer                         :: ncols_frag
+     integer                         :: lwrk
      integer                         :: wf_components
      character (len=12)              :: flabel
 !**********************************************************************
@@ -566,15 +571,18 @@ contains
 !        out: aoosoc  -> scr1_mat
 
        do i = 1, nuclei_totnum
+!        fixme: define nrows/ncols according to center/fragment i
+         nrows_frag = 0
+         ncols_frag = 0
          call put_atomic_oo_order_so_correction(                &
                                                 scr1_mat,       &
-                                                nrows_ext,      &
-                                                ncols_ext,      &
+                                                nrows_frag,     &
+                                                ncols_frag,     &
                                                 4,              &
                                                 i,              &
                                                 nuclei_totnum,  &
                                                 print_lvl       &
-                                                )
+                                               )
        end do
 
 !      allocate scratch space - part 2
@@ -627,7 +635,7 @@ contains
          call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
 !      end if
 
-!      add amfi contributions to h1_2c
+!      add aoo-SO contributions to h1_2c
        call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
 
        scr2_mat = 0.0d0
@@ -667,7 +675,7 @@ contains
 
 !        debug print
 !        if(print_lvl > 2)then
-           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
+           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+ooSO',6)
 !        end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
