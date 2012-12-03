@@ -111,6 +111,7 @@ contains
 !**********************************************************************
  
        if(x2c_add_amfi == 1)then
+         print *, 'blubbbxxxx'
 !        interface to "old" AMFI (by B. Schimmelpfennig)
          call x2c_interface2old_amfi(naosh_ls,             &
                                      nr_ao_L,              &

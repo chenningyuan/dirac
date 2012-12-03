@@ -2624,6 +2624,10 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
+#ifdef MOD_AOOSOC
+#include "mxcent.h"
+#include "nuclei.h"
+#endif
       real(8), allocatable :: WORK(:)
       logical, intent(in)  :: GOFAST
 !     local scratch
@@ -3133,6 +3137,11 @@ C
      &                                    nesht,ipqtoq,iprham)
       else ! generate 2e-SOC in the atomic run
 #ifdef MOD_AOOSOC
+        if(nucdep == 1 .and. nucind == 1)then
+
+!
+        write(lupri,*) 'blubbbbbbb'
+        call flshfo(lupri)
 !
 !       release memory
         CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3171,6 +3180,7 @@ C
 
         deallocate(pctm_aoosoc)
         deallocate(dmat_aoosoc)
+        end if ! check for atomic run
 #else
         call quit('generation of  atomic oo-order 2e-SOC not active'//
      &            ' in this version')
