@@ -111,13 +111,6 @@ contains
                                  aoo_bs_to_fs,         &
                                  print_lvl)
 
-!     pure 2e-SO matrix
-      call pure_so_2e(                            &
-                      fmat,                       & 
-                      nrows,                      &
-                      ncols,                      &
-                      nr_quat                     &
-                      )
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
