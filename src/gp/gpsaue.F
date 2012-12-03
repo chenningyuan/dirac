@@ -2999,6 +2999,7 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
+!#define DEBUG
 #ifdef DEBUG
       print*, 'QTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
@@ -3006,6 +3007,7 @@ C
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
       print*, 'QTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#undef DEBUG
 #endif
 C
 C     Time reversal symmetry of F-matrix
@@ -3218,7 +3220,7 @@ c     Like QTRANS, but uses fortran 90 memory allocation internally
       real(8) :: FMO(LRMO,LCMO,NZMO)
       real(8) :: TM1(LR1 ,LC1 ,NZTM1)
       real(8) :: TM2(LR2 ,LC2 ,NZTM2)
-      integer :: IQAO(:), IQMO(:), IQTM1(:), IQTM2(:)
+      integer :: IQAO(nzao),IQMO(nzmo),IQTM1(nztm1),IQTM2(nztm2)
       real(8), allocatable :: work(:)
       integer IQW(4)
 C     find out how much buffer is needed in qtrans

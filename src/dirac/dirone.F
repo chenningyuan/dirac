@@ -3140,9 +3140,6 @@ C
         if(nucdep == 1 .and. nucind == 1)then
 
 !
-        write(lupri,*) 'blubbbbbbb'
-        call flshfo(lupri)
-!
 !       release memory
         CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
         call dealloc(work)
