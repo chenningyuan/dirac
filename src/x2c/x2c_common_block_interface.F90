@@ -119,6 +119,7 @@ contains
  
 !        initialize integer variables
          num_nuclei       = nucdep
+         typ_nuclei       = nontyp
 !                          [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
          nr_ao_total_x2c  = ntbas(0)
 !                          [  L    ] (ifsym==1) + [  L    ] (ifsym==2)

@@ -65,6 +65,11 @@ module module_aoosoc_pfg
   integer            :: aoo_pointer_quat_op(0:7)               =  0
   integer            :: nr_2e_fock_matrices                    =  0
   integer            :: aoo_intflg                             =  0
+  integer            :: aoo_mxatom                             =  0
+  integer            :: aoo_mxcent                             =  0
+  integer            :: aoo_nontyp                             =  0
+  integer, allocatable :: aoo_nont(:)
+  integer, allocatable :: aoo_nucdeg(:)
 
   !> definition of "atom" data type 
   type type_atom

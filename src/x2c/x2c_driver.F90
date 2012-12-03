@@ -462,6 +462,7 @@ contains
                                           x2c_pointer_quat_op,               &
                                           x2c_max_quant_num,                 &
                                           num_nuclei,                        &
+                                          typ_nuclei,                        &
                                           x2c_tot_charge_for_mfsum,          &
                                           x2c_amfi_order,                    &
                                           lwrk,                              &

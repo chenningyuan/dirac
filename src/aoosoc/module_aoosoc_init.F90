@@ -146,6 +146,11 @@ contains
                               cord(3,i)  &   
                             )
        end do
+       aoo_mxatom = mxatom
+       aoo_mxcent = mxcent
+       aoo_nontyp = nontyp
+       allocate( aoo_nont(mxatom), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_nont(:)'
+       allocate( aoo_nucdeg(mxcent), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_nucdeg(:)'
     !> end
 
 ! 

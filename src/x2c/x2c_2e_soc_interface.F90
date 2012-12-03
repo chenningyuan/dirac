@@ -61,6 +61,7 @@ contains
                                        quat_pointer_op,         &
                                        max_quant_num,           &
                                        nuclei_totnum,           &
+                                       nuclei_type,             &
                                        tot_charge_for_mfsum,    &
                                        amfi_order_contrib,      &
                                        is_len_wrk,              &
@@ -100,6 +101,7 @@ contains
      integer, intent(in)     :: is_len_wrk
      integer, intent(in)     :: max_quant_num
      integer, intent(in)     :: nuclei_totnum
+     integer, intent(in)     :: nuclei_type
      integer, intent(in)     :: tot_charge_for_mfsum
      integer, intent(in)     :: amfi_order_contrib
      integer, intent(in)     :: print_lvl
@@ -151,6 +153,7 @@ contains
                                    cspeed,               &
                                    max_quant_num,        &
                                    nuclei_totnum,        &
+                                   nuclei_type,          &
                                    tot_charge_for_mfsum, &
                                    amfi_order_contrib,   &
                                    is_len_wrk,           &
@@ -494,6 +497,7 @@ contains
                                   cspeed,                &
                                   max_quant_num,         &
                                   nuclei_totnum,         &
+                                  nuclei_type,           &
                                   tot_charge_for_mfsum,  &
                                   amfi_order_contrib,    &
                                   is_len_wrk,            &
@@ -538,6 +542,7 @@ contains
      integer, intent(in)             :: is_len_wrk
      integer, intent(in)             :: max_quant_num
      integer, intent(in)             :: nuclei_totnum
+     integer, intent(in)             :: nuclei_type
      integer, intent(in)             :: tot_charge_for_mfsum
      integer, intent(in)             :: amfi_order_contrib
      integer, intent(in)             :: print_lvl
@@ -546,6 +551,7 @@ contains
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
      real(8), allocatable            :: wrk(:)
+     integer, allocatable            :: aooso_info(:)
      integer                         :: i
      integer                         :: j
      integer                         :: iq
@@ -556,6 +562,7 @@ contains
      integer                         :: nr_sph
      integer                         :: nrows_frag
      integer                         :: ncols_frag
+     integer                         :: center_total
      integer                         :: lwrk
      integer                         :: wf_components
      character (len=12)              :: flabel
@@ -565,25 +572,34 @@ contains
        allocate(scr1_mat(naosh_ls*naosh_ls*4))
        scr1_mat = 0.0d0
 
-!      ------------------------------------------------------------------
-!      step 1. read aoosoc contributions for symmetry independent centers
-!      ------------------------------------------------------------------
+!      ---------------------------------------------------------------------------------
+!      step 1. read and distribute aoosoc contributions for symmetry independent centers
+!      ---------------------------------------------------------------------------------
 !        out: aoosoc  -> scr1_mat
 
-       do i = 1, nuclei_totnum
-!        fixme: define nrows/ncols according to center/fragment i
-         nrows_frag = 0
-         ncols_frag = 0
+       allocate(aooso_info(naosh_ls))
+
+       center_total = 1
+       do i = 1, nuclei_type
+
+!        count the number of basis functions for center_total
+         call labcount(ncols_frag,aooso_info,naosh_ls,1,-1,center_total,1,-1)
+         nrows_frag = ncols_frag
+
          call put_atomic_oo_order_so_correction(                &
                                                 scr1_mat,       &
+                                                naosh_ls,       &
                                                 nrows_frag,     &
                                                 ncols_frag,     &
                                                 4,              &
                                                 i,              &
+                                                center_total,   &
                                                 nuclei_totnum,  &
                                                 print_lvl       &
                                                )
        end do
+
+       deallocate(aooso_info)
 
 !      allocate scratch space - part 2
        allocate(scr2_mat(naosh_ls*naosh_ls*4))

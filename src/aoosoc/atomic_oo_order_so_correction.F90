@@ -126,27 +126,38 @@ contains
 
   subroutine put_atomic_oo_order_so_correction(                             &
                                                Gmat,                        &
+                                               naosh_ls,                    &
                                                nrows_ext,                   &
                                                ncols_ext,                   &
                                                nr_quat_ext,                 &
                                                center_id,                   &
                                                center_total,                &
+                                               max_center,                  &
                                                print_lvl                    &
                                               )    
 !**********************************************************************
      real(8), optional, intent(inout)   :: Gmat(*)
+     integer, intent(in)                :: naosh_ls
      integer, intent(in)                :: nrows_ext
      integer, intent(in)                :: ncols_ext
      integer, intent(in)                :: nr_quat_ext
      integer, intent(in)                :: center_id
-     integer, intent(in)                :: center_total
+     integer, intent(inout)             :: center_total
+     integer, intent(in)                :: max_center
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
+     real(8), allocatable               :: Gmat_frag(:)
+     real(8), allocatable               :: work(:)
+     integer                            :: lwork
+     integer                            :: lfree
+     integer                            :: kfree
 !----------------------------------------------------------------------
+
+      allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 
 !     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
       call read_normalized_2e_soc(                              &
-                                  Gmat,                         & 
+                                  Gmat_frag,                    & 
                                   nrows_ext,                    &
                                   ncols_ext,                    &
                                   nr_quat_ext,                  &
@@ -154,13 +165,26 @@ contains
                                   nint(atom(center_id)%charge), &
                                   aoo_fsoc                      &
                                  )
-!     distribute  atomic data in molecular hamiltonian block 
-!     use tronds put_atomic_block...
-      stop 'define distribution of atomic data in molecular hamiltonian block'
+!     distribute  atomic data in molecular block 
+      lwork = 2*naosh_ls + nrows_ext + ncols_ext + 24
+      allocate(work(lwork))
+      kfree = 1
+      lfree = lwork
+      call put_aoblock(Gmat,naosh_ls,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4, &
+                       Gmat_frag,nrows_ext,ncols_ext,-1,nrows_ext,ncols_ext,-1,work,kfree,lfree   &
+                      )
 
-!     release memory for atom type
-      if(center_id == center_total)then 
-        deallocate(atom)                             
+      deallocate(work)
+      deallocate(Gmat_frag)
+
+!     update counter
+      center_total = center_total + aoo_nont(center_id)
+
+!     release memory when last type has been added
+      if(center_total == max_center)then
+        deallocate(atom)
+        deallocate(aoo_nont)
+        deallocate(aoo_nucdeg)
       end if
 
   end subroutine put_atomic_oo_order_so_correction

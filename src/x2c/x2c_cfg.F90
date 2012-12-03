@@ -101,6 +101,7 @@ module x2cmod_cfg
   integer, public :: fh_1int_4c                       =  0
   integer, public :: all_prp_op                       =  0
   integer, public :: num_nuclei                       =  0
+  integer, public :: typ_nuclei                       =  0
   integer, public :: x2c_pointer_quat(0:7, 1:2)       =  0
   integer, public :: x2c_bs_irrep_mat(1:4, 0:7)       =  0
   integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4) =  0
