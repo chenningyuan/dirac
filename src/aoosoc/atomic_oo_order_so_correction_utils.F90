@@ -31,11 +31,14 @@ module atomic_oo_order_so_correction_utils
 
   use picture_change_operations
   use module_interest_interface
+  use x2c_utils, only: print_x2cmat
+
 
   implicit none
 
   public get_scso_2e_fock
   public make_so_2e_fock
+  public pure_so_2e
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
@@ -54,6 +57,9 @@ contains
                              intflg,     &
                              mdirac,     &
                              nz,         &
+                             ipqtoq,     &
+                             ihqmat,     &
+                             naosh_ls,   &
                              print_lvl   &
                              )
 !**********************************************************************
@@ -64,10 +70,14 @@ contains
      integer, intent(in)                :: ncols
      integer, intent(in)                :: nz
      integer, intent(in)                :: intflg
+     integer, intent(in)                :: ipqtoq(4,0:7)
+     integer, intent(in)                :: ihqmat(4,-1:1)
+     integer, intent(in)                :: naosh_ls
      integer, intent(in)                :: print_lvl
      logical, intent(in)                :: mdirac
 !----------------------------------------------------------------------
      real(8), parameter                 :: hfxfac = 1.0d0
+     integer                            :: irep, iz, iq, ih
 !----------------------------------------------------------------------
 
 !     take care of present "limitations" (being pragmatic for now)
@@ -84,6 +94,26 @@ contains
                                                 hfxfac      &
                                                ) 
 #endif
+
+      call butobs_no_work(fmat,nz)
+
+!     Symmetrize FMAT matrix
+!     ======================
+!     IH = 0   Non-symmetric
+!     IH = 1   Symmetric
+!     IH = 2   Anti-symmetric
+
+      irep = 0
+      do iz = 1,nz
+        iq = ipqtoq(iz,irep)
+        ih = ihqmat(iq,1)
+        if(ih == 1)then
+          call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,1))
+        else if(ih == 2)then
+          call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,1))
+        end if
+      end do
+
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
@@ -139,6 +169,41 @@ contains
        enddo
 
   end subroutine make_so_2e_fock
+!----------------------------------------------------------------------
+
+  subroutine pure_so_2e(                            &
+                        Gmat,                       & 
+                        nrow,                       &
+                        ncol,                       &
+                        nz                          &
+                       )
+!----------------------------------------------------------------------
+!
+!    purpose: retain only two-electron spin-orbit elements in imaginary parts
+!
+!----------------------------------------------------------------------
+     real(8), intent(inout)   :: Gmat(nrow,ncol,4)
+     integer, intent(in)      :: nrow
+     integer, intent(in)      :: ncol
+     integer, intent(in)      :: nz
+!----------------------------------------------------------------------
+     integer                  :: i, j
+!----------------------------------------------------------------------
+
+!      check dimensionalities
+       if(nz /= 4) stop '2-el soc matrix is not in quaternion format'
+ 
+       if(nrow /= ncol) stop '2-el soc matrix is not in MDIRAC format'
+
+!      take out real parts
+       do j=1,nrow
+         do i=1,nrow
+           !> quaternion(0) 
+           Gmat(i     ,j     ,1) = 0.0d0                 ! ll
+         enddo
+       enddo
+
+  end subroutine pure_so_2e
 !----------------------------------------------------------------------
 
   subroutine get_normalized_2e_soc(                      &
@@ -205,6 +270,19 @@ contains
         fock_mat_offset = fock_mat_offset + nrows*ncols*nr_quat
 
       end do
+
+!     pure 2e-SO matrix
+      call pure_so_2e(                            &
+                      fmat,                       & 
+                      nr_ao_large_aoo,            &
+                      nr_ao_large_aoo,            &
+                      nr_quat                     &
+                      )
+
+!     debug print
+!     if(print_lvl > 2)then
+        call print_x2cmat(fmat,nr_ao_large_aoo,nr_ao_large_aoo,nr_quat,aoo_cb_pq_to_uq(1,0),'aoosoc - 2e-SOC',6)
+!     end if
   
 !     todo: combine fock matrices in case nr_2e_fock > 1
 

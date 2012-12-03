@@ -233,15 +233,16 @@ C
       end if
 !     consistency check for atomic oo-order SOC contributions
 #ifdef MOD_AOOSOC
-      print *,'aoomod',aoomod,x2c_2c_mmf_mos,x2cmod_mmf 
       if(aoomod)then
-        write(lupri,*) ' * atomic oo-order SOC module active'
+        write(lupri,*) 'Information about the oo-order SOC module:'
+        write(lupri,*) '* atomic oo-order SOC module active'
         x2c_2c_mmf_mos = .false.
         if(x2cmod_mmf)then
-          write(lupri,*) '   - generate 2e-SOCs to the X2C Hamiltonian'
+          write(lupri,*) '  - generate 2e-SOCs to be added to'//
+     &                   ' the X2C Hamiltonian'
           x2c_add_amfi = -1
         else
-          write(lupri,*) '   - add 2e-SOCs to the X2C Hamiltonian'
+          write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
         end if
         if(.not.x2c)then
           call quit(' aooSOC does not make sense in NON-2c '//

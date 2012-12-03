@@ -432,14 +432,6 @@ C     ****************************************************
 C
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
 
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'predhf: 1-electron Fock matrix for you',-1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-#undef blubb_blubb_so
-#endif
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
          BARNUC  =.FALSE.
@@ -665,14 +657,6 @@ C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'predhf: barnuc 1-electron Fock matrix for you',-1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-#undef blubb_blubb_so
-#endif
         IF(IPRSCF.GE.12) THEN
          CALL HEADER(
      &   'PREDHF: Fresh 1-electron Fock matrix within "BARNUC"',-1)
@@ -768,14 +752,6 @@ C
       ELSE
         DOLEV = DOLEVEL
       ENDIF
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'predhf: total Fock matrix for you',-1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-#undef blubb_blubb_so
-#endif
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,DOLEV,WORK(KFREE),LFREE)
       IF(ATOMST) THEN
@@ -1389,6 +1365,24 @@ C
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
 
+
+#define blubb_blubb_aooso
+#ifdef blubb_blubb_aooso
+         !fixme: michal for InteRest                            
+         call dzero(fock,N2BBASXQ*nopen)
+         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
+     &               NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+!        CALL HEADER(
+!    &   'scfcyc: full twofock 2-electron Fock matrix for you',-1)
+!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &                NZ,IPQTOQ(1,0),LUPRI)
+         open(99,file='blubb_oo',status='replace',form='unformatted',
+     &        access='sequential',action="readwrite",position='rewind')
+         write(99) (fock(i),i=1,N2BBASXQ)
+         close(99,status='keep')
+         call dzero(fock,N2BBASXQ*nopen)
+#undef blubb_blubb_aooso
+#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1482,6 +1476,7 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+
 !       mi - variable initialization (otherwise runtime-check failure)
 
         tdfde= second()
@@ -1525,20 +1520,6 @@ C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'scfcyc: 1-electron Fock matrix for you',-1)
-         CALL PRQMAT(CMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         CALL HEADER(
-     &   'scfcyc: 2-electron Fock matrix for you',-1)
-         CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
-#endif
 C
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1788,7 +1769,7 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
-         print *, 'dfrac1, dfrac2',dfrac1,dfrac2
+!        print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
@@ -4101,8 +4082,8 @@ C
           IBEIG(IORB(I)+J) = 0
         ENDDO
 
-         iprham_svae = iprham
-         iprham = 5
+         iprham_save = iprham
+!        iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -4333,7 +4314,7 @@ C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
-        iprham = iprham_svae
+        iprham = iprham_save
 C
  30   CONTINUE
 C

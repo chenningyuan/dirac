@@ -116,6 +116,7 @@ contains
       aoo_bs_irrep_mat(1:4, 0:7)       = irqmat(1:4, 0:7)
       aoo_iqmult_trip_q(1:4, 1:4, 1:4) = iqmult(1:4, 1:4, 1:4)
       aoo_pointer_quat_op(0:7)         = jm4pos(0:7)
+      aoo_ihqmat(1:4,-1:1)             = ihqmat(1:4,-1:1)
 
 !     initialize logicals
       aoo_mdirac       = mdirac

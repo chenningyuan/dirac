@@ -1317,9 +1317,7 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-      print *, 'aoomod active 1'
 #ifdef MOD_AOOSOC
-      print *, 'aoomod active 2'
       call reset_available_kw_list()
 
 

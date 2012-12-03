@@ -58,6 +58,7 @@ contains
 !----------------------------------------------------------------------
 
       allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
+      fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
       call get_scso_2e_fock(                          &
@@ -69,18 +70,21 @@ contains
                             aoo_intflg,               &
                             aoo_mdirac,               &
                             nr_quat,                  &
+                            aoo_cb_pq_to_uq(1,0),     &
+                            aoo_ihqmat(1,-1),         &
+                            nr_ao_total_aoo,          &
                             print_lvl                 &
                            )
 
 
-      if(print_lvl > -1)then
+      if(print_lvl > 2)then
         CALL HEADER( &
         'blubb aoosoc twofock 2-electron Fock matrix for you',-1)
         CALL PRQMAT(fmat,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo, &
                     nr_quat,aoo_cb_pq_to_uq(1,0),6)
       end if
 
-!     get pure 2e-SO-fock matrix
+!     get 2e-SO-fock matrix
       call make_so_2e_fock(                            &
                            fmat,                       & 
                            nrows/2,                    &
@@ -106,6 +110,14 @@ contains
                                  ioff_aomat_x,         &
                                  aoo_bs_to_fs,         &
                                  print_lvl)
+
+!     pure 2e-SO matrix
+      call pure_so_2e(                            &
+                      fmat,                       & 
+                      nrows,                      &
+                      ncols,                      &
+                      nr_quat                     &
+                      )
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &

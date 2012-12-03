@@ -62,6 +62,7 @@ module module_aoosoc_pfg
   integer            :: aoo_bs_irrep_mat(1:4, 0:7)             =  0
   integer            :: aoo_iqmult_trip_q(1:4, 1:4, 1:4)       =  0
   integer            :: aoo_pointer_quat_op(0:7)               =  0
+  integer            :: aoo_ihqmat(4,-1:1)                     =  0
   integer            :: nr_2e_fock_matrices                    =  0
   integer            :: aoo_intflg                             =  0
   integer            :: aoo_mxatom                             =  0
