@@ -30,7 +30,6 @@ module module_aoosoc_pfg
   integer, parameter :: aoo_funit                   =  25    ! file unit for X2CMAT
 
   logical            :: aoo_mdirac                             =  .false. ! .true. if MDIRAC in DIRAC is active
-  logical            :: aoo_4cmode                             =  .false. ! .true. if we are running a 4-component SCF
 
 ! real(8) block
   real(8), public    :: aoo_cspeed                             = -1.0d0   ! speed of light

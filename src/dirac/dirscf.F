@@ -1389,25 +1389,6 @@ C
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
 
-
-#define blubb_blubb_aooso
-#ifdef blubb_blubb_aooso
-         !fixme: michal for InteRest                            
-         call dzero(fock,N2BBASXQ*nopen)
-         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &               NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
-         CALL HEADER(
-     &   'scfcyc: full twofock 2-electron Fock matrix for you',-1)
-!        CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         open(99,file='blubb_oo',status='replace',form='unformatted',
-     &        access='sequential',action="readwrite",position='rewind')
-         write(99) (fock(i),i=1,N2BBASXQ)
-         close(99,status='keep')
-         call dzero(fock,N2BBASXQ*nopen)
-#undef blubb_blubb_aooso
-#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1472,29 +1453,9 @@ C
             call dzero(fock,N2BBASXQ*nopen)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'scfcyc: twofock 2-electron Fock matrix for you',-1)
-         CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
-#undef blubb_blubb_so
-#endif
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             call dzero(dmat,N2BBASXQ*nopen)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'scfcyc: old 2-electron Fock matrix for you',-1)
-         CALL DSCAL(N2BBASXQ,0.5d0,DMAT,1)
-         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         CALL DSCAL(N2BBASXQ,2.0d0,DMAT,1)
-#undef blubb_blubb_so
-#endif
 C
             IF (NISHT .GT. 0)
      &         CALL DAXPY(N2BBASXQ,DCOVLP,DMAT,1,FOCK,1)
@@ -1521,22 +1482,6 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'scfcyc: final 2-electron Fock matrix for you',-1)
-!        CALL DSCAL(N2BBASXQ,0.5d0,FOCK,1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         
-!        open(99,file='blubb_oo',status='replace',form='unformatted',
-!    &        access='sequential',action="readwrite",position='rewind')
-!        write(99) (fock(i),i=1,N2BBASXQ)
-!        close(99,status='keep')
-!        CALL DSCAL(N2BBASXQ,2.0d0,FOCK,1)
-#undef blubb_blubb_so
-#endif
-
 !       mi - variable initialization (otherwise runtime-check failure)
 
         tdfde= second()
@@ -1623,19 +1568,6 @@ C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
-!#define blubb_blubb_so
-#ifdef blubb_blubb_so
-         CALL HEADER(
-     &   'scfcyc: total Fock matrix for you',-1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),LUPRI)
-         open(99,file='blubb_oo',status='replace',form='unformatted',
-     &        access='sequential',action="readwrite",position='rewind')
-         write(99) (cmo(i),i=1,N2BBASXQ)
-         close(99,status='keep')
-#undef blubb_blubb_so
-#endif
-
 C
 C        Add active two-electron Fock matrices
 C

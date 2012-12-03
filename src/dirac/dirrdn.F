@@ -231,17 +231,21 @@ C
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
       end if
+!     consistency check for atomic oo-order SOC contributions
 #ifdef MOD_AOOSOC
+      print *,'aoomod',aoomod,x2c_2c_mmf_mos,x2cmod_mmf 
       if(aoomod)then
         write(lupri,*) ' * atomic oo-order SOC module active'
-        if(x2c)then
-          write(lupri,*) '   - add 2e-SOCs to the X2C Hamiltonian'
+        x2c_2c_mmf_mos = .false.
+        if(x2cmod_mmf)then
+          write(lupri,*) '   - generate 2e-SOCs to the X2C Hamiltonian'
+          x2c_add_amfi = -1
         else
-          if(.not.x2cmod_mmf) call quit(' for now AooSOC requires'//
-     &      ' .X2Cmmf in atomic runs')
-          x2c_2c_mmf_mos = aoo_2c_mmf_mos
-          write(lupri,*) '   - generate 2e-SOCs from the mean-field'//
-     &                   ' Hamiltonian after an initial 4c SCF'
+          write(lupri,*) '   - add 2e-SOCs to the X2C Hamiltonian'
+        end if
+        if(.not.x2c)then
+          call quit(' aooSOC does not make sense in NON-2c '//
+     &      ' relativistic runs')
         end if
       end if
 #endif
@@ -4524,11 +4528,14 @@ C***********************************************************************
 #ifdef PCM_MODULE
       use pcmmod_cfg
 #endif
+#ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 9)
+      PARAMETER (NTABLE = 68,NDIR = 10)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4560,7 +4567,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   '/
+     &             '*PCM   ','*aooSOC'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -6217,7 +6224,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9), I
+               GO TO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6282,6 +6289,11 @@ CMI  ... reading input routine for AMFI+RELSCF
 !       *PCM
     9 continue
       ! this is a cheat so that *PCM section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
+   10 continue
+      ! this is a cheat so that *aooSOC section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200

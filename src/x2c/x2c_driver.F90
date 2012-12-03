@@ -691,7 +691,6 @@ contains
 !      ------------------------------------------------------------------------------
 !      the basic "h1_4c" will always be the bare-nucleus h1 hamiltonian except 
 !      for the "4c-Dirac-Fock operator as basis" option. sknecht+tsaue: march 2011
-        write(*,*) 'blubbbbbbb00'
                                basic_h1mat = 0
        if(defining_h1mat == 2) basic_h1mat = 2
        call x2c_get_h1_mat_base(xmat,                  &
@@ -713,7 +712,6 @@ contains
                                 mdirac,                &
                                 spinfree,              &
                                 print_lvl)
-        write(*,*) 'blubbbbbbb1.5'
        
 !      step 3: get defining matrix (== "h1-defining" in orthonormal MO basis)
 !              in : ["SL resorted"] matrix -> scr2mat
@@ -738,7 +736,6 @@ contains
                                     mdirac,                &
                                     spinfree,              &
                                     print_lvl)
-        write(*,*) 'blubbbbbbb1.75'
  
 !      allocate scratch matrix with appropriate dimension
        allocate(eigvl(max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c)))
@@ -754,7 +751,6 @@ contains
 !              out: the basic 2c-h1 in orthonormal basis -> xmat
 !                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_z_value
 !      ------------------------------------------------------------------------------
-        write(*,*) 'blubbbbbbb2'
        call get_h1_2c_onmo_bas(xmat,                      &
                                scr1mat,                   &
                                scr2mat,                   &
@@ -823,7 +819,6 @@ contains
          is_fragment_pctmat = is_z_value
        end if
 
-        write(*,*) 'blubbbbbbb3'
        call construct_pctmat_saao_bas(xmat,                &
                                       scr1mat,             &
                                       scr2mat,             &
@@ -844,7 +839,6 @@ contains
 
 !      free scratch memory
        deallocate(eigvl)
-        write(*,*) 'blubbbbbbb4'
 
        close(x2c_file_scr,status="delete")
 

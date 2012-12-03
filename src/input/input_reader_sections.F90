@@ -31,7 +31,7 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*AooSOC')
+        case ('*aooSOC')
            call read_input_aoosoc(word, kw_section)
 
         case ('**RELCC')
@@ -1294,11 +1294,6 @@
          x2c_free_part_mtx_defh1 = .true.
       end if
 
-!     use DIRACs atomic oo-order 2e-spin-orbit correction
-      if (kw_matches(word, '.aoosoc')) then
-         x2c_add_amfi = 2
-      end if
-
       if (kw_matches(word, '.fockao')) then
          x2c_fock_saao_basis = .true.
       end if
@@ -1311,7 +1306,7 @@
 
       use x2cmod_cfg
       use input_reader
-#ifdef AOOSOC
+#ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
 
@@ -1322,17 +1317,20 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef AOOSOC
+      print *, 'aoomod active 1'
+#ifdef MOD_AOOSOC
+      print *, 'aoomod active 2'
       call reset_available_kw_list()
 
-      aoomod = .true.
 
       if (kw_matches(word, '.DEBUG ')) then
          aoomod_debug = .true.
+         aoomod       = .true.
+         x2c_add_amfi = 2
       end if
-
-      if (kw_matches(word, '.mmfmos')) then
-         aoo_2c_mmf_mos   = .true.
+      if (kw_matches(word, '.atomic')) then
+         x2c_add_amfi = 2
+         aoomod       = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

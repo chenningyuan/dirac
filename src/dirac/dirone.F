@@ -2597,6 +2597,7 @@ C*****************************************************************************
       use x2c_pct_mo_coefficients, only: 
      &    x2c_molecular_mean_field_mos
 #ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
       use module_aoosoc_pfg
       use module_aoosoc_init, only:
      &    aoosoc_init
@@ -3135,56 +3136,63 @@ C
      &                                    i2tmt,i2tmot,icmoq,ntmo,
      &                                    nfbas,nesh,nz,nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
-      else ! generate 2e-SOC in the atomic run
+        else if(aoomod)then 
 #ifdef MOD_AOOSOC
-        if(nucdep == 1 .and. nucind == 1)then
+          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !
-!       release memory
-        CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
-        call dealloc(work)
+!           release memory
+            CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
+            call dealloc(work)
 
-!       generate density matri(x/ces) - incoming variable to aoosoc module
-        allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
-        allocate(cmo_aoosoc(ncmotq))
-        CALL reacmo_no_work(LUCOEF,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
-        call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
-        deallocate(cmo_aoosoc)
+!           generate density matri(x/ces) - incoming variable to aoosoc module
+            allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
+            allocate(cmo_aoosoc(ncmotq))
+            dmat_aoosoc = 0.0d0
+            cmo_aoosoc  = 0.0d0
+!           read coefficients
+            call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
+            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,3)
+            close(lucoef,status='keep')
 
-        allocate(pctm_aoosoc(ntbas(0)**2*4))
-        open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &       access='sequential',action='readwrite',
-     &       position='rewind')
+!           generate density matri(x/ces)
+            call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
+            deallocate(cmo_aoosoc)
 
-!       initialize offset
-        ioff_pct_mat = 1
-        do i = 1, nfsym
-          write(flabel,'(a11,i1)') 'pctmtAO   0',i
-          if(nfbas(i,0) * nfbas(i,1) > 0)then
-            call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
-     &                   nfbas(i,0) * nfbas(i,1)*nz,lux2c)
-          end if
-          ioff_pct_mat  = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
-        end do
+            allocate(pctm_aoosoc(ntbas(0)**2*4))
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
 
-        close(lux2c,status='keep')
+!           initialize offset
+            ioff_pct_mat = 1
+            do i = 1, nfsym
+              write(flabel,'(a11,i1)') 'pctmtAO   0',i
+              if(nfbas(i,0) * nfbas(i,1) > 0)then
+                call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
+     &                        nfbas(i,0) * nfbas(i,1)*nz,lux2c)
+              end if
+              ioff_pct_mat = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
+            end do
 
-        call get_atomic_oo_order_so_correction(
-     &                                         dmat_aoosoc,
-     &                                         pctm_aoosoc,
-     &                                         iprham
-     &                                         )
+            close(lux2c,status='keep')
 
-        deallocate(pctm_aoosoc)
-        deallocate(dmat_aoosoc)
-        end if ! check for atomic run
+            call get_atomic_oo_order_so_correction(
+     &                                             dmat_aoosoc,
+     &                                             pctm_aoosoc,
+     &                                             iprham
+     &                                             )
+
+            deallocate(pctm_aoosoc)
+            deallocate(dmat_aoosoc)
+          end if ! check for atomic run
 #else
-        call quit('generation of  atomic oo-order 2e-SOC not active'//
-     &            ' in this version')
+          call quit('generation of  atomic oo-order 2e-SOC not active'//
+     &              ' in this version')
 #endif
       
-        end if ! x2c_2c_mmf_mos .equiv. .true.
-      end if ! x2cmod_mmf .equiv. .true.
+        end if ! x2c_2c_mmf_mos .equiv. .true. or aoomod .equiv. true
+      end if ! x2c .equiv. .true.
 
 !     final output
 !     ------------
