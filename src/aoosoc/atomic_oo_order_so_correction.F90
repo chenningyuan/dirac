@@ -156,14 +156,14 @@ contains
       allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 
 !     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
-      call read_normalized_2e_soc(                              &
-                                  Gmat_frag,                    & 
-                                  nrows_ext,                    &
-                                  ncols_ext,                    &
-                                  nr_quat_ext,                  &
-                                  file_name_aoo_contributions,  &
-                                  nint(atom(center_id)%charge), &
-                                  aoo_fsoc                      &
+      call read_normalized_2e_soc(                                 &
+                                  Gmat_frag,                       & 
+                                  nrows_ext,                       &
+                                  ncols_ext,                       &
+                                  nr_quat_ext,                     &
+                                  file_name_aoo_contributions,     &
+                                  nint(atom(center_total)%charge), &
+                                  aoo_fsoc                         &
                                  )
 !     distribute  atomic data in molecular block 
       lwork = 2*naosh_ls + nrows_ext + ncols_ext + 24
