@@ -371,14 +371,23 @@ contains
      end do
      write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
 
-!    dump 2e-soc on file
+!    read 2e-soc from file
      open(fh,file=file_name(1:12),status='old',form='unformatted',      &
           access='sequential',action="readwrite",position='rewind')
 
      read(fh) nrow_tmp, ncol_tmp, nz_tmp
-     if(nrow_tmp >  nrow) stop 'read_normalized_2e_soc: row dimension does not fit'
-     if(ncol_tmp >  ncol) stop 'read_normalized_2e_soc: col dimension does not fit'
-     if(nz_tmp   /= 4   ) stop 'read_normalized_2e_soc: nz  dimension does not fit'
+     if(nrow_tmp >  nrow)then 
+       print *, 'read_normalized_2e_soc: row dimension does not fit',nrow_tmp,nrow
+       stop 'read_normalized_2e_soc: row dimension does not fit'
+     end if
+     if(ncol_tmp >  ncol)then
+       print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
+       stop 'read_normalized_2e_soc: col dimension does not fit'
+     end if
+     if(nz_tmp   /= 4   )then 
+       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp
+       stop 'read_normalized_2e_soc: nz  dimension does not fit'
+     end if
 
      read(fh) Gmat
 

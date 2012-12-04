@@ -115,8 +115,8 @@ contains
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
                                   fmat,                       & 
-                                  nrows,                      &
-                                  ncols,                      &
+                                  nrows/2,                    &
+                                  ncols/2,                    &
                                   nr_quat,                    &
                                   file_name_aoo_contributions,&
                                   nint(atom(1)%charge),       &
@@ -131,7 +131,7 @@ contains
 
   subroutine put_atomic_oo_order_so_correction(                             &
                                                Gmat,                        &
-                                               naosh_ls,                    &
+                                               naosh_l,                     &
                                                nrows_ext,                   &
                                                ncols_ext,                   &
                                                nr_quat_ext,                 &
@@ -142,7 +142,7 @@ contains
                                               )    
 !**********************************************************************
      real(8), optional, intent(inout)   :: Gmat(*)
-     integer, intent(in)                :: naosh_ls
+     integer, intent(in)                :: naosh_l
      integer, intent(in)                :: nrows_ext
      integer, intent(in)                :: ncols_ext
      integer, intent(in)                :: nr_quat_ext
@@ -171,11 +171,11 @@ contains
                                   aoo_fsoc                         &
                                  )
 !     distribute  atomic data in molecular block 
-      lwork = 2*naosh_ls + nrows_ext + ncols_ext + 24
+      lwork = 2*naosh_l + nrows_ext + ncols_ext + 24
       allocate(work(lwork))
       kfree = 1
       lfree = lwork
-      call put_aoblock(Gmat,naosh_ls,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4, &
+      call put_aoblock(Gmat,naosh_l,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4,  &
                        Gmat_frag,nrows_ext,ncols_ext,-1,nrows_ext,ncols_ext,-1,work,kfree,lfree   &
                       )
 
