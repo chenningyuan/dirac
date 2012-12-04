@@ -51,10 +51,6 @@
 * Why hardwire this?
       I_ANA_CC = 0
 *
-*  For controlling some dimensionings in sigden_ctrl
-* will not be needed but check what it will do
-      I_AM_IN_CC_EXC_E = 1
-*
 *. Copy initial sets of excitation operators from file 
       IF(II_RES_EXC.NE.0) THEN
         WRITE(6,*)
@@ -337,6 +333,7 @@ C?            CALL WRTMAT(CCVEC1,1,LEN_T_VEC,1,LEN_T_VEC)
           END IF
         END IF
       END IF
+      STOP 'update restart for lrcc'
 * 
       RETURN
       END
@@ -2535,7 +2532,7 @@ C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
 * H21 -- 10 -- M11 (multiply by 1/2 on additional array(At the moment))
 * H22 -- 11 -- M11 (reuse the above M11, add to above)
 * M11 + H11 -- 10 -- M01
-* H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
+* H02 + M02 -- 01 -- M01 ! do not multiply (reuse the above M02 + H02, multiply by 1/2)
 * H22 -- 21 -- M01 !keep
 * H21 -- 20 -- M01 !keep
 * H12 -- 11 -- M01 !keep
@@ -2908,7 +2905,6 @@ C     CALL SCALVE(WORK(KM10),HALF,LEN_M10_VEC_CC)
       NPART = 1
       NHOLE = 1
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
-      stop 'look for me'
 *
 * Allocate the M01 intermediate. Since in this way we will never need
 * more than two intermediates in memory
@@ -2943,7 +2939,6 @@ C     CALL SCALVE(WORK(KM10),HALF,LEN_M10_VEC_CC)
      &     WORK(KINTM11),NINTER11,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-      STOP ' and think about it... in the office'
 *
 * Save contraction for later
 *
@@ -2999,9 +2994,9 @@ C
 *
       CALL VEC_FROM_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
 *
-* Multiply by 1/2
+* Multiply by 1/2 ! Do not multiply
 *
-      CALL SCALVE(WORK(KM02),HALF,LEN_M02_VEC_CC)
+C     CALL SCALVE(WORK(KM02),HALF,LEN_M02_VEC_CC)
 * 
       IHM = 2
       IFHM = 2 !intermediates are fetched
@@ -3109,25 +3104,6 @@ C
 * Write intermediate KM01
 *
       CALL VEC_TO_DISC(WORK(KM01),LEN_M01_VEC_CC,1,LBLK,LU_M01)
-*
-* And now the contraction
-*
-C     print*,'second contraction for M01'
-C     IHM = 2
-C     IFHM = 2 !intermediates are fetched
-C
-C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
-C    &     IFHM,WORK(KM01), 
-C    &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
-C    &    NINTER01,WORK(KINTM01),WORK(KLIBSOBEX_M01),WORK(KLIHIND),IHSM,
-C    &     NINTER01,WORK(KLLSOBEX_M01),
-C    &     NM01TOT,WORK(KNM01TOT),WORK(KNM01TT),
-C    &     WORK(KCOMBNM01TOT),WORK(KPERMNM01TOT),
-C    &     WORK(KFACNM01TOT),WORK(KCOMBFACNM01TOT),
-C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
-C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
-C    &     WORK,KFREE,LFREE)
 *
 * Deallocate the M01 intermediate 
 *
