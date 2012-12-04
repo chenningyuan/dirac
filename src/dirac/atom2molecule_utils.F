@@ -55,7 +55,9 @@ C***********************************************************************
       CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
+      print *, 'nbas,lr,lc',nbas,lr,lc,nont
       DO ITYP = 1,NONT
+      print *, 'ndeg(ityp)',ndeg(ityp)
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
           CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
@@ -79,9 +81,11 @@ C.........Create pointer mol->atom for rows
           ENDIF
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
+      print *, 'nzc1',nzc1
           DO IZ = 1,NZC1
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
      &                 WORK(KIBUF),WORK(KJBUF))
+      call wrtmatmn(amol(1,1,iz),nbas,nbas,nbas,nbas,6)
           ENDDO
         ENDDO
         ICENT = ICENT + 1

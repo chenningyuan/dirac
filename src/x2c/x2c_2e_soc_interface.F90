@@ -551,7 +551,6 @@ contains
 !--------------------------------------------------------------
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
-     real(8), allocatable            :: scr3_mat(:)
      real(8), allocatable            :: wrk(:)
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
@@ -570,18 +569,52 @@ contains
      character (len=12)              :: flabel
 !**********************************************************************
  
-!      allocate scratch space - part 1
+!      allocate scratch space
        allocate(scr1_mat(naosh_ls*naosh_ls*4))
+       allocate(scr2_mat(nr_ao_L*nr_ao_L*4))
        scr1_mat = 0.0d0
+       scr2_mat = 0.0d0
+
+!      -------------------------------------------------------------------------------
+!      step 1. read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
+!      -------------------------------------------------------------------------------
+
+       i = 0
+       j = 0
+       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
+       call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
+!      end if
+
+!      --------------------------------------------------------
+!      step 2. select LL-block of h1_++_saao_cartesian_gaussian
+!      --------------------------------------------------------
+!          in: scr1_mat
+!         out: scr2_mat
+       call pick_LL_block_saao_bas(scr1_mat,            &
+                                   scr2_mat,            &
+                                   naosh_L,             &
+                                   naosh_all,           &
+                                   naosh_ls,            &
+                                   nr_ao_L,             &
+                                   nfsym,               &
+                                   nz,                  &
+                                   0,                   &
+                                   op_bs_to_fs)
 
 !      ---------------------------------------------------------------------------------
-!      step 1. read and distribute aoosoc contributions for symmetry independent centers
+!      step 3. read and distribute aoosoc contributions for symmetry independent centers
 !      ---------------------------------------------------------------------------------
 !        out: aoosoc  -> scr1_mat
 
        allocate(aooso_info(naosh_ls))
 
        center_total = 1
+       scr1_mat     = 0.0d0
+
        do i = 1, nuclei_type
 
 !        count the number of basis functions for center_total
@@ -601,85 +634,18 @@ contains
                                                )
        end do
 
-       deallocate(aooso_info)
-
-!      allocate scratch space - part 2
-       allocate(scr2_mat(naosh_ls*naosh_ls*4))
-       scr2_mat = 0
-
-#ifdef blubbbbbb
-!      b. transform from AO-basis to SO-AO basis
-!      -----------------------------------------
-!        in : h1_AO    -> scr2_mat
-!        out: h1_SO-AO -> scr1_mat
-       scr1_mat = 0.0d0
-       i = op_bs_to_fs(0,1)
-       do iz = 1, 4
-         irepd = bs_irrep_mat(iz,0)
-         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
-         ipq   = iqp_off_in(iq,0)
-         call mtaoso(scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
-                     scr1_mat(1+(naosh_ls*naosh_ls*(ipq-1))),    &
-                     naosh_ls,                                   &
-                     irepd,                                      &
-                     print_lvl)
-       end do
-
-!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
-!      -----------------------------------------------------------
-       call butobs_no_work(scr1_mat,nz)
-
-!      d. insert quaternion phase factors
-!      ----------------------------------
-       if(nz < 4)then
-         do iz = 1, nz                                                
-           iq = ipq_off_in(iz,0)
-           call q2bphase('F',iq,1,scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))))
-         end do           
-       end if          
-#endif
-
-!      -------------------------------------------------------------------------------
-!      step 3. read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
-!      -------------------------------------------------------------------------------
-
-       i = 0
-       j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
-       scr2_mat = 0.0d0
-       call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
-
 !      debug print
 !      if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - AMFI contribution',6)
-         call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
+         call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',6)
 !      end if
 
-#ifdef blubbbbbb
-!      add aoo-SO contributions to h1_2c
-       call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
-#endif
-       allocate(scr3_mat(nr_ao_L*nr_ao_L*4))
+       deallocate(aooso_info)
 
-       scr3_mat = 0.0d0
-       call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr3_mat,1)
-       
-       scr2_mat = 0.0d0
+!      -----------------------------------------
+!      step 4. add aoo-SO contributions to h1_2c
+!      -----------------------------------------
 
-!      --------------------------------------------------------
-!      step 4. select LL-block of h1_++_saao_cartesian_gaussian
-!      --------------------------------------------------------
-
-       call pick_LL_block_saao_bas(scr1_mat,            &
-                                   scr2_mat,            &
-                                   naosh_L,             &
-                                   naosh_all,           &
-                                   naosh_ls,            &
-                                   nr_ao_L,             &
-                                   nfsym,               &
-                                   nz,                  &
-                                   0,                   &
-                                   op_bs_to_fs)
+       call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr2_mat,1)
 
 !      -------------------------------------------------------------
 !      step 5. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
@@ -689,8 +655,6 @@ contains
        j = 0
        write(flabel,'(a7,i4,i1)') 'h12cAOA',j,i
 
-!      add aoo-SO contributions to h1_2c
-       call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr2_mat,1)
 
        if(spherical_on)then
 
@@ -702,7 +666,6 @@ contains
          call x2c_write(flabel,scr1_mat,nr_sph**2  * nz,x2c_file_glb)
        else
 
-         call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr3_mat,1,scr2_mat,1)
 !        debug print
 !        if(print_lvl > 2)then
            call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+ooSO',6)
@@ -714,7 +677,6 @@ contains
 !      release scratch space
        deallocate(scr1_mat)
        deallocate(scr2_mat)
-       deallocate(scr3_mat)
 
   end subroutine x2c_interface2aoosoc
 
