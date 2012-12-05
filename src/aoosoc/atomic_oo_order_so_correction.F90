@@ -160,6 +160,7 @@ contains
 
       allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 
+!     print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
 !     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
       call read_normalized_2e_soc(                                 &
                                   Gmat_frag,                       & 
@@ -184,9 +185,10 @@ contains
 
 !     update counter
       center_total = center_total + aoo_nont(center_id)
+!     print *, 'center_total,  aoo_nont(center_id)',center_total,  aoo_nont(center_id)
 
 !     release memory when last type has been added
-      if(center_total == max_center)then
+      if(center_total > max_center)then
         deallocate(atom)
         deallocate(aoo_nont)
         deallocate(aoo_nucdeg)

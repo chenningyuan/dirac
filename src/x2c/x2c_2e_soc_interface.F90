@@ -615,6 +615,8 @@ contains
        center_total = 1
        scr1_mat     = 0.0d0
 
+       print *, 'nuclei_type',nuclei_type
+
        do i = 1, nuclei_type
 
 !        count the number of basis functions for center_total
