@@ -67,6 +67,7 @@ contains
                             nrows,                    &
                             ncols,                    &
                             nr_2e_fock_matrices,      &
+                            aoo_dfopen,               &
                             aoo_intflg,               &
                             aoo_mdirac,               &
                             nr_quat,                  &
@@ -76,6 +77,7 @@ contains
                             print_lvl                 &
                            )
 
+      if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
 
       if(print_lvl > 2)then
         CALL HEADER( &

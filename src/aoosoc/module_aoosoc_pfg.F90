@@ -33,6 +33,7 @@ module module_aoosoc_pfg
 
 ! real(8) block
   real(8), public    :: aoo_cspeed                             = -1.0d0   ! speed of light
+  real(8),allocatable:: aoo_dfopen(:)
 
   integer            :: dim_pshell(2)                          =  0
   integer            :: dim_eshell(2)                          =  0

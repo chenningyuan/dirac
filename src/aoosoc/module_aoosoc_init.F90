@@ -138,6 +138,12 @@ contains
 !       end do
 !     end do
 
+!    active fock matrix factors
+     if(nr_2e_fock_matrices > 1)then 
+       allocate( aoo_dfopen(nr_2e_fock_matrices), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
+       aoo_dfopen(1:(nr_2e_fock_matrices-1)) = df(1:(nr_2e_fock_matrices-1))
+     end if
+
     !> interface atomic/molecular data
        allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
        do i=1,size(atom)
