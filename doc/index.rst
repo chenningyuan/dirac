@@ -95,33 +95,8 @@ Getting help
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
-Reference manual
-================
-
-* **Input sections:**
-  :doc:`DIRAC <manual/dirac>` |
-  :doc:`OPTIMIZE <manual/optimize>` |
-  :doc:`GENERAL <manual/general>` |
-  :doc:`HAMILTONIAN <manual/hamiltonian>` |
-  :doc:`DFT <manual/dft>` |
-  :doc:`FDE <manual/fde>` |
-  :doc:`GRID <manual/grid>` |
-  :doc:`INTEGRALS <manual/integrals>` |
-  :doc:`WAVE FUNCTION <manual/wavefunction>` |
-  :doc:`AMFI <manual/amfi>` |
-  :doc:`GOSCIP <manual/goscip>` |
-  :doc:`MOLTRA <manual/moltra>` |
-  :doc:`DIRRCI <manual/dirrci>` |
-  :doc:`RELADC <manual/reladc>` |
-  :doc:`RELCCSD <manual/relccsd>` |
-  :doc:`PROPERTIES <manual/properties>` |
-  :doc:`ANALYZE <manual/analyze>` |
-  :doc:`VISUAL <manual/visual>`
-
-* **Operators and strings:**
-  :doc:`One-electron operators <manual/oneel_oper>` |
-  :doc:`Orbital strings <manual/orb_strings>`
-
+:doc:`Reference manual <manual/index>`
+======================================
 
 Developers
 ==========
