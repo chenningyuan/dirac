@@ -61,7 +61,7 @@ def main():
     if p:
         if not has_patchprogram():
             sys.stderr.write("The `patch' program was not found, cannot apply updates.\n")
-            return
+            sys.exit(-1)
         if test_or_apply_patch(p,test=True):
             print "Verified patch, now applying",
             res = test_or_apply_patch(p,test=False)
@@ -83,10 +83,10 @@ def main():
         else:
             sys.stderr.write("Patch cannot be applied, please find error log in update-error.log.\n")
             sys.stderr.write("This may be due to your modifications of Dirac or a developer error.\n")
-            sys.stderr.write("Please extract the official distribution archive and update directly\n from that.\n")
+            sys.stderr.write("Please extract the official distribution archive and update directly\nfrom that.\n")
             sys.exit(-1)
     else:
-        pass
+        sys.exit(0)
 
 print 'Dirac update script, attempting to locate and download updates..'
 while True:
