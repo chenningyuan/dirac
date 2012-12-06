@@ -77,12 +77,10 @@ set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, a
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/installation/installation.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_VERSION_MAJOR    "${VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_PATCH    "${VERSION_PATCH}")
-set(CPACK_PACKAGE_FILE_NAME        "DIRAC-${VERSION_MAJOR}.${VERSION_PATCH}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-${VERSION_MAJOR}.${VERSION_PATCH}-Source")
+set(CPACK_PACKAGE_FILE_NAME        "DIRAC-${DIRAC_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-${DIRAC_VERSION}-Source")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
-    "DIRAC ${VERSION_MAJOR}.${VERSION_PATCH}"
+    "DIRAC ${DIRAC_VERSION}"
     )
 
 SET(EXPORT_DIR ${CMAKE_BINARY_DIR}/export)
@@ -121,10 +119,9 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src                          ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
-        COMMAND echo "DIRAC version: ${VERSION_MAJOR}.${VERSION_PATCH}" > ${EXPORT_DIR}/VERSION
-        COMMAND echo "Git hash:      ${GIT_REVISION}" >> ${EXPORT_DIR}/VERSION
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
