@@ -50,7 +50,7 @@ copyright = u'The authors of DIRAC'
 # built documents.
 #
 # Read version from file
-dirac_version = open(os.path.join('..', 'VERSION'), 'r').read().rstrip()
+dirac_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
 # The short X.Y version.
 version = dirac_version
 # The full version, including alpha/beta/rc tags.

@@ -1,11 +1,6 @@
 
 
-.. _hamiltonian:
-
-===============
-\*\*HAMILTONIAN
-===============
-.. index:: **HAMILTONIAN
+starstar(HAMILTONIAN)
 
 **Introduction**
 ================
@@ -156,11 +151,8 @@ calculation of spectroscopic constants and valence properties; for core
 properties, testing is recommended (see also :ref:`.LVNEW`). This
 is the default Hamiltonian choice since DIRAC11.
 
-.. _.LVNEW:
 
-.LVNEW
-------
-.. index:: .LVNEW
+keyword(LVNEW)
 
 Modification of :ref:`.LVCORR` that obtains the atomic small
 component charge via a Mulliken analysis instead of the original table
