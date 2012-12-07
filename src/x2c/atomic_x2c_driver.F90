@@ -43,15 +43,6 @@ module atomic_x2c
 
   private
 
-! parameters
-  integer, parameter :: bla_bla = 1 
-
-! types
-  type fragments_pctmat
-    real(8), allocatable :: pctmat_f_i(:)
-    integer, allocatable :: naosh_all_f_i(:)
-    integer, allocatable :: naosh_L_f_i(:)
-  end type
 
 contains
 

@@ -26,14 +26,15 @@
 !
 !***********************************************************************
 
-      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,NZC1,
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS_R,NBAS_C,INUC,NONT,NDEG,NZC1,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
      &                       WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Put an atomic block into a molecular matrix
 C       AMOL        - molecular matrix
-C       NBAS        - dimension of molecular matrix
+C       NBAS_R      - row dimension of molecular matrix
+C       NBAS_C      - column dimension of molecular matrix
 C       INUC        - index of first atom of this type in list of
 C                     symmetry-independent centers
 C       NONT        - number of symmetry-independent centers of this type
@@ -47,12 +48,12 @@ C     Written by T. Saue March 31 2011
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION AMOL(NBAS,NBAS,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
+      DIMENSION AMOL(NBAS_R,NBAS_C,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
      &          WORK(*)
       KFRSAV=KFREE
       ICENT=INUC
-      CALL MEMGET('INTE',KRBUF,NBAS,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KRBUF,NBAS_R,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KCBUF,NBAS_C,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
       print *, 'nbas,lr,lc',nbas,lr,lc,nont
@@ -60,7 +61,7 @@ C***********************************************************************
       print *, 'ndeg(ityp)',ndeg(ityp)
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
+          CALL LABCOUNT(N1,WORK(KRBUF),NBAS_R,1,IR_CLS,ICENT,IDEG,-1)
           IF(N1.NE.NR) THEN
             WRITE(6,'(A,2(/A,I5))') 
      &                'PUT_AOBLOCK: Error in row number',
@@ -69,9 +70,9 @@ C.........Create pointer mol->atom for rows
             CALL QUIT('PUT_AOBLOCK: Error in row number !')
           ENDIF
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KRBUF),NBAS,WORK(KIBUF),NR)
-C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(N2,WORK(KCBUF),NBAS,1,IC_CLS,ICENT,IDEG,-1)
+          CALL REVINDEX(WORK(KRBUF),NBAS_R,WORK(KIBUF),NR)
+C.........Create pointer mol->atom for colums
+          CALL LABCOUNT(N2,WORK(KCBUF),NBAS_C,1,IC_CLS,ICENT,IDEG,-1)
           IF(N2.NE.NC) THEN
             WRITE(6,'(A,2(/A,I5))') 
      &                'PUT_AOBLOCK: Error in column number',
@@ -80,12 +81,12 @@ C.........Create pointer mol->atom for rows
             CALL QUIT('PUT_AOBLOCK: Error in column number !')
           ENDIF
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
+          CALL REVINDEX(WORK(KCBUF),NBAS_C,WORK(KJBUF),NC)
       print *, 'nzc1',nzc1
           DO IZ = 1,NZC1
-            CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
+            CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS_R,ATOM(1,1,IZ),LR,
      &                 WORK(KIBUF),WORK(KJBUF))
-      call wrtmatmn(amol(1,1,iz),nbas,nbas,nbas,nbas,6)
+      call wrtmatmn(amol(1,1,iz),nbas_r,nbas_c,nbas_r,nbas_c,6)
           ENDDO
         ENDDO
         ICENT = ICENT + 1

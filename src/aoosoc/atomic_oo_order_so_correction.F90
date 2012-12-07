@@ -178,8 +178,8 @@ contains
       allocate(work(lwork))
       kfree = 1
       lfree = lwork
-      call put_aoblock(Gmat,naosh_l,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4,  &
-                       Gmat_frag,nrows_ext,ncols_ext,-1,nrows_ext,ncols_ext,-1,work,kfree,lfree   &
+      call put_aoblock(Gmat,naosh_l,naosh_l,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4,  &
+                       Gmat_frag,nrows_ext,ncols_ext,-1,nrows_ext,ncols_ext,-1,work,kfree,lfree           &
                       )
 
       deallocate(work)

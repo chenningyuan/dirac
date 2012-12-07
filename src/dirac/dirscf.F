@@ -5375,8 +5375,8 @@ C.........Generate contribution to atomic density matrix from this shell
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
-        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
-     &                   NUCDEG(ICENT),NZC1,
+        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),NTBAS(0),ICENT,
+     &                   NONT(IATOM),NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
      &                   WORK,KFREE,LFREE)
 C.......Release memory        

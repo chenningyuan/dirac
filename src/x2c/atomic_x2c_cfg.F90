@@ -36,13 +36,17 @@ module atomic_x2c_cfg
 ! character block
 
 ! logical block
-  logical, public :: atomic_x2c_complete_mol                =  .false.
-  logical, public :: atomic_x2c_add_amfi                    =  .false.
+  logical, public :: fx2c_complete_mol                =  .false.
 
 ! double precision block
 
 ! integer block
 
-! calculated integer arrays for SA-AO/orthonormal MO basis
+! types
+  type fx2c_pctmat_info
+    real(8), allocatable :: fx2c_pctmat(:)
+    integer, allocatable :: fx2c_naosh_all(:)
+    integer, allocatable :: fx2c_naosh_L(:)
+  end type
 
 end module
