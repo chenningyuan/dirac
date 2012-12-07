@@ -22,7 +22,8 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
-    logical, save :: pe_iter = .true.
+!edh: change default setting for debugging
+    logical, save :: pe_iter = .false.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
     logical, save :: pe_gspol = .false.
@@ -254,17 +255,19 @@ subroutine pe_dalton_input(word, luinp, lupri)
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
         ! direct solver for induced dipoles
-        else if (trim(option(2:)) == 'DIRECT') then
+!         else if (trim(option(2:)) == 'DIRECT') then
             pe_iter = .false.
-        ! iterative solver for induced dipoles (defaults to true)
-        else if (trim(option(2:)) == 'ITERAT') then
+         ! iterative solver for induced dipoles (defaults to true)
+!edh         else if (trim(option(2:)) == 'ITERAT') then
             read(luinp,*) option
             backspace(luinp)
-            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
-               &.and. option(1:1) /= '!' .and. option(1:1) /= '#') then
-                read(luinp,*) thriter
-            end if
-            pe_iter = .true.
+            !if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+            !   &.and. option(1:1) /= '!' .and. option(1:1) /= '#') then
+            !    read(luinp,*) thriter
+            !end if
+!edh            pe_iter = .true.
+!edh: For debugging we don't use the iterative solver!
+!TODO: Make DIRAC keywords for DIRECT and ITERATIVE SOLVER!
         ! handling sites near quantum-classical border
         else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
@@ -1372,6 +1375,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     work => dalwrk
 
      print *, '*** edh: Entering pe_master ***', runtype
+     print *, '*** edh: pe:iter ***', pe_iter 
 
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
@@ -1391,6 +1395,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         response = .false.
         mep = .false.
     else if (runtype == 'response') then
+        write(luout,*) 'pe_module'
+        write(luout,*) 'npols', npols
         if (pe_gspol) return
         if (npols < 1) return
         if (.not. lpol(1)) return
@@ -3080,6 +3086,9 @@ end subroutine es_multipoles
 
 subroutine pe_polarization(denmats, fckmats)
 
+!edh: for debugging
+#include "priunit.h"
+
     external :: Tk_integrals
 
     real(dp), dimension(:), intent(in) :: denmats
@@ -3109,8 +3118,6 @@ subroutine pe_polarization(denmats, fckmats)
             end if
             do i = 1, ndens
                 Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Fpd
-! edh:
-            write(luout,*) 'Fels', Fels(:,i) 
             end do
         end if
         call induced_dipoles(M1inds, Ftots)
@@ -3119,10 +3126,15 @@ subroutine pe_polarization(denmats, fckmats)
                 Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
                 Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
                 Epol(3,i) = - 0.5d0 * dot(M1inds(:,i), Fmuls)
+!               write(lupri,*) '*** edh: M1inds ***', M1inds(:,i), Fels(:,i) 
                 if (pe_pd) Epd(2,i) = - 0.5d0 * dot(M1inds(:,i), Fpd)
             end do
         end if
     end if
+
+    write(lupri,*) '*** edh: Epol el', sum(Epol(1,:))
+    write(lupri,*) '*** edh: Epol nuclear', sum(Epol(2,:))
+    write(lupri,*) '*** edh: Epol multipoles', sum(Epol(3,:)) 
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
@@ -3175,7 +3187,7 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: lu, iter, info
-    integer :: i, j, k, l, m, n, o, p, q
+    integer :: i, j, k, l, m, n, o, p, q, loo
     integer, dimension(:), allocatable :: ipiv
     logical :: exclude, lexist
     logical :: converged = .false.
@@ -3187,7 +3199,6 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
     if (pe_iter) then
-    write(luout,*) 'edh:pe_iter true in ind. dip routine?'
         if (myid == 0) then
             if (fock .and. scfcycle <= 5) then
                 redthr = 10**(5-scfcycle)
@@ -3240,8 +3251,16 @@ subroutine induced_dipoles(M1inds, Fs)
                     if (zeroalphas(i)) cycle
                     call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
                     l = l + 3
-                write(lupri,*) 'P1s,', P1s(:,i)
                 end do
+
+!                loo = 1
+!                do i = nsites(myid-1)+1, nsites(myid)
+!                   write(lupri,*) 'P1s,', P1s(:,i)
+!                   write(lupri,*) 'Fs', Fs(loo,:)
+!                   write(lupri,*) 'M1inds', M1inds(loo,:)
+!                   loo = loo + 3
+!                end do
+
 
 #if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
@@ -3345,7 +3364,7 @@ subroutine induced_dipoles(M1inds, Fs)
                     if (myid == 0) then
                         M1tmp = M1inds(l:l+2,n)
                         Ftmp = Ftmp + Fs(l:l+2,n)
-!edh                    call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
+                        call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
                         norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
                     end if
 
@@ -3483,8 +3502,13 @@ subroutine electron_fields(Fels, denmats)
 
     external :: Tk_integrals
 
+!edh: for debugging 
+#include "priunit.h" 
+
     real(dp), dimension(:,:), intent(out) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
+!edh temp.  
+    integer :: kfoo
 
     logical :: skip
     integer :: site
@@ -3508,15 +3532,21 @@ subroutine electron_fields(Fels, denmats)
         end if
 !       Edh: Tk_integrals routine have been modified (not adapted here)
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
+        kfoo = 0
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
                 m = k * nnbas
                 Fels(i+j,k) = dot(denmats(l:m), Fel_ints(:,j))
+                do kfoo = l,m
+!                  write(lupri,*) '*** edh: denmats, kfoo, denmats(kfoo)', kfoo, denmats(kfoo), Fel_ints(kfoo,j)
+                end do               
             end do
         end do
         i = i + 3
     end do
+
+    
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
@@ -4195,8 +4225,9 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-!       Edh: Tk_integrals routine have been modified
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0,.true., .true.)
+!       Edh: Tk_integrals routine should be modified
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
+!        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0,.true., .true.)
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do

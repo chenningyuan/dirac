@@ -1274,10 +1274,8 @@ C*****************************************************************************
       use pcm_interface
 #endif
 
- 
-
 #ifdef MOD_PEQM
-      use polarizable_embedding, only: pe_master 
+      use polarizable_embedding, only: pe_master
 #endif
 
 #include "implicit.h"
@@ -1511,11 +1509,8 @@ C
 
 
 #ifdef MOD_PEQM
-
-      write(lupri,*) '*** Polarizable Embedding Playground ***'    
-     
+      write(lupri,*) '*** Polarizable Embedding Playground ***'         
 !    edh: For large-large part (not needed for now) 
-
 !      ketlrg = .true. 
 !      bralrg = .true.      
 !      ketsml = .false.
@@ -1523,105 +1518,81 @@ C
 
 !       edh: Its is neccesary to construct a triangular matrix for
 !       pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
-        allocate(dlmat_triangle(nnbbasx))
-        allocate(flmat_triangle(nnbbasx))
-        dlmat_triangle = 0.0d0
-        flmat_triangle = 0.0d0
+      allocate(dlmat_triangle(nnbbasx))
+      allocate(flmat_triangle(nnbbasx))
+      dlmat_triangle = 0.0d0
+      flmat_triangle = 0.0d0
  
 ! edh: Note that there is a factor 2 difference for diagonal elem.
 ! in DALTON and DIRAC. For non-diagonal elem it is a factor 4. 
-
       k = 1    
       ! LL block
       do i = 1, ntbas(1)
          do j = 1, i
             if (i == j) then
-!                dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+                dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
             else
-!                dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+                dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
             end if
             k = k + 1
          end do
       end do
-!     ! SS block
+      ! SS block
       do i = ntbas(1) + 1, ntbas(0)
          do j = 1, i
             if (j > ntbas(1)) then
                if (i == j) then
-!                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
+                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
                else
-!                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
+                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
                end if
             end if
             k = k + 1
          end do
       end do
 
-!        write(lupri,*), 'DENSITY MATRIX'
-!        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!     &              1,(/1, 2, 3, 4/),LUPRI)
-
-        call pe_master('fock', denmats=dlmat_triangle,
+      call pe_master('fock', denmats=dlmat_triangle,
      &               fckmats=flmat_triangle, nmats=1,
      &               Epe=Epe,
      &               dalwrk=work(kfree:kfree + lfree))
-        eqmmm = work(kfree)
-        ! F = F + M
-       ! LL block
-        k = 1
-        do i = 1, ntbas(1)
-           do j = 1, i
-              if (i == j) then ! edh: Conversion from DALTON to DIRAC
-                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                    + flmat_triangle(k)
-              else
-                 fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                    + flmat_triangle(k)
-                 fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                    + flmat_triangle(k)
-              end if
-              k = k + 1 
-           end do
-        end do
-        ! SS block
-        do i = ntbas(1) + 1, ntbas(0)
-           do j = 1, i
-              if (j > ntbas(1)) then
-                  if (i == j) then
-                     fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                        + flmat_triangle(k)
-                 else
-                    fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                       + flmat_triangle(k)
-                    fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                       + flmat_triangle(k)
-                 end if
-            end if 
-            k = k + 1
-           end do
-        end do
+      eqmmm = work(kfree)
+      ! F = F + M
+      ! LL block
+      k = 1
+      do i = 1, ntbas(1)
+         do j = 1, i
+            if (i == j) then ! edh: Conversion from DALTON to DIRAC
+               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                  + flmat_triangle(k)
+            else
+            fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                               + flmat_triangle(k)
+            fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+     &                               + flmat_triangle(k)
+            end if
+            k = k + 1 
+         end do
+      end do
+      ! SS block
+      do i = ntbas(1) + 1, ntbas(0)
+         do j = 1, i
+            if (j > ntbas(1)) then
+                if (i == j) then
+                   fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                      + flmat_triangle(k)
+               else
+                   fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
+     &                                      + flmat_triangle(k)
+                   fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
+     &                                      + flmat_triangle(k)
+               end if
+          end if 
+          k = k + 1
+         end do
+      end do
 
-!        write(lupri,*) 'raboof'
-!        do k = 1, nnbbasx
-!        write(lupri,*) 'k, dlmat_triangle(k), flmat_tri(k)',k,
-!     &                               dlmat_triangle(k), 
-!     &                               flmat_triangle(k)
-!        end do
-
-!        write(lupri,*), 'FOCK MATRIX'
-!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!     &              1,(/1, 2, 3, 4/),LUPRI)
-
-        write(lupri,*), 'Epol in SCFCY1', Epol
-
-!       stop 1
-!        print *, 'raboof fock after'
-!        CALL PRQMAT(DMAT,NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),
-!     &              1,(/1, 2, 3, 4/),LUPRI)
-
-        deallocate(dlmat_triangle)
-        deallocate(flmat_triangle)
-
+      deallocate(dlmat_triangle)
+      deallocate(flmat_triangle)
 #endif
  
 C
@@ -1966,7 +1937,7 @@ C
             k = k + 1
          end do
       end do
-!     ! SS block
+      ! SS block
       do i = ntbas(1) + 1, ntbas(0)
          do j = 1, i
             if (j > ntbas(1)) then
@@ -1984,16 +1955,17 @@ C
      &               denmats=dmat_triangle,
      &               nmats=1,dalwrk=work(kwork:lwork))
 
-      write(lupri,*)'Eelsav in dirscf', Eelsav
+!      write(lupri,*)'Eelsav in dirscf', Eelsav
+!      write(lupri,*), 'Epol in ERGCAL', Epol
 
-      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
+       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
 !      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
 !     E2PART = 1/2*(Gij *Dij). As the DFT potential, Eel (Eelsav) from the 
 !     PE module is added to the E2PART: Here it is substracted again         
       E2PART = E2PART - (0.5d0 * Eelsav)
 
-      dhferg = dhferg + Epe
+      dhferg = dhferg + Epe 
 
       deallocate(dmat_triangle)
 #endif
@@ -2019,13 +1991,8 @@ C
 !        write (*,*) 'FDE energy: ',fde_energy
 !     endif
 
-      write(lupri,*) 'dhferg before ELERGY', dhferg
-      write(lupri,*) 'ELERGY', ELERGY
-
-      DHFERG = DHFERG + ELERGY
-C
-      write(lupri,*) 'dhferg after ELERGY', dhferg
-      
+      DHFERG = DHFERG + ELERGY 
+C      
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
 CMI      ... print out matrixes ...
@@ -2064,12 +2031,12 @@ CMI      ... print out matrixes ...
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
 #ifdef MOD_PEQM
-          write(lupri,'(3X,A,'//FMT//')')
-     +  'PE energy                         :   ',Epe
+         WRITE(LUPRI,'(A,'//FMT//')')
+     +       'PE energy                          :   ',Epe 
 #endif
 
          WRITE(LUPRI,'(A,'//FMT//')')
-     +       'Total energy                       :  ',DHFERG
+     +       'Total energy                       :  ',DHFERG 
          IF(IPRSCF.GE.2) THEN
             WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* 1-electron energy          :  ',E1PART
@@ -2097,6 +2064,7 @@ CMI      ... print out matrixes ...
       ENDIF
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
+
       if (dhferg.lt.besterg) then
 #if defined SYS_WINDOWS
          call system('copy DFCOEF DFCOEF.BEST')

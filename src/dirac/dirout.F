@@ -197,8 +197,9 @@ C            leave this to authors of this part) Done, hjaaj.
             if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Multipole       ', Epol(3,1)
         end if
-!     &          '@ Total PE energy: ',
-!     &                    sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
+            write(lupri,'(9x,a16,5x,f20.12)') '@ Total PE energy: ', 
+     &      Ees(0,1) + Ees(1,1) + Ees(2,1) + Ees(3,1) + Ees(4,1) + 
+     &      Ees(5,1) + Epol(1,1) + Epol(2,1) + Epol(3,1) 
 #endif
 
 C!      end ii       A one-center approximation may be used that gives a correction 

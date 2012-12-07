@@ -3985,6 +3985,11 @@ C***********************************************************************
 #ifdef PCM_MODULE
         use pcm_interface
 #endif
+
+#ifdef MOD_PEQM 
+        use polarizable_embedding, only: pe_master
+#endif
+
         use orbital_rotation_indices
 
 
@@ -4012,6 +4017,12 @@ C
       type(fde_import) :: itmp
 C
 C
+#ifdef MOD_PEQM 
+      real(8) :: Epe(1)
+      real(8), allocatable :: dlmat_triangle(:)
+      real(8), allocatable :: flmat_triangle(:)
+#endif
+
       CALL QENTER('GMOLITX1')
       IREP = JSYMOP - 1
 C
@@ -4155,7 +4166,103 @@ C
            call pcm_fock_driver(fao, fmo, work(kfree), lfree)
         endif 
 #endif      
+
+#ifdef MOD_PEQM
+
+! edh: Most of this presumably not neccesary. Only polarization should be added
+! here... 
+      allocate(dlmat_triangle(nnbbasx))
+      allocate(flmat_triangle(nnbbasx))
+      dlmat_triangle = 0.0d0
+      flmat_triangle = 0.0d0
  
+      k = 1
+      ! LL block
+       do i = 1, ntbas(1)
+          do j = 1, i
+             if (i == j) then
+                 dlmat_triangle(k) = 2.0d0*fmo(((i-1)*ntbas(0) + j), 1)
+             else
+                 dlmat_triangle(k) = 4.0d0*fmo(((i-1)*ntbas(0) + j), 1)
+             end if
+             k = k + 1
+          end do
+       end do
+       ! SS block
+       do i = ntbas(1) + 1, ntbas(0)
+          do j = 1, i
+             if (j > ntbas(1)) then
+                if (i == j) then
+                  dlmat_triangle(k) = 2.0d0*fmo(((i-1)*ntbas(0) + j), 1)
+                else
+                  dlmat_triangle(k) = 4.0d0*fmo(((i-1)*ntbas(0) + j), 1)
+                end if
+             end if
+             k = k + 1
+          end do
+       end do
+
+!      write(lupri,*), 'DENSITY MATRIX RESPONSE'
+!      CALL PRQMAT(DV,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &             1,(/1, 2, 3, 4/),LUPRI)
+!     write(lupri,*), 'FOCK MATRIX RESPONSE WITHOUT PE'
+!     CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              1,(/1, 2, 3, 4/),LUPRI)
+
+      call pe_master(runtype='response',
+     &               denmats=dlmat_triangle,
+     &               fckmats=flmat_triangle,
+     &               nmats=ndmat, 
+     &               dalwrk=work(kfree:kfree + lfree)) 
+
+      ! F = F + M
+      ! LL block
+      k = 1
+      do i = 1, ntbas(1)
+         do j = 1, i
+            if (i == j) then ! edh: Conversion from DALTON to DIRAC
+                fao(((i-1)*ntbas(0) + j), 1) = 
+     &          fao(((i-1)*ntbas(0) + j), 1)
+     &          + flmat_triangle(k)
+            else
+                fao(((i-1)*ntbas(0) + j), 1) = 
+     &          fao(((i-1)*ntbas(0) + j), 1)
+     &          + flmat_triangle(k)
+                fao(((j-1)*ntbas(0) + i), 1) = 
+     &          fao(((j-1)*ntbas(0) + i), 1)
+     &          + flmat_triangle(k)
+            end if
+         k = k + 1
+         end do
+      end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                 if (i == j) then
+                    fao(((i-1)*ntbas(0) + j), 1) =
+     &              fao(((i-1)*ntbas(0) + j), 1)
+     &            + flmat_triangle(k)
+                 else
+                    fao(((i-1)*ntbas(0) + j), 1) = 
+     &              fao(((i-1)*ntbas(0) + j), 1)
+     &            + flmat_triangle(k)
+                    fao(((j-1)*ntbas(0) + i), 1) = 
+     &              fao(((j-1)*ntbas(0) + i), 1)
+     &            + flmat_triangle(k)
+                end if
+            end if
+           k = k + 1
+           end do
+        end do
+
+!       write(lupri,*), 'FOCK MATRIX RESPONSE WITH PE'
+!       CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              1,(/1, 2, 3, 4/),LUPRI)
+!
+      deallocate(dlmat_triangle)
+      deallocate(flmat_triangle)                    
+#endif
 C
 C
 C     *******************************************

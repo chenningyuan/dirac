@@ -117,6 +117,9 @@ C***********************************************************************
 #ifdef PCM_MODULE
        use pcm_interface
 #endif
+#ifdef MOD_PEQM
+      use polarizable_embedding, only: pe_master
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -137,6 +140,14 @@ C
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
+#ifdef MOD_PEQM
+      real(8) :: Epe(1)
+      real(8), allocatable :: dlmat_triangle(:)
+      real(8), allocatable :: dsmat_triangle(:)
+      real(8), allocatable :: flmat_triangle(:)
+      real(8), allocatable :: fsmat_triangle(:)
+      logical :: ketlrg, bralrg, ketsml, brasml
+#endif
 
 
 C
@@ -315,6 +326,89 @@ CJTH check this
            call pcm_fock_driver(fmo, fao, work(kfree), lfree)
         endif 
 #endif       
+
+#ifdef MOD_PEQM
+! edh: As the solvent methods before us (see above) we need
+! to construct the (static) PE contributions from environment
+! before starting a response calcaultion from DFCOEF(!)
+
+      call genden(fao, cmo, 1, iprint)
+
+      allocate(dlmat_triangle(nnbbasx))
+      allocate(flmat_triangle(nnbbasx))
+      dlmat_triangle = 0.0d0
+      flmat_triangle = 0.0d0
+      k = 1
+      ! LL block
+      do i = 1, ntbas(1)
+         do j = 1, i
+            if (i == j) then
+                dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
+            else
+                dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
+            end if
+            k = k + 1
+         end do
+      end do
+      ! SS block
+      do i = ntbas(1) + 1, ntbas(0)
+         do j = 1, i
+            if (j > ntbas(1)) then
+               if (i == j) then
+                   dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
+               else
+                   dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
+               end if
+            end if
+            k = k + 1
+         end do
+      end do
+
+      call pe_master('fock', denmats=dlmat_triangle,
+     &               fckmats=flmat_triangle, nmats=1,
+     &               Epe=Epe,
+     &               dalwrk=work(kfree:kfree + lfree))
+      eqmmm = work(kfree)
+
+      ! F = F + M
+      ! LL block
+      k = 1
+      do i = 1, ntbas(1)
+         do j = 1, i
+            if (i == j) then ! edh: Conversion from DALTON to DIRAC
+               fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                 + flmat_triangle(k)
+            else
+            fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                              + flmat_triangle(k)
+            fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
+     &                              + flmat_triangle(k)
+            end if
+            k = k + 1
+         end do
+      end do
+      ! SS block
+      do i = ntbas(1) + 1, ntbas(0)
+         do j = 1, i
+            if (j > ntbas(1)) then
+                if (i == j) then
+                   fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                     + flmat_triangle(k)
+                else
+                   fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                     + flmat_triangle(k)
+                   fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
+     &                                     + flmat_triangle(k)
+                end if
+            end if
+            k = k + 1
+         end do
+      end do
+
+      deallocate(dlmat_triangle)
+      deallocate(flmat_triangle)
+#endif 
+
 
 C
 C     3. Get one-electron Fock matrix
