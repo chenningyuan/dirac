@@ -359,13 +359,11 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
-dirac_modules[this_module].add_test('operator_trs_flip')
 dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].add_test('cosci_energy_blockd')
-dirac_modules[this_module].add_test('anapole')
-dirac_modules[this_module].add_test('edm')
 dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_export_density')
+dirac_modules[this_module].add_test('weak_interactions')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'pcm'

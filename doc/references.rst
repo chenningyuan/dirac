@@ -275,6 +275,17 @@ or popular Google-Books web-space.
    Chapman and Hall, London, 1973
    `[pdf] <http://goo.gl/11Esq>`_
 
+.. [Mukherjee2009] Debashis Mukherjee,B. K. Sahoo,H. S. Nataraj and B. P. Das,
+   *Relativistic Coupled Cluster (RCC) Computation of the Electric Dipole Moment
+   Enhancement Factor of Francium Due to the Violation of Time Reversal Symmetry*,
+   J. Phys. Chem. A 2009, **113**, 12549–12557,
+   <http://dx.doi.org/10.1021/jp904020s>
+
+.. [Nataraj2007] H. S. Nataraj, B. K. Sahoo, B. P. Das, R. K. Chaudhuri and D. Mukherjee,
+   *The electron electric dipole moment enhancement factors of Rubidium and Caesium atoms*,
+   Journal of Physics: Conference Series **80** (2007) 012050
+   <http://dx.doi.org/10.1088/1742-6596/80/1/012050>
+
 .. [Olejniczak2012] M. Olejniczak, R. Bast, T. Saue, M. Pecul,
    *A simple scheme for magnetic balance in four-component relativistic Kohn-Sham calculations of nuclear magnetic resonance shielding constants in a Gaussian basis*,
    J. Chem. Phys. **136**, *014108* (2012)
@@ -482,4 +493,4 @@ or popular Google-Books web-space.
    *Accurate Spin-Dependent Electron Liquid Correlation Energies for Local Spin
    Density Calculations: A Critical Analysis*,
    Can. J. Phys. **58**, *1200* (1980)
-   `[pdf] <http://www.nrcresearchpress.com/doi/abs/10.1139/p80-159>`_
+   `[pdf] <http://dx.doi.org/10.1139/p80-159>`_
