@@ -66,9 +66,6 @@ Tutorials and walkthrus
   :doc:`Vector fields <tutorials/visual/visualize>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
-* **Modeling the solvent:**
-  :doc:`Polarizable continuum model <tutorials/pcm>`
-
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
   :doc:`MOLTRA <tutorials/moltra_sample>` |
