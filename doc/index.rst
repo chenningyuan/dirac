@@ -95,8 +95,14 @@ Getting help
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
-:doc:`Reference manual <manual/index>`
-======================================
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 
 Developers
 ==========
