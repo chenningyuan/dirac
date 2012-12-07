@@ -62,6 +62,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>`
 
+* **Property calculations:**
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
+
 * **Visualization:**
   :doc:`Vector fields <tutorials/visual/visualize>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
@@ -95,8 +98,14 @@ Getting help
   :doc:`Frequently asked questions <tutorials/faq>`
 
 
-:doc:`Reference manual <manual/index>`
-======================================
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 
 Developers
 ==========

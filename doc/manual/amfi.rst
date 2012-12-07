@@ -101,7 +101,7 @@ in the AMFI/RELSCF output, together with the RELSCF convergence status.
 --------
 
 Discard selected centers from AMFI calculations. Related the
-:ref:`.BSS` keyword, whose
+:ref:`BSS` keyword, whose
 numerical value *axyz* must have y=0 (i.e. 'spin-free' from the DIRAC
 BSS side, while AMFI provides SO terms of first order in potential).
 
