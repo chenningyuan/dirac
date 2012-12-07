@@ -149,7 +149,7 @@ print *, '*    Toke Winther             University of Southern Denmark    Denmar
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
 print *, '*                                                                             *'
 print *, '*    For the complete list of contributors to the DIRAC code see our          *'
-print *, '*    website http://dirac.chem.vu.nl                                          *'
+print *, '*    website http://www.diracprogram.org                                      *'
 print *, '*                                                                             *'
 print *, '*    This is an experimental code. The authors accept no responsibility       *'
 print *, '*    for the performance of the code or for the correctness of the results.   *'
