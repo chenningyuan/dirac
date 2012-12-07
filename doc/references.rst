@@ -329,6 +329,10 @@ or popular Google-Books web-space.
    J.Chem.Phys. **118**, *522* (2003)
    `[pdf] <http://dx.doi.org/10.1063/1.1522407>`_
 
+.. [Saue2011] T. Saue
+   *Relativistic Hamiltonians for chemistry: a primer*,
+   ChemPhysChem **12**, *3077*  (2011) 
+   `[pdf] <http://dx.doi.org/10.1002/cphc.201100682>`_
 .. [Schipper2000] P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
    *Molecular calculations of excitation energies and (hyper)polarizabilities with
    a statistical average of orbital model exchange-correlation
