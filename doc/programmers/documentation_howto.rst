@@ -26,7 +26,7 @@ the packages "python-sphinx" and "python-matplotlib", then::
   $ cmake ..
   $ make html
 
-Now point your browser to build/_build/html/index.html
+Now point your browser to build/_html/index.html
 
 
 How to add new sections and text
