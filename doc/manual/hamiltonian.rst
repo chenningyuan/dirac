@@ -7,8 +7,8 @@
 ===============
 .. index:: **HAMILTONIAN
 
-Introduction
-============
+**Introduction**
+================
 This section defines the electronic Hamiltonian that is to be used. 
 Within the Born-Oppenheimer approximation the generic form of the electronic Hamiltonian is
 
@@ -21,13 +21,19 @@ where :math:`V_{NN}` is the repulsion of classical nuclei.
 The one-electron hamiltonian :math:`h\left(i\right)` splits into the free-electron Hamiltonian
 :math:`h_0` and the electron-nucleus interaction :math:`V_{eN}`. In the non-relativistic case
 the free-electron Hamiltonian is simply the kinetic energy operator, whereas a rest mass term
-is added in the relativistic case, e.g. for the Dirac Hamiltonian
+is added in the relativistic case, e.g. for the Dirac (bare-nucleus) Hamiltonian
 
 .. math::
     h_D = \beta mc^2 + c\left(\alpha\cdot\mathbf{p}\right) + V_{eN}
 
 In the non-relativistic case the two-electron operator :math:`g\left(i,j\right)` is the
-instantaneous Coulomb interaction. In the relativistic case, the two-electron interaction is vastly
+instantaneous Coulomb interaction. 
+
+.. math::
+
+   g^{Coulomb}\left(1,2\right)=\frac{1}{r_{12}}
+
+In the relativistic case, the two-electron interaction is vastly
 more complex, including magnetic interactions as well as retardation effects. In the relativistic framework the instantenous 
 Coulomb-interaction is the zeroth-order term in an expansion in :math:`c^{-2}` of the full
 Lorentz invariant two-electron interaction.  Note, however, that although the mathematical form of the Coulomb term is the same
@@ -36,13 +42,13 @@ Coulomb term contains the spin-same orbit (SSO) interaction. The first-order ter
 
 .. math::
 
-    g^{Breit}\left(1,2\right)=-e^{2}\left[ \frac{c{\alpha}_{1}\cdot c{\alpha}_{2}}{2c^{2}r_{12}}+\frac{\left(c{\alpha}_{1}\cdot\mathbf{r_{12}}\right)\left(c{\alpha}_{2}\cdot\mathbf{r}_{12}\right)}{2c^{2}r_{12}^{3}}\right]
+    g^{Breit}\left(1,2\right)=-\frac{c{\alpha}_{1}\cdot c{\alpha}_{2}}{2c^{2}r_{12}}-\frac{\left(c{\alpha}_{1}\cdot\mathbf{r_{12}}\right)\left(c{\alpha}_{2}\cdot\mathbf{r}_{12}\right)}{2c^{2}r_{12}^{3}}
 
 which can be rearranged to 
 
 .. math::
 
-    g^{Breit}\left(1,2\right)=g^{Gaunt}\left(1,2\right)+g^{gauge}\left(1,2\right)=-\frac{ec{\alpha}_{1}\cdot ec{\alpha}_{2}}{c^{2}r_{12}}-\frac{\left(ec{\alpha}_{1}\cdot{\nabla}_{1}\right)\left(ec{\alpha}_{2}\cdot{\nabla}_{2}\right)r_{12}}{2c^{2}}
+    g^{Breit}\left(1,2\right)=g^{Gaunt}\left(1,2\right)+g^{gauge}\left(1,2\right)=-\frac{c{\alpha}_{1}\cdot c{\alpha}_{2}}{c^{2}r_{12}}-\frac{\left(c{\alpha}_{1}\cdot{\nabla}_{1}\right)\left(c{\alpha}_{2}\cdot{\nabla}_{2}\right)r_{12}}{2c^{2}}
 
 The Gaunt term, which contains the spin-other orbit interaction, is implemented at the SCF level in DIRAC. 
 
@@ -66,8 +72,8 @@ defined in this section must be totally symmetric under both the molecular
 point group and time reversal symmetry. The latter requirement precludes the
 introduction of external magnetic fields.
 
-General
-=======
+**General**
+===========
 
 .. _.PRINT:
 
@@ -89,8 +95,8 @@ Ignore two-particle interactions.
 The keyword ensures the diagonalization of the bare nuclei Hamiltonian
 matrix without proceeding to the iterative SCF method.
 
-4-component Hamiltonians
-========================
+**4-component Hamiltonians**
+============================
 
 The default Hamiltonian of DIRAC is the Dirac-Coulomb Hamiltonian
 using the Simple Coulombic Correction (see :ref:`.LVCORR`). 
@@ -190,8 +196,8 @@ include)::
   .INTFLG
    1 1 0
 
-Turning off spin dependence
-===========================
+**Turning off spin dependence**
+===============================
 
 .. _.SPINFREE:
 
@@ -238,8 +244,8 @@ spin-orbit case.
 .. index:: .SPINF2
 .. warning:: documentation missing
 
-Advanced: Other projection operators
-====================================
+**Advanced: Other projection operators**
+========================================
 
 .. _.FREEPJ:
 
@@ -255,8 +261,8 @@ Project out all negative-energy solutions of the free-particle Dirac Hamiltonian
 .. index:: .VEXTPJ
 Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian from the MO space.
 
-Exact 2-component Hamiltonians
-==============================
+**Exact 2-component Hamiltonians**
+==================================
 
 .. _.X2C:
 
@@ -301,8 +307,8 @@ Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite
 basis set, see Ref. [Ilias2005]_. Calculations using the 2-component BSS
 Hamiltonian are running only with large component basis functions.
 
-Approximate 2-component Hamiltonians
-====================================
+**Approximate 2-component Hamiltonians**
+========================================
 Please note that these are only tested for energies and generally does not work for properties !
 
 .. _.ZORA:
@@ -344,8 +350,8 @@ Second-order Douglas-Kroll Hamiltonian
 First-order Douglas-Kroll Hamiltonian
 
 
-Non-relativistic Hamiltonians
-=============================
+**Non-relativistic Hamiltonians**
+=================================
 .. _.LEVY-LEBLOND:
 
 .LEVY-LEBLOND
@@ -368,8 +374,8 @@ give identical energy results as with the :ref:`.LEVY-LEBLOND` keyword.
 DIRAC runs in the 2-component spin-free mode, which in fact represents the
 traditional one-component mode.
 
-Effective core potentials
-=========================
+**Effective core potentials**
+=============================
 
 .. _.ECP:
 
@@ -379,8 +385,8 @@ Effective core potentials
 .. warning:: documentation missing
 
 
-External fields/Environment
-===========================
+**External fields/Environment**
+===============================
 
 .. _.OPERATOR:
 
@@ -434,8 +440,8 @@ for further information).
 .. index:: .CAP
 Complex Absorption Potential (development version)
 
-Kohn-Sham Hamiltonian
-=====================
+**Kohn-Sham Hamiltonian**
+=========================
 
 .. _.DFT:
 .DFT
@@ -514,8 +520,8 @@ Weight of exchange in Fock matrix construction. Default::
 .. index:: .HFXMU
 .. warning:: documentation missing
 
-Advanced modification of the 4-component Hamiltonian
-====================================================
+**Advanced modification of the 4-component Hamiltonian**
+========================================================
 
 .. _.NOSMLV:
 
@@ -565,8 +571,8 @@ This threshold applies to whatever
 convergence criteria has been selected (:ref:`.EVCCNV`, :ref:`.ERGCNV` or :ref:`.FCKCNV`).
 
 
-Advanced BSS keywords/Experimental
-==================================
+**Advanced BSS keywords/Experimental**
+======================================
 
 .. _.X2COLD:
 
@@ -712,8 +718,8 @@ Integer (3,4,5) should be specified in free format on the line following
 .. index:: .MO4C2C
 .. warning:: documentation missing
 
-Various
-=======
+**Various**
+===========
 .. _.SCQSET:
 
 .SCQSET
