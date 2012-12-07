@@ -36,7 +36,7 @@ LBalpha).
 
 
 The specification of the functional is described in connection with the
-.DFT option in the :ref:`.DFT` section
+.DFT option in the :ref:`DFT` section
 
 The DFT module is described in references [Schipper2000]_, [Saue2002]_, [Fossgaard2003]_.
 
@@ -119,7 +119,7 @@ potential is shifted in order to reproduce the desired IP (see reference [Grunin
 Activate the statistical averaging of (model) orbital potentials (SAOP)
 as defined in reference [Schipper2000]_.
 This implies (and
-activates) the ALDA kernel. The functional under :ref:`.DFT` is expected to be
+activates) the ALDA kernel. The functional under :ref:`DFT` is expected to be
 GLLBhole. The asymptotic potential is LBalpha.
 
 *Recommended input:*
@@ -135,7 +135,7 @@ GLLBhole. The asymptotic potential is LBalpha.
 .SAOP
 -----
 
-The more general version of :ref:`.SAOP!`
+The more general version of :ref:`SAOP!`
 
 Followed by a single line of input: asymptotic potential (currently LB94
 or LBalpha).
@@ -207,34 +207,34 @@ the solution of the response equation.
 .XALDA
 ------
 
-Same as :ref:`.ALDA` but keep the fraction of exact exchange of the
-xc functional under :ref:`.DFT`.
+Same as :ref:`ALDA` but keep the fraction of exact exchange of the
+xc functional under :ref:`DFT`.
 
 .ALDA+
 ------
 
-Use :ref:`.ALDA` only for the Hermitian contribution (density
+Use :ref:`ALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 .ALDA-
 ------
 
-Use :ref:`.ALDA` only for the anti-Hermitian contribution (spin
+Use :ref:`ALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
 .XALDA+
 -------
 
-Use :ref:`.XALDA` only for the Hermitian contribution (density
+Use :ref:`XALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 .XALDA-
 -------
 
-Use :ref:`.XALDA` only for the anti-Hermitian contribution (spin
+Use :ref:`XALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
@@ -252,4 +252,4 @@ fractional HF Gaunt interaction, and pure functionals no HF Gaunt
 interaction at all. If this option is not given the Gaunt integrals will
 be included to 100%, meaning that even an LDA calculation will include
 full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
-:ref:`\*\*HAMILTONIAN`.
+:ref:`HAMILTONIAN`.
