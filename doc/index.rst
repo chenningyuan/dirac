@@ -63,7 +63,7 @@ Tutorials and walkthrus
   :doc:`CAM functional <tutorials/dft/cam>`
 
 * **Property calculations:**
-  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/smb>`
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
 
 * **Visualization:**
   :doc:`Vector fields <tutorials/visual/visualize>` |
