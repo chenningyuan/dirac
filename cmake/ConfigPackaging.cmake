@@ -121,11 +121,9 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
-        COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
+        COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/VERSION-git-hash
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
         )
 endif()
-
-set(DEVELOPMENT_CODE TRUE)
