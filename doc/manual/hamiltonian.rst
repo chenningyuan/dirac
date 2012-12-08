@@ -462,11 +462,8 @@ Neglect potential for multi-center SS blocks, i.e. multi-center SS
 nuclear attraction integrals and multi-center SS two-electron integrals.
 
 
-.. _.ONECAP:
+keyword(ONECAP)
 
-.ONECAP
--------
-.. index:: .ONECAP
 Consider taking the `.SMLV1C <#.SMLV1C>`_ model one step further. Only
 one-center contributions to the LS and SS two-electron integrals and SS
 nuclear attraction integrals are calculated explicitly. The
@@ -478,11 +475,9 @@ molecular gradient.
 
 .. warning:: broken link
 
-.. _.ONECNV:
 
-.ONECNV
--------
-.. index:: .ONECNV
+keyword(ONECNV)
+
 Employ the one-center model as given by :ref:`ONECAP` until
 convergence to a specified THRESHOLD, whereafter the full set of
 two-electron integrals will be used::
@@ -497,11 +492,8 @@ convergence criteria has been selected (:ref:`EVCCNV`, :ref:`ERGCNV` or :ref:`FC
 **Advanced BSS keywords/Experimental**
 ======================================
 
-.. _.X2COLD:
+keyword(X2COLD)
 
-.X2COLD
--------
-.. index:: .X2COLD
 One-step Exact (infinite order) 2-Component relativistic Hamiltonian
 [Ilias2007]_.  This keyword was called .X2C prior to DIRAC10.  DIRAC runs in
 the (memory saving) 2-component mode. Note that one should combine this option
@@ -510,11 +502,9 @@ spin-orbit operator that gives unphysically large spin-orbit contributions. To
 get a realistic screened spin-orbit operator AMFI is added in the development
 version unless :ref:`NOAMFI` specified.
 
-.. _.X2C4:
 
-.X2C4
------
-.. index:: .X2C4
+keyword(X2C4)
+
 One-step Exact (infinite order) 2-Component relativistic Hamiltonian
 [Ilias2007]_ .
 
@@ -522,25 +512,19 @@ DIRAC runs in the 4-component mode. This mode is useful if you wish to restart
 from a previous 4-component calculation and vice versa. AMFI is added in the
 development version unless :ref:`NOAMFI` specified.
 
-.. _.IOTC4:
 
-.IOTC4
-------
-.. index:: .IOTC4
+keyword(IOTC4)
+
 .. warning:: documentation missing
 
-.._.BSS4:
 
-.BSS4
------
-.. index:: .BSS4
+keyword(BSS4)
+
 .. warning:: documentation missing
 
-.. _.CMPEIG:
 
-.CMPEIG
--------
-.. index:: .CMPEIG
+keyword(CMPEIG)
+
 When some two-component relativistic Hamiltonian is chosen, compare
 eigenvalues between the 'parent' four-component Dirac and derived
 two-component one-electron Hamiltonians.
@@ -550,27 +534,21 @@ eigenvalues are identical with four-component Dirac counterparts. For
 the second-order (and lower order) Douglas--Kroll--Hess Hamiltonian they
 slightly differ.
 
-.. _.BEG_2C:
 
-.BEG_2C
--------
-.. index:: .BEG_2C
+keyword(BEG_2C)
+
 .. warning:: documentation missing
 
-.. _.ONESTEP:
 
-.ONESTEP
---------
-.. index:: .ONESTEP
+keyword(ONESTEP)
+
 Together with the :ref:`BSS` keyword - for the infinite order only
 - invokes the one-step infinite order method (which is otherwise called
 by :ref:`X2C`, :ref:`X2C4` keywords).
 
-.. _.NOAMFI:
 
-.NOAMFI
--------
-.. index:: .NOAMFI
+keyword(NOAMFI)
+
 Do not include the AMFI contribution where
 AMFI is the default. This holds also for keywords :ref:`X2C` and
 :ref:`X2C4`). In the DIRAC08 distribution version .NOAMFI was the

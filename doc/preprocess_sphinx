@@ -19,7 +19,7 @@ for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
     #
     # .RABOOF
     # -------
-    sed -i 's/keyword(\([a-zA-Z_]\+\))/\.\. index:: \.\1\n\.\. _\1:\n\n\.\1\n----------/g' $file
+    sed -i 's/keyword(\([a-zA-Z0-9_]\+\))/\.\. index:: \.\1\n\.\. _\1:\n\n\.\1\n----------/g' $file
 
     # replace:
     # starstar(RABOOF)
@@ -30,7 +30,7 @@ for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
     # ==========
     # \*\*RABOOF
     # ==========
-    sed -i 's/starstar(\([a-zA-Z_]\+\))/\.\. index:: \*\*\1\n\.\. _\1:\n\n==========\n\\\*\\\*\1\n==========/g' $file
+    sed -i 's/starstar(\([a-zA-Z0-9_]\+\))/\.\. index:: \*\*\1\n\.\. _\1:\n\n==========\n\\\*\\\*\1\n==========/g' $file
 
     # replace:
     # star(RABOOF)
@@ -41,7 +41,7 @@ for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
     # ========
     # \*RABOOF
     # ========
-    sed -i 's/star(\([a-zA-Z_]\+\))/\.\. index:: \*\1\n\.\. _\1:\n\n==========\n\\\*\1\n==========/g' $file
+    sed -i 's/star(\([a-zA-Z0-9_]\+\))/\.\. index:: \*\1\n\.\. _\1:\n\n==========\n\\\*\1\n==========/g' $file
 
 done
 
