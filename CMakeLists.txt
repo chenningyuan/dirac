@@ -29,7 +29,6 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
-option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 
 set(CMAKE_MODULE_PATH
@@ -99,11 +98,6 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 
 add_subdirectory(src/xcfun)
 set(LIBS xcfun ${LIBS})
-
-if(ENABLE_GEN1INT)
-    add_definitions(-DBUILD_GEN1INT)
-    add_subdirectory(src/gen1int)
-endif()
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
@@ -194,15 +188,6 @@ add_library(
     ${DIRAC_SOURCES}
     ${GENERATED_FILES}
     )
-
-if(ENABLE_GEN1INT)
-    add_dependencies(dirac gen1int_interface)
-    set(LIBS
-        gen1int_interface
-        ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-        ${LIBS}
-        )
-endif()
 
 # get size of static allocations
 add_custom_target(
