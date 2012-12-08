@@ -96,7 +96,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -q64"
+            "${CMAKE_Fortran_FLAGS} -qintsize=8 -q64"
             )
     endif()
 
