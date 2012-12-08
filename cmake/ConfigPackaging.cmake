@@ -38,6 +38,18 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL
 # 4) create symlink
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
 
+# write git hash to build dir
+file(WRITE ${PROJECT_BINARY_DIR}/VERSION-git-hash "${GIT_REVISION}")
+# copy version info to install dir
+install(
+    FILES ${PROJECT_BINARY_DIR}/VERSION-git-hash ${PROJECT_SOURCE_DIR}/VERSION
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+    )
+
 if(ENABLE_PCMMOD)
     install( # Install PCMSolver input parsing script
         FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
