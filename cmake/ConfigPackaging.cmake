@@ -126,8 +126,9 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src                          ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/src/main/main.F90            ${EXPORT_DIR}/src/main
         COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
