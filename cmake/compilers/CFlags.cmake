@@ -25,9 +25,9 @@ if(CMAKE_C_COMPILER_ID MATCHES PGI)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES XL)
-    set(CMAKE_C_FLAGS         " ")
+    set(CMAKE_C_FLAGS         "-qcpluscmt")
     set(CMAKE_C_FLAGS_DEBUG   " ")
-    set(CMAKE_C_FLAGS_RELEASE " ")
+    set(CMAKE_C_FLAGS_RELEASE "-O3")
 endif()
 
 save_compiler_flags(C)

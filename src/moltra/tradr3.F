@@ -853,9 +853,23 @@ C
       Real(8)              :: GMAT(*)
       Real(8), allocatable :: RBUF(:)
       Integer, allocatable :: LBUF(:)
+	  Integer, intent(in)  :: NGBFSZ
+	  Integer :: istat
+	  
       IF (IREC.EQ.0) RETURN
-      Allocate (RBUF(NGBFSZ))
-      Allocate (LBUF(NGBFSZ))
+! miro: provide with checking parameter
+      Allocate (RBUF(NGBFSZ),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*) 
+     & "Real*8 RBUF(NGBFSZ) allocation failed, NGBFSZ=",NGBFSZ
+		Call Quit('Real*8 RBUF(NGBFSZ) allocation failed !')
+	  EndIf
+      Allocate (LBUF(NGBFSZ),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*)
+     &  "Integer LBUF(NGBFSZ) allocation failed, NGBFSZ=",NGBFSZ
+		Call Quit('Integer LBUF(NGBFSZ) allocation failed !')
+	  EndIf	  
 C
 C     Read a batch and the link to the previous record.
 C
@@ -871,8 +885,8 @@ C
 C     We read in reverse order, if we have the first block we're done
 C
       IF (IREC.NE.0) GOTO 1
-      DeAllocate (RBUF)
-      DeAllocate (LBUF)
+      DeAllocate (RBUF,stat=istat)
+      DeAllocate (LBUF,stat=istat)
 C
       RETURN
       END

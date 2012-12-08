@@ -21,6 +21,11 @@ or popular Google-Books web-space.
    Adv. Quantum Chem. **32**, 227 (1998)
    `[pdf] <http://dx.doi.org/10.1016/S0065-3276(08)60416-5>`_
 
+.. [Aucar1999] G. Aucar, T. Saue, H. J. Aa. Jensen, L. Visscher,
+   *On the origin and contribution of the diamagnetic term in four-component relativistic calculations of magnetic properties*,
+   J. Chem. Phys. **110**, *6208* (1999)
+   `[pdf] <http://dx.doi.org/10.1063/1.479181>`_
+
 .. [Autschbach2012] J. Autschbach, *Perspective: Relativistic effects*,
    J. Chem. Phys. **136**, 150902 (2012)
    `[pdf] <http://dx.doi.org/10.1063/1.3702628>`_
@@ -54,6 +59,11 @@ or popular Google-Books web-space.
    P-odd interaction constant :math:`W_A` from relativistic *ab initio* calculations of diatomic molecules,
    Phys. Rev. A **85**, *052509* (2012)
    `[pdf] <http://dx.doi.org/10.1103/PhysRevA.85.052509>`_
+
+.. [Chesnut1994] D. B. Chesnut,
+   *Ab Initio Calculations of NMR Chemical Shielding*,
+   Annual Reports on NMR Spectroscopy **29**, *71* (1994)
+   `[pdf] <http://dx.doi.org/10.1016/S0066-4103(08)60131-3>`_
 
 .. [Dirac1930] P. A. M. Dirac,
    *Note on Exchange Phenomena in the Thomas Atom*,
@@ -187,6 +197,11 @@ or popular Google-Books web-space.
    J. Chem. Phys. **104**, *4083* (1996)
    `[pdf] <http://dx.doi.org/10.1063/1.471644>`_
 
+.. [Keal2003] T. W. Keal, D. J. Tozer,
+   *The exchange-correlation potential in Kohn--Sham nuclear magnetic resonance shielding calculation*,
+   J. Chem. Phys. **119**, *3015* (2003)
+   `[pdf] <http://dx.doi.org/10.1063/1.1590634>`_
+
 .. [Knecht2008] S. Knecht and H. J. Aa. Jensen and T. Fleig,
    *Large-Scale Parallel Configuration Interaction.
    I. Non-Relativistic and Scalar-Relativistic General Active Space
@@ -271,10 +286,20 @@ or popular Google-Books web-space.
    Journal of Physics: Conference Series **80** (2007) 012050
    <http://dx.doi.org/10.1088/1742-6596/80/1/012050>
 
+.. [Olejniczak2012] M. Olejniczak, R. Bast, T. Saue, M. Pecul,
+   *A simple scheme for magnetic balance in four-component relativistic Kohn-Sham calculations of nuclear magnetic resonance shielding constants in a Gaussian basis*,
+   J. Chem. Phys. **136**, *014108* (2012)
+   `[pdf] <http://dx.doi.org/10.1063/1.3671390>`_
+
 .. [Olsen1990] J. Olsen and P. Joergensen and J. Simons,
    *Passing the one-billion limit in Full CI calculations*,
    Chem. Phys. Lett. **169**, *463* (1990)
    `[pdf] <http://dx.doi.org/10.1016/0009-2614(90)85633-N>`_
+
+.. [Pecul2004] M. Pecul, T. Saue, K. Ruud, A. Rizzo,
+   *Electric field effects on the shielding constants of noble gases: A 4-component relativistic Hartree-Fock study*,
+   J. Chem. Phys. **121**, *3051* (2004)
+   `[pdf] <http://dx.doi.org/10.1063/1.1771635>`_
 
 .. [Perdew1986] J. P. Perdew and Y. Wang,
    *Accurate and Simple Density Functional for the Electronic Exchange Energy:
@@ -340,6 +365,10 @@ or popular Google-Books web-space.
    J.Chem.Phys. **118**, *522* (2003)
    `[pdf] <http://dx.doi.org/10.1063/1.1522407>`_
 
+.. [Saue2011] T. Saue
+   *Relativistic Hamiltonians for chemistry: a primer*,
+   ChemPhysChem **12**, *3077*  (2011) 
+   `[pdf] <http://dx.doi.org/10.1002/cphc.201100682>`_
 .. [Schipper2000] P. R. T. Schipper, O. V. Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
    *Molecular calculations of excitation energies and (hyper)polarizabilities with
    a statistical average of orbital model exchange-correlation
@@ -363,6 +392,11 @@ or popular Google-Books web-space.
    *The molecular mean-field approach for correlated relativistic calculations*,
    J. Chem. Phys. **131**, *124116* (2009)
    `[pdf] <http://dx.doi.org/10.1063/1.3239505>`_
+
+.. [Stanton1984] R. E. Stanton, S. Havriliak,
+   *Kinetic balance: A Partial solution to the problem of variational safety in Dirac calculations*,
+   J. Chem. Phys. **81**, *1910* (1984)
+   `[pdf] <http://dx.doi.org/10.1063/1.447865>`_
 
 .. [Strange1998] P. Strange, *Relativistic Quantum Mechanics: with applications in
    condensed matter and atomic physics*, Cambridge University Press, Cambridge, 1998

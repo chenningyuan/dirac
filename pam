@@ -5,7 +5,7 @@
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
 #
-# Contributors:  Rado BAST, Norway
+# Contributors:  Rado Bast, France
 #                Ulf Ekstrom, Sweden
 #                Stefan Knecht, Denmark
 #                Andre Gomes, France
@@ -34,23 +34,17 @@ if sys.version < '2.4':
     print('pam requires python version >= 2.4')
     sys.exit(1)
 
-global install_dir
-
-name_of_this_script = os.path.basename(os.path.realpath(__file__))
-install_dir_default = os.path.dirname(os.path.realpath(__file__))
-install_dir = install_dir_default
+pam_directory = os.path.dirname(os.path.realpath(__file__))
 
 class pam_enviroment:
     """
     class for handling the pam-launched dirac run
     """
 
-    global install_dir
-
     def __init__(self):
         '''Initialize the global set of variables'''
 
-        # own dirac executable file
+        # set up own dirac executable file
         if is_windows():
             self.dirac_exe_file="dirac.x.exe"
         else:
@@ -59,12 +53,10 @@ class pam_enviroment:
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
+        # default: do not show pam settings
         self.just_show_settings = False
 
         self.expert_mode = False # disable various safety checks
-
-        #  installation directory ...
-        self.dirac_home = install_dir
 
         # set the basis set directories
         self.set_basdir()
@@ -72,34 +64,31 @@ class pam_enviroment:
         # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
-        # no internal pam default for --scratch
-        # read either from .diracrc or as flag (Ulf's intention)
-        self.scratch_dir     = None
-        self.scratch_dir_full = None
+        # scratch space, set up later in pam
+        self.scratch_dir = None
 
         # globally accessible scratch disk in parallel runs
         # this variable will decide whether files are distributed over local disks
-        self.global_scratch_disk = False
+        self.global_scratch_disk = True
 
         # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
 
-    # ... current PID to have unique string for each pam run
+        # current PID to obtain unique string for each pam run (used for defining the name of scratch directory)
         self.current_pid=os.getpid()
 
-    # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
-        self.dirac_p=None
+        self.dirac_p=None # dirac.x/dirac mpi-launcher subprocess
         self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
 
-    # ... dirac error output (stderr stream), always filled
+        # dirac error output (stderr stream)
         self.dirac_stderr=None
 
-    # ... variables related to parallel calculations
+        # variables related to parallel calculations
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = None  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
-        self.distribute_files = False # if some distribution over different nodes
+        self.distribute_files = False # if there is some distribution of files over different nodes
 
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
@@ -110,47 +99,48 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
 
-    #   restrict distribution of working files over nodes by own flag/variable
+        #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
 
-    #   list of basic (core) DIRAC files to be distributed over nodes by default
+        #  list of basic (core) DIRAC files to be distributed over nodes by default
         self.core_dirac_files=[self.dirac_exe_file,'MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
-    # machine file
+        # machine file
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
         self.machinefile_content = None
 
-    # argument to pass the scratch directory location on to the nodes (rarely needed)
+        # argument to pass the scratch directory location on to the nodes (rarely needed)
         self.argument_to_pass_scratch_dir_to_slaves = None
 
-    # master name,IP
+        # master name
         self.master = get_hostname()  # short hostname
 
-    #  user login name
+        # user (login) name
         self.user_name=get_username()
 
-    # nodes (if any) - list; filled from self.machinefile
+        # nodes for parallel run (if any) - list; filled from self.machinefile
         self.nodes = []
 
-    # rcp, rsh for parallel, multinodes calculations
+        # rcp, rsh for parallel, multinodes calculations
         self.rsh = 'ssh'
         self.rcp = 'scp'
 
-    # dirac profiling
+       # dirac profiling
         self.profile = False
         self.profiler = None
         self.profiling_file = 'gmon.out'  # usuall output file
         self.profile_command = None  # command for profiling
-    # dirac executable command (set in own routine)
+
+       # dirac executable command (set in own routine)
         self.dirac_cmd = None
 
-    # dirac-executable position (could be reset after flag reading)
-        exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
+       # dirac-executable position (could be reset after flag reading)
+        exec_position=os.path.join(pam_directory, self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
         else:
             # does not exist, try build directory
-            exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
+            exec_position=os.path.join(pam_directory, "build", self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
@@ -245,9 +235,6 @@ class pam_enviroment:
         self.start_time=time.time()
         self.elapsed_time=0.0
 
-    # pam script sitting in the installation directory (TODO: better specification)
-        self.pam_command = os.path.join(install_dir,"pam")
-
     #  read diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
@@ -262,8 +249,8 @@ class pam_enviroment:
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
         self.basdir='.:'
-        basis_dir= os.path.join(install_dir_default,'basis')
-        basis_dalton_dir=os.path.join(install_dir_default,'basis_dalton')
+        basis_dir= os.path.join(pam_directory, 'basis')
+        basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
         if os.path.isdir(basis_dir):
             self.basdir = self.basdir + basis_dir
         if os.path.isdir(basis_dalton_dir):
@@ -278,7 +265,6 @@ class pam_enviroment:
         '''
         print "Operating system:     ",  self.operating_system
         print "Current settings:"
-        print "  Install directory   ", self.dirac_home
         print "  Basis directories   ",  self.basdir
         disk= disk_space_find(self.scratch_dir)
         if disk.available:
@@ -393,18 +379,25 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
-                print
-                self.list_scratch_dir()
+                 self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
                 if not self.silent:
-                    print '  deleting the scratch directory \n'
-                try:
-                    shutil.rmtree(self.scratch_dir)
-                except:
-                    #miro: happens on Windows only. why ? has to be explored deeply
-                    print_error_message('can not delete scratch directory '+self.scratch_dir+' for to some system reasons !')
+                    sys.stdout.write('  going to delete the scratch directory ... ')
+                count=1
+                #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
+                # remaining 'alive' even after its ending 
+                while os.path.isdir(self.scratch_dir):
+                    try:
+                        shutil.rmtree(self.scratch_dir)
+                    except:
+                        count = count + 1
+                if count > 1:
+                    sys.stdout.write('done (after %s attempts)' % count)
+                else:
+                    sys.stdout.write('done')
+                print
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
@@ -414,6 +407,7 @@ class pam_enviroment:
         '''prints message on the DIRAC executable exit according to the input parameter'''
         self.elapsed_time=(time.time() - self.start_time)
         elapsed_time_str = time.strftime('%Hh%Mm%Ss', time.gmtime(self.elapsed_time))
+        print
         print '  exit date      :', datetime.datetime.now()
         print '  elapsed time   :', elapsed_time_str
         print '  exit code      :', self.returncode
@@ -430,10 +424,8 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        # hierarchy - from closest to the farthest
-        paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
-                 os.path.join(install_dir,'diracrc'),
-                 os.path.join(os.path.expanduser('~'),'.diracrc')]
+        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
+                 os.path.join(pam_directory, '.diracrc')]            # then try .diracrc in the pam directory
         for path in paths:
             try:
                 f = open(path,'r')
@@ -457,7 +449,6 @@ class pam_enviroment:
 
     def process_pam_arguments(self):
         ''' the longest method - reading and processing script flags  '''
-        global install_dir
 
         from optparse import OptionParser, OptionGroup
 
@@ -465,7 +456,7 @@ class pam_enviroment:
             """%prog [options] --inp=*.inp --mol=*.mol
    or: %prog [options] --inp=*.inp --mol=*.xyz
    or: %prog [options] --fullrestart=ARCHIVE.tgz
-Options are also read from the ~/.dirac and .diracrc files."""
+Options are also read from ~/.diracrc"""
 
         parser = OptionParser(usage)
 
@@ -689,23 +680,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='FULL_PATH',
             )
         group.add_option(
-            '--global-scratch-disk',
-            default=False,
-            action='store_true',
-            dest='dest_global_scratch_disk',
-            help='globally accessible scratch directory (parallel calculation) [default: %default]',
-            metavar='FULL_PATH',
-            )
-        group.add_option(
-            '--installdir',
-            type='string',
-            action='store',
-            dest='dest_install_dir',
-            default=install_dir_default,
-            help='directory where pam resides [default: %default]',
-            metavar='FULL_PATH',
-            )
-        group.add_option(
             '--basis',
             type='string',
             action='store',
@@ -806,6 +780,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.mpiarg = options.dest_mpiarg
 
         if options.machfile:
+            self.global_scratch_disk = False
             self.machinefile = options.machfile
 
         if options.dest_mpi_workdir_argument:
@@ -816,18 +791,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # only if nr of proc is larger than 1 run through MPI
             if self.nr_proc > 1:
                 self.parallel_run = True
-
-        if options.dest_install_dir:
-            if os.path.isdir(str(options.dest_install_dir)):
-                install_dir = str(options.dest_install_dir)
-            else:
-                print 'Installation directory you inserted is non-existent !'
-                print 'Used the default instead:', install_dir
-        elif install_dir_default is None:
-            sys.exit('The installation directory is not set ! Error exit !')
-
-        if options.dest_global_scratch_disk:
-            self.global_scratch_disk = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -913,21 +876,33 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if self.parallel_run and not self.global_scratch_disk:
             self.distribute_files = True
 
+        # determine scratch directory
+
+        # 1) if user sets by flag or in .diracrc, use this choice
         if options.dest_scratch:
             self.scratch_dir = options.dest_scratch
-            # ALWAYS append $USER/DIRAC_inp_mol_pid
-            # otherwise users could wipe out their home directory
-            self.scratch_dir = os.path.join(self.scratch_dir,self.user_name,'DIRAC_' + self.output_name + '_' + str(self.current_pid))
-        else:
-            if not options.dest_scratchfull:
-                error_message = '''ERROR: pam does not know which scratch directory to use
-set it either via pam --scratch=<path>
-or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
-                sys.exit(error_message)
 
+        # 2) if user did not set, check whether environment variables are set
+        if is_windows:
+            possible_scratch_env_variables = ['SCRATCH', 'TEMP']
+        else:
+            possible_scratch_env_variables = ['SCRATCH', 'TMPDIR']
+        for variable in possible_scratch_env_variables:
+            if not self.scratch_dir:
+                if os.environ.get(variable):
+                    self.scratch_dir = os.environ.get(variable)
+
+        # 3) last resort: use $HOME/DIRAC_scratch_directory
+        if not self.scratch_dir:
+            self.scratch_dir = os.path.join(os.path.expanduser("~"), 'DIRAC_scratch_directory')
+
+        # finally ALWAYS append $USER/DIRAC_inp_mol_pid
+        # otherwise users could wipe out their home directory
+        self.scratch_dir = os.path.join(self.scratch_dir, self.user_name, 'DIRAC_%s_%s' % (self.output_name, self.current_pid))
+
+        # --scratchfull overrides --scratch
         if options.dest_scratchfull:
-            self.scratch_dir=options.dest_scratchfull
-            self.scratch_dir_full=options.dest_scratchfull
+            self.scratch_dir = options.dest_scratchfull
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
@@ -1141,6 +1116,8 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
                 os.putenv('GLBSCR', '1')
             else:
                 os.putenv('GLBSCR', '0')
+        else:
+            os.putenv('DIRPAR', '0')
 
     # Next line is for IBM only but will not hurt other systems
 
@@ -1235,7 +1212,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
-                line = line[:-1]
+                line = line.split()[0]   # first entry is each line should the the name of the node
                 if line != self.master:  # append only slaves different from the master
                     self.nodes.append(line)
             # make a unique list of nodes - remove all duplicities from the list
@@ -1529,13 +1506,17 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         """
         archive (pack) working files at the end of the DIRAC program run
         """
+
         # set name of the archive file
-
-        archive_name = self.output_name + '.tgz'
+        archive_name = self.output_name + '.' + self.output_suffix
+        archive_name = '.'.join(archive_name.split('.')[:-1]) + '.tgz'
         archive_full_name = os.path.join(self.input_directory,archive_name)
-        tar = tarfile.open(archive_full_name, 'w:gz')
 
-      # select existing files in self.archive_files for the archive
+        # backup
+        if not self.nobackup:
+            backup_file(some_file=archive_full_name, upto=None)
+
+        # select existing files in self.archive_files for the archive
 
         existing_archive_files = []
         for p in self.archive_files:
@@ -1546,11 +1527,7 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files
 
-      # backup
-
-        if not self.nobackup:
-            backup_file(some_file=archive_full_name, upto=None)
-
+        tar = tarfile.open(archive_full_name, 'w:gz')
         for filename in existing_archive_files:
             tar.add(filename)
         tar.close()
@@ -1570,11 +1547,11 @@ or put --scratch=<path> in %s''' % os.path.expanduser('~/.diracrc')
             print '  user           :', self.user_name
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
-            print '  pam command    :', self.pam_command
+            print '  pam command    :', os.path.join(pam_directory, 'pam')
             # we have all args here, therefore canceled printout of input file & molecule file
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  executable      :', self.dirac_exe
+                print '  executable     :', self.dirac_exe
             disk= disk_space_find(self.scratch_dir)
             if disk.available:
                 scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available)

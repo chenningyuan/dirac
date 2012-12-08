@@ -17,8 +17,10 @@ Setting up DIRAC
   :doc:`64bit integer support <installation/mpi_int64>`
 
 * **Testing:**
-  :doc:`Running the test set <installation/tests>` |
-  :doc:`How it works <programmers/testing>`
+  :doc:`Running the test set <installation/testing>`
+
+* **Example installations and run scripts:**
+  :doc:`Hyperion (Toulouse) <installation/examples/hyperion>`
 
 
 First steps in DIRAC territory
@@ -60,6 +62,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>`
 
+* **Property calculations:**
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
+
 * **Visualization:**
   :doc:`Vector fields <tutorials/visual/visualize>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
@@ -96,29 +101,10 @@ Getting help
 Reference manual
 ================
 
-* **Input sections:**
-  :doc:`DIRAC <manual/dirac>` |
-  :doc:`OPTIMIZE <manual/optimize>` |
-  :doc:`GENERAL <manual/general>` |
-  :doc:`HAMILTONIAN <manual/hamiltonian>` |
-  :doc:`DFT <manual/dft>` |
-  :doc:`FDE <manual/fde>` |
-  :doc:`GRID <manual/grid>` |
-  :doc:`INTEGRALS <manual/integrals>` |
-  :doc:`WAVE FUNCTION <manual/wavefunction>` |
-  :doc:`AMFI <manual/amfi>` |
-  :doc:`GOSCIP <manual/goscip>` |
-  :doc:`MOLTRA <manual/moltra>` |
-  :doc:`DIRRCI <manual/dirrci>` |
-  :doc:`RELADC <manual/reladc>` |
-  :doc:`RELCCSD <manual/relccsd>` |
-  :doc:`PROPERTIES <manual/properties>` |
-  :doc:`ANALYZE <manual/analyze>` |
-  :doc:`VISUAL <manual/visual>`
+.. toctree::
+   :maxdepth: 1
 
-* **Operators and strings:**
-  :doc:`One-electron operators <manual/oneel_oper>` |
-  :doc:`Orbital strings <manual/orb_strings>`
+   manual/index.rst
 
 
 Developers
@@ -134,7 +120,8 @@ Developers
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>`
+  :doc:`Debugging <programmers/debugging>` |
+  :doc:`Further development <programmers/further_development>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |
