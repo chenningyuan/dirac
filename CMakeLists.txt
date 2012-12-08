@@ -65,7 +65,7 @@ include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(GenericMacros)
-include(BinaryInfo)
+include(BinaryInfo) # has to come after ConfigVersion
 
 add_custom_command(
     OUTPUT
