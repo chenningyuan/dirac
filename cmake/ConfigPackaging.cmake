@@ -39,10 +39,10 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
 
 # write git hash to build dir
-file(WRITE ${PROJECT_BINARY_DIR}/VERSION-git-hash "${GIT_REVISION}")
+file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${GIT_REVISION}")
 # copy version info to install dir
 install(
-    FILES ${PROJECT_BINARY_DIR}/VERSION-git-hash ${PROJECT_SOURCE_DIR}/VERSION
+    FILES ${PROJECT_BINARY_DIR}/GIT_HASH ${PROJECT_SOURCE_DIR}/VERSION
     DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE
@@ -133,7 +133,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
-        COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/VERSION-git-hash
+        COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
