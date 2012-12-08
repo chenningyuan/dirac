@@ -93,7 +93,7 @@ matrix without proceeding to the iterative SCF method.
 ============================
 
 The default Hamiltonian of DIRAC is the Dirac-Coulomb Hamiltonian
-using the Simple Coulombic Correction (see :ref:`LVCORR`).
+using the Simple Coulombic Correction (see :ref:`.LVCORR`).
 The Dirac-Coulomb Hamiltonian formally has no bound solution and is
 therefore embedded in projection operators. By default, these are the
 projection operators obtained iteratively in the SCF process.
@@ -107,14 +107,14 @@ spin-orbit splittings and/or performing accurate studies of light
 molecules. The current implementation is limited to including the Gaunt
 interaction in the construction of the Fock matrix and works for
 Hartree--Fock and DFT. For using Gaunt in combination with DFT see the
-:ref:`DFT` section of the
+:ref:`\*DFT` section of the
 manual. Transformation of the Gaunt part of the two electron operator to
 the MO basis is not yet implemented, for this purpose we recommend the
 use of the molecular mean field approximation. This can be used for
 example in MP2/CC/FSCC/IHFSCC calculations with RELCCSD by means of the
-:ref:`X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages)
+:ref:`.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages)
 
-For the relativistic two-component mode (see :ref:`X2C` keyword)
+For the relativistic two-component mode (see :ref:`.X2C` keyword)
 with AMFI contributions it uses both spin-same and spin-other orbit
 mean-field parts.
 
@@ -125,7 +125,7 @@ This keyword gives unmodified Dirac-Coulomb Hamiltonian which was
 the default untill the DIRAC11 release. Explicitly including (SS\|SS) type
 Coulomb integrals does give the most accurate description of the system
 but does increase computational cost significantly. Use this option for
-high-accuracy calculations, preferably in conjunction with :ref:`GAUNT`
+high-accuracy calculations, preferably in conjunction with :ref:`.GAUNT`
 to also include the Gaunt correction to the two-electron
 interaction.
 
@@ -140,13 +140,13 @@ charges) [Visscher1997a]_ .
 This is currently the most economical and accurate approximation to the
 full Dirac--Coulomb Hamiltonian and can certainly be used for the
 calculation of spectroscopic constants and valence properties; for core
-properties, testing is recommended (see also :ref:`LVNEW`). This
+properties, testing is recommended (see also :ref:`.LVNEW`). This
 is the default Hamiltonian choice since DIRAC11.
 
 
 keyword(LVNEW)
 
-Modification of :ref:`LVCORR` that obtains the atomic small
+Modification of :ref:`.LVCORR` that obtains the atomic small
 component charge via a Mulliken analysis instead of the original table
 look-up. (The problem with the table look-up is that the electrostatics
 in the molecule will be wrong if you have specified a basis set which
@@ -186,7 +186,7 @@ Use Dyall's spin-free Hamiltonian, Ref. [Dyall1994]_ ,
 to obtain results without spin-orbit coupling for the four-component
 Hamiltonian in the default restricted kinetic balance scheme. This
 keyword works also for two-component relativistic Hamiltonians where one
-can choose between two spin-free schemes - see the :ref:`BSS`
+can choose between two spin-free schemes - see the :ref:`.BSS`
 keyword.
 
 Note that this option should not be used for response calculations with
@@ -196,7 +196,7 @@ contributions.
 
 keyword(NOSPIN)
 
-Implies :ref:`SPINFREE`, but also remove all spin-symmetry-breaking
+Implies :ref:`.SPINFREE`, but also remove all spin-symmetry-breaking
 (quaternion "imaginary" or "triplet" terms) from property gradients in response
 calculations. Used for analyzing magnetic properties similarly to how it is
 done with non-relativistic methods.
@@ -239,7 +239,7 @@ relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
 
 One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
-default in the development version unless :ref:`NOAMFI` is specified.
+default in the development version unless :ref:`.NOAMFI` is specified.
 
 
 keyword(X2Cmmf)
@@ -250,7 +250,7 @@ within the new module for the Exact 2-Component relativistic Hamiltonian, Refs.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
-step. after the SCF. One can combine this option with :ref:`GAUNT` which
+step. after the SCF. One can combine this option with :ref:`\.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC are
@@ -278,10 +278,10 @@ of the Dirac Hamiltonian in
 the Hartree-Fock procedure. Works only for closed-shell systems. The
 implementation offers only little computational advantages and is
 intended chiefly for comparisons of methodology. Note that the
-combination :ref:`SPINFREE` and :ref:`ZORA` gives a
+combination :ref:`.SPINFREE` and :ref:`.ZORA` gives a
 spin-free formalism that differs from the conventional spin-free ZORA
 formulation. Two integers should be specified in free format on the line
-following :ref:`ZORA`::
+following :ref:`.ZORA`::
 
   .ZORA
    1 1
@@ -317,7 +317,7 @@ because it redefines the metric used in the calculation.
 keyword(NONREL)
 
 Standard nonrelativistic calculation based on the Schrodinger equation.  Should
-give identical energy results as with the :ref:`LEVY-LEBLOND` keyword.
+give identical energy results as with the :ref:`.LEVY-LEBLOND` keyword.
 
 DIRAC runs in the 2-component spin-free mode, which in fact represents the
 traditional one-component mode.
@@ -478,7 +478,7 @@ molecular gradient.
 
 keyword(ONECNV)
 
-Employ the one-center model as given by :ref:`ONECAP` until
+Employ the one-center model as given by :ref:`.ONECAP` until
 convergence to a specified THRESHOLD, whereafter the full set of
 two-electron integrals will be used::
 
@@ -486,7 +486,7 @@ two-electron integrals will be used::
    THRESHOLD
 
 This threshold applies to whatever
-convergence criteria has been selected (:ref:`EVCCNV`, :ref:`ERGCNV` or :ref:`FCKCNV`).
+convergence criteria has been selected (:ref:`.EVCCNV`, :ref:`.ERGCNV` or :ref:`.FCKCNV`).
 
 
 **Advanced BSS keywords/Experimental**
@@ -500,7 +500,7 @@ the (memory saving) 2-component mode. Note that one should combine this option
 with the spin-free option as X2C will only provide an unscreened (bare nucleus)
 spin-orbit operator that gives unphysically large spin-orbit contributions. To
 get a realistic screened spin-orbit operator AMFI is added in the development
-version unless :ref:`NOAMFI` specified.
+version unless :ref:`.NOAMFI` specified.
 
 
 keyword(X2C4)
@@ -510,7 +510,7 @@ One-step Exact (infinite order) 2-Component relativistic Hamiltonian
 
 DIRAC runs in the 4-component mode. This mode is useful if you wish to restart
 from a previous 4-component calculation and vice versa. AMFI is added in the
-development version unless :ref:`NOAMFI` specified.
+development version unless :ref:`.NOAMFI` specified.
 
 
 keyword(IOTC4)
@@ -542,20 +542,20 @@ keyword(BEG_2C)
 
 keyword(ONESTEP)
 
-Together with the :ref:`BSS` keyword - for the infinite order only
+Together with the :ref:`.BSS` keyword - for the infinite order only
 - invokes the one-step infinite order method (which is otherwise called
-by :ref:`X2C`, :ref:`X2C4` keywords).
+by :ref:`.X2C`, :ref:`.X2C4` keywords).
 
 
 keyword(NOAMFI)
 
 Do not include the AMFI contribution where
-AMFI is the default. This holds also for keywords :ref:`X2C` and
-:ref:`X2C4`). In the DIRAC08 distribution version .NOAMFI was the
+AMFI is the default. This holds also for keywords :ref:`.X2C` and
+:ref:`.X2C4`). In the DIRAC08 distribution version .NOAMFI was the
 default.
 
-.. warning:: missing AMFI contribution (for :ref:`X2C`,
-             :ref:`X2C4` and :ref:`BSS` keywords) may lead to
+.. warning:: missing AMFI contribution (for :ref:`.X2C`,
+             :ref:`.X2C4` and :ref:`.BSS` keywords) may lead to
              overestimation of spin-orbit effects since these would be represented by
              one-electron terms only, without two-electron shielding.
 
@@ -584,7 +584,7 @@ After the four-component DC-SCF method do the infinite order transformation
 (either one- or two-step) upon the Fock-Dirac matrix.  Otherwise it is
 transforming Dirac bare nucleus.
 
-Used only with keyword :ref:`DO4C2C`.
+Used only with keyword :ref:`.DO4C2C`.
 
 
 keyword(CONT2C)
@@ -593,10 +593,10 @@ keyword(CONT2C)
 
 After four-component DC-SCF continue with two-component iterations.
 
-Used only with keyword :ref:`DO4C2C`.
+Used only with keyword :ref:`.DO4C2C`.
 
 Integer (3,4,5) should be specified in free format on the line following
-:ref:`CONT2C`::
+:ref:`.CONT2C`::
 
   .CONT2C
    3
