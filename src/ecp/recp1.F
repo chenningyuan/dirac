@@ -109,17 +109,15 @@
       CALL RECP_SETPARM
       mgcsu  = mgcsup
 
-      ALLOCATE (IPT_A(10))
-
-!     input processing.
-      CALL RECP_INP_MAIN( IPT_A,      ccr,    chg,    eta,
-     &   ica,    idp,    ityp,   la,     lb,     lcr,
-     &   lls,    lmnp1,  lmn1u,  lproju, maords, mcons,
-     &   mcrs,   mgcs,   mnl,    ms,     mtype,  nblpr,  nc,
-     &   ncon,   ncr,    ncru,   nct,    nd,     nf,     nir,
-     &   nkcrl,  nkcru,  nklsl,  nklsu,  nrcr,   nso,    nsopr,
-     &   nt,     ntl,    ntu,    x,      y,      z,      zcr,
-     &   zet,    CX_TEMP)
+!     ================
+!     input processing
+!     ================
+      CALL RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,
+     &     lls,lmnp1,lmn1u,lproju,maords,mcons,
+     &     mcrs,mgcs,mnl,ms,mtype,nblpr,nc,
+     &     ncon,ncr,ncru,nct,nd,nf,nir,
+     &     nkcrl,nkcru,nklsl,nklsu,nrcr,nso,nsopr,
+     &     nt,ntl,ntu,x,y,z,zcr,zet,CX_TEMP)
 
       ALLOCATE(IPT_IL(nnbft))  !allocate space for il(*)
 
@@ -136,10 +134,13 @@
       CALL RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
       CALL RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
 
-!     # compute the one-electron integrals.
+!     =========================
+!     compute the ecp integrals
+!     =========================
       INT_AREP = 0
       IF (nu.eq.4) INT_AREP = 1
 
+      ALLOCATE (IPT_A(10))
       DO n = 4, nu
          nnam  = inam(n)
          CALL RECP_ONE_MAIN(IPT_A,ccr,chg,eta,ica,
@@ -156,7 +157,7 @@
       DEALLOCATE(IPT_LMNV)
       DEALLOCATE(IPT_A)
       IF (ALLOCATED(RECP_SET)) DEALLOCATE(RECP_SET)
-      end
+      END
 
 
       SUBROUTINE RECP_SETPARM

@@ -21,7 +21,7 @@
 
 MODULE RECP_INP
 CONTAINS
-SUBROUTINE RECP_INP_MAIN(a,ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
+SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
            lls,lmnp1,lmn1u,lproju,maords,mcons,mcrs,mgcs,mnl,ms,mtype,nblpr,nc, &
            ncon,ncr,ncru,nct,nd,nf,nir,nkcrl,nkcru,nklsl,nklsu,nrcr,nso,nsopr,  &
            nt,ntl,ntu,x,y,z,zcr,zet,CX_TEMP)
@@ -53,12 +53,11 @@ SUBROUTINE RECP_INP_MAIN(a,ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
           lmnp1(*),lmn1u,lproju,maords(*),mcons(*),mcrs(*),mgcs(*),mnl(*),ms(*),   &
           nblpr(*),nc(*),ncon(*),ncr(*),ncru,nct(*),nd(*),nf(*),nir(*),nkcrl(6,*), &
           nkcru(6,*),nklsl(4,*),nklsu(4,*),nrcr(*),nso(*),nsopr(*),nt(*),ntl(*),ntu(*)
-  real*8  a(*),ccr(*),chg(*),eta(mrcru,mconu,*),x(mcu,*),y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
+  real*8  ccr(*),chg(*),eta(mrcru,mconu,*),x(mcu,*),y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
   character*3 ityp(*), mtype(*)
 ! local variables
-  integer I,J,K,itol,inrm,ncrs,ngen,ncons,naords,ist,iaords,iru,ir,igcs,icsu, &
-   ics,ic,icons,iconu,ircru,icon,ircr,l,isf,isfr,is,icu,ig,if,ilmnp1,lai,itl,itu,   &
-   jcts,it,jct,jt,ixyz,i2,i3,js,iso,iau,ia,leig,lmn,lmnvmx,lmnvmx2,lmnvmx3 
+  integer I,J,K,itol,inrm,ncrs,ngen,ncons,naords,iaords,iru,igcs,icsu, &
+          ic,icons,iconu,ircru,icon,l,isf,isfr,is,icu,ig,ilmnp1,itl,itu,jcts,it,jct,jt,js
   integer ixyzir(3), lblso(16),CX_TEMP
   real*8  t, eval
   character*1 ibl, ipc, isk, lblsh(21)
@@ -108,13 +107,13 @@ SUBROUTINE RECP_INP_MAIN(a,ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
   CALL OUTPUT_DBG_TITLE('INP_MAIN : end process input data')
 ! ----------------------------------------------------------------
 
-! # generate cartesian gaussian exponent array. (mklmnv)
+! generate cartesian gaussian exponent array. (mklmnv)
   CALL RECP_INP_CARTEXP
  
-! # determine the number of types of one-electron integrals.
+! determine the number of types of one-electron integrals.
   CALL RECP_INP_INTCHECK(nu,ns,ncrs,mcrs,lcr,lls,inam) 
  
-! # normalization of symmetry orbitals. (deleted)
+! normalization of symmetry orbitals. (deleted)
 ! if (inrm.ne.0) CALL RECP_INP_ORB_SONORM
  
 ! contracted orbital and lower-triangle-packed matrix symmetry
@@ -133,31 +132,33 @@ SUBROUTINE RECP_INP_MAIN(a,ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
   nnbft = (nbft * (nbft + 1)) / 2
   mpru  = nblpr(nst) + (nso(nst)+1)*((nso(nst)+1)-1)/2
 
-! # normalize the contraction coefficients.
+! normalize the contraction coefficients.
   CALL RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 
-! # calculate the nuclear repulsion energy. (deleted)
+! calculate the nuclear repulsion energy. (deleted)
 ! CALL RECP_INP_NUCREP(ic,nc,chg,x,y,z)
 
-  call gcentr(ica,nc)
+  CALL gcentr(ica,nc)
  
   IF ((ng+1).GT.mgup) call bummer('change mgup (two places) to ',(ng+1),2)
-  IF (PRINT_LEVEL.GE.2) THEN
-     WRITE (RECP_OUT,'(a,a,i2,a)')' * primitive ao integrals neglected', &
-           'if exponential factor below 10**(-',itol,')'
-  ENDIF 
+! IF (PRINT_LEVEL.GE.2) THEN
+!    WRITE (RECP_OUT,'(A,A,I2,A)')' * primitive ao integrals neglected', &
+!          ' if exponential factor below 10**(-',itol,')'
+! ENDIF 
 
   CALL OUTPUT_DBG_TITLE('INP_MAIN : start print input info')
   CALL RECP_SETZERO_I1(ixyzir,3)
 
+! ----------------------------------------------------------------
   isf = 0
   isfr = 0
-  do 840 is = 1,ns
+  DO is = 1,ns
      icu = nc(is)
 
+!    INFO1 : atom name/charge/geometry/center interchanges
      CALL RECP_INP_INFO1(is,nc,mcu,msu,ica,ng,ngen,chg,x,y,z,mtype)
 
-     do 796 if = 1,nf(is)
+     DO J = 1,nf(is)
         isf = isf+1
         itl = ntl(isf)
         itu = ntu(isf)
@@ -168,85 +169,33 @@ SUBROUTINE RECP_INP_MAIN(a,ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
         ircru = nrcr(icons)
         iconu = ncon(icons)
         icsu = 0
-        do ir = 1,iru
-           icsu = icsu + nd(la(ir,iaords))
-        enddo
+        DO K = 1,iru
+           icsu = icsu + nd(la(K,iaords))
+        ENDDO
 
+!       INFO2 : basisset/symmetry orbital labels/symmetry orbitals
         CALL RECP_INP_INFO2(lmnp1,icons,ircru,iconu,zet,eta,icsu,igcs, &
              isfr,iru,la,nd,lb,ityp,icu,itl,itu,IPT_LMNV,iaords)
-
-        DO ircr = 1,ircru
-           ics = 0
-           DO ir = 1,iru
-              isfr = isfr+1
-              lai = la(ir,iaords)
-              iso = nsopr(lai)+lb(isfr)
-              ms(iso) = is
- 
-!             # compute the L^2-operator expectation value and
-!             # determine if it is an eigenvalue.
-              lmn = lmnp1(icons) - 1
-              CALL RECP_INP_ORBITAL_L2OPXV(lmn,itl,itu,IPT_LMNV,eval,leig,ics,igcs) 
-
-!             # not an eigenvalue. print a warning.
-              IF (leig.LT.0) THEN
-                 IF (PRINT_LEVEL.GE.2) THEN 
-                    WRITE(RECP_OUT,'(3x,a,i3,a3,a,f12.8)')'s.o. basis function',iso,ityp(lai), &
-                    ' is not an L^2 eigenvector. : <v|L^2|v>/<v|v> =', eval
-                 ENDIF 
-                 leig = lmn  !assign the maximum value
-              ENDIF
-
-!             # assign the mnl(*) values to the so functions.
-!             # 1:s, 2:p, 3:3s, 4:d, 5:4p, 6:f, 7:5s, 8:5d, 9:g,...
-              mnl(iso) = ( lmnp1(icons)**2 + 2 * leig + 5 ) / 4
-
-              iau = nd(lai)
-              DO ia = 1,iau
-                 ics = ics+1
-                 IF ( (inam(nu).ge.5).and.(leig.eq.1) ) then
-!                   # determine angular momentum symmetries.
-                    CALL RECP_INP_ORBITAL_ANGSYM(icu,itl,itu,ics,igcs,lai,ixyzir)
-                 ENDIF
-              ENDDO
-           ENDDO    
-        ENDDO
-  796   continue
-        CALL RECP_INP_PRINTCSO(is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,zcr,ccr,mtype,lblsh)
-  840 continue
+!       INFO3 : orbital 
+        CALL RECP_INP_INFO3(mru,ircru,iru,isfr,iaords,la,nsopr,lb,ms,is,ixyzir, &
+             icons,lmnp1,itl,itu,igcs,mnl,nd,nu,inam,icu,eval,ityp)
+     ENDDO
+     CALL RECP_INP_PRINTCSO(is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,zcr,ccr,mtype,lblsh)
+  ENDDO 
+  IF (PRINT_LEVEL.GE.2) WRITE(RECP_OUT,'(/,10X,60A,/)') ('=', I=1,60)
+! ----------------------------------------------------------------
 
 ! # multiply normalization constants into contraction coefficients.
   CALL RECP_INP_ORBITAL_MULTNORMCOEF(ncons,ncon,nrcr,mrcru,mconu,zet,eta,lmnp1)
 
-!     -------------------------------
-
-  if (inam(nu).eq.5) then
-     do ixyz = 1, 3
-        i2 = mod(ixyz,  3) + 1
-        i3 = mod(ixyz+1,3) + 1
-        do ist = 1, nst
-          if ( idp(ist,ixyzir(i2),ixyzir(i3)) .ne. 0 ) then
-            lxyzir(ixyz) = ist
-            goto 860
-          endif
-        enddo
-        860 continue
-     enddo
-
-     IF (PRINT_LEVEL.GE.5) THEN
-        write (RECP_OUT,864) (ityp(lxyzir(ixyz)), ixyz=1,3)
-        864 format(/'lx: ',a3,10x,'ly: ',a3,10x,'lz: ',a3)
-     ENDIF
-  endif
+! set lxyzir
+  CALL RECP_INP_ORBITAL_SETLXYZIR(nu,inam,nst,ixyzir,lxyzir,mstu,idp,ityp)
  
-! # write out the header information
-  CALL WTHEAD(nst,ns,isfr,ityp,nso,mtype,ms,mnl)
-  IF (PRINT_LEVEL.GE.2) THEN
-     WRITE(RECP_OUT,880) isfr, (ityp(I), nso(I), I=1,nst)
-     880 FORMAT(//i9,' symmetry orbitals,',3x,4(3x,a3,':',i4),(/31x,4(3x,a3,':',i4)))
-  ENDIF
- 
-  IF (RECP_DBG.GE.1) CLOSE (74) !close file (RECP_DBG_INP)
+! write orbital labels 
+! --------------------
+  CALL RECP_INP_PRINT_ORBLABEL(nst,ns,isfr,ityp,nso,mtype,ms,mnl)
+
+  IF (RECP_DBG.GE.1) CLOSE(74) !close file (RECP_DBG_INP)
   CALL OUTPUT_LOC('RECP_INP_MAIN','X')
 END SUBROUTINE RECP_INP_MAIN
 END MODULE RECP_INP

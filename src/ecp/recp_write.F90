@@ -382,15 +382,25 @@ SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
 ! # Delete if the file exist (for geometry optimization)
   INQUIRE(FILE=FILE_INT(INT_TYPE),EXIST=FILE_EXIST)
   IF (FILE_EXIST) THEN
-     WRITE(6,*) 'File ',FILE_INT(INT_TYPE),' delete..'
+!    WRITE(6,5X,A,A,A) 'File ',FILE_INT(INT_TYPE),' will be updated'
      OPEN (UNIT=FILE_NUM(INT_TYPE),FILE=FILE_INT(INT_TYPE),FORM='UNFORMATTED',STATUS='OLD')
      CLOSE(UNIT=FILE_NUM(INT_TYPE),STATUS='DELETE')
   ENDIF
 
 ! # Write RECP integrals to file 
   OPEN(UNIT=FILE_NUM(INT_TYPE),FILE=FILE_INT(INT_TYPE),FORM='UNFORMATTED')
-  IF(INT_TYPE.EQ.4)  WRITE(FILE_NUM(INT_TYPE)),(ARRAY_STVC(I),I=1,N_INTEGRAL(LBLOP)) !yc-check
-  IF(INT_TYPE.GE.5)  WRITE(FILE_NUM(INT_TYPE)), ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT)
+  IF (INT_TYPE.EQ.4) THEN
+     WRITE(FILE_NUM(INT_TYPE)),(ARRAY_STVC(I),I=1,N_INTEGRAL(LBLOP)) !yc-check
+     WRITE(RECP_OUT,'(A,A)')   ' * VCORE was generated : ', FILE_INT(INT_TYPE)
+  ENDIF
+  IF (INT_TYPE.GE.5) WRITE(FILE_NUM(INT_TYPE)), ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT)
+     IF (INT_TYPE.EQ.5) THEN
+        WRITE(RECP_OUT,'(A,A)')' * SOX was generated   : ', FILE_INT(INT_TYPE)
+     ELSEIF (INT_TYPE.EQ.6) THEN
+        WRITE(RECP_OUT,'(A,A)')' * SOY was generated   : ', FILE_INT(INT_TYPE)
+     ELSEIF (INT_TYPE.EQ.7) THEN
+        WRITE(RECP_OUT,'(A,A)')' * SOZ was generated   : ', FILE_INT(INT_TYPE)
+     ENDIF
   CLOSE(UNIT=FILE_NUM(INT_TYPE))
 
 ! --------------------------------------
