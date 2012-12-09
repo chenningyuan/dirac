@@ -170,13 +170,6 @@ Write out a line in the output for each memory allocation done by DIRAC.  This
 is mainly useful for programmers or for solving out-of-memory issues.
 
 
-.. index:: .ECP
-.ECP
-----
-
-.. warning:: documentation missing
-
-
 .. index:: .NOSET
 .NOSET
 ------
