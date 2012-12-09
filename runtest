@@ -870,6 +870,8 @@ def main(*args):
             nr_of_tests_done += 1
             start = time.time()
             exit = task.run_and_controlled_exit()
+            result_text = 'UNDEFINED'
+
             if exit == 'NORMAL':
 
                 nr_problems = 0
