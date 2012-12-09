@@ -1,0 +1,33 @@
+INTGRL
+ arbitray basis for RnF_77+ HF-like molecule
+ to simulate diatomic with heavy element
+C   2 77 0  X  Y
+       86.    1
+Rn     .0000000000        0.0000000000        2.0000000000
+LARGE    3   1   1   1
+f   6    0
+ 500000
+ 120000
+  70000
+   9000
+   3000
+    900  
+f   5    0    
+    55000
+    12000
+     7000
+     1000
+      600 
+f   2    0
+    1900 
+     900 
+        1.    1
+H     0.00000000000        .0000000000         .0000000000
+LARGE    2    1    1   
+f   3    0    
+      2.5          
+      1.2
+      0.4
+f   1    0    
+      0.5 
+FINISH

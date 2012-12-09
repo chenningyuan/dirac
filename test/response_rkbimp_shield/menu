@@ -2,4 +2,5 @@ quick
 rkb.inp      He.mol  --outcmo --noarch
 rkbimp.inp   He.mol  --incmo  --noarch
 ukb.inp      He.mol  --noarch
+rm DFCOEF
 

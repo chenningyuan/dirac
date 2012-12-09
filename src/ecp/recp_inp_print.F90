@@ -51,8 +51,8 @@ SUBROUTINE RECP_INP_PRINT_ORBLABEL(nsym,ns,nbft,ityp,nso,mtype,ms,mnl)
   character*4  slabel(8)
   character*2  btype(bmin:bmax)
 ! # basis function types.
-  data btype/'??','_s','_p','3s','_d','4p','_f','5s','5d',  &
-             '_g','6p','6f','_h','7s','7d','7g','_i','??' /
+  data btype/' ?','_s','_p','3s','_d','4p','_f','5s','5d',  &
+             '_g','6p','6f','_h','7s','7d','7g','_i',' ?' /
  
   ALLOCATE(IPT_WTHEAD_MAP(nbft,2))
 

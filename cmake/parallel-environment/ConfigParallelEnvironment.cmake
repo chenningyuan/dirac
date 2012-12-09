@@ -16,28 +16,20 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
 
     # test whether we are able to compile a simple MPI program
     # if not, we stop configuration
-    exec_program(
-        cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90
-        OUTPUT_VARIABLE _source
-        )
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPATIBLE
         )
-    if(NOT MPI_COMPATIBLE)
-        message(FATAL_ERROR "Your compiler is not MPI compatible")
-    endif()
+  # if(NOT MPI_COMPATIBLE)
+  #     message(FATAL_ERROR "Your compiler is not MPI compatible")
+  # endif()
 
     add_definitions(-DVAR_MPI)
     include_directories(${MPI_INCLUDE_PATH})
 
     # test whether MPI module is compatible with compiler
-    exec_program(
-        cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90
-        OUTPUT_VARIABLE _source
-        )
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPILER_MATCHES
@@ -50,11 +42,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     endif()
 
     # test whether MPI integer type matches
-    exec_program(
-        cat
-        ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90
-        OUTPUT_VARIABLE _source
-        )
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_ITYPE_MATCHES
@@ -77,11 +65,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
 
     if(ENABLE_MPI2_DETECTION)
         # test whether MPI-2 is available
-        exec_program(
-            cat
-            ARGS ${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90
-            OUTPUT_VARIABLE _source
-            )
+        file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90" _source)
         check_fortran_source_compiles(
             ${_source}
             MPI_2_COMPATIBLE

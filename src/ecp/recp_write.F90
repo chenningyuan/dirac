@@ -158,7 +158,7 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
   ALLOCATE( values_stvc(MN_INTEGRAL) )
   ALLOCATE( labels_stvc(2,MN_INTEGRAL) )
 
-  IF (PRINT_LEVEL.GE.5) WRITE (RECP_OUT,'(A,I3)'),' nop :',nop
+  IF (PRINT_LEVEL.GE.5) WRITE (RECP_OUT,'(A,I3)') ' nop :',nop
 ! # write out the components of the operator arrays.
   DO lblop = 1, nop
 
@@ -390,10 +390,10 @@ SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
 ! # Write RECP integrals to file 
   OPEN(UNIT=FILE_NUM(INT_TYPE),FILE=FILE_INT(INT_TYPE),FORM='UNFORMATTED')
   IF (INT_TYPE.EQ.4) THEN
-     WRITE(FILE_NUM(INT_TYPE)),(ARRAY_STVC(I),I=1,N_INTEGRAL(LBLOP)) !yc-check
+     WRITE(FILE_NUM(INT_TYPE)) (ARRAY_STVC(I),I=1,N_INTEGRAL(LBLOP)) !yc-check
      WRITE(RECP_OUT,'(A,A)')   ' * VCORE was generated : ', FILE_INT(INT_TYPE)
   ENDIF
-  IF (INT_TYPE.GE.5) WRITE(FILE_NUM(INT_TYPE)), ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT)
+  IF (INT_TYPE.GE.5) WRITE(FILE_NUM(INT_TYPE)) ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT)
      IF (INT_TYPE.EQ.5) THEN
         WRITE(RECP_OUT,'(A,A)')' * SOX was generated   : ', FILE_INT(INT_TYPE)
      ELSEIF (INT_TYPE.EQ.6) THEN
@@ -417,7 +417,7 @@ SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
         ENDIF
 !       Make 'ARRAY_SO = 0'
         OPEN(UNIT=FILE_NUM(INT_TYPE),FILE=FILE_INT(INT_TYPE), FORM='UNFORMATTED')
-        WRITE(FILE_NUM(INT_TYPE)) ,((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT) 
+        WRITE(FILE_NUM(INT_TYPE)) ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT) 
         CLOSE(UNIT=FILE_NUM(INT_TYPE))
      ENDDO
      INT_TYPE = 4

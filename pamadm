@@ -196,6 +196,7 @@ list_of_tests.append('zora')
 # then list directories that are to be skipped as whole
 
 files_never_compiled = []
+files_never_compiled.append('src/gp/unit_testing.F90')
 files_never_compiled.append('src/utils/cube2pov.c')
 files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('src/relccsd/ccints_nomemget.F')
@@ -220,7 +221,6 @@ files_never_compiled.append('src/xcint/src/fake_input.F90')
 directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('cmake')
-directories_never_compiled.append('src/gen1int')
 
 for directory in directories_never_compiled:
     for file in glob.glob('%s/*.F90' % directory):
@@ -358,13 +358,11 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
-dirac_modules[this_module].add_test('operator_trs_flip')
 dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].add_test('cosci_energy_blockd')
-dirac_modules[this_module].add_test('anapole')
-dirac_modules[this_module].add_test('edm')
 dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_export_density')
+dirac_modules[this_module].add_test('weak_interactions')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'pcm'
