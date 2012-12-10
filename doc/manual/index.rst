@@ -16,6 +16,9 @@ Keyword reference
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`GOSCIP <goscip>`  --- Complete Open-Shell module
    - :doc:`DIRRCI <dirrci>` --- Direct Relativistic CI module
+   - :doc:`LUCITA <lucita>` --- Spinfree large-scale CI module
+   - :doc:`KR CI <krci>` --- Kramers-restricted relativistic large-scale CI module
+   - :doc:`KRMCSCF <krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
    - :doc:`RELCCSD <relccsd>` --- Coupled cluster module
    - :doc:`RELADC <reladc>` --- Propagator module (Green's functions) for ionizations
 
