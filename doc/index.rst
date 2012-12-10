@@ -73,12 +73,15 @@ Tutorials and walkthrus
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
+* **ADC:**
+  :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
+  :doc:`Atom <tutorials/reladc/atom>`
+
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
   :doc:`MOLTRA <tutorials/moltra_sample>` |
   :doc:`LUCITA <tutorials/lucita_sample>` |
-  :doc:`RELCCSD <tutorials/relccsd_sample>` |
-  :doc:`RELADC <tutorials/reladc_sample>`
+  :doc:`RELCCSD <tutorials/relccsd_sample>`
 
 * **Open-shell systems:**
   :doc:`DIRRCI <tutorials/dirrci_sample>` |
