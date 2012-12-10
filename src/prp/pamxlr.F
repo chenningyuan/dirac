@@ -1580,10 +1580,6 @@ C
       CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVECS,BBUF)
 !gosia:
 ! if shielding_rearrange then here form: \kappa=\kappa-T:
-      write(*, *) 'buba, rsplab = ', rsplab
-      write(*, *) 'buba, nbtyp = ', nbtyp
-      write(*, *) 'buba, nxpar,ndamp,nfreq = ', nxpar,ndamp,nfreq
-      write(*, *) 'buba, ityp, bvtyp(ityp) = ', ityp, bvtyp(ityp)
       if (shielding_rearrange) then
         nlength=nxpar*ndamp*nfreq
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab)

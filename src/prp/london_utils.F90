@@ -451,7 +451,6 @@ contains
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) 'buba T_ai'
         call prqmat(T_ai(1,1,1), &
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, 0), lupri)
@@ -477,10 +476,10 @@ contains
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) 'buba T_ai_vec, i1 = ', i1
+        write(*, *) '     T_ai_vec, i1 = ', i1
         do iz = 1, nz
           do i = 1, length
-             write(*, *) 'buba i = ', i
+             write(*, *) '     i = ', i
              write(*, *) T_ai_vec(i, iz)
           end do
         end do
@@ -498,7 +497,6 @@ contains
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) 'buba final kappa'
         call prqmat(kappa(1,1), length, 1, length, 1, nz,  &
                     ipqtoq(1,irep), lupri)
      end if
@@ -559,9 +557,8 @@ contains
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) 'buba i1, length = ', i1, length
         do i = 1, i1
-           write(*, *) 'buba i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
+           write(*, *) '     i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
                              i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) 
         end do
      end if
