@@ -91,6 +91,24 @@ example for D:math:`_{2h}`:
 
 keyword(GAS SHELLS)
 
+Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
+The first line contains the number of GA spaces to be used (1-7), 
+followed by one line per GAS with a separation of the min/max number of electrons in each GAS and the 
+number of orbitals per fermion correp (either one (no inversion symmetry) or two (inversion
+symmetry: g u) entries per line) by a "/". 
+
+The first entry before the "/" gives the minimal number of accumulated (!) electrons
+after consideration of this GAS, the second the corresponding maximum
+number, separated by blanks. The minimum and maximum accumulated
+occupations allow for a very flexible parameterization of the wave
+function. All determinants fulfilling the occupation constraints will be
+constructed. The second entry after the "/" gives  the 
+number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
+here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
+inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
+virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
+pp. 27 for more details. example for 4 GAS spaces with an advanced excitation pattern:
+
 ::
 
     .GAS SHELLS
@@ -100,9 +118,22 @@ keyword(GAS SHELLS)
      14 16 /  7  7
      16 16 / 30 24
 
+keyword(INACTIVE)
+
+Inactive orbitals per fermion correp. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
+
+::
+
+    .INACTIVE
+     4 2
 
 **Optional keywords**
 =====================
+
+keyword(NOOCCN)
+
+compute natural orbital occupation numbers for each electronic state. *default*: do not compute natural orbital occupation numbers.
+
 
 keyword(ANALYZ)
 
@@ -110,19 +141,29 @@ analyze the final CI wave function printing the coefficients for each determinan
 :math:`10^{-2}`. *default*: do not analyze the final CI wave function.
 
 
-keyword(MAXITR)
+keyword(MAX CI)
 
 maximum number of CI iterations. *default*:
 
 ::
 
-    .MAXITR
-     100
+    .MAX CI
+     5
 
+keyword(MXCIVE)
+
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`CIROOTS`) to optimize on.
+example:
+
+::
+
+    .MXCIVE
+     24
 
 keyword(RSTRCI)
 
-Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation):
+Restart CI from vector(s) on file KRCI\_CVECS.x where **x** is determined by the symmetry of the wave
+function.
 
 ::
 
@@ -135,6 +176,92 @@ Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation)
 
     .RSTRCI
      0
+
+*further infomation*: the convention in linear symmetry for KRCI_CVECS.x is the following where the offset/range for systems
+with a gerade number of electrons is for x: offset --> 1; range: x =[1-64] and with an ungerade number of electrons x: offset -->
+65; range: x =[65-128]. In more detail (with MJ == :math:`\Omega`):
+    
+
+a. for systems with a gerade number of e- and no inversion center:
+
+::
+
+    MJ =  0: KRCI_CVECS.1
+    MJ = +1: KRCI_CVECS.2
+    MJ = -1: KRCI_CVECS.3
+    MJ = +2: KRCI_CVECS.4
+    MJ = -2: KRCI_CVECS.5
+    ...
+    up to
+    MJ = +32: KRCI_CVECS.64
+
+    
+
+b. for systems with a gerade number of e- and an inversion center:
+
+::    
+
+    MJ =  0g: KRCI_CVECS.1
+    MJ = +1g: KRCI_CVECS.2
+    MJ = -1g: KRCI_CVECS.3
+    MJ = +2g: KRCI_CVECS.4
+    MJ = -2g: KRCI_CVECS.5
+    ...
+    up to
+    MJ = +16g: KRCI_CVECS.32
+
+    and 
+    MJ =  0u: KRCI_CVECS.33
+    MJ = +1u: KRCI_CVECS.34
+    MJ = -1u: KRCI_CVECS.35
+    MJ = +2u: KRCI_CVECS.36
+    MJ = -2u: KRCI_CVECS.37
+    ...
+    up to
+    MJ = +16u: KRCI_CVECS.64
+
+c. for systems with an ungerade number of e- and no inversion center:
+
+::
+    
+    MJ = +1/2: KRCI_CVECS.65
+    MJ = -1/2: KRCI_CVECS.66
+    MJ = +3/2: KRCI_CVECS.67
+    MJ = -3/2: KRCI_CVECS.68
+    ...
+    up to
+    MJ = +63/2: KRCI_CVECS.128
+
+d. for systems with an ungerade number of e- and an inversion center:
+
+::    
+
+    MJ = +1/2g: KRCI_CVECS.65
+    MJ = -1/2g: KRCI_CVECS.66
+    MJ = +3/2g: KRCI_CVECS.67
+    MJ = -3/2g: KRCI_CVECS.68
+    ...
+    up to
+    MJ = -31/2g: KRCI_CVECS.96
+
+    and 
+
+    MJ = +1/2u: KRCI_CVECS.97
+    MJ = -1/2u: KRCI_CVECS.98
+    MJ = +3/2u: KRCI_CVECS.99
+    MJ = -3/2u: KRCI_CVECS.100
+    ...
+    up to
+    MJ = -31/u: KRCI_CVECS.128
+
+
+keyword(CHECKP)
+
+enables a check point write of the current solution vectors to the file
+KRCI\_CVECS.x (see above in :ref:`CIROOTS` for an explanation of how **x** is
+supposed to be replaced) during the Davidson iterations. A checkpoint
+file will be written roughly every 6th iteration. *default*: do not write check points.
+
 
 **Advanced options**
 ====================

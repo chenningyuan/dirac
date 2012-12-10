@@ -73,7 +73,7 @@ hartree (a.u.) are included, this can be modified in the
 
 keyword(LUCITA)
 
-Activates the :ref:`lucita` (and
+Activates the :ref:`LUCITA` (and
 the :ref:`moltra` module to get 4-index
 transformed integrals).
 
@@ -143,13 +143,12 @@ module to get 4-index
 transformed integrals.
 
 
-keyword(KR CI)
+keyword(KRCI)
 
 Activates the :ref:`KRCI` module
 for the calculation of ground and excited states at the relativistic CI level.
 
-.KRMCSCF
---------
+keyword(KRMCSCF)
 
 Activates the :ref:`KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetries) 
@@ -1181,150 +1180,6 @@ determinant above a given threshold.
 
     do not analyze the final CI wave function.
 
-
-Mandatory keywords
-==================
-
-.GASSH
-------
-
-Number and specification of GAS orbitals. Line with the number of GA
-spaces used (1-7), followed by one line per GAS with number of orbitals
-per fermion correp (either one (no inversion symmetry) or two (inversion
-symmetry: g u) entries per line). The design of GAS is non-trivial and
-should be motivated by the electronic structure of the system (e.g.
-inner core, outer core, valence, virtual space). Sometimes it is useful
-to subdivide the valence space, for scientific reasons, or/and the
-virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
-pp. 27 for more details.
-
- *Default:* None.
-
-.GASSPC
--------
-
-specification of CI calculation. One line per GAS with 2 entries each:
-The first entry gives the minimal number of accumulated (!) electrons
-after consideration of this GAS, the second the corresponding maximum
-number, separated by blanks. The minimum and maximum accumulated
-occupations allow for a very flexible parameterization of the wave
-function. All determinants fulfilling the occupation constraints will be
-constructed.
-
-*Default:* None.
-
-optional keywords
-=================
-
-.MAX CI
--------
-
-Number of CI iterations.
-
-*Default:*
-
-::
-
-    .MAX CI
-     5
-
-.INACTIVE
----------
-
-Inactive orbitals per fermion correp.
-
-*Default:* All orbitals active.
-
-.MXCIVE
--------
-
-size of Davidson subspace.
-
-example:
-
-::
-
-    .MXCIVE
-     24
-
-*Default:* 3 times the number of eigenstates to optimize on.
-
-.RSTRCI
--------
-
-*Default:* No restart. Optional restart from CI vector on file
-KRCI\_CVECS.x where **x** is determined by the symmetry of the wave
-function (symmetry == 1 --> **x = 1**; symmetry == 2 --> **x = 2**;
-etc.). **NOTE:** in the DIRAC10 release version the **x** <==> symmetry
-relation is: symmetry == 1 --> **x = a**; symmetry == 2 --> **x = b**;
-etc.
-
-::
-
-    .RSTRCI
-     1
-
-*Default:* No restart.
-
-.NOOCCN
--------
-
-compute natural orbital occupation numbers for each electronic state.
-
-*Default:*
-
-::
-
-    do not compute natural orbital occupation numbers.
-
-.WRTFCK
--------
-
-write Fock matrix to file KRMC\_FOCK where it can be re-read for a
-possible restart of a calculation (see the following keyword).
-
-*Default:*
-
-::
-
-    do not write Fock matrix to file.
-
-.RDFOCK
--------
-
-read Fock matrix from file KRMC\_FOCK.
-
-*Default:*
-
-::
-
-    do not read Fock matrix from file.
-
-.CHECKP
--------
-
-enables a check point write of the current solution vectors to the file
-KRCI\_CVECS.x (see above in .CIROOTS for an explanation of how **x** is
-supposed to be replaced) during the Davidson iterations. A checkpoint
-file will be written roughly every 6th iteration.
-
-*Default:*
-
-::
-
-    do not write check points.
-
-.ANALYZ
--------
-
-analyze the final CI wave function printing the coefficients for each
-determinant above a given threshold.
-
-*Default:*
-
-::
-
-    do not analyze the final CI wave function.
 
 \*MP2CAL -- MP2 calculation
 ===========================
