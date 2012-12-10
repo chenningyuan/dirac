@@ -145,13 +145,13 @@ transformed integrals.
 
 keyword(KRCI)
 
-Activates the :ref:`KRCI` module
+Activates the :ref:`*KRCI` module
 for the calculation of ground and excited states at the relativistic CI level.
 
 keyword(KRMCSCF)
 
-Activates the :ref:`KRMCSCF`
-module for the optimization of ground and excited states (in other than the ground state symmetries) 
+Activates the :ref:`*KRMCSCF`
+module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
 
 

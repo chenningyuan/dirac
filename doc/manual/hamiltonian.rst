@@ -241,7 +241,7 @@ One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
 default unless :ref:`.NOAMFI` is specified.
 
-See als :ref:`X2C` for debug options.
+See als :ref:`*X2C` for debug options.
 
 keyword(X2Cmmf)
 
