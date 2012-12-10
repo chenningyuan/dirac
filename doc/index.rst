@@ -38,6 +38,10 @@ First steps in DIRAC territory
   :doc:`General information <molecule_and_basis/basis>` |
   :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
+* **Troubleshooting:**
+  :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
+
 
 Tutorials and walkthrus
 =======================
@@ -89,10 +93,6 @@ Tutorials and walkthrus
 
 Getting help
 ============
-
-* **Troubleshooting:**
-  :doc:`Known problems <getting_help/known_problems>` |
-  :doc:`Memory problems <getting_help/memory>`
 
 * **Move somewhere else:**
   :doc:`Frequently asked questions <tutorials/faq>`
