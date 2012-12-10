@@ -1,10 +1,6 @@
 
 
-.. _dirac:
-.. index:: **DIRAC
-==============================
-\*\*DIRAC -- Job specification
-==============================
+starstar(DIRAC)
 
 
 Activation of modules
@@ -20,12 +16,10 @@ package if you want to e.g. save the two-electron integrals to disk for another
 purpose, this is not possible with DIRAC.
 
 
-.. index:: .WAVE FUNCTION
-.WAVE FUNCTION
---------------
+keyword(WAVE FUNCTION)
 
 Activates the wave function module(s).  This activates the reading of the
-:ref:`wave_function` section, where the desired wave function type(s) must be
+:ref:`**WAVE FUNCTION` section, where the desired wave function type(s) must be
 specified.  If you read in converged MO coefficients from the file DFCOEF and
 you want to skip the SCF step and proceed directly to properties or the
 post-SCF step, then a trick to do this is to comment out (or remove) this

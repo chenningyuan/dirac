@@ -1,10 +1,6 @@
 
 
-.. _wave_function:
-
-=================
-\*\*WAVE FUNCTION
-=================
+starstar(WAVE FUNCTION)
 
 Get the wave function.
 
