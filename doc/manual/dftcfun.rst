@@ -66,14 +66,14 @@ B3LYP
    GGAKEY Slater=0.8 Becke=0.72 HF=0.2 VWN5=0.19 LYP=0.81
 B3LYP-G
    GGAKEY Slater=0.8 Becke=0.72 HF=0.2 VWN3=0.19 LYP=0.81
+B3P86
+   GGAKEY Slater=0.8 Becke=0.72 VWN5=0.19 P86c=0.81 
+B3P86-G
+   GGAKEY Slater=0.8 Becke=0.72 VWN3=0.19 P86c=0.81 
 PBE0
    GGAKEY PBEx=0.75 PBEC=1.0 HF=0.25 HF
 PBE38
    GGAKEY PBEx=0.625 PBEx HF=0.375 PBEC=1.0
-B3P86
-   GGAKEY Slater=0.8 Becke=0.72 VWN5=1.0 P86c=0.81 
-B3P86-G
-   GGAKEY Slater=0.8 Becke=0.72 VWN5=1.0 P86c=0.81 
 
 Long-range corrected functionals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
