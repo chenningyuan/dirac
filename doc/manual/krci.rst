@@ -78,18 +78,6 @@ symmetry the input for two :math:`\Omega` =2g states read as
     .CIROOTS
     4g 2
 
-keyword(INACTI)
-
-Inactive orbitals per boson symmetry, separated by commas. This keyword is not allowed in connection with the citype
-choice :ref:`CITYPE` GASCI. *default*: all orbitals active. 
-example for D:math:`_{2h}`:
-
-::
-
-    .INACTI
-     1,1,0,0,1,0,0,2
-
-
 keyword(GAS SHELLS)
 
 Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
@@ -118,6 +106,18 @@ pp. 27 for more details. example for 4 GAS spaces with an advanced excitation pa
       6  8 /  1  2
      14 16 /  7  7
      16 16 / 30 24
+
+if all remaining orbitals (fullCI) should be included in the last GAS space, use:
+
+::
+
+    .GAS SHELLS
+     4
+      1  2 /  1  0
+      6  8 /  1  2
+     14 16 /  7  7
+     16 16 / all
+
 
 keyword(INACTIVE)
 
