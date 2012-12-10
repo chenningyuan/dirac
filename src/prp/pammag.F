@@ -384,6 +384,8 @@ C =========================================================================
       ELSE 
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
+!gosia: this 'if' has to be checked,
+! i get this warning even for shielding+london...
         WRITE(LUPRI,'(1X,A)')
      &'  Used conventional atomic orbitals, not London orbitals !'
         WRITE(LUPRI,'(1X,A)')
@@ -414,6 +416,9 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
+      use london_helper
+      use london_utils
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -442,6 +447,8 @@ C
      &         DMAT(NORBT,NORBT,NZ),
      &         ORTO(3,*),WORK(*)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
+      real(8), allocatable :: S_ji(:)
+      
 C
 #include "ibtfun.h"
       CALL QENTER('GETCON')
@@ -488,7 +495,10 @@ C --------------------------------------------
            CALL DZERO(CONMAT,N2ORBXQ)
            CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
      &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-         
+! gosia: leave occ-occ block only
+           if (lao_lr_rearrange) then
+             call get_m_ij(conmat)
+           end if 
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
      &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
@@ -512,6 +522,15 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              IOPSY2  = JBTOF(ISYM2-1,1)
              IREP2   = ISYM2 - 1 ! 0-7
              CALL DZERO(WORK(KTMAT),N2ORBXQ)
+!            gosia:
+             if (lao_lr_rearrange) then
+               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+!              gosia: zero-out other blocks than occ-occ,
+!              this is easier for a moment than adapting other routines...
+               call get_m_ij(work(ktmat))
+             else
+!
              IF (.NOT.SYMCON) THEN
               IF (ITIM2.NE.0)
      &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
@@ -524,6 +543,15 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ENDIF
+               if (shielding_rearrange) then
+               call alloc(S_ji, n2orbxq)
+               call get_T_ji(WORK(KTMAT), S_ji, doeprn)
+               call dzero(WORK(KTMAT), n2orbxq)
+               call dcopy(n2orbxq, S_ji, 1, WORK(KTMAT), 1)
+               call dealloc(S_ji)
+               end if
+             end if ! if (lao_lr_rearrange)
+
 
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
@@ -620,6 +648,8 @@ C
 C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
+      use london_helper
+      use london_reorth_hb
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
@@ -693,6 +723,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+          if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -709,6 +740,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
+          end if
         ELSE  ! Transformation in the e-e space only
 
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
@@ -734,6 +766,8 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+!gosia:
+          if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -750,6 +784,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
+          end if !if (.not. lao_lr_rearrange) then
         ENDIF
       ENDDO
       IF(IPRINT.GE.5) THEN
@@ -905,6 +940,7 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
+      use london_helper
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -1041,6 +1077,9 @@ C
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
+
+!     gosia: if lao_lr_rearrange we only do: DMAT = C*(SB)C(+)
+      if (.not. lao_lr_rearrange) then
 C
 C     Take symmetric/antisymmetric combinations to form MDMAT
 C    =========================================================
@@ -1064,6 +1103,7 @@ C  ... in gp/gpsaue.F
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
+      end if ! if (.not. lao_lr_rearrange) 
       CALL QEXIT('GETMDM')
       RETURN
       END
@@ -2409,6 +2449,7 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2685,15 +2726,23 @@ C----------------------------------------------------------------
 ! for imp=3 always write the correct indxpr to ipcon(1), it is easier for a moment
       IPTYP  = 1
       NPCOMP = 1
-      IF (SYMCON) THEN
-        PFAC(1) = DMI2
-        LABELC='dS/dB'
-        ILABELC = 5
-      ELSE
-        PFAC(1) = -D1
-        LABELC='d|S>/dB'
-        ILABELC = 7
-      END IF
+!     gosia: if connection-independent formulation of shieldings, then
+!     we want "dS/dB" integrals.
+      if (lao_lr_rearrange) then
+          PFAC(1) = -1.0d0
+          LABELC='dS/dB'
+          ILABELC = 5
+      else
+        IF (SYMCON) THEN
+          PFAC(1) = DMI2
+          LABELC='dS/dB'
+          ILABELC = 5
+        ELSE
+          PFAC(1) = -D1
+          LABELC='d|S>/dB'
+          ILABELC = 7
+        END IF
+      end if
       PNAME     = LABELC(1:ILABELC)//'X'
       PLABEL(1) = LABELC(1:ILABELC)//'X'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -2893,6 +2942,7 @@ C
 C   Written by Miro Ilias, August 2003, Odense
 C 
 C*****************************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
@@ -2983,7 +3033,6 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
       ENDIF
 
 C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
-!gosia (i'll fix it later)
       if (bxlao .or. bylao .or. bzlao) then
 !       we always write to component "1"
         icomp_reorth = 1

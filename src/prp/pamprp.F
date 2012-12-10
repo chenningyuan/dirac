@@ -6236,6 +6236,7 @@ C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -6265,6 +6266,22 @@ C
       CALL QENTER('PRP_SHIELD1')
 C 
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
+
+! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged 
+! equation (Eq. 40-42 in JCP 131, 124119 (2009))
+      if (shielding_rearrange) then
+        write(*, *) 'NMR shielding tensor calculated ',
+     &               'from rearranged equations ',
+     &               '(Eq.40-42 in JCP 131, 124119 (2009))'
+      end if
+! if .LAOMOD, then NMR shielding is calculated from rearranged equations
+! but also LR equations are modified  
+      if (lao_lr_rearrange) then
+        write(*, *) 'NMR shielding rearranged, LR equations in LAO ',
+     &               'basis are rearranged too (fully connection-',
+     &               'independent approach)'
+      end if
+
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
@@ -6337,20 +6354,30 @@ C--------------------------------------------------------------------
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
+!  ...  gosia: if connection-independent formulation of shieldings,
+!  ...  then the -{S^B, h(mK)} expectation value is calculated here
 !todo from Trond's email:
 !check the use of GETCON in  PRP_SHIELD1(pamprp.F). Can it be completely removed ?
+! gosia: no, it's one of contributions to NMR shielding
         CALL MEMGET('REAL',KW   ,3*N2ORBXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCON ,N2ORBXQ  ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDMAT,N2ORBXQ  ,WORK,KFREE,LFREE)
         CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
-     &               WORK,KFREE,LFREE,IPRPRP)
+     &             WORK,KFREE,LFREE,IPRPRP)
         CALL MEMREL('PRP_SHIELD1_GETCON',WORK,1,KW,KFREE,LFREE)
-CMI   ...  sign convention !!!
+CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
         IF (IPRPRP.GE.2) THEN
-          CALL HEADER('Reorthonormalization part of the '// 
-     &  'shielding (expect.value) in symmetry coordinates (ppm)',1)
-          CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          if (lao_lr_rearrange) then
+            CALL HEADER('Contribution to the shielding from overlap '// 
+     &      'magnetic derivative (expect.value) in symmetry '//
+     &      'coordinates (ppm)',1)
+            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          else
+            CALL HEADER('Reorthonormalization part of the '// 
+     &      'shielding (expect.value) in symmetry coordinates (ppm)',1)
+            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          end if
         ENDIF
 C       ... extract the reorthonormalization part into the PMAT
         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)

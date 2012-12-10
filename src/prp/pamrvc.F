@@ -3976,6 +3976,7 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+        use london_helper
         use dirac_cfg
         use dft_cfg
         use xcint_main

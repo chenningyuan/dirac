@@ -28,7 +28,7 @@
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
-     &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2
+     &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2, SHIEL2
 
       INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 4)
@@ -41,7 +41,7 @@
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &
-     &                BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2
+     &                BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2, SHIEL2
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &

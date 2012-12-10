@@ -26,11 +26,13 @@ module london_reorth_hb
   use dft_cfg
   use num_grid_gen
   use dirac_interface
+  use london_helper  
+  use london_utils   
 
   implicit none
 
   public london_reort_hb
-  public check_symmetry 
+!  public check_symmetry 
   save
 
   private
@@ -63,6 +65,7 @@ module london_reorth_hb
   integer, parameter :: max_nr_xyz_comp = 3
   integer            ::     nr_xyz_comp
 
+  integer, parameter :: file_unit = 137
   integer, parameter :: tbmo_unit = 71
   logical            :: debug_me
 
@@ -74,6 +77,9 @@ contains
 ! when London atomic orbitals are used:
 ! {T^B, H(0)} = {T^B, h(0)} + {T^B, L}
 ! please see two last terms in eq. (31) in JCP 131, 124119 (2009)
+
+! gosia: in connection-independent formulation, we calculate only:
+! -{S^B, L}
 
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
@@ -103,7 +109,8 @@ contains
     call alloc(tb_dmat, size_tb_dmat)
     tb_dmat = 0.0d0
 
-!   get (C+)(T^B)C
+!   get (C+)(T^B)C + c.c.
+!   gosia: if (lao_lr_rearrange) then it is (C+)(S^B)C written on tb_dmat
     call get_tb_dmat(tb_dmat, cmo, ibeig)
 
     size_fao = n2bbasxq*nr_xyz_comp
@@ -122,8 +129,14 @@ contains
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
     call dealloc(fao)
 
-!   calculate "F" part, add to "G" and write result to file
-    call get_ftb(fmo, cmo, ibeig)
+    if (.not. lao_lr_rearrange) then
+!     calculate "F" part, add to "G" and write result to file
+      call get_ftb(fmo, cmo, ibeig)
+    else
+!     if connection-independent approach, we don't need one-index transformed contribution
+!     in the property gradient, so only write fmo to file:
+      call write_sb(fmo)
+    end if
 
     call dealloc(fmo)
 
@@ -191,7 +204,7 @@ contains
         call prqmat(fmat(1, icomp), &
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
-        call check_symmetry(fmat(1, icomp), norbt)
+        call check_symmetry(fmat(1, icomp), norbt, nz)
       end if
 
       call dzero(tb, n2orbxq)
@@ -286,7 +299,7 @@ contains
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
 
-        call check_symmetry(fmat, norbt)
+        call check_symmetry(fmat, norbt, nz)
 
       end if
 
@@ -562,6 +575,8 @@ contains
       call di_select_wrk(work, lwork)
 
 !     get T^B_icomp matrix into tb
+!     gosia: if lao_lr_rearrange, then here we read in 'dS/dB' integrals
+!     with factor -0.5 (the same as in SYMCON)
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
@@ -575,6 +590,11 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+      if (lao_lr_rearrange) then
+!       we only need occ-occ block of S^B matrix, so zero-out the rest:
+        call get_m_ij(tb) 
+      end if
 
       lwork = len_f77_work
       kfree = 1
@@ -600,25 +620,41 @@ contains
 
   end subroutine
 
-  subroutine check_symmetry(mat, ndim)
-    integer, intent(in) :: ndim
-    real(8), intent(in) :: mat(ndim, ndim, *)
-    real(8) :: a
-    integer :: i, j, iz
+!  subroutine check_symmetry(mat, ndim)
+!    integer, intent(in) :: ndim
+!    real(8), intent(in) :: mat(ndim, ndim, *)
+!    real(8) :: a
+!    integer :: i, j, iz
+!
+!    a = 0.0d0
+!    do iz = 1, nz
+!      do i = 1, ndim - 1
+!        do j = i + 1, ndim
+!          a = a + (dabs(mat(i, j, iz)) - dabs(mat(j, i, iz)))
+!        end do
+!      end do
+!    end do
+!    a = a/dfloat(((ndim*ndim - ndim)/2)*nz)
+!    write(*, *) 'symmetry mat: ', a
+!
+!  end subroutine
 
-    a = 0.0d0
-    do iz = 1, nz
-      do i = 1, ndim - 1
-        do j = i + 1, ndim
-          a = a + (dabs(mat(i, j, iz)) - dabs(mat(j, i, iz)))
-        end do
-      end do
+  subroutine write_sb(sb)
+    real(8), intent(in) :: sb(n2orbxq, *)
+    integer :: icomp
+
+    open(lufckl, file='FCKLON', form='unformatted',   &
+         access='direct',recl=8*n2orbxq,              &
+         status='unknown')
+
+    do icomp = 1, nr_xyz_comp
+      call wrtdac(lufckl, norbt*norbt*nz,   &
+                  sb(1, icomp), icomp)
     end do
-    a = a/dfloat(((ndim*ndim - ndim)/2)*nz)
-    write(*, *) 'symmetry mat: ', a
+
+    close(lufckl, status='keep')
 
   end subroutine
-
 
 
       SUBROUTINE GET_NPOS(NPOS)

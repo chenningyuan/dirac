@@ -135,6 +135,7 @@ C
 C***********************************************************************
       use london_direct_hb
       use london_reorth_hb
+      use london_helper
       use memory_allocator
       use orbital_rotation_indices
 
@@ -210,6 +211,10 @@ c.......direct contribution
         end if
 
 c.......reorthonormalization contribution
+!       gosia: in connection-independent formulation, there is no
+!       reorthonormalization contribution in the property gradient.
+!       Instead, there is a contribution from magnetic derivatives 
+!       of overlap matrix (modifications in london_reorth.F90)
         if (.not. noonei) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
         end if
@@ -372,13 +377,14 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 38,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 39,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -404,7 +410,7 @@ C
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
-     &            '.DAMPIN','.FREQ I'/
+     &            '.DAMPIN','.FREQ I','.LAOMOD'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -524,7 +530,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38), I
+     &                     31,32,33,34,35,36,37,38,39), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -774,6 +780,10 @@ C&&& DAMPING: specify a damping parameter
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
                FINTER = .TRUE.
                READ(LUCMD,*) STARTFREQ,ENDFREQ,STEPFREQ
+               GO TO 100
+ 39            CONTINUE
+C&&& LAOMOD: rearrange LR equations with LAOs, so connection matrices are not needed
+               call set_london_keywords('laomod')
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1472,6 +1482,9 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+      use london_helper
+      use london_utils 
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
@@ -1565,6 +1578,16 @@ C
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
       CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVECS,BBUF)
+!gosia:
+! if shielding_rearrange then here form: \kappa=\kappa-T:
+      write(*, *) 'buba, rsplab = ', rsplab
+      write(*, *) 'buba, nbtyp = ', nbtyp
+      write(*, *) 'buba, nxpar,ndamp,nfreq = ', nxpar,ndamp,nfreq
+      write(*, *) 'buba, ityp, bvtyp(ityp) = ', ityp, bvtyp(ityp)
+      if (shielding_rearrange) then
+        nlength=nxpar*ndamp*nfreq
+        call combine_kappa_T(xpo, nlength, nbtyp, rsplab)
+      end if
 C
 C     Print section
 C     -------------
