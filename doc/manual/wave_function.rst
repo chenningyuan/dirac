@@ -154,10 +154,9 @@ Activates the :ref:`KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetries) 
 at the relativistic MCSCF level.
 
-﻿.. _scf:
 
 SCF & DFT
-============
+=========
 
 This section gives directives for Hartree-Fock calculations.
 Kohn-Sham calculations are performed by invoking the keyword
