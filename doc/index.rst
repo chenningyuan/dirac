@@ -10,11 +10,12 @@ Setting up DIRAC
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>` |
-  :doc:`64bit integer support <installation/math_int64>`
+  :doc:`MKL environment variables <installation/mkl>`
 
-* **MPI:**
-  :doc:`64bit integer support <installation/mpi_int64>`
+* **64-bit integer support:**
+  :doc:`Do I need it? <installation/int64/faq>` |
+  :doc:`MPI <installation/int64/mpi>` |
+  :doc:`Math libraries <installation/int64/math>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
