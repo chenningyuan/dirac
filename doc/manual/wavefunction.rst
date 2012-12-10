@@ -783,7 +783,7 @@ matrix to orthonormal basis.
 Then for each fragment read name PRJFIL of the coefficient file
 followed by the number of symmetry-independent nuclei in this
 fragment followed by an
-:ref:`orb_strings` of
+:ref:`orbital_strings` of
 selected orbitals for each fermion irrep.
 
 ::

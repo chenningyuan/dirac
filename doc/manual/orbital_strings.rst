@@ -1,4 +1,6 @@
-.. _orb_strings:
+
+
+.. _orbital_strings:
 
 Specification of orbital strings
 ================================

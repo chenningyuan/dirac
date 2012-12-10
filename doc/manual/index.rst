@@ -33,4 +33,4 @@ Keyword reference
 
 * :doc:`One-electron operators <one_electron_operators>`
 
-* :doc:`Orbital strings <orb_strings>`
+* :doc:`Orbital strings <orbital_strings>`

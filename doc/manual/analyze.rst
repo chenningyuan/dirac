@@ -26,8 +26,7 @@ Print vectors read from DFCOEF.
 .VECPRI
 -------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to print.
+For each fermion irrep, give an :ref:`orbital_strings` of orbitals to print.
 
 *Default:* Print the occupied electronic solutions.
 
@@ -78,8 +77,8 @@ Print level.
 -------
 
 Perform Mulliken population analysis [Mulliken1955]_
-Continues to
-`\*MULPOP </dirac/index.php/Manual:ANALYZE:MULPOP>`_ subsection.
+Continues to :ref:`*MULPOP`
+subsection.
 
 \*MULPOP -- Mulliken population analysis
 ========================================
@@ -93,9 +92,7 @@ may be collected to group labels as specified by the user.
 .VECPOP
 -------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
-analyze.
+For each fermion irrep, give an :ref:`orbital_string` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
@@ -111,10 +108,8 @@ Give Mulliken net/overlap populations in addition to gross populations.
 
 Define labels for use in Mulliken population analysis.
 
-Give first the number of labels to define, then the label name (12
-characters) and `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ for each fermion
-irrep.
+Give first the number of labels to define, then the label name (12 characters)
+and :ref:`orbital_string` for each fermion irrep.
 
 *Example:*
 
@@ -175,9 +170,8 @@ Print level.
 .PROJEC
 -------
 
-Perform projection analysis [Faegri2001]_
-Activates the
-`\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_ subsection.
+Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
+subsection.
 
 \*PROJECTION -- Projection analysis
 ===================================
@@ -200,13 +194,10 @@ of the full molecular basis) using `.OWNBAS <#.OWNBAS>`_. The advantage
 is faster calculations and conservation of atomic symmetry for atomic
 fragments. To avoid working with symmetry-combinations of atomic centers
 for the fragments, it may sometimes be advantageous to dump molecular
-coefficients in *C*\ :sub:`1`\  symmetry using
-`.ACMOUT </dirac/index.php/Manual:GENERAL#.ACMOUT>`_
-under
-`\*\*GENERAL </dirac/index.php/Manual:GENERAL>`_
+coefficients in *C*\ :sub:`1`\  symmetry using :ref:`.ACMOUT`
+under :ref:`**GENERAL`
 and do the analysis
-without symmetry. When
-`.OWNBAS <#.OWNBAS>`_
+without symmetry. When :ref:`.OWNBAS`
 is used, one then needs to
 calculate each atomic type only once in its own basis in order to do the
 complete analysis.
@@ -214,19 +205,16 @@ complete analysis.
 .VECPRJ
 -------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
-analyze.
+For each fermion irrep, give an :ref:`orbital_strings` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
 .VECREF
 -------
 
-First give number of fragments to project onto, and then for each
-fragment give filename of MO coefficients and the number of
-symmetry-independent nuclei in this fragment and for each fermion irrep,
-give an `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+First give number of fragments to project onto, and then for each fragment give
+filename of MO coefficients and the number of symmetry-independent nuclei in
+this fragment and for each fermion irrep, give an :ref:`orbital_strings` of
 reference orbitals.
 
 *Example:*
@@ -290,11 +278,12 @@ Print level.
     .PRINT
      0
 
-.DENSIT
--------
+.DENSITY
+--------
 
 Write density to a formatted file in Gaussian cube format. Activates the
-`\*DENSITY </dirac/index.php/Manual:ANALYZE:DENSITY>`_ subsection.
+:ref:`*DENSITY` subsection.
+
 
 \*DENSITY -- Write the density to a formatted file
 ==================================================
@@ -435,8 +424,7 @@ Print level.
 
 Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
 
-Continues to the activated
-`\*LOCALIZATION </dirac/index.php/Manual:ANALYZE:LOCALIZATION>`_
+Continues to the activated :ref:`*LOCALIZATION`
 subsection. Note that in the present implementation this only works in
 C\ :sub:`1`\  symmetry.
 
@@ -494,20 +482,17 @@ Localization from projection analysis instead of Mulliken analysis.
 .OWNBAS
 -------
 
-See `.OWNBAS </dirac/index.php/Manual:ANALYZE:PROJECTION#.OWNBAS>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
+See :ref:`.OWNBAS` under :ref:`*PROJECTION`.
 
 .VECPRJ
 -------
 
-See `.VECPRJ </dirac/index.php/Manual:ANALYZE:PROJECTION#.VECPRJ>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
+See :ref:`.VECPRJ` under :ref:`*PROJECTION`.
 
 .VECREF
 -------
 
-See `.VECREF </dirac/index.php/Manual:ANALYZE:PROJECTION#.VECREF>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
+See :ref:`.VECREF` under :ref:`*PROJECTION`.
 
 .HESSUN
 -------
