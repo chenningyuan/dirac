@@ -4,7 +4,7 @@ import sys, urllib2, subprocess, os
 # Update script 2012 by Ulf Ekstrom
 
 # The url for the next update is read from this file
-url_location = 'utils/update-url'
+url_location = 'update/update-url'
 
 def get_patch(url):
     # print "Attempting to download patch from",url
@@ -66,7 +66,7 @@ def main():
             print "Verified patch, now applying",
             res = test_or_apply_patch(p,test=False)
             if res:
-                print "Update applied successfully, please rerun setup.py and recompile Dirac"
+                print "Update applied successfully, please rerun setup.py and recompile DIRAC"
                 try:
                     f = open(url_location,'r')
                     newurl = f.read().strip()
@@ -83,14 +83,14 @@ def main():
                 sys.exit(-1)
         else:
             sys.stderr.write("Patch cannot be applied, please find error log in update-error.log.\n")
-            sys.stderr.write("This may be due to your modifications of Dirac or a developer error.\n")
+            sys.stderr.write("This may be due to your modifications of DIRAC or a developer error.\n")
             sys.stderr.write("Please extract the official distribution archive and update directly\nfrom that.\n")
             sys.stderr.write("The error was detected before any files where modified.\n")
             sys.exit(-1)
     else:
         sys.exit(0)
 
-print 'Dirac update script, attempting to locate and download updates..'
+print 'DIRAC update script, attempting to locate and download updates ...'
 print
 while True:
     main()
