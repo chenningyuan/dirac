@@ -20,7 +20,7 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
 First steps in DIRAC territory
