@@ -56,7 +56,8 @@ keyword(CITYPE)
 
 Type of CI calculation. Typical multi-reference CI calculations should be defined by RASCI or GASCI.
 
-valid choices are: FCI, SDCI, SDTQ, RASCI, GASCI.
+valid choices are: FCI, SDCI, SDTQ, RASCI, GASCI. If you choose RASCI or GASCI please take a look at the *RASCI/GASCI*
+keyword section below.
 
 *example:*
 
@@ -75,4 +76,160 @@ specifies the target state spin multiplicity (2S+1) of the desired eigenstates.
 
     .MULTIP
      1
+
+**Optional keywords**
+=====================
+
+keyword(DENSI)
+
+Level of computed density matrices. *default:* one-elctron density matrices and natural orbital occupation numbers.
+To compute one- and two-particle density matrices:
+
+::
+
+    .DENSI
+     2
+
+keyword(NROOTS)
+
+Number of states(roots) to optimize. *default*:
+
+::
+
+    .NROOTS
+     1
+
+keyword(SYMMET)
+
+Spatial symmetry of the desired state(s). This is the boson symmetry label referring to an irrep ordering as defined by
+the group generators. *default*:
+
+::
+
+    .SYMMET
+     1
+
+
+keyword(MAXITR)
+
+maximum number of CI iterations. *default*:
+
+::
+
+    .MAXITR
+     100
+
+keyword(INACTI)
+
+Inactive orbitals per boson symmetry, separated by commas. This keyword is not allowed in connection with the citype
+choice :ref:`CITYPE` GASCI. *default*: all orbitals active. 
+example for D:math:`_{2h}`:
+
+::
+
+    .INACTI
+     1,1,0,0,1,0,0,2
+
+keyword(RSTRCI)
+
+Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation):
+
+::
+
+    .RSTRCI
+     1
+
+*default*: no restart.
+
+::
+
+    .RSTRCI
+     0
+
+**Specific input -- GASCI**
+===========================
+
+keyword(NACTEL)
+
+Number of active electrons. *default*: none. example:
+
+::
+
+    .NACTEL
+     10
+
+keyword(GASSHE)
+
+Number and specification of GAS orbitals. Line with the number of GA spaces used (1-7), 
+followed by one line per GAS with number of orbitals per boson symmetry, separated by commas. *default*: none.
+example for 2 GAS spaces and active orbital distribution when running inD:math:`_{2h}` symmetry:
+
+::
+
+    .GASSHE
+     2
+     2,0,4,4,8,2,1,1
+     8,2,6,6,19,5,3,3
+
+keyword(GASSPC)
+
+Number and specification of sequential CI calculations. Line with the number of CI calculations with given GA spaces
+(currently only 1 is allowed), followed by one line per GAS with 2 numbers each: The first gives the minimal number of
+accumulated electrons after this GAS, the second the corresponding maximum number, separated by blanks (defining
+occupation constraints of each GAS). *default*: None. example for an excitation pattern in connection with the 2-GAS
+input from :ref:`GASSHE` above and 10 active electrons:
+
+::
+
+    .GASSPC
+     1
+     8  10
+     10 10
+
+**Specific input -- RASCI**
+===========================
+
+keyword(NACTEL)
+
+Number of active electrons. *default*: none. example:
+
+::
+
+    .NACTEL
+     10
+
+keyword(RAS1)
+
+RAS1 specification and maximum number of holes. Line with orbitals per boson symmetry, separated by commas, 
+followed by a line with the maximum number of holes in RAS1. *default*: none. 
+example for an active orbital distribution when running inD:math:`_{2h}` symmetry and max 2 holes:
+
+::
+
+    .RAS1
+     2,0,4,4,2,2,1,1
+     2
+
+
+keyword(RAS2)
+
+RAS2 specification. Line with orbitals per boson symmetry, separated by commas. example for an active orbital distribution 
+when running inD:math:`_{2h}` symmetry:
+
+
+::
+
+    .RAS2
+     1,0,1,1,1,1,0,1
+
+keyword(RAS3)
+
+RAS3 specification and maximum number of electrons. Line with orbitals per boson symmetry, separated by commas, followed by a line with the maximum number of electrons in RAS3.
+example for an active orbital distribution when running inD:math:`_{2h}` symmetry and max 2 electrons in RAS3:
+
+::
+
+    .RAS3
+     2,0,4,4,2,2,1,1
+     2
 
