@@ -1,7 +1,6 @@
-.. _moltra:
 
-\*\*MOLTRA
-==========
+
+starstar(MOLTRA)
 
 Integral transformation module.
 

@@ -73,13 +73,13 @@ hartree (a.u.) are included, this can be modified in the
 
 keyword(LUCITA)
 
-Activates the :ref:`LUCITA` (and
-the :ref:`moltra` module to get 4-index
+Activates the :ref:`*LUCITA` (and
+the :ref:`**MOLTRA` module to get 4-index
 transformed integrals).
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`moltra` section.
+:ref:`**MOLTRA` section.
 
 
 **Pre-SCF orbital manipulations**
