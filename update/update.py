@@ -88,6 +88,7 @@ def main():
         print "If run with no arguments this script attempts to download and apply updates to DIRAC."
         print "The updating procedure relies on the UNIX `patch' program, and may fail if you have"
         print "made local modifications to the DIRAC source code."
+        sys.exit(-1)
     new_version, url = full_url()
     p = get_patch(new_version, url)
     if p:
