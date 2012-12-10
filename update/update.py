@@ -43,13 +43,13 @@ def get_patch(new_version, url):
         print "No updates found on server."
         return None
     except urllib2.URLError:
-        sys.stderr.write("Error downloading patch from %s\n" % url)
+        sys.stderr.write("Error downloading patch from %s, cannot connect to server.\n" % url)
         return None
     print "Downloading patch %s:" % new_version,
     try:
         patch = u.read()
     except:
-        sys.stderr.write("Error downloading patch from %s\n" % url)
+        sys.stderr.write("Error downloading patch from %s, cannot connect to server.\n" % url)
         return None
     print "OK"
     return patch
@@ -83,6 +83,11 @@ def test_or_apply_patch(patch,test=True):
 
 
 def main():
+    if len(sys.argv) > 1:
+        print "Usage: update.py"
+        print "If run with no arguments this script attempts to download and apply updates to DIRAC."
+        print "The updating procedure relies on the UNIX `patch' program, and may fail if you have"
+        print "made local modifications to the DIRAC source code."
     new_version, url = full_url()
     p = get_patch(new_version, url)
     if p:
