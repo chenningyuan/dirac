@@ -1,0 +1,6 @@
+1. lao_shield_unchanged.inp: shielding is calculated in a standard way
+
+2. lao_shield_rearranged.inp: shielding is calculated from rearranged equations
+
+3. lao_shield_lr_rearranged_lih.out: shielding is calculated from rearranged equations and in addition the linear response equations are modified to be connection-independent (here all formulation is connection-independent) 
+
