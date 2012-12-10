@@ -2,10 +2,6 @@
 
 starstar(DIRAC)
 
-
-Activation of modules
-=====================
-
 By default DIRAC only activates the generation of the basis set (e.g.  kinetic
 balance conditions for small component functions) and the one-electron modules.
 Two-electron integrals over the atomic basis functions will be calculated when
