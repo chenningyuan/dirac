@@ -2,17 +2,11 @@
 
 star(DFT)
 
-keyword(ALDA)
-
-Invoke the adiabatic LDA approximation: anything beyond the Kohn--Sham
-functional (exchange-correlation kernel etc.) is approximated by LDA
-(exchange switched off in hybrid functionals).
+**Introduction**
+================
 
 In this link the directives for modifying the DFT calculation are
 described (e.g. modifying grid, using ALDA and much more)
-
-.SAOP The more general version of .SAOP! - followed by a single line of
-input.
 
 *typical input (here correcting LDA):*
 
@@ -40,8 +34,8 @@ have a negligible effect on spectroscopic constants; however, for example for
 core properties further studies are necessary.
 
 
-Integration algorithm and thresholds
-====================================
+**Integration algorithm and thresholds**
+========================================
 
 keyword(SCREENING)
 
@@ -74,8 +68,8 @@ than this threshold do not contribute to XC matrix elements.
      1.0D-14
 
 
-Asymptotic correction
-=====================
+**Asymptotic correction**
+=========================
 
 keyword(GRAC)
 
@@ -142,8 +136,8 @@ or LBalpha).
     LBalpha
 
 
-Spin magnetization TDDFT
-========================
+**Spin magnetization TDDFT**
+============================
 
 keyword(NOSAOP)
 
@@ -181,8 +175,8 @@ instead of the default form
    \mathbf{m} = \sum_i \phi_i^\dagger \mathbf{\Sigma} \phi_i
 
 
-Adiabatic local density approximation (ALDA)
-============================================
+**Adiabatic local density approximation (ALDA)**
+================================================
 
 keyword(ALDA)
 
@@ -225,8 +219,8 @@ density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
 
-Other functionality
-===================
+**Other functionality**
+=======================
 
 **Programmers options**
 

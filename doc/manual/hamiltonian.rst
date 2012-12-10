@@ -386,11 +386,38 @@ combinations of exchange and correlation functionals, e.g.::
   .DFT
    B3LYP
 
-or composed by specifying GGAKEY followed by a list of the desired
+Alternatively, it can be composed by specifying GGAKEY followed by a list of the desired
 functionals together with their weights::
 
   .DFT
    GGAKEY PW86X=1.0 P86C=1.0
+
+GGAKEY also allows the definition of (global) hybrid functionals, for instance B3LYP can be specified as::
+
+  .DFT
+  GGAKEY Slater=0.8 Becke=0.72 HF=0.2 VWN=0.19 LYP=0.81
+
+where HF indicates weight of Hartree-Fock exchange 20%. It is also possible to specify 
+long-range corrected or Coulomb-attenuated functionals using the CAM keyword, e.g. 
+CAMB3LYP is predefined but can also be specified as::
+
+  .DFT
+  CAM p:alpha=0.19 p:beta=0.46 p:mu=0.33 x:slater=1 x:becke=1 c:lyp=0.81 c:vwn5=0.19
+
+Coulomb-attenuated functionals are based on a separation of the two-electron interaction 
+into a long- and short-range part
+
+.. math::
+
+   \frac{1}{r_{12}}=\frac{\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}
+   - \frac{1-\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}
+
+For CAM or long-range corrected functionals this separation is only invoked in the evaluation of exchange.
+The above CAM input first reads the three parameters(p) :math:`\alpha` (alpha), :math:`\beta` (beta) and
+:math:`\mu` (mu), followed by exchange (x) and correlation (c) functionals with their respective weights.
+Standard exchange functionals are automatically short-range corrected following the approach of [IIkura2001]_.
+The activation of this separation for correlation as well leads to *long-range WFT/short-range DFT methods*, as
+represented by MP2-srDFT in DIRAC.
 
 *Exchange functionals:*
 

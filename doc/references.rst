@@ -172,6 +172,11 @@ or popular Google-Books web-space.
    Int.J.Quant.Chem., **55**, *127-132* (1995)
    `[pdf] <http://dx.doi.org/10.1002/qua.560550207>`_
 
+.. [IIkura2001] Hisayoshi Iikura and Takao Tsuneda and Takeshi Yanai and Kimihiko Hirao,
+   *A long-range correction scheme for generalized-gradient-approximation exchange functionals*,
+   J. Chem. Phys., **115**, *3540-3544* (2001)
+   `[pdf] <http://link.aip.org/link/doi/10.1063/1.1383587>`_
+
 .. [Ilias2001] M. Iliaš and V. Kello and L. Visscher and
    B. Schimmelpfennig, *Inclusion of mean-field spin–orbit effects based
    on all-electron two-component spinors: Pilot calculations on atomic
