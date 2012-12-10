@@ -4981,11 +4981,7 @@ C            as they need to be modified within BSS transformations
 
 C&&& HFXMU: range separation
   127     CONTINUE
-#ifdef MOD_UNRELEASED
           READ(LUCMD,*) HFXMU
-#else
-          write (*,*) 'Keyword inactive in this release'
-#endif 
           GO TO 100
 
 !C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
