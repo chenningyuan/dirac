@@ -380,8 +380,7 @@ keyword(DFT)
 Perform a Kohn--Sham density functional theory calculation. In the following line you must specify
 the desired DFT functional.
 
-The functional can either be selected from a set of predefined
-combinations of exchange and correlation functionals, e.g.::
+The functional can either be selected from a set of :doc:`predefined combinations of exchange and correlation functionals <dftcfun>`, e.g.::
 
   .DFT
    B3LYP
@@ -418,31 +417,6 @@ The above CAM input first reads the three parameters(p) :math:`\alpha` (alpha), 
 Standard exchange functionals are automatically short-range corrected following the approach of [IIkura2001]_.
 The activation of this separation for correlation as well leads to *long-range WFT/short-range DFT methods*, as
 represented by MP2-srDFT in DIRAC.
-
-*Exchange functionals:*
-
--  LDA exchange  [Dirac1930]_
--  Becke 1988 [Becke1988]_
--  The correction term to LDA proposed by Becke [Becke1988]_
--  Perdew--Wang 1986 [Perdew1986]_
-
-*Correlation functionals:*
-
--  The Vosko--Wilk--Nusair LDA correlation energy (VWN5) [Vosko1980]_
--  The Lee--Yang--Parr functional  [Lee1988]_
--  Perdew 1986 [Perdew1986]_
-
-*Predefined combinations:*
-
--  LDA
--  CAMB3LYP
--  BLYP
--  B3LYP
--  BP86
--  BPW91
--  PBE
--  PBE0
-
 
 keyword(DFTAUTO)
 
