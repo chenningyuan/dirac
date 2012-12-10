@@ -12,6 +12,7 @@ module london_utils
   public check_symmetry 
   public combine_kappa_T
   public get_T_ai 
+  public get_m_ai 
   public get_m_ij 
   public get_T_ji 
   public get_T_ji2 
@@ -55,6 +56,82 @@ module london_utils
   logical            :: debug_me
 
 contains
+
+  subroutine get_m_ai(m, sum_ep_rn)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout) :: m(norbt, norbt, nz)
+     logical, intent(in)    :: sum_ep_rn
+
+     integer :: ip(2), ap(2), ie(2), ae(2)
+     integer :: ifrp, iz, i, j
+
+!    ---------------------------------------------------------------------------
+     
+     do ifrp = 1, nfsym
+        ip(ifrp) = iorb(ifrp) + 1
+        ap(ifrp) = ip(ifrp) + nish(ifrp)
+        ie(ifrp) = ip(ifrp) + npsh(ifrp)
+        ae(ifrp) = ie(ifrp) + nish(ifrp)
+
+        debug_me = .false.
+        if (debug_me) then
+           write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
+           write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
+           write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
+           write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
+           write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
+           write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
+           write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
+        end if
+     end do
+
+!    'ai' blocks (zero-out 'ij' blocks)
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+
+!          zero-out 'ij' blocks
+           do j = ie(ifrp), ae(ifrp) - 1
+              do i = ie(ifrp), ae(ifrp) - 1
+                 m(i, j, iz) = 0.0d0
+              end do
+           end do
+
+!          zero-out 'aa' blocks
+           do j = ip(ifrp), ie(ifrp) - 1
+              do i = ip(ifrp), ie(ifrp) - 1
+                 m(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 m(i, j, iz) = 0.0d0
+              end do
+           end do
+           do j = ae(ifrp), norb(ifrp)
+              do i = ip(ifrp), ie(ifrp) - 1
+                 m(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 m(i, j, iz) = 0.0d0
+              end do
+           end do
+
+           if (.not. sum_ep_rn) then
+              do j = ie(ifrp), ae(ifrp) - 1
+                 do i = ip(ifrp), ie(ifrp) -1
+                    m(i, j, iz) = 0.0d0
+                 end do
+              end do
+              do j = ip(ifrp), ie(ifrp) -1
+                 do i = ie(ifrp), ae(ifrp) - 1
+                    m(i, j, iz) = 0.0d0
+                 end do
+              end do
+           end if
+
+        end do
+     end do
+
+  end subroutine
+
 
   subroutine get_T_ai(T, T_ai, sum_ep_rn)
 !    ---------------------------------------------------------------------------
@@ -357,8 +434,8 @@ contains
 !           T_{ai}^B     - elements of connection matrix (occ-virt blocks)
 !                          the 'full' connection matrix is read from TBMO file
 
-!    it is used to calculate the NMR shielding tensor according
-!    to Eq. 40-42 from JCP 131, 124119
+!    it is used to calculate the NMR shielding tensor
+!    from Eq. 40-42 from JCP 131, 124119
 !    ---------------------------------------------------------------------------
 
 !    which component of magnetic field is that:
@@ -420,7 +497,7 @@ contains
      read(tbmo_unit) T
 
      if (nr_xyz_comp > 1) then
-!       for example when calculating full shielding tensor
+!       when calculating full shielding tensor
 !       there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
 !       read here the requested one:
         if (chosen_icomp == 2) then
@@ -445,16 +522,17 @@ contains
 
 !    get occ-virt part of T to T_ai:
 !    -------------------------------
-     call alloc(T_ai, norbt, norbt, nz)
-     call get_T_ai(T, T_ai, sum_ep_rn)
-     call dealloc(T)
+     !call alloc(T_ai, norbt, norbt, nz)
+     !call get_T_ai(T, T_ai, sum_ep_rn)
+     !call dealloc(T)
+     call get_m_ai(T, sum_ep_rn)
 
-     debug_me = .false.
-     if (debug_me) then
-        call prqmat(T_ai(1,1,1), &
-                    norbt, norbt, norbt, norbt, &
-                    nz, ipqtoq(1, 0), lupri)
-     end if
+     !debug_me = .false.
+     !if (debug_me) then
+     !   call prqmat(T_ai(1,1,1), &
+     !               norbt, norbt, norbt, norbt, &
+     !               nz, ipqtoq(1, 0), lupri)
+     !end if
 
 
 !    T_ai is a matrix, so now let's make it a vector
@@ -468,10 +546,12 @@ contains
                                    orbital_rotation_indices, &
 !                                   h, &
                                    T_ai_vec, &
-                                   T_ai, &
+                                   !T_ai, &
+                                   T, &
                                    irep)
 
-     call dealloc(T_ai)
+     !call dealloc(T_ai)
+     call dealloc(T)
      call dealloc(orbital_rotation_indices)
 
      debug_me = .false.

@@ -447,7 +447,6 @@ C
      &         DMAT(NORBT,NORBT,NZ),
      &         ORTO(3,*),WORK(*)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
-      real(8), allocatable :: S_ji(:)
       
 C
 #include "ibtfun.h"
@@ -543,13 +542,9 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ENDIF
-               if (shielding_rearrange) then
-               call alloc(S_ji, n2orbxq)
-               call get_T_ji(WORK(KTMAT), S_ji, doeprn)
-               call dzero(WORK(KTMAT), n2orbxq)
-               call dcopy(n2orbxq, S_ji, 1, WORK(KTMAT), 1)
-               call dealloc(S_ji)
-               end if
+             if (shielding_rearrange) then
+               call get_m_ij(work(ktmat))
+             end if
              end if ! if (lao_lr_rearrange)
 
 

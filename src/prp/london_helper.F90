@@ -21,7 +21,7 @@ contains
 
 !    laomod keyword:
 !    reorganize LR equations when LAOs are used, needed for connection-independent formulation of shielding
-!    (it also sets lao_sh_rearrange = .true.)
+!    (also, automatically, shielding is calculated from Eq. 40-42 in JCP 131, 124119 (2009))
      if (word(1:6) == 'laomod') then
         lao_lr_rearrange = .true.
      end if

@@ -1205,6 +1205,7 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
+!gosia: i'll need to adapt that for 'SHIEL2'
 C
 C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
