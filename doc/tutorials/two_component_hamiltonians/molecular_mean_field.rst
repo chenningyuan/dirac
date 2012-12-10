@@ -1,5 +1,7 @@
-I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) for my post-HF (Coupled-Cluster [CC], Fock-Space CC, KR-MCSCF or KR-CI) calculations - what do i need to consider?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) - what do i need to consider?
+--------------------------------------------------------------------------------------------------
 
 The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present (Dirac11
 release Nov 2011) **available** for the following methods:
@@ -55,9 +57,9 @@ section.
 
     **MOLTRA
     .INTFL2
-    1 0 0 0 
+    1 0 0 0
     .INTFL4
-    1 0 0 0   
+    1 0 0 0
     ...
     ...
     &CCSORT USEOE=T, NORECMP=T &END
@@ -65,4 +67,3 @@ section.
 You are now ready to restart your post-HF calculation but do not forget
 to copy your MO-coefficient file DFCOEF to your scratch directory, i.e.
 add *--incmo* to your *pam* command line.
-

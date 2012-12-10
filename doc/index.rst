@@ -60,7 +60,8 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/2c_hamiltonians>`
+  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
 
 * **Nonrelativistic limit:**
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
@@ -93,13 +94,6 @@ Tutorials and walkthrus
   :doc:`MP2 <tutorials/dusty_attic/mp2>` |
   :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
   :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
-
-
-Getting help
-============
-
-* **Move somewhere else:**
-  :doc:`Frequently asked questions <tutorials/faq>`
 
 
 Reference manual
