@@ -71,6 +71,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>`
 
+* **Long-range WFT/short-range DFT:**
+  :doc:`General <tutorials/srDFT/general>`
+
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
 

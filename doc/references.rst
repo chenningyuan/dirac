@@ -238,6 +238,11 @@ or popular Google-Books web-space.
    Theor. Chem. Acc. **129**, *631-650* (2011)
    `[pdf] <http://dx.doi.org/10.1007/s00214-011-0911-2>`_
 
+.. [Kullie2011] O. Kullie and T. Saue,
+   *Range-separated density functional theory: a 4-component relativistic study of the rare gas dimers He2, Ne2, Ar2, Kr2, Xe2, Rn2 and Uuo2*,
+   J. Chem. Phys. **395**, *54* (2011)
+   `[pdf] <http://dx.doi.org/10.1016/j.chemphys.2011.06.024>`_
+
 .. [Kutzelnigg1984] W. Kutzelnigg,
    *Chemical Bonding in the Higher Main Group Elements*, Angew. Chem. Int. Ed. Engl. **23**, *272* (1984),
    http://dx.doi.org/10.1002/anie.198402721
