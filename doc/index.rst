@@ -10,11 +10,15 @@ Setting up DIRAC
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>` |
-  :doc:`64bit integer support <installation/math_int64>`
+  :doc:`MKL environment variables <installation/mkl>`
 
 * **MPI:**
-  :doc:`64bit integer support <installation/mpi_int64>`
+  :doc:`Forwarding environment variables <installation/mpi>`
+
+* **64-bit integer support:**
+  :doc:`Do I need it? <installation/int64/faq>` |
+  :doc:`MPI <installation/int64/mpi>` |
+  :doc:`Math libraries <installation/int64/math>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
@@ -38,12 +42,16 @@ First steps in DIRAC territory
   :doc:`General information <molecule_and_basis/basis>` |
   :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
+* **Troubleshooting:**
+  :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
+
 
 Tutorials and walkthrus
 =======================
 
 * **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start>`
+  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
@@ -52,7 +60,8 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/2c_hamiltonians>`
+  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
 
 * **Nonrelativistic limit:**
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
@@ -66,33 +75,25 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
 
 * **Visualization:**
-  :doc:`Vector fields <tutorials/visual/visualize>` |
+  :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
-* **Correlated calculations:**
-  :doc:`MP2 <tutorials/mp2cal_sample>` |
-  :doc:`MOLTRA <tutorials/moltra_sample>` |
-  :doc:`LUCITA <tutorials/lucita_sample>` |
-  :doc:`RELCCSD <tutorials/relccsd_sample>` |
-  :doc:`RELADC <tutorials/reladc_sample>`
+* **Open-shell SCF:**
+  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
+  :doc:`Np atom <tutorials/open_shell_scf/np>`
 
-* **Open-shell systems:**
-  :doc:`DIRRCI <tutorials/dirrci_sample>` |
-  :doc:`GOSCIP <tutorials/goscip_sample>` |
-  :doc:`Open-shell examples <tutorials/open_shells>` |
-  :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
-  :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
+* **ADC:**
+  :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
+  :doc:`Atom <tutorials/reladc/atom>`
 
-
-Getting help
-============
-
-* **Troubleshooting:**
-  :doc:`Known problems <getting_help/known_problems>` |
-  :doc:`Memory problems <getting_help/memory>`
-
-* **Move somewhere else:**
-  :doc:`Frequently asked questions <tutorials/faq>`
+* **Outdated tutorials (need update):**
+  :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
+  :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
+  :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
+  :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
+  :doc:`MP2 <tutorials/dusty_attic/mp2>` |
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
+  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
 
 
 Reference manual

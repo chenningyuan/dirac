@@ -6,12 +6,7 @@
 RELCCSD
 =======
 
-The old namelist style input (described above) used in DIRAC10 will be
-replaced by an input that is more consistent with the rest of the input
-in the next release. This input is briefly described for those of you
-who have access to the developer version of DIRAC.
-
-The old namelist style input used up to DIRAC10 is replaced by an input
+The old namelist style input used up to DIRAC10 has been replaced by an input
 that is more consistent with the rest of the input. In DIRAC11 it is
 possible to use both styles of inputs but we have the intention to phase
 out the namelist input in upcoming releases.

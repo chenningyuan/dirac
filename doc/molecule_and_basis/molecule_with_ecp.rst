@@ -1,4 +1,5 @@
 
+.. _ecp_input:
 
 How to specify ECP parameters in mol files
 ==========================================
@@ -10,14 +11,14 @@ This reduces basis set demands in heavy elements by replacing core electrons wit
 Theory
 ------
 
-Originally, the spin-orbit term is included in the RECP (SOREP) as following,
+Originally, the spin-orbit term is included in the RECP (SOREP) as following [Lee1977]_,
 
 .. math::
 
   U^{SOREP} = U_{LJ}^{SOREP}(r) + \sum_{l=0}^{L-1}\sum_{j=|l-1/2|}^{l+1/2}\sum_{m=-j}^{j}
              [U_{ij}^{SOREP}(r)- U_{LJ}^{SOREP}(r)]|ljm\rangle \langle ljm| 
 
-The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`)
+The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) [Ermler1981]_
 
 .. math::
   U^{AREP} = U_{L}^{AREP}(r) + \sum_{l=0}^{L-1}\sum_{m=-l}^{l}
@@ -160,7 +161,7 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 
 2.SO blocks: Three parameters in each line in SO blocks are same to AREP blocks.
 
-Note: coefficients in spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as,
+Note: coefficients in spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as [Park2012]_,
 
 .. math::
    U_{l}^{SO,DIRAC} = \frac{2}{2l+1}\Delta U_{l}^{SOREP}

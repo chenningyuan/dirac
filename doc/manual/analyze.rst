@@ -1,10 +1,6 @@
 
 
-.. _analyze:
-
-===========
-\*\*ANALYZE
-===========
+starstar(ANALYZE)
 
 Wave function analyzing tool.
 
@@ -12,27 +8,54 @@ This section is aimed to analyze the final Hartree-Fock wave function by
 using one or more analysis modules. By default none of them is
 activated.
 
-.PRIVEC
--------
+
+keyword(PRIVEC)
 
 Print vectors. Activates the :ref:`*PRIVEC` subsection.
 
+
+keyword(MULPOP)
+
+Perform Mulliken population analysis [Mulliken1955]_
+Continues to :ref:`*MULPOP`
+subsection.
+
+
+keyword(PROJECTION)
+
+Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
+subsection.
+
+
+keyword(DENSITY)
+
+Write density to a formatted file in Gaussian cube format. Activates the
+:ref:`*DENSITY` subsection.
+
+
+keyword(LOCALIZATION)
+
+Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
+
+Continues to the activated :ref:`*LOCALIZATION`
+subsection. Note that in the present implementation this only works in
+C\ :sub:`1`\  symmetry.
+
+--------------------------------------------------------------------------------
 
 star(PRIVEC)
 
 Print vectors read from DFCOEF.
 
-.VECPRI
--------
+
+keyword(VECPRI)
 
 For each fermion irrep, give an :ref:`orbital_strings` of orbitals to print.
 
 *Default:* Print the occupied electronic solutions.
 
-**Advanced options**
 
-.PRICMP
--------
+keyword(PRICMP)
 
 Separate control for printing of large and small components.
 
@@ -50,17 +73,15 @@ Print small components:
     .PRICMP
      2
 
-.AOLAB
-------
+
+keyword(AOLAB)
 
 Print vectors in AO basis.
 
 *Default:* Print vectors in SO basis.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -71,16 +92,9 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.MULPOP
--------
-
-Perform Mulliken population analysis [Mulliken1955]_
-Continues to :ref:`*MULPOP`
-subsection.
-
-\*MULPOP -- Mulliken population analysis
-========================================
+star(MULPOP)
 
 Mulliken population analysis is performed in AO basis. The analysis is
 based on the concept of *labels*. Each basis function is labeled by its
@@ -88,22 +102,20 @@ functional type and center (and boson irrep when in SO basis, the
 default). The labels are given in the output. A set of primitive labels
 may be collected to group labels as specified by the user.
 
-.VECPOP
--------
+
+keyword(VECPOP)
 
 For each fermion irrep, give an :ref:`orbital_string` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
-**Advanced options**
 
-.NETPOP
--------
+keyword(NETPOP)
 
 Give Mulliken net/overlap populations in addition to gross populations.
 
-.LABDEF
--------
+
+keyword(LABDEF)
 
 Define labels for use in Mulliken population analysis.
 
@@ -136,25 +148,23 @@ SO-labels*) can be drawn from the DIRAC output starting at the section :
        Large components:   35
         1  L Ag AR s        2  L Ag AR dxx      3  L Ag AR dyy      4  L Ag AR dzz      etc.
 
-.AOLAB
-------
+
+keyword(AOLAB)
 
 Base definition of labels on AO basis.
 
 *Default:* Base definition of labels on SO basis.
 
-.INDSML
--------
+
+keyword(INDSML)
 
 Use individual small component labels.
 
 *Default:* Gather all small component functions belonging to a given
 center and irrep, irrespective of function type.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -165,15 +175,9 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.PROJEC
--------
-
-Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
-subsection.
-
-\*PROJECTION -- Projection analysis
-===================================
+star(PROJECTION)
 
 The current solution may be projected down onto another set of
 coefficients generated from the basis, e.g. one may project molecular
@@ -201,15 +205,15 @@ is used, one then needs to
 calculate each atomic type only once in its own basis in order to do the
 complete analysis.
 
-.VECPRJ
--------
+
+keyword(VECPRJ)
 
 For each fermion irrep, give an :ref:`orbital_strings` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
-.VECREF
--------
+
+keyword(VECREF)
 
 First give number of fragments to project onto, and then for each fragment give
 filename of MO coefficients and the number of symmetry-independent nuclei in
@@ -235,18 +239,16 @@ reference orbitals.
     1
     1..43
 
-.OWNBAS
--------
+
+keyword(OWNBAS)
 
 Calculate fragments in their own basis.
 
 This keyword must be used with some care as the list of fragments is
 assumed to be identical to that of symmetry independent centers.
 
-**Advanced options**
 
-.PROTHR
--------
+keyword(PROTHR)
 
 Set threshold for absolute value of projection coefficients to be
 printed.
@@ -258,15 +260,13 @@ printed.
     .PROTHR
      0.01
 
-.WGPOP
-------
+
+keyword(WGPOP)
 
 Split overlap densities according to weight of contributions.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -277,15 +277,9 @@ Print level.
     .PRINT
      0
 
-.DENSITY
---------
+--------------------------------------------------------------------------------
 
-Write density to a formatted file in Gaussian cube format. Activates the
-:ref:`*DENSITY` subsection.
-
-
-\*DENSITY -- Write the density to a formatted file
-==================================================
+star(DENSITY)
 
 The density can be dumped to formatted file in `CUBE file
 format <http://local.wasp.uwa.edu.au/~pbourke/dataformats/cube/>`_ for
@@ -345,8 +339,8 @@ the uranyl cation obtained by subtracting from the density generated
 from regular occupation the density generated by reducing the occupation
 by two electrons.
 
-.ORBITALS
----------
+
+keyword(ORBITALS)
 
 This keyword is only available in the Development version of Dirac. Make
 individual cube files for each give orbital, instead of the total
@@ -366,8 +360,8 @@ This generates cube files for gerade orbitals 4-9 and ungerade orbitals
 generation can be rather slow for large basis sets. Writing hundreds of
 cube files can take much more time than a SCF calculation.
 
-.DOCUBE
--------
+
+keyword(DOCUBE)
 
 Specify large/small component density generation (1 = on; 0 = off).
 
@@ -378,8 +372,8 @@ Specify large/small component density generation (1 = on; 0 = off).
     .DOCUBE
      1 1
 
-.NCUBE
-------
+
+keyword(NCUBE)
 
 Number of cells along the sides of the cube.
 
@@ -390,8 +384,8 @@ Number of cells along the sides of the cube.
     .CUBE
      80 80 80
 
-.CUBADJ
--------
+
+keyword(CUBADJ)
 
 Adjust the volume of the cube.
 
@@ -411,8 +405,8 @@ separately and then add CUBADJ(1). The length of the vectors spanning
 the cube (parallelepiped) are analogously defined by maximal atomic
 positions, with CUBADJ(2) added.
 
-.PRINT
-------
+
+keyword(PRINT)
 
 Print level.
 
@@ -423,19 +417,9 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.LOCALI
--------
-
-Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
-
-Continues to the activated :ref:`*LOCALIZATION`
-subsection. Note that in the present implementation this only works in
-C\ :sub:`1`\  symmetry.
-
-
-\*LOCALIZATION -- Molecular orbital localization
-================================================
+star(LOCALIZATION)
 
 Performs molecular orbitals localization using the Pipek-Mezey
 criterion. The implementation uses an exponential parametrization and a
@@ -443,74 +427,60 @@ quasi-Newton minimization method instead of the Edminston-Ruedenberg
 algorithm. For the moment, it only works with the *C*\ :sub:`1`\
 symmetry and for the occupied orbitals.
 
-.THRESH
--------
 
-Convergence threshold.
+keyword(THRESHOLD)
 
-*Default:*
+Convergence threshold. Default::
 
-::
+  .THRESH
+   1.0D-6
 
-    .THRESH
-     1.0D-6
 
-.MAXITR
--------
+keyword(MAXITR)
 
-Maximum number of iterations.
+Maximum number of iterations. Default::
 
-*Default:*
+  .MAXITR
+   100
 
-::
 
-    .MAXITR
-     100
+keyword(PRJLOC)
 
-.PRJLOC
--------
+Localization from projection analysis instead of Mulliken analysis::
 
-Localization from projection analysis instead of Mulliken analysis.
+  .PRJLOC
+   1
 
-::
+Default::
 
-    .PRJLOC
-     1
+  .PRJLOC
+   0
 
-*Default:*
 
-::
-
-    .PRJLOC
-     0
-
-.OWNBAS
--------
+keyword(OWNBAS)
 
 See :ref:`.OWNBAS` under :ref:`*PROJECTION`.
 
-.VECPRJ
--------
+
+keyword(VECPRJ)
 
 See :ref:`.VECPRJ` under :ref:`*PROJECTION`.
 
-.VECREF
--------
+
+keyword(VECREF)
 
 See :ref:`.VECREF` under :ref:`*PROJECTION`.
 
-.HESSUN
--------
+
+keyword(HESSUNITY)
 
 Hessian approximated by the unity matrix.
 
 *Default:* Use the diagonal elements of the (diagonally dominant)
 Hessian.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -521,55 +491,37 @@ Print level.
     .PRINT
      1
 
+--------------------------------------------------------------------------------
+
+star(RHO1)
+
+For each unique pair (A,B) of centers a formatted file is created, containing
+four columns of numbers: The origin is placed at atom A, and the first column
+gives the coordinate in Angstroms along the line between centers A and B. The
+following columns contain the total, large and small component density,
+respectively (in atomic units). The file is named
+'RH',NAMN(ICENTA),NAMN(ICENTB),IDEGB where ICENTB is the name of
+symmetry-independent center B and IDEGB the numbering of the dependent center.
+Underscores are inserted wherever there are blanks. The generation of the
+density requires the coefficient file DFCOEF. Note that one can in principle
+obtain the density along any line simply by introducing ghost centers.
+
+For uranyl one may use the command::
+
+  pam --incmo --get ``RHU___O____1  RHU___O____2 ...
 
 
-ANALYZE:VISUAL
-=====================
+keyword(PRINT)
 
-this page moved to...which is also empty
+Print level. Default::
 
-\*RHO1 -- Print density along lines between atomic centers
-==========================================================
+  .PRINT
+   0
 
-For each unique pair (A,B) of centers a formatted file is created,
-containing four columns of numbers: The origin is placed at atom A, and
-the first column gives the coordinate in Angstroms along the line
-between centers A and B. The following columns contain the total, large
-and small component density, respectively (in atomic units). The file is
-named 'RH',NAMN(ICENTA),NAMN(ICENTB),IDEGB where ICENTB is the name of
-symmetry-independent center B and IDEGB the numbering of the dependent
-center. Underscores are inserted wherever there are blanks. The
-generation of the density requires the coefficient file DFCOEF. Note
-that one can in principle obtain the density along any line simply by
-introducing ghost centers.
 
-For uranyl one may use the command
+keyword(MESH)
 
-::
+Step length for grid. Default::
 
-    pam -incmo -get ``RHU___O____1  RHU___O____2 ...
-
-.PRINT
-------
-
-Print level.
-
-*Default:*
-
-::
-
-    .PRINT
-     0
-
-.MESH
------
-
-Step length for grid.
-
-*Default:*
-
-::
-
-    .MESH
-     0.01
-
+  .MESH
+   0.01

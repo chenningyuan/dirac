@@ -239,8 +239,9 @@ relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
 
 One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
-default in the development version unless :ref:`.NOAMFI` is specified.
+default unless :ref:`.NOAMFI` is specified.
 
+See als :ref:`*X2C` for debug options.
 
 keyword(X2Cmmf)
 
@@ -328,7 +329,12 @@ traditional one-component mode.
 
 keyword(ECP)
 
-.. warning:: documentation missing
+Perform an effective core potential calculation. The ECP parameters should be set
+in the MOL file. Both spin-orbit and spin-free calculations are available by
+specifying spin-orbit (SO) parameters in the MOL file. With SO parameters,
+the 2-component spin-orbit calculation is conducted, whereas the spin-free
+(1-component) calculation is performed by omitting the SO part in the ECP parameter.
+(See :ref:`ecp_input`)
 
 
 **External fields/Environment**
