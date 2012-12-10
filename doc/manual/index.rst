@@ -11,6 +11,7 @@ Keyword reference
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
+   - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
 
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification

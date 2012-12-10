@@ -224,7 +224,8 @@ or popular Google-Books web-space.
    University of Düsseldorf (Germany) '***, '** (2009)*
    `[pdf] <http://dirac.chem.sdu.dk/thesis/09.PhD.StefanKnecht.pdf>`_
 
-.. [Knecht2010]  S. Knecht and T. Saue, *tba*, xxx **xxx**, *Universities of Strasbourg and Odense*,(2010-2011) .
+.. [Knecht2010]  X2Cmod: A modular code for Exact-Two-Component Hamiltonian
+	Transformations, S. Knecht (Odense, Denmark) and T. Saue (Toulouse, France), 2010-2012.
 
 .. [Knecht2010a] S. Knecht and H. J. Aa. Jensen and T. Fleig,
    *Large-Scale Parallel Configuration Interaction. II. Two- and 4-Component Double-Group General Active Space

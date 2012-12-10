@@ -239,8 +239,9 @@ relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
 
 One should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
-default in the development version unless :ref:`.NOAMFI` is specified.
+default unless :ref:`.NOAMFI` is specified.
 
+See als :ref:`X2C` for debug options.
 
 keyword(X2Cmmf)
 
