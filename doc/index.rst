@@ -69,6 +69,10 @@ Tutorials and walkthrus
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
+* **Open-shell SCF:**
+  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
+  :doc:`Np atom <tutorials/open_shell_scf/np>`
+
 * **Correlated calculations:**
   :doc:`MP2 <tutorials/mp2cal_sample>` |
   :doc:`MOLTRA <tutorials/moltra_sample>` |
@@ -79,9 +83,7 @@ Tutorials and walkthrus
 * **Open-shell systems:**
   :doc:`DIRRCI <tutorials/dirrci_sample>` |
   :doc:`GOSCIP <tutorials/goscip_sample>` |
-  :doc:`Open-shell examples <tutorials/open_shells>` |
-  :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
-  :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
+  :doc:`Open-shell examples <tutorials/open_shells>`
 
 
 Getting help
