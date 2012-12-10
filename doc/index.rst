@@ -66,7 +66,7 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
 
 * **Visualization:**
-  :doc:`Vector fields <tutorials/visual/visualize>` |
+  :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Correlated calculations:**
