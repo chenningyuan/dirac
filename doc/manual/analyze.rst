@@ -15,11 +15,10 @@ activated.
 .PRIVEC
 -------
 
-Print vectors. Activates the `\*PRIVEC`_ subsection.
+Print vectors. Activates the :ref:`*PRIVEC` subsection.
 
 
-`\*PRIVEC`_
-===========
+star(PRIVEC)
 
 Print vectors read from DFCOEF.
 
@@ -190,7 +189,7 @@ Normally, the fragments are calculated in the full molecular basis. This
 is done by zeroing charges of the remaining atoms of the molecule in the
 basis set input and adjusting occupation in the menu file. It is,
 however, possible to calculate the fragments in the own basis (a subset
-of the full molecular basis) using `.OWNBAS <#.OWNBAS>`_. The advantage
+of the full molecular basis) using :ref:`.OWNBAS`. The advantage
 is faster calculations and conservation of atomic symmetry for atomic
 fragments. To avoid working with symmetry-combinations of atomic centers
 for the fragments, it may sometimes be advantageous to dump molecular

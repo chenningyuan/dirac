@@ -20,8 +20,8 @@ Activates the Hartree-Fock/Kohn-Sham module.
 
 Specification of the SCF module can be given in the :ref:`scf` subsection.
 
-If `.DFT </dirac/index.php/Manual:HAMILTONIAN#.DFT>`_ has been specified
-under `\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_, then a
+If :ref:`.DFT` has been specified
+under :ref:`**HAMILTONIAN`, then a
 Kohn-Sham calculation will be performed, otherwise a Hartree-Fock
 calculation will be performed.
 
@@ -31,18 +31,17 @@ calculation will be performed.
 Resolve open-shell states: do a small CI calculation to get the
 individual energies of the states present in an
 average-of-configurations open-shell Hartree-Fock calculation (see
-`\*RESOLVE </dirac/index.php/Manual:WAVE_FUNCTION:RESOLVE>`_).
+:ref:`*RESOLVE`).
 
 .MP2
 ----
 
-Activates the `second-order Møller-Plesset
-module </dirac/index.php/Manual:WAVE_FUNCTION:MP2CAL>`_.
+Activates :ref:`.MP2CAL`.
 
 .MVO
 ----
 
-Calculate modified virtual orbitals (see :ref:`mvocal`).
+Calculate modified virtual orbitals (see :ref:`MVOCAL`).
 
 .RELCCSD
 --------
@@ -103,8 +102,8 @@ For each fermion irrep give the new order of orbitals.
 Jacobi rotations between pairs of orbitals.
 
 On the line following the keyword, give first the rotation angle, then
-on the following line(s) for each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
+on the following line(s) for each fermion irrep, give an :ref:`orbital_strings`
+of orbitals to
 rotate.
 
 **Post-SCF orbital manipulations**
@@ -133,23 +132,23 @@ given orbital real and positive.
 .RELADC
 -------
 
-Activates the `propagator module </dirac/index.php/Manual:RELADC>`_ and
+Activates the :ref:`RELADC` and
 calculates the ionization spectrum by the (A)lgebraic (D)iagrammatic
-(C)onstruction ADC. Also activates the
-`\*\*MOLTRA </dirac/index.php/Manual:MOLTRA>`_ module to get 4-index
+(C)onstruction ADC. Also activates the :ref:`**MOLTRA`
+module to get 4-index
 transformed integrals.
 
 .KR CI
 ------
 
-Activates the `2c/4c GAS-CI </dirac/index.php/Manual:LUCIAREL>`_ module
+Activates the :ref:`LUCIAREL` module
 for the calculation of ground and excited states at the CI level.
 
 .KRMCSCF
 --------
 
-Activates the `Kramers-restricted
-MCSCF </dirac/index.php/Manual:KR-MCSCF>`_ module for the calculation of
+Activates the :ref:`KR-MCSCF`
+module for the calculation of
 ground and excited states at the CI level.
 
 ﻿.. _scf:
@@ -819,7 +818,7 @@ symmetry independent nuclei in the DIRAC basis file.
 Freeze orbitals (must only be used in conjunction with
 :ref:`.PROJECT`).
 
-For each fermion irrep, give an `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+For each fermion irrep, give an :ref:`orbital_strings` of
 orbitals to freeze.
 
 .. _resolve:
@@ -831,14 +830,14 @@ Resolve open-shell states.
 
 The individual electronic states of an average-of-configurations
 calculation are resolved by a full CI in the small open-shell
-manifold(s) using the `GOSCIP module </dirac/index.php/Manual:GOSCIP>`_.
+manifold(s) using the :ref:`GOSCIP` module.
 
 Note that even if this is a small CI diagonalization one needs in
 principle to generate *all* AO integrals for the initial 4-index
 transformation. The cost of calculation can be greatly reduced invoking
-integral screening (controlled by `.SCREEN <#.SCREEN>`_) in the 4-index
+integral screening (controlled by :ref:`.SCREEN`) in the 4-index
 transformation, possibly also by leaving out at least SS integrals
-(using `.INTFLG <#.INTFLG>`_).
+(using :ref:`.INTFLG`).
 
 .PRINT
 ------
@@ -855,12 +854,7 @@ Print level.
 .INTFLG
 -------
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .SCREEN
 -------
@@ -1576,8 +1570,7 @@ a basically arbitrary number (save for an upper limit) of subspaces with
 arbitrary occupation constraints. This is the most general approach to
 orbital space subdivisions. The program uses DIRAC Kramers pairs from
 either a closed- or an open-shell calculation in a relativistic two- and
-four-component formalism (see
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+four-component formalism (see :ref:`**HAMILTONIAN`).
 
 The technical limitations are roughly set by several 100 million
 determinants in the CI expansion on PCs and common computing clusters
@@ -1592,8 +1585,8 @@ are printed.
 
 The program is also used for the computation of various one-electron
 properties at the GASCI level [Knecht2009]_ .
-Please refer to the `KR-CI property
-module </dirac/index.php/Manual:KR-CI_properties>`_ page for more
+Please refer to the :ref:`KR-CI_properties`
+page for more
 information.
 
 Mandatory keywords
@@ -2288,8 +2281,8 @@ is a modification of the original algorithm published in Ref. [Laerdahl1997]_.
 
 Active, doubly occupied, electronic solutions.
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
+For each fermion irrep, give an :ref:`orbital_strings`
+of active orbitals.
 
 *Default:* The occupied electronic solutions.
 
@@ -2298,8 +2291,8 @@ string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
 
 Active virtual solutions.
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
+For each fermion irrep, give an `orbital_strings`
+of active orbitals.
 
 *Default:* All the unoccupied virtual solutions.
 
@@ -2309,12 +2302,7 @@ string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
 -------
 
 Specify what two-electron integrals to include in the direct MP2
-calculation (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+calculation (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .SCREEN
 -------
@@ -2350,8 +2338,8 @@ Print level.
 Threshold for neglecting high-lying virtual orbitals. Neglect all
 orbitals with energy above this threshold. This option is retained for
 backwards compatibility, it is advised to use the more general energy
-option in the `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ input.
+option in the :ref:`orbital_strings`
+input.
 
 *Arguments:* Real DMP2\_VIRTHR.
 
@@ -2404,13 +2392,13 @@ The default option in DIRAC is to generate the modified virtual orbitals
 by construction of a Fock operator for the system with some electrons
 removed, as first proposed by Bauschlicher [Bauschlicher1980]_.
 The orbital string
-specified with `.MVOVEC <#.MVOVEC>`_ indicates what occupied orbitals to
+specified with :ref:`.MVOVEC` indicates what occupied orbitals to
 remove in the construction of the Hartree-Fock potential.
 
 *Note* that the resulting modified virtual orbitals are no longer
 canonical and can *not* be used in MP2 calculations; they can be used in
-the `DIRRCI </dirac/index.php/Manual:DIRRCI>`_ and
-`RELCCSD </dirac/index.php/Manual:RELCCSD>`_ modules.
+the :ref:`DIRRCI` and
+:ref:`RELCCSD` modules.
 
 .PRINT
 ------
@@ -2427,7 +2415,7 @@ Print level.
 .VECMVO
 -------
 
-Read `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+Read :ref:`orbital_strings` of
 orbitals to be included in the Hartree-Fock potential when constructing
 the cationic Fock operator.
 
@@ -2435,10 +2423,4 @@ the cationic Fock operator.
 -------
 
 Specify what two-electron integrals to include during the construction
-of the modified virtual orbitals (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
+of the modified virtual orbitals (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).

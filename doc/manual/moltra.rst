@@ -199,7 +199,7 @@ of active orbitals.
 
 Allow negative energy ("positronic") spinors in active set. If this
 keyword is not specified then only electronic spinors will be included
-and any positronic spinors specified with `.ACTIVE <#.ACTIVE>`_ are
+and any positronic spinors specified with :ref:`.ACTIVE` are
 ignored.
 
 .NO2IND
@@ -263,7 +263,7 @@ Print level.
 Ranges of active orbitals in 2-index transformation module specified for
 index 1 and 2 and fermion irrep 1 and 2.
 
-*Default:* Ranges set by `.ACTIVE <#.ACTIVE>`_.
+*Default:* Ranges set by :ref:`.ACTIVE`.
 
 .4INDEX
 -------
@@ -271,7 +271,7 @@ index 1 and 2 and fermion irrep 1 and 2.
 Ranges of active orbitals in 4-index transformation module specified for
 index 1 to 4 and fermion irrep 1 and 2.
 
-*Default:* Ranges set by `.ACTIVE <#.ACTIVE>`_.
+*Default:* Ranges set by :ref:`.ACTIVE`.
 
 .MDCINT
 -------

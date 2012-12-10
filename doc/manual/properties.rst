@@ -81,18 +81,14 @@ Evaluate the electronic quadrupole moment (expectation value).
 
 Evaluate electric field gradients (expectation values).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .NQCC
 -----
 
 Evaluate nuclear quadrupole coupling constants (expectation values).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .POLARIZABILITY
 ---------------
@@ -119,10 +115,7 @@ frequencies of the quadratic response function thus become
 calculation cannot be specified in combination with other quadratic
 response calculations.
 
-The frequencies can be changed using
-`.BFREQ </dirac/index.php/Manual:PROPERTIES:QUADRATIC_RESPONSE#.BFREQ>`_
-in `\*QUADRATIC
-RESPONSE </dirac/index.php/Manual:PROPERTIES:QUADRATIC_RESPONSE>`_.
+The frequencies can be changed using :ref:`.BFREQ` in :ref:`*QUADRATIC RESPONSE`.
 
 .TWO-PHOTON
 -----------
@@ -148,21 +141,17 @@ Predefined magnetic properties
 Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 (linear response).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .SHIELDING
 ----------
 
-Evaluate nuclear magnetic shieldings (linear response). `Print
-level <#.PRINT>`_ 2 gives tensor and longer output. `Print
-level <#.PRINT>`_ 4 gives the raw values in symmetry coordinates as
+Evaluate nuclear magnetic shieldings (linear response). :ref:`.PRINT`
+2 gives tensor and longer output. :ref:`.PRINT` 4
+gives the raw values in symmetry coordinates as
 well.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .MAGNET
 -------
@@ -175,9 +164,7 @@ expectation values).
 
 Evaluate indirect spin-spin couplings (linear response).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .DSO
 ----
@@ -185,9 +172,7 @@ Atomic centers may be restricted with
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
 an expectation value.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .NSTDIAMAGNETIC
 ---------------
@@ -195,9 +180,7 @@ Atomic centers may be restricted with
 Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
 an expectation value.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 Other predefined properties
 ===========================
@@ -226,9 +209,7 @@ enantiomers, see [Laerdahl1999]_ .
 
 Calculate electronic density at the nucleus(nuclei).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .EFFDEN
 -------
@@ -236,9 +217,7 @@ Atomic centers may be restricted with
 Calculate effective electronic density at the
 nucleus(nuclei), [Knecht2011]_.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 
 Manual:PROPERTIES:EXCITATION ENERGIES
@@ -285,10 +264,9 @@ Control variational parameters
 .OCCUP
 ------
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of inactive orbitals
-from which excitations are allowed. By default excitations from all
-occupied orbitals are included in the generalized eigenvalue problem.
+For each fermion ircop give an :ref:`orbital_strings` of inactive orbitals from
+which excitations are allowed. By default excitations from all occupied
+orbitals are included in the generalized eigenvalue problem.
 
 Example:
 
@@ -304,8 +282,8 @@ orbitals 7 and 8.
 .VIRTUA
 -------
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of virtual orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of virtual orbitals
 to which excitations are allowed. By default excitations to all virtal
 orbitals are included in the generalized eigenvalue problem.
 
@@ -369,12 +347,8 @@ have an important effect on run time.
 .INTFLG
 -------
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .CNVINT
 -------
@@ -452,8 +426,8 @@ orbitals.
 
 Decompose an expectation value in contribution from fragment orbitals.
 This action presupposes that a projection analysis has been performed,
-see the `projection
-analysis </dirac/index.php/Manual:ANALYZE:PROJECTION>`_ section for
+see :ref:`*PROJECTION`
+section for
 details.
 
 **Programmers options**
@@ -573,15 +547,15 @@ Control variational parameters
 .OCCUP
 ------
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of inactive orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of inactive orbitals
 to include in the linear response calculation.
 
 .VIRTUA
 -------
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of virtual orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of virtual orbitals
 to include in the linear response calculation.
 
 .SKIPEE
@@ -644,12 +618,8 @@ have an important effect on run time.
 .INTFLG
 -------
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .CNVINT
 -------
@@ -828,9 +798,7 @@ classes whose residual has a norm that is larger than a fraction
 =========================================================
 
 The section gives directives for control of a single point evaluation of
-the molecular gradient activated with
-`.MOLGRD </dirac/index.php/Manual:PROPERTIES#.MOLGRD>`_ under
-`\*\*PROPERTIES </dirac/index.php/Manual:PROPERTIES>`_.
+the molecular gradient activated with :ref:`.MOLGRD` under :ref:`**PROPERTIES`.
 
 The molecular gradient module is usually called from within the geometry
 optimization module.
@@ -853,12 +821,8 @@ and if activated then only "necessary" contributions are calculated.
 .INTFLG
 -------
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .SCREEN
 -------
@@ -887,8 +851,7 @@ from 3+ gives individual contributions to the gradient (kinetic energy
 gradient, nuclear attraction gradient etc.). Print levels of 5+ print
 some matrices, and 10+ give massive output!
 
-*Default:* Print level from
-`\*\*GENERAL </dirac/index.php/Manual:GENERAL>`_.
+*Default:* Print level from :ref:`**GENERAL`.
 
 .NUMGRA
 -------
@@ -929,7 +892,7 @@ origin and dipole origin are changed in order to have consistency.
 .GO\_ANG
 --------
 
-Same as `.GAUGEO </dirac/index.php/Manual:PROPERTIES:NMR#.GAUGEO>`_ but
+Same as :ref:`.GAUGEO` but
 reads coordinates in angstrom.
 
 .USECM
@@ -941,12 +904,8 @@ Use the center of mass as the gauge origin.
 -------
 
 Specify what two-electron integrals to include in the two-electron
-London contributions to the magnetic field property gradient (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+London contributions to the magnetic field property gradient
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .NOTWO
 ------
@@ -1051,7 +1010,7 @@ Specify frequencies of operator B.
 .C FREQ
 -------
 
-Specify frequencies of operator C (see `.B FREQ <#.B_FREQ>`_).
+Specify frequencies of operator C (see :ref:`.B FREQ`).
 
 .ALLCMB
 -------
@@ -1150,12 +1109,8 @@ have an important effect on run time.
 .INTFLG
 -------
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 .CNVINT
 -------
