@@ -89,8 +89,7 @@ the line connecting A and B.
     .IMPORT
     grid_file
 
-Import previously `.EXPORTed <#.EXPORT>`_ DFT grid from grid\_file for
-`BSSE calculations </dirac/index.php/BSSE_calculations_with_DIRAC>`_.
+Import previously exported DFT grid.
 
 For debugging you can also create your own grid file. The grid file is
 formatted - in free format. A grid file for three points could look like

@@ -5,17 +5,14 @@
 
 Integral transformation module.
 
-This module transforms integrals from the scalar AO basis to integrals
-in the molecular spinor basis. The algorithm is not yet described in
-detail but it may be helpful to read Ref. [Visscher2002]_
-to find information
-about the double quaternion formalism that is used. This module is
-usually invoked by one of the correlation modules but can also be run as
-a stand-alone module by specifying
-`.4INDEX </dirac/index.php/Manual:WAVE_FUNCTION#.4INDEX>`_ in the
-`\*\*DIRAC </dirac/index.php/Manual:DIRAC>`_ section of input. The input
-serves to change the default active space and to specify special wishes
-(e.g modification of `.INTFLG <#.INTFLG>`_).
+This module transforms integrals from the scalar AO basis to integrals in the
+molecular spinor basis. The algorithm is not yet described in detail but it may
+be helpful to read Ref. [Visscher2002]_ to find information about the double
+quaternion formalism that is used. This module is usually invoked by one of the
+correlation modules but can also be run as a stand-alone module by specifying
+:ref:`.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
+change the default active space and to specify special wishes (e.g modification
+of :ref:`.INTFLG`).
 
 Three separate transformations are considered:
 
@@ -24,23 +21,18 @@ Three separate transformations are considered:
 -  Transformation of two-electron Coulomb integrals.
 -  Transformation of integrals over general (one-electron) operators.
 
-The output is written to the files MDCINT, MRCONEE, and MDPROP,
-respectively, and can be read in by the
-`RELCCSD </dirac/index.php/Manual:RELCCSD>`_ and
-`DIRRCI </dirac/index.php/Manual:DIRRCI>`_ programs to perform
-correlated calculations and by the
-`RELADC </dirac/index.php/Manual:RELADC>`_ program to perform propagator
-calculations. Some common input needs to be specified both in this
-section and in the `DIRRCI </dirac/index.php/Manual:DIRRCI>`_ sections.
+The output is written to the files MDCINT, MRCONEE, and MDPROP, respectively,
+and can be read in by the :ref:`RELCCSD` and :ref:`DIRRCI` and programs to
+perform correlated calculations and by the :ref:`RELADC` program to perform
+propagator calculations. Some common input needs to be specified both in this
+section and in the :ref:`DIRRCI` sections.
 
 .ACTIVE
 -------
 
 Specify the active set of spinors.
 
-*Arguments:* One line with an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ for each fermion
-irrep.
+*Arguments:* One line with an :ref:`orbital_strings` for each fermion irrep.
 
 *Default:*
 
@@ -176,42 +168,29 @@ Specify which classes of integrals should contribute to the transformed
 two-electron integrals and the effective (core) Hamiltonian. Default is
 to follow the definitions given in \*\*HAMILTONIAN. If you want
 different integral classes in the 2- and 4-index transformation, then
-use the `.INTFL2 <#.INTFL2>`_ and `.INTFL4 <#.INTFL4>`_ keywords below
-(see `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+use the :ref:`.INTFL2` and :ref:`.INTFL4` keywords below
+(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
 
 .INTFL2
 -------
 
 Specify what two-electron integrals to include in the 2-index
 transformation ,i.e., in the two-electron part of the Fock core matrix
-(see `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
 
 .INTFL4
 -------
 
-Specify what two-electron integrals to include in the 4-index
-transformation (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
-
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
+Specify what two-electron integrals to include in the 4-index transformation
+(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
 
 .CORE
 -----
 
 Specify the frozen core spinors,
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of active orbitals.
+For each fermion irrep, give an :ref:`orbital_strings`
+of active orbitals.
 
 *Default:* All occupied orbitals that are not active.
 
@@ -331,10 +310,9 @@ working for parallel distributions.
 \*PRPTRA -- Property integrals transformation
 =============================================
 
-This section defines the property operators that should to be
-transformed. Such integrals are only used in an experimental section of
-`RELCCSD </dirac/index.php/Manual:RELCCSD>`_, and this subsection can
-thus usually be omitted.
+This section defines the property operators that should to be transformed. Such
+integrals are only used in an experimental section of :ref:`RELCCSD`, and this
+subsection can thus usually be omitted.
 
 **Programmers options**
 

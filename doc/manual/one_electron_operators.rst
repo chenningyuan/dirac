@@ -308,8 +308,8 @@ Fermi-contact integrals
 Here is an example where the Fermi-contact (FC) integrals for a certain
 nucleus are added to the Hamiltonian in a finite-field calculation.
 Let's assume you are looking at a PbX dimer (order in the .mol file: 1.
-Pb, 2. X) and you want to add to the Dirac-Coulomb
-`Hamiltonian </dirac/index.php/Manual:HAMILTONIAN>`_ the FC integrals
+Pb, 2. X) and you want to add to the Dirac-Coulomb :ref:`**HAMILTONIAN`
+the FC integrals
 for the Pb nucleus as a perturbation with a given field-strength
 (FACTORS).
 
