@@ -288,7 +288,7 @@ molecular orbital contributions to the density::
   .PROPERTIES
   **HAMILTONIAN
   **WAVE FUNCTION
-  .DHF
+  .SCF
   **PROPERTIES
   .RHONUC
   *EXPECTATION
@@ -309,7 +309,7 @@ function::
   **HAMILTONIAN
   .LEVY-LEBLOND
   **WAVE FUNCTION
-  .DHF
+  .SCF
   **PROPERTIES
   *EXPECTATION
   .OPERATOR
