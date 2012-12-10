@@ -1,14 +1,8 @@
 
 
-.. _\*DFT:
+star(DFT)
 
-\*DFT
-=====
-
-.. index:: .ALDA
-
-.ALDA
------
+keyword(ALDA)
 
 Invoke the adiabatic LDA approximation: anything beyond the Kohn--Sham
 functional (exchange-correlation kernel etc.) is approximated by LDA
@@ -31,27 +25,25 @@ input.
     .SAOP
     LBalpha
 
-Single line following .SAOP : asymptotic potential (currently LB94 or
-LBalpha).
+Single line following .SAOP : asymptotic potential (currently LB94 or LBalpha).
 
+The specification of the functional is described in connection with the .DFT
+option in the :ref:`.DFT` section
 
-The specification of the functional is described in connection with the
-.DFT option in the :ref:`.DFT` section
+The DFT module is described in references [Schipper2000]_, [Saue2002]_,
+[Fossgaard2003]_.
 
-The DFT module is described in references [Schipper2000]_, [Saue2002]_, [Fossgaard2003]_.
-
-It uses standard non-relativistic functionals. This is justified in many
-cases since various studies, like refs. [Varga1999]_, [Varga2000]_, [Mayer1996]_,
-indicate that
-relativistic corrections to the exchange-correlation functionals have a
-negligible effect on spectroscopic constants; however, for example for
+It uses standard non-relativistic functionals. This is justified in many cases
+since various studies, like refs. [Varga1999]_, [Varga2000]_, [Mayer1996]_,
+indicate that relativistic corrections to the exchange-correlation functionals
+have a negligible effect on spectroscopic constants; however, for example for
 core properties further studies are necessary.
+
 
 Integration algorithm and thresholds
 ====================================
 
-.SCREENING
-----------
+keyword(SCREENING)
 
 Specify the screening threshold used in the BLAS-3 integration scheme.
 
@@ -62,14 +54,14 @@ Specify the screening threshold used in the BLAS-3 integration scheme.
     .SCREENING
      1.0D-18
 
-.POINTWISE
-----------
+
+keyword(POINTWISE)
 
 Switch to old (unscreened) BLAS-2 integration scheme (default in
 DIRAC10) instead of the new BLAS-3 scheme (default in DIRAC11).
 
-.TINYDENS
----------
+
+keyword(TINYDENS)
 
 Specify the tiny density threshold. Grid points with a density smaller
 than this threshold do not contribute to XC matrix elements.
@@ -81,11 +73,11 @@ than this threshold do not contribute to XC matrix elements.
     .TINYDENS
      1.0D-14
 
+
 Asymptotic correction
 =====================
 
-.GRAC
------
+keyword(GRAC)
 
 Activate the gradient regulated asymptotic correction scheme (GRAC), [Gruning2001]_,
 followed by two lines of input.
@@ -111,10 +103,8 @@ potential is shifted in order to reproduce the desired IP (see reference [Grunin
     LB94
     0.5 40.0 0.79248 1.0D-6
 
-.. _.SAOP!:
 
-.SAOP!
-------
+keyword(SAOP!)
 
 Activate the statistical averaging of (model) orbital potentials (SAOP)
 as defined in reference [Schipper2000]_.
@@ -132,8 +122,8 @@ GLLBhole. The asymptotic potential is LBalpha.
     *DFT
     .SAOP!
 
-.SAOP
------
+
+keyword(SAOP)
 
 The more general version of :ref:`.SAOP!`
 
@@ -151,16 +141,16 @@ or LBalpha).
     .SAOP
     LBalpha
 
+
 Spin magnetization TDDFT
 ========================
 
-.NOSDFT
--------
+keyword(NOSAOP)
 
 Turn off spin density contribution to XC response.
 
-.COLLINEAR
-----------
+
+keyword(COLLINEAR)
 
 Use the collinear approximation as a definition of the spin density.
 
@@ -175,8 +165,8 @@ instead of the default noncollinear definition
 
     s = \vert \mathbf{m} \vert
 
-.BETASIGMA
-----------
+
+keyword(BETASIGMA)
 
 use
 
@@ -190,61 +180,57 @@ instead of the default form
 
    \mathbf{m} = \sum_i \phi_i^\dagger \mathbf{\Sigma} \phi_i
 
+
 Adiabatic local density approximation (ALDA)
 ============================================
 
-.. _.ALDA:
-
-.ALDA
------
+keyword(ALDA)
 
 Approximate all functional derivatives beyond the xc potential by SVWN
 derivatives. For hybrid functionals exact exchange is switched off in
 the solution of the response equation.
 
-.. _.XALDA:
 
-.XALDA
-------
+keyword(XALDA)
 
 Same as :ref:`.ALDA` but keep the fraction of exact exchange of the
 xc functional under :ref:`.DFT`.
 
-.ALDA+
-------
+
+keyword(ALDA+)
 
 Use :ref:`.ALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
-.ALDA-
-------
+
+keyword(ALDA-)
 
 Use :ref:`.ALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
-.XALDA+
--------
+
+keyword(XALDA)
 
 Use :ref:`.XALDA` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
-.XALDA-
--------
+
+keyword(XALDA-)
 
 Use :ref:`.XALDA` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
+
 
 Other functionality
 ===================
 
 **Programmers options**
 
-.GAUNTSCALE
------------
+keyword(GAUNTSCALE)
 
 Scale Gaunt integrals (if included) with the same factor as for
 Hartree-Fock exchange. This means that hybrid functionals include

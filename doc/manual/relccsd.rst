@@ -26,8 +26,7 @@ settings.
 -------
 
 Activate the Fock space module. This option should be used for
-multireference calculations. See further
-`CCFSPC </dirac/index.php/Manual:RELCCSD:CCFSPC>`_
+multireference calculations. See further :ref:`CCFSPC`.
 
 .ENERGY
 -------
@@ -58,20 +57,19 @@ molecular properties.
 ------
 
 Specify the occupation of the reference determinant (both for CC and
-FSCC calculations). More information can be found here:
-`NELEC </dirac/index.php/Manual:RELCCSD:RELCCSD>`_
+FSCC calculations). More information can be found here: :ref:`NELEC`.
 
 .NEL\_F1
 --------
 
 Number of electrons in the gerade irreps of the Abelian symmetry group.
-See also `NELEC\_F1 </dirac/index.php/Manual:RELCCSD:RELCCSD>`_
+See also :ref:`NELEC_F1`.
 
 .NEL\_F2
 --------
 
 Number of electrons in the ungerade irreps of the Abelian symmetry
-group. See also `NELEC\_F2 </dirac/index.php/Manual:RELCCSD:RELCCSD>`_
+group. See also :ref:`NELEC_F2`.
 
 .PRINT
 ------
