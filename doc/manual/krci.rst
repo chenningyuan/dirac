@@ -1,6 +1,7 @@
 
+star(KRCI)
 
-star(KRCI) or star(KRCICALC) (deprecated)
+or star(KRCICALC) (deprecated)
 
 *2- and 4-component relativistic GASCI module* written by Timo Fleig
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
@@ -93,9 +94,9 @@ keyword(GAS SHELLS)
 
 Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
 The first line contains the number of GA spaces to be used (1-7), 
-followed by one line per GAS with a separation of the min/max number of electrons in each GAS and the 
+followed by one line per GAS with a separation by a "/" of the min/max number of electrons in each GAS and the 
 number of orbitals per fermion correp (either one (no inversion symmetry) or two (inversion
-symmetry: g u) entries per line) by a "/". 
+symmetry: *gerade* *ungerade*) entries per line). 
 
 The first entry before the "/" gives the minimal number of accumulated (!) electrons
 after consideration of this GAS, the second the corresponding maximum

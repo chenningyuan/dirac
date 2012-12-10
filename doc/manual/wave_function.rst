@@ -884,6 +884,7 @@ Choose integral transformation algorithm (PLEASE CLARIFY!)
 
     .SCHEME
      4
+
 .. _krmcscf:
 
 \*KR-MCSCF
@@ -898,8 +899,6 @@ by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and
 Hans Joergen Aagaard Jensen.
-
-**stefan: FIXME: a more detailed introduction would be most welcome.**
 
 Mandatory keywords
 ==================
@@ -1140,22 +1139,6 @@ state-selective MCSCF), therefore:
 ::
 
     3
-
-.RSTRCI
--------
-
-Optional restart from CI vector on file KRCI\_CVECS.x where **x** is
-determined by the symmetry of the wave function (symmetry == 1 --> **x =
-1**; symmetry == 2 --> **x = 2**; etc.). **NOTE:** in the DIRAC10
-release version the **x** <==> symmetry relation is: symmetry == 1 -->
-**x = a**; symmetry == 2 --> **x = b**; etc.
-
-::
-
-    .RSTRCI
-     1
-
-*Default:* No restart.
 
 .NOOCCN
 -------
