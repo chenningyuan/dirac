@@ -31,6 +31,6 @@ Keyword reference
 
 * :doc:`**MOLTRA <moltra>` --- Integral transformation module
 
-* :doc:`One-electron operators <oneel_oper>`
+* :doc:`One-electron operators <one_electron_operators>`
 
 * :doc:`Orbital strings <orb_strings>`

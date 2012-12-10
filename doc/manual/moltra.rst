@@ -355,7 +355,6 @@ Print level.
 
 Specification of general one-electron operators.
 
-See the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ section for
-more information and explicit examples.
+See the :ref:`one_electron_operators` section for more information and explicit
+examples.
 

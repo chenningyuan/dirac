@@ -1,4 +1,6 @@
-.. _one_el_op:
+
+
+.. _one_electron_operators:
 
 One-electron operators
 ======================

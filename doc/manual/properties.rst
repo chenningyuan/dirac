@@ -22,8 +22,7 @@ default static, but frequencies can be added in the relevant
 subsections.
 
 Properties which are not predefined must be specified in detail in the
-relevant input section (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_).
+relevant input section (see :ref:`one_electron_operators`).
 
 By default no properties are calculated.
 
@@ -270,11 +269,9 @@ than one boson symmetry.
 .A OPERATOR
 -----------
 
-Specification of a transition moment operator (see the `specification of
-one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details). This keyword can be given multiple times to add more
-operators.
+Specification of a transition moment operator (see
+:ref:`one_electron_operators` for details). This keyword can be given multiple
+times to add more operators.
 
 .ANALYZE
 --------
@@ -439,9 +436,8 @@ This section gives directives for the calculation of expectation values.
 
 Specification of general one-electron operators.
 
-See the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ section for
-more information and explicit examples.
+See the :ref:`one_electron_operators` section for more information and explicit
+examples.
 
 **Advanced options**
 
@@ -502,24 +498,20 @@ Definition of the linear response function
 .A OPERATOR
 -----------
 
-Specification of the A operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the A operator
+(see :ref:`one_electron_operators` for details).
 
 .B OPERATOR
 -----------
 
-Specification of the B operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the B operator
+(see :ref:`one_electron_operators` for details).
 
 .OPERATORS
 ----------
 
-Specification of both the A and B operators (see the `specification of
-one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of both the A and B operators
+(see :ref:`one_electron_operators` for details).
 
 .TRIAB
 ------
@@ -1011,31 +1003,27 @@ Definition of the quadratic response function
 .DIPLEN
 -------
 
-Specification of dipole operators for A, B, and C (see the
-`specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of dipole operators for A, B, and C
+(see :ref:`one_electron_operators` for details).
 
 .A OPERATOR
 -----------
 
-Specification of the A operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the A operator
+(see :ref:`one_electron_operators` for details).
 
 .B OPERATOR
 -----------
 
-Specification of the B operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the B operator
+(see :ref:`one_electron_operators` for details).
 
 .C OPERATOR
 -----------
 
-Specification of the C operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the C operator
+(see :ref:`one_electron_operators` for details).
+
 
 .B FREQ
 -------

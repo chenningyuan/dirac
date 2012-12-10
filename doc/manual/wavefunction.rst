@@ -1894,8 +1894,7 @@ computation of:
 
 Upon request the analysis of other one-electron properties may also be
 implemented. The module could in principle be used for each one-electron
-operator that is specified in
-`[1] <http://wiki.chem.vu.nl/dirac/index.php/Manual:One-electron_operators>`_.
+operator that is specified in :ref:`one_electron_operators`.
 
 **NOTE: the following keywords must be placed under the input deck**
 

@@ -342,11 +342,8 @@ group and time reversal symmetry. The field strength of the operator is
 specified with COMFACTOR. The keyword can be repeated for addition of
 more than one operator.
 
-See the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ section for
-more information and explicit examples.
-
-.. warning:: broken link
+See the :ref:`one_electron_operators` section for more information and explicit
+examples.
 
 
 keyword(PCM)
