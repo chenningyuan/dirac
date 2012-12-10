@@ -43,7 +43,7 @@ Tutorials and walkthrus
 =======================
 
 * **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start>`
+  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
