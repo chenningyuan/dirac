@@ -101,6 +101,12 @@ or popular Google-Books web-space.
    Int.J.Quant.Chem. **109**, *2909–2915* (2009)
    `[pdf] <http://dx.doi.org/10.1002/qua.22155>`_
 
+.. [Ermler1981]  W. C. Ermler, Y. S. Lee, P. A. Christiansen and K. S. Pitzer,
+   *Ab initio effective core potentials including relativistic effects. 
+   A procedure for the inclusion of spin-orbit coupling in molecular wavefunctions*,
+   Chem. Phys. Lett. **81**, *70* (1981)
+   `[pdf] <http://dx.doi.org/10.1016/0009-2614(81)85329-8>`_
+
 .. [Faegri2001]  K. Fægri and T. Saue, *Diatomic molecules
    between very heavy elements of group 13 and group 17: A study of
    relativistic effects on bonding*,
@@ -246,6 +252,12 @@ or popular Google-Books web-space.
    Phys. Rev. A **60**, *4439* (1999)
    `[pdf] <http://dx.doi.org/10.1103/PhysRevA.60.4439>`_
 
+.. [Lee1977] Y. S. Lee, W. C. Ermler, and K. S. Pitzer,
+   *Ab initio effective core potentials including relativistic effects. 
+   I. Formalism and applications to the Xe and Au atoms*,
+   J. Chem. Phys. **67**, *5861* (1977)
+   `[pdf] <http://dx.doi.org/10.1063/1.434793>`_
+
 .. [Lee1988] C. Lee, W. Yang, and R. G. Parr, *Development
    of the Colle-Salvetti Correlation-Energy Formula into a Functional of
    the Electron Density*, Phys. Rev. B **37**, *785* (1988)
@@ -300,6 +312,12 @@ or popular Google-Books web-space.
    *Passing the one-billion limit in Full CI calculations*,
    Chem. Phys. Lett. **169**, *463* (1990)
    `[pdf] <http://dx.doi.org/10.1016/0009-2614(90)85633-N>`_
+
+.. [Park2012] Y. C. Park, I. S. Lim, and Y. S. Lee,
+   *Two-Component Spin-orbit Effective Core Potential Calculations 
+   with an All-electron Relativistic Program DIRAC*
+   Bull. Korean Chem. Soc. **33**, *803* (2012)
+   `[pdf] <http://dx.doi.org/10.5012/bkcs.2012.33.3.803>`_
 
 .. [Pecul2004] M. Pecul, T. Saue, K. Ruud, A. Rizzo,
    *Electric field effects on the shielding constants of noble gases: A 4-component relativistic Hartree-Fock study*,
