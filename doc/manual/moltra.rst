@@ -100,7 +100,7 @@ advantage that the full size of the problem is exactly divided between
 processes - so the larger the number of MPI processes, the less disk
 space is used per process.
 
-**(Not part of the Dirac08 release)** In connection to scheme 6 the
+In connection to scheme 6 the
 user can also choose whether or perform an intermediate sorting step
 prior to the second half-transformation step, via the keyword
 **.HTSORT**. In this step the 1HT entities on disk are rearranged from
@@ -117,7 +117,7 @@ place at the 2HT step.
     .HTSORT
      0
 
-**(Not part of the Dirac08 release)** Sorting of HT intermediates is
+Sorting of HT intermediates is
 disabled by default. Without such sorting, scheme 6's performance can be
 negatively affected on computer systems where reading data is relatively
 expensive (one example is for IBM p4/p5/p6 systems and the XLF compiler)
@@ -137,7 +137,7 @@ same architecture.
     .HTSORT
      1
 
-**(Not part of the Dirac08 release)** This sort strategy minimizes the
+This sort strategy minimizes the
 amount of read/write operations by taking up as much 1HT data in memory
 and sorting it before writing it to disk again. This provides efficiency
 for systems (such as the IBM systems mentioned above) where reading is
@@ -226,8 +226,6 @@ screening).
 
 .ASCII
 ------
-
-(feature will become available in DIRAC10)
 
 Write integrals to the ASCII file MO\_integrals.txt to facilitate
 interfaces with correlation codes. Warning: only meant for initial

@@ -51,8 +51,8 @@ Specify the screening threshold used in the BLAS-3 integration scheme.
 
 keyword(POINTWISE)
 
-Switch to old (unscreened) BLAS-2 integration scheme (default in
-DIRAC10) instead of the new BLAS-3 scheme (default in DIRAC11).
+Switch to old (unscreened) BLAS-2 integration scheme (default before DIRAC11)
+instead of the new BLAS-3 scheme (default since DIRAC11).
 
 
 keyword(TINYDENS)
