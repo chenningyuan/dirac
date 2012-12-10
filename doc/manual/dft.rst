@@ -252,4 +252,4 @@ fractional HF Gaunt interaction, and pure functionals no HF Gaunt
 interaction at all. If this option is not given the Gaunt integrals will
 be included to 100%, meaning that even an LDA calculation will include
 full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
-:ref:`\*\*HAMILTONIAN`.
+:ref:`**HAMILTONIAN`.

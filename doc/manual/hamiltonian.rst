@@ -107,7 +107,7 @@ spin-orbit splittings and/or performing accurate studies of light
 molecules. The current implementation is limited to including the Gaunt
 interaction in the construction of the Fock matrix and works for
 Hartree--Fock and DFT. For using Gaunt in combination with DFT see the
-:ref:`\*DFT` section of the
+:ref:`*DFT` section of the
 manual. Transformation of the Gaunt part of the two electron operator to
 the MO basis is not yet implemented, for this purpose we recommend the
 use of the molecular mean field approximation. This can be used for
@@ -250,7 +250,7 @@ within the new module for the Exact 2-Component relativistic Hamiltonian, Refs.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
-step. after the SCF. One can combine this option with :ref:`\.GAUNT` which
+step. after the SCF. One can combine this option with :ref:`.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC are
@@ -464,7 +464,7 @@ nuclear attraction integrals and multi-center SS two-electron integrals.
 
 keyword(ONECAP)
 
-Consider taking the `.SMLV1C <#.SMLV1C>`_ model one step further. Only
+Consider taking the :ref:`.SMLV1C` model one step further. Only
 one-center contributions to the LS and SS two-electron integrals and SS
 nuclear attraction integrals are calculated explicitly. The
 electrostatic effects of the terms neglected this way are included by
@@ -472,8 +472,6 @@ calculating the classical repulsion from small component charges based
 on a Mulliken population analysis. Note that we therefore only need to
 calculate the derivative of the LL integrals when calculating the
 molecular gradient.
-
-.. warning:: broken link
 
 
 keyword(ONECNV)

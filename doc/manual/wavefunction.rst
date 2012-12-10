@@ -159,7 +159,7 @@ SCF & DFT
 
 This section gives directives for Hartree-Fock calculations.
 Kohn-Sham calculations are performed by invoking the keyword
-:ref:`.DFT` under :ref:`\*\*HAMILTONIAN`.
+:ref:`.DFT` under :ref:`**HAMILTONIAN`.
 
 Open-shell calculations correspond to either
 average-of-configurations (:ref:`.AOC`) or fractional
@@ -241,7 +241,7 @@ and :ref:`.OVLSEL`.
 
 To get the energies of the individual states present in the
 average-of-configurations, specify :ref:`.RESOLVE` (see also
-:ref:`\*RESOLVE`).
+:ref:`*RESOLVE`).
 
 To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
@@ -359,7 +359,7 @@ Three different criteria for convergence may be chosen:
    many integrals neglected) will hinder convergence. You should
    modify
    :ref:`.SCREEN` under
-   :ref:`\*TWOINT` if you
+   :ref:`*TWOINT` if you
    modify :ref:`.EVCCNV` or one of the other two convergence
    criteria.
 -  The difference in total energy between two consecutive
@@ -631,7 +631,7 @@ number of integrals to be processed in each iteration:
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
-   :ref:`\*\*INTEGRALS` section.
+   :ref:`**INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
    obtained by screening on the density matrix as well, see Ref. [Saue1997]_.
@@ -695,9 +695,9 @@ SCF-iterations.
 -------
 
 Specify what two-electron integrals to include (see
-:ref:`.INTFLG` under :ref:`\*\*HAMILTONIAN`).
+:ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* :ref:`.INTFLG` from :ref:`\*\*HAMILTONIAN`.
+*Default:* :ref:`.INTFLG` from :ref:`**HAMILTONIAN`.
 
 Output control
 ==============
