@@ -77,16 +77,14 @@ Tutorials and walkthrus
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
   :doc:`Atom <tutorials/reladc/atom>`
 
-* **Correlated calculations:**
-  :doc:`MP2 <tutorials/mp2cal_sample>` |
-  :doc:`MOLTRA <tutorials/moltra_sample>` |
-  :doc:`LUCITA <tutorials/lucita_sample>` |
-  :doc:`RELCCSD <tutorials/relccsd_sample>`
-
-* **Open-shell systems:**
-  :doc:`DIRRCI <tutorials/dirrci_sample>` |
-  :doc:`GOSCIP <tutorials/goscip_sample>` |
-  :doc:`Open-shell examples <tutorials/open_shells>`
+* **Outdated tutorials (need update):**
+  :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
+  :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
+  :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
+  :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
+  :doc:`MP2 <tutorials/dusty_attic/mp2>` |
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
+  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
 
 
 Getting help
