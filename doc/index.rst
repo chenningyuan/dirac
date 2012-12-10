@@ -12,6 +12,9 @@ Setting up DIRAC
   :doc:`Detection and linking <installation/math>` |
   :doc:`MKL environment variables <installation/mkl>`
 
+* **MPI:**
+  :doc:`Forwarding environment variables <installation/mpi>`
+
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`MPI <installation/int64/mpi>` |
