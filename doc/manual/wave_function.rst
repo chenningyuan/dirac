@@ -2,74 +2,76 @@
 
 starstar(WAVE FUNCTION)
 
-Get the wave function.
+
+**Get the wave function**
+=========================
 
 This section allows the specification of which wave function module(s)
 to activate. By default no modules are activated. To activate any of
 these modules you must also specify :ref:`.WAVE FUNCTION`
-under :ref:`dirac`,
+under :ref:`**DIRAC`,
 otherwise this input is not read.
 
 Note that the order below specifies the order in which the different
 modules are called if you ask for more than one.
 
-.SCF
-----
+
+keyword(SCF)
 
 Activates the Hartree-Fock/Kohn-Sham module.
 
-Specification of the SCF module can be given in the :ref:`scf` subsection.
+Specification of the SCF module can be given in the :ref:`*SCF` subsection.
 
 If :ref:`.DFT` has been specified
 under :ref:`**HAMILTONIAN`, then a
 Kohn-Sham calculation will be performed, otherwise a Hartree-Fock
 calculation will be performed.
 
-.RESOLVE
---------
+
+keyword(RESOLVE)
 
 Resolve open-shell states: do a small CI calculation to get the
 individual energies of the states present in an
 average-of-configurations open-shell Hartree-Fock calculation (see
 :ref:`*RESOLVE`).
 
-.MP2
-----
+
+keyword(MP2)
 
 Activates :ref:`.MP2CAL`.
 
-.MVO
-----
+
+keyword(MVO)
 
 Calculate modified virtual orbitals (see :ref:`MVOCAL`).
 
-.RELCCSD
---------
 
-Activates the  :ref:`relccsd`
-(and the :ref:`moltra`
+keyword(RELCCSD)
+
+Activates the  :ref:`RELCCSD`
+(and the :ref:`MOLTRA`
 module to get 4-index
 transformed integrals).
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`moltra` section.
+:ref:`MOLTRA` section.
 
-.DIRRCI
--------
+
+keyword(DIRRCI)
 
 Activates the MOLFDIR CI module (and also the
-:ref:`moltra`  module to get 4-index transformed integrals).
+:ref:`MOLTRA`  module to get 4-index transformed integrals).
 
 Specification of input for the MOLFDIR CI module is given in
-the :ref:`dirrci`  and :ref:`goscip` sections.
+the :ref:`DIRRCI`  and :ref:`GOSCIP` sections.
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`moltra`  section.
+:ref:`MOLTRA`  section.
 
-.LUCITA
--------
+
+keyword(LUCITA)
 
 Activates the :ref:`lucita` (and
 the :ref:`moltra` module to get 4-index
@@ -79,10 +81,11 @@ By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
 :ref:`moltra` section.
 
-**Pre-SCF orbital manipulations**
 
-.REORDER MO'S
--------------
+**Pre-SCF orbital manipulations**
+=================================
+
+keyword(REORDER MO)
 
 Interchange initial molecular orbitals prior to the SCF-calculation. The
 start orbitals from DFCOEF are read and reordered.
@@ -96,8 +99,8 @@ For each fermion irrep give the new order of orbitals.
     .REORDER MO'S
     1..8,10,9
 
-.ORBROT
--------
+
+keyword(ORBROT)
 
 Jacobi rotations between pairs of orbitals.
 
@@ -106,10 +109,11 @@ on the following line(s) for each fermion irrep, give an :ref:`orbital_strings`
 of orbitals to
 rotate.
 
-**Post-SCF orbital manipulations**
 
-.POST SCF REORDER MO'S
-----------------------
+**Post-SCF orbital manipulations**
+==================================
+
+keyword(POST SCF REORDER MO)
 
 Interchange converged molecular orbitals. The orbitals from DFCOEF are
 read and reordered just before exiting the SCF subroutine.
@@ -123,14 +127,14 @@ For each fermion irrep give the new order of orbitals.
     .POST DHF REORDER MO'S
     1..8,10,9
 
-.PHCOEF
--------
+
+keyword(PHCOEF)
 
 Phase adjustment of coefficients DFCOEF: make the largest element of a
 given orbital real and positive.
 
-.RELADC
--------
+
+keyword(RELADC)
 
 Activates the :ref:`RELADC` and
 calculates the ionization spectrum by the (A)lgebraic (D)iagrammatic
@@ -138,8 +142,8 @@ calculates the ionization spectrum by the (A)lgebraic (D)iagrammatic
 module to get 4-index
 transformed integrals.
 
-.KR CI
-------
+
+keyword(KR CI)
 
 Activates the :ref:`LUCIAREL` module
 for the calculation of ground and excited states at the CI level.
@@ -2296,16 +2300,17 @@ of active orbitals.
 
 *Default:* All the unoccupied virtual solutions.
 
-**Advanced options**
 
-.INTFLG
--------
+**Advanced options**
+====================
+
+keyword(INTFLG)
 
 Specify what two-electron integrals to include in the direct MP2
 calculation (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-.SCREEN
--------
+
+keyword(SCREEN)
 
 Screening threshold in the 4-index transformation.
 
@@ -2318,10 +2323,11 @@ A negative number deactivates screening.
     .SCREEN
      1.0D-14
 
-**Programmers options**
 
-.PRINT
-------
+**Programmers options**
+=======================
+
+keyword(PRINT)
 
 Print level.
 
@@ -2332,8 +2338,8 @@ Print level.
     .PRINT
      0
 
-.VIRTHR
--------
+
+keyword(VIRTHR)
 
 Threshold for neglecting high-lying virtual orbitals. Neglect all
 orbitals with energy above this threshold. This option is retained for
@@ -2345,8 +2351,8 @@ input.
 
 *Default:* No threshold.
 
-.IJTSK
-------
+
+keyword(IJTSK)
 
 Max. number of I (or J) orbitals (occupied orbitals) in each calculation
 batch. Usually one batch is sufficient but larger calculations may be
@@ -2358,8 +2364,8 @@ the CPU time by a factor 4.
 
 *Default:* All active occupied electronic solutions.
 
-.SCLMEM
--------
+
+keyword(SCLMEM)
 
 Internal memory available for scalar untransformed integrals. Larger
 batches will be written to disk.
@@ -2368,18 +2374,16 @@ batches will be written to disk.
 
 *Default:* Set by program and is usually sufficient.
 
-.ORGALG
--------
+
+keyword(ORGALG)
 
 Use original alorithm as described in Ref. [Laerdahl1997]_.
 
 *Default:* Use `new
 algorithm <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_.
 
-.. _mvocal:
 
-\*MVOCAL
-========
+star(MVOCAL)
 
 Modified virtual orbitals.
 
@@ -2400,8 +2404,8 @@ canonical and can *not* be used in MP2 calculations; they can be used in
 the :ref:`DIRRCI` and
 :ref:`RELCCSD` modules.
 
-.PRINT
-------
+
+keyword(PRINT)
 
 Print level.
 
@@ -2412,15 +2416,15 @@ Print level.
     .PRINT
      0
 
-.VECMVO
--------
+
+keyword(VECMVO)
 
 Read :ref:`orbital_strings` of
 orbitals to be included in the Hartree-Fock potential when constructing
 the cationic Fock operator.
 
-.INTFLG
--------
+
+keyword(INTFLG)
 
 Specify what two-electron integrals to include during the construction
 of the modified virtual orbitals (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).

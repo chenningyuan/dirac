@@ -13,7 +13,7 @@ Keyword reference
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
 
-* :doc:`**WAVE FUNCTION <wavefunction>` --- Method specification
+* :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`GOSCIP <goscip>`  --- Complete Open-Shell module
    - :doc:`DIRRCI <dirrci>` --- Direct Relativistic CI module
    - :doc:`RELCCSD <relccsd>` --- Coupled cluster module
