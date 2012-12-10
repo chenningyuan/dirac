@@ -1,19 +1,9 @@
 
 
-.. _general:
-.. index:: **GENERAL
-===========
-\*\*GENERAL
-===========
+starstar(GENERAL)
 
 
-General input specification
-===========================
-
-
-.. index:: .DIRECT
-.DIRECT
--------
+keyword(DIRECT)
 
 Direct evaluation of two-electron integrals for Fock matrices (all two-electron
 integrals for other uses, e.g. CI, CCSD, MCSCF, are always evaluated directly,
@@ -26,9 +16,7 @@ directly; 0 = do not evaluate directly)::
    1 1 1
 
 
-.. index:: .SPHTRA
-.SPHTRA
--------
+keyword(SPHTRA)
 
 Transformation to spherical harmonics embedded in the transformation to
 orthonormal basis; totally symmetric contributions are deleted.
@@ -45,33 +33,25 @@ components is modified, however, in accordance with the restricted kinetic
 balance relation.
 
 
-.. index:: .PCMOUT
-.PCMOUT
--------
+keyword(PCMOUT)
 
 Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
 coefficients between machines with different binary structure.
 
 
-.. index:: .ACMOUT
-.ACMOUT
--------
+keyword(ACMOUT)
 
 Write coefficients in C1 symmetry to the unformatted file DFACMO.
 
 
-.. index:: .ACMOIN
-.ACMOIN
--------
+keyword(ACMOIN)
 
 Import coefficients in C1 symmetry from the unformatted file DFACMO to current
 symmetry. This assumes that the current symmetry is lower than the symmetry
 used for obtaining the original coefficients.
 
 
-.. index:: .LOWJACO
-.LOWJACO
---------
+keyword(LOWJACO)
 
 Use Jacobi diagonalization in the Löwdin orthogonalization procedure.
 This is much slower than the default method but does not mix AOs in the
@@ -84,9 +64,7 @@ default.
    also the DIRAC08 info should be removed
 
 
-.. index:: .DOJACO
-.DOJACO
--------
+keyword(DOJACO)
 
 The default method is to use the `Householder
 <http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_ diagonalization
@@ -95,18 +73,14 @@ degenerate eigenvectors of different symmetries. The Jacobi method is currently
 limited to real groups.
 
 
-.. index:: .QJACO
-.QJACO
-------
+keyword(QJACO)
 
 Employ pure Jacobi diagonalization of quaternion matrixes. Properly handles
 degenerate eigenvectors. Slower than .DOJACO and exclusive.  Experimental
 option.
 
 
-.. index:: .LINDEP
-.LINDEP
--------
+keyword(LINDEP)
 
 Thresholds for linear dependence in large and small components; refer to
 the smallest acceptable values of eigenvalues of the overlap matrix.
@@ -116,9 +90,7 @@ The default is::
    1.0D-6 1.0D-8
 
 
-.. index:: .RKBIMP
-.RKBIMP
--------
+keyword(RKBIMP)
 
 Import SCF coefficients calculated using restricted kinetic balance (RKB) and
 add the UKB component (all small component). This option is a nice way to get
@@ -127,9 +99,7 @@ magnetic field (e.g. NMR shielding and magnetizability), in particular when
 combined with London orbitals, which makes the magnetic balance *atomic*.
 
 
-.. index:: .PRJTHR
-.PRJTHR
--------
+keyword(PRJTHR)
 
 RKBIMP projects out the RKB coefficients transformed to orthonormal
 basis and then adds the remained, corresponding to the UKB complement.
@@ -140,9 +110,7 @@ The default is::
   1.0D-5
 
 
-.. index:: .PRINT
-.PRINT
-------
+keyword(PRINT)
 
 General print level. The higher the number is, the more output the user
 gets. Option of this type is useful for code debugging.
@@ -152,9 +120,7 @@ By default set to::
    0
 
 
-.. index:: .CVALUE
-.CVALUE
--------
+keyword(CVALUE)
 
 Speed of light in a.u. Default::
 
@@ -162,45 +128,33 @@ Speed of light in a.u. Default::
    137.0359998
 
 
-.. index:: .LOGMEM
-.LOGMEM
--------
+keyword(LOGMEM)
 
 Write out a line in the output for each memory allocation done by DIRAC.  This
 is mainly useful for programmers or for solving out-of-memory issues.
 
 
-.. index:: .NOSET
-.NOSET
-------
+keyword(NOSET)
 
 .. warning:: documentation missing
 
 
-.. index:: .FAMILY
-.FAMILY
-------
+keyword(FAMILY)
 
 .. warning:: documentation missing
 
 
-.. index:: .SKIP2E
-.SKIP2E
--------
+keyword(SKIP2E)
 
 .. warning:: documentation missing
 
 
-.. index:: *PARALLEL
-\*PARALLEL
-==========
+star(PARALLEL)
 
 Parallelization directives.
 
 
-.. index:: .PRINT
-.PRINT
-------
+keyword(PRINT)
 
 Print level for the parallel calculation. Default::
 
@@ -212,9 +166,7 @@ the parallelization efficiency. A complete timing for all nodes will be
 given if the print level is 4 or higher.
 
 
-.. index:: .NTASK
-.NTASK
-------
+keyword(NTASK)
 
 Number of tasks to send to each node when distributing the calculation
 of two-electron integrals. Default::
