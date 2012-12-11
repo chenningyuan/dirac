@@ -423,9 +423,11 @@ C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
   140    CONTINUE
 C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
             DOXLR  = .TRUE.
-            SHIELD = .TRUE.
             LONDON = .TRUE.
+            SHIEL2 = .true.
             call set_london_keywords('shiel2')
+!gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
+! i will have to fix that...
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180

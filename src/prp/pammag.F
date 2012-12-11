@@ -308,7 +308,8 @@ C ... call the routine in abacus/hergp.F
      &' terms for the H(B) property gradient !'
        ENDIF
 
-       IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
+       !IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
+       IF (NOORTH.AND. (SHIELD.OR.SHIEL2.OR.OPTROT)) THEN
          WRITE(LUPRI,'(/,1X,A)')
      &': No calculation of {T(1),H(m_K)} reorthonormalization'//
      &' terms for the H(B m_K) expectation value terms !'
@@ -385,7 +386,7 @@ C =========================================================================
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
 !gosia: this 'if' has to be checked,
-! i get this warning even for shielding+london...
+! i get this warning even for shielding+london!...
         WRITE(LUPRI,'(1X,A)')
      &'  Used conventional atomic orbitals, not London orbitals !'
         WRITE(LUPRI,'(1X,A)')
@@ -447,7 +448,6 @@ C
      &         DMAT(NORBT,NORBT,NZ),
      &         ORTO(3,*),WORK(*)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
-      
 C
 #include "ibtfun.h"
       CALL QENTER('GETCON')
@@ -495,7 +495,8 @@ C --------------------------------------------
            CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
      &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 ! gosia: leave occ-occ block only
-           if (lao_lr_rearrange) then
+           !if (lao_lr_rearrange) then
+           if (lao_lr_rearrange .or. shielding_rearrange) then
              call get_m_ij(conmat)
            end if 
            IF (IPRINT.GE.5) THEN
@@ -525,11 +526,12 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              if (lao_lr_rearrange) then
                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-!              gosia: zero-out other blocks than occ-occ,
+!              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
+!              integrals in def_d1hblond subroutine
+!              now we zero-out other blocks than occ-occ,as we need 'dS/dB'_ij
 !              this is easier for a moment than adapting other routines...
                call get_m_ij(work(ktmat))
              else
-!
              IF (.NOT.SYMCON) THEN
               IF (ITIM2.NE.0)
      &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
@@ -542,10 +544,20 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ENDIF
+             end if ! if (lao_lr_rearrange)
+
              if (shielding_rearrange) then
+!              gosia: whatever connection we just read into work(ktmat)
+!              we want to combine (T + T\dagger)_ij,
+!              ideally we should get here 'dS/dB' integrals, but this we cannot do easily.
+!              to do it, we would have to assign 'dS/dB' integrals (same as in SYMCON) to shielding_rearrange
+!              exactly as done in lr_lao_rearrange (in def_d1hblond subroutine)
+!              but this reformulation is meant to be general for NATCON and SYMCON, so we don't want to decide
+!              so instead we will here combine (T+T\dagger)_ij
+!              which equals to 'dS/dB'_ij for any T.
+               !call get_s_from_t(work(ktmat))
                call get_m_ij(work(ktmat))
              end if
-             end if ! if (lao_lr_rearrange)
 
 
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
@@ -2469,7 +2481,8 @@ C
 
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
-        IF(SHIELD) CALL HEADER(
+        !IF(SHIELD) CALL HEADER(
+        IF(SHIELD.OR.SHIEL2) CALL HEADER(
      &'All individual operators for NMR shieldings with LAO',-1)
         IF(OPTROT) CALL HEADER(
      &'All individual operators for optical rotation with LAO',-1)

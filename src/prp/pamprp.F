@@ -1205,13 +1205,13 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
-!gosia: i'll need to adapt that for 'SHIEL2'
 C
 C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
       IF (XLR_SKIPEP) THEN
 C      .... NMR shieldings
-         IF (SHIELD) THEN
+         !IF (SHIELD) THEN
+         IF (SHIELD.OR.SHIEL2) THEN
             DOEXP = .TRUE.
             NSTDIA = .TRUE.
          END IF
@@ -1347,7 +1347,8 @@ C
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
-      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+      !IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+      IF (SHIELD .OR. SHIEL2 .OR. ESRGTENS .OR. ESRANISO) THEN
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
@@ -1368,7 +1369,8 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
-      ELSE IF (SHIELD) THEN
+      !ELSE IF (SHIELD) THEN
+      ELSE IF (SHIELD .OR. SHIEL2) THEN
       ! message has relevance if wanted NMR shieldings
         WRITE(LUPRI,'(2X,A)')
      &  '...Aucars diamagnetic'//
@@ -1505,7 +1507,8 @@ C
 C
 C     NMR shielding
 C
-      IF(SHIELD) THEN
+      !IF(SHIELD) THEN
+      IF(SHIELD .OR. SHIEL2) THEN
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -3950,7 +3953,8 @@ C
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-              IF (SHIELD) THEN
+              !IF (SHIELD) THEN
+              IF (SHIELD .OR. SHIEL2) THEN
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
@@ -4109,7 +4113,8 @@ C        Sigma_Z:
 C
 C     Print section for NMR shielding:
 C
-      IF (SHIELD) THEN
+      !IF (SHIELD) THEN
+      IF (SHIELD .OR. SHIEL2) THEN
 C
 C     A operators
 C     ===========
@@ -6369,7 +6374,8 @@ C  ...  get the expect. value {T,h(mK)} reorthonormalization term
 CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
         IF (IPRPRP.GE.2) THEN
-          if (lao_lr_rearrange) then
+          !if (lao_lr_rearrange) then
+          if (lao_lr_rearrange .or. shielding_rearrange) then
             CALL HEADER('Contribution to the shielding from overlap '// 
      &      'magnetic derivative (expect.value) in symmetry '//
      &      'coordinates (ppm)',1)

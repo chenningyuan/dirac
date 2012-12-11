@@ -66,6 +66,15 @@ contains
      integer :: ifrp, iz, i, j
 
 !    ---------------------------------------------------------------------------
+
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ai: entering T:'
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
      
      do ifrp = 1, nfsym
         ip(ifrp) = iorb(ifrp) + 1
@@ -129,6 +138,15 @@ contains
 
         end do
      end do
+
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ai: T_ai on output, sum_ep_rn = :', sum_ep_rn
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
 
   end subroutine
 
@@ -391,7 +409,6 @@ contains
                     nz, ipqtoq(1, irep), lupri)
      end if
 
-
      call alloc(T_ai, norbt, norbt, nz)
      call get_T_ai(T, T_ai, doeprn)
 
@@ -421,10 +438,9 @@ contains
      character*16, intent(in) :: lab1
 
      real(8), allocatable   :: T(:, :, :)
-     real(8), allocatable   :: T_ai(:, :, :)
      real(8), allocatable   :: T_ai_vec(:, :)
      integer, allocatable   :: orbital_rotation_indices(:, :)
-     integer :: which_icomp, chosen_icomp, irep, iz, i, j, i1
+     integer :: which_icomp, chosen_icomp, irep, iz, i, j
      logical :: sum_ep_rn, ep, ee
 
 !    this subroutine does:
@@ -499,7 +515,7 @@ contains
      if (nr_xyz_comp > 1) then
 !       when calculating full shielding tensor
 !       there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
-!       read here the requested one:
+!       here we need to read the requested one:
         if (chosen_icomp == 2) then
            if (which_icomp == 2) then
               go to 2
@@ -520,22 +536,15 @@ contains
      close(tbmo_unit, status = 'keep')
 
 
-!    get occ-virt part of T to T_ai:
-!    -------------------------------
-     !call alloc(T_ai, norbt, norbt, nz)
-     !call get_T_ai(T, T_ai, sum_ep_rn)
-     !call dealloc(T)
+!    leave only occ-virt part of T:
+!    ------------------------------
+!gosia: todo fix sum_ep_rn: by default it should be fixed to \kappa's
+!*) if e-p rotations are allowed, then sum_ep_rn=true,
+!*) if only e-e rotations are allowed, then sum_ep_rn=false
+!
      call get_m_ai(T, sum_ep_rn)
 
-     !debug_me = .false.
-     !if (debug_me) then
-     !   call prqmat(T_ai(1,1,1), &
-     !               norbt, norbt, norbt, norbt, &
-     !               nz, ipqtoq(1, 0), lupri)
-     !end if
-
-
-!    T_ai is a matrix, so now let's make it a vector
+!    T_ai is a matrix, so now let's transform it to a vector
 !    take care of the correct order -> should be the same as
 !    on solution vector:
      call alloc(T_ai_vec, length, nz)
@@ -546,21 +555,18 @@ contains
                                    orbital_rotation_indices, &
 !                                   h, &
                                    T_ai_vec, &
-                                   !T_ai, &
                                    T, &
                                    irep)
 
-     !call dealloc(T_ai)
      call dealloc(T)
      call dealloc(orbital_rotation_indices)
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) '     T_ai_vec, i1 = ', i1
+        write(*, *) 'T_ai_vec,ee, ep = ', ee, ep
         do iz = 1, nz
           do i = 1, length
-             write(*, *) '     i = ', i
-             write(*, *) T_ai_vec(i, iz)
+             write(*, *) 'iz,i,T_ai_vec(i, iz) = ', iz, i, T_ai_vec(i, iz)
           end do
         end do
      end if
@@ -577,10 +583,10 @@ contains
 
      debug_me = .false.
      if (debug_me) then
+        write(*, *) 'kappa on output'
         call prqmat(kappa(1,1), length, 1, length, 1, nz,  &
                     ipqtoq(1,irep), lupri)
      end if
-
 
   end subroutine
 
@@ -638,8 +644,8 @@ contains
      debug_me = .false.
      if (debug_me) then
         do i = 1, i1
-           write(*, *) '     i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
-                             i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) 
+           write(*, *) 'i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) = ', &
+                        i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) 
         end do
      end if
 
@@ -668,6 +674,13 @@ contains
     real(8)              :: f
 !   ----------------------------------------------------------------------------
 
+    debug_me = .false.
+    if (debug_me) then
+      write(*, *) 'collect_matrix_to_vector: matrix'
+      call prqmat(matrix, norbt, norbt, norbt, norbt, nz,  &
+                  ipqtoq(1,irep), lupri)
+    end if
+
     do is = 1, length
 
       i = orbital_rotation_indices(1, is)
@@ -675,27 +688,19 @@ contains
 
       do iz = 1, nz
 
-        if (ipqtoq(iz, irep) > 1) then
-          f = -1.0
-        else
-          f =  1.0
-        end if
-
-
+!       gosia todo: it looks like this simple line is working,
+!       but anyway i will have to check it for all symmetries
         vector(is, iz) = matrix(s, i, iz) 
-!
-!!              row
-!!              ¦
-!!              ¦  column
-!!              ¦  ¦
-!        matrix(s, i, iz) = matrix(s, i, iz) &
-!                         +     response_vector(is, iz)
-!        matrix(i, s, iz) = matrix(i, s, iz) &
-!                         - f*h*response_vector(is, iz)
+
       end do
     end do
  
-
+    debug_me = .false.
+    if (debug_me) then
+      write(*, *) 'collect_matrix_to_vector: vector'
+      call prqmat(vector, length, 1, length, 1, nz,  &
+                  ipqtoq(1,irep), lupri)
+    end if
 
   end subroutine
 
@@ -719,6 +724,5 @@ contains
     write(*, *) 'symmetry mat: ', a
 
   end subroutine
-
 
 end module

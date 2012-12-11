@@ -1578,8 +1578,9 @@ C
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
       CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVECS,BBUF)
+
 !gosia:
-! if shielding_rearrange then here form: \kappa=\kappa-T:
+! if shielding_rearrange then here form: \kappa = \kappa - T:
       if (shielding_rearrange) then
         nlength=nxpar*ndamp*nfreq
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab)
