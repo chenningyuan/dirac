@@ -222,8 +222,6 @@ part (density contribution).
 **Other functionality**
 =======================
 
-**Programmers options**
-
 keyword(GAUNTSCALE)
 
 Scale Gaunt integrals (if included) with the same factor as for
@@ -233,3 +231,9 @@ interaction at all. If this option is not given the Gaunt integrals will
 be included to 100%, meaning that even an LDA calculation will include
 full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
 :ref:`**HAMILTONIAN`.
+
+
+keyword(OVLDIAG)
+
+Activate the overlap diagnostic for TD-DFT calculations of excitation energies
+according to [Peach2008]_.

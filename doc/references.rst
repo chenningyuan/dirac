@@ -330,6 +330,10 @@ or popular Google-Books web-space.
    Bull. Korean Chem. Soc. **33**, *803* (2012)
    `[pdf] <http://dx.doi.org/10.5012/bkcs.2012.33.3.803>`_
 
+.. [Peach2008] M. J. G. Peach, P. Benfield, T. Helgaker, D. J. Tozer,
+   J. Chem. Phys. **128**, *044118* (2008)
+   `[pdf] <http://dx.doi.org/10.1063/1.2831900>`_
+
 .. [Pecul2004] M. Pecul, T. Saue, K. Ruud, A. Rizzo,
    *Electric field effects on the shielding constants of noble gases: A 4-component relativistic Hartree-Fock study*,
    J. Chem. Phys. **121**, *3051* (2004)
@@ -489,6 +493,11 @@ or popular Google-Books web-space.
    `[pdf] <http://dx.doi.org/10.1063/1.480934>`_
 
 .. [Vies2012] http://dx.doi.org/10.1103/PhysRevA.85.030304
+
+.. [Villaume2010] Sebastien Villaume, Trond Saue and Patrick Norman, 
+   *Linear Complex Polarization Propagator in a Four-Component Kohn-Sham Framework*,
+   J. Chem. Phys. **133** *064105* (2010) 
+   `[pdf] <http://link.aip.org/link/doi/10.1063/1.3461163>`_
 
 .. [Visscher1996]      L. Visscher, T. J. Lee, and K. G.
    Dyall, *Formulation and implementation of a relativistic unrestricted
