@@ -251,10 +251,13 @@ class pam_enviroment:
         self.basdir='.:'
         basis_dir= os.path.join(pam_directory, 'basis')
         basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+        basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
         if os.path.isdir(basis_dir):
             self.basdir = self.basdir + basis_dir
         if os.path.isdir(basis_dalton_dir):
             self.basdir = self.basdir+':'+basis_dalton_dir
+        if os.path.isdir(basis_ecp_dir):
+            self.basdir = self.basdir+':'+basis_ecp_dir
 
     def show_settings(self):
         '''

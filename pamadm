@@ -103,6 +103,7 @@ vital_directories.append('src/xcint/src')
 vital_directories.append('utils')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
+vital_directories.append('basis_ecp')
 vital_directories.append('cmake')
 
 # these tests are always packaged
