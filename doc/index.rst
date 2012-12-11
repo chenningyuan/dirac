@@ -90,6 +90,10 @@ Tutorials and walkthrus
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
   :doc:`Atom <tutorials/reladc/atom>`
 
+* **ECP:**
+  :doc:`First calculation <tutorials/ecp/first>` |
+  :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
   :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
