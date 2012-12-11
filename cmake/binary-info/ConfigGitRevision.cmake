@@ -1,5 +1,6 @@
-set(GIT_REVISION)
-
+# only in the development code we get the hash from git
+# in the released code we read it from file, in this case
+# it is already set at this stage
 if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)

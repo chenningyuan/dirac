@@ -276,6 +276,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "mxcent.h"
+#include "nuclei.h"  !test
 #include "inc_mxvalue.h"
 #include "inc_print.h"
 #include "recpval.h"
@@ -283,7 +284,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns
   REAL*8  zcr(*),ccr(*)
-  INTEGER I1,I,J,K,INDEX1,RECPCORE
+  INTEGER I1,I,J,K,INDEX1,RECPCORE,INDEX_NAME
   INTEGER AREP2,SOREP2,kcru,kcrl
 
 ! Skip if there is no RECP
@@ -295,6 +296,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
   kcru   = 0 
 
   I1 = 1
+  INDEX_NAME = 1
   DO I = 1, ns
 
      RECPCORE = RECP_CORE(I)
@@ -305,17 +307,26 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
      IF (ECPNONT(I).EQ.0) GOTO 1000
 
 !    Print information
-     IF (RECP_DBG.GE.2) THEN
-        WRITE (RECP_OUT,'(/,3X,5(A,I3,X))') 'No.',I, 'NONT',ECPNONT(I), & 
-           'Core',RECPCORE,'AREP block',(AREP2+1),'SOREP block',SOREP2
+!    IF (RECP_DBG.GE.2) THEN
+!       WRITE (RECP_OUT,'(/,3X,5(A,I3,X))') 'No.',I, 'NONT',ECPNONT(I), & 
+!          'Core',RECPCORE,'AREP block',(AREP2+1),'SOREP block',SOREP2
+!    ENDIF
+
+     WRITE(RECP_OUT,'(/,A,I3,A,A3,A)') ' * Nuc. Center No.     : ',I,' (',NAMN(INDEX_NAME),')'
+     WRITE(RECP_OUT,'(3X,A,I3)') 'Sym. distinct atoms : ',ECPNONT(I)  
+     INDEX_NAME = INDEX_NAME + ECPNONT(I)
+
+     IF (AREP_ANG(I).EQ.0) THEN
+!       IF (RECP_DBG.GE.2) & 
+!          If Atom doesn't have the RECP parameter
+           WRITE (RECP_OUT,'(3X,A)') 'This nuclear center does not have core potential'
+        GOTO 1000 
+     ELSE
+        WRITE(RECP_OUT,'(3X,A,I3)') 'Core electrons      : ',RECPCORE
+        WRITE(RECP_OUT,'(3X,A,I3)') 'AREP blocks         : ',(AREP2+1)
+        WRITE(RECP_OUT,'(3X,A,I3)') 'SO blocks           : ',SOREP2
      ENDIF
 
-!    If Atom doesn't have the RECP parameter
-     IF (AREP_ANG(I).EQ.0) THEN
-        IF (RECP_DBG.GE.2) & 
-           WRITE (RECP_OUT,'(3X,A)') 'This nuclear center has no core potential'
-        GOTO 1000 
-     ENDIF
 
      lproju = max(lproju, (AREP2-1), SOREP2)
 
@@ -376,18 +387,18 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
      I1 = I1 + 1
 
      1000 CONTINUE
-
   ENDDO
+  WRITE(RECP_OUT,*) !make empty line
 
   CALL RECP_NTRD_READCP  ! deallocate
   IF (kcru.GT.mcrup) GOTO 8900
   GOTO 9000
 
   8110 CONTINUE
-       WRITE(*,*)'AREP2 too large ',(AREP2+1)
+       WRITE(*,*)'AREP too large ',(AREP2+1)
        CALL QUIT('Error in reading AREP')
   8120 CONTINUE
-       WRITE(*,*)'SOREP2 too large ',SOREP2
+       WRITE(*,*)'SOREP too large ',SOREP2
        CALL QUIT('Error in reading SOREP')
   8410 CONTINUE
        WRITE(*,*)'ncr(kcr) too small ',ncr(K)

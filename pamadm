@@ -161,6 +161,7 @@ list_of_tests.append('mcscf_energy')
 list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
 list_of_tests.append('mp2_energy')
 list_of_tests.append('mp2_properties')
+list_of_tests.append('mp2_srdft_energies')
 list_of_tests.append('open-shells')
 list_of_tests.append('projection_analysis')
 list_of_tests.append('pvc_scf')
@@ -196,6 +197,7 @@ list_of_tests.append('zora')
 # then list directories that are to be skipped as whole
 
 files_never_compiled = []
+files_never_compiled.append('src/gp/unit_testing.F90')
 files_never_compiled.append('src/utils/cube2pov.c')
 files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('src/relccsd/ccints_nomemget.F')
@@ -220,7 +222,6 @@ files_never_compiled.append('src/xcint/src/fake_input.F90')
 directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('cmake')
-directories_never_compiled.append('src/gen1int')
 
 for directory in directories_never_compiled:
     for file in glob.glob('%s/*.F90' % directory):

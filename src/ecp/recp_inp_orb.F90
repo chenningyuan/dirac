@@ -193,6 +193,35 @@ SUBROUTINE RECP_INP_ORBITAL_MULTNORMCOEF(ncons,ncon,nrcr,mrcru,mconu,zet,eta,lmn
 END SUBROUTINE RECP_INP_ORBITAL_MULTNORMCOEF
 
 
+SUBROUTINE RECP_INP_ORBITAL_SETLXYZIR(nu,inam,nst,ixyzir,lxyzir,mstu,idp,ityp)
+! set lxyzir
+  IMPLICIT NONE
+#include "inc_print.h"
+  INTEGER nu,inam(5),nst,ixyzir(3),lxyzir(3),mstu,idp(mstu,mstu,*)
+  CHARACTER*3 ityp(*)
+! local variables
+  INTEGER I,I2,I3,J 
+  IF (inam(nu).EQ.5) THEN
+     DO I = 1, 3
+        I2 = mod(I,  3) + 1
+        I3 = mod(I+1,3) + 1
+        DO J = 1, nst
+           IF ( idp(J,ixyzir(I2),ixyzir(I3)) .NE. 0 ) THEN
+              lxyzir(I) = J
+              GOTO 860
+           ENDIF
+        ENDDO
+        860 CONTINUE
+     ENDDO
+
+     IF (PRINT_LEVEL.GE.5) THEN
+        WRITE (RECP_OUT,'(/,3(3X,A,A3))') &
+          'lx: ',ityp(lxyzir(1)), 'ly: ',ityp(lxyzir(2)), 'lz: ',ityp(lxyzir(3))
+     ENDIF
+  ENDIF
+END SUBROUTINE RECP_INP_ORBITAL_SETLXYZIR
+
+
 SUBROUTINE RECP_INP_ORBITAL_L2OPXV(lmn,itl,itu,lmnv,eval,leig,ics,igcs)
 !  compute the matrix vector product, (L^2) * v, in an unnormalized cartesian basis, 
 !  and determine if v(*) is an eigenvector of the total angular momentum operator.

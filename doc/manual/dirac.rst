@@ -1,14 +1,6 @@
 
 
-.. _dirac:
-.. index:: **DIRAC
-==============================
-\*\*DIRAC -- Job specification
-==============================
-
-
-Activation of modules
-=====================
+starstar(DIRAC)
 
 By default DIRAC only activates the generation of the basis set (e.g.  kinetic
 balance conditions for small component functions) and the one-electron modules.
@@ -20,79 +12,65 @@ package if you want to e.g. save the two-electron integrals to disk for another
 purpose, this is not possible with DIRAC.
 
 
-.. index:: .WAVE FUNCTION
-.WAVE FUNCTION
---------------
+keyword(WAVE FUNCTION)
 
 Activates the wave function module(s).  This activates the reading of the
-:ref:`wave_function` section, where the desired wave function type(s) must be
+:ref:`**WAVE FUNCTION` section, where the desired wave function type(s) must be
 specified.  If you read in converged MO coefficients from the file DFCOEF and
 you want to skip the SCF step and proceed directly to properties or the
 post-SCF step, then a trick to do this is to comment out (or remove) this
 keyword.
 
 
-.. index:: .ANALYZE
-.ANALYZE
---------
+keyword(ANALYZE)
 
 Activates the Hartree--Fock or Kohn--Sham analysis module.  This activates the
-reading of the :ref:`analyze` section.
+reading of the :ref:`**ANALYZE` section.
 
 
-.. index:: .PROPERTIES
-.PROPERTIES
------------
+keyword(PROPERTIES)
 
 Activates the property module (which will call the integral module for property
-integrals).  This activates the reading of the :ref:`properties` section.
+integrals).  This activates the reading of the :ref:`**PROPERTIES` section.
 
 
-.. index:: .OPTIMIZE
-.OPTIMIZE
----------
+keyword(OPTIMIZE)
 
 Activates the geometry optimization.  This activates the reading of the
-:ref:`optimize` subsection.
+:ref:`*OPTIMIZE` subsection.
 
 
-.. index:: .4INDEX
-.4INDEX
--------
+keyword(4INDEX)
 
 Explicitly activates the transformation of integrals to molecular orbital
-basis.  This activates the reading of the :ref:`moltra` section.
+basis.  This activates the reading of the :ref:`**MOLTRA` section.
 
-These transformed integrals are currently only used by the :ref:`relccsd`,
-:ref:`reladc`, :ref:`dirrci`, and :ref:`lucita` modules, and if one of these
-three modules are requested under :ref:`wave_function`, then this flag is
+These transformed integrals are currently only used by the :ref:`RELCCSD`,
+:ref:`RELADC`, :ref:`DIRRCI`, and :ref:`LUCITA` modules, and if one of these
+three modules are requested under :ref:`**WAVE FUNCTION`, then this flag is
 automatically activated unless .NO4INDEX is specified in this input module.
 
 By default, molecular orbitals with orbital energy between -10 and +20 hartree
-are included, this can be modified in the :ref:`moltra` section.
+are included, this can be modified in the :ref:`**MOLTRA` section.
 
 
-.. index:: .NO4INDEX
-.NO4INDEX
----------
+keyword(NO4INDEX)
 
 Do not automatically activate integral transformation to molecular
 orbital basis if any of
-:ref:`relccsd`,
-:ref:`reladc`,
-:ref:`dirrci`, and
-:ref:`lucita`
+:ref:`RELCCSD`,
+:ref:`RELADC`,
+:ref:`DIRRCI`, and
+:ref:`LUCITA`
 modules
-are requested under :ref:`wave_function`.
+are requested under :ref:`**WAVE FUNCTION`.
 
 This keyword is utilized when repeating correlated CC or CI calculations
 (with different parameters for instance) based on saved files after the
 integral transformation.
 
 
-.. index:: .TITLE
-.TITLE
-------
+keyword(TITLE)
 
 Title line (max. 50 characters).
 Example::
@@ -101,9 +79,7 @@ Example::
    my first DIRAC calculation
 
 
-.. index:: .INPTEST
-.INPTEST
---------
+keyword(INPTEST)
 
 Input test - no job modules are called, only verification of DIRAC input files.
 It is often useful to start a new set of calculations with an input test in
@@ -111,31 +87,23 @@ order to check that input file processing is correct before submitting your
 (long-term run) job.
 
 
-.. index:: .ONLY INTEGRALS
-.ONLY INTEGRALS
----------------
+keyword(ONLY INTEGRALS)
 
 Stop after the calculation of the one-electron integrals for the Hamiltonian
-and the one-electron integrals specified under :ref:`integrals`.  The integrals
+and the one-electron integrals specified under :ref:`**INTEGRALS`.  The integrals
 are written to disk.
 
 
-.. index:: .NOSFCR
-.NOSFCR
--------
+keyword(NOSFCR)
 
 .. warning:: documentation missing
 
 
-.. index:: .MINIMI
-.MINIMI
--------
+keyword(MINIMI)
 
 .. warning:: documentation missing
 
 
-.. index:: .XMLOUT
-.XMLOUT
--------
+keyword(XMLOUT)
 
 .. warning:: documentation missing
