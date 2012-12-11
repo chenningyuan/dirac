@@ -11,3 +11,6 @@ There is a keyword for it::
   **INTEGRALS
   *READIN
   .UNCONTRACT
+
+Note that there is the limit for maximum number of exponents in one shell, 
+which specified in the "include/cbirea.h" file (as MAXPRD = 35).
