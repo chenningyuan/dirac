@@ -34,6 +34,7 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use codata
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
@@ -309,7 +310,8 @@ C ... call the routine in abacus/hergp.F
        ENDIF
 
        !IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
-       IF (NOORTH.AND. (SHIELD.OR.SHIEL2.OR.OPTROT)) THEN
+       IF (NOORTH.AND. (SHIELD.OR.shielding_rearrange
+     &     .OR.OPTROT)) THEN
          WRITE(LUPRI,'(/,1X,A)')
      &': No calculation of {T(1),H(m_K)} reorthonormalization'//
      &' terms for the H(B m_K) expectation value terms !'
@@ -2482,7 +2484,7 @@ C
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
         !IF(SHIELD) CALL HEADER(
-        IF(SHIELD.OR.SHIEL2) CALL HEADER(
+        IF(SHIELD.OR.shielding_rearrange) CALL HEADER(
      &'All individual operators for NMR shieldings with LAO',-1)
         IF(OPTROT) CALL HEADER(
      &'All individual operators for optical rotation with LAO',-1)

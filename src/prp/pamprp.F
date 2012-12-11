@@ -1197,6 +1197,7 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1211,7 +1212,7 @@ C
       IF (XLR_SKIPEP) THEN
 C      .... NMR shieldings
          !IF (SHIELD) THEN
-         IF (SHIELD.OR.SHIEL2) THEN
+         IF (SHIELD.OR.shielding_rearrange) THEN
             DOEXP = .TRUE.
             NSTDIA = .TRUE.
          END IF
@@ -1348,7 +1349,8 @@ C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
       !IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
-      IF (SHIELD .OR. SHIEL2 .OR. ESRGTENS .OR. ESRANISO) THEN
+      IF (SHIELD .OR. shielding_rearrange .OR. 
+     &    ESRGTENS .OR. ESRANISO) THEN
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
@@ -1370,7 +1372,7 @@ C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
       !ELSE IF (SHIELD) THEN
-      ELSE IF (SHIELD .OR. SHIEL2) THEN
+      ELSE IF (SHIELD .OR. shielding_rearrange) THEN
       ! message has relevance if wanted NMR shieldings
         WRITE(LUPRI,'(2X,A)')
      &  '...Aucars diamagnetic'//
@@ -1419,6 +1421,7 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1508,7 +1511,7 @@ C
 C     NMR shielding
 C
       !IF(SHIELD) THEN
-      IF(SHIELD .OR. SHIEL2) THEN
+      IF(SHIELD .OR. shielding_rearrange) THEN
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -3858,6 +3861,7 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
+      use london_helper
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
@@ -3954,7 +3958,7 @@ C
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
               !IF (SHIELD) THEN
-              IF (SHIELD .OR. SHIEL2) THEN
+              IF (SHIELD .OR. shielding_rearrange) THEN
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
@@ -4114,7 +4118,7 @@ C
 C     Print section for NMR shielding:
 C
       !IF (SHIELD) THEN
-      IF (SHIELD .OR. SHIEL2) THEN
+      IF (SHIELD .OR. shielding_rearrange) THEN
 C
 C     A operators
 C     ===========
