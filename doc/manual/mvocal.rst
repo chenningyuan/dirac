@@ -1,5 +1,8 @@
 star(MVOCAL)
 
+Introduction
+============
+
 Modified virtual orbitals.
 
 The virtual canonical Hartree-Fock orbitals are not the optimal choice
@@ -16,9 +19,10 @@ remove in the construction of the Hartree-Fock potential.
 
 *Note* that the resulting modified virtual orbitals are no longer
 canonical and can *not* be used in MP2 calculations; they can be used in
-the :ref:`DIRRCI` and
-:ref:`RELCCSD` modules.
+the :ref:`DIRRCI` and :ref:`RELCCSD` modules.
 
+Keywords
+========
 
 keyword(PRINT)
 
@@ -30,7 +34,6 @@ Print level.
 
     .PRINT
      0
-
 
 keyword(VECMVO)
 

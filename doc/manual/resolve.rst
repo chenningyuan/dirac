@@ -1,5 +1,7 @@
-\*RESOLVE
-=========
+star(RESOLVE)
+
+Introduction
+============
 
 Resolve open-shell states.
 
@@ -14,8 +16,10 @@ integral screening (controlled by :ref:`.SCREEN`) in the 4-index
 transformation, possibly also by leaving out at least SS integrals
 (using :ref:`.INTFLG`).
 
-.PRINT
-------
+Keywords
+========
+
+keyword(PRINT)
 
 Print level.
 
@@ -26,13 +30,12 @@ Print level.
     .PRINT
      0
 
-.INTFLG
--------
+keyword(INTFLG)
+
 
 Specify what two-electron integrals to include (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-.SCREEN
--------
+keyword(SCREEN)
 
 Screening threshold in the 4-index transformation.
 
@@ -45,8 +48,7 @@ A negative number deactivates screening.
     .SCREEN
      1.0D-14
 
-.SCHEME
--------
+keyword(SCHEME)
 
 Choose integral transformation algorithm (PLEASE CLARIFY!)
 

@@ -1,6 +1,5 @@
 .. _goscip:
 
-
 ======================
 GOSCIP -- COSCI module
 ======================
@@ -11,7 +10,7 @@ This module allows for small full configuration interaction calculations. It is 
 
 The input should be given in namelist form.
 
-Historical note: This program was originally written for MOLFDIR [1] and was later also included in DIRAC.
+Historical note: This program was originally written for [MOLFDIR]_ and was later also included in DIRAC.
 
 
 &GOSCIP

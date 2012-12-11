@@ -1,8 +1,7 @@
-SCF & DFT
-=========
+star(SCF)
 
-This section gives directives for Hartree-Fock calculations.
-Kohn-Sham calculations are performed by invoking the keyword
+This section gives directives for Hartree-Fock and Kohn-Sham calculations.
+Kohn-Sham calculations are activated by invoking the keyword
 :ref:`.DFT` under :ref:`**HAMILTONIAN`.
 
 Open-shell calculations correspond to either
@@ -16,10 +15,7 @@ Kohn-Sham calculations are not well defined.
 Occupation
 ==========
 
-.. _.CLOSED SHELL:
-
-.CLOSED SHELL
--------------
+keyword(CLOSED SHELL)
 
 For each fermion irrep give the number of closed shell electrons.
 
@@ -31,10 +27,7 @@ electrons.
 For symmetry groups *with* inversion symmetry, you need to specify
 the distribution of the electrons in the two fermion irreps [Saue2000]_.
 
-.. _.OPEN SHELL:
-
-.OPEN SHELL
------------
+keyword(OPEN SHELL)
 
 Specification of open shell(s).
 
@@ -91,32 +84,24 @@ To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
 :ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`LUCITA`.
 
-.BOSONS
--------
+keyword(BOSONS)
 
 Occupation of boson irreps in spin-free calculation. For example,
 for the D2h symmetry eight numbers in subsequent line, for the C2v
 symmetry there four occupation numbers in line.
 
-.MJSELE
--------
+keyword(MJSELE)
 
 Occupation of MJ-splitted fermion irreps (only for the linear
 symmetry). Next line contains sequence of occupation numbers, see
 the SCF output for how many.
 
-.. _.AOC:
-
-.AOC
-----
+keyword(AOC)
 
 Average-of-configuration calculation (default for open-shell
 Hartree-Fock).
 
-.. _.FOCC:
-
-.FOCC
------
+keyword(FOCC)
 
 Fractional occupation (default for open-shell
 Kohn-Sham) CLARIFY
@@ -129,8 +114,7 @@ AO-Fock matrix is generated for each open shell.
 for generating start orbitals for MCSCF as well as initial
 convergence in open-shell Hartree-Fock.
 
-.AUTOCC
--------
+keyword(AUTOCC)
 
 Program is allowed to change occupation during SCF cycles. This is
 deactivated by default. However, the program will still try to do
@@ -156,8 +140,7 @@ present. Otherwise the corrected bare nucleus approach is followed.
 In all three cases linear dependencies are removed in the zeroth
 iteration.
 
-.NOBNCR
--------
+keyword(NOBNCR)
 
 Switch off the bare nucleus correction. This correction is on per
 default and improves the screening of the nuclei by estimating
@@ -174,13 +157,11 @@ example, with one heavy element and without this correction (that
 is, with the bare nucleus Hamiltonian) all electrons will end up on
 that heavy element in the initial guess!
 
-.TRIVEC
--------
+keyword(TRIVEC)
 
 Start SCF-iterations from the vector file.
 
-.TRIFCK
--------
+keyword(TRIFCK)
 
 Start SCF-iterations from the two-electron Fock matrix from
 previous calculation (stored on file DFFCK2).
@@ -229,8 +210,7 @@ is slightly above threshold.
 
 For more detailed help see SCF help on convergence troubleshooting  and related pages.
 
-.MAXITR
--------
+keyword(MAXITR)
 
 Maximum number of SCF iterations.
 
@@ -248,10 +228,7 @@ convergence thresholds. By properly set desired and allowed
 thresholds one can have exact number of iterations specified by
 *.MAXITR*.
 
-.. _.EVCCNV:
-
-.EVCCNV
--------
+keyword(EVCCNV)
 
 Converge on error vector (electronic gradient).
 
@@ -262,10 +239,7 @@ Converge on error vector (electronic gradient).
     .EVCCNV
      desired threshold allowed threshold
 
-.. _.ERGCNV:
-
-.ERGCNV
--------
+keyword(ERGCNV)
 
 Threshold for convergence on total energy.
 
@@ -276,10 +250,7 @@ Threshold for convergence on total energy.
     .ERGCNV
      desired threshold allowed threshold
 
-.. _.FCKCNV:
-
-.FCKCNV
--------
+keyword(FCKCNV)
 
 Converge on largest absolute change in Fock matrix.
 
@@ -314,8 +285,7 @@ This may be achieved by convergence acceleration schemes:
 
 In DIRAC DIIS takes precedence over damping.
 
-.DIISTH
--------
+keyword(DIISTH)
 
 Change the default convergence threshold for initiation of DIIS,
 based on largest element of error vector.
@@ -327,8 +297,7 @@ based on largest element of error vector.
     .DIISTH
      a very large number
 
-.MXDIIS
--------
+keyword(MXDIIS)
 
 Maximum dimension of B-matrix in the DIIS module.
 
@@ -341,16 +310,14 @@ Maximum dimension of B-matrix in the DIIS module.
 
 .. _.DIISMO:
 
-.DIISMO
--------
+keyword(DIISMO)
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
 described above.
 
 .. _.DIISAO:
 
-.DIISAO
--------
+keyword(DIISAO)
 
 Activate
 `DALTON <http://www.kjemi.uio.no/software/dalton/dalton.html>`_-like
@@ -368,18 +335,14 @@ where the :math:`\mathbf{f}` is given by
    \sum_{O\in\mathcal{O}}f_{O}\cdot\mathbf{D}^{O}_{{AO}}\cdot ( \mathbf{F}^{D}_{{AO}}+
    (a_{O}-1)\mathbf{Q}^{V,O}_{{AO}} ) \right] \mathbf{C}
 
-.. _.NODIIS:
-
-.NODIIS
--------
+keyword(NODIIS)
 
 Do not perform DIIS. The default is to activate
 :ref:`.DIISMO` for closed-shell calculations, and to
 activate :ref:`.DIISAO` for average-of-configurations
 calculations.
 
-.DAMPFC
--------
+keyword(DAMPFC)
 
 Change the default damping factor.
 
@@ -390,8 +353,7 @@ Change the default damping factor.
     .DAMPFC
      0.25
 
-.NODAMP
--------
+keyword(NODAMP)
 
 Do not perform damping of the Fock matrix. Damping is activated by
 default, but DIIS takes precedence. In case all columns in the
@@ -400,14 +362,12 @@ B-matrix is removed by linear dependency, damping is activated.
 Level shift
 ===========
 
-.LSHIFT
--------
+keyword(LSHIFT)
 
 Activate level shift (for virtual orbitals). Followed by a real
 argument (level shift).
 
-.OLEVEL
--------
+keyword(OLEVEL)
 
 Activate level shift (for open-shell orbitals). Followed by a real
 argument (level shift), one line for each open shell {Please give
@@ -447,18 +407,12 @@ orbitals. This is useful for reordering the orbitals for the
 4-index transformation and subsequent correlation calculations
 (CCSD, CI etc.) (see :ref:`.POST DHF REORDER MO'S`).
 
-.. _.OVLSEL:
-
-.OVLSEL
--------
+keyword(OVLSEL)
 
 Activate dynamic overlap selection. The default is no overlap
 selection.
 
-.. _.NODYNSEL:
-
-.NODYNSEL
----------
+keyword(NODYNSEL)
 
 No dynamic update of overlap selection vectors. The default is
 dynamic update.
@@ -495,22 +449,17 @@ number of integrals to be processed in each iteration:
    either by the number of iterations or by energy convergence. The
    latter takes precedence over the former.
 
-.NODSCF
--------
+keyword(NODSCF)
 
 Do not perform SCF-iterations with differential density matrix.
 
 *Default:* Use differential density matrix in direct SCF.
 
-.. _.FIXDIF:
-
-.FIXDIF
--------
+keyword(FIXDIF)
 
 Set :math:`alpha` equal to 1.
 
-.CNVINT
--------
+keyword(CNVINT)
 
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
@@ -522,8 +471,7 @@ SCF-iterations.
     .CNVINT
      CNVINT(1) CNVINT(2)
 
-.ITRINT
--------
+keyword(ITRINT)
 
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
@@ -535,8 +483,7 @@ SCF-iterations.
     .ITRINT
      1 1
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify what two-electron integrals to include (see
 :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
@@ -546,8 +493,7 @@ Specify what two-electron integrals to include (see
 Output control
 ==============
 
-.PRINT
-------
+keyword(PRINT)
 
 General print level for the SCF method. For instance, value of 2
 prints eignevalues during each iteration.
@@ -559,8 +505,7 @@ prints eignevalues during each iteration.
     .PRINT
      0
 
-.EIGPRI
--------
+keyword(EIGPRI)
 
 Controls the print-out of positive energy and negative energy
 eigenvalues (1 = on; 0 = off).
@@ -616,8 +561,7 @@ moment there are no orthonormalization of fragments on different
 fragments and so in practice one should only use orbitals from one
 fragment.
 
-.PROJECT
---------
+keyword(PROJECT)
 
 Eliminate orbitals by projecting them out of the transformation
 matrix to orthonormal basis.
@@ -638,8 +582,7 @@ selected orbitals for each fermion irrep.
       READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
     ENDDO
 
-.PRJTHR
--------
+keyword(PRJTHR)
 
 Smallest norm accepted when eliminating orbitals.
 
@@ -650,15 +593,13 @@ Smallest norm accepted when eliminating orbitals.
     .PRJTHR
      1.0D-10
 
-.OWNBAS
--------
+keyword(OWNBAS)
 
 Eliminated/frozen orbitals are given in the fragment basis. Note
 that the list of fragments is assumed to follow the list of
 symmetry independent nuclei in the DIRAC basis file.
 
-.FROZEN
--------
+keyword(FROZEN)
 
 Freeze orbitals (must only be used in conjunction with
 :ref:`.PROJECT`).

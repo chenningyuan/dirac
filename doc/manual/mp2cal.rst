@@ -1,13 +1,18 @@
-\*MP2CAL -- MP2 calculation
-===========================
+star(MP2CAL)
 
-This section gives directives for the integral-direct closed-shell MP2
+**Introduction**
+================
+
+This section gives directives for the integral-direct closed-shell 
+second-order Møller-Plesset perturbation theory (MP2)
 calculation. The default algorithm is described
 `here <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_ and
 is a modification of the original algorithm published in Ref. [Laerdahl1997]_.
 
-.OCCUPIED
----------
+**Basic keywords**
+==================
+
+keyword(OCCUPIED)
 
 Active, doubly occupied, electronic solutions.
 
@@ -16,8 +21,7 @@ of active orbitals.
 
 *Default:* The occupied electronic solutions.
 
-.VIRTUAL
---------
+keyword(VIRTUAL)
 
 Active virtual solutions.
 
