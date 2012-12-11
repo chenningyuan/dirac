@@ -490,6 +490,11 @@ or popular Google-Books web-space.
 
 .. [Vies2012] http://dx.doi.org/10.1103/PhysRevA.85.030304
 
+.. [Villaume2010] Sebastien Villaume, Trond Saue and Patrick Norman, 
+   *Linear Complex Polarization Propagator in a Four-Component Kohn-Sham Framework*,
+   J. Chem. Phys. **133** *064105* (2010) 
+   `[pdf] <http://link.aip.org/link/doi/10.1063/1.3461163>`_
+
 .. [Visscher1996]      L. Visscher, T. J. Lee, and K. G.
    Dyall, *Formulation and implementation of a relativistic unrestricted
    coupled cluster method including noniterative connected triples*, J.

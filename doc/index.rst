@@ -75,7 +75,8 @@ Tutorials and walkthrus
   :doc:`General <tutorials/srDFT/general>`
 
 * **Property calculations:**
-  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
