@@ -293,6 +293,11 @@ or popular Google-Books web-space.
    *Continuum Solvation Models in Chemical Physics*,
    Wiley, New York (2007)
 
+.. [MOLFDIR] L. Visscher, O. Visser, P.J.C. Aerts, H. Merenga, and W.C. Nieuwpoort, 
+   *Relativistic quantum chemistry : the MOLFDIR program package*, 
+   Comp. Phys. Comm., **81**, *120* (1994)
+   `[pdf] <http://dx.doi.org/10.1016/0010-4655(94)90115-5>`_
+
 .. [Moss1973]  R. E. Moss, *Advanced Molecular Quantum Mechanics: An Introduction to
    Relativistic Quantum Mechanics and the Quantum Theory of Radiation*,
    Chapman and Hall, London, 1973

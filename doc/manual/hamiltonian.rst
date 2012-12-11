@@ -421,7 +421,7 @@ For CAM or long-range corrected functionals this separation is only invoked in t
 The above CAM input first reads the three parameters(p) :math:`\alpha` (alpha), :math:`\beta` (beta) and
 :math:`\mu` (mu), followed by exchange (x) and correlation (c) functionals with their respective weights.
 Standard exchange functionals are automatically short-range corrected following the approach of [IIkura2001]_.
-The activation of this separation for correlation as well leads to *long-range WFT/short-range DFT methods*, as
+The activation of this separation for correlation as well leads to :doc:`long-range WFT/short-range DFT methods <../tutorials/srDFT/general>`, as
 represented by MP2-srDFT in DIRAC.
 
 keyword(DFTAUTO)

@@ -15,6 +15,9 @@ Keyword reference
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
 
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
+   - :doc:`SCF <scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
+   - :doc:`MP2CAL <mp2cal>` --- second-order Møller-Plesset perturbation theory
+   - :doc:`RESOLVE <resolve>` --- resolve open-shell states
    - :doc:`GOSCIP <goscip>`  --- Complete Open-Shell module
    - :doc:`DIRRCI <dirrci>` --- Direct Relativistic CI module
    - :doc:`LUCITA <lucita>` --- Spinfree large-scale CI module
@@ -22,6 +25,7 @@ Keyword reference
    - :doc:`KRMCSCF <krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
    - :doc:`RELCCSD <relccsd>` --- Coupled cluster module
    - :doc:`RELADC <reladc>` --- Propagator module (Green's functions) for ionizations
+   - :doc:`MVOCAL <mvocal>` --- Modified virtual orbitals
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
 
