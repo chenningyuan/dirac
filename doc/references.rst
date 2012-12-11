@@ -101,6 +101,12 @@ or popular Google-Books web-space.
    Int.J.Quant.Chem. **109**, *2909–2915* (2009)
    `[pdf] <http://dx.doi.org/10.1002/qua.22155>`_
 
+.. [Ermler1981]  W. C. Ermler, Y. S. Lee, P. A. Christiansen and K. S. Pitzer,
+   *Ab initio effective core potentials including relativistic effects. 
+   A procedure for the inclusion of spin-orbit coupling in molecular wavefunctions*,
+   Chem. Phys. Lett. **81**, *70* (1981)
+   `[pdf] <http://dx.doi.org/10.1016/0009-2614(81)85329-8>`_
+
 .. [Faegri2001]  K. Fægri and T. Saue, *Diatomic molecules
    between very heavy elements of group 13 and group 17: A study of
    relativistic effects on bonding*,
@@ -172,6 +178,11 @@ or popular Google-Books web-space.
    Int.J.Quant.Chem., **55**, *127-132* (1995)
    `[pdf] <http://dx.doi.org/10.1002/qua.560550207>`_
 
+.. [IIkura2001] Hisayoshi Iikura and Takao Tsuneda and Takeshi Yanai and Kimihiko Hirao,
+   *A long-range correction scheme for generalized-gradient-approximation exchange functionals*,
+   J. Chem. Phys., **115**, *3540-3544* (2001)
+   `[pdf] <http://link.aip.org/link/doi/10.1063/1.1383587>`_
+
 .. [Ilias2001] M. Iliaš and V. Kello and L. Visscher and
    B. Schimmelpfennig, *Inclusion of mean-field spin–orbit effects based
    on all-electron two-component spinors: Pilot calculations on atomic
@@ -213,7 +224,8 @@ or popular Google-Books web-space.
    University of Düsseldorf (Germany) '***, '** (2009)*
    `[pdf] <http://dirac.chem.sdu.dk/thesis/09.PhD.StefanKnecht.pdf>`_
 
-.. [Knecht2010]  S. Knecht and T. Saue, *tba*, xxx **xxx**, *Universities of Strasbourg and Odense*,(2010-2011) .
+.. [Knecht2010]  X2Cmod: A modular code for Exact-Two-Component Hamiltonian
+	Transformations, S. Knecht (Odense, Denmark) and T. Saue (Toulouse, France), 2010-2012.
 
 .. [Knecht2010a] S. Knecht and H. J. Aa. Jensen and T. Fleig,
    *Large-Scale Parallel Configuration Interaction. II. Two- and 4-Component Double-Group General Active Space
@@ -225,6 +237,11 @@ or popular Google-Books web-space.
    *Mössbauer spectroscopy for heavy elements: a relativistic benchmark study of mercury*,
    Theor. Chem. Acc. **129**, *631-650* (2011)
    `[pdf] <http://dx.doi.org/10.1007/s00214-011-0911-2>`_
+
+.. [Kullie2011] O. Kullie and T. Saue,
+   *Range-separated density functional theory: a 4-component relativistic study of the rare gas dimers He2, Ne2, Ar2, Kr2, Xe2, Rn2 and Uuo2*,
+   J. Chem. Phys. **395**, *54* (2011)
+   `[pdf] <http://dx.doi.org/10.1016/j.chemphys.2011.06.024>`_
 
 .. [Kutzelnigg1984] W. Kutzelnigg,
    *Chemical Bonding in the Higher Main Group Elements*, Angew. Chem. Int. Ed. Engl. **23**, *272* (1984),
@@ -240,6 +257,12 @@ or popular Google-Books web-space.
    molecules including partiy-violating weak interactions*,
    Phys. Rev. A **60**, *4439* (1999)
    `[pdf] <http://dx.doi.org/10.1103/PhysRevA.60.4439>`_
+
+.. [Lee1977] Y. S. Lee, W. C. Ermler, and K. S. Pitzer,
+   *Ab initio effective core potentials including relativistic effects. 
+   I. Formalism and applications to the Xe and Au atoms*,
+   J. Chem. Phys. **67**, *5861* (1977)
+   `[pdf] <http://dx.doi.org/10.1063/1.434793>`_
 
 .. [Lee1988] C. Lee, W. Yang, and R. G. Parr, *Development
    of the Colle-Salvetti Correlation-Energy Formula into a Functional of
@@ -295,6 +318,12 @@ or popular Google-Books web-space.
    *Passing the one-billion limit in Full CI calculations*,
    Chem. Phys. Lett. **169**, *463* (1990)
    `[pdf] <http://dx.doi.org/10.1016/0009-2614(90)85633-N>`_
+
+.. [Park2012] Y. C. Park, I. S. Lim, and Y. S. Lee,
+   *Two-Component Spin-orbit Effective Core Potential Calculations 
+   with an All-electron Relativistic Program DIRAC*
+   Bull. Korean Chem. Soc. **33**, *803* (2012)
+   `[pdf] <http://dx.doi.org/10.5012/bkcs.2012.33.3.803>`_
 
 .. [Pecul2004] M. Pecul, T. Saue, K. Ruud, A. Rizzo,
    *Electric field effects on the shielding constants of noble gases: A 4-component relativistic Hartree-Fock study*,

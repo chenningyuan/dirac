@@ -260,7 +260,7 @@ b3p86_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
-    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1);
+    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
     fun_set_hf_weight(1-dirw);
     return 1;
 }
@@ -272,7 +272,7 @@ b3p86g_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
-    gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1);
+    gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1-lypw);
     fun_set_hf_weight(1-dirw);
     return 1;
 }

@@ -41,7 +41,9 @@ the oxygen molecule as this triplet is split by a few wave numbers due
 to spin-spin and (second order) spin-orbit interactions. The lowest
 state is the Omega=0 component that cannot be represented by a single
 determinant. This state can be calculated using the Fock space method
-(see under `&CCFSPC </dirac/index.php/Manual:RELCCSD:CCFSPC#DOEA2>`_).
+(see under :ref:`&CCFSPC`).
+
+.. warning:: check link to &CCFSPC
 
 Coming back to the example given above, the oxygen molecule, we now
 show how this is done with the keywords given in the reference manual. We again want to
@@ -69,7 +71,7 @@ X ground state is a triplet that is split by second-order spin-orbit
 coupling and spin-spin interactions into a lowest M\ :sub:`S`\ =0
 component and two higher M\ :sub:`S`\ =±2 components. This case is also
 discussed under the RELCCSD input as an example of the use of the
-`NELEC </dirac/index.php/Manual:RELCCSD:RELCCSD#NELEC>`_ keyword. In the
+:ref:`NELEC` keyword. In the
 Fock space approach we first perform a calculation on
 O\ :sub:`2`\ \ :sup:`+2`\  and calculate the three X states, the
 degenerate open shell singlet a and the singlet b state in one single

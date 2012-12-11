@@ -25,9 +25,8 @@ fluorine atom using a COSCI wavefunction. This will represent the
 individual determinants in this simple case. 
 
 The same calculation can
-also be done automatically by specifying
-`.RESOLVE </dirac/index.php/Manual:WAVE_FUNCTION:RESOLVE>`_ in the `WAVE
-FUNCTION </dirac/index.php/Manual:WAVE_FUNCTION>`_ section of the input.
+also be done automatically by specifying :ref:`.RESOLVE`
+in the :ref:`**WAVE FUNCTION` section of the input.
 
 The full calculation is given as input example of the  *cosci_energy*  test:
 

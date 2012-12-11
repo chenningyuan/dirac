@@ -69,7 +69,7 @@ scalar relativistic effects::
 
 In the two-component variational scheme is possible to combine external AMFI
 spin-orbit terms, [Ilias2001]_, together with BSS integrals - see the
-:ref:`AMFI` section.  Note that AMFI provides only one-center atomic
+:ref:`\*AMFI` section.  Note that AMFI provides only one-center atomic
 integrals.
 
 Infinite order scalar and spin-orbit terms, (one-electron) mean-field
@@ -101,7 +101,7 @@ This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit comes
 from the Gaunt interaction term.
 
 DIRAC enables switching-off AMFI spin-orbit contributions from various centers.
-See the keyword :ref:`NOAMFC`.
+See the keyword :ref:`.NOAMFC`.
 
 Infinite order scalar terms "from the beginning", (one-electron) spin orbit
 (SO1) and the mean-field spin-same-orbit (MFSSO2) terms exclusively from AMFI::

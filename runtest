@@ -820,15 +820,15 @@ def main(*args):
                     if line[0:1] != '#':
                         current_section = get_current_section(line, current_section)
                         if use_this_line(current_section):
-                            if   line[0:2] == 'sh':
+                            if  line.split()[0] == 'sh':
                                 l.append(shell_command(test, line))
-                            elif line[0:2] == 'cp':
+                            elif line.split()[0] == 'cp':
                                 l.append(python_command(test, line))
                                 pass
-                            elif line[0:2] == 'mv':
+                            elif line.split()[0] == 'mv':
                                 l.append(python_command(test, line))
                                 pass
-                            elif line[0:2] == 'rm':
+                            elif line.split()[0] == 'rm':
                                 l.append(python_command(test, line))
                                 pass
                             else:
@@ -870,6 +870,8 @@ def main(*args):
             nr_of_tests_done += 1
             start = time.time()
             exit = task.run_and_controlled_exit()
+            result_text = 'UNDEFINED'
+
             if exit == 'NORMAL':
 
                 nr_problems = 0
