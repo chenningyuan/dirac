@@ -13,18 +13,15 @@ Section.
 The RELADC/LANCZOS calculation is then individually controlled in the
 \*\*RELADC and \*\*LANCZOS input sections.
 
-\*\*RELADC
-==========
+star(RELADC)
 
-.DOSIPS
--------
+keyword(DOSIPS)
 
 Do Single Ionization Potentials.
 If you intend to do single ionization spectra calculations then set this keyword.
 Closely related to SIP calculations is the keyword
 
-.ADCLEVEL
----------
+keyword(ADCLEVEL)
 
 Here you determine the perturbational order for a SIP calculation.
 
@@ -48,8 +45,7 @@ Here you determine the perturbational order for a SIP calculation.
    2
 
 
-.SIPREPS
----------
+keyword(SIPREPS)
 
 Integer array of length 32. Specifies the symmetries of the one-hole
 final states (SIP) to be calculated. If you do not enter this array
@@ -73,23 +69,20 @@ number of requested symmetries followed by the individual irrep numbers.
    1,3,5,7,17,19,21,23
 
 
-.READQKL
---------
+keyword(READQKL)
 
 Read back previously calculated constant diagrams in SIP runs. This is a restart
 option to avoid the most time consuming step in SIP runs. The constant diagrams
 for all symmetries are stored in the file QKLVAL.
 
-.NOCONS
--------
+keyword(NOCONS)
 
 Block calculation of constant diagrams in third-order SIP calculations.
 ADC is still executed up to third order but in the hole/hole block the (time consuming)
 constant diagrams are omitted. Skipping constant diagrams reduces accuracy but
 increases speed considerably. Not recommended for production runs.
 
-.VCONV
-------
+keyword(VCONV)
 
 Determines convergence of the inverse iteration in the calculation of
 the constant diagrams. If these iterations take much time you can reduce
@@ -109,24 +102,21 @@ of results when you activate this option.
     .VCONV
     1.0E-04
 
-.DOADCP
--------
+keyword(DOADCP)
 
 Execute automatic eigenvector population analysis. Requires the activation of long eigenvector
 calculation via .SIPEIGV. The final states which are represented by the ADC eigenvectors are
 analyzed with respect to atomic contributions to individual states. Can be further processed
 by GNUPLOT (this module is work in progress and will be finished soon).
 
-.DOFULL
--------
+keyword(DOFULL)
 
 Lanczos is automatically invoked when RELADC is active. If you want to invoke an additional
 full diagonalizer set this keyword. Attention: ADC matrices can become very large. A full
 diagonalization is therefore supported only for matrix dimensions up to 5000 x 5000 and is useful
 for test purposes only.
 
-.DODIPS
--------
+keyword(DODIPS)
 
 Do Double Ionization Potentials.
 If you intend to do double ionization spectra calculations then set this keyword.
@@ -139,8 +129,7 @@ is set fixed to 'extended second order'.
 
     DODIPS = F
 
-.DIPREPS
----------
+keyword(DIPREPS)
 
 Integer array of length 32. Specifies the symmetries of the two-hole
 final states (DIP) to be calculated. If you do not enter this array
@@ -155,8 +144,7 @@ analogous to SIPREPS.
 
     DIPREPS(1:32) = 0  (no symmetries preselected, all are calculated)
 
-.ADCTHR
---------
+keyword(ADCTHR)
 
 In DIP calculations only matrix elements whose amount is larger than ADCTHR
 will be written to disk. This is due to the large matrices occurring in DIP
@@ -178,8 +166,7 @@ the behavior is system-dependent.
     .ADCTHR
     1.0E-05
 
-\*\*LANCZOS
-===========
+star(LANCZOS)
 
 Once the ADC matrices are stored in packed form on disk they are diagonalized
 by the iterative Lanczos algorithm. The spectral information is written to
@@ -249,7 +236,7 @@ interested in a few lowest IPs and the screen output suffices.
     .DIPPRNT
     100.0
 
-.SIPEIGV
+keyword(SIPEIGV)
 --------
 
 Integer array of length 32. For each chosen symmetry given in SIPREPS
@@ -287,7 +274,7 @@ then 20 eigenvectors are calculated for irrep 1, 20 for 3, 30 for 5, 30 for 7,
 10 for 17 and none for the remaining symmetries.
 
 
-.DIPEIGV
+keyword(DIPEIGV)
 --------
 
 Everything that is mentioned in .SIPEIGV refers here to the eigenvectors for the
@@ -295,8 +282,7 @@ doubly ionized final states. Same default and same input with reference to the
 DIPREPS array, of course.
 
 
-.DOINCORE
----------
+keyword(DOINCORE)
 
 This keyword activates an incore Lanczos diagonalization. If you run jobs on machines with
 large core memory you can speed up the diagonalization considerably by transferring large parts
