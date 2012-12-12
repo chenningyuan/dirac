@@ -62,13 +62,27 @@ ECP parameters from the library
  LARGE BASIS aug-cc-pVTZ
  FINISH
 
-Basis set library for ECP (line 7):
- 
-The format is same as the large component basis set. (see large component basis set) However, one should use the basis set parameters corresponding to the RECP.
+1. Basis set library for ECP (line 7):
+The format is same as the large component basis set. (see large component basis set) 
+However, one should use the basis set parameters corresponding to the RECP.
 
-ECP parameters from the library (line 8):
+2. ECP parameters from the library (line 8):
+ECPLIB keyword should be used for the use of RECP parameters from the library. 
 
-ECPLIB keyword should be used for the use of RECP parameters from the library.
+Note: In DIRAC program, some ECP libraries are provided in basis_ecp directory for your conveniences.  
+However, it is safe to check ECP parameters from authors' webpages.
+The name of ECP parameters used here is following, ECP(XX)(YY)(ZZ)(SO/SF). 
+
+* XX: representative authors, (CE=Christiansen, Ermler, and coworkers), (DS=Dolg, Stoll, and coworkers), (HW=Hay, Wadt, and coworkers), (SB=Stevens, Basch, and coworkers)
+
+* YY: number of core electrons replaced by potential
+
+* ZZ: further information (if exist),
+
+* (SO/SF) : spin-orbit(SOREP) or spin-free(AREP), The difference of SO and SF is the existance of SO parameters.
+
+For example, ECPDS60MDFSO indicates Stuttgart RECP from Dolg, Stoll, and coworkers 
+with 60 electrons replaced by potential which is fitted from relativistic calculation (spin-orbit potential is included).
 
 Explicitly typed ECP
 ---------------------

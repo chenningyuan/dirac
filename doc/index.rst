@@ -63,6 +63,9 @@ Tutorials and walkthrus
   :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
   :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
 
+* **Relativistic effective core potentials:**
+  :doc:`Getting started <tutorials/ecp/first>`
+
 * **Nonrelativistic limit:**
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
 
@@ -118,7 +121,8 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Beta testing <programmers/beta_testing>`
+  :doc:`Beta testing <programmers/beta_testing>` |
+  :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
