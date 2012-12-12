@@ -30,6 +30,9 @@ This means that all changes to release-12 will get integrated into the main line
 development.
 **Never** merge from master to release-12.
 
+If, by accident, you committed to the wrong branch, you can ``git cherry-pick`` the
+commit to the release-12 branch.
+
 3. Do not change the file VERSION. This file is changed when
    we release a new patch. But we will not release a patch from each
    commit to release-12
