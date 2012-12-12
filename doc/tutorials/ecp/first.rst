@@ -44,7 +44,7 @@ In the final output, the two-component molecular spinors are obtained ::
 In the final output, the molecular spinors are generated from the inclusion of spin-orbit coupling in SCF step.
 The orbital degeneracies showing AREP calculation are broken in SOREP. (See AREP calculation below)
 
-Note: Compared to all-electron calculation, only small number of occupied molecular spinors are listed above.  
+Note: Compared to all-electron calculation, only small number of occupied molecular spinors are listed in the above example.  
 Here, only four occupied molecular spinors are shown. 
 Because only eight electrons (7 electrons in iodine and 1 electron in hydorgen) are described.
 46 electrons in iodine are omitted and substituted as core potentials.
@@ -53,7 +53,7 @@ AREP calculation
 ----------------
 
 One-component scalar relativistic effective core potential (AREP) calculation is obtained
-from the omitting SO parameters in SOREP. (HI_AREP.mol)
+from the omitting of the SO parameters in SOREP. (HI_AREP.mol)
 
 .. literalinclude:: HI_AREP.mol 
 
@@ -74,5 +74,5 @@ After SCF step, the following molecular orbitals are obtained ::
     7.50571888682965  ( 2)    21.10478953048176  ( 2)
 
 Compared to molecular spinors from SOREP calculation, spin-orbit coupling neglected in AREP molecular orbitals.
-Degenercies in molecular orbitals from spin-free (AREP) calculation can be compared with SOREP results.
+As a result, some degenercies in molecular orbitals appear in spin-free (AREP) calculation. 
 
