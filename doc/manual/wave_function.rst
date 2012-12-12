@@ -45,6 +45,9 @@ keyword(MVO)
 
 Calculate modified virtual orbitals (see :ref:`MVOCAL`).
 
+keyword(MP2 NO)
+
+Activates the :ref:`*MP2 NO` module to calculate MP2 natural orbitals.
 
 keyword(RELCCSD)
 
