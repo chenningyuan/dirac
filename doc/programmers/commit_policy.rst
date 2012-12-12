@@ -23,12 +23,15 @@ the guidelines outlined here.
 To summarize the above two points: all commits that go to master will **never**
 make it to this documentation: http://diracprogram.org/doc/release-12/ and will
 **never** be part of patches to DIRAC12 if you don't carefully plan your
-commits, the patches **never** get lost (from the user's point of view).
+commits, the patches **will** get lost (from the user's point of view).
 
 **All** commits that go to release-12 can be merged to master at any moment.
 This means that all changes to release-12 will get integrated into the main line
 development.
 **Never** merge from master to release-12.
+
+If, by accident, you committed to the wrong branch, you can ``git cherry-pick`` the
+commit to the release-12 branch.
 
 3. Do not change the file VERSION. This file is changed when
    we release a new patch. But we will not release a patch from each
