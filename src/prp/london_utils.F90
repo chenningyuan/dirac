@@ -452,6 +452,10 @@ contains
 
 !    it is used to calculate the NMR shielding tensor
 !    from Eq. 40-42 from JCP 131, 124119
+
+! gosia: todo: now it works only if we always add reorthonormalization contribution
+! (run routines in london_reorth), as there the TBMO file is created...
+!  i'll have to rewrite it to make it independent on that file
 !    ---------------------------------------------------------------------------
 
 !    which component of magnetic field is that:
@@ -583,7 +587,7 @@ contains
 
      debug_me = .false.
      if (debug_me) then
-        write(*, *) 'kappa on output'
+        write(*, *) 'kappa on output, ee, ep = ', ee, ep
         call prqmat(kappa(1,1), length, 1, length, 1, nz,  &
                     ipqtoq(1,irep), lupri)
      end if

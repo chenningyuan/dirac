@@ -537,7 +537,14 @@ contains
 
 
       end do
+
+    !if (lao_lr_rearrange) then
+    !  call get_m_ij(fmo(1, icomp))
+    !end if
+
+
     end do
+
 
   end subroutine
 
@@ -576,7 +583,6 @@ contains
 
 !     get T^B_icomp matrix into tb
 !     gosia: if lao_lr_rearrange, then here we read in 'dS/dB' integrals
-!     with factor -0.5 (the same as in SYMCON)
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
@@ -619,25 +625,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-!  subroutine check_symmetry(mat, ndim)
-!    integer, intent(in) :: ndim
-!    real(8), intent(in) :: mat(ndim, ndim, *)
-!    real(8) :: a
-!    integer :: i, j, iz
-!
-!    a = 0.0d0
-!    do iz = 1, nz
-!      do i = 1, ndim - 1
-!        do j = i + 1, ndim
-!          a = a + (dabs(mat(i, j, iz)) - dabs(mat(j, i, iz)))
-!        end do
-!      end do
-!    end do
-!    a = a/dfloat(((ndim*ndim - ndim)/2)*nz)
-!    write(*, *) 'symmetry mat: ', a
-!
-!  end subroutine
 
   subroutine write_sb(sb)
     real(8), intent(in) :: sb(n2orbxq, *)
