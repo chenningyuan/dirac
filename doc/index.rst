@@ -121,7 +121,8 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Beta testing <programmers/beta_testing>`
+  :doc:`Beta testing <programmers/beta_testing>` |
+  :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
