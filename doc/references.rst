@@ -203,6 +203,12 @@ or popular Google-Books web-space.
    Acta Physica Slovaca. Reviews and Tutorials, **60**, *259-391* (2010)
    `[pdf] <http://dx.doi.org/10.2478/v10155-010-0003-1>`_
 
+.. [Jensen1988] H. J. Aa. Jensen, P. Jørgensen, H. Ågren, and J. Olsen, *Second-order Møller–Plesset
+   perturbation theory as a configuration and orbital generator in multiconfiguration
+   self-consistent field calculations.* 
+   J. Chem. Phys., **88**, *3834* (1988). Erratum **89**, *5354* (1988).
+   `[pdf] <http://dx.doi.org/10.1063/1.453884>`_
+
 .. [Jensen1996] H. J. Aa. Jensen and K. G. Dyall and T. Saue and K. Fægri jr.,
    *`Relativistic 4-component Multi-Configurational Self-Consistent Field Theory for Molecules: Formalism*
    J. Chem. Phys. **104**, *4083* (1996)
