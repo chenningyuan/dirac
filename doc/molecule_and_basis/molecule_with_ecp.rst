@@ -84,6 +84,9 @@ The name of ECP parameters used here is following, ECP(XX)(YY)(ZZ)(SO/SF).
 For example, ECPDS60MDFSO indicates Stuttgart RECP from Dolg, Stoll, and coworkers 
 with 60 electrons replaced by potential which is fitted from relativistic calculation (spin-orbit potential is included).
 
+Further correlation-consistent basis sets by Kirk Petereson and co-workers that can be used with the Stuttgart-Cologne ECPs 
+are available `here <http://tyr0.chem.wsu.edu/~kipeters/basis.html>`_ . 
+
 Explicitly typed ECP
 ---------------------
 
