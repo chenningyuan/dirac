@@ -32,8 +32,8 @@ states are solved for::
   *READIN
   .UNCONTRACT
   **WAVE FUNCTION
-  .DHF
-  *DHFCAL
+  .SCF
+  *SCF
   .EVCCNV
    1.0D-9 1.0D-6
   .CLOSED

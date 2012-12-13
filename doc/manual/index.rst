@@ -26,6 +26,7 @@ Keyword reference
    - :doc:`RELCCSD <relccsd>` --- Coupled cluster module
    - :doc:`RELADC <reladc>` --- Propagator module (Green's functions) for ionizations
    - :doc:`MVOCAL <mvocal>` --- Modified virtual orbitals
+   - :doc:`MP2 NO <mp2no>` --- MP2 natural orbitals module
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
 
