@@ -77,7 +77,7 @@ will call response.inp::
   .LVCORR
   .URKBAL
   **WAVE FUNCTION
-  .DHF
+  .SCF
   **PROPERTIES
   *LINEAR RESPONSE
   .A OPERATOR
@@ -333,7 +333,7 @@ steps along each side (this is the molecular plane)::
   .LVCORR
   .URKBAL
   **WAVE FUNCTION
-  .DHF
+  .SCF
   **VISUAL
   .J
    PAMXVC 1
