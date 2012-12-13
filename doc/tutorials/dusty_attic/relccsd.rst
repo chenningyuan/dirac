@@ -85,7 +85,8 @@ Fock space run. The FSCCSD input reads then
 
 This example can be found as test #52 REFERENCE_IT!!! in the DIRAC test set.
 
-.. include:: ../../test/fscc_highspin/README.rst
+.. comment out...
+ .. include:: ../../test/fscc_highspin/README.rst
 
 Nitrogen atom
 -------------
