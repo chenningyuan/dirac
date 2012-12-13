@@ -2280,7 +2280,7 @@ C
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-6, RTHRCI**2 * 0.01D0)
+      THRSCR = MIN(1.0D-8, RTHRCI**2 * 0.01D0)
 C
 C     **********************************
 C     *** Start micro iteration loop ***
