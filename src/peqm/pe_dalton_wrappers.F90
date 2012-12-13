@@ -15,6 +15,9 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     logical, intent(in) :: gauss
     real(dp), dimension(1), intent(in) :: gauexp
 
+!edh: for debugging
+#include "priunit.h"
+
 !    logical, intent(in) :: ketlrg, bralrg, ketsml, brasml
 
     integer :: num_ao
@@ -77,6 +80,8 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
                             prop_sym=prop_sym)
     if (num_prop /= ncomps) stop 'Wrong number of components.'
        call Gen1IntAPIGetNumAO(num_ao=num_ao)
+
+    write(lupri,*) 'num_ao, nbas nnbas', num_ao, nbas, nnbas    
 
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 

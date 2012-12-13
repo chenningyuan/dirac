@@ -3061,9 +3061,9 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
                 m = (l - 1) * nnbas + 1
                 n = l * nnbas
                 Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
-                do kfoo = m, n
+!                do kfoo = m, n
 !                write(lupri,*) '*** edh: denmats, Mk_ints, El(l)', kfoo, denmats(kfoo), Mk_ints(kfoo,j)
-                end do
+!                end do
                 if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do
         end do
@@ -3126,15 +3126,10 @@ subroutine pe_polarization(denmats, fckmats)
                 Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
                 Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
                 Epol(3,i) = - 0.5d0 * dot(M1inds(:,i), Fmuls)
-!               write(lupri,*) '*** edh: M1inds ***', M1inds(:,i), Fels(:,i) 
                 if (pe_pd) Epd(2,i) = - 0.5d0 * dot(M1inds(:,i), Fpd)
             end do
         end if
     end if
-
-    write(lupri,*) '*** edh: Epol el', sum(Epol(1,:))
-    write(lupri,*) '*** edh: Epol nuclear', sum(Epol(2,:))
-    write(lupri,*) '*** edh: Epol multipoles', sum(Epol(3,:)) 
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
@@ -3393,11 +3388,10 @@ subroutine induced_dipoles(M1inds, Fs)
                                                     & iter, ' iterations.'
                         converged = .true.
                     else if (iter > 50) then
-                        write(luout,*) 'norm', norm
                         write(luout,*) 'ERROR: could not converge induced&
                                        & dipole moments.'
                         stop 'ERROR: could not converge induced dipole&
-                             & moments.' 
+                             & moments.'
                     else
                         converged = .false.
                         iter = iter + 1
@@ -3507,8 +3501,6 @@ subroutine electron_fields(Fels, denmats)
 
     real(dp), dimension(:,:), intent(out) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
-!edh temp.  
-    integer :: kfoo
 
     logical :: skip
     integer :: site
@@ -3532,21 +3524,15 @@ subroutine electron_fields(Fels, denmats)
         end if
 !       Edh: Tk_integrals routine have been modified (not adapted here)
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
-        kfoo = 0
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
                 m = k * nnbas
                 Fels(i+j,k) = dot(denmats(l:m), Fel_ints(:,j))
-                do kfoo = l,m
-!                  write(lupri,*) '*** edh: denmats, kfoo, denmats(kfoo)', kfoo, denmats(kfoo), Fel_ints(kfoo,j)
-                end do               
             end do
         end do
         i = i + 3
     end do
-
-    
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
