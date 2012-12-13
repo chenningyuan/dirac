@@ -32,9 +32,9 @@ iterations we would have an input like this::
   **HAMILTONIAN
   .SPINFREE
   **WAVE FUNCTIONS
-  .DHF
+  .SCF
   .RELADC
-  *DHFCAL
+  *SCF
   .CLOSED
    30 18
   .FCKCNV
