@@ -236,7 +236,7 @@ instance::
    OVERLAP
 
 
-Dipole moment as finite field parturbation
+Dipole moment as finite field perturbation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another example is the finite perturbation calculation with the :math:`\hat{z}`
