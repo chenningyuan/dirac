@@ -934,11 +934,10 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
       ENDIF
 
 C
-C     Finite field: 
-C     Loop through list of one-electron operators in CBIHAM;
+C     Finite field perturbations:
+C     Loop through  the list of one-electron operators in CBIHAM;
 C     ======================================================
 C     ...skip Fock-matrices for now ...
-CMI   ... only ordinary (symmetric) operators added to the Hamiltonian
       TOBE = .FALSE.
       DO I = 1,N1OPER
         IOP = IPR1OP(I)
@@ -1038,6 +1037,7 @@ C     On input:  LU1INT  - lu of integral file
 C                IOP - index of the property
 C                IDIMENS - dimension of array (either triangular or square)
 C                FIRST - array, must be set to true
+C                IPRINT - print level (very usefull for control printouts)
 C
 C     On output: PMAT - accumulated property matrix (Hermit sorting)
 C
@@ -1139,13 +1139,8 @@ CMI     ... assignements
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-CMI fix
-!       IF (IOPTYP.EQ.21) THEN 
-!          IQP=1
-!          WRITE(LUPRI,'(/,2X,A)')
-!     &    'Operator of type 21, IQP set to 1.'
-!       ENDIF
-! check
+
+! check with data printout
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
           WRITE(LUPRI,'(A,I3,A,I2,3X,A,A8)')
@@ -1323,13 +1318,16 @@ C     corresponding to property IOP of COMMON block XCBPRP
 C
 C     On input:  LU1INT
 C                   IOP
+!                 IDIMENS
+!                 FIRST
+!                 IPRINT
 C     
 C     On output: PMAT - property matrix (Hermit sorting)
 C
 C        
 C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996 - tsaue
-C     Dec.2005, MI - adapted for square properties (IDIMENS = NNBBASX or N2BBASX)
+C     Dec.2005, MI - adapted for square matrices of some operators (IDIMENS = NNBBASX or N2BBASX)
 C
 C*************************************************************************
 ****
@@ -3647,7 +3645,8 @@ C
           DO JSYM = 1,NBRP
             ISYM           = JFSYM(JSYM,IP)
             IREP           = ISYM - 1
-!fixme irep can be < 0 in NONREL runs
+!fixme irep can be < 0 in NONREL runs; miro-print warning
+            IF (IREP.LT.0) WRITE(LUPRI,*) 'WARNING: GTOVLT, IREP<0!'
             IF(NBBAS(IREP,IC).GT.0) THEN
               ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
               IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)

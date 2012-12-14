@@ -1,11 +1,16 @@
 @ECHO OFF
+
+rem
+rem True DOS written script for the DIRAC buildup !
+rem
+
 cls
+
 rem  http://www.robvanderwoude.com/batchfiles.php
 rem the directory where your DIRAC sits
-echo "Hello, building up DIRAC on Windows 7 server Urpin FPV-UMB"
+rem echo "Hello, building up DIRAC on Windows 7 server Urpin FPV-UMB"
 
 set DIRAC=C:\Users\milias\Documents\Work\QCH\dirac_git\trunk
-set DIRACx=C:/Users/milias/Documents/Work/QCH/dirac_git/trunk
 
 set BUILD=build_MinGW64_ilp64_serial
 set BUILD_DBG=build_MinGW64_ilp64_serial_debug
@@ -16,8 +21,17 @@ set BUILD_I32LP64_CHECK=build_MinGW64_i32lp64_serial_check
 rem go to the local DIRAC directory
 cd %DIRAC%
 
+rem initialize GIT_SSH to make PuTTy keyring work - 
+rem set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
+rem echo "I have GIT_SSH=%GIT_SSH%"
+rem echo "I have SVN_SSH=%SVN_SSH%"
+rem echo "I have PLINK_PROTOCOL=%PLINK_PROTOCOL%"
+
 rem enable keyring....
-rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\Documents\milias_private_key.ppk
+rem "C:\Program Files (x86)\PuTTY\pageant.exe"  C:\Users\milias\.ssh\milias_private_key.ppk
+
+rem check the server connectivity:
+rem plink -agent git@repo.ctcc.no
 
 rem download fresh Dirac - MUST HAVE full path of git
 C:\Git\bin\git.exe pull origin release-12
@@ -59,4 +73,3 @@ cd %BUILD_I32LP64_CHECK%
 cmake ..
 mingw32-make clean
 mingw32-make Experimental
-

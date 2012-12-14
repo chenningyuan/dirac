@@ -146,3 +146,5 @@ integrals (point nucleus only) use::
 
   .BSS
    001
+
+.. include:: ../../../../test/cosci_energy/README.rst
