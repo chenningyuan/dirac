@@ -1,8 +1,13 @@
-Spin-orbit states of the Fluorine atom
---------------------------------------
 
-This test calculates the spin-orbit components of the :math:`^{2}P` state of Fluorine,
-using a COSCI wavefunction and several different Hamiltonians.
+---------------------------------------
+Spin-orbit states from the COSCI method
+---------------------------------------
+
+This tutorial's part demonstrates the importance of the effective mean-field spin-orbit scrrening
+on spin-orbit states of the open-shell system.
+
+In the DIRAC test we calculate the spin-orbit components of the :math:`^{2}P` state of Fluorine,
+using a COSCI wavefunction and with several different Hamiltonians.
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/cm-1  |
@@ -41,13 +46,14 @@ using a COSCI wavefunction and several different Hamiltonians.
 +-------------------+-------------------+
 
 The closest results to those with the four-component Dirac-Coulomb (DC) Hamiltonian are
-with the infinite-order two-component Hamiltonian containing mean-field spin-orbit screening, see for example,  [Ilias2007]_.
+with the infinite-order two-component Hamiltonian containing mean-field spin-orbit screening (those with +MFSSO), 
+see for example, Refs. [Ilias2001]_, [Ilias2007]_.
 
 Spin-orbit states of the :math:`Rn^{77+}` cation
 -------------------------------------------------
 
-Let us proceed to a very simple heavy system, Fluorine-like (9 electrons), highly charged :math:`Rn^{77+}` cation (Z=86).
-Its :math:`^{2}P` splitting is in the following table:
+Let us proceed to the isoelectronic, simple heavy system:  Fluorine-like (9 electrons), highly charged :math:`Rn^{77+}` cation (Z=86).
+Its calculated :math:`^{2}P` splittings are in the following table:
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/eV    |
@@ -73,5 +79,8 @@ Its :math:`^{2}P` splitting is in the following table:
 
 Again, the two-component infinite order Hamiltonian with the AMFI screening (BSS+MFSSO), together with 
 the screened second-order Douglas-Kroll-Hess operator (DKH2+MFSSO) are reproducing four-component 
-DC results.
+DC results. 
+"Naked" (non-screened) two-component Hamiltonians (BSS, DKH2) are not preforming so well with respect to
+the screened ones.
+Likewise the one-electron spin-orbit terms must be at least of order two (starting from the DKH2 Hamiltonian).
 
