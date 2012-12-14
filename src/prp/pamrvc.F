@@ -4167,10 +4167,6 @@ C
 #endif      
 
 #ifdef MOD_PEQM
-! edh: Most of this presumably not neccesary. Only polarization should be added
-! here... 
-
-      write(lupri,*) 'nnbas edh', nnbas
       write(lupri,*) 'ndmat', ndmat
 
       allocate(dlmat_triangle(nnbbasx*ndmat))
@@ -4275,9 +4271,7 @@ C
 !      write(lupri,*) 'flmat', flmat_triangle(kfoo)
 !      end do
 !     stop 1
-
-
-
+       write(lupri,*), 'ndmat', ndmat
        write(lupri,*), 'FOCK MATRIX RESPONSE WITH PE'
        CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &           1,(/1, 2, 3, 4/),LUPRI)
