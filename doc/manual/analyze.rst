@@ -447,10 +447,6 @@ First give number of fragments to project onto. Then for each fragment give
 filename of MO coefficients and string specifying which orbitals will be
 used in the projection (:ref:`orbital_strings`)::
 
-*Example:*
-
-::
-
   .VECREF
    3
    DFO1AT
@@ -471,7 +467,7 @@ Use full Hessian::
    FULL
 
 Use diagonal approximation of the Hessian. If using this approximation,
-there is danger of converging to the stationary point instead of minima.::
+there is danger of converging to the stationary point instead of minima::
 
   .HESLOC
    DIAG
