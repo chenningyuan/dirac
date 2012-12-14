@@ -46,7 +46,7 @@ using a COSCI wavefunction and with several different Hamiltonians.
 +-------------------+-------------------+
 
 The closest results to those with the four-component Dirac-Coulomb (DC) Hamiltonian are
-with the infinite-order two-component Hamiltonian containing mean-field spin-orbit screening (those with +MFSSO), 
+with the infinite-order two-component Hamiltonian containing mean-field spin-orbit screening (those with +MFSSO),
 see for example, Refs. [Ilias2001]_, [Ilias2007]_.
 
 Spin-orbit states of the :math:`Rn^{77+}` cation
@@ -77,9 +77,9 @@ Its calculated :math:`^{2}P` splittings are in the following table:
 | DKH2sfBSO1        |   4056.349        |
 +-------------------+-------------------+
 
-Again, the two-component infinite order Hamiltonian with the AMFI screening (BSS+MFSSO), together with 
-the screened second-order Douglas-Kroll-Hess operator (DKH2+MFSSO) are reproducing four-component 
-DC results. 
+Again, the two-component infinite order Hamiltonian with the AMFI screening (BSS+MFSSO), together with
+the screened second-order Douglas-Kroll-Hess operator (DKH2+MFSSO) are reproducing four-component
+DC results.
 "Naked" (non-screened) two-component Hamiltonians (BSS, DKH2) are not preforming so well with respect to
 the screened ones.
 Likewise the one-electron spin-orbit terms must be at least of order two (starting from the DKH2 Hamiltonian).
