@@ -313,7 +313,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-11)
+      PARAMETER (DM1=-1.D0)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
@@ -478,30 +478,19 @@ C               Translate to the complex (bar/unbar) notation.
       ENDDO
       ENDIF
 C
-! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN
          IF (NSTRT1.EQ.NSTRT2) THEN
-            ! print out NONZERO diagonal matrix elements
             WRITE (LUPRI,1010) ACHAR(25:32)
-            WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
             DO I = 1, 2*NSTRT1
-             IF ( (DABS(PRCMO(I,I,1)).GT.ZEROTHRS).OR.
-     &            (DABS(PRCMO(I,I,2)).GT.ZEROTHRS) ) THEN
                WRITE (LUPRI,1011) I,PRCMO(I,I,1),PRCMO(I,I,2)
-             ENDIF
             ENDDO
             WRITE (LUPRI,*)
          ENDIF
-         IF (IPRINT.GE.2) THEN
-           ! print out all NONZERO matrix elements
-            WRITE (LUPRI,1012) ACHAR(25:32)
-            WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
+         IF (IPRINT.GE.3) THEN
+            WRITE (LUPRI,1012)
             DO I = 1, NSTRT1*2
                DO J = 1, NSTRT2*2
-                IF ( (DABS(PRCMO(I,J,1)).GT.ZEROTHRS).OR.
-     &               (DABS(PRCMO(I,J,2)).GT.ZEROTHRS) ) THEN
                   WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
-                ENDIF
                ENDDO
             ENDDO
             WRITE (6,*)
@@ -516,12 +505,11 @@ C
 C
  1000 FORMAT (/' Transforming ',A8,' evaluation date ',A8,' label ',A8)
  1001 FORMAT (/' Finished transformation : integrals on ',A8)
- 1010 FORMAT (/'Nonzero diagonal elements of ',A8,
-     & ' operator in Kramers paired molecular spinor basis:'
+ 1010 FORMAT (/' Diagonal elements of ',A8,
+     & ' operator in molecular spinor basis'
      & //12X,'Real part',11X,'Imaginary Part')
  1011 FORMAT (I6,2X,F18.10,2X,F18.10)
- 1012 FORMAT (/'All nonzero property elements of ',A8,' operator',
-     &' in Kramers paired molecular spinor basis:'/)
+ 1012 FORMAT (/' Complete property matrix in molecular spinor basis')
  1013 FORMAT (2I5,F18.10,2X,F18.10)
       RETURN
       END
