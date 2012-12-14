@@ -2994,6 +2994,10 @@ C
      &          TM2(LR2,LC2,*),IQTM2(*),
      &          BUF(LBUF)
       DIMENSION IQW(4)
+CMI   .... IPRINT threshold 
+      DATA IPRLIM / 200 /
+!     DATA IPRLIM /   4 /
+
 C
       CALL QENTER('QTRANS')
 C
@@ -3042,12 +3046,11 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
          
-          IF (IPRINT.GE.12) THEN
+          IF (IPRINT.GE.IPRLIM) THEN
             CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
 
             WRITE(LUPRI,'(2X,A,4I2)')
      &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
-            WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
             CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
 
             WRITE(LUPRI,'(/2X,A,4I2)')
@@ -3069,7 +3072,7 @@ C
      &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &               D0,IQW,BUF,NRAO,NCMO,NZW)
 
-          IF (IPRINT.GE.13) THEN
+          IF (IPRINT.GE.IPRLIM) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &      'QTRANS: First part transformation matrix W, W=FC;'//
      &      ' IQW=',(IQW(IZ),IZ=1,NZW)
@@ -3084,7 +3087,7 @@ C
      &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
      &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
 
-          IF (IPRINT.GE.13) THEN
+          IF (IPRINT.GE.IPRLIM) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &     'QTRANS: Second part of transformation H,H=(C+).W; '//
      &     'IQMO=',(IQMO(IZ),IZ=1,NZMO)
@@ -3114,13 +3117,7 @@ C
      &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
      &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &        D0,IQW,BUF,NRMO,NCAO,NZW)
-
-	  IF(IPRINT.GE.15) THEN
-        CALL HEADER('QTRANS:first part of transformation,W = (C+)F ',-1)
-        CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)       
-	  ENDIF
-	 
-C 
+C
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
@@ -3130,9 +3127,8 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
-		
         IF(IPRINT.GE.11) THEN
-          CALL HEADER('QTRANS: Final AO-to-MO-transformed matrix',-1)
+          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
 C

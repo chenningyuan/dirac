@@ -147,13 +147,13 @@ C
 C              Generate matrix
 C
                CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
-               CALL RMAKDM(.TRUE.,.FALSE.,DUMMY,WORK(KDV),DUMMY,DUMMY,
-     &              WORK,KFREE,LFREE)
-c              RMAKDM needs to be called "...,WORK,KFREE,LFREE)"
-!              WRITE(LUPRI,'(/A)') '*** GETMAT: one-electron active'//
-!    &         ' matrix DV missing. Cannot continue. ***'
-!              CALL QUIT('*** GETMAT: one-electron active matrix DV 
-!    &                    missing. Cannot continue. ***')
+c              CALL RMAKDM(.TRUE.,.FALSE.,DUMMY,WORK(KDV),DUMMY,DUMMY,
+c    &              WORK,LWORK)
+c              RMAKDM need to be called "...,WORK,KFREE,LFREE)"
+               WRITE(LUPRI,'(/A)') '*** GETMAT: one-electron active'//
+     &         ' matrix DV missing. Cannot continue. ***'
+               CALL QUIT('*** GETMAT: one-electron active matrix DV 
+     &                    missing. Cannot continue. ***')
 C
 C              Write it to file
 C

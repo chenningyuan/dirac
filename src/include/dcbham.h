@@ -97,9 +97,6 @@
 !                  included in DFT calculations.
 !     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
 !                  constructing direct products of spin and spatial symmetries
-!
-!    TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
-!
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -132,7 +129,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc, TRS_MIX
+     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -144,7 +141,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
-     &                ecpcalc, TRS_MIX,                                 &
+     &                ecpcalc,                                          &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

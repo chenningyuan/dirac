@@ -1259,7 +1259,7 @@ C
       JCOM(1,19)= 1
 C       
 C         
-C     20. iS.P   * off-diagonal dot-product of sigma and vector operator
+C     20. iS.P         * dot-product of sigma and vector operator
 C     ==================================
 C
       MCMP(20)   =  3
@@ -1273,24 +1273,13 @@ C
 C
 C     21.    i*BETA*GAMMA5 * scalar operator
 C     ===========================================
-C     occupies (as imaginary elements) off-diagonal block (0+-0)
-C     carries symmetry of gamma5 (xyz)
+C     occupies imaginary part of the LS block
 C
-      MCMP(21)    =  1
-      JM4 (1,21)  =  4 
-      JCOM(1,21)  =  1
-
-C     22. (iS.P)d   * new diagonal dot-product of sigma and vector operator
-C     composed of i[Sigma_x]Px + i[Sigma_y]Py + i[Sigma_z]Pz (+00+)
-C     =======================================================================
-C
-      MCMP(22)   =  3
-      JM4 (1,22) =  7
-      JM4 (2,22) =  6
-      JM4 (3,22) =  5
-      JCOM(1,22) =  1
-      JCOM(2,22) =  1
-      JCOM(3,22) =  1
+      MCMP(21)  = 1
+      !JM4 (1,21)= 0  ! wrong !
+      !JM4 (1,21) =  3   ! im(ab), x-quaternion
+      JM4 (1,21) =  4   ! symmetry of gamma5 
+      JCOM(1,21)= 1
 
       RETURN
       END
