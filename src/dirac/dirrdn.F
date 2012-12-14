@@ -7486,8 +7486,9 @@ C     Initialize /CBILOC/
 C     ===================
 C
       PRJLOC = .FALSE.
+      OWNBAS = .FALSE.
       ITRLOC = 100
-      IPRLOC = IPRGEN
+      IPRLOC = 1
       HESLOC = 'FULL'
       LGFULL = .FALSE.
       LGDIAG = .FALSE.
