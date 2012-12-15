@@ -4167,7 +4167,8 @@ C
 #endif      
 
 #ifdef MOD_PEQM
-      write(lupri,*) 'ndmat', ndmat
+!      write(lupri,*) 'ndmat', ndmat
+!      print *, 'raboof', IHRMOP(1:ndmat)
 
       allocate(dlmat_triangle(nnbbasx*ndmat))
       allocate(flmat_triangle(nnbbasx*ndmat))
@@ -4178,6 +4179,7 @@ C
       ! LL block
 !      ndmat = 1
       do l = 1, ndmat
+         if (ihrmop(l) == -1) cycle
          do i = 1, ntbas(1)
             do j = 1, i
                if (i == j) then
@@ -4227,6 +4229,7 @@ C
       ! LL block
       k = 1
       do l = 1, ndmat
+         if (ihrmop(l) == -1) cycle
          do i = 1, ntbas(1)
             do j = 1, i
                if (i == j) then ! edh: Conversion from DALTON to DIRAC
@@ -4271,10 +4274,10 @@ C
 !      write(lupri,*) 'flmat', flmat_triangle(kfoo)
 !      end do
 !     stop 1
-       write(lupri,*), 'ndmat', ndmat
-       write(lupri,*), 'FOCK MATRIX RESPONSE WITH PE'
-       CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &           1,(/1, 2, 3, 4/),LUPRI)
+!       write(lupri,*), 'ndmat', ndmat
+!       write(lupri,*), 'FOCK MATRIX RESPONSE WITH PE'
+!       CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!     &           1,(/1, 2, 3, 4/),LUPRI)
 
 !      call QUIT('EDH STOP HERE')
  
