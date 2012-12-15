@@ -107,6 +107,15 @@ Tutorials and walkthrus
   :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
 
 
+Exercises
+=========
+
+.. toctree::
+   :maxdepth: 1
+
+   exercises/index.rst
+
+
 Reference manual
 ================
 

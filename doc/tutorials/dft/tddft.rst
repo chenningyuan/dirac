@@ -44,7 +44,7 @@ states are solved for::
   .SKIPEP
   .ANALYZE
   .EXCITATION ENERGIES
-   3 4
+   3 4        ! 3 = fermion irrep; 4 = number of excitations (in irrep 3)
   .EXCITATION ENERGIES
    5 4
   .EXCITATION ENERGIES

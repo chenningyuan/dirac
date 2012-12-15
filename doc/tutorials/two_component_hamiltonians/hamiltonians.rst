@@ -15,7 +15,7 @@ or with the more valuable mean-field contribution, u\_so(1) (also in the first
 order), which is reasonable approximation of the 'Gaunt' term from the
 four-component level.
 
-The best two-component Hamiltonian is BSS+MFSSO, or IOTC+MFSSO, or likewise 
+The best two-component Hamiltonian is BSS+MFSSO, or IOTC+MFSSO, or likewise
 X2C+MFSSO (see :ref:`.X2C`) where
 one-electron scalar and spin-orbit effects are up to infinite order, and AMFI
 MFSSO contribution (mean-field spin-same orbit) provides a 'screening' of
@@ -146,3 +146,5 @@ integrals (point nucleus only) use::
 
   .BSS
    001
+
+.. include:: ../../../../test/cosci_energy/README.rst
