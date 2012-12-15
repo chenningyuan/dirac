@@ -1,0 +1,52 @@
+#!/bin/bash
+
+DIR_DOC=$1
+DIR_BUILD=$2
+
+DIR_TEMP=$DIR_BUILD/html_temp
+DIR_FINAL=$DIR_BUILD/html
+
+rm -rf $DIR_TEMP
+cp -r $DIR_DOC $DIR_TEMP
+
+for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
+
+    # replace:
+    # keyword(RABOOF)
+    # by:
+    # .. index:: .RABOOF
+    # .. _RABOOF:
+    #
+    # .RABOOF
+    # -------
+    sed -i 's/keyword(\([a-zA-Z 0-9_]\+\))/\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------/g' $file
+
+    # replace:
+    # starstar(RABOOF)
+    # by:
+    # .. index:: **RABOOF
+    # .. _RABOOF:
+    #
+    # ==========
+    # \*\*RABOOF
+    # ==========
+    sed -i 's/starstar(\([a-zA-Z 0-9_]\+\))/\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========/g' $file
+
+    # replace:
+    # star(RABOOF)
+    # by:
+    # .. index:: **RABOOF
+    # .. _RABOOF:
+    #
+    # ========
+    # \*RABOOF
+    # ========
+    sed -i 's/star(\([a-zA-Z 0-9_]\+\))/\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========/g' $file
+
+done
+
+sphinx-build -b html $DIR_TEMP $DIR_FINAL
+
+rm -rf $DIR_TEMP
+
+exit 0

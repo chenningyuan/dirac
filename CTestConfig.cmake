@@ -9,3 +9,5 @@ set(CTEST_DROP_SITE          "repo.ctcc.no")
 set(CTEST_DROP_LOCATION      "/CDash/submit.php?project=DIRAC")
 set(CTEST_DROP_SITE_CDASH    TRUE)
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS  200)
+
+set(UPDATE_TYPE git)

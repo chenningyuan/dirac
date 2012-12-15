@@ -21,6 +21,35 @@ install(
     WORLD_READ             WORLD_EXECUTE
     )
 
+# workaround to install pam-dirac symlink:
+# 1) copy pam to pam-dirac
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/pam ${PROJECT_BINARY_DIR}/pam-dirac)")
+# 2) install real file pam-dirac
+install(
+    FILES ${PROJECT_BINARY_DIR}/pam-dirac
+    DESTINATION bin
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+# 3) remove real file
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
+# 4) create symlink
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
+
+# write git hash to build dir
+file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${GIT_REVISION}")
+# copy version info to install dir
+install(
+    FILES ${PROJECT_BINARY_DIR}/GIT_HASH ${PROJECT_SOURCE_DIR}/VERSION
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+    )
+
 if(ENABLE_PCMMOD)
     install( # Install PCMSolver input parsing script
         FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/src/solverlib/pcmsolver
@@ -60,11 +89,10 @@ set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, a
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/installation/installation.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_VERSION_MAJOR    "${VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR    "${VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH    "${VERSION_PATCH}")
+set(CPACK_PACKAGE_FILE_NAME        "DIRAC-${DIRAC_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-${DIRAC_VERSION}-Source")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
-    "DIRAC ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+    "DIRAC ${DIRAC_VERSION}"
     )
 
 SET(EXPORT_DIR ${CMAKE_BINARY_DIR}/export)
@@ -77,9 +105,7 @@ include(IncludeFilesList)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
-        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/fetch_external_sources ${CMAKE_SOURCE_DIR}
         COMMAND mkdir -p ${EXPORT_DIR}
-        COMMAND mkdir -p ${EXPORT_DIR}/external
         COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
         COMMAND rm     ${EXPORT_DIR}/sources.tar
@@ -97,20 +123,18 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src                          ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/update                       ${EXPORT_DIR}
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/src/main/main.F90            ${EXPORT_DIR}/src/main
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
-        COMMAND echo "set(DEVELOPMENT_CODE FALSE)" >> ${EXPORT_DIR}/cmake/ConfigVersion.cmake
-        COMMAND echo "DIRAC version: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" > ${EXPORT_DIR}/VERSION
-        COMMAND echo "Git hash:      ${GIT_REVISION}" >> ${EXPORT_DIR}/VERSION
+        COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
         )
 endif()
-
-set(DEVELOPMENT_CODE TRUE)

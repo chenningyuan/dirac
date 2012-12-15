@@ -1,10 +1,6 @@
 
 
-.. _analyze:
-
-===========
-\*\*ANALYZE
-===========
+starstar(ANALYZE)
 
 Wave function analyzing tool.
 
@@ -12,29 +8,54 @@ This section is aimed to analyze the final Hartree-Fock wave function by
 using one or more analysis modules. By default none of them is
 activated.
 
-.PRIVEC
--------
 
-Print vectors. Activates the `\*PRIVEC`_ subsection.
+keyword(PRIVEC)
+
+Print vectors. Activates the :ref:`*PRIVEC` subsection.
 
 
-`\*PRIVEC`_
-===========
+keyword(MULPOP)
+
+Perform Mulliken population analysis [Mulliken1955]_
+Continues to :ref:`*MULPOP`
+subsection.
+
+
+keyword(PROJECTION)
+
+Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
+subsection.
+
+
+keyword(DENSITY)
+
+Write density to a formatted file in Gaussian cube format. Activates the
+:ref:`*DENSITY` subsection.
+
+
+keyword(LOCALIZATION)
+
+Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
+
+Continues to the activated :ref:`*LOCALIZATION`
+subsection. Note that in the present implementation this only works in
+C\ :sub:`1`\  symmetry.
+
+--------------------------------------------------------------------------------
+
+star(PRIVEC)
 
 Print vectors read from DFCOEF.
 
-.VECPRI
--------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to print.
+keyword(VECPRI)
+
+For each fermion irrep, give an :ref:`orbital_strings` of orbitals to print.
 
 *Default:* Print the occupied electronic solutions.
 
-**Advanced options**
 
-.PRICMP
--------
+keyword(PRICMP)
 
 Separate control for printing of large and small components.
 
@@ -52,17 +73,15 @@ Print small components:
     .PRICMP
      2
 
-.AOLAB
-------
+
+keyword(AOLAB)
 
 Print vectors in AO basis.
 
 *Default:* Print vectors in SO basis.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -73,16 +92,9 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.MULPOP
--------
-
-Perform Mulliken population analysis [Mulliken1955]_
-Continues to
-`\*MULPOP </dirac/index.php/Manual:ANALYZE:MULPOP>`_ subsection.
-
-\*MULPOP -- Mulliken population analysis
-========================================
+star(MULPOP)
 
 Mulliken population analysis is performed in AO basis. The analysis is
 based on the concept of *labels*. Each basis function is labeled by its
@@ -90,31 +102,25 @@ functional type and center (and boson irrep when in SO basis, the
 default). The labels are given in the output. A set of primitive labels
 may be collected to group labels as specified by the user.
 
-.VECPOP
--------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
-analyze.
+keyword(VECPOP)
+
+For each fermion irrep, give an :ref:`orbital_string` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
-**Advanced options**
 
-.NETPOP
--------
+keyword(NETPOP)
 
 Give Mulliken net/overlap populations in addition to gross populations.
 
-.LABDEF
--------
+
+keyword(LABDEF)
 
 Define labels for use in Mulliken population analysis.
 
-Give first the number of labels to define, then the label name (12
-characters) and `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ for each fermion
-irrep.
+Give first the number of labels to define, then the label name (12 characters)
+and :ref:`orbital_string` for each fermion irrep.
 
 *Example:*
 
@@ -142,25 +148,23 @@ SO-labels*) can be drawn from the DIRAC output starting at the section :
        Large components:   35
         1  L Ag AR s        2  L Ag AR dxx      3  L Ag AR dyy      4  L Ag AR dzz      etc.
 
-.AOLAB
-------
+
+keyword(AOLAB)
 
 Base definition of labels on AO basis.
 
 *Default:* Base definition of labels on SO basis.
 
-.INDSML
--------
+
+keyword(INDSML)
 
 Use individual small component labels.
 
 *Default:* Gather all small component functions belonging to a given
 center and irrep, irrespective of function type.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -171,16 +175,9 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.PROJEC
--------
-
-Perform projection analysis [Faegri2001]_
-Activates the
-`\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_ subsection.
-
-\*PROJECTION -- Projection analysis
-===================================
+star(PROJECTION)
 
 The current solution may be projected down onto another set of
 coefficients generated from the basis, e.g. one may project molecular
@@ -196,37 +193,31 @@ Normally, the fragments are calculated in the full molecular basis. This
 is done by zeroing charges of the remaining atoms of the molecule in the
 basis set input and adjusting occupation in the menu file. It is,
 however, possible to calculate the fragments in the own basis (a subset
-of the full molecular basis) using `.OWNBAS <#.OWNBAS>`_. The advantage
+of the full molecular basis) using :ref:`.OWNBAS`. The advantage
 is faster calculations and conservation of atomic symmetry for atomic
 fragments. To avoid working with symmetry-combinations of atomic centers
 for the fragments, it may sometimes be advantageous to dump molecular
-coefficients in *C*\ :sub:`1`\  symmetry using
-`.ACMOUT </dirac/index.php/Manual:GENERAL#.ACMOUT>`_
-under
-`\*\*GENERAL </dirac/index.php/Manual:GENERAL>`_
+coefficients in *C*\ :sub:`1`\  symmetry using :ref:`.ACMOUT`
+under :ref:`**GENERAL`
 and do the analysis
-without symmetry. When
-`.OWNBAS <#.OWNBAS>`_
+without symmetry. When :ref:`.OWNBAS`
 is used, one then needs to
 calculate each atomic type only once in its own basis in order to do the
 complete analysis.
 
-.VECPRJ
--------
 
-For each fermion irrep, give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of orbitals to
-analyze.
+keyword(VECPRJ)
+
+For each fermion irrep, give an :ref:`orbital_strings` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
-.VECREF
--------
 
-First give number of fragments to project onto, and then for each
-fragment give filename of MO coefficients and the number of
-symmetry-independent nuclei in this fragment and for each fermion irrep,
-give an `orbital string </dirac/index.php/Manual:Orbital_strings>`_ of
+keyword(VECREF)
+
+First give number of fragments to project onto, and then for each fragment give
+filename of MO coefficients and the number of symmetry-independent nuclei in
+this fragment and for each fermion irrep, give an :ref:`orbital_strings` of
 reference orbitals.
 
 *Example:*
@@ -248,18 +239,16 @@ reference orbitals.
     1
     1..43
 
-.OWNBAS
--------
+
+keyword(OWNBAS)
 
 Calculate fragments in their own basis.
 
 This keyword must be used with some care as the list of fragments is
 assumed to be identical to that of symmetry independent centers.
 
-**Advanced options**
 
-.PROTHR
--------
+keyword(PROTHR)
 
 Set threshold for absolute value of projection coefficients to be
 printed.
@@ -271,15 +260,13 @@ printed.
     .PROTHR
      0.01
 
-.WGPOP
-------
+
+keyword(WGPOP)
 
 Split overlap densities according to weight of contributions.
 
-**Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -290,14 +277,9 @@ Print level.
     .PRINT
      0
 
-.DENSIT
--------
+--------------------------------------------------------------------------------
 
-Write density to a formatted file in Gaussian cube format. Activates the
-`\*DENSITY </dirac/index.php/Manual:ANALYZE:DENSITY>`_ subsection.
-
-\*DENSITY -- Write the density to a formatted file
-==================================================
+star(DENSITY)
 
 The density can be dumped to formatted file in `CUBE file
 format <http://local.wasp.uwa.edu.au/~pbourke/dataformats/cube/>`_ for
@@ -328,9 +310,13 @@ Large component density of iodobenzene plotted using Molekel (cutoff:
 Large component density of iodobenzene plotted using
 `Molekel <http://www.cscs.ch/molekel/>`_ (cutoff: 0.01).
 
+.. warning:: broken image link
+
 Small component density of iodobenzene plotted using Molekel (cutoff:
 0.0001).
 </dirac/index.php/Image:Iodobenzene_s.jpg>
+
+.. warning:: broken image link
 
 Small component density of iodobenzene plotted using
 `Molekel <http://www.cscs.ch/molekel/>`_ (cutoff: 0.0001).
@@ -344,6 +330,8 @@ by two electrons.
 
 </dirac/index.php/Image:Uo2_homo.jpg>
 
+.. warning:: broken image link
+
 It is also possible to plot the density of an orbital by subtracting
 densities generated from a given coefficient file, varying the
 occupation. The figure shows the large component density of the HOMO of
@@ -351,8 +339,8 @@ the uranyl cation obtained by subtracting from the density generated
 from regular occupation the density generated by reducing the occupation
 by two electrons.
 
-.ORBITALS
----------
+
+keyword(ORBITALS)
 
 This keyword is only available in the Development version of Dirac. Make
 individual cube files for each give orbital, instead of the total
@@ -372,8 +360,8 @@ This generates cube files for gerade orbitals 4-9 and ungerade orbitals
 generation can be rather slow for large basis sets. Writing hundreds of
 cube files can take much more time than a SCF calculation.
 
-.DOCUBE
--------
+
+keyword(DOCUBE)
 
 Specify large/small component density generation (1 = on; 0 = off).
 
@@ -384,8 +372,8 @@ Specify large/small component density generation (1 = on; 0 = off).
     .DOCUBE
      1 1
 
-.NCUBE
-------
+
+keyword(NCUBE)
 
 Number of cells along the sides of the cube.
 
@@ -396,8 +384,8 @@ Number of cells along the sides of the cube.
     .CUBE
      80 80 80
 
-.CUBADJ
--------
+
+keyword(CUBADJ)
 
 Adjust the volume of the cube.
 
@@ -417,8 +405,8 @@ separately and then add CUBADJ(1). The length of the vectors spanning
 the cube (parallelepiped) are analogously defined by maximal atomic
 positions, with CUBADJ(2) added.
 
-.PRINT
-------
+
+keyword(PRINT)
 
 Print level.
 
@@ -429,157 +417,168 @@ Print level.
     .PRINT
      0
 
+--------------------------------------------------------------------------------
 
-.LOCALI
--------
-
-Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
-
-Continues to the activated
-`\*LOCALIZATION </dirac/index.php/Manual:ANALYZE:LOCALIZATION>`_
-subsection. Note that in the present implementation this only works in
-C\ :sub:`1`\  symmetry.
-
-
-\*LOCALIZATION -- Molecular orbital localization
-================================================
+star(LOCALIZATION)
 
 Performs molecular orbitals localization using the Pipek-Mezey
 criterion. The implementation uses an exponential parametrization and a
-quasi-Newton minimization method instead of the Edminston-Ruedenberg
-algorithm. For the moment, it only works with the *C*\ :sub:`1`\
-symmetry and for the occupied orbitals.
-
-.THRESH
--------
-
-Convergence threshold.
-
-*Default:*
-
-::
-
-    .THRESH
-     1.0D-6
-
-.MAXITR
--------
-
-Maximum number of iterations.
-
-*Default:*
-
-::
-
-    .MAXITR
-     100
-
-.PRJLOC
--------
-
-Localization from projection analysis instead of Mulliken analysis.
-
-::
-
-    .PRJLOC
-     1
-
-*Default:*
-
-::
-
-    .PRJLOC
-     0
-
-.OWNBAS
--------
-
-See `.OWNBAS </dirac/index.php/Manual:ANALYZE:PROJECTION#.OWNBAS>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
-
-.VECPRJ
--------
-
-See `.VECPRJ </dirac/index.php/Manual:ANALYZE:PROJECTION#.VECPRJ>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
-
-.VECREF
--------
-
-See `.VECREF </dirac/index.php/Manual:ANALYZE:PROJECTION#.VECREF>`_
-under `\*PROJECTION </dirac/index.php/Manual:ANALYZE:PROJECTION>`_.
-
-.HESSUN
--------
-
-Hessian approximated by the unity matrix.
-
-*Default:* Use the diagonal elements of the (diagonally dominant)
-Hessian.
-
-**Programmers options**
-
-.PRINT
-------
-
-Print level.
-
-*Default:*
-
-::
-
-    .PRINT
-     1
+Trus region minimization method instead of the Edminston-Ruedenberg
+algorithm. It works with the *C*\ :sub:`1`\ symmetry and for the occupied orbitals.
 
 
+keyword(PRJLOC)
 
-ANALYZE:VISUAL
-=====================
+Localization from projection analysis instead of Mulliken analysis. [Default: False]::
 
-this page moved to...which is also empty
+  .PRJLOC
 
-\*RHO1 -- Print density along lines between atomic centers
-==========================================================
 
-For each unique pair (A,B) of centers a formatted file is created,
-containing four columns of numbers: The origin is placed at atom A, and
-the first column gives the coordinate in Angstroms along the line
-between centers A and B. The following columns contain the total, large
-and small component density, respectively (in atomic units). The file is
-named 'RH',NAMN(ICENTA),NAMN(ICENTB),IDEGB where ICENTB is the name of
-symmetry-independent center B and IDEGB the numbering of the dependent
-center. Underscores are inserted wherever there are blanks. The
-generation of the density requires the coefficient file DFCOEF. Note
-that one can in principle obtain the density along any line simply by
-introducing ghost centers.
+keyword(OWNBAS)
 
-For uranyl one may use the command
+Calculate fragments in their own basis. For now it is the only option which can be
+used with projection analysis option (.PRJLOC) [Default: False]::
+
+  .OWNBAS
+
+keyword(VECREF)
+
+First give number of fragments to project onto. Then for each fragment give
+filename of MO coefficients and string specifying which orbitals will be
+used in the projection (:ref:`orbital_strings`)::
+
+  .VECREF
+   3
+   DFO1AT
+   1..6
+   DFH1AT
+   1
+   DFH2AT
+   1
+
+
+keyword(HESLOC)
+
+Define model of the Hessian [Default: FULL].
+
+Use full Hessian::
+
+  .HESLOC
+   FULL
+
+Use diagonal approximation of the Hessian. If using this approximation,
+there is danger of converging to the stationary point instead of minima::
+
+  .HESLOC
+   DIAG
+
+First the diagonal approximation of the Hessian will be used 
+and after reaching convergence criterion the localization will 
+switch to the construction of the full Hessian::
+
+  .HESLOC
+   COMB
+
+keyword(CHECK)
+
+This keyword can be used only in combination with .HESLOC = COMB.
+The full Hessian will be calculated only at the last iteration.
+This way one can check if the procedure converged to the minimum.
+
+
+keyword(THFULL)
+
+Convergence threshold for the localization process. It applies on the functional
+value of the localization criteria when full Hessian is calculated. It is used in 
+.HESLOC = FULL scheme and in the second part of the .HESLOC = COMB scheme.
+When not specified gradient criterion or criterion of the number of negative
+eigenvalues equals zero will be used::
+
+  .THFULL
+   1.0D-13
+
+
+keyword(THGRAD)
+
+Convergence threshold for the localization process. It applies on the gradient
+of the localization functional. It is used in .HESLOC = FULL or DIAG scheme and in the
+second part of the .HESLOC = COMB scheme. When not specified the functional value 
+criterion or criterion of the number of negative eigenvalues equals zero will be used::
+
+  .THGRAD
+   1.0D-17
+
+
+keyword(THDIAG)
+
+Convergence threshold for the localization process. It applies on the functional 
+value of the localization criteria when diagonal Hessian is calculated.
+It can be used with the .HESLOC = DIAG keyword.
+If .HESLOC = COMB it is used to switch from the first to the second stage of the
+convergence process::
+
+  .THDIAG
+   1.0D-05
+
+
+keyword(SELECT)
+
+Select subset of MOs for localization (use :ref:`orbital_strings` syntax). 
+Currently only Pipek-Mezey localization is implemented, therefore localize
+only occupied orbitals. Localization of virtual orbitals is not recommended.
 
 ::
 
-    pam -incmo -get ``RHU___O____1  RHU___O____2 ...
+  .SELECT
+   1..5
 
-.PRINT
-------
 
-Print level.
+keyword(MAXITR)
 
-*Default:*
+Maximum number of iterations. Default::
 
-::
+  .MAXITR
+   100
 
-    .PRINT
-     0
 
-.MESH
------
+keyword(PRINT)
 
-Step length for grid.
+Set print level. Default::
 
-*Default:*
+  .PRINT
+   1
 
-::
+--------------------------------------------------------------------------------
 
-    .MESH
-     0.01
+star(RHO1)
 
+For each unique pair (A,B) of centers a formatted file is created, containing
+four columns of numbers: The origin is placed at atom A, and the first column
+gives the coordinate in Angstroms along the line between centers A and B. The
+following columns contain the total, large and small component density,
+respectively (in atomic units). The file is named
+'RH',NAMN(ICENTA),NAMN(ICENTB),IDEGB where ICENTB is the name of
+symmetry-independent center B and IDEGB the numbering of the dependent center.
+Underscores are inserted wherever there are blanks. The generation of the
+density requires the coefficient file DFCOEF. Note that one can in principle
+obtain the density along any line simply by introducing ghost centers.
+
+For uranyl one may use the command::
+
+  pam --incmo --get ``RHU___O____1  RHU___O____2 ...
+
+
+keyword(PRINT)
+
+Print level. Default::
+
+  .PRINT
+   0
+
+
+keyword(MESH)
+
+Step length for grid. Default::
+
+  .MESH
+   0.01
