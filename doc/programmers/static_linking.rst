@@ -14,7 +14,7 @@ Developers and users are invited to extend this collection of experiences of sta
 
 Correct static executables
 --------------------------
-* ilias, 194.160.135.47:
+* ilias, miro.utcpd.sk:
   Linux-2.6.30-1-amd64, ownmath, i32lp64, GNU Fortran/gcc (Debian 4.4.5-10) 4.4.5; -static -fpic, nooptim
   Linux-2.6.30-1-amd64, ownmath, i32lp64, GNU Fortran/gcc (Debian 4.6.2-9); -static -fpic, nooptim
 
@@ -28,11 +28,11 @@ Correct static executables
   For "pure" runs you have to have higher version of GNU compilers.
 
 * ilias, miro_ilias_desktop (home PC Desktop, with most recent Ubuntu) 
-  a) Linux-3.0.0-14-generic; x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
+   - Linux-3.0.0-14-generic; x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
      /usr/lib/libblas.a+/usr/lib/liblapack.a; -g -static -fpic -O0
      (NB: as superuser remove xerbla.o from /usr/lib/liblapack.a -mixing with /usr/lib/liblas.a)
 
-  b) Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
+   - Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
      ATLAS-static; -g -static -fpic -O0 (fixed bug below)
 
 * ilias, opteron.tau.ac.il:
@@ -61,9 +61,9 @@ For instance, failures are happening in input readings of DFTINPUT, CI/RELCCSD.
   Linux-2.6.32-5-amd64, i32lp64, ownmath; GNU Fortran/gcc (Debian 4.4.5-8) 4.4.5
 
 * ilias, grafix.fpv.umb.sk:
-  a) setup --static -D VERBOSE_OUTPUT=ON  --debug
+  -  setup --static -D VERBOSE_OUTPUT=ON  --debug
      Linux-2.6.32-28-generic; x86_64; i32lp64; GNU Fortran/Gcc (Ubuntu 4.4.3-4ubuntu5) 4.4.3; ATLAS-static
-  b) setup -D VERBOSE_OUTPUT=ON --debug --static --int64 --internal-math
+  -  setup -D VERBOSE_OUTPUT=ON --debug --static --int64 --internal-math
      Linux-2.6.32-28-generic; x86_64; ilp64; GNU Fortran/Gcc (Ubuntu 4.4.3-4ubuntu5) 4.4.3; ownmath
 
 Note that the Gfortran error in NAMELIST reading is described  http://comments.gmane.org/gmane.comp.gcc.bugs/289633 .
@@ -91,7 +91,6 @@ Here we describe cases of static dirac.x executables crashing already at the sta
   does not compile with static external /usr/lib/libblas.a+/usr/lib/liblapack.a, giving :: 
      /usr/lib/liblapack.a(xerbla.o):function xerbla_: error: undefined reference to '_gfortran_transfer_character_write'
      /usr/lib/liblapack.a(xerbla.o):function xerbla_: error: undefined reference to '_gfortran_transfer_integer_write'
-and :: 
      /usr/bin/ld: error: /usr/lib/libblas.a(xerbla.o): multiple definition of 'xerbla\_'
      /usr/bin/ld: /usr/lib/liblapack.a(xerbla.o): previous definition here
 
@@ -102,8 +101,10 @@ Executables not compilable
 ----------------------------
 We list cases when one can not get static dirac.x executable based on some linking error.  
 
-Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example ::
-  /home/ilias/bin/openmpi_ilp64/lib/libopen-pal.a(dlopen.o): In function `vm_open':
+Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example 
+::
+
+  /home/ilias/bin/openmpi_ilp64/lib/libopen-pal.a(dlopen.o): In function 'vm_open':
   dlopen.c:(.text+0x148): warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
   /home/ilias/bin/openmpi_ilp64/lib/libopen-rte.a(plm_rsh_module.o): In function `setup_launch':
   plm_rsh_module.c:(.text+0x821): warning: Using 'getpwuid' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
@@ -112,7 +113,9 @@ Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example ::
   [100%] Built target dirac.x
 
 * ilias, opteron.tau.ac.il
-   export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t' , static buildup does not work with MKL libs, giving ::
-     /opt/intel/fce/10.1.015/bin/ifort -static -Wl,-E -w -assume byterecl -DVART -g -traceback -static-libgcc -static-intel -i8 -O0 CMakeFiles/dirac.x.dir/main/main.F90.o  -o dirac.x lib/libdirac.a lib/libxcfun.a  -Wl,--start-g   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_lapack.a    /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_core.a   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkls_ilp64.a  /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_sequential.a /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_em64t.a   /opt/intel/mkl/10.0.3.020/lib/emibguide.a  /usr/lib64/libpthread.a /usr/lib64/libm.a -Wl,--end-group
+   export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t' , static buildup does not work with MKL libs, giving :
+::
+
+  /opt/intel/fce/10.1.015/bin/ifort -static -Wl,-E -w -assume byterecl -DVART -g -traceback -static-libgcc -static-intel -i8 -O0 CMakeFiles/dirac.x.dir/main/main.F90.o  -o dirac.x lib/libdirac.a lib/libxcfun.a  -Wl,--start-g   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_lapack.a    /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_core.a   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkls_ilp64.a  /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_sequential.a /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_em64t.a   /opt/intel/mkl/10.0.3.020/lib/emibguide.a  /usr/lib64/libpthread.a /usr/lib64/libm.a -Wl,--end-group
      ld: cannot find libmkl_intel_lp64.a
 
