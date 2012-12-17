@@ -1212,11 +1212,14 @@ Options are also read from ~/.diracrc"""
         if self.machinefile:
             self.handle_machinefile()
 
+        master_id = '' 
         # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
                 line = line.split()[0]   # first entry is each line should the the name of the node
-                if line != self.master:  # append only slaves different from the master
+                if len(master_id) == 0:  # set master id from first line in machinefile
+                    master_id = line
+                if line != master_id:    # append only slaves different from the master
                     self.nodes.append(line)
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes))
