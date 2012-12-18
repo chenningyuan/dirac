@@ -72,7 +72,8 @@ Tutorials and walkthrus
 * **DFT:**
   :doc:`TDDFT <tutorials/dft/tddft>` |
   :doc:`BSSE <tutorials/dft/bsse>` |
-  :doc:`CAM functional <tutorials/dft/cam>`
+  :doc:`CAM functional <tutorials/dft/cam>` |
+  :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
