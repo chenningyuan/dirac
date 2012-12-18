@@ -791,9 +791,7 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
-            # only if nr of proc is larger than 1 run through MPI
-            if self.nr_proc > 1:
-                self.parallel_run = True
+            self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
