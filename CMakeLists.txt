@@ -101,6 +101,11 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 add_subdirectory(src/xcfun)
 set(LIBS xcfun ${LIBS})
 
+if(ENABLE_GEN1INT)
+    add_definitions(-DBUILD_GEN1INT)
+    add_subdirectory(src/gen1int)
+endif()
+
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -190,6 +195,15 @@ add_library(
     ${DIRAC_SOURCES}
     ${GENERATED_FILES}
     )
+
+if(ENABLE_GEN1INT)
+    add_dependencies(dirac gen1int_interface)
+    set(LIBS
+        gen1int_interface
+        ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
+        ${LIBS}
+        )
+endif()
 
 # get size of static allocations
 add_custom_target(

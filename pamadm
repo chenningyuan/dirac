@@ -223,6 +223,7 @@ files_never_compiled.append('src/xcint/src/fake_input.F90')
 directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('cmake')
+directories_never_compiled.append('src/gen1int')
 
 for directory in directories_never_compiled:
     for file in glob.glob('%s/*.F90' % directory):
