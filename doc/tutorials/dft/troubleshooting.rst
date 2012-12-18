@@ -56,3 +56,13 @@ practice to verify that your results are converged with respect to the grid
 parameters. When you calculate a table of functionals, it is a good practice
 for one of the results to re-run with the best integration grid and to check
 that your results do not change.
+
+DFT nonconverging...
+--------------------
+
+What to do if your DFT run is not converging ? Instead of DFT try first to perform  the SCF method.
+If the previous SCF step does converge, save the MO-coeffient file and use them as starting set for
+your DFT method. 
+
+This trick can help because the HOMO-LUMO gap is higher in the SCF than in the DFT. Restarting the DFT
+from converged SCF coefficients makes the DFT method converging in many cases.
