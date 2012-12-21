@@ -33,6 +33,9 @@ This gives 24 determinants which translates into the following states:
 Spin-orbit free calculation
 ---------------------------
 
+Preparing the input files
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 We employ the following molecular input file `N2.mol` ::
 
   DIRAC
@@ -67,8 +70,6 @@ which transform as rotations :math:`R_x\left(B_{3g}\right)` , :math:`R_y\left(B_
 
 We can now set up the following correlation of states:
 
-.. math::
-
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
 | State                  | Spin                           | Spatial                | Spin :math:`\otimes` Spatial                                               |
 +========================+================================+========================+============================================================================+  
@@ -82,12 +83,96 @@ We can now set up the following correlation of states:
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
 |  :math:`^3\Sigma_g`    | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`A_g`            | :math:`B_{3g}, B_{2g}, B_{1g}`                                             |
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
-|  :math:`^1\Sigma_u`    | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{1u}`         | :math:`B_{2u}, B_{3u}, A_{u}`                                              |
+|  :math:`^3\Sigma_u`    | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{1u}`         | :math:`B_{2u}, B_{3u}, A_{u}`                                              |
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
-|  :math:`^1\Pi_{x,y;g}` | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{3g}, B_{2g}` | :math:`\left(A_g, B_{1g}, B_{2g}\right), \left(B_{1g}, A_g, B_{3g}\right)` |
+|  :math:`^3\Pi_{x,y;g}` | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{3g}, B_{2g}` | :math:`\left(A_g, B_{1g}, B_{2g}\right), \left(B_{1g}, A_g, B_{3g}\right)` |
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
-|  :math:`^1\Pi_{x,y;u}` | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{3u}, B_{2u}` | :math:`\left(A_u, B_{1u}, B_{2u}\right), \left(B_{1u}, A_u, B_{3u}\right)` |
+|  :math:`^3\Pi_{x,y;u}` | :math:`B_{3g}, B_{2g}, B_{1g}` | :math:`B_{3u}, B_{2u}` | :math:`\left(A_u, B_{1u}, B_{2u}\right), \left(B_{1u}, A_u, B_{3u}\right)` |
 +------------------------+--------------------------------+------------------------+----------------------------------------------------------------------------+  
 
-Counting total symmetries we find the 24 microstates are evenly distributed amongst the eight irreps of :math:`D_{2h}`.
+Counting total symmetries we find the 24 microstates are evenly distributed amongst the eight irreps of :math:`D_{2h}`:
+
+
++----------------+-------------------------------------------------------------+-----------------------+
+| Irrep          | Core-ionized state                                          |                       |
++================+=============================================================+=======================+
+| :math:`A_g`    | :math:`^1\Sigma_g, ^{3(x)}\Pi_{x;g}, ^{3(y)}\Pi_{y;g}`      | :math:`x^2, y^2, z^2` |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{3u}` | :math:`^{1}\Pi_{x;u}, ^{3(y)}\Sigma_u, ^{3(z)}\Pi_{y;u}`    | :math:`x`             |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{2u}` | :math:`^{1}\Pi_{y;u}, ^{3(x)}\Sigma_u, ^{3(z)}\Pi_{x;u}`    | :math:`y`             |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{1g}` | :math:`^{3(z)}\Sigma_g, ^{3(y)}\Pi_{x;g}, ^{3(x)}\Pi_{y;g}` | :math:`xy`            |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{1u}` | :math:`^1\Sigma_u, ^{3(y)}\Pi_{x;u}, ^{3(x)}\Pi_{y;u}`      | :math:`z`             |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{2g}` | :math:`^{1}\Pi_{y;g}, ^{3(y)}\Sigma_g, ^{3(z)}\Pi_{x;g}`    | :math:`xz`            |
++----------------+-------------------------------------------------------------+-----------------------+
+| :math:`B_{3g}` | :math:`^{1}\Pi_{x;g}, ^{3(x)}\Sigma_g, ^{3(z)}\Pi_{y;g}`    | :math:`yz`            |
++----------------+-------------------------------------------------------------+-----------------------+   
+| :math:`A_{u}`  | :math:`^{3(z)}\Sigma_u, ^{3(x)}\Pi_{x;u}, ^{3(y)}\Pi_{y;u}` | :math:`xyz`           |
++----------------+-------------------------------------------------------------+-----------------------+
+
+From these considerations we now set up the following menu file for our calculation::
+
+  **DIRAC
+  .WAVE FUNCTION
+  .ANALYZE
+  .PROPERTIES
+  **INTEGRALS
+  *READIN
+  .UNCONTRACT
+  **HAMILTONIAN
+  .SPINFREE
+  .DFT
+  PBE0
+  **WAVE FUNCTION
+  .SCF
+  *SCF
+  .CLOSED SHELL
+  6 8
+  **ANALYZE
+  .MULPOP
+  *MULPOP
+  .VECPOP
+  1..5
+  1..5
+  **PROPERTIES
+  .PRINT
+  1
+  *EXCITATION ENERGIES
+  .SKIPEP
+  .OCCUP
+  1
+  1
+  .VIRTUA
+  4,5
+  5
+  .OPERATOR
+   XDIPLEN
+  .OPERATOR
+   YDIPLEN
+  .OPERATOR
+   ZDIPLEN
+  .EXCITATIONS  !Ag
+  1 3
+  .EXCITATIONS  !B3u
+  2 3
+  !.EXCITATIONS  !B2u
+  !3 3
+  .EXCITATIONS  !B1g
+  4 3
+  .EXCITATIONS  !B1u
+  5 3
+  !.EXCITATIONS  !B2g
+  !6 3
+  .EXCITATIONS  !B3g
+  7 3
+  .EXCITATIONS  !Au
+  8 3
+  .ANALYZE
+  *END OF INPUT
+
+
+
 
