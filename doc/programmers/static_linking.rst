@@ -10,7 +10,26 @@ resulting static executables are performing correctly.
 Therefore we show some example configurations giving correct, partially correct, totally wrong and non-compilable executables.
 We hope that this info shall help developers to identify possible cracks in the generation of their own static executables.
 
-Developers and users are invited to extend this collection of experiences of static buildups on various platforms. 
+Developers and users are invited to extend this collection of experiences of static buildups.
+
+Generating static OpenMPI
+^^^^^^^^^^^^^^^^^^^^^^^^^ 
+If you want to have static dirac.x running in parallel way, users have to prepare own static version of the OpenMPI wrappers.
+Download the installation package first, unpack it and follow installation instructions.
+
+You get static OpenMPI suite by adding specific configuration flags. For example, with GNU compilers: 
+ ::
+ ./configure --prefix=<path> --without-memory-manager CXX=g++ CC=gcc F77=gfortran FC=gfortran LDFLAGS=--static --disable-shared --enable-static
+and with Intel compilers:
+ ::
+ ./configure --prefix=<space> --without-memory-manager CXX=icpc CC=icc F77=ifort FC=ifort LDFLAGS=--static --disable-shared --enable-static
+finally type ::
+ make all install
+
+You could to check your OpemMPI wrappers for static linking: 
+ ::
+ ldd mpif90
+ not a dynamic executable
 
 Correct static executables
 --------------------------
@@ -19,7 +38,19 @@ Correct static executables
   Linux-2.6.30-1-amd64, ownmath, i32lp64, GNU Fortran/gcc (Debian 4.6.2-9); -static -fpic, nooptim
 
 * ilias, frpd2.utcpd.sk:
-  Linux-2.6.32-5-amd64; ownmath; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4); -static -fpic, nooptim
+  - Linux-2.6.32-5-amd64; ownmath; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4); -static -fpic, nooptim
+
+  - Linux-2.6.32-5-amd64, ATLAS library; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4); opt
+  Gives warning at linking step: 
+ ::
+  usr/lib/gcc/x86_64-linux-gnu/4.6/../../../x86_64-linux-gnu/libpthread.a(sem_open.o): In function `sem_open':
+  /home/aurel32/eglibc/eglibc-2.13/nptl/sem_open.c:333: warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+ This is due to the " -Wl,--whole-archive -lpthread -Wl,--no-whole-archive " linking command containg pthread-library, but this must be,
+ because placing "-lpthread" elsewhere generates wrong executable giving error ::
+   Program received signal 11 (SIGSEGV): Segmentation fault.
+   Backtrace for this error:
+   + function __restore_rt (0x15D0620)
+     from file sigaction.c
 
 * ilias, grid3.ui.savba.sk:
   Linux-2.6.18-274.3.1.el5; ownath; x86_64, ilp64, GNU Fortran (GCC) 4.4.4 20100726 (Red Hat 4.4.4-13)';  -g -static -fpic; opt
@@ -82,9 +113,6 @@ Here we describe cases of static dirac.x executables crashing already at the sta
       from file sigaction.c
    Segmentation fault
    (see also http://gcc.gnu.org/bugzilla/show_bug.cgi?format=multiple&id=42477)
-
-* ilias, frpd2.utcpd.sk:
-  Linux-2.6.32-5-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.1-4) 4.6.1; opt
 
 * ilias, 194.160.135.47: 
   Linux-2.6.30-1-amd64, i32lp64, GNU Fortran/gcc (Debian 4.4.5-10) 4.4.5; -static -fpic, nooptim
