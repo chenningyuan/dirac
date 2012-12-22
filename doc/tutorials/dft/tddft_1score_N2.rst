@@ -306,4 +306,7 @@ the speed of light to e.g. 20 a.u.::
 The transition moment of the singlet :math:`^1\Pi_u` state is then reduced from 0.093876 a.u. to 0.086275 a.u. 
 upon inclusion of spin-orbit coupling.
 
+Simulating the core-excitation spectrum using complex response
+--------------------------------------------------------------
 
+`Gas Phase Core Excitation Database <http://unicorn.mcmaster.ca/corex/cedb-title.html>`_
