@@ -312,6 +312,7 @@
       END IF !ISKIP
       IF(ISKIP.GE.2) THEN
       print*,' adding M10 and H10'
+      CALL MEMCHK_KRCC(WORK)
       CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH10,WORK(KNH10),
      &                                   NINTER10,WORK(KINTM10),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
@@ -324,6 +325,7 @@
 * And now the contraction
 *
       print*,'second contraction M10'
+      CALL MEMCHK_KRCC(WORK)
       IHM = 2
       IFHM = 2 !intermediates are fetched
 *

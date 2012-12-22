@@ -254,6 +254,7 @@ C last of this possible contraction
 * At the moment making the mapping here. Could probably be moved out to
 * speed up things.
            IF(J.EQ.1) THEN
+           CALL MEMCHK_KRCC(WORK)
 C first of this type of contraction
            IDIMEXDX = 0
            CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,

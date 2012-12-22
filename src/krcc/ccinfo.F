@@ -6315,6 +6315,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
 * Stay inside GAS
 * Correct number of holes and particles
 * Cannot exceede Kramers flip 
+* Stay within the restrictions from min max occupation in GAS
 * Notice this is passed down since a restriction 
 * on the Kramers Flip for T will not give the same 
 * restriction on the way for an Intermediate operator
@@ -6404,7 +6405,28 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
       END DO
       IF(IH.NE.NHOLE.OR.IP.NE.NPART) RETURN
       IF(NTEST.EQ.100) WRITE(6,*) " right number of holes ",NHOLE,NPART
-      
+*
+* Ensure that the GAS restraints is obeyed 
+* Keep this in mind for spin. There may be changes
+* First the virtuals
+      NCGAS = 0
+      DO IGAS=NGAS,1,-1
+* Only count creators in the virtual space
+        IF(IHPVGAS(IGAS).EQ.1) EXIT
+        IMXNELGS = MXNELGS(IGAS)
+Calculate the number of CA and CB in GAS
+        NCGAS = NCGAS + IOP(IGAS+0*NGAS) + IOP(IGAS+1*NGAS)
+        IF(NCGAS.GT.IMXNELGS) RETURN
+      END DO
+* Now the occupied
+      NAGAS = 0
+      DO IGAS=1,NGAS
+        IF(IHPVGAS(IGAS).EQ.2) EXIT
+        IMXNELGS = IGSOCCX(IGAS,2,1)-IGSOCCX(IGAS,1,1)
+Calculate the number of AA and AB in GAS
+        NAGAS = NAGAS + IOP(IGAS+2*NGAS) + IOP(IGAS+3*NGAS)
+        IF(NCGAS.GT.IMXNELGS) RETURN
+      END DO
 *
 * Is this an allowed operator in the GAS.
 * For all indices yet to be contracted rules are different

@@ -449,7 +449,7 @@ C
      &           ' Barred spinors ', (NGSSHK(J,I,2),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           IGSOCCX(1,I,1),'/',IGSOCCX(2,I,1),')'
+     &           IGSOCCX(I,1,1),'/',IGSOCCX(I,2,1),')'
           END DO
         END IF
       END IF
@@ -469,7 +469,7 @@ C
      &           (NGSSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           IGSOCCX(1,I,1),'/',IGSOCCX(2,I,1),')'
+     &           IGSOCCX(I,1,1),'/',IGSOCCX(I,2,1),')'
           END DO
         END IF
       END IF

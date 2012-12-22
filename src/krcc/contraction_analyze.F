@@ -1272,7 +1272,13 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
         CALL WRT_SPOX_TP_CC_KRCC(TTYPE,1)
         WRITE(6,*) ' Resulting operator '
         CALL WRT_SPOX_TP_CC_KRCC(RESTYPE,1)
+        WRITE(6,*) ' IFHM = ',IFHM
+        WRITE(6,*) ' Intermediate size = ',IDIMEXDX
+        WRITE(6,*) ' IWAY = ',IWAY
       END IF
+      DO jj=1,100
+       print*,'kkp'
+      END DO
 *
 * First find EX,DX by calling old routines
 *
