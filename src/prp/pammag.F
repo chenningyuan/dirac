@@ -499,7 +499,7 @@ C --------------------------------------------
 ! gosia: leave occ-occ block only
            !if (lao_lr_rearrange) then
            if (lao_lr_rearrange .or. shielding_rearrange) then
-             call get_m_ij(conmat)
+             !gosia fixme call get_m_ij(conmat)
            end if 
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
@@ -532,7 +532,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !              integrals in def_d1hblond subroutine
 !              now we zero-out other blocks than occ-occ,as we need 'dS/dB'_ij
 !              this is easier for a moment than adapting other routines...
-               call get_m_ij(work(ktmat))
+               !gosia fixme call get_m_ij(work(ktmat))
              else
              IF (.NOT.SYMCON) THEN
               IF (ITIM2.NE.0)
@@ -549,6 +549,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              end if ! if (lao_lr_rearrange)
 
              if (shielding_rearrange) then
+             !if (shielding_rearrange .or. lao_lr_rearrange) then
 !              gosia: whatever connection we just read into work(ktmat)
 !              we want to combine (T + T\dagger)_ij,
 !              ideally we should get here 'dS/dB' integrals, but this we cannot do easily.
@@ -558,6 +559,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !              so instead we will here combine (T+T\dagger)_ij
 !              which equals to 'dS/dB'_ij for any T.
                !call get_s_from_t(work(ktmat))
+!gosia fixme: get_s_from_t to be written
                call get_m_ij(work(ktmat))
              end if
 
@@ -2712,7 +2714,7 @@ C----------------------------------------------------------------
       IPTYP  = 1
       NPCOMP = 1
 !     gosia: if connection-independent formulation of shieldings, then
-!     we want "dS/dB" integrals.
+!     we want "dS/dB" integrals, we keep the '-' sign.
       if (lao_lr_rearrange) then
           PFAC(1) = -1.0d0
           LABELC='dS/dB'
@@ -3027,6 +3029,12 @@ C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
       IF (IBTAND(IB,4).EQ.4.AND.(.NOT.NOONEI)) THEN
          OPEN(LUFCKL,FILE='FCKLON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
+!gosia fixme: if here i do:
+!        (1) WORK(KPRPMOLO) = 0.0d0
+!        (2) CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
+! i get different results.
+! Results of (1) and (2) should be the same and the same as of putting 'NOONEI' in input
+! while only (2) gives the same results as 'NOONEI'
          CALL READAC(LUFCKL,N2ORBXQ,WORK(KPRPMOLO),icomp_reorth)
          CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          CLOSE(LUFCKL,STATUS = 'KEEP')

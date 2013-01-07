@@ -1,5 +1,6 @@
 quick
 lao_shield_unchanged.inp        h2o.mol
-lao_shield_rearranged.inp       h2o.mol
+lao_shield_rearranged_sc.inp    h2o.mol
+lao_shield_rearranged_nc.inp    h2o.mol
 lao_shield_lr_rearranged.inp    h2o.mol
 
