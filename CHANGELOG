@@ -6,4 +6,3 @@
 - Improved documentation.
 - Added test "kallay_mrcc_interface".
 - Made it possible to run MPI binary on one processor.
-- Fixed problem with "make test" after segmentation faults. (NOT YET)
