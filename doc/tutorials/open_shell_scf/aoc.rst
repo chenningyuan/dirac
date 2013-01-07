@@ -158,7 +158,8 @@ Based on these observations we define the diagonal blocks of the AOC Fock matrix
 - active-active block:
 .. math:: \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
 
-*These are definitions employed in DIRAC12 and onwards.* In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
+*These are the definitions employed in DIRAC12 and onwards* (and also the definition found in the thesis of Jørn Thyssen [Thyssen2004]_). 
+In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
 missing from the active-active block. Since :math:`Q_{uu}^U` is positive and for an open shell :math:`a_U<1` removal
 of this term tend to shift orbital energies of the open shell upwards. 
 
