@@ -973,12 +973,12 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.8) THEN
+CTROND      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,'(/,A)')
      &  'GETMDM: Entering T(1) MO-connection matrix:'
         CALL PRQMAT(TMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &               IPQTOQ(1,IREP),LUPRI)
-      ENDIF
+CTROND      ENDIF
       IF(IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/A)')
      &  'GETMDM: Entering MO coefficients:'
@@ -1100,6 +1100,7 @@ C    =========================================================
       ENDDO
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
+      end if ! if (.not. lao_lr_rearrange) 
       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
@@ -1112,7 +1113,6 @@ C  ... in gp/gpsaue.F
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
-      end if ! if (.not. lao_lr_rearrange) 
       CALL QEXIT('GETMDM')
       RETURN
       END
