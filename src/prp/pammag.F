@@ -978,14 +978,14 @@ C
      &  'GETMDM: Entering T(1) MO-connection matrix:'
         CALL PRQMAT(TMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &               IPQTOQ(1,IREP),LUPRI)
-
-       IF(IPRINT.GE.10) THEN
+      ENDIF
+      IF(IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/A)')
      &  'GETMDM: Entering MO coefficients:'
         CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
-       ENDIF
       ENDIF
+
 
 C
 C     Generate MDM = modified density matrix of f.symm I1,I2
