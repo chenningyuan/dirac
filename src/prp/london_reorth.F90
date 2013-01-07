@@ -144,7 +144,8 @@ contains
 
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
-    real(8), intent(in)    :: fmat(n2orbxq, *)
+    !gosia fixme real(8), intent(in)    :: fmat(n2orbxq, *)
+    real(8), intent(inout)    :: fmat(n2orbxq, *)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -289,6 +290,9 @@ contains
                  1)
 
 !     write to FCKLON file:
+!gosia fixme:
+      !fmat(1, icomp) = 0.0d0
+      !call dzero(fmat(1, icomp), n2orbxq)
       call wrtdac(lufckl, norbt*norbt*nz,   &
                   fmat(1, icomp), icomp)
 
@@ -373,7 +377,7 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
-    debug_me = .false.
+    debug_me = .true.
     if (debug_me) then
       do icomp = 1, nr_xyz_comp
         write(*, *) 'fao in get_gtb, icomp = ', icomp
@@ -522,8 +526,7 @@ contains
 !                     --------------------------------
                       iprprp)
 
-
-      debug_me = .false.
+      debug_me = .true.
       if (debug_me) then
         write(*, *) 'fao in do_ao_to_mo after qtrans, icomp, i = ', icomp, i
         call prqmat(fao(1, icomp), &
@@ -535,16 +538,8 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
-
       end do
-
-    !if (lao_lr_rearrange) then
-    !  call get_m_ij(fmo(1, icomp))
-    !end if
-
-
     end do
-
 
   end subroutine
 
@@ -583,6 +578,7 @@ contains
 
 !     get T^B_icomp matrix into tb
 !     gosia: if lao_lr_rearrange, then here we read in 'dS/dB' integrals
+!     it was set in pammag.F in def_d1hblond subroutine
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
@@ -596,6 +592,14 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'tb matrix in MO basis in get_tb_dmat'
+        call prqmat(tb, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
 
       if (lao_lr_rearrange) then
 !       we only need occ-occ block of S^B matrix, so zero-out the rest:
@@ -627,14 +631,18 @@ contains
   end subroutine
 
   subroutine write_sb(sb)
-    real(8), intent(in) :: sb(n2orbxq, *)
+    !gosia fixme real(8), intent(in) :: sb(n2orbxq, *)
+    real(8), intent(inout) :: sb(n2orbxq, *)
     integer :: icomp
 
     open(lufckl, file='FCKLON', form='unformatted',   &
          access='direct',recl=8*n2orbxq,              &
          status='unknown')
 
+!gosia fixme
     do icomp = 1, nr_xyz_comp
+      !sb(1, icomp) = 0.0d0
+      !call dzero(sb(1, icomp), n2orbxq)
       call wrtdac(lufckl, norbt*norbt*nz,   &
                   sb(1, icomp), icomp)
     end do
