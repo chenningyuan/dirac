@@ -997,18 +997,32 @@ C
 C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
-
+CTROND
+          WRITE(6,*) 'TEST..',I1,I2
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
-            CALL QTRANS(
-     &      'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
-     &                  NORB(I1),NOCC(I2),
+CTROND            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+CTROND     &                  NORB(I1),NOCC(I2),
+CTROND     &       DMAT(I2BASX(I1,I2)+1,1),
+CTROND     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+CTROND!          T(o,i)
+CTROND     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+CTROND     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+CTROND!          C(a,o)^+
+CTROND     &     CMO(ICMOQ(I1)+1),
+CTROND     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+CTROND!          C(i,b)
+CTROND     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+CTROND     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+CTROND     &     WORK(KFREE),LFREE,IPRINT)
+            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &                  NOCC(I1),NOCC(I2),
      &       DMAT(I2BASX(I1,I2)+1,1),
      &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
 !          T(o,i)
-     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &     TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
      &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
 !          C(a,o)^+
-     &     CMO(ICMOQ(I1)+1),
+     &     CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
      &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
 !          C(i,b)
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
@@ -1019,27 +1033,7 @@ C
         ELSE ! Run o only over electronic states
 
         IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
-
-          IF (IPRINT.GE.10) THEN
-            CALL HEADER(
-     &      'GETMDM: Before QTRANS whole modified density matrix',-1)
-            IF (EPMIX) THEN
-              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-            ELSE
-              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-            ENDIF
-            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-            CALL HEADER(
-     &      'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
-            Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &                       NFBAS(I2,0),NTBAS(0),
-     &                       NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-          ENDIF
-
-          CALL QTRANS(
-     &            'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+          CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &             NESH(I1),NOCC(I2),
      &             DMAT(I2BASX(I1,I2)+1,1),
      &             NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
@@ -1050,31 +1044,10 @@ C
      &             CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &             NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &             WORK(KFREE),LFREE,IPRINT)
-
-          IF (IPRINT.GE.10) THEN
-            CALL HEADER(
-     &      'GETMDM: Actual WHOLE modified density matrix',-1)
-
-            IF (EPMIX) THEN
-              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-            ELSE
-              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-            ENDIF
-
-            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-            CALL HEADER(
-     &        'GETMDM: After QTRANS BLOCK modified density matrix',-1)
-              Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &                  NFBAS(I2,0),NTBAS(0),
-     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-          ENDIF
-
         ENDIF
       ENDIF
       ENDDO
-      IF (IPRINT.GE.6) THEN
+CTROND      IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'GETMDM: NON-HERMITIAN modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1085,7 +1058,7 @@ C
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+CTROND      ENDIF
 
 !     gosia: if lao_lr_rearrange we only do: DMAT = C*(SB)C(+)
       if (.not. lao_lr_rearrange) then
@@ -1101,7 +1074,7 @@ C    =========================================================
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
       end if ! if (.not. lao_lr_rearrange) 
-      IF(IPRINT.GE.5) THEN
+CTROND      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1112,7 +1085,9 @@ C  ... in gp/gpsaue.F
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+CTROND      ENDIF
+CTROND
+      STOP 'End of GETMDM'    
       CALL QEXIT('GETMDM')
       RETURN
       END
