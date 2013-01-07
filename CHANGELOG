@@ -6,3 +6,5 @@
 - Improved documentation.
 - Added test "kallay_mrcc_interface".
 - Made it possible to run MPI binary on one processor.
+- Compilation fix for older ifort (10.1) together with gcc 4.1.
+- Fix for too slow MCSCF convergence.
