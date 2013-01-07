@@ -28,14 +28,14 @@ We will now find the set of orbitals which minimizes the average energy
 
 .. math::
 
-   E^{ave}=\frac{1}{N_{det}}\sum_{I=1}^{N_{det}}\left<\Psi_P\left|H\right|\Psi_P\right>
+   E_{av}=\frac{1}{N_{det}}\sum_{I=1}^{N_{det}}\left<\Psi_P\left|H\right|\Psi_P\right>
 
 Inserting the expansion of the solutions in terms of Slater determinants and using the fact that the expansion
 coefficients :math:`C_{PI}` are  elements of a unitary matrix we obtain
 
 .. math::
 
-  E^{ave}=\frac{1}{N_{det}}\sum_{P=1}^{N_{det}}\sum_{Q=1}^{N_{det}}\left<\Phi_P\left|H\right|\Phi_Q\right>\sum_{I=1}^{N_{det}}C_{PI}^*C_{QI}
+  E_{av}=\frac{1}{N_{det}}\sum_{P=1}^{N_{det}}\sum_{Q=1}^{N_{det}}\left<\Phi_P\left|H\right|\Phi_Q\right>\sum_{I=1}^{N_{det}}C_{PI}^*C_{QI}
          =\frac{1}{N_{det}}\sum_{P=1}^{N_{det}}\left<\Phi_P\left|H\right|\Phi_P\right>
 
 showing that the average can also be taken over the N-particle basis itself.
@@ -58,7 +58,7 @@ respective shells. The total energy can then be written in terms of orbitals rat
 
 .. math::
 
-   E^{ave}=\sum_S f_s \left[\sum_{p\in S}h_{pp}+\frac{1}{2}\sum_{T}Q^{T}_{pp}+\frac{1}{2}(a_S-1)Q^S_{pp}\right]
+   E_{av}=\sum_S f_s \left[\sum_{p\in S}h_{pp}+\frac{1}{2}\sum_{T}Q^{T}_{pp}+\frac{1}{2}(a_S-1)Q^S_{pp}\right]
 
 where we have introduced
 
@@ -68,7 +68,7 @@ where we have introduced
   - :math:`a_S=\frac{M_S\left(N_2-1\right)}{N_S\left(M_2-1\right)}` for :math:`f_s\ne 0` 
   - :math:`a_S=1` for :math:`f_s = 0`
 
-- scaled anti-symmetrized two-electron integrals :math:`Q^S_{pq}=f_s\sum_{r\in S}\left[(pq|rr)-(pr|rq)\right]`
+- two-electron contributions :math:`Q^S_{pq}=f_s\sum_{r\in S}<pr||qr>`
 
 Orbital rotations
 -----------------
@@ -98,7 +98,11 @@ The generally non-zero elements of the gradient vector are:
 - inactive-active rotations:
 .. math:: \quad g_{iu}=(1-f_U)\left[F^I_{ui}+f_U\alpha_UQ^U_{ui}\right];\quad u\in U
 - inter-shell active-active rotations
-.. math:: \quad g_{uv}=(f_U-f_V)F^I_{vu}-(a_U-1)f_UQ^U_{vu}-(a_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
+.. math:: \quad g_{uv}=(f_U-f_V)F^I_{vu}-(\alpha_U-1)f_UQ^U_{vu}-(\alpha_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
+
+where we have introduced 
+
+.. math:: \quad \alpha_S = \frac{1-a_S}{1-f_S}
 
 These gradient elements allow the definition of the off-diagonal elements of the Fock matrix:
 
@@ -119,9 +123,59 @@ The diagonal blocks of the Fock matrix are *a priori* not related to gradient el
 therefore freedom of choice in their specification. The specific choice will not affect the total
 energy, but will affect orbitals energies as well as convergence of the AOC HF calculation.
 
+In order to obtain a meaningful definition of the diagonal blocks of the Fock matrix we will consider an extension of 
+Koopmans' theorem to average-of-configuration Hartree-Fock, that is, we consider average energy after removal of an electron 
+from a specific shell :math:`T` and using the same orbital set as for the original N-electron system. 
 
+The energy difference becomes
 
+.. math::
+   E^N_{av}-E^{N-1}_{av}=\frac{1}{M_T}\sum_{t\in T}\left[h_{tt}+\sum_S Q^S_{tt}+(a_{T}-1)Q_{tt}^T\right]
 
+If we now define the diagonal block of the Fock matrix corresponding to shell :math:`T` as
 
+.. math::
+   {\cal F}_{pq} = h_{pq}+\sum_S Q^S_{pq}+(a_{T}-1)Q_{pq}^T
 
+the ionization potential associated with the electron removal becomes
 
+.. math::
+   IP = E^{N-1}_{av}-E^N_{av}=-\frac{1}{M_T}\sum_{t\in T}\varepsilon_t
+
+In the case of a degenerate shell we simply find
+
+.. math::
+   IP = E^{N-1}_{av}-E^N_{av}=-\varepsilon_t,\quad t\in T
+
+identical to the original Koopmans' theorem, whereas one in the general case gets an average over the orbital energies of the shell.
+
+Based on these observations we define the diagonal blocks of the AOC Fock matrix as
+
+- inactive-inactive block:
+.. math:: \quad {\cal F}_{ij}=F^I_{ij}
+- secondary-secondary block:
+.. math:: \quad {\cal F}_{ab}=F^I_{ab}
+- active-active block:
+.. math:: \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
+
+*These are definitions employed in DIRAC12 and onwards.* In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
+missing from the active-active block. Since :math:`Q_{uu}^U` is positive and for an open shell :math:`a_U<1` removal
+of this term tend to shift orbital energies of the open shell upwards. 
+
+Convergence problems typically occur when orbital energies between shells have similar values such that the selection of occupied orbitals 
+for the construction of the Fock matrix becomes ambiguous. In a closed-shell system this will for instance happen when the HOMO-LUMO gap closes.
+The definition of the active-active block in pre-DIRAC12 version (which was in fact an unintended omittal) can in some instances lead to improved
+convergence. More specifically, this happens when the orbitals of an open shell and the closed shell (or another open shell) are almost degenerate.
+However, such situations are often symptomatic for a wrong choice of partitioning of orbitals into closed and open shells. Furthermore, 
+the definition of the active-active block in pre-DIRAC12 versions tend to close the HOMO-LUMO gap which may hamper convergence.
+
+Level shift
+-----------
+
+Whenever there is almost degeneracy of orbitals between different shells the recommended strategy is to exploit the freedom in the
+definition of diagonal blocks of the Fock matrix and introduce a *level shift* :math:`\lambda`, that is
+
+.. math:: \quad F^U_{uv} \rightarrow F^U_{uv}+\lambda\delta_{uv}
+
+The level shift of secondary (virtual) orbitals is controlled by the keyword :ref:`.LSHIFT`, whereas open shells can be shifted
+using the keyword :ref:`.OLEVEL`.

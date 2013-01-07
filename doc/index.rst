@@ -87,6 +87,7 @@ Tutorials and walkthrus
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
