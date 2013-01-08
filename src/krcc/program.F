@@ -45,6 +45,10 @@ C
       KCC1 = KLOOK
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
+      IF(IONLYTRANS.EQ.1) THEN
+        WRITE(6,*) ' Exiting after transformation '
+        RETURN
+      END IF
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!
@@ -225,10 +229,13 @@ C Hardwirering of optimizer
         KSDIIS = 0
       END IF
 *
+      I_DO_SBSPJA = 1
       IF(I_DO_SBSPJA.EQ.1) THEN
         MXDIM = MAX(MAXIT,MXCIV_ORIG)
 *. Space for working with Subpspace Jacobian :
         LSBSPJA = 5*MXDIM**2 + 2*MXDIM
+        print*,'LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG',
+     &          LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG
       ELSE
         LSBSPJA = 0
       END IF

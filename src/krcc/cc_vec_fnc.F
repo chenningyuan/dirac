@@ -95,6 +95,7 @@
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
       ISKIP = 5 ! from which commutator to skip
+      I_EXCLUDE_M10 = 0
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -232,6 +233,7 @@
 *
 * Allocate the M10 intermediate
 *
+      IF(I_EXCLUDE_M10.EQ.0) THEN
       NPART = 1
       NHOLE = 0 
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
@@ -241,6 +243,7 @@
       print*,'to intermediate'
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
+      CALL MEMCHK_KRCC(WORK)
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM10),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
@@ -349,6 +352,7 @@
       NPART = 1
       NHOLE = 0 
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+      END IF
 *
 * Fourth through M02
 *

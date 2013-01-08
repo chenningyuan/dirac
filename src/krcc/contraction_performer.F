@@ -352,8 +352,10 @@ C last of this possible contraction
       INTEGER IHEXP(3,2*NRANK)
       INTEGER ID1(4*NGAS), IEX(4*NGAS)
       INTEGER IORD(4),IEXD1234(2*NRANK)
+* Temp debug arrays
+C     DIMENSION HDIFF(LHT1234)
 *
-      NTEST = 000
+      NTEST = 00
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' ======================='
         WRITE(6,*) ' Welcome to HCT1234_REL '
@@ -376,6 +378,10 @@ C last of this possible contraction
           CALL MEMGET('REAL',KDIFF,LHT1234,WORK,KFREE,LFREE)
           CALL COPVEC(HT1234,WORK(KDIFF),LHT1234)
         END IF
+* Remove the next three lines
+C       DO I=1,LHT1234
+C         HDIFF(I) = HT1234(I)
+C       END DO
       END IF
 *
 *. Find all possible contractions of H operator with the NTOP T operators
@@ -402,12 +408,14 @@ C Will now refine ICONN so we can contract to an intermediate with one T
      &                   WORK,KFREE,LFREE)
 *
       IF(NTEST.GE.1000) THEN
-        WRITE(6,*) ' HCT1234 : Output block of CC vector function '
-        CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
-        CALL VECSUM(WORK(KDIFF),WORK(KDIFF),HT1234,-1.0D0,1.0D0,LHT1234)
-        WRITE(6,*) ' HCT1234 : Contribution from this contraction '
-        CALL WRTMAT(WORK(KDIFF),1,LHT1234,1,LHT1234)
-        CALL MEMREL('T DIFF',WORK,KDIFF,KDIFF,KFREE,LFREE)
+         WRITE(6,*) ' HCT1234 : Output block of CC vector function '
+         CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
+* Remove the next five lines
+C       DO I=1,LHT1234
+C         HDIFF(I) = HT1234(I) - HDIFF(I)
+C       END DO
+C        WRITE(6,*) ' HCT1234 : Contribution from this contraction '
+C        CALL WRTMAT(HDIFF,1,LHT1234,1,LHT1234)
       END IF
 *
       RETURN
@@ -887,7 +895,6 @@ C
         CALL MEMCHK_KRCC(WORK)
 *
       END IF
-      NTEST = 0
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
       IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM

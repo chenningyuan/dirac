@@ -1276,9 +1276,6 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
         WRITE(6,*) ' Intermediate size = ',IDIMEXDX
         WRITE(6,*) ' IWAY = ',IWAY
       END IF
-      DO jj=1,100
-       print*,'kkp'
-      END DO
 *
 * First find EX,DX by calling old routines
 *
@@ -1286,7 +1283,6 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       NTOP = 1
       CALL HTYPE_TO_ED_KRCC(MTYPE,IHINDEX,NHOP,ICONN,NTOP,NRANK,
      &                   IDX,IEX,IEXD1234,IORD,ISIGN_DE)
-      CALL MEMCHK_KRCC(WORK)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Excitation part '
@@ -1305,7 +1301,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 * else perform the mapping
 *
       IF(IFHM.EQ.2) THEN
-        CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+        CALL IDIM_EX_DX_MASTER(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
      &                  IHSM,OUTT,IDIMEXDX,T,
      &                  WORK,KFREE,LFREE)
       ELSE
@@ -2045,8 +2041,59 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
       RETURN
       END
 *
+      SUBROUTINE IDIM_EX_DX_MASTER(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                      ISM,OUTT,IDIMEXDX,T,
+     &                      WORK,KFREE,LFREE)
+*
+* Do as the routine name says. Dimension EX and DX.
+* Based on ANA_GENCCS_CC_KRCC just with more loops.
+* Moved GETSTR2_TOTSM_SPGP_KRCC into loop structure for speed up and
+* added a lot of IF statements. Not so pretty but faster.
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+#include "ctcc.inc"
+*
+      INTEGER IEX(4*NGAS),IDX(4*NGAS),MTYPE(4*NGAS)
+      DIMENSION OUTT(IDIMEXDX),T(*),WORK(*)
+* Local scratch 
+      NNDIM = NRANK*MX_ST_TSOSO_BLK_MX
+      NMDIM = MX_ST_TSOSO_BLK_MX 
+      CALL MEMGET('INTE',KIOCC_CAE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CBE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AAE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_ABE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CAD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CBD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AAD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_ABD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CA,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CB,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AA,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AB,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_FREE,NNDIM,WORK,KFREE,LFREE)
+      CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                      ISM,OUTT,IDIMEXDX,T,
+     & WORK(KIOCC_CAE),WORK(KIOCC_CBE),WORK(KIOCC_AAE),WORK(KIOCC_ABE),
+     & WORK(KIOCC_CAD),WORK(KIOCC_CBD),WORK(KIOCC_AAD),WORK(KIOCC_ABD),
+     & WORK(KIOCC_CA),WORK(KIOCC_CB),WORK(KIOCC_AA),WORK(KIOCC_AB),
+     & WORK(KIOCC_FREE),
+     &                      WORK,KFREE,LFREE)
+*
+      CALL MEMREL('MAPP',WORK,KIOCC_CAE,KIOCC_CAE,KFREE,LFREE)
+      RETURN
+      END
+*
       SUBROUTINE IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
      &                      ISM,OUTT,IDIMEXDX,T,
+     & IOCC_CAE,IOCC_CBE,IOCC_AAE,IOCC_ABE,IOCC_CAD,IOCC_CBD,
+     & IOCC_AAD,IOCC_ABD,IOCC_CA,IOCC_CB,IOCC_AA,IOCC_AB,IOCC_FREE,
      &                      WORK,KFREE,LFREE)
 *
 * Do as the routine name says. Dimension EX and DX.
