@@ -30,6 +30,10 @@ or popular Google-Books web-space.
    J. Chem. Phys. **136**, 150902 (2012)
    `[web] <http://dx.doi.org/10.1063/1.3702628>`_
 
+.. [Baker1993] J. Baker,
+   *Techniques for geometry optimization: A comparison of cartesian and natural internal coordinates*, J. Comp. Chem. **14**, 1085 (1993)
+   `[web] <http://dx.doi.org/10.1002/jcc.540140910>`_
+
 .. [Bast2011] Radovan Bast,  Anton Koers,  André Severo Pereira Gomes,  Miroslav Iliaš,  Lucas Visscher,  Peter Schwerdtfeger and Trond Saue
    *Analysis of parity violation in chiral molecules*, PCCP **13**, 864 (2011)
    `[web] <http://dx.doi.org/10.1039/c0cp01483d>`_
@@ -71,17 +75,20 @@ or popular Google-Books web-space.
    `[web] <http://dx.doi.org/10.1017/S0305004100016108>`_
 
 .. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue and K.Fægri,
-   Bonding analysis using localized relativistic orbitals:
-   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po),
+   *Bonding analysis using localized relativistic orbitals:
+   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po)*,
    J. Chem. Phys. **124**, *154307* (2006)
    `[web] <http://dx.doi.org/10.1063/1.2187001>`_
 
-.. [Dunning1989] T. H. Dunning, *bla*, J. Chem. Phys. **106**, *0* (1989)
-   `[web] <http://dx.doi.org/10.1007/s002140100263>`_
+.. [Dunning1989] T. H. Dunning, 
+   *Gaussian basis sets for use in correlated molecular calculations. I. The atoms boron through neon and hydrogen*,
+   J. Chem. Phys. **90**, *1007* (1989)
+   `[web] <http://dx.doi.org/10.1063/1.456153>`_
 
 .. [Dyall1994] K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
-   hamiltonian*, J. Chem. Phys. **100**, *2118* (1994)
+   hamiltonian*,
+   J. Chem. Phys. **100**, *2118* (1994)
    `[web] <http://dx.doi.org/10.1063/1.466508>`_
 
 .. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
