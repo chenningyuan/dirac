@@ -49,8 +49,11 @@ copyright = u'The authors of DIRAC'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-# Read version from file
-dirac_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
+# Read version from file (miro: workaround for Windows as for some reasons it does not find the file)
+try:
+  dirac_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
+except:
+  dirac_version = 'not found'
 # The short X.Y version.
 version = dirac_version
 # The full version, including alpha/beta/rc tags.

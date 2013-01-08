@@ -38,7 +38,7 @@ PROJECT_NUMBER         =  "@DIRAC_VERSION@"
 # for a project that appears at the top of each page and should give viewer
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Doxygen denerated documentation of DIRAC source codes"
+PROJECT_BRIEF          = "Doxygen generated documentation of DIRAC source codes, see www.diracprogram.org." 
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is
 # included in the documentation. The maximum height of the logo should not
@@ -666,8 +666,8 @@ INPUT_ENCODING         = UTF-8
 # *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py
 # *.f90 *.f *.for *.vhd *.vhdl
 
-#miro: only Fortran90 files
-FILE_PATTERNS          =  *.f90 *.F90
+#miro: reasonable scale of source file formats
+FILE_PATTERNS          =  *.f90 *.F90 *.F *.h *.c *.cxx
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.

@@ -3,7 +3,7 @@
 Np atom
 =======
 
-In this tutorial we will try to get the [Rn] 5f4 6d1 7s2 configuration of Np.
+In this tutorial we will try to get the :math:`[Rn] 5f^{4} 6d^{1} 7s^{2}` configuration of Np.
 This is a tough cookie.  First we prepare the mol file::
 
   DIRAC
@@ -41,7 +41,7 @@ file::
   *END OF
 
 This converges nicely.  Now we could be tempted to restart from DFCOEF,
-reintroduce the 7s2 and the open shells 5f4 and 6d1 and impose overlap
+reintroduce the  :math:`7s^{2}` and the open shells :math:`5f^{4}` and :math:`6d^{1}` and impose overlap
 selection like this::
 
   **DIRAC
@@ -301,3 +301,31 @@ And here is the 5f4 shell::
   --------------------------------------------------------------------------------------------------------------------------------
    alpha    0.8571  |      0.0000         0.0000         0.0000         0.0000         0.2143         0.2143         0.4286
    beta     0.1429  |      0.0179         0.0536         0.0536         0.0179         0.0000         0.0000         0.0000
+
+
+Other similar cases:  :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}` and :math:`W4+` with broken orbital degeneracies
+========================================================================================================================
+
+The :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}`, and :math:`W4+` are closed shell cations with the electronic structure of the Yb atom (Z=70), 
+which are not converging in simple SCF procedure.
+
+In the SCF output one observes broken degeneracies of their atomic p,d,f... shells (using four- and two-component Hamiltonians), 
+even with spin-free and nonrelativistic Levy-Leblond Hamiltonians. 
+This is in contrast with the Yb closed shell atom, whose electronic structure is emulated, that comes out with proper spinor/orbital degeneracies.
+
+The reason for this problem is that the start guess for orbitals is based on a bare nucleus or other simple model Hamiltonian. 
+In the first diagonalization this Hamiltonian gives orbitals that do not have the expected order 4f, 6p but rather 6p, 4f. 
+The program then proceeds by occupying the three 6p orbitals, complemented by a remaining four 4f orbitals. 
+Thus resulting density does not have the correct spherical symmetry and offsets the SCF procedure yielding a symmetry-broken solution.
+
+The leading idea behind is to fix the wrong order of orbitals which is causing the degeneracy.
+
+The 'default' wrong order of forming molecular orbitals is for s-shell (LUMO) beeing inserted after the first d-shell (HOMO).
+The user has to apply the :math:`M_{J}`-selection for the linear symmetry, or the orbital reordering scheme to have s-orbitals separated from d-orbitals.
+In this way it is possible to get converged MOs not only for linear, but also for D2h and C2v symmetries. However, for the C2v it takes many more iterations.
+
+One could also experiment with providing a better starting guess of orbitals, e.g. by first calculating the highly-charged cation with a Xenon electronic configuration. 
+This gives a symmetric density that can be used as starting set of MOs (using the DFCOEF file) for the real calculation. 
+Some care is needed with this restart as also the orbitals for the Xe-like ion may have an undesired order. 
+Howver, this may require use of the MO-selection options of the program, as mentioned above.
+
