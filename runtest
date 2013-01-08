@@ -758,7 +758,7 @@ class python_command:
                 if os.path.isfile(dirac_file):
                     os.remove(dirac_file)
                 else:
-                    print "runtest warning: file for removing "+dirac_file+"does not exist!"
+                    print "runtest warning: file %s does not exist and cannot be removed" % dirac_file
                     print "  check the test menu presciption: "+self.command+" "+self.command_args
          elif self.command == 'mv' :
              src=self.command_args.split()[0]
