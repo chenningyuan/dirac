@@ -2567,7 +2567,7 @@ C
 C     Reorder orbitals
 C
       IF (LMOORD) CALL REORD(WORK(KCMO),WORK(KEIG),WORK(KIBG),
-     &                       IMOORD,IREORD,MXREORD,WORK(KFREE),LFREE)
+     &                       IMOORD,IREORD,MXREORD)
 C
 C     Rotate orbitals
 C
@@ -2712,8 +2712,7 @@ C     ====================================
 C
 C     Reorder orbitals
 C
-      IF (LMOORF) CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
-     &                       WORK(KFREE),LFREE)
+      IF (LMOORF) CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD)
 C
 C     Phase-adjustment of coefficients, if requested...
 C
