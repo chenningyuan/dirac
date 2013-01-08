@@ -272,6 +272,7 @@ contains
                 fmo,             &
                 buf,             &
                 iprprp)
+
       debug_me = .false.
       if (debug_me) then
         write(*, *) 'buf in get_ftb after ttra, icomp = ', icomp
@@ -280,6 +281,13 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
+!g!fixme
+!g      lwork = len_f77_work
+!g      kfree = 1
+!g      call di_select_wrk(work, lwork)
+!g      call fmoli3(00,buf,fmo,tb,work,kfree,lwork)
+!g      call di_deselect_wrk(work, lwork)
+!g!end of fixme
 
 !     add result to fmat
       call daxpy(n2orbxq,        &
@@ -377,7 +385,7 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
-    debug_me = .true.
+    debug_me = .false.
     if (debug_me) then
       do icomp = 1, nr_xyz_comp
         write(*, *) 'fao in get_gtb, icomp = ', icomp
@@ -526,7 +534,7 @@ contains
 !                     --------------------------------
                       iprprp)
 
-      debug_me = .true.
+      debug_me = .false.
       if (debug_me) then
         write(*, *) 'fao in do_ao_to_mo after qtrans, icomp, i = ', icomp, i
         call prqmat(fao(1, icomp), &

@@ -448,7 +448,7 @@ C
      &         CONMAT(NORBT,NORBT,NZ),
 !              Density matrix
      &         DMAT(NORBT,NORBT,NZ),
-     &         ORTO(3,*),WORK(*)
+     &         ORTO(3,*),WORK(*), iqsym(4)
       LOGICAL AH,EPMIX,DOPCTRA_SAVE
 C
 #include "ibtfun.h"
@@ -496,11 +496,6 @@ C --------------------------------------------
            CALL DZERO(CONMAT,N2ORBXQ)
            CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
      &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-! gosia: leave occ-occ block only
-           !if (lao_lr_rearrange) then
-           if (lao_lr_rearrange .or. shielding_rearrange) then
-             !gosia fixme call get_m_ij(conmat)
-           end if 
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
      &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
@@ -530,9 +525,6 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
-!              now we zero-out other blocks than occ-occ,as we need 'dS/dB'_ij
-!              this is easier for a moment than adapting other routines...
-               !gosia fixme call get_m_ij(work(ktmat))
              else
              IF (.NOT.SYMCON) THEN
               IF (ITIM2.NE.0)
@@ -548,29 +540,35 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              ENDIF
              end if ! if (lao_lr_rearrange)
 
+!g             if (shielding_rearrange .or. lao_lr_rearrange) then
+!g               call get_m_ij(work(ktmat))
+!g             end if
              if (shielding_rearrange) then
-             !if (shielding_rearrange .or. lao_lr_rearrange) then
-!              gosia: whatever connection we just read into work(ktmat)
-!              we want to combine (T + T\dagger)_ij,
-!              ideally we should get here 'dS/dB' integrals, but this we cannot do easily.
-!              to do it, we would have to assign 'dS/dB' integrals (same as in SYMCON) to shielding_rearrange
-!              exactly as done in lr_lao_rearrange (in def_d1hblond subroutine)
-!              but this reformulation is meant to be general for NATCON and SYMCON, so we don't want to decide
-!              so instead we will here combine (T+T\dagger)_ij
-!              which equals to 'dS/dB'_ij for any T.
-               !call get_s_from_t(work(ktmat))
-!gosia fixme: get_s_from_t to be written
+!              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
+               ih = -1
+               do iz = 1, nz
+                 iq = ipqtoq(iz, irep2)
+                 iqsym(iz) = ihqmat(iq, ih)
+               end do
+               call qgetam(work(ktmat), norbt, nz, norbt, norbt, iqsym)
                call get_m_ij(work(ktmat))
              end if
-
+             if (lao_lr_rearrange) then
+               call get_m_ij(work(ktmat))
+             end if
 
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
              EPMIX = DOEPRN
              AH  = .TRUE. ! T_icomp is antihermitian ! 
+             if (shielding_rearrange .or. lao_lr_rearrange) then
+             CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             else
 C ... do the reorthonormalization ...
              CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
      &                   CONMAT,WORK(KTHMAT),IPRINT)
+             end if !if (shielding_rearrange .or. lao_lr_rearrange) then
              IF (IPRINT.GE.5) THEN
               WRITE(LUPRI,'(4A/)')
      &         'GETCON: Transformed term {}', PRPNAM(INDXPR),';',
@@ -734,6 +732,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+!       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
           if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
@@ -777,7 +776,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
-!gosia:
+!       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
           if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
@@ -975,12 +974,12 @@ C
 C
 C     Print section
 C
-CTROND      IF(IPRINT.GE.8) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,'(/,A)')
      &  'GETMDM: Entering T(1) MO-connection matrix:'
         CALL PRQMAT(TMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &               IPQTOQ(1,IREP),LUPRI)
-CTROND      ENDIF
+      ENDIF
       IF(IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/A)')
      &  'GETMDM: Entering MO coefficients:'
@@ -998,24 +997,8 @@ C
 C
 C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
-        IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
-CTROND
-          WRITE(6,*) 'TEST..',I1,I2
-          IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
-CTROND            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
-CTROND     &                  NORB(I1),NOCC(I2),
-CTROND     &       DMAT(I2BASX(I1,I2)+1,1),
-CTROND     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-CTROND!          T(o,i)
-CTROND     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-CTROND     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-CTROND!          C(a,o)^+
-CTROND     &     CMO(ICMOQ(I1)+1),
-CTROND     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-CTROND!          C(i,b)
-CTROND     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
-CTROND     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-CTROND     &     WORK(KFREE),LFREE,IPRINT)
+!gosia: fixme
+        if (lao_lr_rearrange) then
             CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NOCC(I1),NOCC(I2),
      &       DMAT(I2BASX(I1,I2)+1,1),
@@ -1025,6 +1008,27 @@ CTROND     &     WORK(KFREE),LFREE,IPRINT)
      &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
 !          C(a,o)^+
      &     CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+!          C(i,b)
+     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &     WORK(KFREE),LFREE,IPRINT)
+
+        else  ! if not lao_lr_rearrange
+
+        IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
+CTROND
+          WRITE(6,*) 'TEST..',I1,I2
+          IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
+            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &                  NORB(I1),NOCC(I2),
+     &       DMAT(I2BASX(I1,I2)+1,1),
+     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+!          T(o,i)
+     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+!          C(a,o)^+
+     &     CMO(ICMOQ(I1)+1),
      &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
 !          C(i,b)
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
@@ -1048,8 +1052,9 @@ CTROND     &     WORK(KFREE),LFREE,IPRINT)
      &             WORK(KFREE),LFREE,IPRINT)
         ENDIF
       ENDIF
+      end if ! if lao_lr_rearrange !gosia fixme
       ENDDO
-CTROND      IF (IPRINT.GE.6) THEN
+      IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'GETMDM: NON-HERMITIAN modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1060,7 +1065,7 @@ CTROND      IF (IPRINT.GE.6) THEN
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-CTROND      ENDIF
+      ENDIF
 
 !     gosia: if lao_lr_rearrange we only do: DMAT = C*(SB)C(+)
       if (.not. lao_lr_rearrange) then
@@ -1076,7 +1081,7 @@ C    =========================================================
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
       end if ! if (.not. lao_lr_rearrange) 
-CTROND      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1087,9 +1092,9 @@ CTROND      IF(IPRINT.GE.5) THEN
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-CTROND      ENDIF
+      ENDIF
 CTROND
-      STOP 'End of GETMDM'    
+      !gosiaSTOP 'End of GETMDM'    
       CALL QEXIT('GETMDM')
       RETURN
       END
@@ -3107,4 +3112,133 @@ C******************************************************
       ENDIF
       RETURN
       END
+
+!ttra2: will be removed
+      SUBROUTINE TTRA2(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
+C*****************************************************************************
+      use london_helper
+      use london_reorth_hb
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      LOGICAL EPMIX, AH
+      DIMENSION  TMAT(NORBT,NORBT,NZ), 
+     &           HMAT(NORBT,NORBT,NZ),
+     &          THMAT(NORBT,NORBT,NZ)
+C
+#include "ibtfun.h"
+      CALL QENTER('TTRA2')
+
+      IREPT = ISYMT-1
+      IOPSYT = JBTOF(IREPT,1)
+
+      IREPH = ISYMH-1
+      IOPSYH = JBTOF(IREPH,1)
+
+      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
+      IOPSYTH = JBTOF(IREPTH,1)
+
+C ... specify sign for herm.conjugate of TMAT 
+      IF (AH) THEN ! anti-hermitian
+        DSGN = DM1
+      ELSE
+        DSGN = D1
+      ENDIF
+
+C ... do matrix multiplications - run over fermion irreps
+C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
+
+      DO I1 = 1, NFSYM
+        IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
+
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1, IORB(I2)+1, 1),
+     &               NORBT, NORBT, NZ,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I3)+1, 1), 
+     &               NORBT, NORBT, NZ, 
+!                    ---------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
+          IF(IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
+     &    'TTRA: 1.part transformed H.T over e-p :',
+     &     IREPTH+1,'/',NBSYM,DSGN
+            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
+     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
+          ENDIF
+       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
+!          if (.not. lao_lr_rearrange) then
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
+!                    -----------------------------------
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
+     &               NORBT,NORBT,NZ,
+!                    -----------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ, 
+!                    -----------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
+          end if
+        ELSE  ! Transformation in the e-e space only
+
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
+       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
+!          if (.not. lao_lr_rearrange) then
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
+!                    ---------------------------------------------- --
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
+          end if !if (.not. lao_lr_rearrange) then
+        ENDIF
+      ENDDO
+
+      CALL QEXIT('TTRA2')
+      RETURN
+      END
+
 

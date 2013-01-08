@@ -6378,7 +6378,6 @@ C  ...  get the expect. value {T,h(mK)} reorthonormalization term
 CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
         IF (IPRPRP.GE.2) THEN
-          !if (lao_lr_rearrange) then
           if (lao_lr_rearrange .or. shielding_rearrange) then
             CALL HEADER('Contribution to the shielding from overlap '// 
      &      'magnetic derivative (expect.value) in symmetry '//
