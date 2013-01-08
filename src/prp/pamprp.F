@@ -6631,6 +6631,9 @@ C     ... use result of e-p response equations
 C       ...add London + reorthonormalization contribution
           AVEDIA1 = (DMATLO(1,1) + DMATLO(2,2) + DMATLO(3,3))/D3
           AVEDIA  = AVEDIA + AVEDIA1
+!gosia fixme: it would be better to keep AVEDIA and AVEDIA1 separated
+!it is confusing to calculate AVEDIA like that, while to print
+!elements of PMATEP only (which does not have contributions from AVEDIA1)
       ENDIF
 C     Paramagnetic part
       AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
