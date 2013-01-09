@@ -488,8 +488,7 @@ C
 !         end do
 
           CALL REORD(CMO,WORK(KOCCNO2),WORK(KMJVEC),
-     &               reorder_list,reorder_fermion,nesht,
-     &               WORK(KFREE),LFREE)
+     &               reorder_list,reorder_fermion,nesht)
 
           call dealloc(reorder_list)
           call dealloc(reorder_fermion)
