@@ -6205,6 +6205,7 @@ C
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATRE,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,2*NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDISO,NUCDEP,WORK,KFREE,LFREE)
@@ -6222,7 +6223,7 @@ C
 C     (-29: accept .SELECT specification)
       CALL SETATM(WORK(KATOM),NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
-     &     WORK(KDMATLO),
+     &     WORK(KDMATLO),WORK(KDMATRE),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
      &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
@@ -6233,7 +6234,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD1 */
       SUBROUTINE PRP_SHIELD1(EXPVAL,ABLRF,TMPMAT,TMAT,
-     &      DMATLO,DMAT,PMAT,TISO,
+     &      DMATLO,DMATRE,DMAT,PMAT,TISO,
      &      DISO,PISO,ANIS,ASYM,SKEW,SPAN,IBUFA,
      &      DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -6262,7 +6263,7 @@ C***********************************************************************
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
-     &     DMATLO(3,3,NUCDEP),
+     &     DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
      &     PMAT(3,3,NUCDEP,2),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
      &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
      &     IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
@@ -6299,6 +6300,7 @@ C
       CALL DZERO(TMPMAT,NCMAT)
       CALL DZERO(DMAT,NCMAT)
       CALL DZERO(DMATLO,NCMAT)
+      CALL DZERO(DMATRE,NCMAT)
       CALL DZERO(TMAT,NCMAT)
       CALL DZERO(PMAT,2*NCMAT)
 C--------------------------------------------------------------------------
@@ -6355,6 +6357,7 @@ CMI ... take care of the correct form of PRPLBL(IPL) name
 C       ... extract London part of shielding into the PMAT
         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
 C       ... add the London exp.value parts of shield. to DMATLO
+CTROND: DCOPY is not needed, use DMATLO directly
         CALL DAXPY(NCMAT,D1,PMAT,1,DMATLO,1)
       END IF
 C--------------------------------------------------------------------
@@ -6391,8 +6394,9 @@ CMI ... sign convention !!!
         ENDIF
 C       ... extract the reorthonormalization part into the PMAT
         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C       ... add the reorthonormalization terms to DMATLO
-        CALL DAXPY(NCMAT,D1,PMAT,1,DMATLO,1)
+C       ... add the reorthonormalization terms to DMATRE
+CTROND...DAXPY not needed !!!! use dmatre directly
+        CALL DAXPY(NCMAT,D1,PMAT,1,DMATRE,1)
       END IF
 C
 C     *** Extract shieldings ***
@@ -6501,7 +6505,10 @@ C         .... save e-e response part into TMAT
           CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,1),1,TMAT,1)
         END IF
 C       ... include London + reorthonormalization to total shielding
-        IF (LONDON) CALL DAXPY(9*NUCDEP,D1,DMATLO,1,TMAT,1)
+        IF (LONDON) THEN
+          CALL DAXPY(9*NUCDEP,D1,DMATLO,1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,DMATRE,1,TMAT,1)
+        ENDIF
         IF (XLR_SKIPEP) THEN
 C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
             CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
@@ -6529,7 +6536,7 @@ C
             IATOM = IATOM + 1
             IF (DOATOM(I)) THEN
               CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
-     &             DMATLO(1,1,IATOM),
+     &             DMATLO(1,1,IATOM),DMATRE(1,1,IATOM),
      &             PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
      &             TISO(IATOM),DISO(IATOM),PISO(IATOM),
      &             ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
@@ -6576,7 +6583,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck SHIANA */
-      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,PMATEE,PMATEP,
+      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,DMATRE,PMATEE,PMATEP,
      &                  AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
@@ -6587,7 +6594,8 @@ C
 C     INPUT:
 C        TMAT   - total shielding 
 C        DMAT   - diamagnetic term if calculated as expectation value
-C        DMATLO - London and reorthonormalization terms
+C        DMATLO - London term
+C        DMATRE - reorthonormalization term
 C        PMATEE - e-e (++) - contribution to response function
 C        PMATEP - e-p (+-) - contribution to response function
 C     Written by T.Enevoldsen Nov. 14 1997
@@ -6605,13 +6613,14 @@ C***********************************************************************
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
-     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3),
-     &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
+     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
+     &          DMATRE(3,3),PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
       CALL DSCAL(9,FACTOR,DMATLO,1)
+      CALL DSCAL(9,FACTOR,DMATRE,1)
       CALL DSCAL(9,FACTOR,PMATEE,1)
       CALL DSCAL(9,FACTOR,PMATEP,1)
 C     Total shielding
@@ -6630,7 +6639,8 @@ C     ... use result of e-p response equations
       IF(LONDON) THEN
 C       ...add London + reorthonormalization contribution
           AVEDIA1 = (DMATLO(1,1) + DMATLO(2,2) + DMATLO(3,3))/D3
-          AVEDIA  = AVEDIA + AVEDIA1
+          AVEDIA3 = (DMATRE(1,1) + DMATRE(2,2) + DMATRE(3,3))/D3
+          AVEDIA  = AVEDIA + AVEDIA1 + AVEDIA3
 !gosia fixme: it would be better to keep AVEDIA and AVEDIA1 separated
 !it is confusing to calculate AVEDIA like that, while to print
 !elements of PMATEP only (which does not have contributions from AVEDIA1)
@@ -6746,14 +6756,19 @@ C   ... make separate print out of e-e and e-p response contributions
           ENDIF
         ENDIF
         IF(LONDON) THEN
-          CALL HEADER('London+reorthonormalization '//
-     &      ' contributions (ppm):',1)
+          CALL HEADER('London contributions (ppm):',1)
           DO ICOOR = 1, 3
             WRITE (LUPRI,'(2X,A6,3F11.4)') NAMEX(ICOOR),
      &            (DMATLO(K,ICOOR),K=1,3)
           END DO
-          WRITE (LUPRI,'(/A,F14.6)')
-     &    ' London + reorthonormalization contribution:',AVEDIA1
+          WRITE (LUPRI,'(/A,F14.6)') ' London contribution:',AVEDIA1
+          CALL HEADER('Reorthonormalization contributions (ppm):',1)
+          DO ICOOR = 1, 3
+            WRITE (LUPRI,'(2X,A6,3F11.4)') NAMEX(ICOOR),
+     &            (DMATRE(K,ICOOR),K=1,3)
+          END DO
+          WRITE (LUPRI,'(/A,F14.6)') 
+     &    ' Reorthonormalization contribution:',AVEDIA3
         ENDIF
 C
         CALL HEADER
