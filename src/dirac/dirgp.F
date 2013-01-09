@@ -2605,12 +2605,11 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
       LOGICAL TOBE, TOBEK
+      real(8), allocatable :: cmo(:)
+      real(8), allocatable :: eig(:)
+      integer, allocatable :: ibeig(:)
 C
 
-      integer, parameter   :: LWORK = 1000000
-      real(8), allocatable :: WORK(:)
-
-#include "memint.h"
 C
 C     check if file KRMCSCF or DFCOEF is present
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
@@ -2625,17 +2624,16 @@ C     check if file KRMCSCF or DFCOEF is present
       if(tobek .and. tobe) tobe = .false.
 C
 C     Memory allocation
-      call alloc(WORK,LWORK,id='WORK in PSTORB')
-      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+      allocate(cmo(ncmotq))
+      allocate(eig(norbt))
+      allocate(ibeig(norbt))
 C
-      CALL PSTOR1(WORK(KCMO),WORK(KEIG),WORK(KIBG),
-     &            tobek,WORK(KFREE),LFREE)
+      call pstor1(cmo,eig,ibeig,tobek)
 C
 C     Memory deallocation
-      CALL MEMREL('PSTORB',WORK,KWORK,KWORK,KFREE,LFREE)
-      call dealloc(WORK)
+      deallocate(cmo)
+      deallocate(eig)
+      deallocate(ibeig)
       RETURN
 C
  1000 CONTINUE
@@ -2643,7 +2641,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/*Deck Pstor1 */
-      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,read_mcscf,WORK,LWORK)
+      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,read_mcscf)
 C***********************************************************************
 C
 C     Post orbital modifications
@@ -2659,11 +2657,10 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbreo.h"
-      DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(*)
+      DIMENSION CMO(*),EIG(*),IBEIG(*)
       logical, intent(in) :: read_mcscf
       logical             :: mcorb, mjava, boson_irrep_info
       logical             :: fndlab
-#include "memint.h"
 
 C     Get coefficients from KRMCSCF/DFCOEF
 C     ====================================
@@ -2707,8 +2704,7 @@ C     ====================================
         CLOSE (LUKRMC,STATUS='DELETE')
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       END IF
 C
 C     Reorder orbitals
