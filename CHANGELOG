@@ -10,7 +10,7 @@
 - Fix for too slow MCSCF convergence.
 
 
-12.2
-----
+UNPUBLISHED
+-----------
 
 - Fixed memory allocations in dirgp.F which now allows SMB for large basis sets.
