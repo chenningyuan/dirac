@@ -998,23 +998,23 @@ C
 C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
 !gosia: fixme
-        if (lao_lr_rearrange) then
-            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
-     &                  NOCC(I1),NOCC(I2),
-     &       DMAT(I2BASX(I1,I2)+1,1),
-     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-!          T(o,i)
-     &     TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-!          C(a,o)^+
-     &     CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
-     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-!          C(i,b)
-     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
-     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &     WORK(KFREE),LFREE,IPRINT)
-
-        else  ! if not lao_lr_rearrange
+!g        if (lao_lr_rearrange) then
+!g            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+!g     &                  NOCC(I1),NOCC(I2),
+!g     &       DMAT(I2BASX(I1,I2)+1,1),
+!g     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+!g!          T(o,i)
+!g     &     TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+!g     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+!g!          C(a,o)^+
+!g     &     CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+!g     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+!g!          C(i,b)
+!g     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+!g     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+!g     &     WORK(KFREE),LFREE,IPRINT)
+!g
+!g        else  ! if not lao_lr_rearrange
 
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
 CTROND
@@ -1052,7 +1052,7 @@ CTROND
      &             WORK(KFREE),LFREE,IPRINT)
         ENDIF
       ENDIF
-      end if ! if lao_lr_rearrange !gosia fixme
+!g      end if ! if lao_lr_rearrange !gosia fixme
       ENDDO
       IF (IPRINT.GE.6) THEN
         CALL HEADER(
