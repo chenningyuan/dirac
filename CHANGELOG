@@ -10,7 +10,8 @@
 - Fix for too slow MCSCF convergence.
 
 
-UNPUBLISHED
------------
+12.2
+----
 
-- Fixed memory allocations in dirgp.F which now allows SMB for large basis sets.
+- Fixed memory allocations in dirgp.F which now allows pre- and post-SCF orbital reordering
+  as well as simple magnetic balance for larger basis sets.
