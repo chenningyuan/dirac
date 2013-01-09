@@ -2545,45 +2545,44 @@ C
 #include "dcbreo.h"
 #include "dcbrot.h"
       LOGICAL TOBE
-
-      integer, parameter   :: LWORK = 1000000
-      real(8), allocatable :: WORK(:)
-C
-#include "memint.h"
+      real(8), allocatable :: cmo(:)
+      real(8), allocatable :: eig(:)
+      integer, allocatable :: ibeig(:)
 C
 C     Check if coefficients are on file
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
-C     Memory allocation
-      call alloc(WORK,LWORK,id='WORK in PREORB')
-      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+
+!     memory allocation
+      allocate(cmo(ncmotq))
+      allocate(eig(norbt))
+      allocate(ibeig(norbt))
 C
 C     Read coefficients, eigenvalues and irrep identification 
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREORB')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &            WORK(KIBG),TOTERG,14,WORK,KFREE,LFREE)
+      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,
+     &            IBEIG,TOTERG,14)
 C
 C     Reorder orbitals
 C
-      IF (LMOORD) CALL REORD(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+      IF (LMOORD) CALL REORD(CMO,EIG,IBEIG,
      &                       IMOORD,IREORD,MXREORD)
 C
 C     Rotate orbitals
 C
-      IF(ROTORB) CALL CMOROT(WORK(KCMO),WORK(KEIG),WORK(KIBG))
+      IF(ROTORB) CALL CMOROT(CMO,EIG,IBEIG)
 C
 C     Write new coefficients
 C
-      CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBG),TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
-C
-C     Memory deallocation
-      CALL MEMREL('PREORB',WORK,KWORK,KWORK,KFREE,LFREE)
-      call dealloc(WORK)
+
+!     Memory deallocation
+      deallocate(cmo)
+      deallocate(eig)
+      deallocate(ibeig)
       RETURN
 C
  1000 CONTINUE
