@@ -2455,7 +2455,7 @@ C           ... single number
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck cmomi1 */
-      SUBROUTINE CMOROT(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE CMOROT(CMO,EIG,IBEIG)
 C***********************************************************************
 C
 C     Perform Jacobi rotations of user-specified angle on pairs
@@ -2474,27 +2474,30 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
-#include "memint.h"
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
+
+      integer, allocatable :: jvec(:)
+      real(8), allocatable :: buf(:)
 C
       X = ROTANG*PI/D180
       COSX = COS(X)
       SINX = SIN(X)      
       DO 10 IFRP = 1,NFSYM
         NVECS = 1
-        CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
-        CALL NUMLST(VECROT(IFRP),WORK(KJVEC),NORB(IFRP),
+        allocate(jvec(norb(ifrp)))
+        CALL NUMLST(VECROT(IFRP),JVEC,NORB(IFRP),
      &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS)
-        CALL ORBCN2(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
+        CALL ORBCN2(JVEC,NVECS,IFRP,NPVECS,NEVECS)
         IF(MOD(NVECS,2).EQ.1) THEN
           CALL QUIT('CMOROT: Odd number of orbitals to rotate !')
         ENDIF
         IF(NVECS.EQ.0) GOTO 20
-        CALL MEMGET('REAL',KBUF,NFBAS(IFRP,0),WORK,KFREE,LFREE)
-        CALL JACORB(COSX,SINX,NVECS,WORK(KJVEC),CMO(ICMOQ(IFRP)+1),
-     &              NFBAS(IFRP,0),NORB(IFRP),WORK(KBUF))
+        allocate(buf(NFBAS(IFRP,0)))
+        CALL JACORB(COSX,SINX,NVECS,JVEC,CMO(ICMOQ(IFRP)+1),
+     &              NFBAS(IFRP,0),NORB(IFRP),BUF)
+        deallocate(buf)
  20     CONTINUE
-        CALL MEMREL('CMOROT',WORK,1,KWORK,KFREE,LFREE)
+        deallocate(jvec)
  10   CONTINUE
 C
       RETURN
@@ -2571,8 +2574,7 @@ C
 C
 C     Rotate orbitals
 C
-      IF(ROTORB) CALL CMOROT(WORK(KCMO),WORK(KEIG),WORK(KIBG),
-     &         WORK(KFREE),LFREE)
+      IF(ROTORB) CALL CMOROT(WORK(KCMO),WORK(KEIG),WORK(KIBG))
 C
 C     Write new coefficients
 C
