@@ -129,14 +129,14 @@ contains
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
     call dealloc(fao)
 
-    if (.not. lao_lr_rearrange) then
+!    if (.not. lao_lr_rearrange) then
 !     calculate "F" part, add to "G" and write result to file
       call get_ftb(fmo, cmo, ibeig)
-    else
+!    else
 !     if connection-independent approach, we don't need one-index transformed contribution
 !     in the property gradient, so only write fmo to file:
-      call write_sb(fmo)
-    end if
+!      call write_sb(fmo)
+!    end if
 
     call dealloc(fmo)
 
@@ -177,6 +177,10 @@ contains
                 lwork)
 
     call di_deselect_wrk(work, lwork)
+
+    if (lao_lr_rearrange) then
+      call get_m_ij(fmo)
+    end if
 
     call alloc(tb,  n2orbxq)
     tb = 0.0d0
@@ -228,6 +232,11 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+! in lao_lr_rearrange take only 'ai' blocks:
+      if (lao_lr_rearrange) then
+        call get_m_ai(tb,doeprn)
+      end if
 
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
