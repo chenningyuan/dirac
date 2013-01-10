@@ -4390,7 +4390,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0105
+      NTEST = 0005
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -4427,7 +4427,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        NEL_AA = IELSUM(ITSOSO_TP(1+2*NGAS,ITSS_TP),NGAS)
        NEL_AB = IELSUM(ITSOSO_TP(1+3*NGAS,ITSS_TP),NGAS)
 *
-       print*,'LENGTH outside',LENGTH
+C      print*,'LENGTH outside',LENGTH
        IBTSOSO_TP(ITSS_TP) = LENGTH + 1
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
@@ -4465,7 +4465,7 @@ C            LENGTH2 = LEN_CA*LEN_CB*LEN_AA*LEN_AB
              LLEN = LEN_CA*LEN_CB*LEN_AA*LEN_AB
              LENGTH = LENGTH + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
              LENGTH2 = LENGTH2 + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             print*,'LLEN,LENGTH,LENGTH2',LLEN,LENGTH,LENGTH2
+C            print*,'LLEN,LENGTH,LENGTH2',LLEN,LENGTH,LENGTH2
              if (NTEST.ge.1000) then
                write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
                write(6,*) 'LENGTH2 ',LENGTH2

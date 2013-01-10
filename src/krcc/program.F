@@ -571,7 +571,7 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
 * next line added by Lasse not sure if correct but thinks so
        LEN_T_VEC_MX = LEN_T_VEC_CC
 *
-       LENNY = LEN_T_VEC_MX + N_SD_INT
+       LENNY = LEN_T_VEC_MX !+ N_SD_INT ! Addition removed by Lasse
        print*,'LENNY',LENNY
       CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
