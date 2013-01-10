@@ -708,28 +708,23 @@ C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
         IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
-
-
-!!!
-        if (lao_lr_rearrange) then
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I1)+1, IORB(I2)+1, 1),
-     &               NORBT,NORBT,NZ,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ, 
-!                    -----------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-!!!
-        else !if (lao_lr_rearrange) then
+          if (lao_lr_rearrange) then
+            I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+            I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+            CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
+!                      -----------------------------------
+     &                 'N', 'N', IPQTOQ(1,IREPT),
+     &                 TMAT(IORB(I1)+1, IORB(I2)+1, 1),
+     &                 NORBT,NORBT,NZ,
+!                      -----------------------------------
+     &                 'N', 'N', IPQTOQ(1,IREPH),
+     &                 HMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &                 NORBT,NORBT,NZ, 
+!                      -----------------------------------
+     &                 D1, IPQTOQ(1,IREPTH),
+     &                 THMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &                 NORBT,NORBT,NZ)
+          else !if (lao_lr_rearrange) then
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
           I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
           I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
@@ -753,8 +748,6 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
-!       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
-          if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -771,10 +764,25 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
-          end if
          end if !if (lao_lr_rearrange) then
         ELSE  ! Transformation in the e-e space only
-
+          if (lao_lr_rearrange) then
+            I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+            I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+            CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), D1,
+!                      -----------------------------------
+     &                 'N', 'N', IPQTOQ(1,IREPT),
+     &                 TMAT(IORB(I1)+1+NPSH(I1),IORB(I2)+1+NPSH(I2),1),
+     &                 NORBT,NORBT,NZ,
+!                      -----------------------------------
+     &                 'N', 'N', IPQTOQ(1,IREPH),
+     &                 HMAT(IORB(I2)+1+NPSH(I2),IORB(I3)+1+NPSH(I3),1),
+     &                 NORBT,NORBT,NZ, 
+!                      -----------------------------------
+     &                 D1, IPQTOQ(1,IREPTH),
+     &                 THMAT(IORB(I1)+1+NPSH(I1),IORB(I3)+1+NPSH(I3),1),
+     &                 NORBT,NORBT,NZ)
+          else
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
           I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
           I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
@@ -798,8 +806,6 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
-!       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
-          if (.not. lao_lr_rearrange) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -816,7 +822,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
-          end if !if (.not. lao_lr_rearrange) then
+          end if !if (lao_lr_rearrange) then
         ENDIF
       ENDDO
       IF(IPRINT.GE.5) THEN

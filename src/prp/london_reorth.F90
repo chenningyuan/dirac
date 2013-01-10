@@ -178,9 +178,9 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
-    if (lao_lr_rearrange) then
-      call get_m_ij(fmo)
-    end if
+!g    if (lao_lr_rearrange) then
+!g      call get_m_ij(fmo)
+!g    end if
 
     call alloc(tb,  n2orbxq)
     tb = 0.0d0
@@ -234,9 +234,9 @@ contains
       call di_deselect_wrk(work, lwork)
 
 ! in lao_lr_rearrange take only 'ai' blocks:
-      if (lao_lr_rearrange) then
-        call get_m_ai(tb,doeprn)
-      end if
+!g      if (lao_lr_rearrange) then
+!g        call get_m_ai(tb,doeprn)
+!g      end if
 
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
