@@ -36,6 +36,7 @@
 ! add input for I_DO_CC_EXP
      &            I_DO_CC_EXP,
      &            NO4IDX, ! No 4-index transformation
+     &            IONLYTRANS, ! Only transformation no CC
 ! logicals
      &            IRECOM,    ! for real/complex algebra
      &            IFORM ! restart (set automatically)

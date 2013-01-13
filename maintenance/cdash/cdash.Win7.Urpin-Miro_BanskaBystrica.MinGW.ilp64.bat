@@ -63,14 +63,16 @@ C:\Git\bin\git.exe pull
 rem return to the top of the DIRAC directory
 cd %DIRAC%
 python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64%
-cd %BUILD_I32LP64%
-mingw32-make Experimental
-
-C:\Git\bin\git.exe pull
-rem return to the top of the DIRAC directory
-cd %DIRAC%
-python setup --check -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-check_master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64_CHECK%
-cd %BUILD_I32LP64_CHECK%
 cmake ..
 mingw32-make clean
-mingw32-make Experimental
+cd %BUILD_I32LP64%
+mingw32-make Nightly
+
+rem C:\Git\bin\git.exe pull
+rem return to the top of the DIRAC directory
+rem cd %DIRAC%
+rem python setup --check -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-check_master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64_CHECK%
+rem cd %BUILD_I32LP64_CHECK%
+rem cmake ..
+rem mingw32-make clean
+rem mingw32-make Experimental

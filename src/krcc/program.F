@@ -45,6 +45,10 @@ C
       KCC1 = KLOOK
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
+      IF(IONLYTRANS.EQ.1) THEN
+        WRITE(6,*) ' Exiting after transformation '
+        RETURN
+      END IF
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!
@@ -225,10 +229,13 @@ C Hardwirering of optimizer
         KSDIIS = 0
       END IF
 *
+      I_DO_SBSPJA = 1
       IF(I_DO_SBSPJA.EQ.1) THEN
         MXDIM = MAX(MAXIT,MXCIV_ORIG)
 *. Space for working with Subpspace Jacobian :
         LSBSPJA = 5*MXDIM**2 + 2*MXDIM
+        print*,'LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG',
+     &          LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG
       ELSE
         LSBSPJA = 0
       END IF
@@ -564,7 +571,7 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
 * next line added by Lasse not sure if correct but thinks so
        LEN_T_VEC_MX = LEN_T_VEC_CC
 *
-       LENNY = LEN_T_VEC_MX + N_SD_INT
+       LENNY = LEN_T_VEC_MX !+ N_SD_INT ! Addition removed by Lasse
        print*,'LENNY',LENNY
       CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)

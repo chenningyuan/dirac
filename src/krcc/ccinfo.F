@@ -4390,7 +4390,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 005
+      NTEST = 0005
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -4405,6 +4405,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       MX_TBLK_AS = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
+       LENGTH2 = 0
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP
        IF(NTEST.GE.100) CALL WRT_SPOX_TP_CC_KRCC(ITSOSO_TP(1,ITSS_TP),1)
 *. Occupation to group translation
@@ -4413,7 +4414,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+2*NGAS,ITSS_TP),IAA_GRP,1)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+3*NGAS,ITSS_TP),IAB_GRP,1)
 *
-       if (NTEST.ge.50) then
+       if (NTEST.ge.500) then
          write(6,*) ' Output from OCC_TO_GRP : '
          write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
          write(6,*) ' ICA_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
@@ -4426,6 +4427,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        NEL_AA = IELSUM(ITSOSO_TP(1+2*NGAS,ITSS_TP),NGAS)
        NEL_AB = IELSUM(ITSOSO_TP(1+3*NGAS,ITSS_TP),NGAS)
 *
+C      print*,'LENGTH outside',LENGTH
        IBTSOSO_TP(ITSS_TP) = LENGTH + 1
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
@@ -4459,8 +4461,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
              END IF
 *
-             LENGTH = LENGTH + LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             LENGTH2 = LENGTH2 + LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            LENGTH2 = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LLEN = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH = LENGTH + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH2 = LENGTH2 + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            print*,'LLEN,LENGTH,LENGTH2',LLEN,LENGTH,LENGTH2
              if (NTEST.ge.1000) then
                write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
                write(6,*) 'LENGTH2 ',LENGTH2
@@ -6425,7 +6430,7 @@ Calculate the number of CA and CB in GAS
         IMXNELGS = IGSOCCX(IGAS,2,1)-IGSOCCX(IGAS,1,1)
 Calculate the number of AA and AB in GAS
         NAGAS = NAGAS + IOP(IGAS+2*NGAS) + IOP(IGAS+3*NGAS)
-        IF(NCGAS.GT.IMXNELGS) RETURN
+        IF(NAGAS.GT.IMXNELGS) RETURN
       END DO
 *
 * Is this an allowed operator in the GAS.

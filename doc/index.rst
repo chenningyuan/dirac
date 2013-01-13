@@ -80,6 +80,7 @@ Tutorials and walkthrus
 
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
@@ -87,6 +88,7 @@ Tutorials and walkthrus
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
