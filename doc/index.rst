@@ -10,17 +10,21 @@ Setting up DIRAC
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>` |
-  :doc:`64bit integer support <installation/math_int64>`
+  :doc:`MKL environment variables <installation/mkl>`
 
 * **MPI:**
-  :doc:`64bit integer support <installation/mpi_int64>`
+  :doc:`Forwarding environment variables <installation/mpi>`
+
+* **64-bit integer support:**
+  :doc:`Do I need it? <installation/int64/faq>` |
+  :doc:`MPI <installation/int64/mpi>` |
+  :doc:`Math libraries <installation/int64/math>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
 First steps in DIRAC territory
@@ -38,12 +42,16 @@ First steps in DIRAC territory
   :doc:`General information <molecule_and_basis/basis>` |
   :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
+* **Troubleshooting:**
+  :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
+
 
 Tutorials and walkthrus
 =======================
 
 * **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start>`
+  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
@@ -52,7 +60,11 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/2c_hamiltonians>`
+  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
+
+* **Relativistic effective core potentials:**
+  :doc:`Getting started <tutorials/ecp/first>`
 
 * **Nonrelativistic limit:**
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
@@ -60,67 +72,60 @@ Tutorials and walkthrus
 * **DFT:**
   :doc:`TDDFT <tutorials/dft/tddft>` |
   :doc:`BSSE <tutorials/dft/bsse>` |
-  :doc:`CAM functional <tutorials/dft/cam>`
+  :doc:`CAM functional <tutorials/dft/cam>` |
+  :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
+
+* **Long-range WFT/short-range DFT:**
+  :doc:`General <tutorials/srDFT/general>`
+
+* **Property calculations:**
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
-  :doc:`Vector fields <tutorials/visual/visualize>` |
+  :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
-* **Modeling the solvent:**
-  :doc:`Polarizable continuum model <tutorials/pcm>`
+* **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
+  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
+  :doc:`Np atom <tutorials/open_shell_scf/np>`
 
-* **Correlated calculations:**
-  :doc:`MP2 <tutorials/mp2cal_sample>` |
-  :doc:`MOLTRA <tutorials/moltra_sample>` |
-  :doc:`LUCITA <tutorials/lucita_sample>` |
-  :doc:`RELCCSD <tutorials/relccsd_sample>` |
-  :doc:`RELADC <tutorials/reladc_sample>`
+* **ADC:**
+  :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
+  :doc:`Atom <tutorials/reladc/atom>`
 
-* **Open-shell systems:**
-  :doc:`DIRRCI <tutorials/dirrci_sample>` |
-  :doc:`GOSCIP <tutorials/goscip_sample>` |
-  :doc:`Open-shell examples <tutorials/open_shells>` |
-  :doc:`Nb atom SCF <tutorials/open_shell_atoms/nb>` |
-  :doc:`Np atom SCF <tutorials/open_shell_atoms/np>`
+* **ECP:**
+  :doc:`First calculation <tutorials/ecp/first>` |
+  :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **Outdated tutorials (need update):**
+  :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
+  :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
+  :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
+  :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
+  :doc:`MP2 <tutorials/dusty_attic/mp2>` |
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
+  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
 
 
-Getting help
-============
+Exercises
+=========
 
-* **Troubleshooting:**
-  :doc:`Known problems <getting_help/known_problems>` |
-  :doc:`Memory problems <getting_help/memory>`
+.. toctree::
+   :maxdepth: 1
 
-* **Move somewhere else:**
-  :doc:`Frequently asked questions <tutorials/faq>`
+   exercises/index.rst
 
 
 Reference manual
 ================
 
-* **Input sections:**
-  :doc:`DIRAC <manual/dirac>` |
-  :doc:`OPTIMIZE <manual/optimize>` |
-  :doc:`GENERAL <manual/general>` |
-  :doc:`HAMILTONIAN <manual/hamiltonian>` |
-  :doc:`DFT <manual/dft>` |
-  :doc:`FDE <manual/fde>` |
-  :doc:`GRID <manual/grid>` |
-  :doc:`INTEGRALS <manual/integrals>` |
-  :doc:`WAVE FUNCTION <manual/wavefunction>` |
-  :doc:`AMFI <manual/amfi>` |
-  :doc:`GOSCIP <manual/goscip>` |
-  :doc:`MOLTRA <manual/moltra>` |
-  :doc:`DIRRCI <manual/dirrci>` |
-  :doc:`RELADC <manual/reladc>` |
-  :doc:`RELCCSD <manual/relccsd>` |
-  :doc:`PROPERTIES <manual/properties>` |
-  :doc:`ANALYZE <manual/analyze>` |
-  :doc:`VISUAL <manual/visual>`
+.. toctree::
+   :maxdepth: 1
 
-* **Operators and strings:**
-  :doc:`One-electron operators <manual/oneel_oper>` |
-  :doc:`Orbital strings <manual/orb_strings>`
+   manual/index.rst
 
 
 Developers
@@ -128,7 +133,8 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Beta testing <programmers/beta_testing>`
+  :doc:`Beta testing <programmers/beta_testing>` |
+  :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
@@ -136,7 +142,8 @@ Developers
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>`
+  :doc:`Debugging <programmers/debugging>` |
+  :doc:`Further development <programmers/further_development>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |

@@ -1524,6 +1524,12 @@ C
      &            WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &            WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRPRJ)
+      IF(IPRPRJ.GE.2) THEN
+        WRITE(6,*) '* Projection vector BVEC for fermion ircop ',
+     &             FREP(IFRP)
+        CALL PRQMAT(BVEC,NREF,NMOL,NTOT,NMOL,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
       CALL MEMGET('REAL',KOCC,NMOL,WORK,KFREE,LFREE)
       IF(NREFS.GT.1) THEN
 C

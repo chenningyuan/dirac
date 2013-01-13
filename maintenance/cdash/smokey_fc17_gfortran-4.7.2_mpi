@@ -24,8 +24,8 @@ mkdir build
 cd build
 cmake ..
 make release
-tar xvzf DIRAC-12.0.0-Source.tar.gz
-cd DIRAC-12.0.0-Source
+tar xvzf DIRAC-12.0-Source.tar.gz
+cd DIRAC-12.0-Source
 
 ./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc17_gfortran-4.7.2_mpi" -D RUNTEST_NR_PROC=2
 cd build

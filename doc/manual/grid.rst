@@ -13,7 +13,7 @@ while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
 elements, with their more variable oxidation states, this can lead to
-errors. If the user invokes the `.ATSIZE <#.ATSIZE>`_ keyword, DIRAC
+errors. If the user invokes the :ref:`.ATSIZE` keyword, DIRAC
 tries to deduce relative atomic sizes from available densities, if it
 can find coefficients.
 
@@ -60,9 +60,9 @@ Specify the minimum precision of the Lebedev angular grid after pruning.
      LEBMIN
 
 Close to the nucleus, the precision of the angular grid will be less
-than L-value given by `.ANGINT <#.ANGINT>`_, but it will not be less
+than L-value given by :ref:`.ANGINT`, but it will not be less
 than the integer LEBMIN. Note that giving a LEBMIN value greater than or
-equal to the L-value given by `.ANGINT <#.ANGINT>`_ is equivalent to
+equal to the L-value given by :ref:`.ANGINT` is equivalent to
 turning the pruning off.
 
 *Default:*
@@ -89,8 +89,7 @@ the line connecting A and B.
     .IMPORT
     grid_file
 
-Import previously `.EXPORTed <#.EXPORT>`_ DFT grid from grid\_file for
-`BSSE calculations </dirac/index.php/BSSE_calculations_with_DIRAC>`_.
+Import previously exported DFT grid.
 
 For debugging you can also create your own grid file. The grid file is
 formatted - in free format. A grid file for three points could look like

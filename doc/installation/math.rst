@@ -93,3 +93,27 @@ Finally set::
   $ export MATH_ROOT=/usr/lib64/atlas
 
 Now DIRAC will correctly detect them.
+
+
+Linking to Atlas libraries on Linux Mint
+----------------------------------------
+
+DIRAC may not be able to detect Atlas BLAS/Lapack
+libraries on Linux Mint because of nonstandard (?) suffix::
+
+After having installed them::
+
+  $ sudo apt-get install liblapack3 libatlas3-base
+
+the libraries were not detected by DIRAC. I had to do this::
+
+  $ cd /usr/lib/atlas-base
+  $ su
+  $ for file in *3; do ln -s $file ${file%.3}; done
+
+and this::
+
+  $ cd /usr/lib
+  $ sudo ln -s liblapack.so.3 liblapack.so
+
+With this the automatic detection of math libraries worked.

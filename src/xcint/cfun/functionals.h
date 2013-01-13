@@ -240,12 +240,10 @@ extern Functional TF_KinFunctional;     /* Thomas-Fermi */
 extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
 extern Functional PW91_KinFunctional;   /* PW91k, a reparametrization of PW91x */
 
-#ifdef MOD_UNRELEASED
 /* range-separated functionals */
 extern Functional SRVWN5Functional;
 extern Functional HjsxFunctional;
 extern Functional SrpbecFunctional;
-#endif
 
 /* Lists of available functionals: */
 extern Functional* available_functionals[];     /* XC functionals */

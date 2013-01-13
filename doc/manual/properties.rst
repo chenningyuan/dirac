@@ -22,8 +22,7 @@ default static, but frequencies can be added in the relevant
 subsections.
 
 Properties which are not predefined must be specified in detail in the
-relevant input section (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_).
+relevant input section (see :ref:`one_electron_operators`).
 
 By default no properties are calculated.
 
@@ -82,18 +81,14 @@ Evaluate the electronic quadrupole moment (expectation value).
 
 Evaluate electric field gradients (expectation values).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .NQCC
 -----
 
 Evaluate nuclear quadrupole coupling constants (expectation values).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .POLARIZABILITY
 ---------------
@@ -120,10 +115,7 @@ frequencies of the quadratic response function thus become
 calculation cannot be specified in combination with other quadratic
 response calculations.
 
-The frequencies can be changed using
-`.BFREQ </dirac/index.php/Manual:PROPERTIES:QUADRATIC_RESPONSE#.BFREQ>`_
-in `\*QUADRATIC
-RESPONSE </dirac/index.php/Manual:PROPERTIES:QUADRATIC_RESPONSE>`_.
+The frequencies can be changed using :ref:`.BFREQ` in :ref:`*QUADRATIC RESPONSE`.
 
 .TWO-PHOTON
 -----------
@@ -149,21 +141,17 @@ Predefined magnetic properties
 Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 (linear response).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .SHIELDING
 ----------
 
-Evaluate nuclear magnetic shieldings (linear response). `Print
-level <#.PRINT>`_ 2 gives tensor and longer output. `Print
-level <#.PRINT>`_ 4 gives the raw values in symmetry coordinates as
+Evaluate nuclear magnetic shieldings (linear response). :ref:`.PRINT`
+2 gives tensor and longer output. :ref:`.PRINT` 4
+gives the raw values in symmetry coordinates as
 well.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .MAGNET
 -------
@@ -176,9 +164,7 @@ expectation values).
 
 Evaluate indirect spin-spin couplings (linear response).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .DSO
 ----
@@ -186,9 +172,7 @@ Atomic centers may be restricted with
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
 an expectation value.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .NSTDIAMAGNETIC
 ---------------
@@ -196,9 +180,7 @@ Atomic centers may be restricted with
 Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
 an expectation value.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 Other predefined properties
 ===========================
@@ -227,9 +209,7 @@ enantiomers, see [Laerdahl1999]_ .
 
 Calculate electronic density at the nucleus(nuclei).
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 .EFFDEN
 -------
@@ -237,9 +217,7 @@ Atomic centers may be restricted with
 Calculate effective electronic density at the
 nucleus(nuclei), [Knecht2011]_.
 
-Atomic centers may be restricted with
-`.SELECT </dirac/index.php/Manual:INTEGRALS#.SELECT>`_ under
-`\*\*INTEGRALS </dirac/index.php/Manual:INTEGRALS>`_.
+Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 
 
 Manual:PROPERTIES:EXCITATION ENERGIES
@@ -255,8 +233,7 @@ symmetry.
 Define excitations and transition moments
 =========================================
 
-.EXCITA
--------
+keyword(EXCITA)
 
 ::
 
@@ -267,17 +244,13 @@ Number of excitation energies N calculated in boson symmetry no. SYM.
 This keyword can be repeated if you want excitation energies in more
 than one boson symmetry.
 
-.A OPERATOR
------------
+keyword(A OPERATOR)
 
-Specification of a transition moment operator (see the `specification of
-one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details). This keyword can be given multiple times to add more
-operators.
+Specification of a transition moment operator (see
+:ref:`one_electron_operators` for details). This keyword can be given multiple
+times to add more operators.
 
-.ANALYZE
---------
+keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
 orbital level.
@@ -285,13 +258,11 @@ orbital level.
 Control variational parameters
 ==============================
 
-.OCCUP
-------
+keyword(OCCUP)
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of inactive orbitals
-from which excitations are allowed. By default excitations from all
-occupied orbitals are included in the generalized eigenvalue problem.
+For each fermion ircop give an :ref:`orbital_strings` of inactive orbitals from
+which excitations are allowed. By default excitations from all occupied
+orbitals are included in the generalized eigenvalue problem.
 
 Example:
 
@@ -304,22 +275,19 @@ Example:
 This would include excitations from gerade orbitals 1,2,3, and ungerade
 orbitals 7 and 8.
 
-.VIRTUA
--------
+keyword(VIRTUA)
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of virtual orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of virtual orbitals
 to which excitations are allowed. By default excitations to all virtal
 orbitals are included in the generalized eigenvalue problem.
 
-.SKIPEE
--------
+keyword(SKIPEE)
 
 Exclude all rotations between occupied positive-energy and virtual
 positive-energy orbitals.
 
-.SKIPEP
--------
+keyword(SKIPEP)
 
 Exclude all rotations between occupied positive-energy and virtual
 negative-energy orbitals.
@@ -327,8 +295,7 @@ negative-energy orbitals.
 Control reduced equations
 =========================
 
-.MAXITR
--------
+keyword(MAXITR)
 
 Maximum number of iterations.
 
@@ -339,8 +306,7 @@ Maximum number of iterations.
     .MAXITR
      30
 
-.MAXRED
--------
+keyword(MAXRED)
 
 Maximum dimension of matrix in reduced system.
 
@@ -351,8 +317,7 @@ Maximum dimension of matrix in reduced system.
     .MAXRED
      200
 
-.THRESH
--------
+keyword(THRESH)
 
 Threshold for convergence of reduced system.
 
@@ -369,18 +334,12 @@ Control integral contributions
 The user is encouraged to experiment with these options since they may
 have an important effect on run time.
 
-.INTFLG
--------
+keyword(INTFLG)
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-.CNVINT
--------
+keyword(CNVINT)
 
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
@@ -394,8 +353,7 @@ SCF-iterations.
 
 *Default:* Very large numbers.
 
-.ITRINT
--------
+keyword(ITRINT)
 
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
@@ -410,21 +368,18 @@ SCF-iterations.
 Advanced/debug flags
 ====================
 
-.E2CHEK
--------
+keyword(E2CHEK)
 
 Generate a complete set of trial vector which implicitly allows the
 explicit construction of the electronic Hessian. Only to be used for
 small systems !
 
-.ONLYSF
--------
+keyword(ONLYSF)
 
 Only call FMOLI in sigmavector routine: only generate one-index
 transformed Fock matrix  [Saue2003]_.
 
-.ONLYSG
--------
+keyword(ONLYSG)
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
 one-index transformed densities [Saue2003]_.
@@ -434,36 +389,31 @@ one-index transformed densities [Saue2003]_.
 
 This section gives directives for the calculation of expectation values.
 
-.OPERATOR
----------
+keyword(OPERATOR)
 
 Specification of general one-electron operators.
 
-See the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ section for
-more information and explicit examples.
+See the :ref:`one_electron_operators` section for more information and explicit
+examples.
 
 **Advanced options**
 
-.ORBANA
--------
+keyword(ORBANA)
 
 Analyze contributions to an expectation value from the individual
 orbitals.
 
-.PROJEC
--------
+keyword(PROJEC)
 
 Decompose an expectation value in contribution from fragment orbitals.
 This action presupposes that a projection analysis has been performed,
-see the `projection
-analysis </dirac/index.php/Manual:ANALYZE:PROJECTION>`_ section for
+see :ref:`*PROJECTION`
+section for
 details.
 
 **Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -484,8 +434,7 @@ Linear Response module written by T. Saue and H. J. Aa. Jensen [Saue2003]_.
 General control statements
 ==========================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -499,30 +448,22 @@ Print level.
 Definition of the linear response function
 ==========================================
 
-.A OPERATOR
------------
+keyword(A OPERATOR)
 
-Specification of the A operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the A operator
+(see :ref:`one_electron_operators` for details).
 
-.B OPERATOR
------------
+keyword(B OPERATOR)
 
-Specification of the B operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the B operator
+(see :ref:`one_electron_operators` for details).
 
-.OPERATORS
-----------
+keyword(OPERATORS)
 
-Specification of both the A and B operators (see the `specification of
-one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of both the A and B operators
+(see :ref:`one_electron_operators` for details).
 
-.TRIAB
-------
+keyword(TRIAB)
 
 Enforce triangularity of response function.
 
@@ -534,8 +475,7 @@ Only one function is calculated.
 
 *Default:* Deactivated.
 
-.B FREQ
--------
+keyword(B FREQ)
 
 Specify frequencies of operator B.
 
@@ -557,49 +497,42 @@ Specify frequencies of operator B.
      1
      0.0
 
-.IMAGIN
--------
+keyword(IMAGIN)
 
 Employ imaginary frequencies.
 
-.ALLCMB
--------
+keyword(ALLCMB)
 
 Form all possible combinations
 even if imaginary.
 
 *Default:* Deactivated.
 
-.UNCOUP
--------
+keyword(UNCOUP)
 
 Uncoupled calculation.
 
 Control variational parameters
 ==============================
 
-.OCCUP
-------
+keyword(OCCUP)
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of inactive orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of inactive orbitals
 to include in the linear response calculation.
 
-.VIRTUA
--------
+keyword(VIRTUA)
 
-For each fermion ircop give an `orbital
-string </dirac/index.php/Manual:Orbital_strings>`_ of virtual orbitals
+For each fermion ircop give an :ref:`orbital_strings`
+of virtual orbitals
 to include in the linear response calculation.
 
-.SKIPEE
--------
+keyword(SKIPEE)
 
 Exclude all rotations between occupied positive-energy and virtual
 positive-energy orbitals.
 
-.SKIPEP
--------
+keyword(SKIPEP)
 
 Exclude all rotations between occupied positive-energy and virtual
 negative-energy orbitals.
@@ -607,8 +540,7 @@ negative-energy orbitals.
 Control reduced equations
 =========================
 
-.MAXITR
--------
+keyword(MAXITR)
 
 Maximum number of iterations.
 
@@ -619,8 +551,7 @@ Maximum number of iterations.
     .MAXITR
      30
 
-.MAXRED
--------
+keyword(MAXRED)
 
 Maximum dimension of matrix in reduced system.
 
@@ -631,8 +562,7 @@ Maximum dimension of matrix in reduced system.
     .MAXRED
      200
 
-.THRESH
--------
+keyword(THRESH)
 
 Threshold for convergence of reduced system.
 
@@ -649,18 +579,12 @@ Control integral contributions
 The user is encouraged to experiment with these options since they may
 have an important effect on run time.
 
-.INTFLG
--------
+keyword(INTFLG)
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-.CNVINT
--------
+keyword(CNVINT)
 
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
@@ -674,8 +598,7 @@ SCF-iterations.
 
 *Default:* Very large numbers.
 
-.ITRINT
--------
+keyword(ITRINT)
 
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
@@ -690,8 +613,7 @@ SCF-iterations.
 Control trial vectors
 =====================
 
-.REAXVC
--------
+keyword(REAXVC)
 
 Read solution vectors from file XVCFIL
 
@@ -730,8 +652,7 @@ has been obtained in the *same* calculation as the response vector file.
 Otherwise you may observe more response solver iterations than
 necessary.
 
-.XLRNRM
--------
+keyword(XLRNRM)
 
 Normalize trial vectors. Using normalized trial vectors will reduce
 efficiency of screening. CLARIFY!
@@ -741,27 +662,23 @@ efficiency of screening. CLARIFY!
 Advanced/debug flags
 ====================
 
-.E2CHEK
--------
+keyword(E2CHEK)
 
 Generate a complete set of trial vector which implicitly allows the
 explicit construction of the electronic Hessian. Only to be used for
 small systems !
 
-.ONLYSF
--------
+keyword(ONLYSF)
 
 Only call FMOLI in sigmavector routine: only generate one-index
 transformed Fock matrix [Saue2003]_.
 
-.ONLYSG
--------
+keyword(ONLYSG)
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
 one-index transformed densities [Saue2003]_.
 
-.STERNHEIM
-----------
+keyword(STERNHEIM)
 
 Set diagonal elements of orbital part of Hessian equal to
 
@@ -774,8 +691,7 @@ virtual negative-energy orbitals.
 
 *Default:* Deactivated.
 
-.STERNC
--------
+keyword(STERNC)
 
 (Sternheim complement) allows to separate basis set incompleteness from
 the replacement of an inner sum over negative-energy orbitals only by
@@ -798,8 +714,7 @@ contribution of 1).
 
 *Default:* Deactivated.
 
-.COMPRESSION
-------------
+keyword(COMPRESSION)
 
 Reduce number of orbital variation parameters by checking corresponding
 elements of gradient vector against a threshold. This may reduce memory.
@@ -811,15 +726,13 @@ elements of gradient vector against a threshold. This may reduce memory.
     .COMPRESSION
      0.0
 
-.NOPREC
--------
+keyword(NOPREC)
 
 No preconditioning of initial trial vectors.
 
 *Default:* Preconditioning of trial vectors.
 
-.RESFAC
--------
+keyword(RESFAC)
 
 New trial vector will be generated only for variational parameter
 classes whose residual has a norm that is larger than a fraction
@@ -836,9 +749,7 @@ classes whose residual has a norm that is larger than a fraction
 =========================================================
 
 The section gives directives for control of a single point evaluation of
-the molecular gradient activated with
-`.MOLGRD </dirac/index.php/Manual:PROPERTIES#.MOLGRD>`_ under
-`\*\*PROPERTIES </dirac/index.php/Manual:PROPERTIES>`_.
+the molecular gradient activated with :ref:`.MOLGRD` under :ref:`**PROPERTIES`.
 
 The molecular gradient module is usually called from within the geometry
 optimization module.
@@ -846,8 +757,7 @@ optimization module.
 
 **Advanced options**
 
-.TRICK
-------
+keyword(TRICK)
 
 If activated the calculation of the SL and SS two-electron integral
 contributions to the gradient is skipped if their contribution is
@@ -858,18 +768,12 @@ and if activated then only "necessary" contributions are calculated.
 
 *Default:* Deactivated.
 
-.INTFLG
--------
+keyword(INTFLG)
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-.SCREEN
--------
+keyword(SCREEN)
 
 Screening threshold.
 
@@ -885,8 +789,7 @@ enormous demand of memory.
 
 **Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -895,11 +798,9 @@ from 3+ gives individual contributions to the gradient (kinetic energy
 gradient, nuclear attraction gradient etc.). Print levels of 5+ print
 some matrices, and 10+ give massive output!
 
-*Default:* Print level from
-`\*\*GENERAL </dirac/index.php/Manual:GENERAL>`_.
+*Default:* Print level from :ref:`**GENERAL`.
 
-.NUMGRA
--------
+keyword(NUMGRA)
 
 Calculate the molecular gradient using numerical differentiation.
 
@@ -913,16 +814,14 @@ This section gives directives for the calculation of NMR parameters.
 
 **Advanced options**
 
-.LONDON
--------
+keyword(LONDON)
 
 Activate calculations of magnetic properties (NMR shielding constants
 and magnetizabilities with London atomic orbitals.
 
 *Default:* Use conventional atomic orbitals.
 
-.GAUGEO
--------
+keyword(GAUGEO)
 
 Reads in a user defined gauge origin (in bohr). Note that both the gauge
 origin and dipole origin are changed in order to have consistency.
@@ -934,48 +833,37 @@ origin and dipole origin are changed in order to have consistency.
     .GAUGEO
      0.0 0.0 0.0
 
-.GO\_ANG
---------
+keyword(GO\_ANG)
 
-Same as `.GAUGEO </dirac/index.php/Manual:PROPERTIES:NMR#.GAUGEO>`_ but
+Same as :ref:`.GAUGEO` but
 reads coordinates in angstrom.
 
-.USECM
-------
+keyword(USECM)
 
 Use the center of mass as the gauge origin.
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify what two-electron integrals to include in the two-electron
-London contributions to the magnetic field property gradient (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+London contributions to the magnetic field property gradient
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-.NOTWO
-------
+keyword(NOTWO)
 
 Do not calculate the two-electron London contributions for the magnetic
 field property gradient when London atomic orbitals are used.
 
-.NOONEI
--------
+keyword(NOONEI)
 
 Do not calculate the {H(0),T(B)} reorthonormalization terms for the
 magnetic field property gradient when London atomic orbitals are used.
 
-.NOORTH
--------
+keyword(NOORTH)
 
 Do not calculate the {T(B),h(mK)} reorthonormalization contributions for
 the expectation value term when London atomic orbitals are used.
 
-.SYMCON
--------
+keyword(SYMCON)
 
 Employ the symmetric connection for reorthonormalization terms when
 using London atomic orbitals.
@@ -993,8 +881,7 @@ functions [Saue2002a]_.
 General control statements
 ==========================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -1008,37 +895,28 @@ Print level.
 Definition of the quadratic response function
 =============================================
 
-.DIPLEN
--------
+keyword(DIPLEN)
 
-Specification of dipole operators for A, B, and C (see the
-`specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of dipole operators for A, B, and C
+(see :ref:`one_electron_operators` for details).
 
-.A OPERATOR
------------
+keyword(A OPERATOR)
 
-Specification of the A operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the A operator
+(see :ref:`one_electron_operators` for details).
 
-.B OPERATOR
------------
+keyword(B OPERATOR)
 
-Specification of the B operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the B operator
+(see :ref:`one_electron_operators` for details).
 
-.C OPERATOR
------------
+keyword(C OPERATOR)
 
-Specification of the C operator (see the `specification of one-electron
-operators </dirac/index.php/Manual:One-electron_operators>`_ for
-details).
+Specification of the C operator
+(see :ref:`one_electron_operators` for details).
 
-.B FREQ
--------
+
+keyword(B FREQ)
 
 Specify frequencies of operator B.
 
@@ -1060,13 +938,11 @@ Specify frequencies of operator B.
      1
      0.0
 
-.C FREQ
--------
+keyword(C FREQ)
 
-Specify frequencies of operator C (see `.B FREQ <#.B_FREQ>`_).
+Specify frequencies of operator C (see :ref:`.B FREQ`).
 
-.ALLCMB
--------
+keyword(ALLCMB)
 
 Evaluate all nonzero quadratic response functions and thereby
 disregarding analysis of overall permutational symmetry.
@@ -1082,8 +958,7 @@ available in your version of DIRAC.**
 First order properties of excited states can be computed from the
 quadratic response function.
 
-.EXCPRP
--------
+keyword(EXCPRP)
 
 Give the number of "left" and "right" states in each boson symmetry.
 
@@ -1102,14 +977,12 @@ zeros can be substituted for positive integers to generate elements \|\\langle i
 Control variational parameters
 ==============================
 
-.SKIPEE
--------
+keyword(SKIPEE)
 
 Exclude all rotations between occupied positive-energy and virtual
 positive-energy orbitals.
 
-.SKIPEP
--------
+keyword(SKIPEP)
 
 Exclude all rotations between occupied positive-energy and virtual
 negative-energy orbitals.
@@ -1117,8 +990,7 @@ negative-energy orbitals.
 Control reduced equations
 =========================
 
-.MAXITR
--------
+keyword(MAXITR)
 
 Maximum number of iterations.
 
@@ -1129,8 +1001,7 @@ Maximum number of iterations.
     .MAXITR
      30
 
-.MAXRED
--------
+keyword(MAXRED)
 
 Maximum dimension of matrix in reduced system.
 
@@ -1141,8 +1012,7 @@ Maximum dimension of matrix in reduced system.
     .MAXRED
      100
 
-.THRESH
--------
+keyword(THRESH)
 
 Threshold for convergence of reduced system.
 
@@ -1159,18 +1029,12 @@ Control integral contributions
 The user is encouraged to experiment with these options since they may
 have an important effect on run time.
 
-.INTFLG
--------
+keyword(INTFLG)
 
-Specify what two-electron integrals to include (see
-`.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ under
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_).
+Specify what two-electron integrals to include
+(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* `.INTFLG </dirac/index.php/Manual:HAMILTONIAN#.INTFLG>`_ from
-`\*\*HAMILTONIAN </dirac/index.php/Manual:HAMILTONIAN>`_.
-
-.CNVINT
--------
+keyword(CNVINT)
 
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
@@ -1184,8 +1048,7 @@ SCF-iterations.
 
 *Default:* Very large numbers.
 
-.ITRINT
--------
+keyword(ITRINT)
 
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
@@ -1200,8 +1063,7 @@ SCF-iterations.
 Control trial vectors
 =====================
 
-.XQRNRM
--------
+keyword(XQRNRM)
 
 Normalize trial vectors. Using normalized trial vectors will reduce
 efficiency of screening.
@@ -1211,15 +1073,13 @@ efficiency of screening.
 Advanced/debug flags
 ====================
 
-.NOPREC
--------
+keyword(NOPREC)
 
 No preconditioning of initial trial vectors.
 
 *Default:* Preconditioning of trial vectors.
 
-.RESFAC
--------
+keyword(RESFAC)
 
 New trial vector will be generated only for variational parameter
 classes whose residual has a norm that is larger than a fraction
