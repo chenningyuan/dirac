@@ -69,36 +69,6 @@ SUBROUTINE bummer( text, ierr, errtyp )
 6020  format(1x,a,i10,a,i10)
 END SUBROUTINE BUMMER
 
-function sifsce( nenrgy, energy, ietype )
-!  select and sum the core energies in the energy(*) array.
-!  usage: real*8   sifsce
-!         external sifsce
-!         total_core = sifsce(...)
-!  input: nenrgy = number of energy(*) values.
-!         ietype(1:nenrgy) = energy types.
-!         energy(1:nenrgy) = energy array.
-!  output: sifsce = total core energy such that
-!                       total_potential = total_electronic + sifsce(...)
-!                   is the total clamped-nucleus, born-oppenheimer potential.
-      implicit none
-      integer  nenrgy, ietype(nenrgy)
-      real*8   sifsce, energy(nenrgy)
-      integer  i,      itypea
-      real*8   ecore
-      ecore = (0)
-      do i = 1, nenrgy
-!        # 0 <= ietype elements are 1-e hamiltonian frozen core terms.
-!        # ietype < 0  elements with itypea=0 are other core terms to
-!                      be added.  e.g. ietype=-1 = nuclear repulsion.
-         itypea = ietype(i) / 1024
-         if ( (ietype(i).ge.0) .or. ((ietype(i).lt.0).and.(itypea.eq.0)) ) then
-            ecore = ecore + energy(i)
-         endif
-      enddo   
-      sifsce = ecore
-      return
-END FUNCTION SIFSCE
-
 
 subroutine siftyp( itypea, itypeb, chrtyp )
 !  return a character description of the integral type.

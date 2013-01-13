@@ -103,6 +103,7 @@ vital_directories.append('src/xcint/src')
 vital_directories.append('utils')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
+vital_directories.append('basis_ecp')
 vital_directories.append('cmake')
 
 # these tests are always packaged
@@ -149,6 +150,7 @@ list_of_tests.append('fscc_intensities')
 list_of_tests.append('gaunt')
 list_of_tests.append('geo_opt')
 list_of_tests.append('geo_opt_saddle')
+list_of_tests.append('kallay_mrcc_interface')
 list_of_tests.append('krci_energy')
 list_of_tests.append('krci_properties_omega_tdm')
 list_of_tests.append('krci_properties_perm_dipmom')
@@ -161,6 +163,7 @@ list_of_tests.append('mcscf_energy')
 list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
 list_of_tests.append('mp2_energy')
 list_of_tests.append('mp2_properties')
+list_of_tests.append('mp2_srdft_energies')
 list_of_tests.append('open-shells')
 list_of_tests.append('projection_analysis')
 list_of_tests.append('pvc_scf')
@@ -219,7 +222,6 @@ files_never_compiled.append('src/xcint/src/fake_input.F90')
 directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('cmake')
-directories_never_compiled.append('src/gen1int')
 
 for directory in directories_never_compiled:
     for file in glob.glob('%s/*.F90' % directory):

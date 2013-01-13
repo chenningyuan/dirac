@@ -2409,7 +2409,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 17, NTABLE = 22)
+      PARAMETER (NDIR = 18, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2426,13 +2426,13 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   '/
+     &             '*SCF   ','*KRCI  '/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   '/
+     &             '.ARDUCC','.SCF   ','.KRCI  '/
 C
       NJOBS = 0
 C
@@ -2496,7 +2496,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122),I
+     &                117,118,119,120,121,122,123),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2662,6 +2662,11 @@ C&&&& ARDUCC: Perform MRCC calculation
          end if
          njobs = njobs + 1
          go to 100
+C&&&& KR CI :  perform (large-scale) KR-CI calculation
+  123    continue
+         DOKRCI  = .TRUE.
+         NJOBS   = NJOBS + 1
+         go to 100
 
 
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -2766,7 +2771,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2864,6 +2869,10 @@ C
 !*SCF
    17 continue
       call SCFINP(word, .false., work, lwork)
+      go to 200
+!*KRCI
+   18 continue
+      CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
       go to 200
 
     1 CONTINUE
@@ -4986,11 +4995,7 @@ C            as they need to be modified within BSS transformations
 
 C&&& HFXMU: range separation
   127     CONTINUE
-#ifdef MOD_UNRELEASED
           READ(LUCMD,*) HFXMU
-#else
-          write (*,*) 'Keyword inactive in this release'
-#endif 
           GO TO 100
 
 !C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
@@ -7497,8 +7502,9 @@ C     Initialize /CBILOC/
 C     ===================
 C
       PRJLOC = .FALSE.
+      OWNBAS = .FALSE.
       ITRLOC = 100
-      IPRLOC = IPRGEN
+      IPRLOC = 1
       HESLOC = 'FULL'
       LGFULL = .FALSE.
       LGDIAG = .FALSE.

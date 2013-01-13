@@ -19,7 +19,11 @@ What to do if CMake is not available or too old?
 
 It is your machine and you have Ubuntu or Debian::
 
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
+  $ sudo apt-get install cmake
+
+On Fedora::
+
+  $ sudo yum install cmake
 
 Similar mechanisms exist for other distributions or
 operating systems. Please consult Google.
@@ -151,31 +155,6 @@ You can do this instead::
   $ cd /buildpath
   $ cmake /sourcepath
   $ make
-
-
-Running CMake using GUI
------------------------
-
-You prefer GUI? No problem. You can configure with GUI::
-
-  $ cd build
-  $ cmake ..
-  $ cmake-gui ..
-
-You may have to install cmake-gui for it, on debian/ubuntu::
-
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
-
-
-Running tests
--------------
-
-You can (and should) run the test suite with::
-
-  $ make test
-
-It is HIGHLY recommended to run the test set after you have compiled
-DIRAC to make sure that your binary correctly reproduces reference results.
 
 
 Make install

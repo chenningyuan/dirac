@@ -1,23 +1,24 @@
 
+.. _ecp_input:
 
 How to specify ECP parameters in mol files
 ==========================================
 
 Effective core potential (ECP) is efficient method in many quantum mechanical calculations.
-This reduces basis set demands in heavy elements by replacing core electrons with effective potential. For the account spin-orbit and other relativistic effects, many ECP parameters developed recently are based on Dirac-Fock calculations. They are also called as the relativistic effective core potential (RECP).
+This reduces basis set demands in heavy elements by replacing core electrons with effective potential. For the account of spin-orbit and other relativistic effects, many ECP parameters developed recently are based on atomic Dirac-Fock calculations, and sometimes called the relativistic effective core potential (RECP).
 
 
 Theory
 ------
 
-Originally, the spin-orbit term is included in the RECP (SOREP) as following,
+Originally, the spin-orbit term is included in the RECP (SOREP) as following [Lee1977]_,
 
 .. math::
 
   U^{SOREP} = U_{LJ}^{SOREP}(r) + \sum_{l=0}^{L-1}\sum_{j=|l-1/2|}^{l+1/2}\sum_{m=-j}^{j}
              [U_{ij}^{SOREP}(r)- U_{LJ}^{SOREP}(r)]|ljm\rangle \langle ljm| 
 
-The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`)
+The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) [Ermler1981]_
 
 .. math::
   U^{AREP} = U_{L}^{AREP}(r) + \sum_{l=0}^{L-1}\sum_{m=-l}^{l}
@@ -54,22 +55,37 @@ ECP parameters from the library
  C   2    2 Y  Z    A
         53.    1
  I     1.59900000           0.00000000        0.00000000
- LARGE BASIS ECPCE46SO_TZ
+ LARGE BASIS ECPCE46_TZ
  ECPLIB ECPCE46SO
          1.    1
  H     0.00000000           0.00000000        0.00000000
  LARGE BASIS aug-cc-pVTZ
  FINISH
 
-Basis set library for ECP (line 7):
- 
-The format is same to the large component basis set. (see large component basis set) However, one should use the basis set parameters corresponded to the RECP.
+1. Basis set library for ECP (line 7):
+The format is same as the large component basis set. (see large component basis set) 
+However, one should use the basis set parameters corresponding to the RECP.
 
-ECP parameters from library (line 8):
+2. ECP parameters from the library (line 8):
+ECPLIB keyword should be used for the use of RECP parameters from the library. 
 
-ECPLIB keyword should be used for the use of RECP parameters from library.
+Note: In DIRAC program, some ECP libraries are provided in basis_ecp directory for your conveniences.  
+However, it is safe to check ECP parameters from authors' webpages.
+The name of ECP parameters used here is following, ECP(XX)(YY)(ZZ)(SO/SF). 
 
+* XX: representative authors, (CE=Christiansen, Ermler, and coworkers), (DS=Dolg, Stoll, and coworkers), (HW=Hay, Wadt, and coworkers), (SB=Stevens, Basch, and coworkers)
 
+* YY: number of core electrons replaced by potential
+
+* ZZ: further information (if exist),
+
+* (SO/SF) : spin-orbit(SOREP) or spin-free(AREP), The difference of SO and SF is the existance of SO parameters.
+
+For example, ECPDS60MDFSO indicates Stuttgart RECP from Dolg, Stoll, and coworkers 
+with 60 electrons replaced by potential which is fitted from relativistic calculation (spin-orbit potential is included).
+
+Correlation-consistent basis sets by Kirk Peterson and co-workers that can be used with the Stuttgart-Cologne ECPs 
+are available `here <http://tyr0.chem.wsu.edu/~kipeters/basis.html>`_ . 
 
 Explicitly typed ECP
 ---------------------
@@ -82,7 +98,7 @@ Explicitly typed ECP
  C   2    2 Y  Z    A
         53.    1
  I     1.59900000           0.00000000        0.00000000
- LARGE BASIS ECPCE46SO_TZ
+ LARGE BASIS ECPCE46_TZ
  ECP 46 4 3
  # AREP
  # f
@@ -143,13 +159,13 @@ Explicitly typed ECP
  LARGE BASIS aug-cc-pVTZ
  FINISH
 
-For the explicitly typed ECP, ECP keyword is used. Three numbers after the ECP keyword denote as follows.
+For the explicitly typed ECP, ECP keyword is used. Three numbers after the ECP keyword denote the following.
 
-1.Number of core electrons: The number of core electrons is substituted by RECP. In this case, 46 core electrons in iodine atom are substituted and 7 electrons in the valence are described.
+1.Number of core electrons: This number of core electrons is substituted by RECP. In this case, 46 core electrons in iodine atom are omitted and 7 electrons in the valence are described.
 
-2.Number of AREP blocks: The numbers of AREP blocks to read.
+2.Number of AREP blocks: The numbers of AREP blocks to be read.
 
-3.Number of SO blocks: The numbers of SOREP blocks to read. In the case of AREP (spin-free) calculation, the number of SOREP blocks is set to 0.
+3.Number of SO blocks: The numbers of SOREP blocks to be read. In the case of AREP (spin-free) calculation, the number of SOREP blocks is set to 0.
 
 After reading block numbers, AREP (and SOREP) blocks are read.
 
@@ -158,9 +174,9 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 .. math::
    U_{l} = \sum_{l}C_{li}r^{n_{li}-2}e^{-\alpha_{li}r^{2}}
 
-2.SO blocks: Three parameters in each line in SO blocks are same to AREP blocks.
+2.SO blocks: Three parameters in each line in SO blocks are same as in AREP blocks.
 
-Note: coefficients in spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as,
+Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as [Park2012]_,
 
 .. math::
    U_{l}^{SO,DIRAC} = \frac{2}{2l+1}\Delta U_{l}^{SOREP}
@@ -168,6 +184,6 @@ Note: coefficients in spin-orbit block are sometimes defined differently by RECP
 For example, factors (2/2l+1) are already multiplied in SO parameters in `[Stuttgart RECP webpage] <http://www.theochem.uni-stuttgart.de/pseudopotentials/clickpse.en.html>`_.
 One can use it directly without the modification.
 There are two kinds of SO factors in `[RECPs of Christiansen and coworkers] <http://people.clarkson.edu/~pchristi/reps.html>`_. 
-SO factor in DIRAC is same to the ones fitted for Columbus program.
+SO factor in DIRAC is same as the ones defined for Columbus program.
 
 

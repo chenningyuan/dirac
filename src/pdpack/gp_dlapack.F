@@ -1,15 +1,15 @@
-
 #ifdef USE_OWN_LAPACK
 #define USE_OWN_DLAPACK
-#define USE_OWN_DLAPACK_EXTRA
 #endif
 
-! ESSL LAPACK lacks some routines
+! ESSL LAPACK la(pa)cks almost everything
+! switch on own LAPACK until better solution is found
 #ifndef USE_OWN_LAPACK
 #ifdef HAVE_ESSL_LAPACK
-#define USE_OWN_DLAPACK_EXTRA
+#define USE_OWN_DLAPACK
 #endif
 #endif
+
 
 
 ! FILE : gp_dlapack.F
@@ -79452,8 +79452,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DRSCL
 *
       END
-#endif /* USE_OWN_DLAPACK */
-#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSBEV( JOBZ, UPLO, N, KD, AB, LDAB, W, Z, LDZ, WORK,
      $                  INFO )
 *
@@ -79659,8 +79657,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSBEV
 *
       END
-#endif /* USE_OWN_DLAPACK_EXTRA */
-#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSBEVD( JOBZ, UPLO, N, KD, AB, LDAB, W, Z, LDZ, WORK,
      $                   LWORK, IWORK, LIWORK, INFO )
 *
@@ -92089,8 +92085,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYCON
 *
       END
-#endif /* USE_OWN_DLAPACK */
-#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSYEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO )
 *
 *  -- LAPACK driver routine (version 3.1) --
@@ -92302,8 +92296,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEV
 *
       END
-#endif /* USE_OWN_DLAPACK_EXTRA */
-#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSYEVD( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, IWORK,
      $                   LIWORK, INFO )
 *
@@ -92579,8 +92571,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEVD
 *
       END
-#endif /* USE_OWN_DLAPACK */
-#ifdef USE_OWN_DLAPACK_EXTRA
       SUBROUTINE DSYEVR( JOBZ, RANGE, UPLO, N, A, LDA, VL, VU, IL, IU,
      $                   ABSTOL, M, W, Z, LDZ, ISUPPZ, WORK, LWORK,
      $                   IWORK, LIWORK, INFO )
@@ -93132,8 +93122,6 @@ C                    DLARRF needs LWORK = 2*N
 *     End of DSYEVR
 *
       END
-#endif /* USE_OWN_DLAPACK_EXTRA */
-#ifdef USE_OWN_DLAPACK
       SUBROUTINE DSYEVX( JOBZ, RANGE, UPLO, N, A, LDA, VL, VU, IL, IU,
      $                   ABSTOL, M, W, Z, LDZ, WORK, LWORK, IWORK,
      $                   IFAIL, INFO )
