@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module density_eval
@@ -50,11 +50,9 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
-#ifdef MOD_UNRELEASED
    public get_jblao
    public get_gjblao
    public get_jblao_ll
-#endif
 
    private
 
@@ -1362,7 +1360,6 @@ contains
 
    end subroutine
 
-#ifdef MOD_UNRELEASED
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
 
 !     --------------------------------------------------------------------------
@@ -1546,6 +1543,5 @@ contains
       j = -0.5d0*j
 
    end subroutine
-#endif /* #ifdef MOD_UNRELEASED */
 
 end module

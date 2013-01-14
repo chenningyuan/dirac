@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2011 by the authors of DIRAC.
+ *     Copyright (c) 2012 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -17,7 +17,7 @@
  *
  *     For information on how to get a license, as well as the
  *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://dirac.chem.vu.nl
+ *     DIRAC program, see: http://www.diracprogram.org
  */
 /* dirac_copyright_end */
 
@@ -260,7 +260,7 @@ b3p86_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
-    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1);
+    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
     fun_set_hf_weight(1-dirw);
     return 1;
 }
@@ -272,7 +272,7 @@ b3p86g_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
-    gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1);
+    gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1-lypw);
     fun_set_hf_weight(1-dirw);
     return 1;
 }

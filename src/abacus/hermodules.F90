@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 !     !!! MODULE FOR READING XYZ FILES !!!
@@ -82,6 +82,7 @@
         LOGICAL :: ADDSYM=.TRUE.
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
+        INTEGER :: natoms_given
 
       CONTAINS
 
@@ -812,8 +813,8 @@
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
-      INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
-      INTEGER,INTENT(INOUT)::LWORK
+      INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
+      INTEGER,INTENT(IN) :: LWORK
 
       INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,                &
      &                katom,basindex,index, iqm_check
@@ -1319,19 +1320,30 @@
      &                      work,lwork,kang,ksets,kblock,kprim,hermit)
 
         INTEGER, INTENT(IN) :: molfile,cmdfile,lupri
-        INTEGER,INTENT(IN)   :: KANG,KSETS,KBLOCK,KPRIM
-        LOGICAL,INTENT(IN)   :: HERMIT
-        INTEGER,INTENT(INOUT):: lwork
-        REAL(KIND=8):: WORK(LWORK) 
-        INTEGER ::     inpfile
+        INTEGER, INTENT(IN) :: lwork
+        REAL(KIND=8)        :: WORK(LWORK) 
+        INTEGER, INTENT(IN) :: KANG,KSETS,KBLOCK,KPRIM
+        LOGICAL, INTENT(IN) :: HERMIT
+
+        INTEGER             :: inpfile
+        INTEGER             :: ios
 
 !       Driver for reading coordinates and basis set information from xyz file and DIRAC.INP
 
 !       In the XYZ format coordinates are supposed to start at the third line
         REWIND (molfile)
-        CALL RDLINE(molfile)
+!       Check whether the first line has a number that can be used to check the number of atoms
+        natoms_given = 0
+        READ (molfile,*,iostat=ios) natoms_given
+!       Skip the comment line
         CALL RDLINE(molfile)
         CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+!       Check number of atoms
+        IF (natoms_given .NE. count_atoms(firstatom)) THEN
+          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
+     &                   " but expected ",natoms_given," atoms"
+          CALL QUIT(' *** ERROR (READXYZ) wrong number of atoms')
+        END IF
 
 !       Read the basis set information from DIRAC.INP
         inpfile=OPEN_FILE('DIRAC.INP',cmdfile,'FORMATTED',LUPRI)

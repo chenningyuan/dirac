@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -193,7 +193,7 @@ C     =============
 C
       IF(.NOT.DOMP2NO) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A)') ' MP2NOGEN: MP2 natural orbitals'
+      WRITE(LUPRI,'(A)') ' *MP2 NO : MP2 natural orbitals'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I3)') ' * General print level:',IPRMP2NO
       WRITE(LUPRI,'(A)') ' * allowed active spinors in MP2-NO run:'
@@ -237,7 +237,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mp2nogen */
-      SUBROUTINE MP2NOGEN(WORK,LWORK)
+      SUBROUTINE MP2NOGEN()
 C***********************************************************************
 C
 C     Generate MP2 natural orbitals
@@ -261,7 +261,6 @@ C
 #include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
-      DIMENSION WORK(*)
 C
 #include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
@@ -295,32 +294,23 @@ C       ... search for coefficients label
       INQUIRE(FILE='MDCINT',EXIST=TOBE)
       IF (TOBE) SKIP_ITRAFO = .TRUE.
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
-C
-      CALL MP2NOGE1(WORK(KFREE),LFREE)
-C     release memory
-      CALL MEMREL('MP2NOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MP2NOGE1()
 C
       RUN_CCMOD  = .FALSE.
 C
-      IF (PARCAL) call SetTaskDistribFlags(saveflags)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mp2noge1 */
-      SUBROUTINE MP2NOGE1(WORK,LWORK)
+      SUBROUTINE MP2NOGE1()
 C***********************************************************************
 C     Generate MP2 natural orbitals
 C
 C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -337,12 +327,14 @@ C
 #include "mpif.h"
 #endif
       LOGICAL FND,FNDLAB,TOBE
-      DIMENSION WORK(*)
       DIMENSION IC(2),IE(2),ID(2), KVEC(2)
       INTEGER NR(2)
       CHARACTER CTMP*1, LABEL*8
-#include "memint.h"
+      real(8), allocatable :: WORK(:)
       CALL QENTER('MP2NOGE1')
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in MVOGE1')
 C
       KFRSAV=KFREE
 C
@@ -350,7 +342,7 @@ C     Initialization
 C
       IMO_NAT     = NORBT*NESHT*NZ
       IOCC_NAT    = NESHT
-      LUNATORB = 98
+      LUNATORB    = 98
 C
       LUBUF = 22
 C     full Fock matrix
@@ -503,8 +495,10 @@ C
 C     memory deallocation
 C     -------------------
       CALL MEMREL('MP2NOGE1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      call dealloc(WORK)
 C
       CALL QEXIT('MP2NOGE1')
+      RETURN
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -965,7 +959,7 @@ C
       WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
       WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
 C
-      CALL PAMCCM(WORK(KFREE),LFREE)
+      CALL PAMCCM()
 C
       CLOSE(LMP2_DEN_INP,STATUS='KEEP')
 C

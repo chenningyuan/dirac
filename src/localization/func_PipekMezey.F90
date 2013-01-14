@@ -45,8 +45,8 @@ type :: PipekMezey_variales
   integer :: maxref
   real*8  :: prothr
   logical :: ownbas
-  character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
-  character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
+  character*6  :: reffil(20)    ! reffil(maxref)    -->  see dcbprj.h
+  character*72 :: vecref(2,20)  ! vecref(2,maxref)  -->  see dcbprj.h
   character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
@@ -80,7 +80,7 @@ contains
   ! Internal variables
 
   ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
-  integer, parameter :: maxref = 15
+  integer, parameter :: maxref = 20
 
   logical :: tobe, twocomp, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit
@@ -156,7 +156,7 @@ contains
   read(iunit,*) chdum,x2c
 
   if(var%maxref /= maxref)then
-    write(var%lupri,'(a)')' WARNING: The maxref dimension in func_PipekMezey module and Dirac differ'
+    write(var%lupri,'(a)')' ERROR: The maxref dimension in func_PipekMezey module and Dirac differ'
     write(var%lupri,'(a,I4)')' maxref(Dirac) =',var%maxref
     write(var%lupri,'(a,I4)')' maxref(func_PipekMezey module) =',maxref
     stop
@@ -2335,7 +2335,7 @@ contains
   integer :: idum, iworkdum, info, llwork, lilwork
   real*8  :: ddum, workdum
 
-  integer :: lenid, lwork, ier
+  integer :: lenid, lwork, ier, m
   real*8, allocatable :: work(:)
 
   !------------------------------------------------------------------------------!

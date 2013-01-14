@@ -31,10 +31,7 @@ contains
   !     Written by J. Thyssen - Nov 16 2000
   !
   !***********************************************************************
-  use unit_test_generator
   implicit none
-
-#include "unit-test.h"
 
   ! External variables
   integer, intent(in), optional :: key
@@ -45,48 +42,9 @@ contains
   real*8,  intent(inout) :: fq(norbt,nasht,nz)
 
   ! Internal variables
-  logical :: create_outputs
   integer :: i, j, k, izz, npvcol, ier
 
   real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
-
-  !------------------------------------------------------------------------------!
-  !           Write to the file input information for unit testing               !
-  !------------------------------------------------------------------------------!
-  create_outputs = .false.
-
-#ifdef CREATE_UNIT_TESTS
-  call set_suffix(nxy)
-  call set_suffix(ix)
-  call set_suffix(iy)
-  call add_input_file ('raddfq90.inp')
-  call set_driver_routine('raddfq90')
-  call add_module('mcscf_routines')
-
-  call add_opt_variable('key   ','1','integer')
-
-  call add_inp_variable(nxy   ,'nxy   ')
-  call add_inp_variable(ix    ,'ix    ')
-  call add_inp_variable(iy    ,'iy    ')
-  call add_inp_variable(irepij,'irepij')
-  call add_inp_variable(iprint,'iprint')
-  call add_inp_variable(nz    ,'nz    ')
-  call add_inp_variable(lupri ,'lupri ')
-  call add_inp_variable(norbt ,'norbt ')
-  call add_inp_variable(nasht ,'nasht ')
-  call add_inp_variable(nnashx,'nnashx')
-  call add_inp_variable(ipqtoq,'ipqtoq')
-  call add_inp_variable(h2xy  ,'h2xy  ')
-  call add_inp_variable(h2yx  ,'h2yx  ')
-  call add_inp_variable(pv    ,'pv    ')
-
-  call add_inp_variable(fq    ,'fq    ')
-  call add_out_variable(fq    ,'fq    ',compare='file-file',file='raddfq90.out')
-
-  call generate_test()
-
-  create_outputs = .true.
-#endif
 
   !------------------------------------------------------------------------------!
   !                               Print section                                  !
@@ -653,16 +611,11 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-  if( present(key) .or. create_outputs )then
-
-    call set_suffix(nxy)
-    call set_suffix(ix)
-    call set_suffix(iy)
-    call add_output_file('raddfq90.out')
+  if( present(key) )then
 
     ! open file
-    open(60,file=get_output_name(1),status='unknown',form='formatted', &
-                                    access='sequential',iostat=ier)
+    open(60,file='raddfq90.out',status='unknown',form='formatted', &
+                                access='sequential',iostat=ier)
     if(ier /= 0)then
       write(6,*) 'raddfq90: ERROR while creating raddfq90.out file'
       stop
@@ -681,8 +634,6 @@ contains
 
     ! close file
     close(60,status='keep')
-
-    call unit_test_generator_destructor
 
   endif
 
@@ -735,7 +686,7 @@ contains
 !     Last revision :
 !
 !***********************************************************************
-      USE UNIT_TEST_GENERATOR
+!     USE UNIT_TEST_GENERATOR
       IMPLICIT NONE
 
 #include "unit-test.h"

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -114,7 +114,7 @@ C
 C
 C     Write information to LUKRMC
 C
-      CALL RSET_KRMC(WORK,KFREE,LFREE)
+      CALL RSET_KRMC(WORK)
 C
 C     Transfer NZCONF to N_CIESR - dimension of ESR matrix
 C
@@ -252,7 +252,7 @@ C
 C debug TODO remove again: 
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
-     &                     IPROPT,WORK(KFREE),LFREE)
+     &                     IPROPT,WORK,KFREE,LFREE)
 C         CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
 C     &                         IPRINT,WORK,LWORK)
 

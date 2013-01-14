@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE : hergroup.F
@@ -130,7 +130,7 @@ C
               IF (IBTXOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
                  NAXIS  = NAXIS + 1
                  IPTAXI = IPTAXI + 1
-                 IPTAX(ICOOR,ITYPE) = IPTAXI
+                 IPTAX (ICOOR,ITYPE)      = IPTAXI
                  IPTXYZ(NAXIS,IREP,ITYPE) = ICOOR
               END IF
   210      CONTINUE
@@ -268,13 +268,12 @@ C             it works !!!
 C
       IGROUP = MIN(7,NINT((4*NROTS+8*NINVC+6*NREFL)/3.0))
       GROUP  = GROUPS(IGROUP)
-
-c     export it to ARGOS
-c     ==================
-#ifdef MOD_ECP
+C
+C     export it to ECP module
+C     =======================
+C
       ndptag = ndptags(IGROUP)
       IGRPAG = IGROUP
-#endif
 C
 C     Generate character table
 C     ========================
@@ -409,11 +408,9 @@ C
           WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,I3,1X))')
      &      REP(I),'|',(IXVAL(JSOP(J),I),J=0,MAXREP)
 c           
-c     For ARGOS
-c     =========
-#ifdef MOD_ECP
+c     For ECP module
+c     ==============
             itypag(i) = REP(I)
-#endif            
 c    
   130   CONTINUE
 C
@@ -1262,7 +1259,7 @@ C
       JCOM(1,19)= 1
 C       
 C         
-C     20. iS.P         * dot-product of sigma and vector operator
+C     20. iS.P   * off-diagonal dot-product of sigma and vector operator
 C     ==================================
 C
       MCMP(20)   =  3
@@ -1276,13 +1273,24 @@ C
 C
 C     21.    i*BETA*GAMMA5 * scalar operator
 C     ===========================================
-C     occupies imaginary part of the LS block
+C     occupies (as imaginary elements) off-diagonal block (0+-0)
+C     carries symmetry of gamma5 (xyz)
 C
-      MCMP(21)  = 1
-      !JM4 (1,21)= 0  ! wrong !
-      !JM4 (1,21) =  3   ! im(ab), x-quaternion
-      JM4 (1,21) =  4   ! symmetry of gamma5 
-      JCOM(1,21)= 1
+      MCMP(21)    =  1
+      JM4 (1,21)  =  4 
+      JCOM(1,21)  =  1
+
+C     22. (iS.P)d   * new diagonal dot-product of sigma and vector operator
+C     composed of i[Sigma_x]Px + i[Sigma_y]Py + i[Sigma_z]Pz (+00+)
+C     =======================================================================
+C
+      MCMP(22)   =  3
+      JM4 (1,22) =  7
+      JM4 (2,22) =  6
+      JM4 (3,22) =  5
+      JCOM(1,22) =  1
+      JCOM(2,22) =  1
+      JCOM(3,22) =  1
 
       RETURN
       END

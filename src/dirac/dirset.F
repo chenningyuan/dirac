@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,14 +16,14 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
-      SUBROUTINE PAMSET(WORK,LWORK)
+      SUBROUTINE PAMSET()
 C***********************************************************************
 C
 C     Subroutine for setting dimensions and generate overlap and Lowdin
@@ -33,13 +33,11 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+      use memory_allocator
       use visual_cfg
       use x2cmod_cfg
 #ifdef MOD_CAP
       use memory
-#endif
-#ifdef BUILD_GEN1INT
-      use dirac_gen1int_interface
 #endif
 
 #include "implicit.h"
@@ -61,9 +59,12 @@ C
 #endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
 
       CALL QENTER('PAMSET')
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in PAMSET')
+
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
 C     Attempt a restart unless geometry optimization
@@ -82,7 +83,7 @@ C
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
         IPREAD = IPREAD - 5
-        CALL READIN(WORK,LWORK,.FALSE.)
+        CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
         IPREAD = IPREAD + 5
       ENDIF
@@ -91,16 +92,15 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-!     youngc:  RECP integral     
-#ifdef MOD_ECP
+
+C     Start RECP integral     
+C     ===================
       IF (ECPCALC) CALL RECP
-#endif
 
 #ifdef BUILD_GEN1INT
 !     test suite of gen1int interface
       if (test_gen1int) then
          call gen1int_host_test(lwork, work, lupri, iprdef)
-         call get_1el_integrals(lupri)
       end if
 #endif
 
@@ -171,6 +171,7 @@ C
       CALL RELINF
 C
       CALL TIMER('PAMSET',TIMSTR,TIMEND)
+      call dealloc(WORK)
       CALL QEXIT('PAMSET')
       RETURN
       END

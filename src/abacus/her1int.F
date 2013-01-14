@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 #ifdef UNDEF
@@ -90,6 +90,11 @@ C
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "onecom.h"
 #include "orgcom.h"
 #include "lmns.h"
@@ -566,7 +571,7 @@ C
       IF (INTTYP .EQ. 45) IBCNT = 2
       IORBA = 0
       CALL IZERO(ISOFRA, 8)
-      IF (ADDSTO .AND. INTTYP .EQ. 1) THEN
+      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
          KMAXT = NSMLSH + NLRGSH
       ELSE
          KMAXT = KMAX
@@ -777,11 +782,16 @@ C
      &          INTADR(*), JSYMC(*), JCENTC(*), GEXP(*)
       integer :: ncentc(*)
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "onecom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "huckel.h"
 #include "symmet.h"
+#include "huckel.h"
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -907,7 +917,7 @@ C     Scale overlap integrals for the Huckel matrix part
 C
          HUCFAC = 1.0D0
          IF (LCLASS(ISHELA) .EQ. 2 .AND. LCLASS(ISHELB) .EQ. 2 .AND.
-     &       INTTYP .EQ. 1.AND.ADDSTO) THEN
+     &       INTTYP .EQ. 1 .AND. DOHUCKEL) THEN
             IHUCA = IHUCPT(ISHELA)
             IF (ISHELA .EQ. ISHELB .AND. DISTAB .LT. 1.0D-3) THEN
                HUCFAC = HUCEXC(IHUCA)
@@ -1135,7 +1145,11 @@ C
 C
 #include "onecom.h"
 #include "orgcom.h"
-#include "huckel.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
 #include "nuclei.h"
 #include "primit.h"
 C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
@@ -3350,6 +3364,9 @@ C  /* Deck dsusan */
      &                  SHLINT,CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ)
 C
 C     K.Ruud, Feb. 1992
+C
+C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
+C the article
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -6682,6 +6699,8 @@ C  Integrals for 1/4 * <A_m | (Qmn r)(r Qmn)~ (c \alpha \cdot p) |B_n>
 C
 C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
 C
+C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
+C
 C*********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -6842,7 +6861,10 @@ C
 C  RDSUSLL:
 C  Integrals for i c Qmn <mi_M| r (r_N x alpha) |ni_N>
 C
-C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen.
+C  Written March 2003 by Miroslav Ilias and Hans Joergen Aa. Jensen,
+C  after routine DSUSAN by Kenneth Ruud.
+C
+C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
 #include "implicit.h"
@@ -7016,6 +7038,8 @@ C*******************************************************************************
 C     K.Ruud, Feb. 1992
 C     H.J.Aa.Jensen (&MI) Mar 2003: new flag DOEKIN, if false omit kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
+C
+C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulting in -1/4
 C
 C***************************************************************************************
 #include "implicit.h"

@@ -27,12 +27,16 @@
      &            ICCSOLVE, I_DO_SBSPJA,
 ! add an option to set LCCB from input
      &            LCCB,
-! add input for I_DO_CC_EXC_E, NEXC_PER_SYM not used yet
+! For block sizes in read and write
+     &            I_READ_BLOCK,
+! For CC excitation energies
      &            I_DO_CC_EXC_E, NEXC_PER_SYM(8),
+! set and add input for MXCIV_ORIG
+     &            MXCIV_ORIG,MXCIV,MXITLR,CCCONV_EX,
 ! add input for I_DO_CC_EXP
      &            I_DO_CC_EXP,
-! set and add input for MXCIV_ORIG
-     &            MXCIV_ORIG,
+     &            NO4IDX, ! No 4-index transformation
+     &            IONLYTRANS, ! Only transformation no CC
 ! logicals
      &            IRECOM,    ! for real/complex algebra
      &            IFORM ! restart (set automatically)

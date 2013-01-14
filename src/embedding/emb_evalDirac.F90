@@ -6,13 +6,12 @@ module fde_eval_dirac
    use fde_data
    use fde_io
    use fde_integrate
-   use vc_grid
+   use electrostatic_potential
    use density_eval
    use ao_eval
    use interface_ao
    use interface_mo_specific
    use xc_max_block_length
-   use vc_grid
 
    implicit none
 
@@ -59,19 +58,71 @@ module fde_eval_dirac
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_active_elpot(dmat,vc,grid)
+      subroutine fde_calculate_active_elpot(dmat,grid,vc,vnuc)
 !   ----------------------------------------------------------------------------
-         real(kind=8) :: dmat(:)
-         real(kind=8), allocatable :: work(:)
-         real(kind=8) :: vc(:), grid(:,:)
-         integer      :: work_dim=1000000
-         integer      :: iprint = 0
+         real(kind=8), intent(in)  :: dmat(:)
+         real(kind=8), intent(in)  :: grid(:,:)
+         real(kind=8), intent(out) :: vc(:), vnuc(:)
+         real(kind=8), allocatable :: r(:,:)
+         integer :: i
+         integer :: np
+         integer :: irrep = 1
+         logical :: nuc_part = .false.    
+         logical :: ele_part = .true.    
          
-         call alloc(work,work_dim, id="scratch space emb_vc")
-         write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(size(grid, 2), dmat,grid,vc,iprint,WORK,work_dim) 
-         write (*,*) 'done!'
-         call dealloc(work)
+         np = size(grid,2)
+
+         allocate(r(3,np))
+
+         do i = 1, np
+            r(1,i) = grid(1,i) 
+            r(2,i) = grid(2,i) 
+            r(3,i) = grid(3,i) 
+         enddo 
+          
+!
+! calculating the hartree potential first
+! 
+         write (*,*) 'Generating the Hartree potential over the grid'
+!
+! aspg, 11/10/2012
+! important here: get_esp expects to get a density matrix
+!                 that is not scaled wih the occupation numbers
+!                 (so like what one would get from calling DENMAT).
+!                 
+         nuc_part = .false.    
+         ele_part = .true.    
+         call get_esp(np,            &
+                      vc,            &
+                      irrep,         & 
+                      size(dmat, 1), & 
+                      dmat,          &
+                      r,             &
+                      nuc_part,      &
+                      ele_part)
+!
+! now the nuclear potential
+!
+         write (*,*) 'Generating the nuclear potential over the grid'
+
+         nuc_part = .true.    
+         ele_part = .false.    
+         call get_esp(np,            &
+                      vnuc,          &
+                      irrep,         & 
+                      size(dmat, 1), & 
+                      dmat,          &
+                      r,             &
+                      nuc_part,      &
+                      ele_part)
+!
+! assemble the final electrostatic potential
+!
+         vc   =  vnuc + vc 
+!
+! cleanup
+!
+         deallocate(r)
                            
       end subroutine fde_calculate_active_elpot  
       
@@ -163,7 +214,7 @@ module fde_eval_dirac
 
       real(kind=8), allocatable :: cmo(:)
       REAL(kind=8), pointer :: points(:,:)
-      real(8), allocatable :: grad_rho(:, :), hes_rho(:, :), vc(:), rho(:, :)
+      real(8), allocatable :: grad_rho(:, :), hes_rho(:, :), rho(:, :)
 
       INTEGER ::i,ierr
       INTEGER :: NDIMENSION
@@ -194,7 +245,7 @@ module fde_eval_dirac
       NCNT = 0.0
       GAB1 = 0.0
 
-      call alloc(dmat, n2bbasxq)
+      call alloc(dmat, n2bbasxq, id="dmat on old_dens")
       dmat = 0.0d0
       call alloc(cmo, ncmotq)
       cmo = 0.0d0
@@ -234,12 +285,10 @@ module fde_eval_dirac
       call alloc(rho,     1,int(SIZE(points,2)))
       call alloc(grad_rho,3,int(SIZE(points,2)))
       call alloc(hes_rho, 6,int(SIZE(points,2)))
-      call alloc(vc,        int(SIZE(points,2)))
 
       rho      = 0.0d0
       grad_rho = 0.0d0
       hes_rho  = 0.0d0
-      vc       = 0.0d0
 
       WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
       DO i=1,size(points,2)
@@ -268,7 +317,12 @@ module fde_eval_dirac
          gf_export%hn(6,i) = hes_rho(6,i)
       END DO
 
+      ! scale the density matrix back to what it was originally
+      dmat = 0.5d0*dmat
+
+      ! and now deallocate everything but dmat
       call dealloc (cmo)
+      call dealloc (buf)
       call dealloc (gao)
       call dealloc (gao1)
       call dealloc (gao2)
@@ -277,7 +331,7 @@ module fde_eval_dirac
       call dealloc (rho)
       call dealloc (grad_rho)
       call dealloc (hes_rho)
-      call dealloc (vc)
+
       end  subroutine fde_old_density_matrix_generator
 
 #endif /* MOD_UNRELEASED */

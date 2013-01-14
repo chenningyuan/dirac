@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
        SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
@@ -426,10 +426,12 @@ C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
 C       ... infinite order - either block diagonalization, or YR equation solving
+#ifdef MOD_UNRELEASED
         IF (BLOCKD) THEN
          CALL GET_HINF_BD(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
      &                    GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
         ELSE
+#endif
 C        ... we need additional integer array...
          ISIZE=NORB(1)
          IF (NFSYM.EQ.2) THEN
@@ -441,7 +443,9 @@ C        ... both for FPM "k" & RKB
      &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
 
+#ifdef MOD_UNRELEASED
         ENDIF
+#endif
 C =======================================================================
 C       ... second order DKH - only in the free-particle basis
 C =======================================================================
@@ -3591,6 +3595,7 @@ C         ... do transform it to the "k" basis into TBUF !
       CALL QEXIT('DF2ONB')
       RETURN
       END
+#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -3857,6 +3862,7 @@ C Copy VMAT into TBUF as TBUF is leaving this routine...
       CALL QEXIT('GET_HINF_BD')
       RETURN
       END
+#endif
       SUBROUTINE DIAG_h_test(hmat,eigvl,eigvc,ndim,nz,ierr)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
@@ -8597,6 +8603,8 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
+!     iprint_save = iprint
+!     iprint      = 3
 
       IF (IPRINT.GE.3) THEN
       CALL HEADER('*** Output from AMFIIN ***',-1)
@@ -8769,9 +8777,34 @@ C          write(lupri,*) 'IX set to:',IX
           INDXLM(IX+8)=INDX
           IPNUC (IX+8)=INUCPOS
 
-          IX = IX + 9
-        ELSE
-          CALL QUIT('AMFI ONLY UP TO g FUNCTIONS!')
+          IX            = IX + 9
+
+        else if(l.eq.6.or.l.eq.7.or.l.eq.8)then
+
+          select case(l)
+            case(6) ! h
+             is_degeneracy = 11
+             ilast_IPTYPAO = 25
+            case(7) ! i
+             is_degeneracy = 13
+             ilast_IPTYPAO = 35
+            case(8) ! j
+             is_degeneracy = 15
+             ilast_IPTYPAO = 47
+          end select
+          do jjj = 1, is_degeneracy
+            ilast_IPTYPAO     = ilast_IPTYPAO + 1
+            IPTYPAO(IX+jjj-1) = ilast_IPTYPAO
+            INDXLM (IX+jjj-1) = INDX
+            IPNUC  (IX+jjj-1) = INUCPOS
+          end do
+          IX = IX + is_degeneracy
+          write(lupri,*) 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, j, ... shells '
+        else
+          write(lupri,*) 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from k, l, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
@@ -8955,8 +8988,6 @@ C    &  '...this file does not exist, AMFI is utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ELSE 
-          WRITE(LUPRI,'(4X,A)')
-     &  '...this file does exist, AMFI is not utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'OLD',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ENDIF
@@ -8988,8 +9019,8 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
-     &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+     &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
@@ -9136,6 +9167,11 @@ C       ... get SO integrals from AMFI
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
          SOZINT=-WORK(KSOZ+IX)
+!        if(IPTYPAO(IX+1) .gt. 25)then
+!          SOXINT = 0.0d0
+!          SOYINT = 0.0d0
+!          SOZINT = 0.0d0
+!        end if
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
@@ -9298,6 +9334,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
+!     iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN

@@ -18,13 +18,6 @@ integer :: nrle4 = -1
 
 contains
 
-subroutine assign_hsfs_parametersXXX
-#include "priunit.h"
-#include "param_ccsd.h"
-write(LUPRI,*) 'HSFS parameters from param_ccsd.h...'
- call print_hsfs_parameters
-end subroutine assign_hsfs_parametersXXX
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine assign_hsfs_parameters
 !---------------------------------------------------------------------------------------------
@@ -32,6 +25,7 @@ subroutine assign_hsfs_parameters
 !
 ! MUST be the very first calling 
 !---------------------------------------------------------------------------------------------
+implicit none
 #include "priunit.h"
 
 write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
@@ -40,8 +34,10 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 !  nbig = 20000000
  !nbig =  90000000
  !nbig  = 240000000
- !nbig  = 600000000
- nbig  = 300000000
+ !nbig  = 300000000
+  nbig  = 600000000
+  !nbig  = 1200000000
+  !nbig  = 3200000000
 
  ndij = 960000
 
@@ -79,6 +75,7 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 end subroutine assign_hsfs_parameters
 
 subroutine print_hsfs_parameters
+implicit none
 #include "priunit.h"
 write(LUPRI,*) 'assigned HSFS parameters...'
 

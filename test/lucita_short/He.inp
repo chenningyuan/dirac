@@ -7,15 +7,12 @@
 #################################
 **HAMILTONIAN
 .SPINFREE
-#################################
 **WAVE FUNCTION
 .SCF
 .LUCITA
-#
 *SCF
 .CLOSED SHELL
- 2
-#
+ 2 0
 *LUCITA
 .INIWFC
   DHFSCF
@@ -27,9 +24,7 @@
 **MOLTRA
 .SCHEME
  4
-.INTFLG
- 1 1 1
 .ACTIVE
 energy  -1000.  1000.  0.1
-#################################
-*END OF
+energy  -1000.  1000.  0.1
+**END OF

@@ -16,7 +16,7 @@ C***********************************************************************
 #include "lucinp.inc"
 * other blocks
 #include "dgroup.h"
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 25)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
@@ -30,8 +30,9 @@ C
       SAVE SET
       DATA TABLE /'.MAX CC','.MK2REF','.MK2DEL','.GASSH ','.GASSPC',
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
-     &            '.GASSHK','.INACTI','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.GASSHK','.INACTI','.IBATCH','.NO4IDX','.IREADB',
+     &            '.CC_EXC','.CCROOT','.MXCIV ','.MXITLR','.CONVEX',
+     &            '.ONLYTR','.******','.******','.******','.******'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -54,12 +55,17 @@ C     ===================
 C
 
       NGAS      = 0
+      INOCOVA   = 0
 C
 C     Initialize /CRUN/
 C     ===================
 C
       MK2REF    = 0
       MK2DEL    = 0
+      NO4IDX    = 0 ! Skip 4-index transformation
+      I_DO_CC_EXC_E = 0
+      MXCIV     = 0
+      IONLYTRANS = 0
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -105,7 +111,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20)
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25)
      &                     , I
                   END IF
   200          CONTINUE
@@ -207,20 +214,65 @@ C&&& GASSHK: GAS setup for spinors
                READ(LUCMD,*) (KRCC_NISH(I),I=1,NFSYM)
                GO TO 100
    13          CONTINUE
+C&&& IBATCH: Change default batch length according to memory and speed
+                 READ(LUCMD,*) LCCB
+                 IKWSET(13) = 1
                GO TO 100
    14          CONTINUE
+C&&& Skip the 4-index transformation - used for restarrted calculations
+                 IKWSET(14) = 1
+                 NO4IDX = 1
                GO TO 100
    15          CONTINUE
+C&&& The length of the blocks written and read from disc
+                 READ(LUCMD,*) I_READ_BLOCK
+                 IKWSET(15) = 1
                GO TO 100
    16          CONTINUE
+C&&& Do CC excitation energies
+                 I_DO_CC_EXC_E = 1
+                 IKWSET(16) = 1
                GO TO 100
    17          CONTINUE
+C&&& Number of roots per symmetry
+                 READ(LUCMD,*) (NEXC_PER_SYM(I),I=1,NBSYM)
+                 IKWSET(17) = 1
                GO TO 100
    18          CONTINUE
+C&&& Number of vectors per root
+                 READ(LUCMD,*) MXCIV
+                 IKWSET(18) = 1
                GO TO 100
    19          CONTINUE
+C&&& Max number of iterations for linear response
+                 READ(LUCMD,*) MXITLR
+                 IKWSET(19) = 1
                GO TO 100
    20          CONTINUE
+C&&& Convergence treshold for excited states
+                 READ(LUCMD,*) CCCONV_EX
+                 IKWSET(20) = 1
+               GO TO 100
+   21          CONTINUE
+C&&& Only transformation no CC. Will just exit after transformation
+                 IONLYTRANS = 1
+                 IKWSET(21) = 1
+               GO TO 100
+   22          CONTINUE
+C&&& 
+                 IKWSET(22) = 1
+               GO TO 100
+   23          CONTINUE
+C&&& 
+                 IKWSET(23) = 1
+               GO TO 100
+   24          CONTINUE
+C&&& 
+                 IKWSET(24) = 1
+               GO TO 100
+   25          CONTINUE
+C&&& 
+                 IKWSET(25) = 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -273,6 +325,15 @@ C
         END IF
       END IF
 C
+C Change of convergence threshold
+C
+      IF(IKWSET(10).EQ.1) THEN
+        WRITE(6,*) ' Convergence threshold changed to: ',CCCONV
+      ELSE
+        CCCONV = 1.0D-10
+        WRITE(6,*) ' Default convergence threshold of ',CCCONV,' used'
+      END IF
+C
 C Calculate number of orbitals per gasspace and total number of orbitals
 C Using new input type
 C
@@ -304,6 +365,59 @@ C
         END IF
       END IF
 C
+C Default batch length
+C
+      IF(IKWSET(13).EQ.0) THEN
+        WRITE(6,*) ' Batch lengt set to default 1000'
+        WRITE(6,*) ' Decrease to reduce memory or increase for speed'
+        LCCB = 1000
+      ELSE
+        WRITE(6,*) ' You have changed the default batch length to',LCCB
+      END IF
+C
+C No 4-index transformation
+C
+      IF(IKWSET(14).EQ.0) THEN
+        WRITE(6,*) ' Will do the 4-index transformation'
+      ELSE
+        WRITE(6,*) ' This is a restarted calculation from integrals'
+        WRITE(6,*) ' No 4-index transformation will be performed'
+      END IF
+C
+C The block size in which files are written and read => smaller blocks =
+C less memory but more reads
+C
+      IF(IKWSET(15).EQ.0) THEN
+        I_READ_BLOCK = 100000
+        WRITE(6,*) ' The default block sizes are : ',I_READ_BLOCK
+      ELSE
+        WRITE(6,*) ' You have changed the default block size to : ',
+     &               I_READ_BLOCK
+      END IF
+C
+C Consistency check for CC excitation energies
+C
+      IF(I_DO_CC_EXC_E.EQ.1) THEN
+        IF(IKWSET(16).EQ.0) THEN
+          WRITE(6,*) ' You need to specify the number of roots '
+          CALL QUIT(' You need to specify the number of roots ')
+        END IF
+        IF(IKWSET(18).EQ.0) THEN
+C Default number of vectors per root is 2
+          MXCIV = 2
+        END IF
+      ELSE 
+        IF(IKWSET(16).EQ.1) THEN
+          CALL QUIT(' I want you to tell me to do excitation energies ')
+        END IF
+      END IF
+      IF(IKWSET(19).EQ.0) THEN
+        MXITLR = MAXIT
+      END IF
+      IF(IKWSET(20).EQ.0) THEN
+        CCCONV_EX = CCCONV
+      END IF
+C
 C Setting some defaults that i am too lazy to change in the code
 C
         NCMBSPC = ISPC
@@ -312,7 +426,7 @@ C
           LCMBSPC(ICISPC) = 1
           ICMBSPC(1,ICISPC) = ICISPC
         END DO
-        LCSBLK = 5000000
+        LCSBLK = 6000000
 C
 C     Print section
 C     =============
@@ -338,9 +452,13 @@ C
      &           ' Barred spinors ', (NGSSHK(J,I,2),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           IGSOCCX(1,I,1),'/',IGSOCCX(2,I,1),')'
+     &           IGSOCCX(I,1,1),'/',IGSOCCX(I,2,1),')'
           END DO
         END IF
+      END IF
+      IF(IKWSET(9).EQ.1) THEN
+        WRITE(6,*) ' Using NOCOVA approximation '
+        WRITE(6,*) ' External indices restricted to ',INOCOVA
       END IF
       IF(IKWSET(4).EQ.1) THEN
         WRITE(LUPRI,'(A,I4)')
@@ -354,7 +472,7 @@ C
      &           (NGSSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           IGSOCCX(1,I,1),'/',IGSOCCX(2,I,1),')'
+     &           IGSOCCX(I,1,1),'/',IGSOCCX(I,2,1),')'
           END DO
         END IF
       END IF
@@ -364,6 +482,19 @@ C
      &   ' Maximum flipping of Kramers projection ', MK2DEL
       WRITE(LUPRI,'(A,I4)')
      &   ' Number of inactive shells ',(KRCC_NISH(I),I=1,NFSYM)
+      IF(I_DO_CC_EXC_E.EQ.1) THEN
+        WRITE(6,*) '                                       '
+        WRITE(6,*) ' Will calculate excited state energies '
+        WRITE(6,*) '                                       '
+        WRITE(6,*) ' ------------------------------------- '
+        WRITE(6,*) '                                       '
+        WRITE(6,*) ' Number of excited states in each symmetry '
+        WRITE(6,*) '                                       '
+        DO I = 1,NBSYM
+          WRITE(6,*) 'Number of roots : ',NEXC_PER_SYM(I),
+     &               ' in symmetry : ',I
+        END DO
+      END IF
 C
 C
 C

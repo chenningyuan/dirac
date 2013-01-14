@@ -149,7 +149,9 @@ C     ajt aug09 Used in prop_integrals.f90
 #include "energy.h"
 #include "priunit.h"
       integer na, i, j
-      real(8) H(3*na,3*na),HESSNN(MXCOOR,MXCOOR)
+      real(8) H(3*na,3*na)
+#ifndef PRG_DIRAC
+      real(8) HESSNN(MXCOOR,MXCOOR)
       IPRINT = 0
       MAXDIF = 2
 C     second and third arg only used when IPRINT > 1
@@ -160,6 +162,7 @@ C     ajt This might come out with halved diagonal
             H(i,j) = HESSNN(max(i,j),min(i,j))
          end do
       end do
+#endif /* ifndef PRG_DIRAC */
       end subroutine
 
 

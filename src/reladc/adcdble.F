@@ -173,12 +173,48 @@ C |
       WRITE(IW,*)
       IF(DOFULL) THEN
         WRITE(IW,*) 'Full diagonalizer additionally requested.'
-        WRITE(IW,*) 'Remark: Only works up to a Matrix dimension'
+        WRITE(IW,*) 'Remark: Only executed up to a Matrix dimension'
         WRITE(IW,*) '     ****  of 5000    ****'
         WRITE(IW,*) 'and is for debugging purposes only.'
       ELSE
         WRITE(IW,*) 'Only Lanzcos diagonalizer will be called.'
       ENDIF
+      IF(ADCTHR.gt.0.0d0) THEN
+        WRITE(IW,*) 'A threshold of',ADCTHR,' will be applied to'
+        WRITE(IW,*) 'the 2P ADC matrix.'
+      ENDIF
+!
+! determine symmetries to be calculated
+!
+      n = 0
+      do i = 1,nrep
+        n = n + dipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(iw,*) 'User has not given explicit symmetries.'
+        write(iw,*) 'Program calculates the following DIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep
+          dipreps(icount) = i
+          write(iw,*) '   No: ',icount,'  symmetry: ',i
+          icount = icount + 1
+        enddo
+        write(iw,*)
+      else
+        write(iw,*) 'User has made explicit symmetry choices.'
+        write(iw,*) 'Program calculates the following DIP symmetries:'
+        write(iw,*)
+        icount=1
+        do i=1,nrep
+          if(dipreps(i).ne.0) then
+            write(iw,*) '   No: ',icount,'  symmetry: ',dipreps(i)
+            icount = icount + 1
+          endif
+        enddo
+        write(iw,*) 'Program calculates',icount,' symmetries.'
+      endif
+      write(iw,*)
 C |
 C |
 C |
@@ -239,7 +275,17 @@ CTROND          II=IREPSPI(I,IREP,1)
 CTROND          WRITE(6,*) "TEST..IREPSPI ",IREP,II,REPNA(IREP),EPS(J)
 CTROND        ENDDO
 CTROND      ENDDO
-      DO 200 DESREP = 1,NREP
+
+      DO 200 IRPLOOP = 1,NREP
+        IF(dipreps(IRPLOOP).EQ.0) GOTO 200
+        IF(dipreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',dipreps(IRPLOOP),
+     &     ' does not exist and is skipped!'
+           GOTO 200
+        ENDIF
+
+        DESREP = dipreps(IRPLOOP)
+
         ICOLLEN(DESREP) = 0
         IF(NOOT(DESREP).GT.0) THEN
           WRITE(IW,'(A,I4)') 
@@ -325,7 +371,16 @@ c  att2: it was observed that the ADC2 matrices get very large and
 c  therefore a diagonalization is required immediately after the
 c  SAT block construction!
 c      
-      DO 300 DESREP = 1,NREP
+      DO 300 IRPLOOP = 1,NREP
+        IF(dipreps(IRPLOOP).EQ.0) GOTO 300
+        IF(dipreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',dipreps(IRPLOOP),
+     &     ' does not exist and is skipped!'
+           GOTO 300
+        ENDIF
+
+        DESREP = dipreps(IRPLOOP)
+
         IF(NOOT(DESREP).EQ.0) GOTO 300
         WRITE(IW,*) ' *** Found final states in symm.',DESREP
 
@@ -345,12 +400,12 @@ c
         IF(CARITH) THEN
           CALL BUILD_SAT_C(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
      &                     IV(NREP+1),CC(BSATEV),CC(BFIRCD),LENSATBL,
-     &                     CC(BLKUPO),CC(BLKUPV),DESREP,
+     &                     CC(BLKUPO),CC(BLKUPV),DESREP,ADCTHR,
      &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
         ELSE
           CALL BUILD_SAT_R(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
      &                     IV(NREP+1),CC(BSATEV),CC(BFIRCD),LENSATBL,
-     &                     CC(BLKUPO),CC(BLKUPV),DESREP,
+     &                     CC(BLKUPO),CC(BLKUPV),DESREP,ADCTHR,
      &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
         ENDIF
 C
@@ -411,6 +466,9 @@ c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
 c  information we need. Since we need only the 2h part we can make use
 c  of the TMATVEC matrix, the eigenvectors of the Lanczos matrix.
+c
+c  in the corresponding symmetry DESREP
+c
 c  ATT in this F90 routine an include symm.inc does not work!
 c  therefore we have to transfer the relevant arrays to TWOHPOP
 c  especially MULTB(64,64,2), NOOT(*) and NO(*)
@@ -1364,7 +1422,7 @@ c
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_SAT_R(OOOO,VOVO,IROOO,MAXOCCSP,MAXVIRSP,
      &                       SATEV,IRCD,IRCDLEN,LTO,LTV,DESREP,
-     &                       IOI,IOJ,BUF,INTBUF)
+     &                       ADCTHR,IOI,IOJ,BUF,INTBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1383,6 +1441,7 @@ C
       INTEGER LTO(MAXOCCSP,MAXOCCSP,MAXOCCSP,MAXOCCSP)
       INTEGER LTV(MAXVIRSP,MAXOCCSP,MAXVIRSP,MAXOCCSP)
       REAL*8 SATEV(IRCDLEN)
+      REAL*8 ADCTHR
 c for the packed matrix output file
       INTEGER INTBUF
       INTEGER IOI(INTBUF),IOJ(INTBUF)
@@ -1420,6 +1479,13 @@ c  ADCDAT:  configuration information for the 2h and 3h1p vector
 C
 C---------------Executable code--------------------------------------
 c
+c
+c  say hello
+c
+
+      CALL PST('Building real SAT block+')
+      WRITE(IW,*) 'Threshold for ADC matrix:',ADCTHR
+
 c  create master index table now with *absolute* spinor indices!
 c  This index table assigns to a row or column number within the
 c  satellite block a quadruple of absolute spinor indices in order
@@ -1519,22 +1585,27 @@ c
         GOTO 177
       ENDIF
       IF(SATROW.EQ.-255) GOTO 180
-      IF(G.EQ.0.0D0) STOP 'Read zero element in BUILD_SAT'
+      IF(G.EQ.0.0D0) STOP 'Read zero element in BUILD_SAT_R'
       IF(SATROW.LT.SATCOL) 
-     &     STOP 'ROW/COL inconsistency in BUILD_SAT!'
-      NTOTELE = NTOTELE + 1
-      IB=IB+1
+     &     STOP 'ROW/COL inconsistency in BUILD_SAT_R'
 c
-      BUF(IB)=G
-      IOI(IB)=SATROW
-      IOJ(IB)=SATCOL
-      IF(IB.EQ.INTBUF) THEN
-        WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-     &               (IOI(IXX),IXX=1,INTBUF),
-     &               (IOJ(IXX),IXX=1,INTBUF),
-     &               INTBUF,JDUMMY
-        IB = 0
-        NBUFS = NBUFS + 1
+c  write matrix element only if greater than ADCTHR
+c
+      IF(ABS(G).GT.ADCTHR) THEN
+        NTOTELE = NTOTELE + 1
+        IB=IB+1
+c
+        BUF(IB)=G
+        IOI(IB)=SATROW
+        IOJ(IB)=SATCOL
+        IF(IB.EQ.INTBUF) THEN
+          WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
+     &                 (IOI(IXX),IXX=1,INTBUF),
+     &                 (IOJ(IXX),IXX=1,INTBUF),
+     &                 INTBUF,JDUMMY
+          IB = 0
+          NBUFS = NBUFS + 1
+        ENDIF
       ENDIF
       GOTO 177   !next element
  180  CONTINUE
@@ -1670,7 +1741,7 @@ c reminder: satrow and satcol count from 1 to length of sat block,
 c but the matrix starts with 2h2h block ==> add offset to these
 c variables.
 c
-          IF(G.NE.0.0D0) THEN
+          IF(ABS(G).GT.ADCTHR) THEN
             NTOTELE = NTOTELE + 1
             IB=IB+1
 c
@@ -1704,7 +1775,7 @@ c
       ENDIF
       CLOSE(ITAP4)
       WRITE(IW,*)
-      WRITE(IW,*) 'Total of nonzero elements in ADC matrix: ',NTOTELE
+      WRITE(IW,*) 'Number of elements above threshold: ',NTOTELE
       WRITE(IW,*) 'Number of buffers in ADC matrix file   : ',NBUFS
       WRITE(IW,*) 'Dimension of ADC matrix in this symmetry:',
      6            IRCDLEN+SATOFF
@@ -1721,7 +1792,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_SAT_C(OOOO,VOVO,IROOO,MAXOCCSP,MAXVIRSP,
      &                       SATEV,IRCD,IRCDLEN,LTO,LTV,DESREP,
-     &                       IOI,IOJ,BUF,INTBUF)
+     &                       ADCTHR,IOI,IOJ,BUF,INTBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1740,6 +1811,7 @@ C
       INTEGER LTO(MAXOCCSP,MAXOCCSP,MAXOCCSP,MAXOCCSP)
       INTEGER LTV(MAXVIRSP,MAXOCCSP,MAXVIRSP,MAXOCCSP)
       REAL*8 SATEV(IRCDLEN)
+      REAL*8 ADCTHR
 c for the packed matrix output file
       INTEGER INTBUF
       INTEGER IOI(INTBUF),IOJ(INTBUF)
@@ -1776,6 +1848,13 @@ c  ADCDAT:  configuration information for the 2h and 3h1p vector
 C
 C---------------Executable code--------------------------------------
 c
+c
+c  say hello
+c
+
+      CALL PST('Building complex SAT block+')
+      WRITE(IW,*) 'Threshold for ADC matrix:',ADCTHR
+
 c  create master index table now with *absolute* spinor indices!
 c  This index table assigns to a row or column number within the
 c  satellite block a quadruple of absolute spinor indices in order
@@ -1881,24 +1960,23 @@ c
         GOTO 177
       ENDIF
       IF(SATROW.EQ.-255) GOTO 180
-      IF(G.EQ.(0.0D0,0.0D0)) STOP 'Read zero element in BUILD_SAT'
+      IF(G.EQ.(0.0D0,0.0D0)) STOP 'Read zero element in BUILD_SAT_C'
       IF(SATROW.LT.SATCOL) 
-     &     STOP 'ROW/COL inconsistency in BUILD_SAT!'
-      NTOTELE = NTOTELE + 1
-      IB=IB+1
-c
-c   !!!
-c
-      BUF(IB)=G
-      IOI(IB)=SATROW
-      IOJ(IB)=SATCOL
-      IF(IB.EQ.INTBUF) THEN
-        WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-     &               (IOI(IXX),IXX=1,INTBUF),
-     &               (IOJ(IXX),IXX=1,INTBUF),
-     &               INTBUF,JDUMMY
-        IB = 0
-        NBUFS = NBUFS + 1
+     &     STOP 'ROW/COL inconsistency in BUILD_SAT_C!'
+      IF(ABS(G).GT.ADCTHR) THEN
+        NTOTELE = NTOTELE + 1
+        IB=IB+1
+        BUF(IB)=G
+        IOI(IB)=SATROW
+        IOJ(IB)=SATCOL
+        IF(IB.EQ.INTBUF) THEN
+          WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
+     &                 (IOI(IXX),IXX=1,INTBUF),
+     &                 (IOJ(IXX),IXX=1,INTBUF),
+     &                 INTBUF,JDUMMY
+          IB = 0
+          NBUFS = NBUFS + 1
+        ENDIF
       ENDIF
       GOTO 177   !next element
  180  CONTINUE
@@ -2040,7 +2118,7 @@ c reminder: satrow and satcol count from 1 to length of sat block,
 c but the matrix starts with 2h2h block ==> add offset to these
 c variables.
 c
-          IF(G.NE.0.0D0) THEN
+          IF(ABS(G).GT.ADCTHR) THEN
             NTOTELE = NTOTELE + 1
             IB=IB+1
 c

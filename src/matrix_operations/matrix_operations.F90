@@ -1,11 +1,11 @@
 
 ! radovan.bast@uit.no (2009-06-03):
-! this module is the interface between matrix_genop and DIRAC
+! this module is the interface between matrix_genop_old and DIRAC
 ! please mind that the naming is common with Dalton
 ! so some things make only sense in the larger picture (Dalton and DIRAC)
 
 ! radovan: please do not use (also in the f90 terms) this module
-!          directly, use this functionality only via module matrix_defop
+!          directly, use this functionality only via module matrix_defop_old
 !          otherwise you risk memory corruption!
 
 module matrix_operations
@@ -16,7 +16,7 @@ module matrix_operations
   implicit none
 
   public matrix
-  public mat_init
+  public mat_init_old
   public mat_free
   public mat_mul
   public mat_zero
@@ -132,7 +132,7 @@ contains
 
   end subroutine
 
-  subroutine mat_init(A, nrow, ncol, nz)
+  subroutine mat_init_old(A, nrow, ncol, nz)
 
 !   ----------------------------------------------------------------------------
     type(matrix)        :: A

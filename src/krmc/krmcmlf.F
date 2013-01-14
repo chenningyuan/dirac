@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -309,6 +309,8 @@ C
          IOFF2 = IOFF2 + 2*NASH(IFSYM)
          IOFF3 = IOFF3 + NASH(IFSYM)
       ENDDO
+
+#ifdef LINSYM_DEBUG
 !     
 !     linear symmetry - make sure only proper <mj|mj> off-diagonal terms
 !     enter the KR-MCSCF machinery... (get rid off numerical noise)
@@ -334,6 +336,7 @@ C
         call dealloc(mjvec)
 
       end if
+#endif
 !
 !     print section
 !     IPRINT = 30

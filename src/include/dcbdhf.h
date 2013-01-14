@@ -1,7 +1,7 @@
 !
 ! FILE    : dcbdhf.h
 !
-!*** Dirac-Fock calculations ***
+!*** Dirac common blocks for Dirac-Hartree-Fock calculations ***
 !
 !     PROJEC     - any projection, defined by a set of coefficients
 !     ... (descriptions are to be added)
@@ -23,25 +23,25 @@
 !     MAX_BOS_BL must be equal to MAX_SUB_BL in dcborb.h /hjaaj oct 2004
 
       CHARACTER*12 DHF_INTTYP
-      CHARACTER*8 CACC
-      CHARACTER*6 PRJFIL(MFRAG)
+      CHARACTER*8  CACC
+      CHARACTER*6  PRJFIL(MFRAG)
       CHARACTER*72 VCPROJ(2, MFRAG), VCFROZ(2)
 
       COMMON /DCCDHF/ DHF_INTTYP, CACC, PRJFIL, VCPROJ, VCFROZ
 
-      LOGICAL DHFCONV(2), DHFEXIT, TRIVEC, TRIFCK, ERGCNV, EVCCNV,      &
-     &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF,           &
-     &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL, AUTOCC, INIOCC, &
-     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,DOCCNV,              &
-     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE, DOLEVEL, ATOMST,   &
+      LOGICAL DHFCONV(2), DHFEXIT,    TRIVEC, TRIFCK, ERGCNV, EVCCNV,   &
+     &        FCKCNV, DODSCF, DODAMP, DODIIS, DIISON, FIXDIF, SIRIFC,   &
+     &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL,AUTOCC,INIOCC,   &
+     &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF,AOC,    DOCCNV, SCFPOP,   &
+     &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,  DOLEVEL,ATOMST,   &
      &        ATHUCK
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
-     &                TRIFCK, DODSCF, DODAMP, DODIIS, DIISON, OVLSEL,   &
-     &                FIXDIF, DIISAO, DIISMO, DYNSEL, DOBOSSEL, AUTOCC, &
-     &                INIOCC, DHF_SKIPEE, DHF_SKIPEP, NOQCDHF, AOC,     &
-     &                ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,DOCCNV,     &
-     &                DOLEVEL, ATOMST,ATHUCK                                           
+     &                TRIFCK, DODSCF, DODAMP, DODIIS,  DIISON,  OVLSEL, &
+     &                FIXDIF, DIISAO, DIISMO, DYNSEL,  DOBOSSEL,AUTOCC, &
+     &                INIOCC, DHF_SKIPEE, DHF_SKIPEP,  NOQCDHF, AOC,    &
+     &                ERGCNV2,EVCCNV2,FCKCNV2,DOMOFREEZE,       DOCCNV, &
+     &                DOLEVEL,ATOMST, SIRIFC, SCFPOP, ATHUCK
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
@@ -89,4 +89,5 @@
      &        LUCMOS, LUSMOS
       COMMON /DHFIOU/ LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS,   &
      &                LUEVEC, LUCMOS, LUSMOS
+! --- end of dcbdhf.h ---
 

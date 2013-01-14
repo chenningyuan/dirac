@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module xc_mpi
@@ -74,8 +74,12 @@ module xc_mpi
    end interface
 #endif
 
+#ifdef VAR_MPI_32BIT_INT
+   integer(4)         :: ierr
+#else
    integer            :: ierr
-   integer, parameter :: irank_master        = 0
+#endif
+   integer, parameter :: irank_master = 0
 
 contains
 
@@ -90,21 +94,25 @@ contains
 
    function xc_mpi_is_master()
       logical :: xc_mpi_is_master
-#ifdef VAR_MPI
-      xc_mpi_is_master = (get_my_rank() == irank_master)
-#else
+#include "dcbgen.h"
       xc_mpi_is_master = .true.
+#ifdef VAR_MPI
+      if (parcal) then
+         xc_mpi_is_master = (get_my_rank() == irank_master)
+      end if
 #endif
    end function
 
    function xc_mpi_get_nr_proc()
       integer :: xc_mpi_get_nr_proc
       integer :: nr_proc
-#ifdef VAR_MPI
-      call interface_mpi_comm_size(global_communicator, nr_proc)
-      xc_mpi_get_nr_proc = nr_proc
-#else
+#include "dcbgen.h"
       xc_mpi_get_nr_proc = 1
+#ifdef VAR_MPI
+      if (parcal) then
+         call interface_mpi_comm_size(global_communicator, nr_proc)
+         xc_mpi_get_nr_proc = nr_proc
+      end if
 #endif
    end function
 

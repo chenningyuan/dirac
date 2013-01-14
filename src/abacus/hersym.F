@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : hersym.F
@@ -84,6 +84,9 @@ C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NSYMOP,KATOM,KASYM,LENTMP,
      &                         CLASS,VRML,internal_file,WORK,LWORK)
+
+      use codata
+
 #include "implicit.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -169,7 +172,24 @@ C
          END IF
          IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
-            IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
+            if (mytid == mparid) then
+               call prnarr(text, mxcent, atmarr)
+               print *, ''
+               print *, 'Centered and rotated coordinates'
+               print *, 'in xyz format (angstrom)'
+               print *, '--------------------------------'
+               print *, ''
+               write(*, '(i0)') nuclp
+               print *, ''
+               do i = 1, nuclp
+                  IZ_VAL = NINT( atmarr(5, i) )
+                  write(*, '(a4, 3f14.8)') namn(IZ_VAL),
+     &                                     atmarr(1, i)*xtang,
+     &                                     atmarr(2, i)*xtang,
+     &                                     atmarr(3, i)*xtang
+               end do
+               print *, ''
+            end if
          ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'

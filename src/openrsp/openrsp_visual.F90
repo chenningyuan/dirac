@@ -5,7 +5,7 @@ module openrsp_visual
 ! use grid_m
 ! use memory_allocator
 ! use matrix_oper
-  use matrix_defop
+  use matrix_defop_old
 
   implicit none
 

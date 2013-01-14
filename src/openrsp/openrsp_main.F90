@@ -2,7 +2,7 @@ module openrsp_main
 
   use prop_test
   use prop_contribs
-  use matrix_defop
+  use matrix_defop_old
   use matrix_stat
   use memory_bouncer
   use dirac_interface
@@ -59,7 +59,7 @@ contains
 
     call get_F(D, F)
 
-!   call test_matrix_defop(S, D, F, C_i)
+!   call test_matrix_defop_old(S, D, F, C_i)
     C_i = 0
 
     write(*, *) 'electron count from S**D:', dot(S, D)

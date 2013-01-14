@@ -992,7 +992,6 @@
       NH21TOT = 0
 *
       DO IH = 1,NH21
-        print*,'THIS OPERATOR',IH
         CALL GET_OP_STUPID(WORK(KNH21),IH,IHTP)
         CALL CONTRACTION_ANALYZE(INI,NPART,NHOLE,NPARTTOT,NHOLETOT,
      &                           WORK(KLSOBEX_CC),NSPOBEX_TPE,
@@ -2766,6 +2765,18 @@
 *
 * End all M01 contractions
 *
+*
+* Made it a bit longer 22/05/12. Total number of contractions.
+* &NH12TOM02
+      ITOTCONT = NH22TOM12 + NH22TOM20 + NH22TOM11 + NH22TOM02 +
+     &           NH22TOM10 + NH22TOM01 + NH22TOT + NH21TOM11 + 
+     &           NH21TOM10 + NH21TOM01 + NH21TOT + NH12TOM02 +
+     &           NH12TOM10 + NH12TOM01 + NH12TOT + NH20TOM10 + 
+     &           NH20TOT + NH11TOM01 + NH11TOT  + NH02TOM01 + 
+     &           NH02TOT + NH10TOT + NH01TOT + NM12TOM02 + NM20TOT +
+     &           NM11TOM01 + NM11TOT + NM02TOM01 + NM02TOT +
+     &           NM10TOT + NM01TOT
+      WRITE(6,*) ' Total number of contractions = ',ITOTCONT
 *
 * End of the line. Was this not long and tedious?
 * Should you find or know of a longer subroutine then please write to me at

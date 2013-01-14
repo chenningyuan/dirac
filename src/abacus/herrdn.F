@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -244,7 +244,7 @@ C        Slaves are already initialized before coming here.
       RETURN
       END
 C  /* Deck readin */
-      SUBROUTINE READIN(WORK,LWORK,HERMIT)
+      SUBROUTINE READIN(HERMIT)
 C     Based on
 C       READIN:Input processing routine for  M O L E C U L E.
 C         Jan Almlof, Stockholm, Dec. 1971.
@@ -270,6 +270,7 @@ C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
         USE READ_XYZFILE
+        use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -288,7 +289,6 @@ C
 #include "cbirea.h"
 C
       CHARACTER(LEN=8) :: moltype
-      REAL(KIND=8)     :: WORK(LWORK)
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
@@ -308,6 +308,9 @@ C     JHS
 #include "chrsgn.h"
 #include "aosotr.h"
 #include "infpar.h"
+
+      integer, parameter   :: LWORK = 1000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -315,6 +318,8 @@ C     iteration.
 C
       IF (RDINPC) RETURN
       RDINPC = .TRUE.
+C
+      call alloc(WORK,LWORK,id='WORK in READIN')
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT.  0) THEN
@@ -403,9 +408,10 @@ C               These are the only two extensions at the moment.
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
+      call dealloc(WORK)
       RETURN
       END
-C  /* Deck readi1 */
+C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
@@ -444,9 +450,7 @@ C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
       use codata
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -723,7 +727,7 @@ C
 #endif
      &            DOOWN,blk)
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
@@ -773,22 +777,13 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-C     ****************************************
-C     **** This is for generating ARGOSIN ****
-C     ****************************************
-#ifdef MOD_ECP
-      nsag   = NUCIND
-      naordsag = blk
-      ngcsag = blk
-      nstag = MAXREP + 1
-      do i = 0, nstag-1
-         ndag(i) = 1
-      enddo
+C     ********************************
+C     **** This is for ECP module ****
+C     ********************************
       CALL RECP_LNK_CHECKMOL(DOCART)
       CALL RECP_LNK_IRREP(MAXREP)
       CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
      &     IQM,JCO,KATOM,KANG)
-#endif
 C
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
@@ -951,7 +946,6 @@ C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP = 0
 C
-      CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
       NHTYPF = 0
@@ -1009,7 +1003,7 @@ C
         QEXP = D0
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
             READ(LUINFO,'(a)', ADVANCE='yes') str
             BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
@@ -1021,7 +1015,7 @@ C
             ENDIF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
-            IF (ADDSTO) NSETS = 2
+            IF (DOHUCKEL) NSETS = 2
             BSET  = 'Basis'
             READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
      &                           Q,NONT(I),
@@ -1033,7 +1027,7 @@ C
             ENDIF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
-              ADDSTO = .FALSE.
+              DOHUCKEL = .FALSE.
 culfek: Not relevant for Dirac at this point.
 c              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
 c     &             'nuclear charge larger than 18'
@@ -1423,10 +1417,11 @@ C
 C              Check if large component basis is contracted
 C              ============================================
 C
-               DO 210 JBLCK = 1, NBLCK(I,1)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(1), NBLCK(I,1)+IBLOCK(1)-1
                   IF ((NUC(JBLCK,1).NE.NRC(JBLCK,1)).AND.
      &                (NRC(JBLCK,1).GT.0)) CNTBAS = .TRUE.
-  210          CONTINUE
+               END DO
                IF ( CNTBAS .AND.
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
                   DIRCON(1) = .TRUE.
@@ -1592,7 +1587,8 @@ C
 C              Check if small component basis is contracted
 C              ============================================
 C
-               DO JBLCK = 1, NBLCK(I,2)
+               CNTBAS = .FALSE.
+               DO JBLCK = IBLOCK(2), NBLCK(I,2)+IBLOCK(2)-1 
                   IF ((NUC(JBLCK,2).NE.NRC(JBLCK,2)).AND.
      &                (NRC(JBLCK,2).GT.0)) CNTBAS = .TRUE.
                END DO
@@ -1628,7 +1624,7 @@ C
 C              Get basis set from basis set library
 C              ===================================
 C
-               ELSE IF ((BASIS .OR. (ADDSTO .AND. J .EQ. 2))) THEN
+               ELSE IF ((BASIS .OR. (DOHUCKEL .AND. J .EQ. 2))) THEN
                   KAOVEC = KBLOCK + 1 - IBLOCK(2)
                   CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
@@ -1884,12 +1880,10 @@ C
 C       End of loop over small/large fitsets.
         ENDDO
 C
-#ifdef MOD_ECP
 C
 C       Read RECP parameter if exist
 C
         CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
-#endif
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -2141,12 +2135,10 @@ C*****************************************************************************
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-#ifdef MOD_ECP
 C      For ECP integeral
        CALL RECP_LNK_RDORB(IQM(1,1),JCO(1,1,1),NUC(1,1),NRC(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM)
-#endif /* ifdef MOD_ECP */ 
       NLRGSH = ISHELL
       NLARGE = IORBD
       NORBL  = IORB
@@ -2178,7 +2170,7 @@ C*****************************************************************************
       IF (IORBD .GT. MXCORB) GOTO 5010
       IF (IPRIM .GT. MXPRIM) GOTO 5020
 
-      IF (ADDSTO) THEN
+      IF (DOHUCKEL) THEN
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
          NSMALL = IORBD - NLARGE
@@ -4370,9 +4362,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4536,7 +4526,7 @@ C
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = IC
 #ifndef PRG_DIRAC
-                  IF (IC .EQ. 2 .AND. ADDSTO) THEN
+                  IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
                      HUCCHR = CHARGE(NCENT(IA))
@@ -4599,12 +4589,10 @@ C
           ENDDO
         ENDDO
       ENDDO
-#ifdef MOD_ECP
 C
 C     For ECP integral
 C
       CALL RECP_LNK_CTRAN(blk)
-#endif /* ifdef MOD_ECP */
 C
       RETURN
       END
@@ -6841,17 +6829,21 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = IBLOCK
 CMI         ... charge, highest angular momentum
+!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          stefan - nov 2011: simple fix/approximation for the time
+!                             being...
+           imax_l = min(IQM(I)-1,4)
            IF (N.EQ.1) THEN
             WRITE(LUTMP2,*) NINT(CHARGE(MNCENT)) 
-            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
-C           WRITE (lupri,*) '*****  charge,iqm:',CHARGE(MNCENT),IQM(I)-1
+            WRITE (LUTMP2,*) CHARGE(MNCENT),imax_l
+!sk         WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
            ENDIF
             II = 0
             DO 200 J = 1, IQM(I)
-           IF (N.EQ.1) THEN
-C            write(lupri,*)
-C    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
-           ENDIF
+!          IF (N.EQ.1) THEN
+!            write(lupri,*)
+!    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
+!          ENDIF
 CMI           .... segmentation of L blocks ...not desirable for AMFI...
                IF (JCO(J,I).GT.1) THEN
                 KBCH_SAVE=KBCH
@@ -6871,14 +6863,18 @@ CMI           .... segmentation of L blocks ...not desirable for AMFI...
                   IF (NNUC .EQ. 0) GO TO 200
                 IF (N.EQ.1) THEN
                  IF (JCO(J,I).EQ.1) THEN
-                  WRITE (LUTMP2,*) NNUC,NNRC
-C                 WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
-C    &                '  -> NNUC,NNRC:',NNUC,NNRC
+                   if(j .lt. 6)then ! up to g functions
+                     WRITE (LUTMP2,*) NNUC,NNRC
+                   end if
+!                   WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
+!    &                  '  -> NNUC,NNRC:',NNUC,NNRC
                  ELSE
                   IF (K.EQ.1) THEN
-                    WRITE (LUTMP2,*) NNUCT,NNRCT
-C                   WRITE (lupri,*) 
-C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    if(j .lt. 6)then ! up to g functions
+                      WRITE (LUTMP2,*) NNUCT,NNRCT
+!                     WRITE (lupri,*) 
+!    &                 '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                    end if
                   ENDIF
                  ENDIF
                 ENDIF
@@ -6888,11 +6884,20 @@ C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
                   IF (N .EQ. 1) THEN
-                     DO 410 M = 1, NNUC
-                        IPRIMD = IPRIMD + 1
-                           WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
-C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
- 410                 CONTINUE
+                     if(j .lt. 6)then ! up to g functions
+                       DO 410 M = 1, NNUC
+                         IPRIMD = IPRIMD + 1
+                         WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
+!                        WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
+ 410                   CONTINUE
+                     else
+                       IPRIMD = IPRIMD + NNUC
+#ifdef X2C_debug
+                       WRITE (lupri,'(a,i4)') 'mnf input writing:'//
+     &             ' skipped angular momentum functions > 5 (h,i,...)',
+     &               NNUC
+#endif
+                     end if
                   END IF
  210           CONTINUE
  200        CONTINUE

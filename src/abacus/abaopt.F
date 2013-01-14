@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,16 +16,18 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C$Id$
 C
 C#include "single.h"
-! OLD_LOG
-!950915-vebjornb: New module taking care of optimizations.
-!                 It uses both the old cbiwlk.h and the new optinf.h
-!
+C
+C FILE: abaopt.F
+C
+C 950915-vebjornb: New module taking care of optimizations.
+C                  It uses both the old cbiwlk.h and the new optinf.h
+C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include "implicit.h"
@@ -187,8 +189,7 @@ C
  123  CONTINUE
 C
 #if defined (PRG_DIRAC)
-      CALL INIGRD()
-      IPRGRD = -1
+      CALL INIGRD(-1)
       DOTRCK = .TRUE.
 #endif
 C
@@ -1204,8 +1205,8 @@ C
 C     
 #if defined (PRG_DIRAC)
 C     
-      WRITE(LUPRI,'(1X,A)')
-     &     '* Contributions to the molecular gradient from'
+      WRITE(LUPRI,'(A)')
+     &     ' * Contributions to the molecular gradient from'
       IF ( LBIT( IGRD_INTFLG, 1 ) )
      &     WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
       IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
@@ -1251,8 +1252,12 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
       END
 
 C  /* Deck optmin */
-      SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE OPTMIN()
+!
+!     Driver for geometry optimization (including minimization)
+!
 
+      use memory_allocator
       use interface_to_mpi
 
 #include "implicit.h"
@@ -1261,14 +1266,21 @@ C  /* Deck optmin */
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include "infpar.h"
 #include "gnrinf.h"
 #endif
+#include "infpar.h"
 #include "optinf.h"
 #include "cbiher.h"
-      DIMENSION WORK(LWORK)
       LOGICAL TSTIN
+
+      integer, parameter   :: IWOFF = 0
+      real(8), parameter   :: WRKDLM = -123456789.0D0
+      real(8), allocatable :: WORK(:)
+
       CALL QENTER('OPTMIN')
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in OPTMIN')
+
       IF (NEWTON) THEN
          CALL TITLER('2nd Order Geometry Optimization','>',110)
       ELSE
@@ -1309,8 +1321,7 @@ C     the program stops.
 C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
             CALL TITLER('Coordinates determined','#',103)
-            CALL QEXIT('OPTMIN')
-            RETURN
+            GO TO 9999
          END IF
       ELSE
          KATARR = IWOFF  + 2
@@ -1326,8 +1337,7 @@ C
       IF (VISUAL) THEN
          CALL VISULZ(WORK,LWORK,IWOFF,WRKDLM)
          CALL TITLER('End of visualization','#',103)
-         CALL QEXIT('OPTMIN')
-         RETURN
+         GO TO 9999
       END IF
 C
       KGRAD  = IWOFF + 1
@@ -1359,7 +1369,6 @@ C
 #if defined (SYS_CONVEX)  || defined (SYS_HAL) || defined (VAR_G77)
       IWOFF  = IWSAV
 #endif
-      CALL QEXIT('OPTMIN')
 #ifndef PRG_DIRAC
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
@@ -1369,6 +1378,12 @@ C
       END IF
 #endif      
 #endif 
+
+ 9999 CONTINUE
+
+      call dealloc(WORK)
+
+      CALL QEXIT('OPTMIN')
       RETURN
       END
 
@@ -1385,7 +1400,6 @@ C  /* Deck runopt */
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
-#include "gnrinf.h"
 #include "inftap.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1395,7 +1409,10 @@ C  /* Deck runopt */
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
-#if !defined (PRG_DIRAC)
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
@@ -1601,8 +1618,7 @@ C
      &        WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &        ACTIVE,EMOD,VECMOD)
       END IF
-      GECONV = 
-     &  MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+      GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
 C
 C     If there has been a completely failed step, the geometry has
 C     by default not converged.
@@ -1803,8 +1819,7 @@ C
      &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
-         GECONV = 
-     &   MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+         GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
@@ -2090,7 +2105,11 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "priunit.h"
 #include "trkoor.h"
 #include "maxaqn.h"
@@ -2099,8 +2118,8 @@ C
 #include "nuclei.h"
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
-      LOGICAL ILL_NUMBER ! external function
-      INTEGER  START
+      LOGICAL     ILL_NUMBER ! external function
+      INTEGER     START
 C
 C     We have to construct the updated geometry before printing it
 C
@@ -2306,6 +2325,7 @@ C
 #include "dcbgen.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
+#include "dcbham.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2386,13 +2406,31 @@ ckr#endif
 !        get a new grid at new geometry
          call reset_num_grid()
       end if
+
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+! Quit if symmetry or X2C are requested.
+        if (nbsym > 1) then
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle symmetry!')
+        end if
+        if (bss.or.x2c) then
+          call quit('Polarizable Continuum Model calculation not '//
+     & 'working with X2C Hamiltonian!')
+        end if
+        call init_pcm
+        call print_pcm 
+        print *, 'PCMSolver re-initialized.'
+      end if
+#endif
+
 C
 C     Geometry optimization for Dirac
 C
 C     Execute Dirac, and retrieve energy.
 C
       IF ( .NOT. EXSIR ) THEN
-         CALL EXEDIR(WORK(IWOFF+1),LWORK)
+         CALL EXEDIR()
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
          ELSE IF (DOCIM) THEN
@@ -2401,6 +2439,10 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
+#ifdef PCM_MODULE
+         else if (dirac_cfg_pcm) then
+            energy = dhferg
+#endif
          ELSE
             call quit('no wave function...')
          END IF
@@ -2447,6 +2489,9 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+#ifdef PRG_DIRAC
+      use dirac_cfg
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2460,17 +2505,17 @@ CTROND#include "pario.h"
 #include "abainf.h"
 #include "optinf.h"
 #ifndef PRG_DIRAC
-#  include "gnrinf.h"
-#  include "maxorb.h"
-#  include "infinp.h"
-#  include "inftap.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 #else
-#  include "dcbgrd.h"
-#  include "dcbham.h"
-#  include "dcbdhf.h"
-#  include "dcbgen.h"
-#  include "dcbmp2.h"
-#  include "dcbpsi.h"
+#include "dcbgrd.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbmp2.h"
+#include "dcbpsi.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2484,6 +2529,13 @@ C
 C
 C     Calculate gradient
 C
+#ifdef PCM_MODULE
+      if (dirac_cfg_pcm) then
+         write(lupri, *), 'Forcing numerical evaluation of molecular '// 
+     &   'gradient for PCM.'
+         dongrd = .true.
+      end if
+#endif
       IF(DONGRD) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE
@@ -2537,7 +2589,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "gnrinf.h"
 #include "optinf.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
@@ -2608,9 +2659,6 @@ C
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
-
-      print *,'yc-INIHES',iprint
-      iprint = 12
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2937,8 +2985,6 @@ C
       LOGICAL RESET, REJLST
 C
       CALL QENTER('UPDHES')
-      print *,'yc-UPDHES',iprint
-      iprint = 12
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient
@@ -4895,7 +4941,11 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
       LOGICAL TRU, FAL
@@ -5583,7 +5633,10 @@ C
          IF ((ABS(STEP(I)) .GT. TRSTRA) .AND. (.NOT. STPSCL))
      &        STEP(I) = SIGN(TRSTRA,STEP(I))
  30   CONTINUE
+      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
       IF (IPRINT .GE. IPRDBG) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &      'RF-Step length:', STPNRM
          IF (REDINT .OR. DELINT) THEN
             CALL HEADER('RF-step in internal coordinates',-1)
          ELSE
@@ -5591,23 +5644,18 @@ C
          END IF
          CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
       END IF
-      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
 C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
       IF ((STPNRM .GT. TRSTRA) .AND. STPSCL) THEN
          FAC = TRSTRA/STPNRM
-         IF (IPRINT .GE. IPRDBG) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Step too long, scaling step by factor:', FAC
-            WRITE(LUPRI,*)
-         END IF
          DO 32 I = 1, NCRD
             STEP(I) = STEP(I)*FAC
  32      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1)
             CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
@@ -5708,12 +5756,14 @@ C
          ELSE IF (ABS(GRDDIA(IMODE)) .LT. 1.0D-10) THEN
             IMODE = 1
          END IF
+         IF (IMODE .NE. 1) THEN
+            WRITE (LUPRI,'(A,I3,A)') ' INFO: Mode',IMODE,
+     &         ' is selected, because lower modes have zero gradient.'
+         END IF
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Mode ',IMODE,' will be partitioned ' //
-     &        'out and maximized.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A,I3,A/)') ' Mode',IMODE,
+     &      ' will be partitioned out and maximized.'
       END IF
 C
 C     The selected mode is placed at the very end.
@@ -6145,7 +6195,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "priunit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
@@ -6186,8 +6240,9 @@ C
          END IF
          CALL WLKMOL(COONEW)
 C
-C     Write updated files.
+C     Write updated files. For convenience we will also write an XYZ file
 C
+         CALL PNCXYZ(COONEW)
          CALL PNCMOL
 C
 C     Memory trap has to be reinitialized.
@@ -6390,7 +6445,11 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -6597,6 +6656,7 @@ C
 C
 C     Write updated geometry to files.
 C
+      CALL PNCXYZ(CORD)
       CALL PNCMOL
 C
 C     To mark that symmetry was broken, the index of the hessian is
@@ -6618,7 +6678,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       KEEPHE = .FALSE.
       RSTARR = .TRUE.
       ERGOLD =  ENERGY
@@ -6671,7 +6731,11 @@ C  /* Deck inipre */
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "inftap.h"
       CHARACTER TMPLIN*80
       DIMENSION WORK(LWORK)
@@ -6735,7 +6799,11 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -6836,7 +6904,11 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "taymol.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
@@ -6971,7 +7043,11 @@ C
 #include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       DIMENSION WORK(LWORK)
@@ -7233,6 +7309,7 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -7241,26 +7318,32 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       CHARACTER*12 FILENM
       LOGICAL :: ex
 C
-C     ADJUST FOR XYZ FILES
       INQUIRE(file='MOLECULE.MOL',exist=ex)
       IF (.NOT.(ex)) THEN
-        INQUIRE(file='MOLECULE.XYZ', exist=ex)
-        IF (ex) WRITE(LUPRI,*)
-     &       'ERROR: abaopt.F PNCMOL not adjusted for XYZ files.'
-        CALL QUIT('ERROR: abaopt.F(PNCMOL): MOLECULE FILE NOT FOUND.')
+         INQUIRE(file='MOLECULE.XYZ', exist=ex)
+         IF (ex) THEN
+            RETURN ! This is fine, users need not use the archaic MOL format
+         ELSE
+!           In this case we need to stop
+            CALL QUIT('MOLECULE FILE NOT FOUND.')
+         END IF
       END IF
 
       LUMOL = -1
-      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ',
+     &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUMOL)
-      DO 200 IMLINE = 1,NMLINE
+      DO IMLINE = 1,NMLINE
          WRITE(LUMOL,'(A)') MLINE(IMLINE)
- 200  CONTINUE
+      END DO
       CALL GPCLOSE(LUMOL,'KEEP')
       FILENM = 'XXXX_mol.inp'
       WRITE(FILENM(1:4),'(I4)') (ITRNMR + 1)
@@ -7292,7 +7375,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "taymol.h"
 #include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
@@ -7363,7 +7450,11 @@ C
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "taymol.h"
 #include "symmet.h"
       LOGICAL HESEXS
@@ -7516,12 +7607,12 @@ C
 #include "optinf.h"
 #include "infopt.h"
 #ifdef PRG_DIRAC
-#  include "dcbdhf.h"
-#  include "dcbgen.h"
-#  include "dcbmp2.h"
-#  include "dcbpsi.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbmp2.h"
+#include "dcbpsi.h"
 #else
-#  include "gnrinf.h"
+#include "gnrinf.h"
 #endif
 C
 #ifdef PRG_DIRAC
@@ -7660,3 +7751,59 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE PNCXYZ (UNIQUE_CORD)
+
+C     Write an XYZ file
+C
+      use codata
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+      DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
+#include "ibtfun.h"
+C
+!     XYZ files are written in Angstroms
+!
+      FAC = XTANG
+!
+!     Count the number of atoms
+!
+      NATOM = 0
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               NATOM = NATOM + 1
+            END IF
+         END DO
+      END DO
+
+!     Write the file
+
+      LUXYZ = 540
+      OPEN (LUXYZ,FILE='MOLECULE.XYZ',FORM='FORMATTED')
+      WRITE (LUXYZ,*) NATOM
+      NATOM = 0
+      WRITE (LUXYZ,*) " "
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               NATOM = NATOM + 1
+               DO I = 1, 3
+                 XYZ(I) =
+     &           FAC*PT(IBTAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
+               END DO 
+               WRITE (LUXYZ,'(A4,3F30.15)') NAMN(ICENT),XYZ
+            END IF
+         END DO
+      END DO
+      CLOSE (LUXYZ,STATUS='KEEP')
+
+      RETURN
+      END
+

@@ -19,21 +19,22 @@ What to do if CMake is not available or too old?
 
 It is your machine and you have Ubuntu or Debian::
 
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
+  $ sudo apt-get install cmake
 
-Similar mechanisms exist for other distributions or 
+On Fedora::
+
+  $ sudo yum install cmake
+
+Similar mechanisms exist for other distributions or
 operating systems. Please consult Google.
 
 If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
+1. Download the latest precompiled tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
-
-Now you can enjoy your new CMake instead of the old one::
-
-  $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
+3. Set correct PATH variable
 
 
 Basic installation using the setup script
@@ -83,7 +84,7 @@ Configure for sequential compilation using gfortran/gcc::
   $ ./setup --fc=gfortran --cc=gcc
 
 You get the idea. The configuration is normally pretty good at detecting math libraries
-automatically, provided you export proper paths, see :ref:`linking_math`.
+automatically, provided you export proper environment variables, see :ref:`linking_math`.
 
 
 Out of source compilation
@@ -156,68 +157,6 @@ You can do this instead::
   $ make
 
 
-.. _linking_math:
-
-Linking to external math libraries
-----------------------------------
-
-Typically you will want to link to external math (BLAS and LAPACK) libraries,
-for instance provided by MKL or Atlas.
-
-The CMake configuration script will automatically find them if you define MATH_ROOT::
-
-  $ export MATH_ROOT='/opt/intel/mkl'
-
-Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
-correct paths depending on the processor and the default integer type.  If the
-MKL libraries that you want to use reside in
-/opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
-
-  $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
-
-Then::
-
-  $ ./setup [--flags]                 # do not need to define --math
-  $ cd build
-  $ make
-
-Alternatively::
-
-  $ cd build
-  $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
-  $ make
-
-If automatic detection of math libraries fails for whatever reason, you can
-always call the libraries explicitly like here::
-
-  $ ./setup --explicit-libs="-L/path -lfoo -lbar"
-
-
-Running CMake using GUI
------------------------
-
-You prefer GUI? No problem. You can configure with GUI::
-
-  $ cd build
-  $ cmake ..
-  $ cmake-gui ..
-
-You may have to install cmake-gui for it, on debian/ubuntu::
-
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
-
-
-Running tests
--------------
-
-You can (and should) run the test suite with::
-
-  $ make test
-
-It is HIGHLY recommended to run the test set after you have compiled
-DIRAC to make sure that your binary correctly reproduces reference results.
-
-
 Make install
 ------------
 
@@ -242,17 +181,6 @@ We recommend to let $PATH point to the install directory::
 
 This way everything (binary, scripts, basis sets) will be at the right place
 under /install/path and $PATH should contain /install/path.
-
-
-How can I compile DIRAC for large molecules?
---------------------------------------------
-
-Set ENABLE_LARGE_MOLECULES to ON via ccmake::
-
-  $ cd build
-  $ ccmake ..
-
-Then (re)build the binary
 
 
 Compiling in verbose mode

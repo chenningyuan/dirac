@@ -4,7 +4,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops -w")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -static"
@@ -91,18 +91,18 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qsuppress=cmpmsg")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -q64"
+            "${CMAKE_Fortran_FLAGS} -qintsize=8 -q64"
             )
     endif()
 
     set_source_files_properties(${FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
-        "-qfree"
+        "-qfree=f90"
         )
     set_source_files_properties(${FIXED_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS

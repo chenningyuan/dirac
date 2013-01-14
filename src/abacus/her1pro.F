@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C  /* Deck pr1int */
@@ -43,7 +43,7 @@ C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
-      IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (WORD .EQ. 'HUCKEL') THEN
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
          DOINT(2,2) = .TRUE.
@@ -78,11 +78,11 @@ C
       END IF
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
-      CALL PR1IN1(WORK(KLAST),LWRK,WORK(KINTRP),WORK(KINTAD),
+      CALL PR1INT_1(WORK(KLAST),LWRK,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
      &            DOINT)
-      IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (WORD .EQ. 'HUCKEL') THEN
          KMAX   = NLRGSH
          NBASIS = NLARGE
          NPBAS  = NPLRG
@@ -97,8 +97,8 @@ C
       END IF
       RETURN
       END
-C  /* Deck pr1in1 */
-      SUBROUTINE PR1IN1(WORK,LWORK,INTREP,INTADR,LABINT,WORD,
+C  /* Deck pr1int_1 */
+      SUBROUTINE PR1INT_1(WORK,LWORK,INTREP,INTADR,LABINT,WORD,
      &                  IORDER,NPQUAD,TRIANG,PROPRI,IPRINT,
      &                  SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
 C
@@ -153,7 +153,7 @@ C
 C
       KATOM = 1
       KLAST = KATOM + NUCDEP
-      IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','PR1DIR',KLAST,LWORK)
+      IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT_1','PR1DIR',KLAST,LWORK)
       LWRK = LWORK - KLAST + 1
 C
 C     **************************
@@ -170,12 +170,12 @@ C     *******************************
 C
       IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,'(2(A,I5),5X,A,I15)')
-     &   '* PR1IN1: INTTYP = ',INTTYP,
+     &   '* PR1INT_1: INTTYP = ',INTTYP,
      &   ' NOPTYP= ',NOPTYP,' NELMNT= ',NELMNT
       ENDIF
       KSOINT = KLAST
       KLAST  = KSOINT + NOPTYP*NELMNT
-      IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','PR1IN2',KLAST,LWORK)
+      IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT_1','PR1IN2',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
       CALL PR1IN2(WORK(KLAST),LWRK,WORK(KSOINT),INTTYP,
      &          NOPTYP,INTREP,ANTI,SQUARE,INTADR,LABINT,TRIANG,
@@ -290,7 +290,6 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "huckel.h"
 #include "cbihr1.h"
 !                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
@@ -2238,27 +2237,6 @@ C
  96   continue
       go to 200
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -2282,11 +2260,12 @@ C
 C     ***** Number of basis functions *****
 C
       NBAST = 0
-      IF (ADDSTO .AND. INTTYP .EQ. 1) THEN
-         KMAXT = NSMLSH + NLRGSH
-      ELSE
+! TODO huckel_merge
+!     IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
+!        KMAXT = NSMLSH + NLRGSH
+!     ELSE
          KMAXT = KMAX
-      END IF
+!     END IF
       DO 400 ISHELL = 1, KMAXT
          DO 410 KB = 0,MAXREP
             IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
@@ -2400,7 +2379,7 @@ C
       IF (INTTYP .EQ. 12 .AND. .NOT.TRIANG) THEN
          KDIFF = KLAST
          KLAST = KDIFF + NELMNT
-         IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','TST',KLAST,LWORK)
+         IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT_1','TST',KLAST,LWORK)
          CALL DSOTST(SOINT,WORK(KDIFF),NBAST,NELMNT,NOPTYP,
      &               LABINT,DOATOM,NPQUAD,INTADR,IPRINT)
       END IF
@@ -2511,7 +2490,7 @@ C
 C     ... INTTYP .le. 0 is special flag for properties
 C         to get list of atoms selected with .SELECT.
 C         This is used in prp/pamprp.F; the other 
-C         atoms will still be calculated in PR1IN1
+C         atoms will still be calculated in PR1INT_1
 C         but will not be used in response. /Sep04 hjaaj
 C
 #else
@@ -4232,7 +4211,7 @@ C
       RETURN
       END
 C  /* Deck effdentyp */
-      SUBROUTINE EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

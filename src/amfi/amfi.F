@@ -190,10 +190,11 @@ cbs   read the input
      *ifinite,EXP_FIN,DOEXIT) 
 
 CMI   IF (EXAMF.and.amfi_verbose) THEN
-      IF (EXAMF.and.IPR_AMFI.GE.1) THEN
-       WRITE(LUPRI,*)
-     & 'Leaving AMFI, because AOPROPER_MNF.xx file exist!'
-       RETURN
+      IF(EXAMF)THEN
+        WRITE(LUPRI,*)
+     &  ' skip explicit AMFI - reading AMFI integrals from file'//
+     &  ' AOPROPER_MNF.xxx!'
+        RETURN
       ENDIF
 
 CMI    .... when AOPROPER file exit, leave the AMFI !

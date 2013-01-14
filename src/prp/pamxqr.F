@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
       SUBROUTINE XQRINP(WORD,RESET,WORK,LWRK)
@@ -853,6 +853,8 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxpr.h"
@@ -948,7 +950,9 @@ C
          CALL MEMGET('REAL',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
 C
          CALL PAMGRD(INDPRP,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &        JOPSY,WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
+     &        JOPSY,WORK(KZCONF),
+     &        get_orbital_rotation_indices_pp(),
+     &        get_orbital_rotation_indices_pn(),
      &        NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXQR)
 C
 C     Check norm of property gradient, skip if below threshold and
@@ -1903,6 +1907,8 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1933,8 +1939,10 @@ C     Scatter the response vector into matrix using index for RPA.
 C
       CALL DZERO(ZYMAT,N2ORBXQ)
 C
-      CALL VEC2MAT(ZYMAT,VECEE,NZYEE,NZEE,WORK(KZXOPE))
-      CALL VEC2MAT(ZYMAT,VECEP,NZYEP,NZEP,WORK(KZXOPP))
+      CALL VEC2MAT(ZYMAT,VECEE,NZYEE,NZEE,
+     &             get_orbital_rotation_indices_pp())
+      CALL VEC2MAT(ZYMAT,VECEP,NZYEP,NZEP,
+     &             get_orbital_rotation_indices_pn())
 C
 C     Print section
 C
@@ -2130,6 +2138,8 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
+      use orbital_rotation_indices
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -2158,8 +2168,8 @@ C
 C
 C     Scatter the operator into the gradient using index.
 C
-      CALL OPTOGR(OP,GEE,NZEE,WORK(KZXOPE))
-      CALL OPTOGR(OP,GEP,NZEP,WORK(KZXOPP))
+      CALL OPTOGR(OP,GEE,NZEE,get_orbital_rotation_indices_pp())
+      CALL OPTOGR(OP,GEP,NZEP,get_orbital_rotation_indices_pn())
 C
 C     Print section
 C

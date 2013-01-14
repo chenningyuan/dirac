@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -57,6 +57,9 @@ C
       character (len=11)    :: orb_sym_fn
       character (len= 4)    :: mynum_str
 C
+!
+      is_ana_mcscf = .false.
+
 C     set "I/O node master" + "shared memory node master"
       N_MASTER    = 0
       N_MASTER_SM = 0
@@ -1656,6 +1659,7 @@ C     Write current CI vector(s) to file - debug version
 !       internally we copy the 
 !       lhs --> LUSC61
 !       rhs --> LUSC62
+        is_ana_mcscf = .true.
         print *, 'read mcscf vector from file KRMCOLD (unit 59)...'
         CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL REAKRMC(59,'CREF    ',WORK(KRSCR),NZCONF*MZ)
@@ -1891,7 +1895,7 @@ C***********************************************************************
 *
       NTESTL = 00
 CSK      IPRNT = 000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 *
       if (NTEST.ge.5) then
 *   Print section:
@@ -2013,7 +2017,7 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCIAREL_NODE(WORK,LWORK)
+      SUBROUTINE LUCIAREL_NODE()
 C
 C     KRMC-LUCIAREL driver routine for the slaves
 C
@@ -2024,12 +2028,12 @@ C
 C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      IMPLICIT REAL*8(A-H,O-Z)
+      use memory_allocator
 C
+#include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION WORK(LWORK)
       LOGICAL LUEND
       CHARACTER LUCITABASF_REL*12, LUCIFILN_REL*16
       CHARACTER CIRUN*6
@@ -2042,6 +2046,11 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
+
+      real(8), allocatable :: WORK(:)
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in LUCIAREL_NODE')
+
 #include "memint.h"
 C
       KFRSAV = KFREE
@@ -2282,6 +2291,7 @@ C     LUCIAREL run is finished for the slaves ...
 
       lupri = lupri_save
 C
+      call dealloc(WORK)
       END
 #endif    /* ifdef VAR_MPI2 */
 C --- end of krmcluci.F ---

@@ -2,9 +2,8 @@ module openrsp_interface_1el
 
    use dirac_interface
    use openrsp_cfg
-   use matrix_defop
+   use matrix_defop_old
    use memory_allocator
-   use character_processing
 
    implicit none
 
@@ -99,7 +98,8 @@ contains
          call add_class('S1MAGR ', '+00'//ss)
          call add_class('S2MKET ', '+00'//ss)
          call add_class('S2MMIX ', '+00'//ss)
-         call add_class('RDSUSLL', '00+0')
+         !call add_class('RDSUSLL', '00+0')
+         call add_class('RDSUSLL', '0++0')
          call add_class('DSUSNOL', '+00'//ss)
          if (need_1el_f) then
             call add_class('CM1    ', '+00'//ss)
@@ -505,8 +505,9 @@ contains
                               (/s/))
          end do
 
-         blocks = '00+0'
-         f = -2.0d0*cval
+         !blocks = '00+0'
+         blocks = '0++0'
+         f = -1.0d0*cval
 
          call add_operator('XXrdsusll       ',                      &
                            blocks,                                  &
@@ -996,6 +997,25 @@ contains
                    // op_name(1:len_trim(op_name)) &
                    // ' not found')
       end if
+
+   end function
+
+   function prefix_zeros(i, n)
+
+!     prefix_zeros(137, 6) returns '000137'
+
+!     --------------------------------------------------------------------------
+      integer,      intent(in) :: i
+      integer,      intent(in) :: n
+      character(n)             :: prefix_zeros
+!     --------------------------------------------------------------------------
+      integer                  :: k
+      character(1)             :: c09(0:9) = (/'0','1','2','3','4','5','6','7','8','9'/)
+!     --------------------------------------------------------------------------
+
+      do k = 1, n
+         prefix_zeros(n-k+1:n-k+1) = c09(mod(i, 10**k)/10**(k-1))
+      end do
 
    end function
 

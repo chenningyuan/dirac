@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -1822,7 +1822,7 @@ C
      &               global_communicator)
       call interface_mpi_bcast_r1_work_f77(T2,NDIMT2*RCW,MASTER,
      &               global_communicator)
-      call interface_mpi_BCAST(RMS,1,MASTER,
+      call interface_mpi_bcast_r1_work_f77(RMS,1,MASTER,
      &               global_communicator)
 #endif
       RETURN
@@ -2239,7 +2239,9 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+                  WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                  CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
                   IF (CARITH) THEN
                      CT1(AI) = A0
@@ -2295,6 +2297,8 @@ C                 Check for small denominators, see comment above.
                         ATVAL = ABS(T2(ABIJ))
                      ENDIF
                      IF (ATVAL.GT.DHOLU) THEN
+             WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+             WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
                         CALL QUIT ('Zero or negative HOMO-LUMO gap')
                      ELSE
                        IF (CARITH) THEN

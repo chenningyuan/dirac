@@ -38,7 +38,7 @@
       CALL MEMGET('INTE',KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
 *. Number of terms to be printed
       IF(IPRNCIV.EQ.0) THEN
         THRES = 0.02
@@ -54,15 +54,14 @@ C     LENGTH_SOX = NSPOBEX_TP_CC*10
       CALL MEMGET('INTE',KNCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KWCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
 *. Number and weight of orbital excitation type
-      LENGTH_OX = NOBEX_TP*10
+      LENGTH_OX = (NOBEX_TP+1)*10
       CALL MEMGET('INTE',KNCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KWCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
       IUSLAB = 0
 *
 *. Occupation of strings of given sym and supergroup
       CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),
-C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
-     &            NSPOBEX_TPE,NOBEX_TP,ISM,
+     &            NSPOBEX_TPE,NOBEX_TP+1,ISM,
      &            THRES,MAXTRM,
      &            WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
      &            WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
@@ -232,8 +231,8 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           NSTR_TOT =NSTR_AB*NSTR_AA*NSTR_CB*NSTR_CA
           IF(NSTR_TOT.GE.1) THEN
-          print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
-     &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+C         print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+C    &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
           END IF
           DO I_AB = 1, NSTR_AB
              I_AA_MIN = 1
@@ -259,8 +258,8 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
 *             ^ End of loop over powers of ten
               END IF
 *             ^ end if we are in loop 1
-C             IF( XMAX .GE. ABS(T(IT)) .AND.
-C    &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
+              IF( XMAX .GE. ABS(T(IT)) .AND.
+     &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
                 ITRM = ITRM + 1
                 IIT = IIT + 1
                 TTNORM = TTNORM + T(IT) ** 2
@@ -269,7 +268,7 @@ C    &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
      &          '                 =================== '
                 WRITE(6,*)
 
-       print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
+C      print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
                 WRITE(6,'(A,2I8,2X,E14.8)')
      &          '  Type, number, size of amplitude : ',
      &          ITSS, IT, T(IT)
@@ -287,7 +286,7 @@ C               IF(IUSLAB.EQ.0) THEN
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
 C               END IF
-C             END IF
+              END IF
 *             ^ End if could and should be printed
              END DO
 *            ^ End of loop over alpha creation strings

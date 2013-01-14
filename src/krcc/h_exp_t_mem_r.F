@@ -1,10 +1,22 @@
-      SUBROUTINE EXP_MT_H_EXP_TC_MEM_KRCC(WORK,KFREE,LFREE)
+      SUBROUTINE EXP_MT_H_EXP_TC_MEM_KRCC(IWAY,WORK,KFREE,LFREE)
+*
+* A lot has to be done to allocate arrays of correct length
+*
+* Not sure if this should be done here or inside the routines
+* I guess that depends on size
 *
 * set up scratch space for direct calculation of H EXP T
 *
 * Pointers to scratch are returned in CC_SCR
 *
 *. Jeppe Olsen, May 2000
+*
+*
+* May want to move this to opct1234M_rel and then allocate for the type
+* of operator that is being used. That should give the correct
+* dimensions unlike now!
+*                               
+* Lasse 2012
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -20,10 +32,14 @@
 *
       DIMENSION WORK(*)
 *
-* Setting a default batch length. Increase or decrease according to
-* memory available and speed
+* Allocate the temp arrays.
+
+      IF(IWAY.EQ.1) THEN
 *
-      LCCB = 15000
+* Setting a default batch length. Increase or decrease according to
+* memory available and speed. Moved to input and default is set there!
+*
+C     LCCB = 130
       WRITE(6,*) ' Batch lenght LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 
@@ -53,13 +69,14 @@ C     CALL MEMMAN(KCCVEC1,N_CC_AMPP1,'ADDL  ',2,'CCVEC1')
 C     KCCVEC1 = 0
 C     KCCVEC2 = 0
 *.3 : Maps for T1T2 => T12 for individual strings types 
+* This mapping should also include the intermediates since we can with
+* roughly equal number of virtuals and occupied (In a GAS) have that
+* this mapping is larger for intermediates
       CALL DIM_T1T2_TO_T12_MAP_REL(LEN_T1T2_STRING,LENT_T1T2_TCC,
      &                             WORK,KFREE,LFREE)
-      DO I=1,1000
-      print*,'temporary dimensioning of LEN_T1T2_STRING'
-      END DO
+C     CALL DIM_T1T2_OR_T1M2_TO_T12_OR_M12_MAP_REL
 C     LEN = LEN_T1T2_STRING
-      LEN = 10*LEN_T1T2_STRING
+      LEN = 40*LEN_T1T2_STRING
       print*,'LEN_T1T2_STRING',LEN_T1T2_STRING
 *. Arrays for holding elementary operators times strings
 *
@@ -97,6 +114,7 @@ C
       NBEL = NELFTP(IBTP)
       LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB + NOCOB*NOCOB
       LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
+      print*,'LZSCR,LZ',LZSCR,LZ
       CALL MEMGET('INTE',KLZ,LZ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLZSCR,LZSCR,WORK,KFREE,LFREE)
 *. String occupations for given CAAB, all symmetris
@@ -107,18 +125,22 @@ C
       CALL MEMGET('INTE',KLSTOCC3,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLSTOCC4,LEN,WORK,KFREE,LFREE)
       print*,'KLSTOCC1,KLSTOCC2',KLSTOCC1,KLSTOCC2
-*. Reorder array for given CAAB, all symmetries 
-      CALL MEMGET('INTE',KLSTREO,MX_ST_TSOSO_MX*NSMST,WORK,KFREE,LFREE)
+*. Reorder array for given CAAB, all symmetries
+      MLSTREO = MX_ST_TSOSO_MX*NSMST*4 
+      CALL MEMGET('INTE',KLSTREO,MLSTREO,WORK,KFREE,LFREE)
+      print*,'KLSTREO,MLSTREO',KLSTREO,MLSTREO
 *. Intermediate blocks, (LCCB,LCCB)
 *. For the moment 
       WRITE(6,*) ' SET DIMENSION FROM LCCB '
       LB = LCCB
       LEN = LCCB**2
-      LEN3 = LCCB**3
+      print*,'LCCB,LEN',LCCB,LEN
+C This is correct Lasse 2012
       CALL MEMGET('REAL',KLTSCR1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KLTSCR2,LEN,WORK,KFREE,LFREE)
 C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
       print*,'LEN,LCCB',LEN,LCCB
+      print*,'KLTSCR1,KLTSCR2',KLTSCR1,KLTSCR2
 *
 *and for a batch of Hamiltonian
       LOPSCR = LCCB*LCCB*LB*10
@@ -129,8 +151,12 @@ C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
 *. a block that is too large ...
 C will now instead calculate it from largest block of integrals.
 C Lasse
+C This may not be true for the intermediates!!!
+C Should move this allocation
       CALL FIND_LARGEST_DIFF_FOR_NEIGHBOURS(LOPSCR,IOFFINTTYPE,
      &                                      NSPOBEX_TP)
+      LOPSCR = LOPSCR*80
+      print*,'LOPSCR',LOPSCR
       CALL MEMGET('REAL',KLOPSCR,LOPSCR,WORK,KFREE,LFREE)
 *. Number and symmetries of each substring for 6 complete T-blocks 
 *. Largest number of strings in intermediate arrays
@@ -158,6 +184,10 @@ C     LEN = 4*MXTSOB_P**2 * MXTSOB_H**2
       LEN = 4*NGAS
       CALL MEMGET('INTE',KLOCK1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLOCL1,LEN,WORK,KFREE,LFREE)
+*
+      ELSE
+      CALL MEMREL('TEMP',WORK,KIX1_CA,KIX1_CA,KFREE,LFREE)
+      END IF
 *
       RETURN
       END

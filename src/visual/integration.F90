@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,21 +16,19 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module visual_integrate
 
    use dirac_interface
-   use matrix_defop
+   use matrix_defop_old
    use memory_allocator
    use visual_cfg
    use visual_in_point
    use interface_grid
    use file_units
-#ifdef MOD_UNRELEASED
    use visual_london
-#endif
 
   public visual_integration
 
@@ -134,14 +132,14 @@ contains
 
          write(lupri, *)
          write(lupri, '(6x, a)')          'plane is spanned by 3 points:'
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_2d_integration_p_origin
          write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_2d_integration_p_right
          write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_2d_integration_p_top
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_2d_integration_nr_right
          write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_2d_integration_nr_top
-         write(lupri, *)                  
+         write(lupri, *)
          write(lupri, '(6x, a, i22)')     'order', visual_cfg_2d_integration_order
          write(lupri, *)
          write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'

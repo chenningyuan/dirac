@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -1357,11 +1357,15 @@ C
 !radovan: these memgets are easily called 25 million times
 !         if somebody modifies the code
 !         please allocate buffers further upstream
-      CALL MEMGET('REAL',KPSO  ,NPMAT               ,WORK,KFREE,LFREE) ! 1
-      CALL MEMGET('REAL',KPSA  ,NPMATA              ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNPCOA,2*NSETA*(NODCAB + 1),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNPCOB,2*NSETB*(NODCAB + 1),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNPCOC,2*NSETC*(NODCCD + 1),WORK,KFREE,LFREE)
+!miro: I have replaced some of them with MEMGET2 to track response-magnetizability bug ifort-parallel
+      CALL MEMGET2('REAL','KPSO',KPSO,NPMAT,WORK,KFREE,LFREE) ! 1
+      CALL MEMGET2('REAL','KPSA',KPSA,NPMATA,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KNPCOA',KNPCOA,2*NSETA*(NODCAB + 1),
+     &              WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KNPCOB',KNPCOB,2*NSETB*(NODCAB + 1),
+     &              WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KNPCOC',KNPCOC,2*NSETC*(NODCCD + 1),
+     &              WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNPCOD,2*NSETD*(NODCCD + 1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJSTRA,NSETA               ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJSTRB,NSETB               ,WORK,KFREE,LFREE)
@@ -1438,6 +1442,7 @@ C
      &            DINTSKP,IREPDM,INDX,INDXAB,GENCNT)
       LWTOT  = LWTOT - KFREE + 1
  999  CONTINUE
+      ! miro: an error occurs here for mpi=2,ifort optimized !
       CALL MEMREL('TWOODS',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOODS')
       RETURN
@@ -1608,7 +1613,7 @@ C
          LWTOT  = LWTOT + KFREE - 1
          MWTOT  = MAX(MWTOT,LWTOT)
  
-         CALL MEMCHK('TWOOD1 axsdgd',WORK,1) ! mi check
+         CALL MEMCHK('TWOOD1-SYMLOP',WORK,1) ! mi check
 
          CALL SYMLOP(WORK(KSOINT),FMAT,DMAT,NDMAT,GMAT,PSO,PSA,
      &               WORK(KFREE),LFREE,WORK(KCOFAB),WORK(KCOFCD),COORAB,

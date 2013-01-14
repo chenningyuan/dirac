@@ -1,167 +1,122 @@
 
 
-Welcome
-=======
-
-.. toctree::
-   :maxdepth: 1
-
-   welcome/features.rst
-   welcome/citing.rst
-
-
-Installing DIRAC
+Setting up DIRAC
 ================
 
-.. toctree::
-   :maxdepth: 1
+* **Installation:**
+  :doc:`Supported platforms <installation/platforms>` |
+  :doc:`Linux, Unix, Mac <installation/installation>` |
+  :doc:`Windows <installation/windows>`
 
-   installation/licensing.rst
-   installation/platforms.rst
-   installation/installation.rst
-   installation/windows.rst
-   installation/tests.rst
+* **Math libraries:**
+  :doc:`Detection and linking <installation/math>` |
+  :doc:`MKL environment variables <installation/mkl>`
 
+* **MPI:**
+  :doc:`Forwarding environment variables <installation/mpi>`
 
-Installing and configuring libraries used by DIRAC
-==================================================
+* **64-bit integer support:**
+  :doc:`Do I need it? <installation/int64/faq>` |
+  :doc:`MPI <installation/int64/mpi>` |
+  :doc:`Math libraries <installation/int64/math>`
 
-.. toctree::
-   :maxdepth: 1
+* **Testing:**
+  :doc:`Running the test set <installation/testing>`
 
-   installation/math_int64.rst
-   installation/mpi_int64.rst
-   installation/mkl.rst
-
-
-Basis sets
-==========
-
-.. toctree::
-   :maxdepth: 1
-
-   basis_sets/basis.rst
-   basis_sets/howto_uncontract.rst
+* **Example installations and run scripts:**
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
 First steps in DIRAC territory
 ==============================
 
-.. toctree::
-   :maxdepth: 1
+* **Getting started:**
+  :doc:`First calculation <tutorials/getting_started>`
 
-   tutorials/getting_started.rst
-   tutorials/reproducing_nr_results.rst
+* **Molecule input formats:**
+  :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
+  :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
 
+* **Basis sets:**
+  :doc:`General information <molecule_and_basis/basis>` |
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
-Restarting and multi-step jobs
-==============================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/restart.rst
-
-
-.. warning::
-
-   Everything below this line needs massive rework
-   (outdated, double, incomplete, broken links, wrong place, simply wrong, ...)
+* **Troubleshooting:**
+  :doc:`Known problems <getting_help/known_problems>` |
+  :doc:`Memory problems <getting_help/memory>`
 
 
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/faq.rst
-   tutorials/general_scf_sample.rst
-
-Menu of 2- and 4-component Hamiltonians
-=======================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/ham_sample.rst
-   tutorials/ham2c.rst
-   tutorials/amfi.rst
-
-
-DFT and TDDFT
-=============
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/tddft.rst
-   tutorials/bsse.rst
-   tutorials/dft_cam.rst
-
-
-Calculating the properties
-============================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/prop_sample.rst
-
-
-Correlated calculations
+Tutorials and walkthrus
 =======================
 
+* **SCF convergence:**
+  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
+
+* **Restarting and multi-step jobs:**
+  :doc:`SCF <tutorials/restart/scf>` |
+  :doc:`X2C <tutorials/restart/x2c>` |
+  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
+
+* **2-component Hamiltonians:**
+  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
+
+* **Relativistic effective core potentials:**
+  :doc:`Getting started <tutorials/ecp/first>`
+
+* **Nonrelativistic limit:**
+  :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
+
+* **DFT:**
+  :doc:`TDDFT <tutorials/dft/tddft>` |
+  :doc:`BSSE <tutorials/dft/bsse>` |
+  :doc:`CAM functional <tutorials/dft/cam>` |
+  :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
+
+* **Long-range WFT/short-range DFT:**
+  :doc:`General <tutorials/srDFT/general>`
+
+* **Property calculations:**
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
+
+* **Visualization:**
+  :doc:`General overview <tutorials/visual/general/tutorial>` |
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
+
+* **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
+  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
+  :doc:`Np atom <tutorials/open_shell_scf/np>`
+
+* **ADC:**
+  :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
+  :doc:`Atom <tutorials/reladc/atom>`
+
+* **ECP:**
+  :doc:`First calculation <tutorials/ecp/first>` |
+  :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **Outdated tutorials (need update):**
+  :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
+  :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
+  :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
+  :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
+  :doc:`MP2 <tutorials/dusty_attic/mp2>` |
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
+  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
+
+
+Exercises
+=========
+
 .. toctree::
    :maxdepth: 1
 
-   tutorials/mp2cal_sample.rst
-   tutorials/moltra_sample.rst
-   tutorials/lucita_sample.rst
-   tutorials/relccsd_sample.rst
-   tutorials/reladc_sample.rst
-
-
-Modeling the solvent
-====================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/pcm.rst
-
-
-How to tackle open-shell systems
-================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/dirrci_sample.rst
-   tutorials/goscip_sample.rst
-   tutorials/open_shells.rst
-   tutorials/niobium.rst
-   tutorials/scf_conv.rst
-
-
-Visualization & Analysis
-========================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/visualize.rst
-   tutorials/plotting_orbital_densities.rst
-   tutorials/magn_curr_den.rst
-   tutorials/analyze_sample.rst
-
-
-Getting help
-============
-
-.. toctree::
-   :maxdepth: 1
-
-   getting_help/memory.rst
-   getting_help/known_problems.rst
-   getting_help/known_bugs.rst
+   exercises/index.rst
 
 
 Reference manual
@@ -170,78 +125,38 @@ Reference manual
 .. toctree::
    :maxdepth: 1
 
-   reference_manual/ref_man_old.rst
-
-   reference_manual/dirac.rst
-   reference_manual/molecule.rst
-   reference_manual/basis_ref.rst
-   reference_manual/general.rst
-   reference_manual/integrals.rst
-   reference_manual/optimize.rst
-   reference_manual/molecule.rst
-   reference_manual/hamiltonian.rst
-   reference_manual/wavefunction.rst
-   reference_manual/scf.rst
-   reference_manual/resolve.rst
-   reference_manual/goscip.rst
-   reference_manual/mcscf.rst
-   reference_manual/analyze.rst
-   reference_manual/properties.rst
-   reference_manual/mp2cal.rst
-   reference_manual/mvocal.rst
-   reference_manual/moltra.rst
-   reference_manual/dirrci.rst
-   reference_manual/relccsd.rst
-   reference_manual/reladc.rst
-   reference_manual/krci.rst
-   reference_manual/lucita.rst
-   reference_manual/luciarel.rst
-
-   reference_manual/grid.rst
-
-   reference_manual/oneel_oper.rst
-   reference_manual/orb_strings.rst
+   manual/index.rst
 
 
-Relativistic community
-======================
+Developers
+==========
 
-.. toctree::
-   :maxdepth: 1
+* **Releasing:**
+  :doc:`Release preparation <programmers/release_preparation>` |
+  :doc:`Beta testing <programmers/beta_testing>` |
+  :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
-   community/forum.rst
-   community/developers.rst
-   community/medal.rst
-   community/reading.rst
+* **Programming:**
+  :doc:`Programmers' manual <programmers/programmers_manual>` |
+  :doc:`Input parsing <programmers/input_reading>` |
+  :doc:`Git submodules <programmers/external_projects>` |
+  :doc:`Nightly tests <programmers/cdash>` |
+  :doc:`Profiling <programmers/profiling>` |
+  :doc:`Debugging <programmers/debugging>` |
+  :doc:`Further development <programmers/further_development>` 
 
-
-For DIRAC programmers
-=====================
-
-.. toctree::
-   :maxdepth: 1
-
-   programmers/documentation_howto.rst
-   programmers/testing.rst
-   programmers/cdash.rst
-   programmers/programmers_manual.rst
-   programmers/xml.rst
-   programmers/external_projects.rst
-   programmers/profiling.rst
-   programmers/debugging.rst
-   programmers/static_linking.rst
-   programmers/int8.rst
-   programmers/grasp.rst
-   programmers/screening.rst
-   programmers/dfcoef.rst
-   programmers/standalones.rst
-   programmers/shell_prog.rst
+* **Notes:**
+  :doc:`Standalone programs <programmers/standalones>` |
+  :doc:`Shell programming <programmers/shell_prog>` |
+  :doc:`DFCOEF <programmers/dfcoef>` |
+  :doc:`Screening <programmers/screening>` |
+  :doc:`64bit integers <programmers/int8>` |
+  :doc:`XML <programmers/xml>` |
+  :doc:`Static linking <programmers/static_linking>` |
+  :doc:`How this documentation works <programmers/documentation_howto>`
 
 
 Bibliography
 ============
 
-.. toctree::
-   :maxdepth: 1
-   
-   bib.rst
+* :doc:`References <references>`

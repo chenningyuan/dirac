@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -26,7 +26,7 @@ C*****************************************************************************
 C
 C     Input section for magnetic properties:
 C --------------------------------------------
-C  NMR shielding, magnetizabilities with/ without London atomic orbitals ...
+C  NMR shielding, magnetizabilities with/without London atomic orbitals 
 C 
 C     Written by T.Enevoldsen - Nov 1997
 C
@@ -41,6 +41,7 @@ C*****************************************************************************
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "nuclei.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -49,7 +50,8 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 15)
-      LOGICAL SET, NEWDEF, RESET, GORG, LBIT, USECM, MODRDSUSLL
+      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
+      LOGICAL :: DOEPRN_SET, INTNMR_SET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
@@ -92,27 +94,22 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOONEI = .FALSE.
       GORG   = .FALSE.
       USECM  = .FALSE.
-      IF (LEVYLE) THEN
-       RDSUSLLMOD = .TRUE.
-      ELSE
-       RDSUSLLMOD = .FALSE.
-      ENDIF
-      MODRDSUSLL = .FALSE.
+      RDSUSLLMOD = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
-!        DOEPRN = .FALSE.
+!       DOEPRN = .FALSE.
 !     else
 !        DOEPRN = .TRUE.
 !     end if
 cmi: restore to fix tests, later to be refined throughout the code
        DOEPRN=.FALSE.
+       DOEPRN_SET=.FALSE.
 
-C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
-C  so it has its own default value
-C of all 3 integral classed (LL+LS+SS)
-!miro TODO: take the integral default from HAMINP
-      INTNMR = 7  
+! The INTNMR parameter here is read before INTXLR (in XLRINP) 
+! assign top level default value from dcbgen.h instead of previous INTNMR = 7
+      INTNMR = INTGEN
+      INTNMR_SET = .FALSE.
 C
 C     Process input 
 C     =========================
@@ -180,6 +177,7 @@ C         for the two-electron London contibution g(B)_mnpq
      & 'NMRINP: Error in reading ILLINT,ISLINT,ISSINT!')
                  ENDIF
                  INTNMR = ILLINT + 2*ISLINT + 4*ISSINT
+                 INTNMR_SET = .TRUE.
                GO TO 100
     6          CONTINUE
 C  ... do not calculate two-electron London contribution, g(B)_mnpq
@@ -194,6 +192,7 @@ C      for the property gradient H(B)
 C  ...  do summations in reorthonormalization terms
 C  over both electronic and positronic states
                DOEPRN = .TRUE.
+               DOEPRN_SET = .TRUE.
                GO TO 100
     9          CONTINUE
 C ... NOEPRN: deactivate the DOEPRN keyword which is by default set to true
@@ -201,17 +200,18 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
                DOEPRN = .FALSE.
                GO TO 100
    10          CONTINUE
-C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
+C&&&& .LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
                GO TO 100
    11          CONTINUE
-C&&&& USECM: use center of mass as a default gauge origin
+C&&&& .USECM: use center of mass as a default gauge origin
                USECM = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
+C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDSUSLL term
+!miro: this is required to reproduce Dalton nonrelativistic results with the Levy-Leblond
+! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
-               MODRDSUSLL = .TRUE.
                GO TO 100
 
 !              .GO_ANG
@@ -245,10 +245,21 @@ C     Print section
 C     =============
 C
 C ... header:
-C     CALL PRSYMB(LUPRI,'=',75,0)
-C     WRITE(LUPRI,'(A)')
-C    &   ' NMRINP: Magnetic properties'
-C     CALL PRSYMB(LUPRI,'=',75,0)
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+      IF (MSUSCP.AND.LONDON) THEN
+#if !defined MOD_MAGNETIZ
+        WRITE(LUPRI,'(2X,A)') 
+     &'You have asked for magnetizabilities wih London atomic orbitals'
+        WRITE(LUPRI,'(2X,A)') 
+     &'-this is not supported in the release version of DIRAC.'
+        CALL QUIT(
+     &'Magnetizabilities wih London atomic orbitals are not supported'//
+     & ' in the DIRAC release version !')
+#endif
+      ENDIF
 
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
@@ -260,10 +271,6 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A)')
-     &   'NMRINP: Input for London magnetic field gradient'//
-     &   '(NMR shieldings, magnetizabilities).'
-         CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
      &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
 
@@ -272,7 +279,6 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
      &     'WARNING: User defined gauge '//
      &     'may give wrong results when using symmetry !'   
          end if
-
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ELSE
@@ -316,18 +322,21 @@ C ... call the routine in abacus/hergp.F
 
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
-         WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
-     &'Hamiltonian include only LL integrals for the dg(1,2)/dB terms!'
+         IF (INTNMR_SET) THEN
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
+     &     'Hamiltonian only LL integrals '//
+     &     ' for the dg(1,2)/dB terms are needed !'
+         ENDIF
        ENDIF
 
        IF (.NOT.DOEPRN) THEN
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over '//
-     & 'electronic shells'
+     & 'electronic shells.'
        ELSE
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over both '//
-     & 'positronic and electronic shells '
+     & 'positronic and electronic shells. '
        ENDIF
 
        IF (SYMCON) THEN
@@ -340,7 +349,8 @@ C ... call the routine in abacus/hergp.F
 
        IF (NOTWOL) THEN
          WRITE(LUPRI,'(1X,A)')
-     & ': No two-electron London contribution to magn.prop. gradient!'
+     & ': No two-electron London contribution '//
+     & '  to magnetic property gradient!'
        ELSE
          WRITE(LUPRI,'(1X,A)')
      & ': Include London magnet.prop.grad.contributions from '//
@@ -348,28 +358,29 @@ C ... call the routine in abacus/hergp.F
          IF(LBIT(INTNMR,1)) WRITE(LUPRI,'(6X,A)') '- LL-integrals'
          IF(LBIT(INTNMR,2)) WRITE(LUPRI,'(6X,A)') '- SL-integrals'
          IF(LBIT(INTNMR,3)) WRITE(LUPRI,'(6X,A)') '- SS-integrals'
+         IF (.NOT.INTNMR_SET) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &   "--> These are default values from the Hamiltonian input."
+         ELSE
+           WRITE(LUPRI,"(2X,A)")
+     &   "--> These are accepted values from user's .INTFLG input."
+         ENDIF
+       ENDIF
        ENDIF
 
 C =========================================================================
 CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
        IF (MSUSCP) THEN
-        IF (LEVYLE.AND.MODRDSUSLL) THEN
-         WRITE(LUPRI,'(1X,A)') 
-     &  '...Though the Levy-Lebl mode the full form of the RDSUSLL '//
-     &  'operator used to achieve the compatibility with rel. calcul.'
-          RDSUSLLMOD = .FALSE.
-        ELSE
           IF (RDSUSLLMOD) THEN
             WRITE(LUPRI,'(1X,A)') 
-     &  '...SL block only for the RDSUSLL operator used to achieve'//
-     &  ' the non-relativistic limit of the magnetizability !'
+     &'WARNING: Used the LS block of the RDSUSLL operator'//
+     &' with factor -2 to achieve '//
+     &'the Dalton nonrelativistic limit of the magnetizability !'
           ELSE
             WRITE(LUPRI,'(1X,A)') 
-     &  '...Full relativistic form of the RDSUSLL operator used!'
+     &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
-        ENDIF
-       ENDIF
       ELSE 
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
@@ -760,7 +771,7 @@ C***********************************************************************
 C
 C   PURPOSE:
 C ==========
-C  Get the total one-electron magnetic field property gradient dh~(B)/dB
+C  Get the total one-electron magnetic field property gradient dh_{D}(B)/dB
 C  in MO basis when using London orbitals and write it to the DA file ONELON.
 C
 C  Expression:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
@@ -821,7 +832,7 @@ C Allocate memory for storing components of dh(B)/dB_c
 
       DO ICOMP = 1, 3
        CALL DZERO(WORK(KDHB),N2ORBXQ)
-       DO IX = 1, 4
+       DO IX = 1, 4 ! run over all 4 integral types RM1...
          CALL DZERO(WORK(KDHBIX),N2ORBXQ)
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
@@ -1547,13 +1558,13 @@ C
       RETURN
       END
 
+#if defined MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck EXPVSUSLO  */
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
 C*****************************************************************************
 C
 C  Routine that calculates expectation value terms for magnetic
-C  susceptibilities - two-electron term and both higher and lower order
+C  susceptibilities with LAO - two-electron term and both higher and lower order
 C  reorthonormalization terms.
 C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
@@ -1632,6 +1643,10 @@ C*****************************************************************************
 C
 C   Routine that calculates two-electron expectation value contribution
 C to magnetic susceptibility when using London atomic orbitals.
+C
+C     This is the pure London-contribution to the second B-derivative.
+C
+C     Resulting tensor is stored in SUS2EL of dcbsusc.h
 C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
@@ -1719,16 +1734,11 @@ C
 #endif
 CLV   ... temporary fix for parallel runs...
       PARCAL_SAVE = PARCAL
-CMI   IF (PARCAL) PARCAL = .FALSE.
-CMI   IF (PARCAL_SAVE) WRITE (LUPRI,*) 
-CMI  &   " WARNING: Running in serial, parallel code not ready yet"
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-CMI        CALL QUIT('Parallel suscpeptibilities not ready!')
-
             CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
 CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
             CALL DIRAC_PARCTL( 1 )
@@ -1778,10 +1788,12 @@ C   with London atomic orbitals.
 C   In the Levy-Leblond case this is identical
 C   with the nonrelativistic DALTON counterpart.
 C
+C   Resulting tensor is stored in SUSFS of dcbsusc.h
+C
 C   Definition:
 C -------------
 C   The exact form (Ruud et al, JCP...) is -1/2{S(2),H(0)} 
-C   (for both connections beacuse the S(2) operator is unique)
+C   (for both connections because the S(2) operator is unique)
 C
 C   On input:  CMO - MO coefficients, IBEIG - boson irreps info
 C
@@ -1918,17 +1930,13 @@ C       ... control print-out ...
 
       ENDDO ! of XX,XY,XZ,YY,YZ,ZZ .....
       DOPCT=DOPCTRA_SAVE
-
 C     .... release the whole memory block used in this subroutine
       CALL MEMREL('HORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-
 C     ... close the AOPROPER file
       CLOSE(LU1INT,STATUS = 'KEEP')
-
       CALL QEXIT('HORDRNT')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lordrrnt  */
       SUBROUTINE LORDRNT(CMO,IBEIG,WORK,KFREE,LFREE)
@@ -1949,11 +1957,14 @@ C                 J.Chem.Phys. Vol. 99  (1993) 3847 )
 C
 C        Using the symmetric connection :
 C -------------------------------------------------------
-C   1/2{ S(1)S(1),H(0)} - {S(1),H(1)} + 1/4{S(1),S(1),H(0)}
+C   1/2{ S(1)S(1),F(0)} - {S(1),F(1)} + 1/4{S(1),S(1),F(0)}
 C
 C        Using the natural connection:
 C -------------------------------------------------------
-C   { S(1)W(1), H(0)} - {W(1),H(1)} + {W(1),W(1),H(0)}
+C   { S(1)W(1), F(0)} - {W(1),F(1)} + {W(1),W(1),F(0)}
+C
+C
+C Resulting tensor is stored in SUSFSY of dcbsusc.h 
 C
 C On input:  CMO - MO coefficients, IBEIG - boson irreps info
 C
@@ -2160,7 +2171,7 @@ C    - {W(1)/S(1),H(1)} = {S(1)/W(1),F(1)},
 C           where F(1)=h(1)+u(1)...
 C===================================================
 
-C     ====   Get h(1) and 2*u(1) MO terms ====
+C     ====   Get F(1)=h(1)+u(1) MO terms ====
 
       DO IW1 = 1, 3  ! Components of W(1)
        IF (.NOT.SYMCON) THEN
@@ -2188,7 +2199,6 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
         DO IH1 = 1, 3 ! Components of H(1)
-C       DO IH1 = IW1, 3 ! Components of H(1)
           IB = 3 ! 0011 ... get ONELON + TWOLON
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
           ISYM1 = IPRPSYM(INDXPR1) 
@@ -2198,7 +2208,7 @@ C       DO IH1 = IW1, 3 ! Components of H(1)
           CALL GETDHB(IB,D0,WORK(KSMAT),
      &           INDXPR1,IOPSY,WORK,KFREE,LFREE,IPRINT)
 
-C ... call TTRA for {W/S(1),F(1)} .. get all into KSWMAT
+C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
           CALL TTRA(EPMIX,AH,ISYM2,ISYM1,WORK(KWMAT),
      &            WORK(KSMAT),WORK(KSWMAT),IPRINT)
@@ -2206,10 +2216,10 @@ C ... call TTRA for {W/S(1),F(1)} .. get all into KSWMAT
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
             CALL HEADER(
-     &     'LORDRNT: Transformed Fock-LAO matrix, {W(1),F(1)}',-1)
+     &  'LORDRNT: Transformed Fock-LAO matrix,nat.conn.{W(1),F(1)}',-1)
            ELSE
             CALL HEADER(
-     &     'LORDRNT: Transformed Fock-LAO matrix, {S(1),F(1)}',-1)
+     & 'LORDRNT: Transformed Fock-LAO matrix,symm.conn. {S(1),F(1)}',-1)
            ENDIF
            WRITE(LUPRI,'(2X,A,2I2)')
      & '*** tensor component: ',IW1,IH1
@@ -2249,6 +2259,7 @@ C      into SUSFSY(3,3)
         ENDIF
        ENDIF
 
+        ! store
         SUSFSY(IPTAX(IW1,2),IPTAX(IH1,2)) = 
      &  SUSFSY(IPTAX(IW1,2),IPTAX(IH1,2)) + EXPVAL
          
@@ -2293,7 +2304,6 @@ C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 
-C       DO I2  =  I1, 3
         DO I2  =  1, 3
 C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
          INDXPR2 = IPLONDON(1,I2) ! Get index of RM1H1_comp
@@ -2314,19 +2324,17 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
            CALL HEADER(
-     & 'LORDRNT: TOTAL transformed matrix {W(1),W(1),H(0)}',-1)
+     & 'LORDRNT: TOTAL transformed matrix {W(1),W(1),F(0)}',-1)
           ELSE
            CALL HEADER(
-     & 'LORDRNT: TOTAL transformed matrix {S(1),S(1),H(0)}',-1)
+     & 'LORDRNT: TOTAL transformed matrix {S(1),S(1),F(0)}',-1)
           ENDIF
           WRITE(LUPRI,'(2X,A,2I2)')
      & '*** tensor component: ',I1,I2
           CALL PRQMAT(WORK(KSWMAT),NORBT,NORBT,NORBT,
      &               NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
          ENDIF
-
 C ...  Store expect. values from resulting matrix WORK(KSWMAT)
-
        EXPVAL = D0
        DO IFS = 1, NFSYM
        IF (NOCC(IFS).GT.0) THEN
@@ -2373,19 +2381,14 @@ C Symmetrize the off-diagonal terms of SUSFSY !!
        SUSFSY(IPTAX(I2,2),IPTAX(I1,2))=PS
       ENDDO
       ENDDO
-
 C     .... release the whole block used in this subroutine
       CALL MEMREL('LORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-
       CLOSE(LU1INT,STATUS = 'KEEP')
-
       DOPCT=DOPCTRA_SAVE
-
       CALL QEXIT('LORDRNT')
-C     CALL QUIT('Exit from LORDRNT')
-      
       RETURN
       END
+#endif
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
@@ -2431,26 +2434,27 @@ C
 #include "memint.h"
       IPRINT = IPRPRP
 
+      IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
         IF(SHIELD) CALL HEADER(
-     &'DEF_D1HBLOND: Operators for NMR shieldings with LAO!',-1)
+     &'All individual operators for NMR shieldings with LAO',-1)
         IF(OPTROT) CALL HEADER(
-     &'DEF_D1HBLOND: Operators for optical rotation with LAO!',-1)
+     &'All individual operators for optical rotation with LAO',-1)
       ELSE IF (IMP.EQ.2) THEN
        CALL HEADER(
-     &'DEF_D1HBLOND: Operators for magnetic'//
-     &' susceptibility with LAO!',-1)
+     &'All individual operators for magnetic susceptibility'//
+     &' (magnetizability) with LAO',-1)
       ELSE IF (IMP.EQ.3) THEN
         CALL HEADER(
-     &'DEF_D1HBLOND: Operators for perturbation from '//
-     &' one component of magnetic field with LAO!',-1)
+     &'Individual operators for perturbation from '//
+     &' one component of magnetic field with LAO',-1)
       ELSE
        WRITE(LUPRI,'(2X,A)')
      & 'DEF_D1HBLOND: Entering magnetic property IMP '//
      & ' has to be 1 or 2 or 3!'
        CALL QUIT('DEF_D1HBLOND: wrong IMP value!')
       ENDIF
-
+      ENDIF
 C------------------------------------------------
 C          X component of the B-field
 C------------------------------------------------
@@ -2464,6 +2468,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,1))
 
       IF (IMP.EQ.1) THEN
         CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2493,6 +2498,7 @@ C--------------------------------------------------------------
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,1))
 C--------------------------------------------------------------
 C       RM1H3  operator ... i c Q_MN < r_vec (alp.p) >
 C--------------------------------------------------------------
@@ -2508,6 +2514,7 @@ C--------------------------------------------------------------
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(3,1))
 C
 C  RM1RN-X operator of +(c/2).< r_n x alpha >
 C
@@ -2521,6 +2528,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,1) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(4,1))
 
 #if !defined (XH4)
 C-------------------------------------------------------------
@@ -2537,6 +2545,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,2))
 
       IF (IMP.EQ.1) THEN
        CALL OP1IND('XSHIELB',IPSHIELD(2+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2565,6 +2574,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,2))
 C
 C       RM1H3-Y operator
 C
@@ -2580,6 +2590,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPLONDON(3,2))
 C
 C          RM1RN-Y operator
 C
@@ -2593,6 +2604,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,2) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(4,IPLONDON(4,2))
 
 C-------------------------------------------------------------
 C     Z component of B-field
@@ -2608,6 +2620,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(1,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPLONDON(1,3))
 
       IF (IMP.EQ.1) THEN
         CALL OP1IND('XSHIELB',IPSHIELD(3+MXCOOR),LLRBPU,NLRBPT,INDXPR
@@ -2636,6 +2649,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPLONDON(2,3))
 C
 C         RM1H3-Z operator
 C
@@ -2651,6 +2665,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPLONDON(3,3))
 C
 C        RM1RN-Z operator of +(c/2).< r_n x alpha >
 C
@@ -2664,6 +2679,7 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(4,3) = INDXPR
+      IF (IPRINT.GE.2) CALL WRIXPR(4,IPLONDON(4,3))
 #endif
 
 C----------------------------------------------------------------
@@ -2689,6 +2705,8 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bxlao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON(1))
+
       PNAME     = LABELC(1:ILABELC)//'Y'
       PLABEL(1) = LABELC(1:ILABELC)//'Y'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -2697,6 +2715,8 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bylao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON(2))
+
       PNAME     = LABELC(1:ILABELC)//'Z'
       PLABEL(1) = LABELC(1:ILABELC)//'Z'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -2705,6 +2725,7 @@ C----------------------------------------------------------------
       if ((imp .eq. 3) .and. bzlao) then
         ipcon(1) = indxpr
       end if
+      IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON(3))
 
 ! if (imp == 3) only ipcon(1) is important, lines below are to catch errors 
       if (imp .eq. 3) then
@@ -2714,7 +2735,7 @@ C----------------------------------------------------------------
 
 C----------------------------------------------------------------
 C   Define connection matrixes T(1),T(2) for 
-C   the second derivate d2H/dB2 
+C   the second derivate d2H/dB2 - for magnetic suscpetibilities
 C----------------------------------------------------------------
       IF (IMP.EQ.2) THEN
 
@@ -2730,16 +2751,21 @@ C      PFAC(1) = DMI2
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON21(1))
+
        PNAME     = LABELC(1:ILABELC)//'Y'
        PLABEL(1) = LABELC(1:ILABELC)//'Y'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON21(2))
+
        PNAME     = LABELC(1:ILABELC)//'Z'
        PLABEL(1) = LABELC(1:ILABELC)//'Z'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON21(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON21(3))
 
 C ... Natural connection term T(1)=W(1)
 C      PFAC(1) = -D1
@@ -2751,16 +2777,21 @@ C      PFAC(1) = -D1
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON22(1))
+
        PNAME     = LABELC(1:ILABELC)//'Y'
        PLABEL(1) = LABELC(1:ILABELC)//'Y'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON22(2))
+
        PNAME     = LABELC(1:ILABELC)//'Z'
        PLABEL(1) = LABELC(1:ILABELC)//'Z'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON22(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON22(3))
 
 C Define d2S/dBXX,XY,...
 C Specify latter PFAC(1)!!!
@@ -2774,31 +2805,42 @@ C Specify latter PFAC(1)!!!
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(1) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(1,IPCON23(1))
+
        PNAME     = LABELC(1:ILABELC)//'XY'
        PLABEL(1) = LABELC(1:ILABELC)//'XY'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(2) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(2,IPCON23(2))
+
        PNAME     = LABELC(1:ILABELC)//'XZ'
        PLABEL(1) = LABELC(1:ILABELC)//'XZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(3) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(3,IPCON23(3))
+
        PNAME     = LABELC(1:ILABELC)//'YY'
        PLABEL(1) = LABELC(1:ILABELC)//'YY'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(4) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(4,IPCON23(4))
+
        PNAME     = LABELC(1:ILABELC)//'YZ'
        PLABEL(1) = LABELC(1:ILABELC)//'YZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(5) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(5,IPCON23(5))
+
        PNAME     = LABELC(1:ILABELC)//'ZZ'
        PLABEL(1) = LABELC(1:ILABELC)//'ZZ'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(6) = INDXPR
+       IF (IPRINT.GE.2) CALL WRIXPR(6,IPCON23(6))
       ENDIF
 
       CALL QEXIT('DEF_D1HBLOND')
@@ -2990,7 +3032,7 @@ C      gradient matrix, PRPMO for LAO-PDBS
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
         WRITE(LUPRI,'(A)')
-     &'WARNING from GETDHB: The total propery gradient'
+     &'WARNING from GETDHB: The total property gradient'
      &//'matrix dH/dB for LAO-PDBS is not (fully?) symmetric !'
       ENDIF
 

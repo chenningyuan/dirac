@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PAMKRCC(WORK,LWORK)
+      SUBROUTINE PAMKRCC()
 C***********************************************************************
 C
 C Getting information from Dirac and setting up strings etc.
@@ -8,9 +8,9 @@ C
 C Written by Lasse Soerensen 2010
 C
 C
-C common blocks needs cleaning!!!!!!!!!!!!!!!!
-C
 C***********************************************************************
+      use memory_allocator
+
 #include "implicit.inc"
 #include "ipoist8.inc"
 *. Parameters for dimensioning
@@ -28,12 +28,15 @@ C will probably have to delete most of these again
 C added by lasse
 #include "cintfo.inc"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('KRCC ')
 C
+      call legacy_lwork_get(LWORK)
 C
 #include "memint.h"
-C
-      CALL QENTER('KRCC ')
+      call alloc(WORK,LWORK,id='WORK in PAMKRCC')
+
 *. Ratio beteeen real and integer word length
       CALL ZIRAT_KRCC !ok
 * First make an entry on memory to look for
@@ -42,6 +45,10 @@ C
       KCC1 = KLOOK
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
+      IF(IONLYTRANS.EQ.1) THEN
+        WRITE(6,*) ' Exiting after transformation '
+        RETURN
+      END IF
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!
@@ -109,6 +116,7 @@ C
      &                WORK,KFREE,LFREE)
 
 
+      call dealloc(WORK)
 *
       CALL QEXIT('KRCC ')
 *
@@ -151,20 +159,6 @@ C
       COMMON/CMXCJ/MXCJ
       CHARACTER*6 CCTYPE
       DIMENSION WORK(*)
-*
-*************************************************************
-*                                                           *
-* Things not yet appliable (or never will be?)              *
-*                                                           *
-* I_TRANS_WF, ICCSOLVE         *
-* II_RES_EXC, MXSPOX                          *
-*                                                           *
-*                                                 Lasse     *
-*                                                           *
-*                                                           *
-*************************************************************
-*CALL MEMGET('INTE',KLIHIND,4*NSPOBEX_TP,WORK,KFREE,LFREE)
-*CALL MEMGET('REAL',KSIGNNHX,NSPOBEX_TP,WORK,KFREE,LFREE)
 *
 * Hardwirerings
 ***************************
@@ -235,10 +229,13 @@ C Hardwirering of optimizer
         KSDIIS = 0
       END IF
 *
+      I_DO_SBSPJA = 1
       IF(I_DO_SBSPJA.EQ.1) THEN
         MXDIM = MAX(MAXIT,MXCIV_ORIG)
 *. Space for working with Subpspace Jacobian :
         LSBSPJA = 5*MXDIM**2 + 2*MXDIM
+        print*,'LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG',
+     &          LSBSPJA,MXDIM,MAXIT,MXCIV_ORIG
       ELSE
         LSBSPJA = 0
       END IF
@@ -445,6 +442,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
      &     IRECOM,WORK,KFREE,LFREE)
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
+      print*,'NSPOBEX_TPE',NSPOBEX_TPE
       CALL MEMCHK_KRCC(WORK)
 *. Add unit-operator as last spinorbital excitation
       IZERO = 0
@@ -566,19 +564,14 @@ C
       N_CC_AMPP1 = N_CC_AMP + 1
 *. Why is this done???
 C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
-      IF(NTEST.GE.5)
-     &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
+      WRITE(6,*) ' KRCC : N_CC_AMP = ', N_CC_AMP
 *
-*. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
-      CALL GET_3BLKS_GCC_REL(KVEC1,KVEC2,KVEC3,MXCJ,
-     &                       WORK,KFREE,LFREE)
-       WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3
 *. and two CC vectors , extra element for unexcited SD at end of vectors
        N_SD_INT = 1
 * next line added by Lasse not sure if correct but thinks so
        LEN_T_VEC_MX = LEN_T_VEC_CC
 *
-       LENNY = LEN_T_VEC_MX + N_SD_INT
+       LENNY = LEN_T_VEC_MX !+ N_SD_INT ! Addition removed by Lasse
        print*,'LENNY',LENNY
       CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
@@ -596,7 +589,7 @@ C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
 * Now to dimension and setup arrays for intermediates.
 * This should later be moved to CC_VEC_FNC_KRCC to save space
 *
-      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
+C     CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs
@@ -612,47 +605,42 @@ C Now with automated restart. Lasse
 *
 *. New optimizer
       CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
-     &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
-     &                   WORK,KFREE,LFREE)
-      STOP 'CC ENERGY HAS BEEN OPTIMIZED'
+     &                   ECC,WORK,KFREE,LFREE)
 *
 * ===========================
 * Calculate density matrices
 * ===========================
 *
-      IDENSI = 0
-      IF(IDENSI.NE.0) THEN
+C     IDENSI = 0
+C     IF(IDENSI.NE.0) THEN
 *. Three more vectors
-        CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
-        CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
-        CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
+C       CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
+C       CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
+C       CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
 C       CALL CC_DENSI(WORK(KCC1),WORK(KCC2),WORK(KDIA),
 C    &       WORK(KCC3),WORK(KCC4),WORK(KCC5),
 C    &       WORK(KVEC1),WORK(KVEC2) )
 C     CC_DENSI(CCAMP,CCLAG,CCDIA,CCVEC1,CCVEC2,CCVEC3,
 C    &           VEC1,VEC2)
-      END IF
+C     END IF
 *
 * =========================================
 *. Coupled cluster first order properties
 * =========================================
 *
-      NPROP = 0
-      IF(NPROP.GT.0) THEN
+C     NPROP = 0
+C     IF(NPROP.GT.0) THEN
 *. Calculate properties
-        KLDUM = 1
+C       KLDUM = 1
 C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
-      END IF
+C     END IF
 *
 * ======================
 *. Analyze T- ampitudes
 * ======================
 *
-      WRITE(6,*) ' KVEC3 before ANA_GCC ', KVEC3
       CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1,
      &                       WORK,KFREE,LFREE)
-      WRITE(6,*) ' KVEC3 after ANA_GCC ', KVEC3
-      STOP 'AFTER ANALYZE'
 *
 *
 * =========================
@@ -660,6 +648,8 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 * =========================
 *
 *.  Exp(t) !ref>
+      IEXPECT = 0
+      IF(IEXPECT.EQ.1) THEN
       I_DO_CC_EXP = 0
       IF(I_DO_CC_EXP.EQ.1) THEN
       MX_TERM = 100
@@ -739,31 +729,25 @@ C?    CALL WRTVCD(WORK(KVEC1),LUHC,1,-1)
 !       CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
 !    &                 WORK(KCC2))
       END IF
+      END IF
 *
 *
 * =======================
 * CC excitation energies
 * =======================
 *
-      I_DO_CC_EXC_E = 0
+      CALL MEMCHK_KRCC(WORK)
       IF(I_DO_CC_EXC_E.EQ.1) THEN
 C
 C Linear response works only for real groups. Lasse
-C
-*. Three more vectors
-        CALL MEMMAR(KCC3,LEN_T_VEC_MX,'ADDL  ',2,'CC3_VE')
-        CALL MEMMAR(KCC4,LEN_T_VEC_MX,'ADDL  ',2,'CC4_VE')
-        CALL MEMMAR(KCC5,LEN_T_VEC_MX,'ADDL  ',2,'CC5_VE')
+C At the moment we will have an extra vector in memory!!!
 *
-C       CALL CC_EXC_E_REL(WORK(KVEC1),WORK(KVEC2),WORK(KCC1),
-C    &                WORK(KCC2),WORK(KCC3),WORK(KCC4),
-C    &                WORK(KDIA),II_RES_EXC,ECC)
+        CALL MEMGET('REAL',KCC_RESP,IMULTFAC*LENNY,WORK,KFREE,LFREE)
+        CALL KRCC_EXC_E(WORK(KCC_RESP),WORK(KCC2),WORK(KCC1),ECC,
+     &                WORK,KFREE,LFREE)
       END IF
 *
-      WRITE(6,*)  ' Returning from LUCIA_GENCC_REL '
-      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GENCC ')
+      WRITE(6,*)  ' Returning from KRCC '
 *
       RETURN
       END
-
-

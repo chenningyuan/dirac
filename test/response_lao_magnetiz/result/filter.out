@@ -1,0 +1,5 @@
+$ERROR 0.0002 
+Nlines 10:  Magnetizabilities                    au          SI         cgs
+
+$ERROR 0.0000002 
+Nlines 3:London Magnetizability = Ebb

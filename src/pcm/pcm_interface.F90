@@ -8,7 +8,8 @@
 ! 
 ! The driver routine and the solver-related routines will be provided
 ! through a FORTRAN90 module. The cavity-related routines are called 
-! by C++. Thus we put them outside the module.
+! by C++. Thus we put them outside the module, to avoid confusion due
+! to name mangling.
 !
 
 !
@@ -48,7 +49,8 @@
       
       real(8), intent(out) :: charges(*)
       real(8), intent(out) :: centers(3,*)
-
+      integer              :: units
+      
       integer :: i, j, k 
 
 ! Get coordinates
@@ -64,7 +66,11 @@
    
    end subroutine
 
-   module pcm_interface
+module pcm_interface
+   
+   use electrostatic_potential
+   use pcm_write
+   use pcmmod_cfg
 
    implicit none 
    
@@ -82,10 +88,16 @@
 
    contains 
 
-   subroutine init()
+   subroutine pcm_initialize(dmat, work, lwork)
 !
-! This functions sets all the global private variables.
+! This subroutine sets all the global private variables.
 ! 
+
+! Passed variables
+      real(8) :: dmat(*)
+      real(8) :: work(*)
+      integer :: lwork
+
       call get_cavity_size(nr_points)
   
 ! Allocation   
@@ -97,12 +109,14 @@
       tess_cent = 0.0d0
 ! Get tesserae centers 
       call get_tess_centers(tess_cent)
+! Compute total polarization charges
+      call pcm_charges(dmat, work, lwork, pcmmod_print)
       
    end subroutine
    
-   subroutine deinit()
+   subroutine pcm_finalize()
 !
-! This functions deallocates all the global private variables.
+! This subroutine deallocates all the global private variables.
 ! 
       nr_points = -1 
       
@@ -112,7 +126,7 @@
       deallocate(tess_cent)
       
    end subroutine 
-
+   
    subroutine pcm_energy_driver(pol_ene, dmat, work, lwork)
 !
 ! Polarizable Continuum Model:
@@ -128,16 +142,18 @@
       real(8) :: work(*)
       integer :: lwork
 
-      if (nr_points <= 0) call init
-! Compute total polarization charges
-      call pcm_charges(dmat, work, lwork, pcmmod_print)
+      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
 ! Compute polarization energy
-      call comp_pol_ene_pcm(pol_ene)
+      if (.not.pcmmod_separate) then
+         call comp_pol_ene_pcm(pol_ene, 1)
+      else
+         call comp_pol_ene_pcm(pol_ene, 0)
+      end if
       pcm_energy = pol_ene
 
    end subroutine
    
-   subroutine pcm_fock_driver(fock, work, lwork)
+   subroutine pcm_fock_driver(fock, dmat, work, lwork)
 !
 ! Polarizable Continuum Model.
 ! Driver routine for Fock matrix contributions, j and X(D).
@@ -147,14 +163,15 @@
 
 ! Passed variables
       real(8)              :: fock(*)
+      real(8)              :: dmat(*)
       real(8)              :: work(*)
       integer              :: lwork
 
-      if (nr_points <= 0) call init
+      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
 ! Update Fock matrix with PCM contribution
       call pcm_fock(fock, work, lwork)
 ! Free temporary allocated memory
-      call deinit
+      call pcm_finalize
 
    end subroutine
 
@@ -164,7 +181,11 @@
 
 ! pcm_energy is the polarization energy:
 ! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call comp_pol_ene_pcm(pcm_energy, 0)
+      if (.not.pcmmod_separate) then
+         call comp_pol_ene_pcm(pcm_energy, 1)
+      else 
+         call comp_pol_ene_pcm(pcm_energy,0)
+      end if
 
       get_pcm_energy = pcm_energy
 
@@ -182,7 +203,7 @@
 !
 
    subroutine pcm_charges(dmat, work, lwork, printlevel)
-     use pcm_electrostatic_potential 
+
 ! Passed variables
       integer, intent(in)  :: printlevel
       real(8), intent(in)  :: dmat(*)
@@ -190,113 +211,124 @@
       integer              :: lwork
 
 ! Local variables
-      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
-      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:) ! Allocated only if pcmmod_separate is .true.
+      real(8), allocatable :: ele_pot(:), ele_pol_chg(:) ! Allocated only if pcmmod_separate is .true.
       integer              :: i
       real(8)              :: factor = 1.0d0
       character(7)         :: potName, potName1, potName2
       character(7)         :: chgName, chgName1, chgName2
 
-! Allocation
-      allocate(nuc_pot(nr_points))
-      nuc_pot = 0.0d0
-      allocate(nuc_pol_chg(nr_points))
-      nuc_pol_chg = 0.0d0
-      allocate(ele_pot(nr_points))
-      ele_pot = 0.0d0
-      allocate(ele_pol_chg(nr_points))
-      ele_pol_chg = 0.0d0
-      
-! Compute nuclear MEP @tesserae centers
-      potName = 'NucPot'//char(0)
-      chgName = 'NucChg'//char(0)
-      call pcm_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
-! Set a cavity surface function with the nuclear MEP
-      call set_surface_function(nr_points, nuc_pot, potName)
-! Compute nuclear polarization charges and set the proper surface function
-      call comp_chg_pcm(potName, chgName)
-! Get nuclear polarization charges @tesserae centers
-! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-      call get_surface_function(nr_points, nuc_pol_chg, chgName)
-
-! Compute electronic MEP @tesserae centers
-      potName = 'ElePot'//char(0)
-      chgName = 'EleChg'//char(0)
-      call ele_pot_pcm(ele_pot, dmat, work, lwork, .false.)
-! Set a cavity surface function with the electronic MEP
-      call set_surface_function(nr_points, ele_pot, potName)
-! Compute electronic polarization charges and set the proper surface function
-      call comp_chg_pcm(potName, chgName)
-! Get electronic polarization charges @tesserae centers
-! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-      call get_surface_function(nr_points, ele_pol_chg, chgName)
+      if (.not.(pcmmod_separate)) then 
+! Compute MEP @tesserae centers
+         potName = 'TotPot'//char(0)
+         chgName = 'TotChg'//char(0)
+         call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
+! Set a cavity surface function with the MEP
+         call set_surface_function(nr_points, potentials, potName)
+! Compute polarization charges and set the proper surface function
+         call comp_chg_pcm(potName, chgName)
+! Get polarization charges @tesserae centers
+         call get_surface_function(nr_points, charges, chgName)
 
 ! Print some information
-      if (printlevel > 5) then
-          do i = 1, nr_points
-            print *, "NMEP @point", i, nuc_pot(i)
-            print *, "EMEP @point", i, ele_pot(i)
-            if (printlevel > 10) then
+         if (printlevel > 5) then
+            do i = 1, nr_points
+              print *, "MEP @point", i, potentials(i)
+              if (printlevel > 10) then
+                 print *, "PC @point", i, charges(i)
+              end if
+            end do
+         end if
+
+! Write to file MEP and ASC
+         call pcm_write_file(nr_points, potentials, charges)
+      else
+! Allocation
+         allocate(nuc_pot(nr_points))
+         nuc_pot = 0.0d0
+         allocate(nuc_pol_chg(nr_points))
+         nuc_pol_chg = 0.0d0
+         allocate(ele_pot(nr_points))
+         ele_pot = 0.0d0
+         allocate(ele_pol_chg(nr_points))
+         ele_pol_chg = 0.0d0
+      
+! Compute nuclear MEP @tesserae centers
+         potName = 'NucPot'//char(0)
+         chgName = 'NucChg'//char(0)
+         call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
+! Set a cavity surface function with the nuclear MEP
+         call set_surface_function(nr_points, nuc_pot, potName)
+! Compute nuclear polarization charges and set the proper surface function
+         call comp_chg_pcm(potName, chgName)
+! Get nuclear polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+         call get_surface_function(nr_points, nuc_pol_chg, chgName)
+
+! Compute electronic MEP @tesserae centers
+         potName = 'ElePot'//char(0)
+         chgName = 'EleChg'//char(0)
+         call get_electronic_mep(nr_points, dmat, tess_cent, ele_pot,    &
+                        work, lwork, 0, .false.)
+! Set a cavity surface function with the electronic MEP
+         call set_surface_function(nr_points, ele_pot, potName)
+! Compute electronic polarization charges and set the proper surface function
+         call comp_chg_pcm(potName, chgName)
+! Get electronic polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+         call get_surface_function(nr_points, ele_pol_chg, chgName)
+
+! Print some information
+        if (printlevel > 5) then
+           do i = 1, nr_points
+             print *, "NMEP @point", i, nuc_pot(i)
+             print *, "EMEP @point", i, ele_pot(i)
+             if (printlevel > 10) then
                 print *, "NPC @point", i, nuc_pol_chg(i)
                 print *, "EPC @point", i, ele_pol_chg(i)
-            end if
-          end do
-      end if
+             end if
+           end do
+        end if
 
 ! Gauss' Theorem Test
 ! NOT SURE IF NECESSARY
-      if (printlevel > 4 ) then 
-          call gauss_test(nuc_pol_chg, ele_pol_chg)
-      end if
+        if (printlevel > 4 ) then 
+           call gauss_test(nuc_pol_chg, ele_pol_chg)
+        end if
 
 ! Obtain vector of total polarization charges 
-      chgName  = 'TotChg'//CHAR(0)
-      chgName1 = 'NucChg'//CHAR(0)
-      chgName2 = 'EleChg'//CHAR(0)
+        chgName  = 'TotChg'//CHAR(0)
+        chgName1 = 'NucChg'//CHAR(0)
+        chgName2 = 'EleChg'//CHAR(0)
 
-      call append_surf_func(chgName)
-      call clear_surf_func(chgName)
-      call add_surface_function(chgName, factor, chgName1)
-      call add_surface_function(chgName, factor, chgName2)
-      call get_surface_function(nr_points, charges, chgName)
+        call append_surf_func(chgName)
+        call clear_surf_func(chgName)
+        call add_surface_function(chgName, factor, chgName1)
+        call add_surface_function(chgName, factor, chgName2)
+        call get_surface_function(nr_points, charges, chgName)
 
 ! Obtain vector of total MEP
 ! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-      potName  = 'TotPot'//char(0)
-      potName1 = 'NucPot'//char(0)
-      potName2 = 'ElePot'//char(0)
-      call append_surf_func(potName)
-      call clear_surf_func(potName)
-      call add_surface_function(potName, factor, potName1)
-      call add_surface_function(potName, factor, potName2)
-      call get_surface_function(nr_points, potentials, potName)
+        potName  = 'TotPot'//char(0)
+        potName1 = 'NucPot'//char(0)
+        potName2 = 'ElePot'//char(0)
+        call append_surf_func(potName)
+        call clear_surf_func(potName)
+        call add_surface_function(potName, factor, potName1)
+        call add_surface_function(potName, factor, potName2)
+        call get_surface_function(nr_points, potentials, potName)
+
+! Write to file MEP and ASC
+        call pcm_write_file(nr_points, potentials, charges)
  
-      deallocate(nuc_pot)
-      deallocate(nuc_pol_chg)
-      deallocate(ele_pot)
-      deallocate(ele_pol_chg)
-
-   end subroutine
-
-   subroutine ele_pot_pcm(pot_or_chg, fock_or_dmat, work, lwork, get_fock)
-      use pcm_electrostatic_potential
-
-      real(8), intent(out) :: pot_or_chg(nr_points)
-      real(8), intent(in)  :: fock_or_dmat(*)
-      real(8)              :: work(*)
-      integer              :: lwork
-      logical              :: get_fock
-
-! get_fock is .true. if we want the Fock matrix contribution 
-      if (get_fock) then
-        call pcm_electronic_mep(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
-      else
-! get_fock is .false. if we want the electronic MEP
-        call pcm_electronic_mep(nr_points, fock_or_dmat, tess_cent, pot_or_chg, work, lwork, 0, get_fock)
+        deallocate(nuc_pot)
+        deallocate(nuc_pol_chg)
+        deallocate(ele_pot)
+        deallocate(ele_pol_chg)
       end if
 
    end subroutine
-  
+
    subroutine pcm_fock(fock, work, lwork)
 
 #include "dcbbas.h"
@@ -311,12 +343,14 @@
       real(8), allocatable :: fock_pcm(:, :, :)
       real(8)              :: average
       integer              :: i, j
+      logical              :: get_matrix = .true.
 
 ! Allocation
       allocate(fock_pcm(ntbas(0), ntbas(0), nz))
       fock_pcm = 0.0d0
 
-      call ele_pot_pcm(charges, fock_pcm, work, lwork, .true.)
+      call get_electronic_mep(nr_points, fock_pcm, tess_cent, charges,    &
+                        work, lwork, 0, get_matrix)
      
 ! Symmetrize Fock matrix contribution       
       do i = 1, ntbas(0)
@@ -327,9 +361,9 @@
         end do
       end do
        
-      print *, "FOCK_PCM"
-      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-                       nz, ipqtoq(1,0), 6)
+!      print *, "FOCK_PCM"
+!      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                       nz, ipqtoq(1,0), 6)
 ! Add fock_pcm to Fock matrix
       call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
 
@@ -404,4 +438,4 @@
 
    end subroutine
 
-   end module
+end module

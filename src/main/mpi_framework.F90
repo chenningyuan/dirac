@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ! FILE    : mpi_framework.F90
@@ -73,7 +73,11 @@ IF( IPAREX .gt. 0 )THEN
       ' kind =',sizeof(ierr),' MPI library --> kind = ',integer_kind_in_mpi
       print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
     else
+#ifdef INT_STAR8
       print '(A/)', '  ** interface to 64-bit integer MPI enabled **'
+#else
+      print '(A/)', '  ** interface to 32-bit integer MPI enabled **'
+#endif
     end if
 !
   end if

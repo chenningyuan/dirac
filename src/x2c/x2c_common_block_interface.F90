@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -52,6 +52,7 @@ module x2c_cb_interface
 contains
 
   subroutine init_x2c_cb(init_x2c_cb_blocks,   &
+                         prop_op_nopct,        &
                          prop_op_dgsym,        &
                          prop_op_trsym,        &
                          prop_op_name)
@@ -74,6 +75,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks
+    logical, optional, intent(out)              :: prop_op_nopct
     integer, optional, intent(out)              :: prop_op_dgsym(*)
     integer, optional, intent(out)              :: prop_op_trsym(*)
     character (len=16), optional, intent(out)   :: prop_op_name(*)
@@ -90,11 +92,11 @@ contains
          nr_quat               = nz
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
+         x2c_1e_system         = onesys
 
 !        set value for amfi module (if at all)
-         if(noamfi)then
-           x2c_add_amfi = -1
-         end if
+         if(noamfi)        x2c_add_amfi = -1
+         if(x2c_1e_system) x2c_add_amfi = -1 
 
 !        common block variables for AMFI(old +new(?))
          if(x2c_add_amfi > 0)then
@@ -178,7 +180,6 @@ contains
          x2c_linsym       = linear
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
-         x2c_1e_system    = onesys
   
 !        initialize real*8
          x2c_cspeed = cval
@@ -213,6 +214,7 @@ contains
              prop_op_trsym(i) = iprptim(i)
              prop_op_name(i)  = prpnam(i)
            end do
+           prop_op_nopct      = nopct
          end if
 
        end if ! initialize x2c information from Dirac common blocks

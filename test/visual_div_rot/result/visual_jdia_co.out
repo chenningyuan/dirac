@@ -1,9 +1,9 @@
-DIRAC pam run in /home/bast/dirac/master/test/visual_div_rot
+DIRAC pam run in /home/bast/dirac/production/latest/test/visual_div_rot
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
- 
+
 Note: maximum allocatable memory for serial run can be set by pam --aw
- 
+
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -150,39 +150,40 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  ******************************************************************************
 
 
-Compilation info
-----------------
+Binary information
+------------------
 
- User (who compiled)      | bast@lpqlx131
+ Who compiled             | bast@lpqlx131
  System                   | Linux-2.6.32-5-amd64
+ CMake generator          | Unix Makefiles
  Processor                | x86_64
- Internal math            | OFF
- 64-bit integers          | ON
+ 64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Debian 4.4.5-8) 4.4.5
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -fdefault-integer-8 -O3 -fu
-                          | nroll-all-loops
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Debian 4.4.5-8) 4.4.5
- C flags                  | -g -O2 -Wno-unused
- BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
-                          | ilp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequent
-                          | ial.so;-Wl,--end-group
+ Fortran compiler         | /opt/intel/bin/ifort
+ Fortran compiler version | ifort (IFORT) 12.1.0 20110811
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O3 
+                          | -ip
+ C compiler               | /opt/intel/bin/icc
+ C compiler version       | icc (ICC) 12.1.0 20110811
+ C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
+                          | 7 -O2
+ BLAS                     | -Wl,--start-group;-limf;/opt/intel/mkl/lib/intel64
+                          | /libmkl_core.so;/opt/intel/mkl/lib/intel64/libmkl_
+                          | intel_thread.so;/usr/lib/libpthread.so;/usr/lib/li
+                          | bm.so;/opt/intel/mkl/lib/intel64/libmkl_intel_lp64
+                          | .so;-openmp;-Wl,--end-group
  LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_lapack95_ilp64.a;-Wl,--end-group
- static libraries linking | OFF
- Configuration time       | 2012-01-17 09:41:44.185270
- Git revision             | 65449f064f739231ca1efec825642f8589187f1e
+                          | l_lapack95_lp64.a;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | e509254
+ Configuration time       | 2012-07-22 13:04:26.759250
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Jan 17 10:02:35 2012 
+     Date and time (Linux)  : Sun Jul 22 13:04:44 2012
      Host name              : not found                               
 
 
@@ -190,7 +191,6 @@ Contents of the input file
 --------------------------
 
 **DIRAC                                                                                             
-#.WAVE FUNCTION                                                                                     
 **HAMILTONIAN                                                                                       
 .LVCORR                                                                                             
 .INTFLG                                                                                             
@@ -256,7 +256,6 @@ FINISH
  * Thresholds for linear dependence:
    Large components:   1.00D-06
    Small components:   1.00D-08
- DFPCMO: IBEIG read in I2 format.
  * General print level   :   0
 
 
@@ -410,7 +409,7 @@ Point group: C1
   -------------------------------------------
 
     2
-
+ 
 C      0.0000000000   0.0000000000   0.0000000000
 O      0.0000000000   0.0000000000   1.1280000000
 
@@ -574,13 +573,12 @@ O      0.0000000000   0.0000000000   1.1280000000
  SCFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
- * Closed shell SCF calculation with   14 electrons in
-       7 orbitals in Fermion irrep 1
+ * Closed shell SCF calculation with    14 electrons in    7 orbitals.
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
- ***** TRIAL FUNCTION *****
+ ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
- ***** CONVERGENCE CRITERIA *****
+ ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
    Allowed convergence:1.000D-06
@@ -654,50 +652,53 @@ Total no. of orbitals           (NORB):   104
                          ! Requested density at point(s) !
                          +-------------------------------+
 
-
+ 
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
-
-  0.000000E+00  0.100000E+00  0.000000E+00         0.0000000         1.9422401         0.0000000         0.0000000
-  0.000000E+00  0.200000E+00  0.000000E+00         0.0000000         1.2144241         0.0000000         0.0000000
-  0.000000E+00  0.500000E+00  0.000000E+00         0.0000000         0.1327553         0.0000000         0.0000000
-  0.000000E+00  0.100000E+01  0.000000E+00         0.0000000         0.0713559         0.0000000         0.0000000
-  0.000000E+00  0.200000E+01  0.000000E+00         0.0000000         0.0234808         0.0000000         0.0000000
-
+ 
+  0.000000E+00  0.100000E+00  0.000000E+00         0.0000000        -1.9422401         0.0000000         0.0000000
+  0.000000E+00  0.200000E+00  0.000000E+00         0.0000000        -1.2144241         0.0000000         0.0000000
+  0.000000E+00  0.500000E+00  0.000000E+00         0.0000000        -0.1327553         0.0000000         0.0000000
+  0.000000E+00  0.100000E+01  0.000000E+00         0.0000000        -0.0713559         0.0000000         0.0000000
+  0.000000E+00  0.200000E+01  0.000000E+00         0.0000000        -0.0234808         0.0000000         0.0000000
+ 
 ----------------------------------------------------------------------------------------------------
-
-
+ 
+ 
  >>>> time used in plot:   0.00 seconds
  >>>> time used in integration:   0.00 seconds
 
- 
-     Date and time (Linux)  : Tue Jan 17 10:02:36 2012 
-     Host name              : not found                               
->>>> Node 0, utime: 0, stime: 0, minflt: 4976, majflt: 0, nvcsw: 0, nivcsw: 16, maxrss: 18112
->>>> Total WALL time used in DIRAC: 1s
+*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
+
+
+ 
+     Date and time (Linux)  : Sun Jul 22 13:04:44 2012
+     Host name              : not found                               
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        54.33
+  Mean allocation size (Mb) :        54.56
   
-  Largest                    9  allocations
+  Largest           9  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for work array at main                        
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+      488.28 Mb at subroutine MAIN__+0x4d6                               for work array at main                        
+        0.72 Mb at subroutine visual_mp_run_visual_+0x2a0c               for unnamed variable                          
+        0.72 Mb at subroutine visual_mp_run_visual_+0x29dc               for unnamed variable                          
+        0.28 Mb at subroutine butobs_no_work_+0xf8                       for buf in butobs                             
+        0.28 Mb at subroutine lowdi1_+0x1b8                              for unnamed variable                          
+        0.14 Mb at subroutine gtovlx_+0xd6                               for unnamed variable                          
+        0.14 Mb at subroutine lowdi1_+0x1a4                              for unnamed variable                          
+        0.00 Mb at subroutine visual_mp_run_visual_+0x115e               for unnamed variable                          
+        0.00 Mb at subroutine visual_mp_run_visual_+0x5264               for unnamed variable                          
   
-  Peak memory usage    (Mb) :       489.00
-       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+  Peak memory usage    (Mb) :       490.00
+       reached at subroutine : visual_mp_run_visual_+0x2a0c              
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     5.10 MB
+ MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 7046, majflt: 0, nvcsw: 49, nivcsw: 96, maxrss: 25360
+>>>> Total WALL time used in DIRAC: 0s

@@ -1,7 +1,0 @@
-!
-! This test calculates the energy of the nitrogen molecule using CC theory
-! Note that we consistently leave out the SS integrals.
-!
-! The test is meant to check the automatic detection of symmetry AND the implementation of linear symmetry
-! We assume that the correlation consistent basis sets are available in your standard path. These sets can be
-! obtained from the DALTON distribution and may later be included in the DIRAC distribution as well.

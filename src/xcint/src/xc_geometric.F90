@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module xc_geometric
@@ -28,10 +28,8 @@ module xc_geometric
 
    public xc_geo_0_lda_c1
    public xc_geo_0_gga_c1
-#ifdef MOD_UNRELEASED
    public xc_geo_1_lda_c1
    public xc_geo_2_lda_c1
-#endif
 
    private
 
@@ -131,7 +129,6 @@ contains
 
    end subroutine
 
-#ifdef MOD_UNRELEASED
    subroutine xc_geo_1_lda_c1(g,        &
                               d_n,      &
                               d_nn,     &
@@ -242,6 +239,5 @@ contains
       end do
 
    end subroutine
-#endif
 
 end module

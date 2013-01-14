@@ -1,6 +1,6 @@
 #define not_GASCIP_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,7 +17,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ! FILE    : krmcgascip.F
@@ -377,11 +377,15 @@ C
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
       write(lupri,'(/A)') '     IAEL      IBEL      MK2'
 #endif
-      NDET = 0
+      NASTR_T = 0
+      NBSTR_T = 0
+      NDET    = 0
       DO 10 IAEL = MINAEL, MAXAEL
          IBEL = NAELEC - IAEL
          MK2 = IAEL - IBEL
-         IMK2(MK2) = NDET
+         IMK2(MK2,1) = NASTR_T
+         IMK2(MK2,2) = NBSTR_T
+         IMK2(MK2,3) = NDET
 C
 #ifdef GASCIP_DEBUG
             write(lupri,'(A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
@@ -432,7 +436,11 @@ C
          write(lupri,'(A,I60)') 'after       NDET',NDET
          call flshfo(lupri)
 #endif
-         NMK2(MK2) = NDET - IMK2(MK2)
+         NMK2(MK2,1) = NASTR
+         NMK2(MK2,2) = NBSTR
+         NMK2(MK2,3) = NDET - IMK2(MK2,3)
+         NASTR_T = NASTR_T + NASTR
+         NBSTR_T = NBSTR_T + NBSTR
  10   CONTINUE
 C
 C
@@ -441,38 +449,41 @@ C
       IF (IPRINT .GE. 0) THEN
          WRITE(LUPRI,9100)
          DO MK2 = MINMK2, MAXMK2
-            IF (NMK2(MK2) .GT. 0) THEN
+            IF (NMK2(MK2,3) .GT. 0) THEN
                IF (MOD(MK2,2) .EQ. 0) THEN
-                  WRITE(LUPRI,9101) MK2/2,NMK2(MK2)
+                  WRITE(LUPRI,9101) MK2/2,NMK2(MK2,3),
+     &                              NMK2(MK2,1), NMK2(MK2,2)
                ELSE
-                  WRITE(LUPRI,9102) MK2,  NMK2(MK2)
+                  WRITE(LUPRI,9102) MK2,  NMK2(MK2,3),
+     &                              NMK2(MK2,1), NMK2(MK2,2)
                END IF
             END IF
          END DO
-         WRITE(LUPRI,9103) NDET
+         WRITE(LUPRI,9103) NDET, NASTR_T, NBSTR_T
          CALL PRSYMB(LUPRI,'=',75,0)
          CALL FLSHFO(LUPRI)
       END IF
  9100 FORMAT(//'   Distribution of determinants wrt. MK'
-     &        /6X,'MK',T28,'#dets'/3X,36('-'))
- 9101 FORMAT(I8,T23,I10)
- 9102 FORMAT(I6,'/2',T23,I10)
- 9103 FORMAT(3X,36('-') / 5X,'all',T23,I10)
+     &        /6X,'MK',T28,'#dets',T37,'#A-str',T47,'#B-str'
+     &        /3X,56('-'))
+ 9101 FORMAT(I8,T23,3I10)
+ 9102 FORMAT(I6,'/2',T23,3I10)
+ 9103 FORMAT(3X,56('-') / 5X,'all',T23,3I10)
 C
 C
       IF (IPRINT .GE. 20 .OR. NDET .LE. 50) THEN
          WRITE(LUPRI,9001)
          DO MK2 = MINMK2, MAXMK2
-            IF (NMK2(MK2) .GT. 0) THEN
+            IF (NMK2(MK2,3) .GT. 0) THEN
                IF (MOD(MK2,2) .EQ. 0) THEN
-                  WRITE(LUPRI,9004) NMK2(MK2),MK2/2
+                  WRITE(LUPRI,9004) NMK2(MK2,3),MK2/2
                ELSE
-                  WRITE(LUPRI,9005) NMK2(MK2),MK2
+                  WRITE(LUPRI,9005) NMK2(MK2,3),MK2
                END IF
             END IF
 C
-            DO I = 1, NMK2(MK2)
-               IDA = IDET(1,I+IMK2(MK2))
+            DO I = 1, NMK2(MK2,3)
+               IDA = IDET(1,I+IMK2(MK2,3))
                DO J=1,NASHT
                   IF ( BTEST(IDA,J-1) ) THEN
                      NA(J)=1
@@ -480,7 +491,7 @@ C
                      NA(J)=0
                   END IF
                END DO
-               IDB = IDET(2,I+IMK2(MK2))
+               IDB = IDET(2,I+IMK2(MK2,3))
                DO J=1,NASHT
                   IF ( BTEST(IDB,J-1) ) THEN
                      NB(J)=1
@@ -488,7 +499,7 @@ C
                      NB(J)=0
                   END IF
                END DO
-               WRITE(LUPRI,9002) I+IMK2(MK2),(NA(J),J=1,NASHT)
+               WRITE(LUPRI,9002) I+IMK2(MK2,3),(NA(J),J=1,NASHT)
                WRITE(LUPRI,9003)             (NB(J),J=1,NASHT)
             END DO
          END DO
@@ -670,7 +681,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#ifdef SYS_AIX
+      ! radovan: otherwise mod() type does not match
+      INTEGER   IA, IB, ID
+#else
       INTEGER*8 IA, IB, ID
+#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -1236,7 +1252,7 @@ C
 C     Input:
 C        DOPV   - calculate PV
 C        DOIMAG - calculate imaginary contributions
-C        IT     - the number of different determinants in I and J
+C        IT     - the number of different spinors in determinants I and J
 C        IOCCI, JOCCI - the strings for determinants I and J
 C        K,L,M,N - IT = 0: not used
 C                  IT = 2: K and M is the orbitals where I and J differ
@@ -1289,10 +1305,8 @@ C---------------------
  20            CONTINUE
             END IF
  30      CONTINUE
-         RETURN
-      END IF
 C
-      IF(IT.EQ.2) THEN
+      ELSE IF (IT.EQ.2) THEN
 C
 C        ===================================
 C        DETERMINANTS DIFFER BY ONE FUNCTION K -> M
@@ -1338,10 +1352,8 @@ C---------------------
                END IF
             END DO
          END IF
-         RETURN
-      END IF
 C
-      IF(IT.EQ.4 .AND. DOPV) THEN
+      ELSE IF(IT.EQ.4 .AND. DOPV) THEN
 C
 C        ====================================
 C        DETERMINANTS DIFFER BY TWO FUNCTIONS  K,L -> M,N
@@ -1379,14 +1391,14 @@ C---------------------
             PV(M,K,N,L,2) = PV(M,K,N,L,2) + DMIJI1
             PV(M,L,N,K,2) = PV(M,L,N,K,2) - DMIJI1
          END IF
-         RETURN
-      END IF
+      ELSE
 C
 C     =============================================
 C     DETERMINANTS DIFFER BY MORE THEN TWO FUNCTIONS
 C     ==============================================
 C
-      CALL QUIT('GASCIP_DENMAT called with IT .gt. 4 !')
+         CALL QUIT('GASCIP_DENMAT called with IT .gt. 4 !')
+      END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1431,7 +1443,7 @@ C
       DIMENSION IBTAB(0:255)
 C
       DIMENSION IOCCI(2*MAXASH_GASCIP), JOCCI(2*MAXASH_GASCIP)
-      LOGICAL HFULL
+      LOGICAL   HFULL
 C
       CALL IBTABINI(IBTAB)
       HFULL = IHRM .EQ. 0
@@ -1850,21 +1862,12 @@ C---------------------
  20         CONTINUE
            END IF
  30      CONTINUE
-         RETURN
-      END IF
 C
-      IF(IT.EQ.2) THEN
+      ELSE IF(IT.EQ.2) THEN
 C
-C        ===================================
-C        DETERMINANTS DIFFER BY ONE FUNCTION K -> M
-C        ===================================
-C
-         IPHASE = 0
-         DO IELEC = 1,NAELEC
-            IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
-            IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
-         END DO
-         IPHASE = (-1)**IPHASE
+C     ===================================
+C     DETERMINANTS DIFFER BY ONE FUNCTION K -> M
+C     ===================================
 C
          HR = HCORE(K,M,1)
          IF (DOIMAG) HI = HCORE(K,M,2)
@@ -1884,41 +1887,62 @@ C---------------------
             END IF
          END DO
         END IF
-         HR = IPHASE * HR
-         IF (DOIMAG) HI = IPHASE * HI
-         RETURN
-      END IF
 C
-      IF(IT.EQ.4 .AND. DO2EL) THEN
+         H_TEST = ABS(HR)
+         IF (DOIMAG) H_TEST = H_TEST + ABS(HI)
+         IF (H_TEST .GT. 1.0D-12) THEN
+            IPHASE = 0
+            DO IELEC = 1,NAELEC
+               IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
+               IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
+            END DO
+            ! IPHASE = (-1)**IPHASE
+            IF (IAND(IPHASE,1) .EQ. 1) THEN ! IPHASE odd or even?
+               HR = -HR
+               HI = -HI
+            END IF
+         END IF
 C
-C        ====================================
-C        DETERMINANTS DIFFER BY TWO FUNCTIONS  K,L -> M,N
-C        ====================================
+      ELSE IF(IT.EQ.4 .AND. DO2EL) THEN
 C
-         IPHASE = 0
-         DO IELEC = 1,NAELEC
-            IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
-            IF (IOCCI(IELEC) .EQ. L) IPHASE = IPHASE + IELEC
-            IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
-            IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
-         END DO
-         IPHASE = (-1)**IPHASE
+C     ====================================
+C     DETERMINANTS DIFFER BY TWO FUNCTIONS  K,L -> M,N
+C     ====================================
+C
 C
 C---------------------
 C        H = H + (K, M, L, N) - (K, N, L, M)
 C---------------------
-         HR = IPHASE * (VMUUUU(K,M,L,N,1) - VMUUUU(K,N,L,M,1))
-         IF (DOIMAG)
-     &   HI = IPHASE * (VMUUUU(K,M,L,N,2) - VMUUUU(K,N,L,M,2))
-         RETURN
-      END IF
+         HR = (VMUUUU(K,M,L,N,1) - VMUUUU(K,N,L,M,1))
+         H_TEST = ABS(HR)
+         IF (DOIMAG) THEN
+            HI = (VMUUUU(K,M,L,N,2) - VMUUUU(K,N,L,M,2))
+            H_TEST = H_TEST + ABS(HI)
+         END IF
+         IF (H_TEST .GT. 1.0D-12) THEN
+            IPHASE = 0
+            DO IELEC = 1,NAELEC
+               IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
+               IF (IOCCI(IELEC) .EQ. L) IPHASE = IPHASE + IELEC
+               IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
+               IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
+            END DO
+            ! IPHASE = (-1)**IPHASE
+            IF (IAND(IPHASE,1) .EQ. 1) THEN ! IPHASE odd or even?
+               HR = -HR
+               HI = -HI
+            END IF
+         END IF
+ 
+      ELSE
 C
 C     =============================================
 C     DETERMINANTS DIFFER BY MORE THEN TWO FUNCTIONS
 C     ==============================================
 C
-      CALL QUIT('GASCIP_HMAT called with IT .gt. 4 !')
-      RETURN
+         CALL QUIT('GASCIP_HMAT called with IT .gt. 4 !')
+      END IF
+ 9999 RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_svc */
@@ -2180,7 +2204,7 @@ C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
 C          DODEN,CL,CR,DV,PV,
 C          DO2EL,NDET,IDET,IHRM,IPRINT)
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 10) THEN
          WRITE(LUPRI,'(/A)')
      &      ' (GASCIP_RCISTD) Diagonal of CI Hamiltonian'
          CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
@@ -2256,7 +2280,7 @@ C
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-6, RTHRCI**2 * 0.01D0)
+      THRSCR = MIN(1.0D-8, RTHRCI**2 * 0.01D0)
 C
 C     **********************************
 C     *** Start micro iteration loop ***
@@ -2976,9 +3000,9 @@ C
       N_NONZERO_TOT = 0
       DO MK2 = MINMK2, MAXMK2
 C        ... MK2 is NAEL - NBEL
-         IF (NMK2(MK2) .EQ. 0) CYCLE
-         I_STRT = IMK2(MK2) + 1
-         I_END  = IMK2(MK2) + NMK2(MK2)
+         IF (NMK2(MK2,3) .EQ. 0) CYCLE
+         I_STRT = IMK2(MK2,3) + 1
+         I_END  = IMK2(MK2,3) + NMK2(MK2,3)
 C
          N_NONZERO = 0
          DO I = I_STRT, I_END
@@ -2988,9 +3012,9 @@ C
          N_NONZERO_TOT = N_NONZERO_TOT + N_NONZERO
 C
          IF (MOD(MK2,2) .EQ. 0) THEN
-            WRITE(LUPRI,9101) MK2/2,NMK2(MK2),N_NONZERO
+            WRITE(LUPRI,9101) MK2/2,NMK2(MK2,3),N_NONZERO
          ELSE
-            WRITE(LUPRI,9102) MK2,NMK2(MK2),N_NONZERO
+            WRITE(LUPRI,9102) MK2,NMK2(MK2,3),N_NONZERO
          END IF
       END DO ! MK2
       WRITE(LUPRI,9103) NDET,N_NONZERO_TOT
@@ -3321,10 +3345,10 @@ C
 C
       DO 10 MK2I = MINMK2, MAXMK2, MK2I_STEP
 C        ... MK2 is NAEL - NBEL
-         IF (NMK2(MK2I) .EQ. 0) GOTO 10
+         IF (NMK2(MK2I,3) .EQ. 0) GOTO 10
 C        write(lupri,*) '(GASCIP_CI) MK2I = ',MK2I
-         ISTRT = IMK2(MK2I) + 1
-         IEND  = IMK2(MK2I) + NMK2(MK2I)
+         ISTRT = IMK2(MK2I,3) + 1
+         IEND  = IMK2(MK2I,3) + NMK2(MK2I,3)
 C
          IF (NZ .LE. 2 .AND. ITMAX .EQ. 4) THEN
             MK2J_STEP = 4 ! only Delta(MK) = 2, i.e. Delta(MK2) = 4, couple for non-quaternion point groups
@@ -3389,12 +3413,12 @@ C
 C           ...only off-diagonal blocks for dens.mat or sigma-vec.
 C
             DO 20 MK2J = MK2J_STRT, MK2J_END, MK2J_STEP
-               IF (NMK2(MK2J) .EQ. 0) GOTO 20
+               IF (NMK2(MK2J,3) .EQ. 0) GOTO 20
 C              write(lupri,*) '(GASCIP_CI) MK2I MK2J = ',MK2I,MK2J
 C              call flshfo(lupri)
 C
-               JSTRT = IMK2(MK2J) + 1
-               JEND  = IMK2(MK2J) + NMK2(MK2J)
+               JSTRT = IMK2(MK2J,3) + 1
+               JEND  = IMK2(MK2J,3) + NMK2(MK2J,3)
                MXNDAV = ITMAX + (MK2J - MK2I)/2
 C              ... we know that NDBV .ge. (MK2I-MK2J)/2
 C
@@ -3773,7 +3797,7 @@ C
       INTEGER*8 IDET(2,*), IDA, IDB, JDA, JDB, IDAOLD, JDAOLD
       INTEGER*8 IDAV, IDBV, IAI, IBI, IAJ, IBJ
 C
-      LOGICAL   DOIMAG
+      LOGICAL   DOIMAG, NEW_HMAT
 C
       DIMENSION IOCCI(2*MAXASH_GASCIP), JOCCI(2*MAXASH_GASCIP)
       DIMENSION IBTAB(0:255)
@@ -3819,9 +3843,9 @@ C
       NBSKIP = 0
       DO 10 MK2I = MINMK2, MAXMK2, MK2I_STEP
 C        ... MK2 is NAEL - NBEL
-         IF (NMK2(MK2I) .EQ. 0) GOTO 10
-         ISTRT = IMK2(MK2I) + 1
-         IEND  = IMK2(MK2I) + NMK2(MK2I)
+         IF (NMK2(MK2I,3) .EQ. 0) GOTO 10
+         ISTRT = IMK2(MK2I,3) + 1
+         IEND  = IMK2(MK2I,3) + NMK2(MK2I,3)
 C
          IF (ITMAX .EQ. 2) THEN
             MK2J_STEP = 2   ! 1-electron operators are often non-totally symmetric
@@ -3894,10 +3918,10 @@ C        *************************
 C
 C
             DO 20 MK2J = MK2J_STRT, MK2J_END, MK2J_STEP
-               IF (NMK2(MK2J) .EQ. 0) GOTO 20
+               IF (NMK2(MK2J,3) .EQ. 0) GOTO 20
 C
-               JSTRT = IMK2(MK2J) + 1
-               JEND  = IMK2(MK2J) + NMK2(MK2J)
+               JSTRT = IMK2(MK2J,3) + 1
+               JEND  = IMK2(MK2J,3) + NMK2(MK2J,3)
                MXNDAV = ITMAX - ABS(MK2J - MK2I)/2
 C              ... we know that NDBV .ge. ABS(MK2I-MK2J)/2
 C
@@ -3909,10 +3933,12 @@ C
 C
                   JDA = IDET(1,J)
                   IF (JDA .NE. JDAOLD) THEN
+                     JDAOLD = JDA
 C                    ... outer loop in gascip_gendet is over A-strings
                      IDAV = IEOR(IDA, JDA)
                      CALL FNBITS(NDAV,IDAV,IBTAB)
                      IF (NDAV .GT. MXNDAV) GOTO 200
+                     NEW_HMAT = .TRUE. ! new HR, HI from GASCIP_HMAT
 C
                      JAELEC = 0
                      IAI =  IAND(IDAV, IDA)
@@ -3933,7 +3959,6 @@ C
                            MA = IPTA2O(II)
                         END IF
                      END DO
-                     JDAOLD = JDA
                   END IF
                   IF (NDAV .GT. MXNDAV) GOTO 200
 C                 ... see note above about MXNDAV
@@ -3958,6 +3983,7 @@ C
 C                    ... IT = number of different spinors
 C                          in det(I) and det(J)
 C
+                     NEW_HMAT = .TRUE.
                      IELEC = JAELEC
                      IBI =  IAND(IDBV, IDB)
                      IBJ =  IAND(IDBV, JDB)
@@ -3984,8 +4010,10 @@ C                 Hamiltonian matrix element
 C                 --------------------------
 C
 C
-                  CALL GASCIP_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,
+                  IF (NEW_HMAT)
+     &               CALL GASCIP_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,
      &                    K,L,M,N,HR,HI,HCORE,VMUUUU)
+                  NEW_HMAT = .FALSE.
 C
 C                 S_J += H_{IJ}^* B_{I}
 C
@@ -4008,10 +4036,10 @@ C     ------------------------------------------------
 C        ... do not print all the small numbers
          CPUTID  = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WALL2-WALL1)
-         WRITE(LUPRI,'(/5A/A,I10,A,I10)')
+         WRITE(LUPRI,'(/5A/A,I10,A,I10,A,I10)')
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
-     &   ' out of',NDET
+     &   ' out of',NDET,'; remaining ',NDET-NBSKIP
         IF (IPRINT .GT. 2) THEN
          CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
          write(lupri,*) '#calls to cnbits and fnbits:',cncalls,fncalls

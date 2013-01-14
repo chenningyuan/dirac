@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -181,7 +181,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE, SAVEFLAGS(4), remove_spinfree_terms
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
@@ -288,7 +288,14 @@ C
       ENDIF
 C
 CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
-      IF (SPINFR.AND.(.NOT.BSS)) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+!     nothing to be done for X2Cmmf (molmf3 == T)
+      if(spinfr) remove_spinfree_terms = .true.
+      if(bss)    remove_spinfree_terms = .false.
+      if(molmf3) remove_spinfree_terms = .false.
+ 
+      if(remove_spinfree_terms)then
+        CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+      end if
 C
       IF(IPRINT.GE.5.AND.SPINFR) THEN
         CALL HEADER('GTCFC1:Total spinfree Fock matrix in AO-basis',-1)
