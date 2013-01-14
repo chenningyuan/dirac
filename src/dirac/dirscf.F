@@ -5381,10 +5381,15 @@ C.........Generate contribution to atomic density matrix from this shell
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
+        CALL MEMGET('INTE',KR1BUF,NBAS_R,WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KC1BUF,NBAS_C,WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KI1BUF,NR,WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KJ1BUF,NC,WORK,KFREE,LFREE) 
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),NTBAS(0),ICENT,
      &                   NONT(IATOM),NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
-     &                   WORK,KFREE,LFREE)
+     &                   WORK(KR1BUF),WORK(KC1BUF),
+     &                   WORK(KI1BUF),WORK(KJ1BUF))
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')

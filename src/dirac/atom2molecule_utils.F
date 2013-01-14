@@ -28,7 +28,7 @@
 
       SUBROUTINE PUT_AOBLOCK(AMOL,NBAS_R,NBAS_C,INUC,NONT,NDEG,NZC1,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
-     &                       WORK,KFREE,LFREE)
+     &                       rbuf, cbuf, ibuf, jbuf)
 C***********************************************************************
 C
 C     Put an atomic block into a molecular matrix
@@ -48,20 +48,16 @@ C     Written by T. Saue March 31 2011
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION AMOL(NBAS_R,NBAS_C,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
-     &          WORK(*)
-      KFRSAV=KFREE
+      DIMENSION AMOL(NBAS_R,NBAS_C,NZC1),ATOM(LR,LC,NZC1),NDEG(*)
+      integer, intent(inout) :: rbuf(*), cbuf(*), ibuf(*), jbuf(*)
+
       ICENT=INUC
-      CALL MEMGET('INTE',KRBUF,NBAS_R,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCBUF,NBAS_C,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
       print *, 'nbas,lr,lc',nbas,lr,lc,nont
       DO ITYP = 1,NONT
       print *, 'ndeg(ityp)',ndeg(ityp)
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(N1,WORK(KRBUF),NBAS_R,1,IR_CLS,ICENT,IDEG,-1)
+          CALL LABCOUNT(N1,RBUF,NBAS_R,1,IR_CLS,ICENT,IDEG,-1)
           IF(N1.NE.NR) THEN
             WRITE(6,'(A,2(/A,I5))') 
      &                'PUT_AOBLOCK: Error in row number',
@@ -70,9 +66,9 @@ C.........Create pointer mol->atom for rows
             CALL QUIT('PUT_AOBLOCK: Error in row number !')
           ENDIF
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KRBUF),NBAS_R,WORK(KIBUF),NR)
+          CALL REVINDEX(RBUF,NBAS_R,IBUF,NR)
 C.........Create pointer mol->atom for colums
-          CALL LABCOUNT(N2,WORK(KCBUF),NBAS_C,1,IC_CLS,ICENT,IDEG,-1)
+          CALL LABCOUNT(N2,CBUF,NBAS_C,1,IC_CLS,ICENT,IDEG,-1)
           IF(N2.NE.NC) THEN
             WRITE(6,'(A,2(/A,I5))') 
      &                'PUT_AOBLOCK: Error in column number',
@@ -81,17 +77,16 @@ C.........Create pointer mol->atom for colums
             CALL QUIT('PUT_AOBLOCK: Error in column number !')
           ENDIF
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KCBUF),NBAS_C,WORK(KJBUF),NC)
+          CALL REVINDEX(CBUF,NBAS_C,JBUF,NC)
       print *, 'nzc1',nzc1
           DO IZ = 1,NZC1
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS_R,ATOM(1,1,IZ),LR,
-     &                 WORK(KIBUF),WORK(KJBUF))
+     &                 IBUF,JBUF)
       call wrtmatmn(amol(1,1,iz),nbas_r,nbas_c,nbas_r,nbas_c,6)
           ENDDO
         ENDDO
         ICENT = ICENT + 1
       ENDDO
-      CALL MEMREL('PUT_AOBLOCK',WORK,1,KFRSAV,KFREE,LFREE)
 C
       END
 !***********************************************************************

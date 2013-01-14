@@ -64,20 +64,70 @@ contains
 !----------------------------------------------------------------------
 
 
-! safety check
-  if(.not.fragment_x2c_info%fragment_approach_enabled) return
+!     safety check
+      if(.not.fragment_x2c_info%fragment_approach_enabled) return
 
-! default for the following procedure is to use the atomic fragments
-! possible extensions are: unit matrices for light atoms and fragment matrices 
-! for heavy centers being close or even sharing a chemical bond.
+!     default for the following procedure is to use the atomic fragments
+!     ----------------------------------------------------------------------------
+!     possible extensions are: unit matrices for light atoms and fragment matrices 
+!     for heavy centers being close or even sharing a chemical bond.
+!     ----------------------------------------------------------------------------
 
-  
-
-! call construct_umol
+!     call construct_umol_from_atoms
 
   end subroutine x2c_fragment_x2c_driver
-
 !***********************************************************************
 
+  subroutine construct_umol_from_atoms(nz,             &
+                                       nfsym,          &
+                                       naosh_all_cent)
+
+!**********************************************************************
+!
+!    purpose: read pct-matrices U_fragment for atomic types and
+!             generate the approximate molecular U
+!
+!----------------------------------------------------------------------
+  real(8), intent(inout) :: umol
+  integer, intent(in)    :: nz
+  integer, intent(in)    :: nfsym
+  integer, intent(in)    :: naosh_all_cent(nfsym)
+!----------------------------------------------------------------------
+  integer, allocatable   :: rbuf(:)
+  integer, allocatable   :: cbuf(:)
+  integer, allocatable   :: ibuf(:)
+  integer, allocatable   :: jbuf(:)
+  integer                :: icent
+  integer                :: iatom
+!----------------------------------------------------------------------
+      icent    = 1
+      do iatom = 1, ncont
+
+!       get # of basis functions (L and L+S) for this atom type
+!       read atomic pctmat from file
+
+        call put_aoblock(umol,
+                         naosh_all_cent(1),
+                         naosh_L(1),
+                         icent,
+                         NONT(IATOM),
+                         NUCDEG(ICENT),
+                         NZC1,
+                         WORK(KADE),
+                         NBAS,
+                         NBAS,
+                         -1,
+                         NBAS,
+                         NBAS,
+                         -1,
+                         rbuf,
+                         cbuf,
+                         ibuf,
+                         jbuf)
+        ICENT = ICENT+NONT(IATOM)
+      end do
+
+  end subroutine construct_umol_from_atoms
+!***********************************************************************
 end module x2c_fragment_x2c_interface
 
