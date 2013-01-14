@@ -24,15 +24,14 @@ module x2c_fragment_x2c_interface
 ! stefan: this module contains all the functionality to carry out an ensuing 
 !         transformation
 !         ========================
-!         X_2c^++ = U^+ * X_4c * U
+!         h_2c^++ = U^+ * h_4c * U
 !         ========================
-!         where U was obtained by means of the atom-by-atom X2C approach:
+!         where U was obtained by means of an atom-by-atom X2C approach:
 !         U =~ SUM_{all unique atomic center/fragments i} U_i = U^{@}
 !
-!         for more details see, e.g. W. Liu, Molecular Physics, 108, (2010) p. 1679ff. 
-!         here we implement scheme (3) and (4) which are described in more detail on page 1702f.
+!         for more details see Peng and Reiher, JCP 2012
 !
-! written by sknecht jan 2011 - ???
+! written by sknecht jan 2013
 !
 
   use fragment_x2c_cfg
@@ -47,13 +46,35 @@ module x2c_fragment_x2c_interface
 contains
 
 !***********************************************************************
-  subroutine x2c_fragment_x2c_driver()
+  subroutine x2c_fragment_x2c_driver(nz,             &
+                                     nfsym,          &
+                                     naosh_all_cent)
 
 !**********************************************************************
 !
-!    purpose: 
+!    purpose: read pct-matrices U_fragment for atomic types and
+!             generate the approximate molecular U
 !
 !----------------------------------------------------------------------
+  integer, intent(in)  :: nz
+  integer, intent(in)  :: nfsym
+  integer, intent(in)  :: naosh_all_cent(nfsym)
+!----------------------------------------------------------------------
+  real(8), allocatable :: umol(:)
+!----------------------------------------------------------------------
+
+
+! safety check
+  if(.not.fragment_x2c_info%fragment_approach_enabled) return
+
+! default for the following procedure is to use the atomic fragments
+! possible extensions are: unit matrices for light atoms and fragment matrices 
+! for heavy centers being close or even sharing a chemical bond.
+
+  
+
+! call construct_umol
+
   end subroutine x2c_fragment_x2c_driver
 
 !***********************************************************************

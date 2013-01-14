@@ -112,7 +112,7 @@ contains
 
 !**********************************************************************
   subroutine x2c_driver(                        &
-                        atom_by_atom_x2c,       &
+                        fragment_x2c,           &
                         return_h1_inf_2c)
 !**********************************************************************
 !
@@ -142,7 +142,7 @@ contains
 !
 !
 !**********************************************************************
-     logical, intent(in)    :: atom_by_atom_x2c   ! atom-by-atom or molecular x2c run
+     logical, intent(in)    :: fragment_x2c       ! fragment-x2c run
      logical, intent(in)    :: return_h1_inf_2c   ! return transformed h1_2c^++
 !----------------------------------------------------------------------
      real(8), allocatable   :: wrk(:)
@@ -192,16 +192,16 @@ contains
 !      ------------------------------------------------------------------------------
        call init_x2c_cb(.true.)
 
-       select case(atom_by_atom_x2c)
+       select case(fragment_x2c)
 
          case(.true.) 
 
-!          atom-by-atom X2C run
-           call quit(' *** error in x2c_driver: atom-by-atom X2C code is not activated yet. ***')
-!          -----------------------------------------------
-!          atom-by-atom X2C run: construct full pct-matrix
-!          -----------------------------------------------
-           call x2c_fragment_x2c_driver()
+!          ----------------------------------------------------------
+!          fragment X2C run: construct full pct-matrix in SA-AO basis
+!          ----------------------------------------------------------
+           call x2c_fragment_x2c_driver(nr_quat,       &
+                                        nr_fsym,       &
+                                        nr_ao_all)
 
          case(.false.) ! false
 
@@ -425,7 +425,7 @@ contains
                       x2c_bs_to_fs,           &
                       lwrk,                   &
                       x2c_prt,                &
-                      atom_by_atom_x2c,       &
+                      fragment_x2c,           &
                       x2c_linsym,             &
                       x2c_mdirac,             &
                       x2c_spinfree,           &
@@ -439,44 +439,45 @@ contains
 
          close(x2c_Sao_scrF,status="delete")
 
-!        --------------------------------------------------------------------------------------------------
-!        step 1.6: add oo-order 2e-SOC or AMFI contributions in case
-!                  h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
-!        --------------------------------------------------------------------------------------------------
-         if(x2c_add_amfi > 0)then
-
-           call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
-                                          x2c_add_amfi,                      &
-                                          nr_ao_total_x2c,                   &
-                                          nr_ao_large_x2c,                   &
-                                          nr_ao_all,                         &
-                                          nr_ao_l,                           &
-                                          nr_fsym,                           &
-                                          nr_quat,                           &
-                                          x2c_bs_irrep_mat,                  &
-                                          x2c_cb_pq_to_uq,                   &
-                                          x2c_cb_uq_to_pq,                   &
-                                          x2c_iqmult_trip_q,                 &
-                                          x2c_bs_to_fs,                      &
-                                          x2c_pointer_quat,                  &
-                                          x2c_pointer_quat_op,               &
-                                          x2c_max_quant_num,                 &
-                                          num_nuclei,                        &
-                                          typ_nuclei,                        &
-                                          x2c_tot_charge_for_mfsum,          &
-                                          x2c_amfi_order,                    &
-                                          lwrk,                              &
-                                          x2c_do_spherical,                  &
-                                          x2c_famfi,                         &
-                                          x2c_funit,                         &
-                                          x2c_cspeed,                        &
-                                          x2c_prt)
-         end if
-
-         close(x2c_famfi,status="delete")
 
 
      end select ! atom-by-atom X2C switch
+
+!    --------------------------------------------------------------------------------------------------
+!    step 1.6: add oo-order 2e-SOC or AMFI contributions in case
+!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
+!    --------------------------------------------------------------------------------------------------
+     if(x2c_add_amfi > 0)then
+
+       call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
+                                      x2c_add_amfi,                      &
+                                      nr_ao_total_x2c,                   &
+                                      nr_ao_large_x2c,                   &
+                                      nr_ao_all,                         &
+                                      nr_ao_l,                           &
+                                      nr_fsym,                           &
+                                      nr_quat,                           &
+                                      x2c_bs_irrep_mat,                  &
+                                      x2c_cb_pq_to_uq,                   &
+                                      x2c_cb_uq_to_pq,                   &
+                                      x2c_iqmult_trip_q,                 &
+                                      x2c_bs_to_fs,                      &
+                                      x2c_pointer_quat,                  &
+                                      x2c_pointer_quat_op,               &
+                                      x2c_max_quant_num,                 &
+                                      num_nuclei,                        &
+                                      typ_nuclei,                        &
+                                      x2c_tot_charge_for_mfsum,          &
+                                      x2c_amfi_order,                    &
+                                      lwrk,                              &
+                                      x2c_do_spherical,                  &
+                                      x2c_famfi,                         &
+                                      x2c_funit,                         &
+                                      x2c_cspeed,                        &
+                                      x2c_prt)
+      end if
+
+      close(x2c_famfi,status="delete")
 
 !      ------------------------------------------------------------------------------------------
 !      step 4: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):

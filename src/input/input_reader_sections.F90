@@ -1265,6 +1265,7 @@
    subroutine read_input_x2c(word, kw_section)
 
       use x2cmod_cfg
+      use fragment_x2c_cfg
       use input_reader
 
       implicit none
@@ -1276,9 +1277,9 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.FGMx2c')) then
-!        x2cmod_fragment_x2c = .true.
-         x2cmod_fragment_x2c = .false.
+      if (kw_matches(word, '.fragx2')) then
+         x2cmod_fragment_x2c                         = .true.
+         fragment_x2c_info%fragment_approach_enabled = .true.
       end if
 
       if (kw_matches(word, '.DEBUG ')) then
