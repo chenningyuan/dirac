@@ -92,10 +92,10 @@ module dirx2c
   use x2c_pct_ao
   use x2c_fio
   use x2c_utils
-  use atomic_x2c
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
   use x2c_import_exportC1
+  use x2c_fragment_x2c_interface
 
   implicit none
 
@@ -201,7 +201,7 @@ contains
 !          -----------------------------------------------
 !          atom-by-atom X2C run: construct full pct-matrix
 !          -----------------------------------------------
-           call x2c_atomic_x2c_driver()
+           call x2c_fragment_x2c_driver()
 
          case(.false.) ! false
 

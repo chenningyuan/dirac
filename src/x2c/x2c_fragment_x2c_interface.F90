@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
-module atomic_x2c
+module x2c_fragment_x2c_interface
 
 ! stefan: this module contains all the functionality to carry out an ensuing 
 !         transformation
@@ -35,11 +35,11 @@ module atomic_x2c
 ! written by sknecht jan 2011 - ???
 !
 
-  use atomic_x2c_cfg
+  use fragment_x2c_cfg
 
   implicit none
 
-  public x2c_atomic_x2c_driver
+  public x2c_fragment_x2c_driver
 
   private
 
@@ -47,15 +47,16 @@ module atomic_x2c
 contains
 
 !***********************************************************************
-  subroutine x2c_atomic_x2c_driver()
+  subroutine x2c_fragment_x2c_driver()
 
 !**********************************************************************
 !
 !    purpose: 
 !
 !----------------------------------------------------------------------
-  end subroutine x2c_atomic_x2c_driver
+  end subroutine x2c_fragment_x2c_driver
 
 !***********************************************************************
 
-end module
+end module x2c_fragment_x2c_interface
+
