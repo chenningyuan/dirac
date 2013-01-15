@@ -34,9 +34,6 @@ module dirx2c
 !                 " DIRAC" NZT == NZ
 !                 for simplicity we internally use nzt = nz also for MDIRAC (some 0 multiplies will not hurt that much
 !                 
-! space for some notes on the pure 1-step approach: 
-!
-!
 ! ---------------------------------------------------------------------------------------
 !                            "roadmap" of the X2C code
 ! ---------------------------------------------------------------------------------------
@@ -100,8 +97,7 @@ module dirx2c
 
   implicit none
 
-  public x2c_tra
-  public x2c_driver
+  public x2c_main
 
   private
 
@@ -112,11 +108,11 @@ module dirx2c
 contains
 
 !**********************************************************************
-  subroutine x2c_driver(                        &
-                       )
+  subroutine x2c_main(                        &
+                     )
 !**********************************************************************
 !
-!    purpose: driver routine of the X2C algorithm
+!    purpose: main driver routine of the X2C algorithm
 !
 !             for a detailed overview of the code structure the programmer 
 !             may be refered to the "figure" at the beginning of this file.
@@ -163,12 +159,12 @@ contains
      character (len=12)     :: flabel                   ! label for matrices on file
 !**********************************************************************
 
-!    ------------------------------------------------------------------------------
-!    step 0: initialize and print header
-!    ------------------------------------------------------------------------------
-
 !    print header
      call hello_dirx2c()
+
+!    ------------------------------------------------------------------------------
+!    step 1.0: initialize and open files
+!    ------------------------------------------------------------------------------
 
 !    initialize variable(s)
      final_ham_lvl_x2c = 0
@@ -190,31 +186,11 @@ contains
      call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
 
 !    ------------------------------------------------------------------------------
-!    step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
+!    step 1.1: initialize X2C dimensions in Dirac-sorted SA-AO basis and symmetry settings 
+!              transfer information from (Dirac) common blocks to private X2C variables
 !    ------------------------------------------------------------------------------
      call init_x2c_cb(.true.)
 
-!    ------------------------------------------------------------------------------
-!    step 1.1: construct molecular U matrix from fragments/atoms if requested
-!    ------------------------------------------------------------------------------
-     if(fragment_x2c_info%fragment_approach_enabled)then
-
-!       ----------------------------------------------------------
-!       fragment X2C run: construct full pct-matrix in SA-AO basis
-!       ----------------------------------------------------------
-        call x2c_fragment_x2c_driver(nr_quat,             &
-                                     nr_fsym,             &
-                                     x2c_mxatom,          &
-                                     type_nuclei,         &
-                                     type_charge,         &
-                                     nr_symm_indep_cent,  &
-                                     nr_degen_nuc_cent,   &
-                                     nr_ao_bas_type(1,0), &
-                                     nr_ao_all,           &
-                                     nr_ao_l,             &
-                                     x2c_funit            &
-                                    )
-     end if
 
 !    memory allocation - part 1 - allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
 !    --------------------------------------------------------------------------------------------- 
@@ -354,27 +330,29 @@ contains
 
        case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-           allocate(wrk(lwrk))
-           call modham(scr1mat,                                         &
-                       xmat,                                            &
-                       scr2mat,                                         &
-                       eigvl,                                           &
-                       .true.,                                          &
-                       .false.,                                         &
-                       x2c_is_defining_h1mat,                           &
-                       wrk,                                             &
-                       lwrk)
-           deallocate(wrk)
+           if(.not.fragment_x2c_info%fragment_approach_enabled)then
+             allocate(wrk(lwrk))
+             call modham(scr1mat,                                         &
+                         xmat,                                            &
+                         scr2mat,                                         &
+                         eigvl,                                           &
+                         .true.,                                          &
+                         .false.,                                         &
+                         x2c_is_defining_h1mat,                           &
+                         wrk,                                             &
+                         lwrk)
+             deallocate(wrk)
+!            ------------------------------------------------------------------------------------
+!            step 1.5: transfer dimensions on common blocks concerning the orthonormal MO basis -
+!                      these dimensions have been evaluated in MODHAM
+!            ------------------------------------------------------------------------------------
+             call init_x2c_cb(.true.)
+           end if
 
-!        ------------------------------------------------------------------------------------
-!        step 1.5: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                  these dimensions have been evaluated in MODHAM
-!        ------------------------------------------------------------------------------------
-         call init_x2c_cb(.true.)
 
        case default
      
-         stop 'x2c driver: defining 4c-Hamiltonian type unknown...'
+         stop 'x2c main: defining 4c-Hamiltonian type unknown...'
 
      end select
 
@@ -393,47 +371,78 @@ contains
      lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
 !    ------------------------------------------------------------------------------
-!    step 1.6: obtain 
-!              a. decoupling matrix "R" in orthonormal MO basis
-!              b. picture-change transformation matrix "U" in Dirac-sorted SA-AO basis
-!              c. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
+!    step 1.6: obtain for 
+!              i. fragment/atomic X2C
+!                  a. picture-change transformation matrix "U" in Dirac-sorted SA-AO basis
+!                  b. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
+!             ii. molecular X2C
+!                  a. decoupling matrix "R" in orthonormal MO basis
+!                  b. picture-change transformation matrix "U" in Dirac-sorted SA-AO basis
+!                  c. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
 !    ------------------------------------------------------------------------------
 
      if(fragment_x2c_info%fragment_approach_enabled)then
-       call x2c_fragment_get_h1_2c
+
+!      free intermediate memory
+       deallocate(scr1mat)
+       deallocate(scr2mat)
+       deallocate(xmat)
+
+!      construct molecular U matrix from fragments/atoms
+!      -------------------------------------------------
+       call x2c_fragment_x2c_driver(nr_quat,             &
+                                    nr_fsym,             &
+                                    x2c_mxatom,          &
+                                    type_nuclei,         &
+                                    type_charge,         &
+                                    nr_symm_indep_cent,  &
+                                    nr_degen_nuc_cent,   &
+                                    nr_ao_bas_type(1,0), &
+                                    nr_ao_all,           &
+                                    nr_ao_l,             &
+                                    x2c_funit            &
+                                   )
+
+!      get h1_2c_inf in  Dirac-sorted SA-AO basis
+!      ------------------------------------------
+       call x2c_fragment_get_h1_2c()
+
      else
-       call x2c_tra(xmat,                      &
-                    scr1mat,                   &
-                    scr2mat,                   &
-                    nr_ao_large_x2c,           &
-                    nr_ao_total_x2c,           &
-                    nr_ao_all,                 &
-                    nr_ao_l,                   &
-                    dim_oshell,                &
-                    dim_eshell,                &
-                    dim_pshell,                &
-                    fullomat_dim,              &
-                    fulleomat_dim,             &
-                    ioff_aomat_x,              &
-                    nr_fsym,                   &
-                    nr_quat,                   &
-                    nzt_x2c,                   &
-                    x2c_cb_pq_to_uq,           &
-                    x2c_funit,                 &
-                    x2c_fscru,                 &
-                    x2c_famfi,                 &
-                    x2c_is_defining_h1mat,     &
-                    final_ham_lvl_x2c,         &
-                    x2c_add_amfi,              &
-                    x2c_bs_to_fs,              &
-                    lwrk,                      &
-                    x2c_prt,                   &
-                    fragment_x2c_info%         &
-                    fragment_approach_enabled, &
-                    x2c_linsym,                &
-                    x2c_mdirac,                &
-                    x2c_spinfree,              &
-                    x2c_do_spherical)
+
+!      molecular (full) X2C 
+!      --------------------
+       call x2c_full_x2c_driver(xmat,                      &
+                                scr1mat,                   &
+                                scr2mat,                   &
+                                nr_ao_large_x2c,           &
+                                nr_ao_total_x2c,           &
+                                nr_ao_all,                 &
+                                nr_ao_l,                   &
+                                dim_oshell,                &
+                                dim_eshell,                &
+                                dim_pshell,                &
+                                fullomat_dim,              &
+                                fulleomat_dim,             &
+                                ioff_aomat_x,              &
+                                nr_fsym,                   &
+                                nr_quat,                   &
+                                nzt_x2c,                   &
+                                x2c_cb_pq_to_uq,           &
+                                x2c_funit,                 &
+                                x2c_fscru,                 &
+                                x2c_famfi,                 &
+                                x2c_is_defining_h1mat,     &
+                                final_ham_lvl_x2c,         &
+                                x2c_add_amfi,              &
+                                x2c_bs_to_fs,              &
+                                lwrk,                      &
+                                x2c_prt,                   &
+                                fragment_x2c_info%         &
+                                fragment_approach_enabled, &
+                                x2c_linsym,                &
+                                x2c_mdirac,                &
+                                x2c_spinfree,              &
+                                x2c_do_spherical)
 !      free memory
        deallocate(scr1mat)
        deallocate(scr2mat)
@@ -519,8 +528,7 @@ contains
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then
-!        for the time being we pursue strategy 2 - diagonalization of the pct Fock operator
-!        stefan - june 2011
+!        for the time being we pursue strategy 2 - diagonalization of the pct Fock operator - stefan - june 2011
          pct_mocoeff_strategy_mmf = 2
          call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
                                                  pct_mocoeff_strategy_mmf,  &
@@ -541,6 +549,7 @@ contains
                                                  x2c_linsym,                &
                                                  x2c_prt)
        end if
+
 !      --------------------------------------------------------------------------------------------
 !      step 4: export picture-change transformation matrix to AO basis with nosym (C1 double group)
 !      --------------------------------------------------------------------------------------------
@@ -558,40 +567,40 @@ contains
 !      print goodbye 
        call goodbye_dirx2c()
 
-  end subroutine
+  end subroutine x2c_main
 
 !**********************************************************************
-  subroutine x2c_tra(xmat,                 &
-                     scr1mat,              &
-                     scr2mat,              &
-                     nr_ao_L,              &
-                     naosh_ls,             &
-                     naosh_all,            &
-                     naosh_L,              &
-                     norb_dim,             &
-                     nesh_dim,             &
-                     npsh_dim,             &
-                     h1mat_dim_4c,         &
-                     momat_orbesh_dim_4c,  &
-                     ioff_aomx,            &
-                     nfsym,                &
-                     nz,                   &
-                     nzt,                  &
-                     ipq_off,              &
-                     x2c_file_glb,         &
-                     x2c_file_scr,         &
-                     x2c_file_amf,         &
-                     defining_h1mat,       &
-                     is_final_ham_lvl,     &
-                     add_amfi_contrib,     &
-                     op_bs_to_fs,          &
-                     is_len_wrk,           &
-                     print_lvl,            &
-                     fragment_x2c,         &
-                     linear_sym,           &
-                     mdirac,               &
-                     spinfree,             &
-                     spherical_on)
+  subroutine x2c_full_x2c_driver(xmat,                 &
+                                 scr1mat,              &
+                                 scr2mat,              &
+                                 nr_ao_L,              &
+                                 naosh_ls,             &
+                                 naosh_all,            &
+                                 naosh_L,              &
+                                 norb_dim,             &
+                                 nesh_dim,             &
+                                 npsh_dim,             &
+                                 h1mat_dim_4c,         &
+                                 momat_orbesh_dim_4c,  &
+                                 ioff_aomx,            &
+                                 nfsym,                &
+                                 nz,                   &
+                                 nzt,                  &
+                                 ipq_off,              &
+                                 x2c_file_glb,         &
+                                 x2c_file_scr,         &
+                                 x2c_file_amf,         &
+                                 defining_h1mat,       &
+                                 is_final_ham_lvl,     &
+                                 add_amfi_contrib,     &
+                                 op_bs_to_fs,          &
+                                 is_len_wrk,           &
+                                 print_lvl,            &
+                                 fragment_x2c,         &
+                                 linear_sym,           &
+                                 mdirac,               &
+                                 spinfree,             &
+                                 spherical_on)
 !**********************************************************************
 !
 !    purpose: X2C transformation driver routine
@@ -825,8 +834,8 @@ contains
 
        close(x2c_file_scr,status="delete")
 
-  end subroutine
+  end subroutine x2c_full_x2c_driver
 
 !**********************************************************************
 
-end module
+end module dirx2c

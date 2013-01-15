@@ -2591,7 +2591,7 @@ C*****************************************************************************
       use memory_allocator
       use x2cmod_cfg
       use dirx2c
-      use x2c_pct_ao,       only:
+      use x2c_pct_ao, only:
      &    pctrafo_all_op_driver
       use x2c_fio
       use x2c_pct_mo_coefficients, only: 
@@ -2887,7 +2887,7 @@ C         2) do picture change transformation of integrals on AOPROPER
             call aoosoc_init()
 #endif
 !           optimized x2c module
-            call x2c_driver()
+            call x2c_main()
 
 !           re-allocate 
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
