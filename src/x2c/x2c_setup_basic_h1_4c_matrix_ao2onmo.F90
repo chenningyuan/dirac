@@ -65,7 +65,6 @@ contains
                                  ipq_off_in,           &
                                  basic_h1mat,          &
                                  is_len_wrk,           &
-                                 is_fragment,          &
                                  x2c_file_scr,         &
                                  linear_sym,           &
                                  mdirac,               &
@@ -97,7 +96,6 @@ contains
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: basic_h1mat
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
@@ -202,7 +200,7 @@ contains
          end if
 
 !        store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
-         write(flabel,'(a7,i4,i1)') 'h1_4cON',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'h1_4cON',1,i
          call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
 
 !        update offsets for matrices

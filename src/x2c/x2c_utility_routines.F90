@@ -79,20 +79,15 @@ contains
                                        nz,                 &
                                        nzt,                &
                                        ipq_off_in,         &
-                                       is_fragment_pctmat, &
-                                       is_fragment,        &
                                        x2c_file_scr,       &
                                        x2c_file_glb,       &
                                        print_lvl)   
 !**********************************************************************
 !
 !    purpose: construct the picture-change transformation matrix "U" 
-!             in DIRAC-sorted SA-AO basis for the fragment "is_fragment" 
+!             in DIRAC-sorted SA-AO basis
 !             using the AO-to-MO transformation matrix V and the 
 !             pct-matrix Umat_ON in orthonormal MO basis.
-!
-!             NOTE: the picture-change transformation matrix is written under the label
-!             "is_fragment_pctmat" as defined in the calling routine.
 !
 !             equation: U = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
 !
@@ -109,8 +104,6 @@ contains
      integer, intent(in)    :: nz
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
-     integer, intent(in)    :: is_fragment_pctmat
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: print_lvl
@@ -141,7 +134,6 @@ contains
                                             nz,                   &
                                             nzt,                  &
                                             nfsym,                &
-                                            is_fragment,          &
                                             ipq_off_in,           &
                                             x2c_file_scr)
 
@@ -158,11 +150,11 @@ contains
          if(norb_dim(i) > 0)then
 
 !          read picture-change transformation matrix in orthonormal MO basis from scratch file
-           write(flabel,'(a7,i4,i1)') 'Umat_ON',is_fragment,i
+           write(flabel,'(a7,i4,i1)') 'Umat_ON',1,i
            call x2c_read(flabel,scr_mat3,norb1_f*n1esh_f*nz,x2c_file_scr)
 
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file
-           write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
+           write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
            call x2c_read(flabel,xmat,nbas1_f*norb1_f*nzt,x2c_file_scr)
 
 !          pctmt (4c-SA-AO -> 2c-ON-RKB) = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
@@ -216,7 +208,7 @@ contains
                       nz)          
 
 !          store picture-change transformation matrix in DIRAC-sorted SA-AO basis on global file
-           write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment_pctmat,i
+           write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
            call x2c_write(flabel,xmat,nbas1_f*nbasL_f*nz,x2c_file_glb)
 
 !          debug print
@@ -247,7 +239,6 @@ contains
                                              nz,            &
                                              nzt,           &
                                              nfsym,         &
-                                             is_center,     &
                                              ipq_off_in,    &
                                              x2c_file_scr)
 !**********************************************************************
@@ -269,7 +260,6 @@ contains
      integer, intent(in)    :: nz
      integer, intent(in)    :: nzt
      integer, intent(in)    :: nfsym
-     integer, intent(in)    :: is_center
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: x2c_file_scr
 !----------------------------------------------------------------------
@@ -302,7 +292,7 @@ contains
            call get_Sao_LL_mat(scr_mat1(ioff_ovl),.false.,nbas1_f,i,-1)
 
 !          read RKB AOtoMO transformation matrix ["SL resorted"] from file 
-           write(flabel,'(a7,i4,i1)') '4cAOMOr',is_center,i
+           write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
            call x2c_read(flabel,scr_mat2(ioff_temp_sl_r),nbas1_f*norb1_f*nzt,x2c_file_scr)
 
 !          proper offset in qgemm for the "SL resorted" matrix
@@ -419,7 +409,6 @@ contains
                                        nz,                  &
                                        nzt,                 &
                                        defining_h1mat,      &
-                                       is_fragment,         &
                                        x2c_file_scr,        &
                                        ipq_off_in,          &
                                        print_lvl,           &
@@ -446,7 +435,6 @@ contains
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
      integer, intent(in)    :: nzt
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: ipq_off_in(4,0:7)
@@ -465,15 +453,15 @@ contains
 
        do i = 1, nfsym
 
-         write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
+         write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
          call x2c_write(flabel,mat1(ioff_aomo),naosh_all(i)*norb_dim(i)*nzt,x2c_file_scr)
 
          if(defining_h1mat == 2)then
-           write(flabel,'(a7,i4,i1)') '4cAOMOo',is_fragment,i
+           write(flabel,'(a7,i4,i1)') '4cAOMOo',1,i
            call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nzt,x2c_file_scr)
 
            if(linear_sym)then
-             write(flabel,'(a7,i4,i1)') '4cMOMOl',is_fragment,i
+             write(flabel,'(a7,i4,i1)') '4cMOMOl',1,i
              call x2c_write(flabel,mat3(ioff_momo),norb_dim(i)**2 * nz,x2c_file_scr)
            end if
 
@@ -518,7 +506,6 @@ contains
                         nfsym,               &
                         nz,                  &
                         ipq_off_in,          &
-                        is_fragment,         &
                         x2c_file_glb,        &
                         print_lvl,           &
                         linear_sym)
@@ -548,7 +535,6 @@ contains
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
      integer, intent(in)    :: ipq_off_in(4,0:7)
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
@@ -607,7 +593,7 @@ contains
 !      step 3: store 2c-adapted Lowdin matrix in AO2MO basis on global file (tag i = 0: marks data storage of "g+u" (if nfsym > 1))
 !                    ^^         ^ ^              ^^ ("g" == general case)
 !      label code:   ||         | |              ||   |
-       write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,0
+       write(flabel,'(a7,i4,i1)') '2cLWAOg',1,0
 
        
        call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
@@ -659,7 +645,7 @@ contains
          end do
  
 !        store adapted 2c-LOWDIN matrix on file
-         write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,0
+         write(flabel,'(a7,i4,i1)') '2cLWAOl',1,0
          call x2c_write(flabel,scr_mat2,nlowdmat,x2c_file_glb)
 
        end if
@@ -782,9 +768,9 @@ contains
        i = 0
        j = 0
        if(abs_ham_lvl <= 2)then
-         write(flabel,'(a7,i4,i1)') 'h12cAOn',j,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
        else 
-         write(flabel,'(a7,i4,i1)') 'h12cAOA',j,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOA',1,i
        end if
 
 !      step 2: read selected integrals from file X2CMAT

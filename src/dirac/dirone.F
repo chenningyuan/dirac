@@ -2806,7 +2806,7 @@ C         2) do picture change transformation of integrals on AOPROPER
             if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
-              if(fndlab12('h12cAOA   00',lux2c))then
+              if(fndlab12('h12cAOA   10',lux2c))then
                 if(noamfi)then
                   write(lupri,'(a)') 
      &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
@@ -2816,7 +2816,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !               set i2cofk to |3|: since we restart, it does not matter
 !               how the AMFI part was derived.
                 i2cofk = 3
-              else if(fndlab12('h12cAOn   00',lux2c))then
+              else if(fndlab12('h12cAOn   10',lux2c))then
                 i2cofk = 1
               else
                   write(lupri,'(a)') 
@@ -2887,7 +2887,7 @@ C         2) do picture change transformation of integrals on AOPROPER
             call aoosoc_init()
 #endif
 !           optimized x2c module
-            call x2c_driver(x2cmod_fragment_x2c,.true.)
+            call x2c_driver()
 
 !           re-allocate 
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
@@ -3167,7 +3167,7 @@ C
 !           initialize offset
             ioff_pct_mat = 1
             do i = 1, nfsym
-              write(flabel,'(a11,i1)') 'pctmtAO   0',i
+              write(flabel,'(a11,i1)') 'pctmtAO   1',i
               if(nfbas(i,0) * nfbas(i,1) > 0)then
                 call x2c_read(flabel,pctm_aoosoc(ioff_pct_mat),
      &                        nfbas(i,0) * nfbas(i,1)*nz,lux2c)

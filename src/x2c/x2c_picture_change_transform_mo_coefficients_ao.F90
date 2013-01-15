@@ -101,11 +101,9 @@ contains
      real(8), allocatable            :: scratch4(:)
      integer, allocatable            :: scratch5(:)
      integer                         :: i, j, k, l
-     integer                         :: is_fragment_tot
 !**********************************************************************
 
 !      initialize the fragment value - in the mmf-case it has (by definition) to be zero.
-       is_fragment_tot = 0
        j               = 0
        k               = 0
        l               = 0
@@ -163,7 +161,6 @@ contains
                                                  nz,                           &
                                                  ipq_off_in,                   &
                                                  x2c_file_glb,                 &
-                                                 is_fragment_tot,              &
                                                  print_lvl)   
          case(2) 
 
@@ -194,7 +191,6 @@ contains
                                                     ipq_off_in,                   &
                                                     l,                            &
                                                     x2c_file_glb,                 &
-                                                    is_fragment_tot,              &
                                                     linear_sym,                   &
                                                     print_lvl)   
 !                                                   3)   
@@ -229,7 +225,6 @@ contains
                                                 nz,                          &
                                                 ipq_off_in,                  &
                                                 x2c_file_glb,                &
-                                                is_fragment,                 &
                                                 print_lvl)   
 !**********************************************************************
 !
@@ -254,7 +249,6 @@ contains
      integer, intent(in)            :: nesh_dim(nfsym)
      integer, intent(in)            :: npsh_dim(nfsym)
      integer, intent(in)            :: ipq_off_in(4,0:7)
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: print_lvl
      character (len= 6), intent(in) :: mo_coeff_file_name
@@ -288,7 +282,7 @@ contains
 !      ---------------------------------------------------------------------------------
 
        do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
@@ -495,7 +489,6 @@ contains
                                                    ipq_off_in,               &
                                                    lwork,                    &
                                                    x2c_file_glb,             &
-                                                   is_fragment,              &
                                                    linear_sym,               &
                                                    print_lvl)   
 !**********************************************************************
@@ -519,7 +512,6 @@ contains
      integer, intent(in)            :: nesh_dim(nfsym)
      integer, intent(in)            :: ipq_off_in(4,0:7)
      integer, intent(inout)         :: lwork
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: print_lvl
      logical, intent(in)            :: linear_sym

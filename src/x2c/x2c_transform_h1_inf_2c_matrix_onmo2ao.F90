@@ -63,7 +63,6 @@ contains
                                     nz,                     &
                                     nzt,                    &
                                     ipq_off_in,             &
-                                    is_fragment,            &
                                     is_final_ham_lvl,       &
                                     add_amfi_contrib,       &
                                     is_len_wrk,             &
@@ -101,7 +100,6 @@ contains
      integer, intent(in)    :: nz
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
-     integer, intent(in)    :: is_fragment
      integer, intent(inout) :: is_final_ham_lvl
      integer, intent(in)    :: basic_h1mat
      integer, intent(in)    :: add_amfi_contrib
@@ -122,7 +120,6 @@ contains
      integer                :: nr_sph
      integer                :: ioff_h1_inf_2cmoON
      integer                :: ioff_tramat
-     integer                :: is_fragment_tmp
      character (len=12)     :: flabel
 !**********************************************************************
 
@@ -145,7 +142,6 @@ contains
                                             nz,                   &
                                             nzt,                  &
                                             nfsym,                &
-                                            is_fragment,          &
                                             ipq_off_in,           &
                                             x2c_file_scr)
 
@@ -215,13 +211,8 @@ contains
 
 !        set (intermediate) pointer to Hamiltonian integral type - final adaption after AMFI step
          is_final_ham_lvl = 5
-         if(.not.fragment_x2c)then
-           is_fragment_tmp  = 0
-         else
-           is_fragment_tmp  = is_fragment
-         end if
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOa',is_fragment_tmp,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
 !                                          ^
 !                                          |
 !                                          a ("amfi preparation"); label will be
@@ -233,13 +224,11 @@ contains
 !        set pointer to Hamiltonian integral type 
          if(.not.fragment_x2c)then
            is_final_ham_lvl = 1
-           is_fragment_tmp  = 0
          else
            is_final_ham_lvl = 2
-           is_fragment_tmp  = is_fragment
          end if
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOn',is_fragment_tmp,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
 !                                          ^
 !                                          |
 !                                          n ("no amfi") == final Hamiltonian integrals

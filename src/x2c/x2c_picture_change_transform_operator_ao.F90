@@ -115,13 +115,8 @@ contains
      logical                         :: prop_op_nopct
      integer, allocatable            :: prop_op_dgsym(:)
      integer, allocatable            :: prop_op_trsym(:)
-     integer                         :: is_fragment_tot
      character (len=16), allocatable :: prop_op_name(:)
 !**********************************************************************
-
-!      initialize the fragment value - after the combination of all fragment 
-!      pct-matrices the new default value is 0.
-       is_fragment_tot = 0
 
 !      step 1: picture-change transform the bare-nucleus corrected 1e Dirac-Hamiltonian
 !      --------------------------------------------------------------------------------
@@ -134,7 +129,6 @@ contains
                                                 nz,                  &
                                                 ipq_off_in,          &
                                                 ioff_aomx,           &
-                                                is_fragment_tot,     &
                                                 x2c_file_glb,        &
                                                 op_bs_to_fs,         &
                                                 is_len_wrk,          &
@@ -154,7 +148,6 @@ contains
                                                    nz,                         &
                                                    ipq_off_in,                 &
                                                    ioff_aomx,                  &
-                                                   is_fragment_tot,            &
                                                    x2c_file_glb,               &
                                                    op_bs_to_fs,                &
                                                    nr_2e_fock_matrices,        &
@@ -200,7 +193,6 @@ contains
                                        nz,                  &
                                        ipq_off_in,          &
                                        ioff_aomx,           &
-                                       is_fragment_tot,     &
                                        x2c_file_glb,        &
                                        int1_4c_file,        &
                                        op_bs_to_fs,         &
@@ -229,7 +221,6 @@ contains
                                         nz,                  &
                                         ipq_off_in,          &
                                         ioff_aomx,           &
-                                        is_fragment,         &
                                         x2c_file_glb,        &
                                         int1_4c_file,        &
                                         op_bs_to_fs,         &
@@ -260,7 +251,6 @@ contains
      integer, intent(in)            :: nz
      integer, intent(in)            :: ipq_off_in(4,0:7)
      integer, intent(in)            :: ioff_aomx(nfsym,nfsym)
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: int1_4c_file
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
@@ -312,10 +302,9 @@ contains
 
 !      print '(a,i0)', 'nfsym       == ',nfsym
 !      print '(a,i0)', 'nz          == ',nz
-!      print '(a,i0)', 'is_fragment == ',is_fragment
 
        do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,     &
                                                        x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
@@ -459,7 +448,6 @@ contains
                                                nz,                   &
                                                ipq_off_in,           &
                                                ioff_aomx,            &
-                                               is_fragment,          &
                                                x2c_file_glb,         &
                                                op_bs_to_fs,          &
                                                is_len_wrk,           &
@@ -485,7 +473,6 @@ contains
      integer, intent(in)            :: nz
      integer, intent(in)            :: ipq_off_in(4,0:7)
      integer, intent(in)            :: ioff_aomx(nfsym,nfsym)
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
      integer, intent(in)            :: is_len_wrk
@@ -554,7 +541,7 @@ contains
        ioff_pct_mat = 1
 
        do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,     &
                                                        x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
@@ -610,7 +597,6 @@ contains
                                                   nz,                          &
                                                   ipq_off_in,                  &
                                                   ioff_aomx,                   &
-                                                  is_fragment,                 &
                                                   x2c_file_glb,                &
                                                   op_bs_to_fs,                 &
                                                   nr_2e_fock_matrices,         &
@@ -642,7 +628,6 @@ contains
      integer, intent(in)            :: nz
      integer, intent(in)            :: ipq_off_in(4,0:7)
      integer, intent(in)            :: ioff_aomx(nfsym,nfsym)
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
      integer, intent(in)            :: nr_2e_fock_matrices
@@ -675,7 +660,7 @@ contains
 !      initialize offset
        ioff_pct_mat = 1
        do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do

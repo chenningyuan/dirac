@@ -78,7 +78,6 @@ contains
                                      ipq_off_in,           &
                                      defining_h1mat,       &
                                      is_len_wrk,           &
-                                     is_fragment,          &
                                      x2c_file_scr,         &
                                      linear_sym,           &
                                      mdirac,               &
@@ -107,7 +106,6 @@ contains
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
@@ -399,7 +397,7 @@ contains
 
 !         read the 4c-fock operator in SA-AO basis from file (label == h1_4cAO)
           nbas1_f = naosh_all(i)
-          write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
+          write(flabel,'(a7,i4,i1)') 'h14csAO',1,i
 
           if(nbas1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
@@ -474,7 +472,7 @@ contains
         do i = 1, nfsym
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
-          write(flabel,'(a7,i4,i1)') '4cAOMOo',j,i
+          write(flabel,'(a7,i4,i1)') '4cAOMOo',1,i
           if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1), &
                                           nbas1_f * norb1_f * nzt, x2c_file_scr)
           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
@@ -524,7 +522,7 @@ contains
           end if
 
 !         save on file x2cscr for re-use as defining h1
-          write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
+          write(flabel,'(a7,i4,i1)') 'h14csAO',1,i
           call x2c_write(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
 !         debug print
           if(print_lvl > 2)then
@@ -543,7 +541,7 @@ contains
         do i = 1, nfsym
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
-          write(flabel,'(a7,i4,i1)') '4cAOMOr',j,i
+          write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
           if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f*nzt,x2c_file_scr)
           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do

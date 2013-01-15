@@ -83,6 +83,7 @@ module dirx2c
 !
 ! x2c modules
   use x2cmod_cfg
+  use fragment_x2c_cfg
   use x2c_cb_interface
   use x2c_def_h1_4c
   use x2c_get_h1inf2c_mo
@@ -112,8 +113,7 @@ contains
 
 !**********************************************************************
   subroutine x2c_driver(                        &
-                        fragment_x2c,           &
-                        return_h1_inf_2c)
+                       )
 !**********************************************************************
 !
 !    purpose: driver routine of the X2C algorithm
@@ -142,8 +142,6 @@ contains
 !
 !
 !**********************************************************************
-     logical, intent(in)    :: fragment_x2c       ! fragment-x2c run
-     logical, intent(in)    :: return_h1_inf_2c   ! return transformed h1_2c^++
 !----------------------------------------------------------------------
      real(8), allocatable   :: wrk(:)
      real(8), allocatable   :: xmat(:)
@@ -155,7 +153,6 @@ contains
      integer                :: is_allocated_dyn
      integer                :: i,j
      integer                :: dimension_for_2mat
-     integer                :: z_value
      integer                :: dim1_fsym_Sao
      integer                :: dim2_fsym_Sao
      integer                :: pct_mocoeff_strategy_mmf ! strategy for the picture-change transformation of the
@@ -182,19 +179,24 @@ contains
             access='sequential',action='readwrite',position='rewind')
        call x2c_write(flabel,x2c_dummy,-1,x2c_funit)
 
-!      set the "Z" value of the current atomic center / total Z value if it is a molecule 
-!      for the time being (until i have fully implemented the atomic X2C
-!      approach) this will be Z = 1.
-       z_value = 1
+!      open scratch file x2cscr
+       open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
+       call x2c_write(flabel,x2c_dummy,-1,x2c_fscru)
+
+!      open scratch file X2Camfi_scr
+       open(x2c_famfi,file='X2Camfi_scr',status='replace',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
+       call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
 
 !      ------------------------------------------------------------------------------
 !      step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
 !      ------------------------------------------------------------------------------
        call init_x2c_cb(.true.)
 
-       select case(fragment_x2c)
+       select case(fragment_x2c_info%fragment_approach_enabled)
 
-         case(.true.) 
+         case(.true.)
 
 !          ----------------------------------------------------------
 !          fragment X2C run: construct full pct-matrix in SA-AO basis
@@ -213,15 +215,6 @@ contains
                                        )
          case(.false.) ! false
 
-!        open scratch file x2cscr (data for previous fragment is erased if atom-by-atom X2C)
-         open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
-              access='sequential',action="readwrite",position='rewind')
-         call x2c_write(flabel,x2c_dummy,-1,x2c_fscru)
-
-!        open scratch file X2Camfi_scr (data for previous fragment is erased if atom-by-atom X2C)
-         open(x2c_famfi,file='X2Camfi_scr',status='replace',form='unformatted',  &
-              access='sequential',action="readwrite",position='rewind')
-         call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
 
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
          dimension_for_2mat = nr_ao_total_x2c**2 * nr_quat
@@ -233,7 +226,7 @@ contains
          is_allocated_dyn  = dimension_for_2mat
 
 !        ------------------------------------------------------------------------------
-!        step 1.1: compute 4c-Sao_LL overlap matrix for fragment "z_value"
+!        step 1.1: compute 4c-Sao_LL overlap matrix
 !        ------------------------------------------------------------------------------
 
 !        open temporary scratch file for 4c-Sao_LL overlap matrix
@@ -264,7 +257,7 @@ contains
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
 !        ------------------------------------------------------------------------------
-!        step 1.2: get LOWDIN matrix for fragment "z_value".
+!        step 1.2: get LOWDIN matrix
 !                  1.2.a. get the 4c-Lowdin matrix
 !                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
 !        ------------------------------------------------------------------------------
@@ -302,7 +295,6 @@ contains
                            nr_fsym,            &
                            nr_quat,            &
                            x2c_cb_pq_to_uq,    &
-                           z_value,            &
                            x2c_funit,          &
                            x2c_prt,            &
                            x2c_linsym)
@@ -406,38 +398,37 @@ contains
 !                  c. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
 !        ------------------------------------------------------------------------------
 
-         call x2c_tra(xmat,                   &
-                      scr1mat,                &
-                      scr2mat,                &
-                      nr_ao_large_x2c,        &
-                      nr_ao_total_x2c,        &
-                      nr_ao_all,              &
-                      nr_ao_l,                &
-                      dim_oshell,             &
-                      dim_eshell,             &
-                      dim_pshell,             &
-                      fullomat_dim,           &
-                      fulleomat_dim,          &
-                      ioff_aomat_x,           &
-                      nr_fsym,                &
-                      nr_quat,                &
-                      nzt_x2c,                &
-                      x2c_cb_pq_to_uq,        &
-                      z_value,                &
-                      x2c_funit,              &
-                      x2c_fscru,              &
-                      x2c_famfi,              &
-                      x2c_is_defining_h1mat,  &
-                      final_ham_lvl_x2c,      &
-                      x2c_add_amfi,           &
-                      x2c_bs_to_fs,           &
-                      lwrk,                   &
-                      x2c_prt,                &
-                      fragment_x2c,           &
-                      x2c_linsym,             &
-                      x2c_mdirac,             &
-                      x2c_spinfree,           &
-                      return_h1_inf_2c,       & 
+         call x2c_tra(xmat,                      &
+                      scr1mat,                   &
+                      scr2mat,                   &
+                      nr_ao_large_x2c,           &
+                      nr_ao_total_x2c,           &
+                      nr_ao_all,                 &
+                      nr_ao_l,                   &
+                      dim_oshell,                &
+                      dim_eshell,                &
+                      dim_pshell,                &
+                      fullomat_dim,              &
+                      fulleomat_dim,             &
+                      ioff_aomat_x,              &
+                      nr_fsym,                   &
+                      nr_quat,                   &
+                      nzt_x2c,                   &
+                      x2c_cb_pq_to_uq,           &
+                      x2c_funit,                 &
+                      x2c_fscru,                 &
+                      x2c_famfi,                 &
+                      x2c_is_defining_h1mat,     &
+                      final_ham_lvl_x2c,         &
+                      x2c_add_amfi,              &
+                      x2c_bs_to_fs,              &
+                      lwrk,                      &
+                      x2c_prt,                   &
+                      fragment_x2c_info%         &
+                      fragment_approach_enabled, &
+                      x2c_linsym,                &
+                      x2c_mdirac,                &
+                      x2c_spinfree,              &
                       x2c_do_spherical)
 
 !        free memory
@@ -586,7 +577,6 @@ contains
                      nz,                   &
                      nzt,                  &
                      ipq_off,              &
-                     is_z_value,           &
                      x2c_file_glb,         &
                      x2c_file_scr,         &
                      x2c_file_amf,         &
@@ -600,7 +590,6 @@ contains
                      linear_sym,           &
                      mdirac,               &
                      spinfree,             &
-                     return_h1_inf_2c,     &
                      spherical_on)
 !**********************************************************************
 !
@@ -639,7 +628,6 @@ contains
      integer, intent(in)    :: momat_orbesh_dim_4c
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: ipq_off(4,0:7)
-     integer, intent(in)    :: is_z_value
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: x2c_file_amf
@@ -653,13 +641,11 @@ contains
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
      logical, intent(in)    :: spinfree
-     logical, intent(in)    :: return_h1_inf_2c
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
      integer                :: i,j
      integer                :: lwrk
-     integer                :: is_fragment_pctmat
      integer                :: basic_h1mat        ! defining parameter for the basic 4c-h1 which will be transformed to 2c-h1
      character (len=12)     :: flabel             ! label for matrices on file
 !**********************************************************************
@@ -686,7 +672,6 @@ contains
                                       nz,                  &
                                       nzt,                 &
                                       defining_h1mat,      &
-                                      is_z_value,          &
                                       x2c_file_scr,        &
                                       ipq_off,             &
                                       print_lvl,           &
@@ -715,7 +700,6 @@ contains
                                 ipq_off,               &
                                 basic_h1mat,           &
                                 lwrk,                  &
-                                is_z_value,            &
                                 x2c_file_scr,          &
                                 linear_sym,            &
                                 mdirac,                &
@@ -739,7 +723,6 @@ contains
                                     ipq_off,               &
                                     defining_h1mat,        &
                                     lwrk,                  &
-                                    is_z_value,            &
                                     x2c_file_scr,          &
                                     linear_sym,            &
                                     mdirac,                &
@@ -758,7 +741,7 @@ contains
 !              in : defining  4c-h1 in orthonormal basis -> xmat
 !                   on file x2cscr in orthonormal basis: the basic operator "h1_4c" (label == h1_4cON)
 !              out: the basic 2c-h1 in orthonormal basis -> xmat
-!                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_z_value
+!                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix
 !      ------------------------------------------------------------------------------
        call get_h1_2c_onmo_bas(xmat,                      &
                                scr1mat,                   &
@@ -770,7 +753,6 @@ contains
                                nfsym,                     &
                                nz,                        &
                                ipq_off,                   &
-                               is_z_value,                &
                                x2c_file_scr,              &
                                defining_h1mat,            &
                                spinfree,                  &
@@ -802,7 +784,6 @@ contains
                                    nz,                      &
                                    nzt,                     &
                                    ipq_off,                 &
-                                   is_z_value,              &
                                    is_final_ham_lvl,        &
                                    add_amfi_contrib,        &
                                    lwrk,                    &
@@ -822,12 +803,6 @@ contains
 !                   on file X2CMAT: picture-change transformation matrix U in SA-AO basis 
 !                                   under the label pctmtAO
 !      ------------------------------------------------------------------------------
-       if(.not. fragment_x2c) then 
-         is_fragment_pctmat = 0
-       else
-         is_fragment_pctmat = is_z_value
-       end if
-
        call construct_pctmat_saao_bas(xmat,                &
                                       scr1mat,             &
                                       scr2mat,             &
@@ -840,8 +815,6 @@ contains
                                       nz,                  &
                                       nzt,                 &
                                       ipq_off,             &
-                                      is_fragment_pctmat,  &
-                                      is_z_value,          &
                                       x2c_file_scr,        &
                                       x2c_file_glb,        &
                                       print_lvl)

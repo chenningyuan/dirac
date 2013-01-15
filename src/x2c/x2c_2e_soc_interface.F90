@@ -418,7 +418,7 @@ contains
 
        i = 0
        j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
+       write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
        scr2_mat = 0.0d0
        call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
@@ -454,7 +454,7 @@ contains
 
        i = 0
        j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOA',j,i
+       write(flabel,'(a7,i4,i1)') 'h12cAOA',1,i
 
        if(spherical_on)then
 
@@ -581,7 +581,7 @@ contains
 
        i = 0
        j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOa',j,i
+       write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
        call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
 !      debug print
@@ -655,7 +655,7 @@ contains
 
        i = 0
        j = 0
-       write(flabel,'(a7,i4,i1)') 'h12cAOA',j,i
+       write(flabel,'(a7,i4,i1)') 'h12cAOA',1,i
 
 
        if(spherical_on)then

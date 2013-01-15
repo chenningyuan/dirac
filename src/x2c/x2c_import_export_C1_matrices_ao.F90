@@ -90,7 +90,7 @@ contains
               access='sequential',action='readwrite',position='rewind')
          call dzero(h1_saao,nz*naosh_ls**2)
          i = 0
-         write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
+         write(flabel,'(a7,i4,i1)') 'h1_4cao',1,0
          call x2c_read(flabel,h1_saao,naosh_ls*naosh_ls*nz,fh)
        end if
 
@@ -230,7 +230,7 @@ contains
        ioff_pct_mat = 1
 
        do i = 1, nr_fsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',0,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),nr_ao_all(i)*nr_ao_l(i)*nr_quat,x2c_funit)
          ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
        end do

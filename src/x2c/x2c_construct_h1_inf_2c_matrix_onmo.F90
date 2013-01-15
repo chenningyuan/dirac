@@ -59,7 +59,6 @@ contains
                                 nfsym,                    &
                                 nz,                       &
                                 ipq_off,                  &
-                                is_fragment,              &
                                 x2c_file_scr,             &
                                 defining_h1mat,           &
                                 spinfree,                 &
@@ -82,7 +81,6 @@ contains
      integer, intent(in)    :: nesh_dim(nfsym)
      integer, intent(in)    :: npsh_dim(nfsym)
      integer, intent(in)    :: ipq_off(4,0:7)
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: print_lvl
@@ -135,7 +133,7 @@ contains
          if( norb_dim(i) > 0 )then
 
 !          set unique last part of the file ID
-           write(flabel_tag,'(i4,i1)') is_fragment,i
+           write(flabel_tag,'(i4,i1)') 1,i
 
 !          step 1: construct the decoupling matrix R in orthonormal MO basis
 !                  this step includes:
