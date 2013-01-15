@@ -35,6 +35,7 @@ module x2c_fragment_x2c_interface
 !
 
   use fragment_x2c_cfg
+  use x2c_fio
 
   implicit none
 
@@ -46,10 +47,18 @@ module x2c_fragment_x2c_interface
 contains
 
 !***********************************************************************
-  subroutine x2c_fragment_x2c_driver(nz,             &
-                                     nfsym,          &
-                                     naosh_L_mol,    &
-                                     naosh_all_mol)
+  subroutine x2c_fragment_x2c_driver(nz,                  &
+                                     nfsym,               &
+                                     mxatom,              &
+                                     type_nuclei,         &
+                                     type_charge,         &
+                                     nr_symm_indep_cent,  &
+                                     nr_degen_nuc_cent,   &
+                                     nr_ao_bas_type,      &
+                                     naosh_L_mol,         &
+                                     naosh_all_mol,       &
+                                     funit                &
+                                    )
 
 !**********************************************************************
 !
@@ -59,26 +68,40 @@ contains
 !----------------------------------------------------------------------
   integer, intent(in)  :: nz
   integer, intent(in)  :: nfsym
+  integer, intent(in)  :: mxatom
   integer, intent(in)  :: naosh_L_mol(nfsym)
   integer, intent(in)  :: naosh_all_mol(nfsym)
+  integer, intent(in)  :: nr_ao_bas_type(mxatom,0:2)
+  integer, intent(in)  :: type_nuclei
+  integer, intent(in)  :: type_charge(*)
+  integer, intent(in)  :: nr_symm_indep_cent(*)
+  integer, intent(in)  :: nr_degen_nuc_cent(*)
+  integer, intent(in)  :: funit
 !----------------------------------------------------------------------
   real(8), allocatable :: umol(:)
   integer              :: i
   integer              :: j
-  integer, parameter   :: nzc1 = 4
+  integer, parameter   :: nzc1    = 4
+  integer, parameter   :: nfsymc1 = 1
+  character(len=12)    :: flabel
 !----------------------------------------------------------------------
 
 !     safety check
       if(.not.fragment_x2c_info%fragment_approach_enabled) return
+
       if(nz /= nzc1)then
         stop ' atomic X2C approach works so far only in C1 symmetry'
       end if
 
+      if(nfsym /= nfsymc1)then
+        stop ' atomic X2C approach works so far only in C1 symmetry'
+      end if
+
+!     allocate molecular pct-matrix
       j    = 0
-      do i = 1, nfsym
+      do i = 1, nfsymc1
         j = j + naosh_all_mol(i)*naosh_L_mol(i)*nzc1
       end do
-!     allocate molecular pct-matrix
       allocate(umol(j))
       umol = 0.0d0
 
@@ -88,20 +111,50 @@ contains
 !     for heavy centers being close or even sharing a chemical bond.
 !     ----------------------------------------------------------------------------
 
-      call construct_umol_from_atoms(umol,           &
-                                     nzc1,           &
-                                     nfsym,          &
-                                     naosh_L_mol,    &
-                                     naosh_all_mol)
+      call construct_umol_from_atoms(umol,                &
+                                     nzc1,                &
+                                     nfsymc1,             &
+                                     nz,                  &
+                                     nfsym,               &
+                                     mxatom,              &
+                                     type_nuclei,         &
+                                     type_charge,         &
+                                     nr_symm_indep_cent,  &
+                                     nr_degen_nuc_cent,   &
+                                     nr_ao_bas_type(1,0), &
+                                     naosh_L_mol,         &
+                                     naosh_all_mol        &
+                                    )
+
+!     put molecular pctmat to file
+      write(flabel,'(a7,i4,i1)') 'pctmtAO',1,1
+
+      call x2c_write(flabel,                 &
+                     umol,                   &
+                     naosh_all_mol(1) *      &
+                     naosh_L_mol(1)   *      &
+                     nzc1,                   &
+                     funit)
+
+      deallocate(umol)
 
   end subroutine x2c_fragment_x2c_driver
 !***********************************************************************
 
-  subroutine construct_umol_from_atoms(umol,           &
-                                       nzc1,           &
-                                       nfsym,          &
-                                       naosh_L_mol,    &
-                                       naosh_all_mol)
+  subroutine construct_umol_from_atoms(umol,                &
+                                       nzc1,                &
+                                       nfsymc1,             &
+                                       nz,                  &
+                                       nfsym,               &
+                                       mxatom,              &
+                                       type_nuclei,         &
+                                       type_charge,         &
+                                       nr_symm_indep_cent,  &
+                                       nr_degen_nuc_cent,   &
+                                       nr_ao_bas_type,      &
+                                       naosh_L_mol,         &
+                                       naosh_all_mol        &
+                                      )
 
 !**********************************************************************
 !
@@ -109,13 +162,19 @@ contains
 !             generate the approximate molecular U
 !
 !----------------------------------------------------------------------
-  real(8), intent(inout) :: umol
-  integer, intent(in)    :: ncont
-  integer, intent(in)    :: nont(ncont)
-  integer, intent(in)    :: nucdeg(*)
+  real(8), intent(inout) :: umol(*)
   integer, intent(in)    :: nzc1
+  integer, intent(in)    :: nfsymc1
+  integer, intent(in)    :: nz
   integer, intent(in)    :: nfsym
-  integer, intent(in)    :: naosh_all_mol(nfsym)
+  integer, intent(in)    :: mxatom
+  integer, intent(in)    :: type_nuclei
+  integer, intent(in)    :: type_charge(*)
+  integer, intent(in)    :: nr_symm_indep_cent(*)
+  integer, intent(in)    :: nr_degen_nuc_cent(*)
+  integer, intent(in)    :: nr_ao_bas_type(mxatom,0:2)
+  integer, intent(in)    :: naosh_all_mol(nfsymc1)
+  integer, intent(in)    :: naosh_L_mol(nfsymc1)
 !----------------------------------------------------------------------
   integer, allocatable   :: rbuf(:)
   integer, allocatable   :: cbuf(:)
@@ -128,36 +187,60 @@ contains
       icent    = 1
       iatom    = 1
 
+      allocate(rbuf(naosh_all_mol(1)))
+      allocate(cbuf(naosh_L_mol(1)))
+
       do ! loop over atom types
 
-        if(iatom > ncont) exit
+        if(iatom > type_nuclei) exit
 
-!       get # of basis functions (L and L+S) for this atom type
-!       read atomic pctmat from file
+!       set # of basis functions (L and L+S), allocate pctmat-frag 
+!       for this atom type and read atomic pctmat from file
+        call fragment_x2c_init(fragment_x2c_info,          &
+                               1,                          &
+                               nzc1,                       &
+                               type_charge(iatom),         &
+                               nr_ao_bas_type(iatom,0),    &
+                               nr_ao_bas_type(iatom,1)     &
+                              )
 
-        call put_aoblock(umol,
-                         naosh_all_cent,
-                         naosh_L,
-                         icent,
-                         nont(iatom),
-                         nucdeg(icent),
-                         nzc1,
-                         WORK(KADE),
-                         NBAS,
-                         NBAS,
-                         -1,
-                         NBAS,
-                         NBAS,
-                         -1,
-                         rbuf,
-                         cbuf,
-                         ibuf,
-                         jbuf)
+         allocate(ibuf(fragment_x2c_info%naosh_all(1)))
+         allocate(jbuf(fragment_x2c_info%naosh_L(1)))
+
+         rbuf = 0
+         cbuf = 0
+         ibuf = 0
+         jbuf = 0
+        
+         call put_aoblock(umol,                            &
+                          naosh_all_mol(1),                &
+                          naosh_L_mol(1),                  &
+                          icent,                           &
+                          nr_symm_indep_cent(iatom),       &
+                          nr_degen_nuc_cent(icent),        &
+                          nzc1,                            &
+                          fragment_x2c_info%pctmat,        &
+                          fragment_x2c_info%naosh_all(1),  &
+                          fragment_x2c_info%naosh_all(1),  &
+                          -1,                              &
+                          fragment_x2c_info%naosh_L(1),    &
+                          fragment_x2c_info%naosh_L(1),    &
+                          -1,                              &
+                          rbuf,                            &
+                          cbuf,                            &
+                          ibuf,                            &
+                          jbuf)
+
+        deallocate(ibuf)
+        deallocate(jbuf)
 
 !       update indices
-        icent = icent + nont(iatom)
+        icent = icent + nr_symm_indep_cent(iatom)
         iatom = iatom + 1
       end do
+
+      deallocate(rbuf)
+      deallocate(cbuf)
 
   end subroutine construct_umol_from_atoms
 !***********************************************************************

@@ -33,6 +33,8 @@ module x2cmod_cfg
   integer, parameter, public :: x2c_Sao_scrF    =  88
   integer, parameter, public :: x2c_lowdin_scrF =  99    ! file unit for scratch file containing the 4c-Lowdin matrix
   integer, parameter, public :: x2c_famfi       =  77
+  integer, parameter, public :: x2c_mxatom      =  20    ! keep in syc with mxatom in mxcent.h
+  integer, parameter, public :: x2c_mxcent      =  300   ! keep in syc with mxcent in mxcent.h
 
 ! character block
   character (len=6), public :: file_name_1e_fock_matrix   = 'undef '
@@ -101,7 +103,11 @@ module x2cmod_cfg
   integer, public :: fh_1int_4c                       =  0
   integer, public :: all_prp_op                       =  0
   integer, public :: num_nuclei                       =  0
-  integer, public :: typ_nuclei                       =  0
+  integer, public :: type_nuclei                      =  0
+  integer, public :: nr_ao_bas_type(1:x2c_mxatom,0:2) =  0
+  integer, public :: type_charge(1:x2c_mxatom)        =  0
+  integer, public :: nr_symm_indep_cent(1:x2c_mxatom) =  0
+  integer, public :: nr_degen_nuc_cent(1:x2c_mxcent)  =  0
   integer, public :: x2c_pointer_quat(0:7, 1:2)       =  0
   integer, public :: x2c_bs_irrep_mat(1:4, 0:7)       =  0
   integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4) =  0

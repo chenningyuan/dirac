@@ -79,7 +79,7 @@ contains
 !   ----------------------------------------------------------------------------
 !   local variables
 !   ----------------------------------------------------------------------------
-    integer             :: i, j, k, l, m
+    integer             :: i, j, k, l, m, center
 !   ----------------------------------------------------------------------------
 
        if(init_x2c_cb_blocks)then
@@ -119,7 +119,7 @@ contains
  
 !        initialize integer variables
          num_nuclei       = nucdep
-         typ_nuclei       = nontyp
+         type_nuclei      = nontyp
 !                          [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
          nr_ao_total_x2c  = ntbas(0)
 !                          [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
@@ -137,6 +137,24 @@ contains
          fulllowdmat_dim  = 0
          fullao2momat_dim = 0
          fullmo2momat_dim = 0
+
+!        # basis functions and charge per atom type
+         center                        = 0
+         do i = 1, type_nuclei
+
+           nr_ao_bas_type(i,0:2)       = nbas_atomtype(i,0:2)
+
+           ! number of symmetry independent centers per type
+           nr_symm_indep_cent(i)       = nont(i)
+
+           do j = 1, nont(i)
+             center                    = center + 1
+             type_charge(i)            = nint(charge(center))
+             ! number of symmetry equivalent atoms per center
+             nr_degen_nuc_cent(center) = nucdeg(center)
+           end do
+         end do
+
          do i = 1, nr_fsym
            j               =  nesh(i)
            k               =  norb(i)

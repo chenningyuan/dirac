@@ -199,10 +199,18 @@ contains
 !          ----------------------------------------------------------
 !          fragment X2C run: construct full pct-matrix in SA-AO basis
 !          ----------------------------------------------------------
-           call x2c_fragment_x2c_driver(nr_quat,       &
-                                        nr_fsym,       &
-                                        nr_ao_all)
-
+           call x2c_fragment_x2c_driver(nr_quat,             &
+                                        nr_fsym,             &
+                                        x2c_mxatom,          &
+                                        type_nuclei,         &
+                                        type_charge,         &
+                                        nr_symm_indep_cent,  &
+                                        nr_degen_nuc_cent,   &
+                                        nr_ao_bas_type(1,0), &
+                                        nr_ao_all,           &
+                                        nr_ao_l,             &
+                                        x2c_funit            &
+                                       )
          case(.false.) ! false
 
 !        open scratch file x2cscr (data for previous fragment is erased if atom-by-atom X2C)
@@ -466,7 +474,7 @@ contains
                                       x2c_pointer_quat_op,               &
                                       x2c_max_quant_num,                 &
                                       num_nuclei,                        &
-                                      typ_nuclei,                        &
+                                      type_nuclei,                       &
                                       x2c_tot_charge_for_mfsum,          &
                                       x2c_amfi_order,                    &
                                       lwrk,                              &
