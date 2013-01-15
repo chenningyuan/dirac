@@ -5363,7 +5363,7 @@ C.........extract selected vectors from CMO and place in CBUF
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF

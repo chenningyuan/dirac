@@ -740,9 +740,7 @@ contains
 !             from file.
 !
 !    ham_lvl  == 1: oo-order 2c-Hamiltonian without AMFI contributions
-!    ham_lvl  == 2: oo-order 2c-Hamiltonian from atom-by-atom X2C approach without AMFI contributions
 !   |ham_lvl| == 3: oo-order 2c-Hamiltonian with AMFI (old == -3 or new == +3) contributions
-!   |ham_lvl| == 4: oo-order 2c-Hamiltonian from atom-by-atom X2C approach with AMFI (new == +4) contributions
 !
 !**********************************************************************
      real(8), intent(inout)   :: xmat(*)

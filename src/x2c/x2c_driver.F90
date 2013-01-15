@@ -163,287 +163,288 @@ contains
      character (len=12)     :: flabel                   ! label for matrices on file
 !**********************************************************************
 
-!      ------------------------------------------------------------------------------
-!      step 0: initialize and print header
-!      ------------------------------------------------------------------------------
+!    ------------------------------------------------------------------------------
+!    step 0: initialize and print header
+!    ------------------------------------------------------------------------------
 
-!      print header
-       call hello_dirx2c()
+!    print header
+     call hello_dirx2c()
 
-!      initialize variable(s)
-       final_ham_lvl_x2c = 0
-       is_allocated_dyn  = 0
+!    initialize variable(s)
+     final_ham_lvl_x2c = 0
+     is_allocated_dyn  = 0
  
-!      open file X2CMAT
-       open(x2c_funit,file='X2CMAT',status='replace',form='unformatted',    &
-            access='sequential',action='readwrite',position='rewind')
-       call x2c_write(flabel,x2c_dummy,-1,x2c_funit)
+!    open file X2CMAT
+     open(x2c_funit,file='X2CMAT',status='replace',form='unformatted',    &
+          access='sequential',action='readwrite',position='rewind')
+     call x2c_write(flabel,x2c_dummy,-1,x2c_funit)
 
-!      open scratch file x2cscr
-       open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       call x2c_write(flabel,x2c_dummy,-1,x2c_fscru)
+!    open scratch file x2cscr
+     open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
+          access='sequential',action="readwrite",position='rewind')
+     call x2c_write(flabel,x2c_dummy,-1,x2c_fscru)
 
-!      open scratch file X2Camfi_scr
-       open(x2c_famfi,file='X2Camfi_scr',status='replace',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
+!    open scratch file X2Camfi_scr
+     open(x2c_famfi,file='X2Camfi_scr',status='replace',form='unformatted',  &
+          access='sequential',action="readwrite",position='rewind')
+     call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
 
-!      ------------------------------------------------------------------------------
-!      step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
-!      ------------------------------------------------------------------------------
-       call init_x2c_cb(.true.)
+!    ------------------------------------------------------------------------------
+!    step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
+!    ------------------------------------------------------------------------------
+     call init_x2c_cb(.true.)
 
-       select case(fragment_x2c_info%fragment_approach_enabled)
+!    ------------------------------------------------------------------------------
+!    step 1.1: construct molecular U matrix from fragments/atoms if requested
+!    ------------------------------------------------------------------------------
+     if(fragment_x2c_info%fragment_approach_enabled)then
 
-         case(.true.)
+!       ----------------------------------------------------------
+!       fragment X2C run: construct full pct-matrix in SA-AO basis
+!       ----------------------------------------------------------
+        call x2c_fragment_x2c_driver(nr_quat,             &
+                                     nr_fsym,             &
+                                     x2c_mxatom,          &
+                                     type_nuclei,         &
+                                     type_charge,         &
+                                     nr_symm_indep_cent,  &
+                                     nr_degen_nuc_cent,   &
+                                     nr_ao_bas_type(1,0), &
+                                     nr_ao_all,           &
+                                     nr_ao_l,             &
+                                     x2c_funit            &
+                                    )
+     end if
 
-!          ----------------------------------------------------------
-!          fragment X2C run: construct full pct-matrix in SA-AO basis
-!          ----------------------------------------------------------
-           call x2c_fragment_x2c_driver(nr_quat,             &
-                                        nr_fsym,             &
-                                        x2c_mxatom,          &
-                                        type_nuclei,         &
-                                        type_charge,         &
-                                        nr_symm_indep_cent,  &
-                                        nr_degen_nuc_cent,   &
-                                        nr_ao_bas_type(1,0), &
-                                        nr_ao_all,           &
-                                        nr_ao_l,             &
-                                        x2c_funit            &
-                                       )
-         case(.false.) ! false
+!    memory allocation - part 1 - allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
+!    --------------------------------------------------------------------------------------------- 
+     dimension_for_2mat = nr_ao_total_x2c**2 * nr_quat
+     do i = 1, nr_fsym
+       dimension_for_2mat = max(dimension_for_2mat,ioff_aomat_x(i,i)+1+nr_ao_total_x2c*nr_ao_all(i)*nr_quat)
+     end do
+     allocate(xmat(dimension_for_2mat))
+     xmat    = 0.0d0
+     is_allocated_dyn  = dimension_for_2mat
 
+!    ------------------------------------------------------------------------------
+!    step 1.2: compute 4c-Sao_LL overlap matrix
+!    ------------------------------------------------------------------------------
 
-!        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
-         dimension_for_2mat = nr_ao_total_x2c**2 * nr_quat
-         do i = 1, nr_fsym
-           dimension_for_2mat = max(dimension_for_2mat,ioff_aomat_x(i,i)+1+nr_ao_total_x2c*nr_ao_all(i)*nr_quat)
-         end do
-         allocate(xmat(dimension_for_2mat))
-         xmat    = 0.0d0
-         is_allocated_dyn  = dimension_for_2mat
+!    open temporary scratch file for 4c-Sao_LL overlap matrix
+     open(x2c_Sao_scrF,file='X2C_Sao_LL_scr',status='replace',form='unformatted',    &
+          access='sequential',action="readwrite",position='rewind')
+     call x2c_write(flabel,x2c_dummy,-1,x2c_Sao_scrF)
 
-!        ------------------------------------------------------------------------------
-!        step 1.1: compute 4c-Sao_LL overlap matrix
-!        ------------------------------------------------------------------------------
+     dim1_fsym_Sao = nr_ao_all(1)
+     dim2_fsym_Sao = 0
+     if(nr_fsym == 2) dim2_fsym_Sao = nr_ao_all(nr_fsym)
 
-!        open temporary scratch file for 4c-Sao_LL overlap matrix
-         open(x2c_Sao_scrF,file='X2C_Sao_LL_scr',status='replace',form='unformatted',    &
-              access='sequential',action="readwrite",position='rewind')
-         call x2c_write(flabel,x2c_dummy,-1,x2c_Sao_scrF)
+     call get_Sao_LL_mat(xmat,x2c_mdirac,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
+!                                                                  ^ (compute+write if >= 0)
 
-         dim1_fsym_Sao = nr_ao_all(1)
-         dim2_fsym_Sao = 0
-         if(nr_fsym == 2) dim2_fsym_Sao = nr_ao_all(nr_fsym)
+!    allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
+     j                               = dimension_for_2mat
+     if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
+     allocate(scr2mat(nr_ao_total_x2c**2 * nr_quat))
+     allocate(scr1mat(j))
+     allocate(eigvl(nr_ao_total_x2c))
 
-         call get_Sao_LL_mat(xmat,x2c_mdirac,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
-!                                                                      ^ (compute+write if >= 0)
+     scr1mat = 0.0d0
+     scr2mat = 0.0d0
+     eigvl   = 0.0d0
 
-!        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-         j                               = dimension_for_2mat
-         if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
-         allocate(scr2mat(nr_ao_total_x2c**2 * nr_quat))
-         allocate(scr1mat(j))
-         allocate(eigvl(nr_ao_total_x2c))
+!    set maximum allowed length of wrk array allocations
+     is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
+     lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
+
+!    ------------------------------------------------------------------------------
+!    step 1.3: get LOWDIN matrix
+!              1.2.a. get the 4c-Lowdin matrix
+!              1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
+!    ------------------------------------------------------------------------------
+
+!    a. read/get the 4c-Lowdin matrix
+!    --------------------------------
+     open(x2c_lowdin_scrF,file='LOWDMAT',status='old',form='unformatted',    &
+          access='sequential',action="readwrite",position='rewind')
+
+     call readi(x2c_lowdin_scrF,1,fulllowdmat_dim_tmp)
+     call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
+
+!    consistency check for LOWDIN matrix
+     if(fulllowdmat_dim_tmp /= fulllowdmat_dim)then
+       call quit('error in x2c-driver: dimension of existing LOWDIN matrix does not match'// & 
+                 ' the present LOWDIN dimensions.')
+     end if
+  
+!    b. construct the two-component Lowdin matrix
+!    --------------------------------------------
+     if(x2c_is_defining_h1mat == 2)then
+
+       call x2c_lowd2c(xmat,               &
+                       scr1mat,            &
+                       scr2mat,            &
+                       dim_pshell,         &
+                       dim_eshell,         &
+                       nr_ao_l,            &
+                       nr_ao_s,            &
+                       nr_ao_all,          &
+                       nr_mo_lw_l,         &
+                       nr_mo_lw_s,         &
+                       nr_mo_lw_all,       &
+                       nr_ao_total_x2c,    &
+                       nr_fsym,            &
+                       nr_quat,            &
+                       x2c_cb_pq_to_uq,    &
+                       x2c_funit,          &
+                       x2c_prt,            &
+                       x2c_linsym)
+
+!      recover the 4c-Lowdin matrix
+       xmat = 0.0d0
+       rewind x2c_lowdin_scrF
+       call readi(x2c_lowdin_scrF,1,fulllowdmat_dim)
+       call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
+
+     end if
+
+     close(x2c_lowdin_scrF,status="delete")
+!    ------------------------------------------------------------------------------
+!    step 1.4: construct modified dirac equation in ON basis --> retrieve AOtoMO transformation matrices.
+!    ------------------------------------------------------------------------------
+!
+!          in : 4c-LOWDIN matrix -> xmat
+!          out: AOtoMO transformation matrices -> xmat, scr1mat
+!                                               + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
+!    ------------------------------------------------------------------------------
+     select case(x2c_is_defining_h1mat)
+
+       case(2) ! defining h1 hamiltonian is the 4c-fock operator obtained in a preceeding 4c-SCF run
 
          scr1mat = 0.0d0
          scr2mat = 0.0d0
-         eigvl   = 0.0d0
+         xmat    = 0.0d0
 
-!        set maximum allowed length of wrk array allocations
-         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
-         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
-
-!        ------------------------------------------------------------------------------
-!        step 1.2: get LOWDIN matrix
-!                  1.2.a. get the 4c-Lowdin matrix
-!                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
-!        ------------------------------------------------------------------------------
-
-!        a. read/get the 4c-Lowdin matrix
-!        --------------------------------
-         open(x2c_lowdin_scrF,file='LOWDMAT',status='old',form='unformatted',    &
+!        a. read the (linear-symmetry adapted) AO2MO transformation matrix
+!        -----------------------------------------------------------------
+         open(11,file='AOMOlin',status='old',form='unformatted', &
               access='sequential',action="readwrite",position='rewind')
 
-         call readi(x2c_lowdin_scrF,1,fulllowdmat_dim_tmp)
-         call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
-
-!        consistency check for LOWDIN matrix
-         if(fulllowdmat_dim_tmp /= fulllowdmat_dim)then
-           call quit('error in x2c-driver: dimension of existing LOWDIN matrix does not match'// & 
-                     ' the present LOWDIN dimensions.')
-         end if
-  
-!        b. construct the two-component Lowdin matrix
-!        --------------------------------------------
-         if(x2c_is_defining_h1mat == 2)then
-
-           call x2c_lowd2c(xmat,               &
-                           scr1mat,            &
-                           scr2mat,            &
-                           dim_pshell,         &
-                           dim_eshell,         &
-                           nr_ao_l,            &
-                           nr_ao_s,            &
-                           nr_ao_all,          &
-                           nr_mo_lw_l,         &
-                           nr_mo_lw_s,         &
-                           nr_mo_lw_all,       &
-                           nr_ao_total_x2c,    &
-                           nr_fsym,            &
-                           nr_quat,            &
-                           x2c_cb_pq_to_uq,    &
-                           x2c_funit,          &
-                           x2c_prt,            &
-                           x2c_linsym)
-
-!          recover the 4c-Lowdin matrix
-           xmat = 0.0d0
-           rewind x2c_lowdin_scrF
-           call readi(x2c_lowdin_scrF,1,fulllowdmat_dim)
-           call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
-
+         if(x2c_linsym)then
+!          MO2MO linear symmetry --> nonlinear symmetry transformation matrix
+           call readt(11,fullmo2momat_dim,scr2mat)
+!          AO2MO linear symmetry --> nonlinear symmetry transformation matrix
+!          skip the record as it is not needed here
+           read(11)
          end if
 
-         close(x2c_lowdin_scrF,status="delete")
-!        ------------------------------------------------------------------------------
-!        step 1.3: construct modified dirac equation in ON basis --> retrieve AOtoMO transformation matrices.
-!        ------------------------------------------------------------------------------
-!
-!              in : 4c-LOWDIN matrix -> xmat
-!              out: AOtoMO transformation matrices -> xmat, scr1mat
-!                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
-!        ------------------------------------------------------------------------------
-         select case(x2c_is_defining_h1mat)
+!        AO2MO transformation matrix
+         call readt(11,fullao2momat_dim,scr1mat)
 
-           case(2) ! defining h1 hamiltonian is the 4c-fock operator obtained in a preceeding 4c-SCF run
+         close(11,status='delete')
 
-             scr1mat = 0.0d0
-             scr2mat = 0.0d0
-             xmat    = 0.0d0
+!        b. read the SL-resorted AO2MO transformation matrix
+!        ---------------------------------------------------
+         open(9,file='AOMOSLR',status='old',form='unformatted', &
+              access='sequential',action="readwrite",position='rewind')
 
-!            a. read the (linear-symmetry adapted) AO2MO transformation matrix
-!            -----------------------------------------------------------------
-             open(11,file='AOMOlin',status='old',form='unformatted', &
-                  access='sequential',action="readwrite",position='rewind')
+         call readt(9,fullao2momat_dim,xmat)
 
-             if(x2c_linsym)then
-!              MO2MO linear symmetry --> nonlinear symmetry transformation matrix
-               call readt(11,fullmo2momat_dim,scr2mat)
-!              AO2MO linear symmetry --> nonlinear symmetry transformation matrix
-!              skip the record as it is not needed here
-               read(11)
-             end if
+         close(9,status='delete')
 
-!            AO2MO transformation matrix
-             call readt(11,fullao2momat_dim,scr1mat)
+       case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-             close(11,status='delete')
+           allocate(wrk(lwrk))
+           call modham(scr1mat,                                         &
+                       xmat,                                            &
+                       scr2mat,                                         &
+                       eigvl,                                           &
+                       .true.,                                          &
+                       .false.,                                         &
+                       x2c_is_defining_h1mat,                           &
+                       wrk,                                             &
+                       lwrk)
+           deallocate(wrk)
 
-!            b. read the SL-resorted AO2MO transformation matrix
-!            ---------------------------------------------------
-             open(9,file='AOMOSLR',status='old',form='unformatted', &
-                  access='sequential',action="readwrite",position='rewind')
-
-             call readt(9,fullao2momat_dim,xmat)
-
-             close(9,status='delete')
-
-           case (0, 3) ! 1-el Dirac Hamiltonian / free particle
-
-               allocate(wrk(lwrk))
-               call modham(scr1mat,                                         &
-                           xmat,                                            &
-                           scr2mat,                                         &
-                           eigvl,                                           &
-                           .true.,                                          &
-                           .false.,                                         &
-                           x2c_is_defining_h1mat,                           &
-                           wrk,                                             &
-                           lwrk)
-               deallocate(wrk)
-
-!            ------------------------------------------------------------------------------------
-!            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                      these dimensions have been evaluated in MODHAM
-!            ------------------------------------------------------------------------------------
-             call init_x2c_cb(.true.)
-
-           case default
-         
-             stop 'x2c driver: defining 4c-Hamiltonian type unknown...'
-
-         end select
-
-!        free top-level scratch memory and possibly re-allocate scr1mat with appropriate size
 !        ------------------------------------------------------------------------------------
-         deallocate(eigvl)
-         if(x2c_is_defining_h1mat < 1)then
-           deallocate(scr1mat)
-!          reallocate with full size
-           allocate(scr1mat(dimension_for_2mat))
-           scr1mat = 0.0d0
-         end if
+!        step 1.5: transfer dimensions on common blocks concerning the orthonormal MO basis -
+!                  these dimensions have been evaluated in MODHAM
+!        ------------------------------------------------------------------------------------
+         call init_x2c_cb(.true.)
+
+       case default
+     
+         stop 'x2c driver: defining 4c-Hamiltonian type unknown...'
+
+     end select
+
+!    memory allocation part 2 - free top-level scratch memory and possibly re-allocate scr1mat with appropriate size
+!    ---------------------------------------------------------------------------------------------------------------
+     deallocate(eigvl)
+     if(x2c_is_defining_h1mat < 1)then
+       deallocate(scr1mat)
+!      reallocate with full size
+       allocate(scr1mat(dimension_for_2mat))
+       scr1mat = 0.0d0
+     end if
 !
-!        recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
-         is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
-         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
+!    recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
+     is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
+     lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
-!        ------------------------------------------------------------------------------
-!        step 1.5: obtain 
-!                  a. decoupling matrix "R" in orthonormal MO basis
-!                  b. picture-change transformation matrix "U" in Dirac-sorted SA-AO basis
-!                  c. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
-!        ------------------------------------------------------------------------------
+!    ------------------------------------------------------------------------------
+!    step 1.6: obtain 
+!              a. decoupling matrix "R" in orthonormal MO basis
+!              b. picture-change transformation matrix "U" in Dirac-sorted SA-AO basis
+!              c. h1_2c_inf (bare-nucleus 1e Dirac-Hamiltonian) in Dirac-sorted SA-AO basis
+!    ------------------------------------------------------------------------------
 
-         call x2c_tra(xmat,                      &
-                      scr1mat,                   &
-                      scr2mat,                   &
-                      nr_ao_large_x2c,           &
-                      nr_ao_total_x2c,           &
-                      nr_ao_all,                 &
-                      nr_ao_l,                   &
-                      dim_oshell,                &
-                      dim_eshell,                &
-                      dim_pshell,                &
-                      fullomat_dim,              &
-                      fulleomat_dim,             &
-                      ioff_aomat_x,              &
-                      nr_fsym,                   &
-                      nr_quat,                   &
-                      nzt_x2c,                   &
-                      x2c_cb_pq_to_uq,           &
-                      x2c_funit,                 &
-                      x2c_fscru,                 &
-                      x2c_famfi,                 &
-                      x2c_is_defining_h1mat,     &
-                      final_ham_lvl_x2c,         &
-                      x2c_add_amfi,              &
-                      x2c_bs_to_fs,              &
-                      lwrk,                      &
-                      x2c_prt,                   &
-                      fragment_x2c_info%         &
-                      fragment_approach_enabled, &
-                      x2c_linsym,                &
-                      x2c_mdirac,                &
-                      x2c_spinfree,              &
-                      x2c_do_spherical)
+     if(fragment_x2c_info%fragment_approach_enabled)then
+       call x2c_fragment_get_h1_2c
+     else
+       call x2c_tra(xmat,                      &
+                    scr1mat,                   &
+                    scr2mat,                   &
+                    nr_ao_large_x2c,           &
+                    nr_ao_total_x2c,           &
+                    nr_ao_all,                 &
+                    nr_ao_l,                   &
+                    dim_oshell,                &
+                    dim_eshell,                &
+                    dim_pshell,                &
+                    fullomat_dim,              &
+                    fulleomat_dim,             &
+                    ioff_aomat_x,              &
+                    nr_fsym,                   &
+                    nr_quat,                   &
+                    nzt_x2c,                   &
+                    x2c_cb_pq_to_uq,           &
+                    x2c_funit,                 &
+                    x2c_fscru,                 &
+                    x2c_famfi,                 &
+                    x2c_is_defining_h1mat,     &
+                    final_ham_lvl_x2c,         &
+                    x2c_add_amfi,              &
+                    x2c_bs_to_fs,              &
+                    lwrk,                      &
+                    x2c_prt,                   &
+                    fragment_x2c_info%         &
+                    fragment_approach_enabled, &
+                    x2c_linsym,                &
+                    x2c_mdirac,                &
+                    x2c_spinfree,              &
+                    x2c_do_spherical)
+!      free memory
+       deallocate(scr1mat)
+       deallocate(scr2mat)
+       deallocate(xmat)
 
-!        free memory
-         deallocate(scr1mat)
-         deallocate(scr2mat)
-         deallocate(xmat)
+     end if
 
-         close(x2c_Sao_scrF,status="delete")
-
-
-
-     end select ! atom-by-atom X2C switch
-
+     close(x2c_Sao_scrF,status="delete")
+      
 !    --------------------------------------------------------------------------------------------------
-!    step 1.6: add oo-order 2e-SOC or AMFI contributions in case
+!    step 1.7: add oo-order 2e-SOC or AMFI contributions in case
 !              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
 !    --------------------------------------------------------------------------------------------------
      if(x2c_add_amfi > 0)then
@@ -478,41 +479,41 @@ contains
 
       close(x2c_famfi,status="delete")
 
-!      ------------------------------------------------------------------------------------------
-!      step 4: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
-!              a. if(appropriate) bare-nucleus corrected 1e Dirac-Hamiltonian
-!              b. if(appropriate) 1-electron/2-electron Fock matrices
-!              c. list of 1e-property operators
+!     ------------------------------------------------------------------------------------------
+!     step 2: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
+!             a. if(appropriate) bare-nucleus corrected 1e Dirac-Hamiltonian
+!             b. if(appropriate) 1-electron/2-electron Fock matrices
+!             c. list of 1e-property operators
+
+!             in : i.  on file X2CMAT   (fh: x2c_funit):
+!                     (combined) picture-change transformation matrix "U"
+!                  ii. on file AOPROPER (fh: 1int_4c_file): 
+!                      all property integrals in Hermit-sorted AO basis
 !
-!              in : i.  on file X2CMAT   (fh: x2c_funit):
-!                      (combined) picture-change transformation matrix "U"
-!                   ii. on file AOPROPER (fh: 1int_4c_file): 
-!                       all property integrals in Hermit-sorted AO basis
-!
-!              out: all operator (listed above) in picture-change transformed form on file
-!      -----------------------------------------------------------------------------------
-       call pctrafo_all_op_driver(nr_ao_total_x2c,               &
-                                  nr_ao_large_x2c,               &
-                                  nr_ao_all,                     &
-                                  nr_ao_l,                       &
-                                  nr_fsym,                       &
-                                  nr_quat,                       &
-                                  x2c_cb_pq_to_uq,               &
-                                  ioff_aomat_x,                  &
-                                  x2c_funit,                     &
-                                  fh_1int_4c,                    &
-                                  x2c_bs_to_fs,                  &
-                                  all_prp_op,                    &
-                                  lwrk,                          &
-                                  x2c_do_spherical,              &
-                                  x2c_mdirac,                    &
-                                  x2c_prep_bnccorr,              &
-                                  x2c_1e_system,                 &
-                                  x2c_is_defining_h1mat,         &
-                                  nr_2e_fock_matrices,           &
-                                  file_name_1e_fock_matrix,      &
-                                  file_name_2e_fock_matrices,    &
-                                  x2c_prt)
+!             out: all operator (listed above) in picture-change transformed form on file
+!     -----------------------------------------------------------------------------------
+      call pctrafo_all_op_driver(nr_ao_total_x2c,               &
+                                 nr_ao_large_x2c,               &
+                                 nr_ao_all,                     &
+                                 nr_ao_l,                       &
+                                 nr_fsym,                       &
+                                 nr_quat,                       &
+                                 x2c_cb_pq_to_uq,               &
+                                 ioff_aomat_x,                  &
+                                 x2c_funit,                     &
+                                 fh_1int_4c,                    &
+                                 x2c_bs_to_fs,                  &
+                                 all_prp_op,                    &
+                                 lwrk,                          &
+                                 x2c_do_spherical,              &
+                                 x2c_mdirac,                    &
+                                 x2c_prep_bnccorr,              &
+                                 x2c_1e_system,                 &
+                                 x2c_is_defining_h1mat,         &
+                                 nr_2e_fock_matrices,           &
+                                 file_name_1e_fock_matrix,      &
+                                 file_name_2e_fock_matrices,    &
+                                 x2c_prt)
 !      ---------------------------------------------------------------------------------------------------------------
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
@@ -541,14 +542,14 @@ contains
                                                  x2c_prt)
        end if
 !      --------------------------------------------------------------------------------------------
-!      step 5: export picture-change transformation matrix to AO basis with nosym (C1 double group)
+!      step 4: export picture-change transformation matrix to AO basis with nosym (C1 double group)
 !      --------------------------------------------------------------------------------------------
        if(x2cmod_h1dirty)then
          call x2c_export_pctmat2C1()
        end if
 
 !      ----------------------------------------------------------------------------------------
-!      step 6: renew dimensions on common blocks, i.e. "remove" references to positronic shells
+!      step 5: renew dimensions on common blocks, i.e. "remove" references to positronic shells
 !      ----------------------------------------------------------------------------------------
        call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
 

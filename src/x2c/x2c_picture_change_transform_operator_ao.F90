@@ -48,6 +48,7 @@ module x2c_pct_ao
   implicit none
 
   public pctrafo_all_op_driver
+  public pctrafo_h1_4cto2c_saao_bas
 
   private
 
@@ -121,19 +122,21 @@ contains
 !      step 1: picture-change transform the bare-nucleus corrected 1e Dirac-Hamiltonian
 !      --------------------------------------------------------------------------------
        if(prep_bncorr)then
-         call pctrafo_h1bnccorr_4cto2c_saao_bas(naosh_ls,            &
-                                                nr_ao_L,             &
-                                                naosh_all,           &
-                                                naosh_L,             &
-                                                nfsym,               &
-                                                nz,                  &
-                                                ipq_off_in,          &
-                                                ioff_aomx,           &
-                                                x2c_file_glb,        &
-                                                op_bs_to_fs,         &
-                                                is_len_wrk,          &
-                                                mdirac,              &
-                                                print_lvl)   
+         call pctrafo_h1_4cto2c_saao_bas(naosh_ls,            &
+                                         nr_ao_L,             &
+                                         naosh_all,           &
+                                         naosh_L,             &
+                                         nfsym,               &
+                                         nz,                  &
+                                         ipq_off_in,          &
+                                         ioff_aomx,           &
+                                         x2c_file_glb,        &
+                                         op_bs_to_fs,         &
+                                         is_len_wrk,          &
+                                         .true.,              &
+                                         .true.,              &
+                                         mdirac,              &
+                                         print_lvl)   
        end if
 
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
@@ -440,29 +443,31 @@ contains
   end subroutine pctrafo_op_4cto2c_saao_bas
 
 !**********************************************************************
-  subroutine pctrafo_h1bnccorr_4cto2c_saao_bas(naosh_ls,             &
-                                               nr_ao_L,              &
-                                               naosh_all,            &
-                                               naosh_L,              &
-                                               nfsym,                &
-                                               nz,                   &
-                                               ipq_off_in,           &
-                                               ioff_aomx,            &
-                                               x2c_file_glb,         &
-                                               op_bs_to_fs,          &
-                                               is_len_wrk,           &
-                                               mdirac,               &
-                                               print_lvl)
+  subroutine pctrafo_h1_4cto2c_saao_bas(naosh_ls,             &
+                                        nr_ao_L,              &
+                                        naosh_all,            &
+                                        naosh_L,              &
+                                        nfsym,                &
+                                        nz,                   &
+                                        ipq_off_in,           &
+                                        ioff_aomx,            &
+                                        x2c_file_glb,         &
+                                        op_bs_to_fs,          &
+                                        is_len_wrk,           &
+                                        dobncorr,             &
+                                        get_ll_block_2c,      &
+                                        mdirac,               &
+                                        print_lvl)
 !**********************************************************************
 !
-!    purpose: picture-change transform the bare-nucleus corrected 
-!             1e Dirac Hamiltonian and store it on file. 
+!    purpose: picture-change transform the bare-nucleus or bare-nucleus 
+!             corrected 1e Dirac Hamiltonian and store it on file. 
 !
-!             This Hamiltonian is used in the initial SCF step whereas
-!             the default Hamiltonian (including AMFI contributions) 
+!             The bare-nucleus corrected Hamiltonian is used in the initial 
+!             SCF step whereas the default Hamiltonian (including AMFI contributions) 
 !             will be considered in all subsequent SCF steps. 
 !
-!             equation: h_{2c_D_bnc_corr}^++ = U+ * h_{4c_D_bnc_corr} * U
+!             equation: h_{2c_D_"bnc_corr"}^++ = U+ * h_{4c_D_"bnc_corr"} * U
 !
 !----------------------------------------------------------------------
      integer, intent(in)            :: naosh_ls
@@ -477,6 +482,8 @@ contains
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
      integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
+     logical, intent(in)            :: dobncorr
+     logical, intent(in)            :: get_ll_block_2c
      logical, intent(in)            :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable           :: wrk(:)
@@ -497,8 +504,8 @@ contains
        allocate(scr_mat1(naosh_ls**2 * nz))
        scr_mat1 = 0
 
-!      step 1: get the 4c bare-nucleus corrected 1e Dirac Hamiltonian in SA-AO basis
-!      -----------------------------------------------------------------------------
+!      step 1: get the 4c bare-nucleus 1e Dirac Hamiltonian in SA-AO basis
+!      -------------------------------------------------------------------
        call reset_x2c_cb_onefck(.false.)
 
        if(mdirac)then
@@ -515,7 +522,8 @@ contains
 #endif
        end if
 
-       call bncorr(scr_mat1,wrk,lwrk,print_lvl)
+!      possibly add correction
+       if(dobncorr) call bncorr(scr_mat1,wrk,lwrk,print_lvl)
 
 !      debug print
        if(print_lvl > 2)then
@@ -570,23 +578,26 @@ contains
                                  ioff_aomx,           &
                                  op_fer_rep,          &
                                  op_bs_to_fs,         &
-                                 .true.,              &
+                                 get_ll_block_2c,     &
                                  print_lvl)
 
-!      store h_{2c_D_bnc_corr}^++ in DIRAC-sorted SA-AO basis on global file X2CMAT
-       i = 0  ! one-step storage of "gerade+ungerade" matrix parts
-       write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
-       call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+       if(dobncorr)then
+!        store h_{2c_D_bnc_corr}^++ in DIRAC-sorted SA-AO basis on global file X2CMAT
+         i = 0  ! one-step storage of "gerade+ungerade" matrix parts
+         write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
+         call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+       else
+       end if
 
        if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - bare-corrected',6)
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1 possibly-corrected',6)
        end if
 
        deallocate(scr_mat2)
        deallocate(pctmat)
        deallocate(scr_mat1)
 
-  end subroutine pctrafo_h1bnccorr_4cto2c_saao_bas
+  end subroutine pctrafo_h1_4cto2c_saao_bas
 
 !**********************************************************************
   subroutine pctrafo_fockmatrices_4cto2c_saao_bas(naosh_ls,                    &

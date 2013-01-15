@@ -40,6 +40,7 @@ module x2c_fragment_x2c_interface
   implicit none
 
   public x2c_fragment_x2c_driver
+  public x2c_fragment_get_h1_2c
 
   private
 
@@ -244,5 +245,10 @@ contains
 
   end subroutine construct_umol_from_atoms
 !***********************************************************************
-end module x2c_fragment_x2c_interface
 
+  subroutine x2c_fragment_get_h1_2c
+
+  end subroutine x2c_fragment_get_h1_2c
+!***********************************************************************
+
+end module x2c_fragment_x2c_interface
