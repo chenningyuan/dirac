@@ -398,8 +398,8 @@ contains
                                     nr_symm_indep_cent,    &
                                     nr_degen_nuc_cent,     &
                                     nr_ao_bas_type(1,0),   &
-                                    nr_ao_all,             &
                                     nr_ao_l,               &
+                                    nr_ao_all,             &
                                     x2c_funit              &
                                    )
 

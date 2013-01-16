@@ -36,20 +36,21 @@ module fragment_x2c_cfg
   type fragment_x2c
 
 !   double precision block
-    real(8), allocatable ::    &
+    real(8), allocatable ::      &
     pctmat(:)
 
 !   integer block
-    integer              ::    &
-    charge,                    &
+    integer              ::      &
+    charge,                      &
     funit
-    integer, allocatable ::    &
-    naosh_all(:),              &
+    integer, allocatable ::      &
+    naosh_all(:),                &
     naosh_L(:)
 
 !   logical block
-    logical              ::    &
-    fragment_approach_enabled, &
+    logical              ::                &
+    fragment_approach_enabled,             &
+    fragment_approach_ismolecule = .false.,&
     initialized
     
   end type

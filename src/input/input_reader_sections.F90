@@ -1278,8 +1278,14 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.fragx2')) then
-         x2cmod_fragment_x2c                         = .true.
-         fragment_x2c_info%fragment_approach_enabled = .true.
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+      end if
+
+      if (kw_matches(word, '.fragmo')) then
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+         fragment_x2c_info%fragment_approach_ismolecule = .true.
       end if
 
       if (kw_matches(word, '.DEBUG ')) then

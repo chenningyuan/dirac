@@ -2938,6 +2938,8 @@ C
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
           CALL SETDC1(IPREAD)
+!         set AO-labels for large components - in x2c_main initialized for large and small components
+          call getlab(ipread)
           IPREAD = IPREAD + 5
 C.........reset NEWPRP to re-initialize AOPROPER
           NEWPRP = .TRUE.

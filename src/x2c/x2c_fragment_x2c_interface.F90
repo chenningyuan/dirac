@@ -187,6 +187,24 @@ contains
   integer                :: iatom
 !----------------------------------------------------------------------
 
+!     debug option - read U matrix from molecular calculation
+      if(fragment_x2c_info%fragment_approach_ismolecule)then
+        call fragment_x2c_init(fragment_x2c_info,          &
+                               1,                          &
+                               nzc1,                       &
+                               0,                          &
+                               naosh_all_mol(1),           &
+                               naosh_L_mol(1)              &
+                              )
+        call dcopy(naosh_all_mol(1)*naosh_L_mol(1)*nzc1,   &
+                   fragment_x2c_info%pctmat,               &
+                   1,                                      & 
+                   umol,                                   & 
+                   1                                       & 
+                   )
+        return
+      end if
+
       icent    = 1
       iatom    = 1
 

@@ -52,9 +52,9 @@ C***********************************************************************
       integer, intent(inout) :: rbuf(*), cbuf(*), ibuf(*), jbuf(*)
 
       ICENT=INUC
-      print *, 'nbas,lr,lc',nbas,lr,lc,nont
+!     print *, 'nbas_r,nbas_c,lr,lc',nbas_r, nbas_c,lr,lc,nont
       DO ITYP = 1,NONT
-      print *, 'ndeg(ityp)',ndeg(ityp)
+!     print *, 'ndeg(ityp)',ndeg(ityp)
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
           CALL LABCOUNT(N1,RBUF,NBAS_R,1,IR_CLS,ICENT,IDEG,-1)
@@ -78,11 +78,10 @@ C.........Create pointer mol->atom for colums
           ENDIF
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(CBUF,NBAS_C,JBUF,NC)
-      print *, 'nzc1',nzc1
           DO IZ = 1,NZC1
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS_R,ATOM(1,1,IZ),LR,
      &                 IBUF,JBUF)
-      call wrtmatmn(amol(1,1,iz),nbas_r,nbas_c,nbas_r,nbas_c,6)
+!     call wrtmatmn(amol(1,1,iz),nbas_r,nbas_c,nbas_r,nbas_c,6)
           ENDDO
         ENDDO
         ICENT = ICENT + 1
@@ -121,6 +120,7 @@ C
       integer :: ival, itemp
 #include "dcbibt.h"
 
+      n = 0
 !.....Initialize index array
       CALL ICOPY(NBAS,1,0,LIST,1)
 !.....If active, search first value

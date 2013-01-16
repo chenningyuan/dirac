@@ -83,6 +83,10 @@ contains
 !   ----------------------------------------------------------------------------
 
        if(init_x2c_cb_blocks)then
+
+!        set AO-labels for large and small components - before x2c_main initialized only for the large component
+         call getlab(-1)
+
          call legacy_lwork_get(len_wrk_f77_x2c)
          x2c_prt               = iprham
          if(x2cmod_debug)      &

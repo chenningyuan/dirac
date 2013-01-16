@@ -196,7 +196,7 @@ C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
 C
-      CALL GETLAB(WORK,LWORK,IPREAD)
+      CALL GETLAB(IPREAD)
 C
 C     Define Hamiltonian
 C

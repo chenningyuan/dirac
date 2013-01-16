@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlab */
-      SUBROUTINE GETLAB(WORK,LWORK,IPRINT)
+      SUBROUTINE GETLAB(IPRINT)
 C***********************************************************************
 C
 C      Generate primitive labels for basis functions in dcblab.h
@@ -48,7 +48,7 @@ C
 #include "dcbbas.h"
 #include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
-      DIMENSION WORK(LWORK)
+      integer, allocatable :: kp(:)
 C
 #include "dcbibt.h"
       CALL QENTER('GETLAB')
@@ -197,9 +197,9 @@ C
 C     Use label information to list SO-basis:
 C
       NDIM = 2*NPLAB(0)
-      CALL MEMGET('INTE',KP,NDIM,WORK,KFREE,LFREE)      
-      CALL LABLST(WORK(KP))
-      CALL MEMREL('LABLST',WORK,KWORK,KWORK,KFREE,LFREE)
+      allocate(kp(ndim))
+      CALL LABLST(KP,iprint)
+      deallocate(kp)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('GETLAB')
       RETURN
@@ -3492,7 +3492,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LABLST */
-      SUBROUTINE LABLST(ILAB)
+      SUBROUTINE LABLST(ILAB,iprint)
 C***********************************************************************
 C
 C     Use information in SO-labels to generate SO-basis
@@ -3526,15 +3526,18 @@ C
         ILAB(1,JLAB) = ILAB(1,JLAB) + 1
         ILAB(2,JLAB) = I
       ENDDO
-      CALL HEADER('Symmetry Orbitals',1)
-      WRITE (LUPRI,'(1X,A,6X,8I6)')
-     *   ' Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I6)')
-     *   ' Number of large orbitals in each symmetry: ',
-     &    (NCOS(I,1),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I6)')
-     *   ' Number of small orbitals in each symmetry: ',
-     &    (NCOS(I,2),I=1,MAXREP+1)
+      if(iprint > 0)then
+        CALL HEADER('Symmetry Orbitals',1)
+        WRITE (LUPRI,'(1X,A,6X,8I6)')
+     *     ' Number of orbitals in each symmetry: ',
+     &      (NAOS(I),I=1,MAXREP+1)
+          WRITE (LUPRI,'(1X,A,8I6)')
+     *     ' Number of large orbitals in each symmetry: ',
+     &      (NCOS(I,1),I=1,MAXREP+1)
+          WRITE (LUPRI,'(1X,A,8I6)')
+     *     ' Number of small orbitals in each symmetry: ',
+     &      (NCOS(I,2),I=1,MAXREP+1)
+      end if
 C
 C     Loop over large component labels
 C
@@ -3545,31 +3548,40 @@ C
           JC = IC
           JREP = -1
           IF(IC.EQ.1) THEN
-            WRITE(LUPRI,'(/A)') '* Large component functions'
+            if(iprint > 0)then
+              WRITE(LUPRI,'(/A)') '* Large component functions'
+            end if
           ELSE
-            WRITE(LUPRI,'(/A)') '* Small component functions'
+            if(iprint > 0)then
+              WRITE(LUPRI,'(/A)') '* Small component functions'
+            end if
           ENDIF
         ENDIF
         IREP = KGET(IATTR(I,2))
         IF(IREP.NE.JREP) THEN
           JREP = IREP
-          WRITE (LUPRI,'(/2X,A,2X,A3,A1,I2,A1/)')
-     &          'Symmetry',REP(IREP),'(',(IREP+1),')'
+          if(iprint > 0)then
+            WRITE (LUPRI,'(/2X,A,2X,A3,A1,I2,A1/)')
+     &            'Symmetry',REP(IREP),'(',(IREP+1),')'
+          end if
         ENDIF
         INUC = JGET(IATTR(I,2))
         NDEG = NUCDEG(INUC)
         II = ILAB(2,I)+ICOS(IREP+1,IC)-IBBAS(IREP,IC)
         IF(NDEG.GT.1) THEN
-          WRITE(LUPRI,'(3X,I6,A,3X,A7,I1,7(A1,I1))')
-     &      ILAB(1,I),' functions: ',
-     &      PLABEL(I,2)(6:12),1,(CHRSGN(NINT(CTRAN(II,K))),K,K=2,NDEG)
+          if(iprint > 0)then
+            WRITE(LUPRI,'(3X,I6,A,3X,A7,I1,7(A1,I1))')
+     &        ILAB(1,I),' functions: ',
+     &        PLABEL(I,2)(6:12),1,(CHRSGN(NINT(CTRAN(II,K))),K,K=2,NDEG)
+          end if
         ELSE
-          WRITE(LUPRI,'(3X,I6,A,3X,A7)') ILAB(1,I),' functions: ',
-     &        PLABEL(I,2)(6:12)
+          if(iprint > 0)then
+            WRITE(LUPRI,'(3X,I6,A,3X,A7)') ILAB(1,I),' functions: ',
+     &          PLABEL(I,2)(6:12)
+          end if
         ENDIF
       ENDDO
 C
-      RETURN
       END
 C***********************************************************************
 C  /* Deck indaoc */
