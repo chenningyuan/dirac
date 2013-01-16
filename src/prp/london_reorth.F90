@@ -57,6 +57,7 @@ module london_reorth_hb
 #include "cbihr2.h"
 #include "dcbdhf.h"
 #include "shells.h"
+#include "dcbxlr.h"
 
 #include "infpar.h"
 
@@ -129,14 +130,8 @@ contains
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
     call dealloc(fao)
 
-!    if (.not. lao_lr_rearrange) then
-!     calculate "F" part, add to "G" and write result to file
-      call get_ftb(fmo, cmo, ibeig)
-!    else
-!     if connection-independent approach, we don't need one-index transformed contribution
-!     in the property gradient, so only write fmo to file:
-!      call write_sb(fmo)
-!    end if
+!   calculate "F" part, add to "G" and write result to file
+    call get_ftb(fmo, cmo, ibeig)
 
     call dealloc(fmo)
 
@@ -144,8 +139,8 @@ contains
 
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
-    !gosia fixme real(8), intent(in)    :: fmat(n2orbxq, *)
-    real(8), intent(inout)    :: fmat(n2orbxq, *)
+    real(8), intent(in)    :: fmat(n2orbxq, *)
+    !real(8), intent(inout)    :: fmat(n2orbxq, *)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -160,7 +155,7 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j, t, isymh, iz
-    logical :: ah
+    logical :: ah, ee, ep
     real(8) :: a
 !-----------------------------------------------------------------------
 
@@ -178,9 +173,9 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
-!g    if (lao_lr_rearrange) then
-!g      call get_m_ij(fmo)
-!g    end if
+    if (lao_lr_rearrange) then
+      call get_m_ij(fmo)
+    end if
 
     call alloc(tb,  n2orbxq)
     tb = 0.0d0
@@ -234,9 +229,13 @@ contains
       call di_deselect_wrk(work, lwork)
 
 ! in lao_lr_rearrange take only 'ai' blocks:
-!g      if (lao_lr_rearrange) then
-!g        call get_m_ai(tb,doeprn)
-!g      end if
+      if (lao_lr_rearrange) then
+        ee = .true.
+        ep = .true.
+        if (xlr_skipep .or. .not. doeprn) ep = .false.
+        if (xlr_skipee) ee = .false.
+        call get_m_ai(tb, ee, ep)
+      end if
 
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
@@ -290,14 +289,6 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
-!g!fixme
-!g      lwork = len_f77_work
-!g      kfree = 1
-!g      call di_select_wrk(work, lwork)
-!g      call fmoli3(00,buf,fmo,tb,work,kfree,lwork)
-!g      call di_deselect_wrk(work, lwork)
-!g!end of fixme
-
 !     add result to fmat
       call daxpy(n2orbxq,        &
                  1.0d0,          &
@@ -307,9 +298,6 @@ contains
                  1)
 
 !     write to FCKLON file:
-!gosia fixme:
-      !fmat(1, icomp) = 0.0d0
-      !call dzero(fmat(1, icomp), n2orbxq)
       call wrtdac(lufckl, norbt*norbt*nz,   &
                   fmat(1, icomp), icomp)
 
@@ -610,6 +598,11 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+      if (lao_lr_rearrange) then
+!       we only need occ-occ block of S^B matrix, so zero-out the rest:
+        call get_m_ij(tb) 
+      end if
+
       debug_me = .false.
       if (debug_me) then
         write(*, *) 'tb matrix in MO basis in get_tb_dmat'
@@ -618,10 +611,6 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
-      if (lao_lr_rearrange) then
-!       we only need occ-occ block of S^B matrix, so zero-out the rest:
-        call get_m_ij(tb) 
-      end if
 
       lwork = len_f77_work
       kfree = 1
@@ -646,28 +635,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-  subroutine write_sb(sb)
-    !gosia fixme real(8), intent(in) :: sb(n2orbxq, *)
-    real(8), intent(inout) :: sb(n2orbxq, *)
-    integer :: icomp
-
-    open(lufckl, file='FCKLON', form='unformatted',   &
-         access='direct',recl=8*n2orbxq,              &
-         status='unknown')
-
-!gosia fixme
-    do icomp = 1, nr_xyz_comp
-      !sb(1, icomp) = 0.0d0
-      !call dzero(sb(1, icomp), n2orbxq)
-      call wrtdac(lufckl, norbt*norbt*nz,   &
-                  sb(1, icomp), icomp)
-    end do
-
-    close(lufckl, status='keep')
-
-  end subroutine
-
 
       SUBROUTINE GET_NPOS(NPOS)
 #include "implicit.h"

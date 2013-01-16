@@ -543,6 +543,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !g             if (shielding_rearrange .or. lao_lr_rearrange) then
 !g               call get_m_ij(work(ktmat))
 !g             end if
+
              if (shielding_rearrange) then
 !              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
                ih = -1
@@ -658,7 +659,6 @@ C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
       use london_helper
-      use london_reorth_hb
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
@@ -709,6 +709,10 @@ C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
       DO I1 = 1, NFSYM
         IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
           if (lao_lr_rearrange) then
+!         called only from get_ftb
+!         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
+!         where T contains S^B matrix (only 'ai' elements)
+!         and H has only 'ij' elements
             I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
             I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
             CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
@@ -767,6 +771,10 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
          end if !if (lao_lr_rearrange) then
         ELSE  ! Transformation in the e-e space only
           if (lao_lr_rearrange) then
+!         called only from get_ftb
+!         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
+!         where T contains S^B matrix (only 'ai' elements and only electronic 'a' indices)
+!         and H has only 'ij' elements
             I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
             I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
             CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), D1,
@@ -3199,32 +3207,6 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
      &               D0, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
-     &    'TTRA: 1.part transformed H.T over e-p :',
-     &     IREPTH+1,'/',NBSYM,DSGN
-            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-          ENDIF
-       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
-!          if (.not. lao_lr_rearrange) then
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
-!                    -----------------------------------
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
-     &               NORBT,NORBT,NZ,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ, 
-!                    -----------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-          end if
         ELSE  ! Transformation in the e-e space only
 
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
@@ -3243,25 +3225,6 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
      &               D0, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
-       if (.not. lao_lr_rearrange .and. .not. shielding_rearrange) then
-!          if (.not. lao_lr_rearrange) then
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
-!                    ---------------------------------------------- --
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-          end if !if (.not. lao_lr_rearrange) then
         ENDIF
       ENDDO
 
