@@ -36,6 +36,8 @@ module x2c_fragment_x2c_interface
 
   use fragment_x2c_cfg
   use x2c_fio
+  use x2c_pct_ao, only: &
+      pctrafo_h1_4cto2c_saao_bas
 
   implicit none
 
@@ -246,7 +248,112 @@ contains
   end subroutine construct_umol_from_atoms
 !***********************************************************************
 
-  subroutine x2c_fragment_get_h1_2c
+  subroutine x2c_fragment_get_h1_2c(naosh_ls,             &
+                                    nr_ao_L,              &
+                                    naosh_all,            &
+                                    naosh_L,              &
+                                    nfsym,                &
+                                    nz,                   &
+                                    ipq_off_in,           &
+                                    ioff_aomx,            &
+                                    add_amfi_contrib,     &
+                                    is_final_ham_lvl,     &
+                                    x2c_file_glb,         &
+                                    x2c_file_amf,         &
+                                    op_bs_to_fs,          &
+                                    is_len_wrk,           &
+                                    spherical_on,         &
+                                    mdirac,               &
+                                    print_lvl)
+!**********************************************************************
+!
+!    purpose: picture-change transform the bare-nucleus 1e Dirac 
+!             Hamiltonian and store it on file.
+!
+!             The bare-nucleus corrected Hamiltonian is used in the initial 
+!             SCF step whereas the default Hamiltonian (including AMFI contributions) 
+!             will be considered in all subsequent SCF steps. 
+!
+!             equation: h_{2c_D}^++ = U+ * h_{4c_D} * U
+!
+!----------------------------------------------------------------------
+     integer, intent(in)    :: naosh_ls
+     integer, intent(in)    :: nr_ao_L
+     integer, intent(in)    :: naosh_all(nfsym)
+     integer, intent(in)    :: naosh_L(nfsym)
+     integer, intent(in)    :: nfsym
+     integer, intent(in)    :: nz
+     integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
+     integer, intent(in)    :: ipq_off_in(4,0:7)
+     integer, intent(inout) :: is_final_ham_lvl
+     integer, intent(in)    :: add_amfi_contrib
+     integer, intent(in)    :: is_len_wrk
+     integer, intent(in)    :: x2c_file_glb
+     integer, intent(in)    :: x2c_file_amf
+     integer, intent(in)    :: op_bs_to_fs(0:7,1:2)
+     integer, intent(in)    :: print_lvl
+     logical, intent(in)    :: spherical_on
+     logical, intent(in)    :: mdirac
+!----------------------------------------------------------------------
+     real(8), allocatable   :: h1_2cinf_saao(:)
+     integer                :: funit
+     integer                :: nr_aosh_h1
+     logical                :: get_ll_block_2c
+     logical                :: dobncorr
+     character (len=12)     :: flabel
+!----------------------------------------------------------------------
+
+      dobncorr = .false.
+
+!     construct h12cAOn or h12cAOa depending on amfi flag
+      if(add_amfi_contrib > 0)then
+
+!       set pointer to Hamiltonian integral type - final adaption after AMFI step
+        is_final_ham_lvl = 5
+        write(flabel,'(a7,i4,i1)') 'h12cAOa',1,0
+        funit           = x2c_file_amf
+        get_ll_block_2c = .false.
+
+      else
+
+!       set pointer to Hamiltonian integral type 
+        is_final_ham_lvl = 2
+        write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
+        funit           = x2c_file_glb
+        get_ll_block_2c = .true.
+
+      end if ! amfi contributions 
+
+      allocate(h1_2cinf_saao(naosh_ls**2*nz))
+      h1_2cinf_saao = 0
+
+      call pctrafo_h1_4cto2c_saao_bas(h1_2cinf_saao,        &
+                                      naosh_ls,             &
+                                      nr_ao_L,              &
+                                      naosh_all,            &
+                                      naosh_L,              &
+                                      nr_aosh_h1,           &
+                                      nfsym,                &
+                                      nz,                   &
+                                      ipq_off_in,           &
+                                      ioff_aomx,            &
+                                      x2c_file_glb,         &
+                                      op_bs_to_fs,          &
+                                      is_len_wrk,           &
+                                      dobncorr,             &
+                                      get_ll_block_2c,      &
+                                      spherical_on,         &
+                                      mdirac,               &
+                                      flabel,               &
+                                      print_lvl)
+
+      call x2c_write(flabel,                                &
+                     h1_2cinf_saao,                         &
+                     nr_aosh_h1*nr_aosh_h1*nz,              &
+                     funit                                  &
+                    ) 
+
+      deallocate(h1_2cinf_saao)
 
   end subroutine x2c_fragment_get_h1_2c
 !***********************************************************************

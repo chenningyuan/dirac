@@ -112,20 +112,33 @@ contains
      character (len=6), intent(in)   :: file_name_1e_fock_matrix
      character (len=6), intent(in)   :: file_name_2e_fock_matrices
 !----------------------------------------------------------------------
+     integer                         :: nr_aosh_h1
      logical                         :: op_2c_ll
      logical                         :: prop_op_nopct
+     real(8), allocatable            :: scr_mat1(:)
      integer, allocatable            :: prop_op_dgsym(:)
      integer, allocatable            :: prop_op_trsym(:)
      character (len=16), allocatable :: prop_op_name(:)
+     character (len=12)              :: flabel
 !**********************************************************************
 
 !      step 1: picture-change transform the bare-nucleus corrected 1e Dirac-Hamiltonian
 !      --------------------------------------------------------------------------------
        if(prep_bncorr)then
-         call pctrafo_h1_4cto2c_saao_bas(naosh_ls,            &
+
+         allocate(scr_mat1(naosh_ls**2*nz))
+         scr_mat1 = 0
+
+!        store h_{2c_D_bnc_corr}^++ in DIRAC-sorted SA-AO basis on global file X2CMAT
+         ! "0" means one-step storage of "gerade+ungerade" matrix parts
+         write(flabel,'(a11,i1)') 'h1bncc2cAOl',0
+
+         call pctrafo_h1_4cto2c_saao_bas(scr_mat1,            &
+                                         naosh_ls,            &
                                          nr_ao_L,             &
                                          naosh_all,           &
                                          naosh_L,             &
+                                         nr_aosh_h1,          &
                                          nfsym,               &
                                          nz,                  &
                                          ipq_off_in,          &
@@ -135,8 +148,11 @@ contains
                                          is_len_wrk,          &
                                          .true.,              &
                                          .true.,              &
+                                         .false.,             &
                                          mdirac,              &
+                                         flabel,              &
                                          print_lvl)   
+         deallocate(scr_mat1)
        end if
 
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
@@ -443,10 +459,12 @@ contains
   end subroutine pctrafo_op_4cto2c_saao_bas
 
 !**********************************************************************
-  subroutine pctrafo_h1_4cto2c_saao_bas(naosh_ls,             &
+  subroutine pctrafo_h1_4cto2c_saao_bas(scr_mat1,             &
+                                        naosh_ls,             &
                                         nr_ao_L,              &
                                         naosh_all,            &
                                         naosh_L,              &
+                                        nr_aosh_h1,           &
                                         nfsym,                &
                                         nz,                   &
                                         ipq_off_in,           &
@@ -456,7 +474,9 @@ contains
                                         is_len_wrk,           &
                                         dobncorr,             &
                                         get_ll_block_2c,      &
+                                        spherical_on,         &
                                         mdirac,               &
+                                        flabel,               &
                                         print_lvl)
 !**********************************************************************
 !
@@ -470,10 +490,12 @@ contains
 !             equation: h_{2c_D_"bnc_corr"}^++ = U+ * h_{4c_D_"bnc_corr"} * U
 !
 !----------------------------------------------------------------------
+     real(8), intent(inout)         :: scr_mat1(*)
      integer, intent(in)            :: naosh_ls
      integer, intent(in)            :: nr_ao_L
      integer, intent(in)            :: naosh_all(nfsym)
      integer, intent(in)            :: naosh_L(nfsym)
+     integer, intent(inout)         :: nr_aosh_h1
      integer, intent(in)            :: nfsym
      integer, intent(in)            :: nz
      integer, intent(in)            :: ipq_off_in(4,0:7)
@@ -482,12 +504,13 @@ contains
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
      integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
+     logical, intent(in)            :: spherical_on
      logical, intent(in)            :: dobncorr
      logical, intent(in)            :: get_ll_block_2c
      logical, intent(in)            :: mdirac
+     character (len=12), intent(in) :: flabel
 !----------------------------------------------------------------------
      real(8), allocatable           :: wrk(:)
-     real(8), allocatable           :: scr_mat1(:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
      integer                        :: i
@@ -495,14 +518,11 @@ contains
      integer                        :: lwrk
      integer                        :: op_fer_rep
      integer                        :: ioff_pct_mat
-     character (len=12)             :: flabel
+     integer                        :: nr_sph
+     character (len=12)             :: flabel_local
 !**********************************************************************
 
        lwrk = is_len_wrk
-
-!      allocate first required scratch matrix
-       allocate(scr_mat1(naosh_ls**2 * nz))
-       scr_mat1 = 0
 
 !      step 1: get the 4c bare-nucleus 1e Dirac Hamiltonian in SA-AO basis
 !      -------------------------------------------------------------------
@@ -549,8 +569,8 @@ contains
        ioff_pct_mat = 1
 
        do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
-         if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,     &
+         write(flabel_local,'(a7,i4,i1)') 'pctmtAO',1,i
+         if(naosh_all(i)*naosh_L(i) > 0) call x2c_read(flabel_local,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz, &
                                                        x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
@@ -581,21 +601,41 @@ contains
                                  get_ll_block_2c,     &
                                  print_lvl)
 
+
        if(dobncorr)then
-!        store h_{2c_D_bnc_corr}^++ in DIRAC-sorted SA-AO basis on global file X2CMAT
-         i = 0  ! one-step storage of "gerade+ungerade" matrix parts
-         write(flabel,'(a11,i1)') 'h1bncc2cAOl',i
          call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+         nr_aosh_h1 = nr_ao_L ! not used for dobncorr, though
        else
+
+         if(flabel == 'h12cAOa   10')then
+           nr_aosh_h1 = naosh_ls
+         else if(flabel == 'h12cAOn   10')then
+
+           if(spherical_on)then
+  
+             allocate(wrk(lwrk))
+             call sph_iotc(scr_mat1,scr_mat2,nr_sph,print_lvl,wrk,lwrk)
+!            reset pointer to WORK array
+             deallocate(wrk)
+
+             call dcopy(nr_sph**2*nz,scr_mat2,1,scr_mat1,1)
+             nr_aosh_h1 = nr_sph
+
+           else
+             nr_aosh_h1 = nr_ao_L
+           end if
+         else
+           write(6,*) 'flabel ==> ',flabel
+           stop 'unknown flabel in pctrafo_h1_4cto2c_saao_bas'
+         end if
        end if
 
        if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1 possibly-corrected',6)
+         call print_x2cmat(scr_mat1,nr_aosh_h1,nr_aosh_h1,nz,ipq_off_in(1,0),'x2c - h1 possibly-corrected',6)
        end if
 
        deallocate(scr_mat2)
        deallocate(pctmat)
-       deallocate(scr_mat1)
 
   end subroutine pctrafo_h1_4cto2c_saao_bas
 

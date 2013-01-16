@@ -390,22 +390,38 @@ contains
 
 !      construct molecular U matrix from fragments/atoms
 !      -------------------------------------------------
-       call x2c_fragment_x2c_driver(nr_quat,             &
-                                    nr_fsym,             &
-                                    x2c_mxatom,          &
-                                    type_nuclei,         &
-                                    type_charge,         &
-                                    nr_symm_indep_cent,  &
-                                    nr_degen_nuc_cent,   &
-                                    nr_ao_bas_type(1,0), &
-                                    nr_ao_all,           &
-                                    nr_ao_l,             &
-                                    x2c_funit            &
+       call x2c_fragment_x2c_driver(nr_quat,               &
+                                    nr_fsym,               &
+                                    x2c_mxatom,            &
+                                    type_nuclei,           &
+                                    type_charge,           &
+                                    nr_symm_indep_cent,    &
+                                    nr_degen_nuc_cent,     &
+                                    nr_ao_bas_type(1,0),   &
+                                    nr_ao_all,             &
+                                    nr_ao_l,               &
+                                    x2c_funit              &
                                    )
 
 !      get h1_2c_inf in  Dirac-sorted SA-AO basis
 !      ------------------------------------------
-       call x2c_fragment_get_h1_2c()
+       call x2c_fragment_get_h1_2c(nr_ao_total_x2c,        &
+                                   nr_ao_large_x2c,        &
+                                   nr_ao_all,              &
+                                   nr_ao_l,                &
+                                   nr_fsym,                &
+                                   nr_quat,                &
+                                   x2c_cb_pq_to_uq,        &
+                                   ioff_aomat_x,           &
+                                   x2c_add_amfi,           &
+                                   final_ham_lvl_x2c,      &
+                                   x2c_funit,              &
+                                   x2c_famfi,              &
+                                   x2c_bs_to_fs,           &
+                                   lwrk,                   &
+                                   x2c_do_spherical,       &
+                                   x2c_mdirac,             &
+                                   x2c_prt)
 
      else
 
