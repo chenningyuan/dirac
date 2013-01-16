@@ -1328,8 +1328,8 @@
          x2c_add_amfi = 2
       end if
       if (kw_matches(word, '.atomic')) then
-         x2c_add_amfi = 2
          aoomod       = .true.
+         x2c_add_amfi = 2
       end if
 
       call check_whether_kw_found(word, kw_section)

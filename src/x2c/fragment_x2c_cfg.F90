@@ -114,7 +114,11 @@ contains
 !   open file with fragment U matrix
     extension        = '000' 
     write(extension,'(i3)') A%charge
-    write(filename,'(a7,a3)') 'X2CMAT.',A%charge
+
+    if(extension(1:1) == ' ') write(extension(1:1),'(i1)') 0
+    if(extension(2:2) == ' ') write(extension(2:2),'(i1)') 0
+    write(filename,'(a7,a3)') 'X2CMAT.',extension
+
     open(A%funit,file=filename,status='old',form='unformatted',    &
          access='sequential',action='readwrite',position='rewind')
 

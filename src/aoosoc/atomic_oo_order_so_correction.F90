@@ -154,10 +154,10 @@ contains
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      real(8), allocatable               :: Gmat_frag(:)
-     real(8), allocatable               :: work(:)
-     integer                            :: lwork
-     integer                            :: lfree
-     integer                            :: kfree
+     real(8), allocatable               :: rbuf(:)
+     real(8), allocatable               :: cbuf(:)
+     real(8), allocatable               :: ibuf(:)
+     real(8), allocatable               :: jbuf(:)
 !----------------------------------------------------------------------
 
       allocate(Gmat_frag(nrows_ext*ncols_ext*4))
@@ -173,16 +173,39 @@ contains
                                   nint(atom(center_total)%charge), &
                                   aoo_fsoc                         &
                                  )
-!     distribute  atomic data in molecular block 
-      lwork = 2*naosh_l + nrows_ext + ncols_ext + 24
-      allocate(work(lwork))
-      kfree = 1
-      lfree = lwork
-      call put_aoblock(Gmat,naosh_l,naosh_l,center_total,aoo_nont(center_id),aoo_nucdeg(center_total),4,  &
-                       Gmat_frag,nrows_ext,ncols_ext,-1,nrows_ext,ncols_ext,-1,work,kfree,lfree           &
-                      )
+      allocate(rbuf(naosh_l))
+      allocate(cbuf(naosh_l))
+      allocate(ibuf(nrows_ext))
+      allocate(jbuf(ncols_ext))
 
-      deallocate(work)
+      rbuf = 0
+      cbuf = 0
+      ibuf = 0
+      jbuf = 0
+
+      call put_aoblock(Gmat,                            &
+                       naosh_l,                         &
+                       naosh_l,                         &
+                       center_total,                    &
+                       aoo_nont(center_id),             &
+                       aoo_nucdeg(center_total),        &
+                       4,                               & 
+                       Gmat_frag,                       &
+                       nrows_ext,                       &
+                       nrows_ext,                       &
+                       -1,                              &
+                       ncols_ext,                       &
+                       ncols_ext,                       &
+                       -1,                              &
+                       rbuf,                            &
+                       cbuf,                            &
+                       ibuf,                            &
+                       jbuf)
+
+      deallocate(jbuf)
+      deallocate(ibuf)
+      deallocate(cbuf)
+      deallocate(rbuf)
       deallocate(Gmat_frag)
 
 !     update counter
