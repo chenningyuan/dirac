@@ -179,17 +179,25 @@ C
          HFXMU = D0
          IF(MDIRAC)THEN
 #ifdef MOD_INTEREST
-           if(x2c)then
-             call process_two_electron_integrals_2comp(fmat,
-     &                                                 dmat,
-     &                                                 intflg,
-     &                                                 hfxfac) 
-           else
-             call process_two_electron_integrals_4comp(fmat,
-     &                                                 dmat,
-     &                                                 intflg,
-     &                                                 hfxfac) 
-           end if
+
+!          stefan: for the time being we will have an outer loop over fock matrices 
+!                  assuming that MDIRAC will only be active for regular SCF and 
+!                  not, e.g., response. todo: inner loop over fmat and proper flags 
+!                  ISYMOP,IHRMOP, IFCKOP in InteRest.
+
+           do i = 1, nfmat
+             if(x2c)then
+               call process_two_electron_integrals_2comp(fmat(1,1,i),
+     &                                                   dmat(1,1,i),
+     &                                                   intflg,
+     &                                                   hfxfac) 
+             else
+               call process_two_electron_integrals_4comp(fmat(1,1,i),
+     &                                                   dmat(1,1,i),
+     &                                                   intflg,
+     &                                                   hfxfac) 
+             end if
+           end do
 #endif
          ELSE
            CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,

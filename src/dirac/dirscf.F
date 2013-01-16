@@ -1364,25 +1364,6 @@ C
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
-
-
-#define blubb_blubb_aooso
-#ifdef blubb_blubb_aooso
-         !fixme: michal for InteRest                            
-         call dzero(fock,N2BBASXQ*nopen)
-         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &               NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
-!        CALL HEADER(
-!    &   'scfcyc: full twofock 2-electron Fock matrix for you',-1)
-!        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &                NZ,IPQTOQ(1,0),LUPRI)
-         open(99,file='blubb_oo',status='replace',form='unformatted',
-     &        access='sequential',action="readwrite",position='rewind')
-         write(99) (fock(i),i=1,N2BBASXQ)
-         close(99,status='keep')
-         call dzero(fock,N2BBASXQ*nopen)
-#undef blubb_blubb_aooso
-#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
