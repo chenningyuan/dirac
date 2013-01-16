@@ -112,6 +112,7 @@ contains
         do iz = 1,nz
           iq = ipqtoq(iz,irep)
           ih = ihqmat(iq,1)
+          print *, 'symmetry of fmat',ih
           if(ih == 1)then
             call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,i))
           else if(ih == 2)then
@@ -120,8 +121,11 @@ contains
         end do
 
 
+!       if(i > 1)then
+!         call dscal(nrows*ncols*nz,aoo_dfopen(i-1),fmat(1,1,1,i),1)
+!       end if
         if(i > 1)then
-          call dscal(nrows*ncols*nz,aoo_dfopen(i-1),fmat(1,1,1,i),1)
+          call daxpy(nrows*ncols*nz,aoo_dfopen(i-1),fmat(1,1,1,i),1,fmat(1,1,1,1),1)
         end if
 
       end do
@@ -259,7 +263,7 @@ contains
 !     normalize (picture-change transform) 2e-SO-fock matrix
       fock_mat_offset = 1
 
-      do i = 1, nr_2e_fock
+!     do i = 1, nr_2e_fock
 
         dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
         call perform_pct_saao_bas(fmat(fock_mat_offset),        &
@@ -286,14 +290,16 @@ contains
                         )
 
 !       todo: combine fock matrices in case nr_2e_fock > 1
-        if(i > 1)then
-          call daxpy(nrows*ncols*nr_quat,1.0d0,fmat(fock_mat_offset),1,fmat(1),1)
-        end if
+!       if(i > 1)then
+!         call daxpy(nr_ao_large_aoo**2*nr_quat,    &
+!                    1.0d0,                         &
+!                    fmat(fock_mat_offset),         &
+!                    1,                             &
+!                    fmat,                          &
+!                    1)                             &
+!       end if
 
-        fock_mat_offset = fock_mat_offset + nrows*ncols*nr_quat
-
-
-      end do
+!     end do
 
 
 !     debug print
