@@ -4530,7 +4530,7 @@ C
         ENDDO
       ENDIF
    
-!     IF (IPRINT.GE.4) THEN
+      IF (IPRINT.GE.4) THEN
        CALL HEADER('*** Output from INIBOS ***',-1)
        write(lupri,'(2X,A,L1)') 'flag on S_L resorting, SORTLS=',SORTLS
        write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
@@ -4539,7 +4539,7 @@ C
        write(lupri,'(2X,A,/,4X,25I3)')
      & 'boson irreps of each MO (from pos. to el.):',
      &                (IBOS(J),J=1,NORB(IFRP))
-!     ENDIF
+      ENDIF
 
       RETURN
       END

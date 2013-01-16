@@ -3783,7 +3783,6 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
-      use memory_allocator
 #ifdef MOD_INTEREST
       use module_interest_interface
 #endif
@@ -3824,8 +3823,6 @@ C
         end if
 #endif
       ELSE
-!       call alloc(sbuf, n2bbasx)
-!       call alloc(stri, nnbbasx)
         allocate(sbuf(n2bbasx))
         allocate(stri(nnbbasx))
 C
@@ -3865,14 +3862,12 @@ C
                 ENDDO
               ENDIF
             ENDDO
-            IOFF = IOFF + N2BAS(I)
           ENDDO
+          IOFF = IOFF + N2BAS(I)
         ENDDO
 
         deallocate(stri)
         deallocate(sbuf)
-!       call dealloc(stri)
-!       call dealloc(sbuf)
       END IF
 C
 C     Scale SS-block
@@ -3908,7 +3903,6 @@ C
       ENDIF    
 C
       CALL QEXIT('GTOVLT')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reno */
