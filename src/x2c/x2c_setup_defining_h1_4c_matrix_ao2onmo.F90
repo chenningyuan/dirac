@@ -421,7 +421,7 @@ contains
                                         op_mat_on_file,    &
                                         print_lvl)
         end if
-        if(x2c_fock_saao_basis) goto 100
+        if(x2c_fock_saao_basis) goto 100 ! debug option - can be activated in the input
 
 !       step 2: 4c-fock_onmo (LS sorted) --> 4c-fock_onmo_nonlin LS sorted
 !       ------------------------------------------------------------------
