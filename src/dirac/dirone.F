@@ -3154,7 +3154,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,3)
+            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
