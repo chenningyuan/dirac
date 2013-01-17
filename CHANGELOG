@@ -15,3 +15,10 @@
 
 - Fixed memory allocations in dirgp.F which now allows pre- and post-SCF orbital reordering
   as well as simple magnetic balance for larger basis sets.
+
+
+FUTURE
+------
+
+- XCFun will not compile hidden cpp files.
+- Code stops if user gives orbital occupation which is inconsistent with NFSYM.

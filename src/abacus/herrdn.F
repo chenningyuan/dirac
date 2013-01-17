@@ -2486,6 +2486,7 @@ C
         NTBAS(ISET)  = 0
       ENDDO
       NBAS_ATOMTYPE(1:NONTYP,0:2) = 0
+
       DO 100 I = 1,NONTYP
 C
          NUCLEI_IN_TYPE = 0
@@ -2543,7 +2544,7 @@ C
      &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
             ENDIF
          END IF
-  100 CONTINUE   ! I = 1, NONTYP
+  100 CONTINUE ! I = 1, NONTYP
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
