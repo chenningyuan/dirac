@@ -117,7 +117,7 @@ macro(find_atlas)
         find_math_header(lapack clapack.h)
         find_math_libs(lapack lapack_atlas lapack)
     endif()
-    find_math_libs(lapack lapack_atlas lapack)
+    find_math_libs(lapack lapack)
     cache_math_result(lapack Atlas)
 endmacro()
 
