@@ -1384,10 +1384,10 @@ C
                   IPERIOD= INDEX(LINE,',')
 
                   !sanity check
-                  if ((nfsym == 1) .and. (iperiod /= 0)) then
+                  if ((nfsym == 1) .and. (iperiod > 0)) then
                      call quit('mistake in .OPEN SHELL specification')
                   end if
-                  if ((nfsym == 2) .and. (iperiod /= 1)) then
+                  if ((nfsym == 2) .and. (iperiod < 1)) then
                      call quit('mistake in .OPEN SHELL specification')
                   end if
 
