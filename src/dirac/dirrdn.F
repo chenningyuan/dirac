@@ -900,8 +900,9 @@ C***********************************************************************
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTFLG_CHANGE
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER LINE*80, TEXT*20, CTEMP*72
+      CHARACTER LINE*80, TEXT*20, CTEMP*72, temp_line*80
       DIMENSION WORK(LWORK)
+      integer, external :: word_count
 C
 #include "nuclei.h"
 #include "dcbgen.h"
@@ -1306,8 +1307,18 @@ C              TRIVEC: Read trial vectors from DFCOEF file
                GO TO 100
    17          CONTINUE
                GO TO 100
+
    18          CONTINUE
-C&&&& CLOSED: number of closed shell electrons
+!                 .CLOSED
+!                 number of closed shell electrons
+
+                  ! sanity check: stop the code if .CLOSED does not match NFSYM
+                  read(lucmd, '(a80)', iostat=ios) temp_line
+                  backspace lucmd
+                  if (word_count(temp_line) /= nfsym) then
+                     call quit('.CLOSED does not match NFSYM')
+                  end if
+
                   READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*)
@@ -1319,6 +1330,7 @@ C&&&& CLOSED: number of closed shell electrons
                   ENDIF
                   INIOCC = .FALSE.
                GO TO 100
+
    19          CONTINUE
 C&&&& EIGPRI: Print control for electron and positron solutions
                   READ(LUCMD,*,IOSTAT=IOS) IL,IS
@@ -1347,8 +1359,6 @@ C              b) Read in number of active shells and their occ.
 C              Format:
 C              If inversion symmetry: A/K,L
 C              If not               : A/K
-C              If inversion symmetry and the format is specified
-C              as A/K then L is assumed to be zero.
 C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,'(A80)') LINE
@@ -1371,6 +1381,15 @@ C
                   READ (TEXT,*) IELEC
 C
                   IPERIOD= INDEX(LINE,',')
+
+                  !sanity check
+                  if ((nfsym == 1) .and. (iperiod > 0)) then
+                     call quit('mistake in .OPEN SHELL specification')
+                  end if
+                  if ((nfsym == 2) .and. (iperiod < 1)) then
+                     call quit('mistake in .OPEN SHELL specification')
+                  end if
+
                   IF (IPERIOD .GT. 0) THEN
                      IF (IPERIOD .LE. ISLASH+1) THEN
                         CALL QUIT('ERROR: Misplaced /')
@@ -8384,3 +8403,30 @@ C
 #include "dcbham.h"
       lscale_dft_gaunt = .true.
       end subroutine
+
+      function word_count(s)
+      
+!       ----------------------------------------------------------------------------
+        character(*), intent(in) :: s
+        integer                  :: word_count
+!       ----------------------------------------------------------------------------
+        integer                  :: i
+        logical                  :: is_blank
+!       ----------------------------------------------------------------------------
+      
+        word_count = 0
+      
+        if (len(s) <= 0) return
+      
+        is_blank = .true.
+      
+        do i = 1, len(s)
+          if (s(i:i) == ' ') then
+            is_blank = .true.
+          else if (is_blank) then
+            word_count = word_count + 1
+            is_blank = .false.
+          end if
+        end do
+      
+      end function

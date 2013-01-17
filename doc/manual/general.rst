@@ -53,25 +53,15 @@ used for obtaining the original coefficients.
 
 keyword(LOWJACO)
 
-Use Jacobi diagonalization in the Löwdin orthogonalization procedure.
-This is much slower than the default method but does not mix AOs in the
-case of block-diagonal overlap matrix. This keyword is only available in
-the development version, DIRAC 08 uses Jacobi diagonalization by
-default.
-
-.. warning::
-   .LOWJACO text is confusing - is this now default or not?
-   also the DIRAC08 info should be removed
-
+Use Jacobi diagonalization in the Löwdin orthogonalization procedure
+(subroutine LOWGEN). This is much slower than the default Householder 
+method but does not mix AOs in the case of block-diagonal overlap matrix. 
 
 keyword(DOJACO)
 
-The default method is to use the `Householder
-<http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_ diagonalization
-method, which is generally more efficient. This method may, however, mix
-degenerate eigenvectors of different symmetries. The Jacobi method is currently
-limited to real groups.
-
+Use the Jacobi method for matrix diagonalization (currently limited to real
+matrices). The default `Householder <http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_  method is generally more efficient, but may mix
+degenerate eigenvectors of different symmetries. 
 
 keyword(QJACO)
 

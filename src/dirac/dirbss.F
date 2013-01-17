@@ -5518,7 +5518,7 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
 
 C      ... diagonalize the H2c in MO(ee) basis !
 !       DOJACO is defined in dcbgen.h, only for real matrixes
-       IF (DOJACO.AND.NZ.EQ.1) THEN
+       IF (DOJACO) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
      &                  EIG(IEIG),1,1,0,TBUF(IH2MO),

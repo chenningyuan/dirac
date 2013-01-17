@@ -2485,6 +2485,8 @@ C
         NTPRIM(ISET) = 0
         NTBAS(ISET)  = 0
       ENDDO
+      NBAS_ATOMTYPE(1:NONTYP,0:2) = 0
+
       DO 100 I = 1,NONTYP
 C
          NUCLEI_IN_TYPE = 0
@@ -2512,6 +2514,8 @@ C
             NTPRIM(ISET) = NTPRIM(ISET)+NUCLEI_IN_TYPE*NPRIM(ISET)
             NTBAS(ISET)  = NTBAS(ISET) +NUCLEI_IN_TYPE*NBAS(ISET)
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
+            NBAS_ATOMTYPE(I,ISET) = NBAS(ISET)
+            NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NBAS(ISET)
          END DO
          
          IF (IPREAD .GT. 0) THEN
@@ -2540,7 +2544,7 @@ C
      &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
             ENDIF
          END IF
-  100 CONTINUE
+  100 CONTINUE ! I = 1, NONTYP
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
