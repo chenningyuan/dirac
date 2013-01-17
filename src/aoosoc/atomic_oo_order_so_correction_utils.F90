@@ -42,6 +42,8 @@ module atomic_oo_order_so_correction_utils
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
+  public hello_aoosoc
+  public goodbye_aoosoc
 
   private
 
@@ -396,5 +398,39 @@ contains
 
   end subroutine read_normalized_2e_soc
 !----------------------------------------------------------------------
+
+  subroutine hello_aoosoc()
+!**********************************************************************
+
+    print '(/18x,a)', ' *********************************************************************'
+    print '( 18x,a)', ' ***   Preparation of oo-order atomic 2e-spin-orbit corrections    ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** library version:  aoo2eSOC v1.0 (January 2013)                ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** authors:          - Stefan Knecht                             ***'
+    print '(18x,a )', ' ***                   - Trond Saue                                ***'
+    print '(18x,a )', ' ***                   - Hans Joergen Aagaard Jensen               ***'
+    print '(18x,a )', ' *** contributor:      - Michal Repisky                            ***'
+    print '(18x,a )', ' *** features:         - atomic 2e-SOC corrections:                ***'
+    print '(18x,a )', ' ***                      --> spin-same-orbit                      ***'
+    print '(18x,a )', ' ***                     (--> spin-other-orbit will be available   ***'
+    print '(18x,a )', ' ***                          in aoo2eSOC v1.1)                    ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '( 18x,a)', ' ***        Universities of Odense, Toulouse, and Tromsoe          ***'
+    print '(18x,a/)', ' *********************************************************************'
+
+  end subroutine hello_aoosoc
+!**********************************************************************
+
+  subroutine goodbye_aoosoc()
+!**********************************************************************
+
+    print '(/18x,a)', ' *********************************************************************'
+    print '( 18x,a)', ' *** oo-order atomic 2e-spin-orbit corrections have been prepared. ***'
+    print '( 18x,a)', ' *** corrections are stored on file aoo2esoc.Z (Z=nuclear charge)  ***'
+    print '(18x,a/)', ' *********************************************************************'
+
+  end subroutine goodbye_aoosoc
+!**********************************************************************
 
  end module

@@ -57,6 +57,7 @@ contains
      integer                            :: i
      real(8), allocatable               :: fmat(:)
 !----------------------------------------------------------------------
+      call hello_aoosoc()
 
       allocate(fmat(nrows*ncols*nr_quat*1))
       fmat = 0.0d0
@@ -134,6 +135,8 @@ contains
      
 !     release memory for atom type
       if(allocated(atom)) deallocate(atom)                             
+
+      call goodbye_aoosoc()
 
   end subroutine get_atomic_oo_order_so_correction
 !----------------------------------------------------------------------
