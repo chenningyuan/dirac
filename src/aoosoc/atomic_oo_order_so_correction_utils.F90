@@ -53,7 +53,7 @@ contains
                              fmat,       &
                              nrows,      &
                              ncols,      &
-                             nr_2e_fock, &
+                             nopen,      &
                              aoo_dfopen, &
                              intflg,     &
                              mdirac,     &
@@ -64,10 +64,10 @@ contains
                              print_lvl   &
                              )
 !**********************************************************************
-     real(8), intent(in)                :: dmat(nrows,ncols,nz,nr_2e_fock)
-     real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock)
-     real(8), intent(in)                :: aoo_dfopen(nr_2e_fock-1)
-     integer, intent(in)                :: nr_2e_fock
+     real(8), intent(inout)             :: dmat(nrows,ncols,nz,1+nopen)
+     real(8), intent(out)               :: fmat(nrows,ncols,nz,1+nopen)
+     real(8), intent(in)                :: aoo_dfopen(nopen)
+     integer, intent(in)                :: nopen
      integer, intent(in)                :: nrows
      integer, intent(in)                :: ncols
      integer, intent(in)                :: nz
@@ -86,50 +86,42 @@ contains
 !     take care of present "limitations" (being pragmatic for now)
       if(.not.mdirac   ) stop 'mdirac required for aoosoc module' 
       if(nz /= 4       ) stop 'c1 symmetry required for aoosoc module' 
-!     if(nr_2e_fock > 1) stop 'only 1 2e-fock matrix allowed for aoosoc module at present'
 
-      do i = 1, nr_2e_fock
+      do i = 1, nopen
+        call daxpy(nrows*ncols*nz,aoo_dfopen(i),dmat(1,1,1,i+1),1,dmat(1,1,1,1),1)
+      end do
 
-!       2e-fock matrix construction
+!     2e-fock matrix construction
+
 #ifdef MOD_INTEREST
-        call process_two_electron_integrals_4comp(               &
-                                                  fmat(1,1,1,i), &
-                                                  dmat(1,1,1,i), &
-                                                  intflg,        &
-                                                  hfxfac         &
-                                                 ) 
+      call process_two_electron_integrals_4comp(               &
+                                                fmat(1,1,1,1), &
+                                                dmat(1,1,1,1), &
+                                                intflg,        &
+                                                hfxfac         &
+                                               ) 
 #endif
 
-        call butobs_no_work(fmat(1,1,1,i),nz)
+      call butobs_no_work(fmat(1,1,1,1),nz)
 
-!       Symmetrize FMAT matrix
-!       ======================
-!       IH = 0   Non-symmetric
-!       IH = 1   Symmetric
-!       IH = 2   Anti-symmetric
+!     Symmetrize FMAT matrix
+!     ======================
+!     IH = 0   Non-symmetric
+!     IH = 1   Symmetric
+!     IH = 2   Anti-symmetric
 
-        irep = 0
-        do iz = 1,nz
-          iq = ipqtoq(iz,irep)
-          ih = ihqmat(iq,1)
-!         print *, 'symmetry of fmat',ih
-          if(ih == 1)then
-            call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,i))
-          else if(ih == 2)then
-            call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,i))
-          end if
-        end do
-
-
-!       if(i > 1)then
-!         call dscal(nrows*ncols*nz,aoo_dfopen(i-1),fmat(1,1,1,i),1)
-!       end if
-        if(i > 1)then
-          call daxpy(nrows*ncols*nz,aoo_dfopen(i-1),fmat(1,1,1,i),1,fmat(1,1,1,1),1)
+      irep = 0
+      do iz = 1,nz
+        iq = ipqtoq(iz,irep)
+        ih = ihqmat(iq,1)
+!       print *, 'symmetry of fmat',ih
+        if(ih == 1)then
+          call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,1))
+        else if(ih == 2)then
+          call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,1))
         end if
-
       end do
-  
+
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
 
@@ -227,7 +219,6 @@ contains
                                    dmat,                 &
                                    nrows,                &
                                    ncols,                &
-                                   nr_2e_fock,           &
                                    nr_ao_total_aoo,      &
                                    nr_ao_large_aoo,      &
                                    nr_ao_all,            &
@@ -244,7 +235,6 @@ contains
      real(8), intent(inout)             :: fmat(*)
      integer, intent(in)                :: nrows
      integer, intent(in)                :: ncols
-     integer, intent(in)                :: nr_2e_fock
      integer, intent(in)                :: nr_ao_total_aoo
      integer, intent(in)                :: nr_ao_large_aoo
      integer, intent(in)                :: nr_ao_all(nr_fsym)
@@ -256,58 +246,44 @@ contains
      integer, intent(in)                :: aoo_bs_to_fs(0:7,2)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
-     integer                            :: fock_mat_offset
-     integer                            :: i
 !----------------------------------------------------------------------
 
 !     normalize (picture-change transform) 2e-SO-fock matrix
-      fock_mat_offset = 1
 
-!     do i = 1, nr_2e_fock
-
-        dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
-        call perform_pct_saao_bas(fmat(fock_mat_offset),        &
-                                  pct_mat,                      &
-                                  dmat,                         &
-                                  nr_ao_total_aoo,              &
-                                  nr_ao_large_aoo,              &
-                                  nr_ao_all,                    &
-                                  nr_ao_l,                      &
-                                  nr_fsym,                      &
-                                  nr_quat,                      &
-                                  aoo_cb_pq_to_uq,              &
-                                  ioff_aomat_x,                 &
-                                  0,                            &
-                                  aoo_bs_to_fs,                 &
-                                  .true.,                       &
-                                  print_lvl)
-!       pure 2e-SO matrix
-        call pure_so_2e(                            &
-                        fmat(fock_mat_offset),      & 
-                        nr_ao_large_aoo,            &
-                        nr_ao_large_aoo,            &
-                        nr_quat                     &
-                        )
-
-!       todo: combine fock matrices in case nr_2e_fock > 1
-!       if(i > 1)then
-!         call daxpy(nr_ao_large_aoo**2*nr_quat,    &
-!                    1.0d0,                         &
-!                    fmat(fock_mat_offset),         &
-!                    1,                             &
-!                    fmat,                          &
-!                    1                              &
-!                    )
-!       end if
-
-!       fock_mat_offset = fock_mat_offset + nr_ao_total_aoo**2 * nr_quat
-
-!     end do
-
+      dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
+      call perform_pct_saao_bas(fmat,                         &
+                                pct_mat,                      &
+                                dmat,                         &
+                                nr_ao_total_aoo,              &
+                                nr_ao_large_aoo,              &
+                                nr_ao_all,                    &
+                                nr_ao_l,                      &
+                                nr_fsym,                      &
+                                nr_quat,                      &
+                                aoo_cb_pq_to_uq,              &
+                                ioff_aomat_x,                 &
+                                0,                            &
+                                aoo_bs_to_fs,                 &
+                                .true.,                       &
+                                print_lvl)
+!     pure 2e-SO matrix
+      call pure_so_2e(                            &
+                      fmat,                       & 
+                      nr_ao_large_aoo,            &
+                      nr_ao_large_aoo,            &
+                      nr_quat                     &
+                      )
 
 !     debug print
 !     if(print_lvl > 2)then
-        call print_x2cmat(fmat,nr_ao_large_aoo,nr_ao_large_aoo,nr_quat,aoo_cb_pq_to_uq(1,0),'aoosoc - 2e-SOC',6)
+        call print_x2cmat(fmat,                   &
+                          nr_ao_large_aoo,        &
+                          nr_ao_large_aoo,        &
+                          nr_quat,                &
+                          aoo_cb_pq_to_uq(1,0),   &
+                          'aoosoc - 2e-SOC',      &
+                          6                       &
+                         )
 !     end if
   
 

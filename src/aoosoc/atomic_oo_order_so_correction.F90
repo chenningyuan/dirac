@@ -32,6 +32,7 @@ module atomic_oo_order_so_correction
   use atomic_oo_order_so_correction_cfg 
   use atomic_oo_order_so_correction_utils 
   use module_aoosoc_pfg 
+  use x2c_utils, only: print_x2cmat
 
   implicit none
 
@@ -57,33 +58,39 @@ contains
      real(8), allocatable               :: fmat(:)
 !----------------------------------------------------------------------
 
-      allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
+      allocate(fmat(nrows*ncols*nr_quat*1))
       fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
-      call get_scso_2e_fock(                          &
-                            dmat,                     &
-                            fmat,                     &
-                            nrows,                    &
-                            ncols,                    &
-                            nr_2e_fock_matrices,      &
-                            aoo_dfopen,               &
-                            aoo_intflg,               &
-                            aoo_mdirac,               &
-                            nr_quat,                  &
-                            aoo_cb_pq_to_uq(1,0),     &
-                            aoo_ihqmat(1,-1),         &
-                            nr_ao_total_aoo,          &
-                            print_lvl                 &
+      call get_scso_2e_fock(                           &
+                            dmat,                      &
+                            fmat,                      &
+                            nrows,                     &
+                            ncols,                     &
+                            nr_2e_fock_matrices-1,     &
+                            aoo_dfopen,                &
+                            aoo_intflg,                &
+                            aoo_mdirac,                &
+                            nr_quat,                   &
+                            aoo_cb_pq_to_uq(1,0),      &
+                            aoo_ihqmat(1,-1),          &
+                            nr_ao_total_aoo,           &
+                            print_lvl                  &
                            )
 
       if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
 
+!     debug print
       if(print_lvl > 2)then
-        CALL HEADER( &
-        'blubb aoosoc twofock 2-electron Fock matrix for you',-1)
-        CALL PRQMAT(fmat,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo,nr_ao_total_aoo, &
-                    nr_quat,aoo_cb_pq_to_uq(1,0),6)
+        call print_x2cmat(                             &
+                          fmat,                        &
+                          nr_ao_total_aoo,             &
+                          nr_ao_total_aoo,             &
+                          nr_quat,                     &
+                          aoo_cb_pq_to_uq(1,0),        &
+                          'aoosoc - 2e-full',          &
+                          6                            &
+                         )
       end if
 
 !     get 2e-SO-fock matrix
@@ -101,7 +108,6 @@ contains
                                  dmat,                 &
                                  nrows,                &
                                  ncols,                &
-                                 nr_2e_fock_matrices,  &
                                  nr_ao_total_aoo,      &
                                  nr_ao_large_aoo,      &
                                  nr_ao_all,            &
@@ -111,7 +117,8 @@ contains
                                  aoo_cb_pq_to_uq,      &
                                  ioff_aomat_x,         &
                                  aoo_bs_to_fs,         &
-                                 print_lvl)
+                                 print_lvl             &
+                                )
 
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
