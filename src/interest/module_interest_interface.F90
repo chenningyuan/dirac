@@ -104,6 +104,11 @@ MODULE MODULE_INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
+  interface process_two_electron_integrals_4comp
+    module procedure process_two_electron_integrals_4comp_1x
+   !module procedure process_two_electron_integrals_4comp_4x
+  end interface
+
 CONTAINS
 ! ------------------------------------------------------------------------------------
 !> 
@@ -178,22 +183,6 @@ CONTAINS
        enddo
     !> end
 
-    !> reorder basis functions to the angular momentum 
-    !> ascending order to increase the integral performance
-    !> set the AO-vector offsets and shell-degeneracy
-    !  do i=1,size(gto)-1
-    !    do j=(i+1),size(gto)
-    !      if( gto(j)%lvalue >= gto(i)%lvalue )cycle
-    !      tmpgto = gto(i)
-    !      gto(i) = gto(j)
-    !      gto(j) = tmpgto
-    !    enddo
-    !  enddo
-    !  do i=1,size(gto)-1
-    !    gto(i+1)%offset = gto(i)%offset + gto(i)%cdegen
-    !  enddo
-    !> end
-
     !> temporary print ... 
        do i=1,size(gto)
          write(6,'(1x,5(a,i3,3x),3(a,d15.5,3x))') ' i = ',i,                             &
@@ -204,14 +193,6 @@ CONTAINS
                                                   ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
-      !write(6,*) 
-      !write(6,'(2x,a,i5)') 'Basis set informations:'
-      !write(6,'(2x,a,i5)') '-----------------------'
-      !write(6,*) 
-      !write(6,*) 
-      !write(6,'(2x,a)')    'label    atom   charge   prim   cont   L-basis   RKB     S-basis'
-      !write(6,'(2x,70a1)') ('-',i=1,70)
-      !write(6,'(2x,70a1)') ('-',i=1,70)
 
        nrow      = sum( gto(:)%cdegen)
        ncol      = sum( gto(:)%cdegen)
@@ -728,7 +709,7 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
+  SUBROUTINE process_two_electron_integrals_4comp_1x( Gmat, Pmat, intflg, hfxfac ) 
 
     use module_interest_eri
 
@@ -946,8 +927,9 @@ CONTAINS
               kbas = ko+k
               gg   = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
               pll  = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-              gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg*pll
-              gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg*pll
+              gg   = gg*pll
+              gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) +        gg
+              gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + dconjg(gg)
             enddo
           enddo
         enddo
@@ -1034,17 +1016,21 @@ CONTAINS
                  pab = pmat(2,4,jbas,ibas)
                  pbb = pmat(4,4,jbas,ibas)
                  pll = pmat(1,1,jbas,ibas) + pmat(3,3,jbas,ibas)
-                 !> large-large block
+                 !>
                  gg = gg*pll + gaag*paa + gabg*pba + gbag*pab + gbbg*pbb
-                 gmat(1,1,kbas,lbas) = gmat(1,1,kbas,lbas) + gg
-                 gmat(3,3,kbas,lbas) = gmat(3,3,kbas,lbas) + gg
+                 !>
+                 gmat(1,1,kbas,lbas) = gmat(1,1,kbas,lbas) +        gg
+                 gmat(3,3,kbas,lbas) = gmat(3,3,kbas,lbas) + dconjg(gg)
               !> contraction [ij|kl]*lk
                  pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-                 !> small-small block
-                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll
-                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll
-                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll
-                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll
+                 !>
+                 gaag = gaag*pll
+                 gabg = gabg*pll
+                 !>
+                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) +        gaag
+                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) - dconjg(gabg) !+ gbag
+                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) +        gabg
+                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + dconjg(gaag) !+ gbbg
               !> end
             enddo
           enddo
@@ -1159,42 +1145,43 @@ CONTAINS
                  gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
                  gbbg = dconjg( gaag )
                  gbag =-dconjg( gabg ) 
-                 !> small-small block: aa
+                 !> small-small block
                  gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
                  gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
-                 gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-                 gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
-                 !> small-small block: bb
-                 gbbgbb = dconjg( gaagaa )
-                 gbbgab =-dconjg( gaagba ) 
-                 gbagbb =-dconjg( gabgaa )
-                 gbagab = dconjg( gabgba )
-                 !> small-small block: ab
                  gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
                  gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
                  gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
                  gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
-                 !> small-small block: ba
-                 gbbgba =-dconjg( gaagab )
-                 gbbgaa = dconjg( gaagbb )
-                 gbagba = dconjg( gabgab )
-                 gbagaa =-dconjg( gabgbb )
+                !gbagbb =-dconjg( gabgaa )
+                !gbagab = dconjg( gabgba )
+                !gbagba = dconjg( gabgab )
+                !gbagaa =-dconjg( gabgbb )
+                !gbbgbb = dconjg( gaagaa )
+                !gbbgab =-dconjg( gaagba ) 
+                !gbbgba =-dconjg( gaagab )
+                !gbbgaa = dconjg( gaagbb )
               !> end
-              !> contraction [ij|kl]*lk
-                 paa = pmat(2,2,lbas,kbas)
-                 pba = pmat(4,2,lbas,kbas)
-                 pab = pmat(2,4,lbas,kbas)
-                 pbb = pmat(4,4,lbas,kbas)
-                 pll = pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
-                 !> large-large block
-                 gg = gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
-                 gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) + gg
-                 gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + gg
-                 !> small-small block
-                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) + gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
-                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) + gbag*pll + gbagaa*paa + gbagab*pba + gbagba*pab + gbagbb*pbb
-                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) + gabg*pll + gabgaa*paa + gabgab*pba + gabgba*pab + gabgbb*pbb
-                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + gbbg*pll + gbbgaa*paa + gbbgab*pba + gbbgba*pab + gbbgbb*pbb
+              !> contraction [ij|kl]*lk = [ij|kl]*dconjg(kl)
+                 paa = dconjg(pmat(2,2,kbas,lbas)                      )  !pmat(2,2,lbas,kbas)
+                 pab = dconjg(pmat(4,2,kbas,lbas)                      )  !pmat(2,4,lbas,kbas)
+                 pba = dconjg(pmat(2,4,kbas,lbas)                      )  !pmat(4,2,lbas,kbas)
+                 pbb = dconjg(pmat(4,4,kbas,lbas)                      )  !pmat(4,4,lbas,kbas)
+                 pll = dconjg(pmat(1,1,kbas,lbas) + pmat(3,3,kbas,lbas))  !pmat(1,1,lbas,kbas) + pmat(3,3,lbas,kbas)
+                 !>
+                 gg   =   gg*pll +   ggaa*paa +   ggab*pba +   ggba*pab +   ggbb*pbb
+                 gaag = gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
+                 gabg = gabg*pll + gabgaa*paa + gabgab*pba + gabgba*pab + gabgbb*pbb
+                !gbag = gbag*pll + gbagaa*paa + gbagab*pba + gbagba*pab + gbagbb*pbb
+                !gbbg = gbbg*pll + gbbgaa*paa + gbbgab*pba + gbbgba*pab + gbbgbb*pbb
+                 !>
+                 gmat(1,1,ibas,jbas) = gmat(1,1,ibas,jbas) +        gg
+                 gmat(3,3,ibas,jbas) = gmat(3,3,ibas,jbas) + dconjg(gg)
+                 gmat(2,2,ibas,jbas) = gmat(2,2,ibas,jbas) +        gaag
+                 gmat(4,2,ibas,jbas) = gmat(4,2,ibas,jbas) - dconjg(gabg) !+ gbag
+                 gmat(2,4,ibas,jbas) = gmat(2,4,ibas,jbas) +        gabg
+                 gmat(4,4,ibas,jbas) = gmat(4,4,ibas,jbas) + dconjg(gaag) !+ gbbg
               !> end
             enddo
           enddo
