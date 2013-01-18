@@ -101,7 +101,7 @@ contains
                                                 dmat(1,1,1,1), &
                                                 intflg,        &
                                                 hfxfac         &
-                                               ) 
+                                               )
 #endif
 
       call butobs_no_work(fmat(1,1,1,1),nz)
