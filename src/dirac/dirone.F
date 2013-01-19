@@ -3782,8 +3782,8 @@ C
                 ENDDO
               ENDIF
             ENDDO
-            IOFF = IOFF + N2BAS(I)
           ENDDO
+          IOFF = IOFF + N2BAS(I)
         ENDDO
 
         deallocate(stri)
