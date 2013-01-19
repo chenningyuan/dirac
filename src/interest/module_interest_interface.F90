@@ -104,12 +104,10 @@ MODULE MODULE_INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
-  interface process_two_electron_integrals_4comp
-    module procedure process_two_electron_integrals_4comp_1x
-   !module procedure process_two_electron_integrals_4comp_4x
-  end interface
-
 CONTAINS
+
+
+
 ! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE initialize_interest()
@@ -206,6 +204,9 @@ CONTAINS
     !> end
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>
   SUBROUTINE process_overlap_integrals_2comp( S ) 
@@ -233,6 +234,9 @@ CONTAINS
     deallocate( Smat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>
   SUBROUTINE process_overlap_integrals_4comp( S, ss_scaling ) 
@@ -272,6 +276,9 @@ CONTAINS
     deallocate( Smat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>
   SUBROUTINE process_kinetic_energy_integrals_2comp( T ) 
@@ -299,6 +306,9 @@ CONTAINS
     deallocate( Tmat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>
   SUBROUTINE process_kinetic_energy_integrals_4comp( T ) 
@@ -328,6 +338,9 @@ CONTAINS
     deallocate( Tmat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE process_nuclear_attraction_integrals_2comp( V ) 
@@ -355,6 +368,9 @@ CONTAINS
     deallocate( Vmat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE process_nuclear_attraction_integrals_4comp( V ) 
@@ -390,6 +406,9 @@ CONTAINS
     deallocate( Vmat )
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE two_center_integrals( interest_routine, final_integrals, ida ) 
@@ -465,6 +484,9 @@ CONTAINS
     enddo    
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !> Copy batch A -> matrix B 
   SUBROUTINE store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
@@ -495,6 +517,9 @@ CONTAINS
     enddo
      
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !> note: on input,  G and P must be in the cartesian GTOs 
   SUBROUTINE process_two_electron_integrals_2comp( Gmat, Pmat, intflg, hfxfac ) 
@@ -707,14 +732,15 @@ CONTAINS
     end subroutine
 
   END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> note: on input,  G and P must be in the cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals_4comp_1x( Gmat, Pmat, intflg, hfxfac ) 
 
-    use module_interest_eri
+
+
+! ------------------------------------------------------------------------------------
+!> note:  on input, both G and P must be in the cartesian GTOs 
+!> fixme: the case when nz!=4, since we always assume nz=4
+  SUBROUTINE process_two_electron_integrals_4comp( Gmat, Pmat, intflg, hfxfac ) 
 
     !> input
-    !> fixme: the case when nz!=4, since we always assume nz=4
     integer, intent(in) :: intflg
     real(8), intent(in) :: hfxfac
     !> 1-electron density matrix, Dirac format
@@ -725,26 +751,13 @@ CONTAINS
     real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
-    logical :: doK
-    real(8) :: fijkl
-    integer :: li, ni, oi   
-    integer :: lj, nj, oj   
-    integer :: lk, nk, ok   
-    integer :: ll, nl, ol   
-    integer :: nint, lmax
+    integer :: i, j
     real(8) :: fll, fsl, fss 
-    integer :: i, j, k, l, ibas
-    real(8) :: gout(441*441*25)    !todo
-    integer :: nij, nkl, ij
-    real(8) :: ei, ci, xi, yi, zi 
-    real(8) :: ej, cj, xj, yj, zj 
-    real(8) :: ek, ck, xk, yk, zk 
-    real(8) :: el, cl, xl, yl, zl 
-
-    character(len=4) :: eri_class = 'ssss'
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
+
+    character(len=4) :: eri_class = 'ssss'
 
 
     !> init for eri classes
@@ -755,9 +768,6 @@ CONTAINS
       case( 7 );    eri_class = 'ssss'
       case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
     end select
-
-    !> init for DFT
-    doK = ( hfxfac /= 0.0d0 )
 
     !> data forward alignment 
     fll = 0.5d0
@@ -790,6 +800,77 @@ CONTAINS
       enddo
     enddo
 
+    !> call core InteRest routine
+    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+
+    !> data backward alignment 
+    fsl = constant%alpha /2.0d0 
+    fss = constant%alpha2/4.0d0 
+    do j=1,nrow
+      do i=1,nrow
+        !> quaternion(0) 
+        Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
+        !> quaternion(i) 
+        Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
+        Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
+        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
+        Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
+        !> quaternion(j) 
+        Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
+        !> quaternion(k) 
+        Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
+        Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
+        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
+        Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
+      enddo
+    enddo
+
+    deallocate( dP )
+    deallocate( dG )
+
+  END SUBROUTINE
+
+
+
+! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac ) 
+
+    use module_interest_eri
+
+    !> input
+    real(8),          intent(in) :: hfxfac
+    character(len=4), intent(in) :: eri_class
+    complex(8),       intent(in) :: dP(4,4,nrow,nrow)  
+
+    !> output
+    complex(8), intent(out) :: dG(4,4,nrow,nrow) 
+
+    !> local
+    logical :: doK
+    real(8) :: fijkl
+    integer :: li, ni, oi   
+    integer :: lj, nj, oj   
+    integer :: lk, nk, ok   
+    integer :: ll, nl, ol   
+    integer :: nint, lmax
+    integer :: i, j, k, l, ibas
+    real(8) :: gout(441*441*25)    !todo
+    integer :: nij, nkl, ij
+    real(8) :: ei, ci, xi, yi, zi 
+    real(8) :: ej, cj, xj, yj, zj 
+    real(8) :: ek, ck, xk, yk, zk 
+    real(8) :: el, cl, xl, yl, zl 
+
+
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -864,38 +945,6 @@ CONTAINS
          enddo jloop
        enddo iloop
     !> end
-
-    !> data backward alignment 
-    fsl = constant%alpha /2.0d0 
-    fss = constant%alpha2/4.0d0 
-    do j=1,nrow
-      do i=1,nrow
-        !> quaternion(0) 
-        Gmat(i     ,j     ,1) = Gmat(i     ,j     ,1) + dreal(dG(1,1,i,j))
-        Gmat(i+nrow,j     ,1) = Gmat(i+nrow,j     ,1) + dreal(dG(2,1,i,j))*fsl
-        Gmat(i     ,j+nrow,1) = Gmat(i     ,j+nrow,1) + dreal(dG(2,1,j,i))*fsl
-        Gmat(i+nrow,j+nrow,1) = Gmat(i+nrow,j+nrow,1) + dreal(dG(2,2,i,j))*fss
-        !> quaternion(i) 
-        Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) + dimag(dG(1,1,i,j))
-        Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) + dimag(dG(2,1,i,j))*fsl
-        Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) - dimag(dG(2,1,j,i))*fsl
-        Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) + dimag(dG(2,2,i,j))*fss
-        !> quaternion(j) 
-        Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) + dreal(dG(1,3,i,j))
-        Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) + dreal(dG(2,3,i,j))*fsl
-        Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) - dreal(dG(2,3,j,i))*fsl
-        Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) + dreal(dG(2,4,i,j))*fss
-        !> quaternion(k) 
-        Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) + dimag(dG(1,3,i,j))
-        Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) + dimag(dG(2,3,i,j))*fsl
-        Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) - dimag(dG(2,3,j,i))*fsl
-        Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) + dimag(dG(2,4,i,j))*fss
-      enddo
-    enddo
-
-    deallocate( dP )
-    deallocate( dG )
-
 
     CONTAINS
 
@@ -1303,6 +1352,9 @@ CONTAINS
     end subroutine
 
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>on input: lower triangle, on output: square symmetric matrix 
   SUBROUTINE symmetrize_matrix( factor, A, ida )
@@ -1337,6 +1389,9 @@ CONTAINS
    !call backward_ao_resorting( A )
      
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>on input: lower triangle, on output: square antisymmetric matrix 
   SUBROUTINE antisymmetrize_matrix( factor, A, ida )
@@ -1371,6 +1426,9 @@ CONTAINS
    !call backward_ao_resorting( A )
      
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>on input:  the matrix in "input"  basis order 
 !>on output: the matrix in integral basis order 
@@ -1404,6 +1462,9 @@ CONTAINS
     deallocate( B )
         
   END SUBROUTINE
+
+
+
 ! ------------------------------------------------------------------------------------
 !>on input:  the matrix in "integral" basis order 
 !>on output: the matrix in "input"    basis order 
