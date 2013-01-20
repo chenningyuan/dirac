@@ -60,7 +60,7 @@ MODULE MODULE_INTEREST_INTERFACE
      integer :: nrow = 0
      integer :: ncol = 0
      integer :: nr_shells = 0 
-     real(8) :: prescreening_treshold = 1.d-15
+     real(8) :: screening_threshold = 1.d-15
   !> end
 
   !> definition of "constant" data type 
@@ -802,6 +802,7 @@ CONTAINS
 
     !> call core InteRest routine
     call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
 
     !> data backward alignment 
     fsl = constant%alpha /2.0d0 
@@ -1347,6 +1348,1165 @@ CONTAINS
               gmat(4,4,ibas,lbas) = gmat(4,4,ibas,lbas) - gbagab*paa_ss - gbagbb*pab_ss - gbbgab*pba_ss - gbbgbb*pbb_ss 
             enddo
           enddo
+        enddo
+      enddo
+    end subroutine
+
+  END SUBROUTINE
+
+
+
+! ------------------------------------------------------------------------------------
+!> 
+  SUBROUTINE process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac ) 
+
+    use module_interest_eri
+
+    !> input
+    real(8),          intent(in) :: hfxfac
+    character(len=4), intent(in) :: eri_class
+    complex(8),       intent(in) :: dP(4,4,nrow,nrow)  
+
+    !> output
+    complex(8), intent(out) :: dG(4,4,nrow,nrow) 
+
+!   !> local
+!   logical :: doK
+!   real(8) :: fijkl
+!   integer :: li, ni, oi   
+!   integer :: lj, nj, oj   
+!   integer :: lk, nk, ok   
+!   integer :: ll, nl, ol   
+!   integer :: nint, lmax
+!   integer :: i, j, k, l, ibas
+!   real(8) :: gout(441*441*25)    !todo
+!   integer :: nij, nkl, ij
+!   real(8) :: ei, ci, xi, yi, zi 
+!   real(8) :: ej, cj, xj, yj, zj 
+!   real(8) :: ek, ck, xk, yk, zk 
+!   real(8) :: el, cl, xl, yl, zl 
+
+    !> local
+    logical    :: doK
+    real(8)    :: Fc,Fx
+    real(8)    :: a2, aa4
+    real(8)    :: fij, fijkl
+    integer    :: li, ni, oi   
+    integer    :: lj, nj, oj   
+    integer    :: lk, nk, ok   
+    integer    :: ll, nl, ol   
+    integer    :: i, j, k, l, kl
+    real(8)    :: ei, ci, xi, yi, zi 
+    real(8)    :: ej, cj, xj, yj, zj 
+    real(8)    :: ek, ck, xk, yk, zk 
+    real(8)    :: el, cl, xl, yl, zl 
+
+    integer    :: nint
+    real(8)    :: gout(441*441*25)    !todo: rozumnejsia definicia
+ 
+    complex(8), allocatable :: dGij(:,:,:) 
+    complex(8), allocatable :: dPi (:,:,:) 
+    complex(8), allocatable :: dPj (:,:,:) 
+    complex(8), allocatable :: dGi (:,:,:) 
+    complex(8), allocatable :: dGj (:,:,:) 
+
+    real(8), allocatable :: gmax(:,:,:)
+    real(8), allocatable :: pmax(:,:,:,:)
+    character(len=4)     :: eri_class_local
+
+    
+    a2  = constant%alpha /2.0d0
+    aa4 = constant%alpha2/4.0d0 
+    
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
+
+    allocate(   dGij(4,4,21*21)     )   !todo: rozumnejsia definicia 
+    if( doK )then
+      allocate( dPi(4,4,21*nrow) )   !todo: rozumnejsia definicia 
+      allocate( dPj(4,4,21*nrow) )   !todo: rozumnejsia definicia 
+      allocate( dGi(4,4,21*nrow) )   !todo: rozumnejsia definicia 
+      allocate( dGj(4,4,21*nrow) )   !todo: rozumnejsia definicia 
+    endif
+
+    allocate( gmax(  2,nr_shells,nr_shells) )
+    allocate( pmax(2,2,nr_shells,nr_shells) )
+    call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
+
+
+ iloop:do i=1,nr_shells
+         li =       gto(i)%lvalue
+         oi =       gto(i)%offset
+         ni =       gto(i)%cdegen
+         ei =       gto(i)%exponent(1)
+         xi = atom( gto(i)%origin )%coordinate_x
+         yi = atom( gto(i)%origin )%coordinate_y
+         zi = atom( gto(i)%origin )%coordinate_z
+         ci =       gto(i)%coefficient(1)
+
+         if( doK )call get_dP_exchange( dP, nrow, oi, ni, dPi, dGi )
+     
+ jloop:  do j=1,i
+           lj =       gto(j)%lvalue
+           oj =       gto(j)%offset
+           nj =       gto(j)%cdegen
+           ej =       gto(j)%exponent(1)
+           xj = atom( gto(j)%origin )%coordinate_x
+           yj = atom( gto(j)%origin )%coordinate_y
+           zj = atom( gto(j)%origin )%coordinate_z
+           cj =       gto(j)%coefficient(1)
+
+                     fij = 1.0d0 
+           if( i==j )fij = 0.5d0
+                  
+           dGij = dcmplx(0.0d0,0.0d0)
+
+           if( doK )call get_dP_exchange( dP, nrow, oj, nj, dPj, dGj )
+       
+ kloop:    do k=1,nr_shells
+             lk =       gto(k)%lvalue
+             ok =       gto(k)%offset
+             nk =       gto(k)%cdegen
+             ek =       gto(k)%exponent(1)
+             xk = atom( gto(k)%origin )%coordinate_x
+             yk = atom( gto(k)%origin )%coordinate_y
+             zk = atom( gto(k)%origin )%coordinate_z
+             ck =       gto(k)%coefficient(1)
+       
+ lloop:      do l=1,k
+               ll   =       gto(l)%lvalue
+               nl   =       gto(l)%cdegen
+               ol   =       gto(l)%offset
+               el   =       gto(l)%exponent(1)
+               xl   = atom( gto(l)%origin )%coordinate_x
+               yl   = atom( gto(l)%origin )%coordinate_y
+               zl   = atom( gto(l)%origin )%coordinate_z
+               cl   =       gto(l)%coefficient(1)
+
+                         fijkl = fij 
+               if( k==l )fijkl = fij*0.5d0 
+       
+               SELECT CASE( eri_class )
+                 CASE( 'llll' )
+                     eri_class_local = 'llll' 
+                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)), &
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i))  )
+                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)), &
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i))  )
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                 CASE( 'ssll' )
+                     eri_class_local = 'ssll' 
+                     !> llll
+                     Fc = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,&  
+                               (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
+                     Fx = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    &
+                               (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     )
+                     Fx=Fx*a2
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
+                     !> exit
+                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
+                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                 CASE( 'ssss' )
+                     eri_class_local = 'ssss' 
+                     !> ssll
+                     Fc = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),&
+                               (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,i)) ) 
+                     Fx = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,k)),&
+                               (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,i)) ) 
+                     Fc=Fc*aa4
+                     Fx=Fx*aa4
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='ssll'  
+                     !> llll
+                     Fc = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,& 
+                               (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
+                     Fx = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    & 
+                               (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
+                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     ) 
+                     Fx=Fx*a2
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
+                     !> exit
+                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
+                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
+                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
+                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                 CASE DEFAULT; stop 'Error: the ERI class is not implemented yet => stop'
+               END SELECT
+
+               SELECT CASE( eri_class_local )
+                 CASE( 'llll' )
+                     call interest_eri(.false.,          &
+                                       fijkl,gout,nint,  &
+                                       li,ei,xi,yi,zi,ci,&
+                                       lj,ej,xj,yj,zj,cj,&
+                                       lk,ek,xk,yk,zk,ck,&
+                                       ll,el,xl,yl,zl,cl )
+                     call process_dG_llll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                 CASE( 'ssll' )
+                     call interest_eri(.true.,           &
+                                       fijkl,gout,nint,  &
+                                       li,ei,xi,yi,zi,ci,&
+                                       lj,ej,xj,yj,zj,cj,&
+                                       lk,ek,xk,yk,zk,ck,&
+                                       ll,el,xl,yl,zl,cl )
+                     call process_dG_ssll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                 CASE( 'ssss' ) 
+                     call interest_eri(.true.,           &
+                                       fijkl,gout,nint,  &
+                                       li,ei,xi,yi,zi,ci,&
+                                       lj,ej,xj,yj,zj,cj,&
+                                       lk,ek,xk,yk,zk,ck,&
+                                       ll,el,xl,yl,zl,cl )
+                     call process_dG_ssss_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                 CASE DEFAULT; stop 'Error: the ERI class is not implemented yet => stop'
+               END SELECT
+
+             enddo lloop
+           enddo kloop
+
+           if( doK ) call add_dG_exchange( dG, nrow,         oj, nj, dGj, hfxfac  )
+                     call add_dG_coulomb ( dG, nrow, oi, ni, oj, nj, dGij         )
+
+         enddo jloop
+
+         if( doK ) call add_dG_exchange( dG, nrow, oi, ni, dGi, hfxfac )
+
+       enddo iloop
+    !> end
+
+    deallocate( dGij )
+    if( doK )then
+      deallocate( dPi )
+      deallocate( dPj )
+      deallocate( dGi )
+      deallocate( dGj )
+    endif
+  
+    deallocate( gmax )
+    deallocate( pmax )
+
+    CONTAINS
+  
+    subroutine get_dP_exchange( dP, nbas, io, ic, dP_block, dG_block )
+      !> input
+      integer,    intent(in) :: io   
+      integer,    intent(in) :: ic   
+      integer,    intent(in) :: nbas 
+      complex(8), intent(in) :: dP(4,4,nbas,nbas)
+      !> output
+      complex(8), intent(out) :: dP_block(4,4,ic,nbas)
+      complex(8), intent(out) :: dG_block(4,4,ic,nbas)
+      !> local
+      integer :: ibas, i, j, k 
+      !> 
+      dG_block = dcmplx(0.0d0,0.0d0)
+      do j=1,nbas
+        do i=1,ic
+          ibas = io+i
+          do k=1,4
+            dP_block(1,k,i,j) = dP(1,k,ibas,j)
+            dP_block(2,k,i,j) = dP(2,k,ibas,j)
+            dP_block(3,k,i,j) = dP(3,k,ibas,j)
+            dP_block(4,k,i,j) = dP(4,k,ibas,j)
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+    subroutine add_dG_exchange( dG, nbas, io, ic, dG_block, scaleK )
+      !> input
+      integer,    intent(in) :: io   
+      integer,    intent(in) :: ic   
+      integer,    intent(in) :: nbas 
+      real(8),    intent(in) :: scaleK
+      complex(8), intent(in) :: dG_block(4,4,ic,nbas)
+      !> output
+      complex(8), intent(inout) :: dG(4,4,nbas,nbas)
+      !> local
+      integer :: ibas, i, j, k 
+      !> 
+      do j=1,nbas
+        do i=1,ic
+          ibas = io+i
+          do k=1,4
+            dG(1,k,ibas,j) = dG(1,k,ibas,j) + dG_block(1,k,i,j)*dcmplx(scaleK,0.0d0)
+            dG(2,k,ibas,j) = dG(2,k,ibas,j) + dG_block(2,k,i,j)*dcmplx(scaleK,0.0d0)
+            dG(3,k,ibas,j) = dG(3,k,ibas,j) + dG_block(3,k,i,j)*dcmplx(scaleK,0.0d0)
+            dG(4,k,ibas,j) = dG(4,k,ibas,j) + dG_block(4,k,i,j)*dcmplx(scaleK,0.0d0)
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+    subroutine add_dG_coulomb( dG, nbas, io, ic, jo, jc, dG_block )
+      !> input
+      integer,    intent(in) :: nbas 
+      integer,    intent(in) :: io, jo   
+      integer,    intent(in) :: ic, jc   
+      complex(8), intent(in) :: dG_block(4,4,ic,jc)
+      !> input/output
+      complex(8), intent(inout) :: dG(4,4,nbas,nbas)
+      !> local
+      integer :: ibas, jbas, i, j
+      !> 
+      do j=1,jc   
+        jbas = jo+j
+        do i=1,ic
+          ibas = io+i
+          dG(1,1,ibas,jbas) = dG(1,1,ibas,jbas) + dG_block(1,1,i,j)
+          dG(3,3,ibas,jbas) = dG(3,3,ibas,jbas) + dG_block(3,3,i,j)
+          dG(2,2,ibas,jbas) = dG(2,2,ibas,jbas) + dG_block(2,2,i,j)
+          dG(4,2,ibas,jbas) = dG(4,2,ibas,jbas) + dG_block(4,2,i,j)
+          dG(2,4,ibas,jbas) = dG(2,4,ibas,jbas) + dG_block(2,4,i,j)
+          dG(4,4,ibas,jbas) = dG(4,4,ibas,jbas) + dG_block(4,4,i,j)
+        enddo
+      enddo
+      !>
+      do i=1,ic   
+        ibas = io+i
+        do j=1,jc
+          jbas = jo+j
+          dG(1,1,jbas,ibas) = dG(1,1,jbas,ibas) + dconjg(dG_block(1,1,i,j))
+          dG(3,3,jbas,ibas) = dG(3,3,jbas,ibas) + dconjg(dG_block(3,3,i,j))
+          dG(2,2,jbas,ibas) = dG(2,2,jbas,ibas) + dconjg(dG_block(2,2,i,j))
+          dG(4,2,jbas,ibas) = dG(4,2,jbas,ibas) + dconjg(dG_block(2,4,i,j))
+          dG(2,4,jbas,ibas) = dG(2,4,jbas,ibas) + dconjg(dG_block(4,2,i,j))
+          dG(4,4,jbas,ibas) = dG(4,4,jbas,ibas) + dconjg(dG_block(4,4,i,j))
+        enddo
+      enddo
+    end subroutine
+
+    subroutine process_dG_ssss_4x(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: dPi(4,4,ic,nbas)
+      complex(8), intent(in) :: dPj(4,4,jc,nbas)
+      complex(8), intent(in) :: dP (4,4,nbas,nbas)
+      real(8),    intent(in) :: gout(5,kc,lc,5,ic,jc)
+      !> input/output
+      complex(8), intent(inout) :: dGij(4,4,ic,jc)
+      complex(8), intent(inout) :: dGi (4,4,ic,nbas)
+      complex(8), intent(inout) :: dGj (4,4,jc,nbas)
+      complex(8), intent(inout) :: dG  (4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l, m
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: pll
+      complex(8) :: paa, pab, pba, pbb
+      complex(8) :: gg, fgg, fgaag, fgabg
+      complex(8) :: gaag, gabg, gbag, gbbg
+      complex(8) :: ggaa, ggab, ggba, ggbb   
+      complex(8) :: gaagaa, gabgaa, gbagaa, gbbgaa
+      complex(8) :: gaagab, gabgab, gbagab, gbbgab
+      complex(8) :: gaagba, gabgba, gbagba, gbbgba
+      complex(8) :: gaagbb, gabgbb, gbagbb, gbbgbb
+      complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+      complex(8) :: paa_ls, pab_ls, pba_ls, pbb_ls
+      complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+      complex(8) :: paa_ss, pab_ss, pba_ss, pbb_ss
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas=ko+k
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> large-small block 
+                 ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+                 ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+                 ggbb = dconjg( ggaa )
+                 ggba =-dconjg( ggab )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+                 !> small-small block
+                 gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
+                 gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
+                 gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
+                 gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
+              !> end
+              !> contraction [ij] = [ij|kl]*lk = [ij|kl]*dconjg(kl)
+                 paa = dconjg(dP(2,2,kbas,lbas)                    )  !=dP(2,2,lbas,kbas)
+                 pab = dconjg(dP(4,2,kbas,lbas)                    )  !=dP(2,4,lbas,kbas)
+                 pba = dconjg(dP(2,4,kbas,lbas)                    )  !=dP(4,2,lbas,kbas)
+                 pbb = dconjg(dP(4,4,kbas,lbas)                    )  !=dP(4,4,lbas,kbas)
+                 pll = dconjg(dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas))  !=dP(1,1,lbas,kbas) + dP(3,3,lbas,kbas)
+                 !>
+                 fgg   =   gg*pll +   ggaa*paa +   ggab*pba +   ggba*pab +   ggbb*pbb
+                 fgaag = gaag*pll + gaagaa*paa + gaagab*pba + gaagba*pab + gaagbb*pbb
+                 fgabg = gabg*pll + gabgaa*paa + gabgab*pba + gabgba*pab + gabgbb*pbb
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+                 dGij(2,2,i,j) = dGij(2,2,i,j) +        fgaag
+                 dGij(4,2,i,j) = dGij(4,2,i,j) - dconjg(fgabg)
+                 dGij(2,4,i,j) = dGij(2,4,i,j) +        fgabg
+                 dGij(4,4,i,j) = dGij(4,4,i,j) + dconjg(fgaag)
+              !> end
+              !> contraction [ji] = [ji|kl]*lk = dconjg([ij]) - transfered to add_dG_coulomb
+              !  dG(1,1,jbas,ibas) = dG(1,1,jbas,ibas) + dconjg(fgg)
+              !  dG(3,3,jbas,ibas) = dG(3,3,jbas,ibas) +        fgg    
+              !  dG(2,2,jbas,ibas) = dG(2,2,jbas,ibas) + dconjg(fgaag) 
+              !  dG(4,2,jbas,ibas) = dG(4,2,jbas,ibas) + dconjg(fgabg) 
+              !  dG(2,4,jbas,ibas) = dG(2,4,jbas,ibas) -        fgabg
+              !  dG(4,4,jbas,ibas) = dG(4,4,jbas,ibas) +        fgaag 
+              !> end
+              !> contraction [ij] = [ij|lk]*kl
+                 fgg = pba
+                 paa = dconjg(paa)        !=dP(2,2,kbas,lbas)                    
+                 pba = dconjg(pab)        !=dP(4,2,kbas,lbas)                    
+                 pab = dconjg(fgg)        !=dP(2,4,kbas,lbas)                    
+                 pbb = dconjg(pbb)        !=dP(4,4,kbas,lbas)                    
+                 pll = dconjg(pll)        !=dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas)
+                 !>
+                 fgg   =   gg*pll +   ggbb*paa -   ggab*pba -   ggba*pab +   ggaa*pbb
+                 fgaag = gaag*pll + gaagbb*paa - gaagab*pba - gaagba*pab + gaagaa*pbb
+                 fgabg = gabg*pll + gabgbb*paa - gabgab*pba - gabgba*pab + gabgaa*pbb
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+                 dGij(2,2,i,j) = dGij(2,2,i,j) +        fgaag
+                 dGij(4,2,i,j) = dGij(4,2,i,j) - dconjg(fgabg)
+                 dGij(2,4,i,j) = dGij(2,4,i,j) +        fgabg
+                 dGij(4,4,i,j) = dGij(4,4,i,j) + dconjg(fgaag)
+              !> end
+              !> contraction [ji] = [ji|lk]*kl = [ji|lk]*dconjg(lk) = dconjg([ij]) - transfered to add_dG_coulomb
+              !  dG(1,1,jbas,ibas) = dG(1,1,jbas,ibas) + dconjg(fgg  )
+              !  dG(3,3,jbas,ibas) = dG(3,3,jbas,ibas) +        fgg   
+              !  dG(2,2,jbas,ibas) = dG(2,2,jbas,ibas) + dconjg(fgaag) 
+              !  dG(4,2,jbas,ibas) = dG(4,2,jbas,ibas) + dconjg(fgabg) 
+              !  dG(2,4,jbas,ibas) = dG(2,4,jbas,ibas) -        fgabg
+              !  dG(4,4,jbas,ibas) = dG(4,4,jbas,ibas) +        fgaag 
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part
+      if( .not. doK )return
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            do i=1,ic
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> large-small block 
+                 ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+                 ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+                 ggbb = dconjg( ggaa )
+                 ggba =-dconjg( ggab )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+                 !> small-small block: aa
+                 gaagaa = dcmplx( ( gout(2,k,l,2,i,j)-gout(3,k,l,3,i,j)), ( gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gaagba = dcmplx( (-gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)-gout(4,k,l,3,i,j)) )
+                 gabgaa = dcmplx( ( gout(2,k,l,4,i,j)-gout(3,k,l,5,i,j)), ( gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 gabgba = dcmplx( (-gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)-gout(4,k,l,5,i,j)) )
+                 !> small-small block: bb
+                 gbbgbb = dconjg( gaagaa )
+                 gbbgab =-dconjg( gaagba ) 
+                 gbagbb =-dconjg( gabgaa )
+                 gbagab = dconjg( gabgba )
+                 !> small-small block: ab
+                 gaagab = dcmplx( ( gout(4,k,l,2,i,j)-gout(5,k,l,3,i,j)), ( gout(5,k,l,2,i,j)+gout(4,k,l,3,i,j)) )
+                 gaagbb = dcmplx( ( gout(2,k,l,2,i,j)+gout(3,k,l,3,i,j)), (-gout(3,k,l,2,i,j)+gout(2,k,l,3,i,j)) )
+                 gabgab = dcmplx( ( gout(4,k,l,4,i,j)-gout(5,k,l,5,i,j)), ( gout(5,k,l,4,i,j)+gout(4,k,l,5,i,j)) )
+                 gabgbb = dcmplx( ( gout(2,k,l,4,i,j)+gout(3,k,l,5,i,j)), (-gout(3,k,l,4,i,j)+gout(2,k,l,5,i,j)) )
+                 !> small-small block: ba
+                 gbbgba =-dconjg( gaagab )
+                 gbbgaa = dconjg( gaagbb )
+                 gbagba = dconjg( gabgab )
+                 gbagaa =-dconjg( gabgbb )
+              !> end
+              !> contraction [ij|kl]*jk
+                 paa_ll = dPj(1,1,j,kbas)
+                 pba_ll = dPj(3,1,j,kbas)
+                 pab_ll = dPj(1,3,j,kbas)
+                 pbb_ll = dPj(3,3,j,kbas)
+                 paa_ls = dPj(1,2,j,kbas)
+                 pba_ls = dPj(3,2,j,kbas)
+                 pab_ls = dPj(1,4,j,kbas)
+                 pbb_ls = dPj(3,4,j,kbas)
+                 paa_sl = dPj(2,1,j,kbas)
+                 pba_sl = dPj(4,1,j,kbas)
+                 pab_sl = dPj(2,3,j,kbas)
+                 pbb_sl = dPj(4,3,j,kbas)
+                 paa_ss = dPj(2,2,j,kbas)
+                 pba_ss = dPj(4,2,j,kbas)
+                 pab_ss = dPj(2,4,j,kbas)
+                 pbb_ss = dPj(4,4,j,kbas)
+                 !> large-large block
+                 dGi(1,1,i,lbas) = dGi(1,1,i,lbas) - paa_ll*gg
+                 dGi(1,3,i,lbas) = dGi(1,3,i,lbas) - pab_ll*gg
+                 dGi(3,1,i,lbas) = dGi(3,1,i,lbas) - pba_ll*gg
+                 dGi(3,3,i,lbas) = dGi(3,3,i,lbas) - pbb_ll*gg
+                 !> large-small block
+                 dGi(1,2,i,lbas) = dGi(1,2,i,lbas) - paa_ls*ggaa - pab_ls*ggba  
+                 dGi(1,4,i,lbas) = dGi(1,4,i,lbas) - paa_ls*ggab - pab_ls*ggbb
+                 dGi(3,2,i,lbas) = dGi(3,2,i,lbas) - pba_ls*ggaa - pbb_ls*ggba
+                 dGi(3,4,i,lbas) = dGi(3,4,i,lbas) - pba_ls*ggab - pbb_ls*ggbb
+                 !> small-large block
+                 dGi(2,1,i,lbas) = dGi(2,1,i,lbas) - gaag*paa_sl - gabg*pba_sl 
+                 dGi(2,3,i,lbas) = dGi(2,3,i,lbas) - gaag*pab_sl - gabg*pbb_sl 
+                 dGi(4,1,i,lbas) = dGi(4,1,i,lbas) - gbag*paa_sl - gbbg*pba_sl 
+                 dGi(4,3,i,lbas) = dGi(4,3,i,lbas) - gbag*pab_sl - gbbg*pbb_sl 
+                 !> small-small block
+                 dGi(2,2,i,lbas) = dGi(2,2,i,lbas) - gaagaa*paa_ss - gaagba*pab_ss - gabgaa*pba_ss - gabgba*pbb_ss 
+                 dGi(2,4,i,lbas) = dGi(2,4,i,lbas) - gaagab*paa_ss - gaagbb*pab_ss - gabgab*pba_ss - gabgbb*pbb_ss 
+                 dGi(4,2,i,lbas) = dGi(4,2,i,lbas) - gbagaa*paa_ss - gbagba*pab_ss - gbbgaa*pba_ss - gbbgba*pbb_ss 
+                 dGi(4,4,i,lbas) = dGi(4,4,i,lbas) - gbagab*paa_ss - gbagbb*pab_ss - gbbgab*pba_ss - gbbgbb*pbb_ss 
+              !> end
+              !> contraction [ij|lk]*jl
+                 paa_ll = dPj(1,1,j,lbas)
+                 pba_ll = dPj(3,1,j,lbas)
+                 pab_ll = dPj(1,3,j,lbas)
+                 pbb_ll = dPj(3,3,j,lbas)
+                 paa_ls = dPj(1,2,j,lbas)
+                 pba_ls = dPj(3,2,j,lbas)
+                 pab_ls = dPj(1,4,j,lbas)
+                 pbb_ls = dPj(3,4,j,lbas)
+                 paa_sl = dPj(2,1,j,lbas)
+                 pba_sl = dPj(4,1,j,lbas)
+                 pab_sl = dPj(2,3,j,lbas)
+                 pbb_sl = dPj(4,3,j,lbas)
+                 paa_ss = dPj(2,2,j,lbas)
+                 pba_ss = dPj(4,2,j,lbas)
+                 pab_ss = dPj(2,4,j,lbas)
+                 pbb_ss = dPj(4,4,j,lbas)
+                 !> large-large block
+                 dGi(1,1,i,kbas) = dGi(1,1,i,kbas) - paa_ll*gg
+                 dGi(1,3,i,kbas) = dGi(1,3,i,kbas) - pab_ll*gg
+                 dGi(3,1,i,kbas) = dGi(3,1,i,kbas) - pba_ll*gg
+                 dGi(3,3,i,kbas) = dGi(3,3,i,kbas) - pbb_ll*gg
+                 !> large-small block
+                 dGi(1,2,i,kbas) = dGi(1,2,i,kbas) - paa_ls*ggbb + pab_ls*ggba  
+                 dGi(1,4,i,kbas) = dGi(1,4,i,kbas) + paa_ls*ggab - pab_ls*ggaa
+                 dGi(3,2,i,kbas) = dGi(3,2,i,kbas) - pba_ls*ggbb + pbb_ls*ggba
+                 dGi(3,4,i,kbas) = dGi(3,4,i,kbas) + pba_ls*ggab - pbb_ls*ggaa
+                 !> small-large block
+                 dGi(2,1,i,kbas) = dGi(2,1,i,kbas) - gaag*paa_sl - gabg*pba_sl 
+                 dGi(2,3,i,kbas) = dGi(2,3,i,kbas) - gaag*pab_sl - gabg*pbb_sl 
+                 dGi(4,1,i,kbas) = dGi(4,1,i,kbas) - gbag*paa_sl - gbbg*pba_sl 
+                 dGi(4,3,i,kbas) = dGi(4,3,i,kbas) - gbag*pab_sl - gbbg*pbb_sl 
+                 !> small-small block
+                 dGi(2,2,i,kbas) = dGi(2,2,i,kbas) - gaagbb*paa_ss + gaagba*pab_ss - gabgbb*pba_ss + gabgba*pbb_ss 
+                 dGi(2,4,i,kbas) = dGi(2,4,i,kbas) + gaagab*paa_ss - gaagaa*pab_ss + gabgab*pba_ss - gabgaa*pbb_ss 
+                 dGi(4,2,i,kbas) = dGi(4,2,i,kbas) - gbagbb*paa_ss + gbagba*pab_ss - gbbgbb*pba_ss + gbbgba*pbb_ss 
+                 dGi(4,4,i,kbas) = dGi(4,4,i,kbas) + gbagab*paa_ss - gbagaa*pab_ss + gbbgab*pba_ss - gbbgaa*pbb_ss 
+              !> end
+              !> contraction [ji|kl]*ik
+                 paa_ll = dPi(1,1,i,kbas)
+                 pba_ll = dPi(3,1,i,kbas)
+                 pab_ll = dPi(1,3,i,kbas)
+                 pbb_ll = dPi(3,3,i,kbas)
+                 paa_ls = dPi(1,2,i,kbas)
+                 pba_ls = dPi(3,2,i,kbas)
+                 pab_ls = dPi(1,4,i,kbas)
+                 pbb_ls = dPi(3,4,i,kbas)
+                 paa_sl = dPi(2,1,i,kbas)
+                 pba_sl = dPi(4,1,i,kbas)
+                 pab_sl = dPi(2,3,i,kbas)
+                 pbb_sl = dPi(4,3,i,kbas)
+                 paa_ss = dPi(2,2,i,kbas)
+                 pba_ss = dPi(4,2,i,kbas)
+                 pab_ss = dPi(2,4,i,kbas)
+                 pbb_ss = dPi(4,4,i,kbas)
+                 !> large-large block
+                 dGj(1,1,j,lbas) = dGj(1,1,j,lbas) - paa_ll*gg
+                 dGj(1,3,j,lbas) = dGj(1,3,j,lbas) - pab_ll*gg
+                 dGj(3,1,j,lbas) = dGj(3,1,j,lbas) - pba_ll*gg
+                 dGj(3,3,j,lbas) = dGj(3,3,j,lbas) - pbb_ll*gg
+                 !> large-small block
+                 dGj(1,2,j,lbas) = dGj(1,2,j,lbas) - paa_ls*ggaa - pab_ls*ggba  
+                 dGj(1,4,j,lbas) = dGj(1,4,j,lbas) - paa_ls*ggab - pab_ls*ggbb
+                 dGj(3,2,j,lbas) = dGj(3,2,j,lbas) - pba_ls*ggaa - pbb_ls*ggba
+                 dGj(3,4,j,lbas) = dGj(3,4,j,lbas) - pba_ls*ggab - pbb_ls*ggbb
+                 !> small-large block
+                 dGj(2,1,j,lbas) = dGj(2,1,j,lbas) - gbbg*paa_sl + gabg*pba_sl 
+                 dGj(2,3,j,lbas) = dGj(2,3,j,lbas) - gbbg*pab_sl + gabg*pbb_sl 
+                 dGj(4,1,j,lbas) = dGj(4,1,j,lbas) + gbag*paa_sl - gaag*pba_sl 
+                 dGj(4,3,j,lbas) = dGj(4,3,j,lbas) + gbag*pab_sl - gaag*pbb_sl 
+                 !> small-small block
+                 dGj(2,2,j,lbas) = dGj(2,2,j,lbas) - gbbgaa*paa_ss - gbbgba*pab_ss + gabgaa*pba_ss + gabgba*pbb_ss 
+                 dGj(2,4,j,lbas) = dGj(2,4,j,lbas) - gbbgab*paa_ss - gbbgbb*pab_ss + gabgab*pba_ss + gabgbb*pbb_ss 
+                 dGj(4,2,j,lbas) = dGj(4,2,j,lbas) + gbagaa*paa_ss + gbagba*pab_ss - gaagaa*pba_ss - gaagba*pbb_ss 
+                 dGj(4,4,j,lbas) = dGj(4,4,j,lbas) + gbagab*paa_ss + gbagbb*pab_ss - gaagab*pba_ss - gaagbb*pbb_ss 
+              !> end
+              !> contraction [ji|lk]*il
+                 paa_ll = dPi(1,1,i,lbas)
+                 pba_ll = dPi(3,1,i,lbas)
+                 pab_ll = dPi(1,3,i,lbas)
+                 pbb_ll = dPi(3,3,i,lbas)
+                 paa_ls = dPi(1,2,i,lbas)
+                 pba_ls = dPi(3,2,i,lbas)
+                 pab_ls = dPi(1,4,i,lbas)
+                 pbb_ls = dPi(3,4,i,lbas)
+                 paa_sl = dPi(2,1,i,lbas)
+                 pba_sl = dPi(4,1,i,lbas)
+                 pab_sl = dPi(2,3,i,lbas)
+                 pbb_sl = dPi(4,3,i,lbas)
+                 paa_ss = dPi(2,2,i,lbas)
+                 pba_ss = dPi(4,2,i,lbas)
+                 pab_ss = dPi(2,4,i,lbas)
+                 pbb_ss = dPi(4,4,i,lbas)
+                 !> large-large block
+                 dGj(1,1,j,kbas) = dGj(1,1,j,kbas) - paa_ll*gg
+                 dGj(1,3,j,kbas) = dGj(1,3,j,kbas) - pab_ll*gg
+                 dGj(3,1,j,kbas) = dGj(3,1,j,kbas) - pba_ll*gg
+                 dGj(3,3,j,kbas) = dGj(3,3,j,kbas) - pbb_ll*gg
+                 !> large-small block
+                 dGj(1,2,j,kbas) = dGj(1,2,j,kbas) - paa_ls*ggbb + pab_ls*ggba  
+                 dGj(1,4,j,kbas) = dGj(1,4,j,kbas) + paa_ls*ggab - pab_ls*ggaa
+                 dGj(3,2,j,kbas) = dGj(3,2,j,kbas) - pba_ls*ggbb + pbb_ls*ggba
+                 dGj(3,4,j,kbas) = dGj(3,4,j,kbas) + pba_ls*ggab - pbb_ls*ggaa
+                 !> small-large block
+                 dGj(2,1,j,kbas) = dGj(2,1,j,kbas) - gbbg*paa_sl + gabg*pba_sl 
+                 dGj(2,3,j,kbas) = dGj(2,3,j,kbas) - gbbg*pab_sl + gabg*pbb_sl 
+                 dGj(4,1,j,kbas) = dGj(4,1,j,kbas) + gbag*paa_sl - gaag*pba_sl 
+                 dGj(4,3,j,kbas) = dGj(4,3,j,kbas) + gbag*pab_sl - gaag*pbb_sl 
+                 !> small-small block
+                 dGj(2,2,j,kbas) = dGj(2,2,j,kbas) - gbbgbb*paa_ss + gbbgba*pab_ss + gabgbb*pba_ss - gabgba*pbb_ss 
+                 dGj(2,4,j,kbas) = dGj(2,4,j,kbas) + gbbgab*paa_ss - gbbgaa*pab_ss - gabgab*pba_ss + gabgaa*pbb_ss 
+                 dGj(4,2,j,kbas) = dGj(4,2,j,kbas) + gbagbb*paa_ss - gbagba*pab_ss - gaagbb*pba_ss + gaagba*pbb_ss 
+                 dGj(4,4,j,kbas) = dGj(4,4,j,kbas) - gbagab*paa_ss + gbagaa*pab_ss + gaagab*pba_ss - gaagaa*pbb_ss 
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+    subroutine process_dG_ssll_4x(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: dPi(4,4,ic,nbas)
+      complex(8), intent(in) :: dPj(4,4,jc,nbas)
+      complex(8), intent(in) :: dP (4,4,nbas,nbas)
+      real(8),    intent(in) :: gout(5,kc,lc,5,ic,jc)
+      !> input/output
+      complex(8), intent(inout) :: dGij(4,4,ic,jc)
+      complex(8), intent(inout) :: dGi (4,4,ic,nbas)
+      complex(8), intent(inout) :: dGj (4,4,jc,nbas)
+      complex(8), intent(inout) :: dG  (4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l, m
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: pll
+      complex(8) :: paa, pab, pba, pbb
+      complex(8) :: gg, fgg, fgaag, fgabg
+      complex(8) :: gaag, gabg, gbag, gbbg
+      complex(8) :: ggaa, ggab, ggba, ggbb   
+      complex(8) :: gaagaa, gabgaa, gbagaa, gbbgaa
+      complex(8) :: gaagab, gabgab, gbagab, gbbgab
+      complex(8) :: gaagba, gabgba, gbagba, gbbgba
+      complex(8) :: gaagbb, gabgbb, gbagbb, gbbgbb
+      complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+      complex(8) :: paa_ls, pab_ls, pba_ls, pbb_ls
+      complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+      complex(8) :: paa_ss, pab_ss, pba_ss, pbb_ss
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas=ko+k
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> large-small block 
+                 ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+                 ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+                 ggbb = dconjg( ggaa )
+                 ggba =-dconjg( ggab )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+              !> end
+              !> contraction [ij] = [ij|kl]*lk = [ij|kl]*dconjg(kl)
+                 paa = dconjg(dP(2,2,kbas,lbas)                    )  !=dP(2,2,lbas,kbas)
+                 pab = dconjg(dP(4,2,kbas,lbas)                    )  !=dP(2,4,lbas,kbas)
+                 pba = dconjg(dP(2,4,kbas,lbas)                    )  !=dP(4,2,lbas,kbas)
+                 pbb = dconjg(dP(4,4,kbas,lbas)                    )  !=dP(4,4,lbas,kbas)
+                 pll = dconjg(dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas))  !=dP(1,1,lbas,kbas) + dP(3,3,lbas,kbas)
+                 !>
+                 fgg   =   gg*pll + ggaa*paa + ggab*pba + ggba*pab + ggbb*pbb
+                 fgaag = gaag*pll
+                 fgabg = gabg*pll
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+                 dGij(2,2,i,j) = dGij(2,2,i,j) +        fgaag
+                 dGij(4,2,i,j) = dGij(4,2,i,j) - dconjg(fgabg)
+                 dGij(2,4,i,j) = dGij(2,4,i,j) +        fgabg
+                 dGij(4,4,i,j) = dGij(4,4,i,j) + dconjg(fgaag)
+              !> end
+              !> contraction [ij] = [ij|lk]*kl
+                 fgg = pba
+                 paa = dconjg(paa)        !=dP(2,2,kbas,lbas)                    
+                 pba = dconjg(pab)        !=dP(4,2,kbas,lbas)                    
+                 pab = dconjg(fgg)        !=dP(2,4,kbas,lbas)                    
+                 pbb = dconjg(pbb)        !=dP(4,4,kbas,lbas)                    
+                 pll = dconjg(pll)        !=dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas)
+                 !>
+                 fgg   =   gg*pll + ggbb*paa - ggab*pba - ggba*pab + ggaa*pbb
+                 fgaag = gaag*pll
+                 fgabg = gabg*pll
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+                 dGij(2,2,i,j) = dGij(2,2,i,j) +        fgaag
+                 dGij(4,2,i,j) = dGij(4,2,i,j) - dconjg(fgabg)
+                 dGij(2,4,i,j) = dGij(2,4,i,j) +        fgabg
+                 dGij(4,4,i,j) = dGij(4,4,i,j) + dconjg(fgaag)
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part
+      if( .not. doK )return
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            do i=1,ic
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(1,k,l,1,i,j), 0.0d0 )
+                 !> large-small block 
+                 ggaa = dcmplx( gout(2,k,l,1,i,j), gout(3,k,l,1,i,j) )
+                 ggab = dcmplx( gout(4,k,l,1,i,j), gout(5,k,l,1,i,j) )
+                 ggbb = dconjg( ggaa )
+                 ggba =-dconjg( ggab )
+                 !> small-large block 
+                 gaag = dcmplx( gout(1,k,l,2,i,j), gout(1,k,l,3,i,j) )
+                 gabg = dcmplx( gout(1,k,l,4,i,j), gout(1,k,l,5,i,j) )
+                 gbbg = dconjg( gaag )
+                 gbag =-dconjg( gabg ) 
+              !> end
+              !> contraction [ij|kl]*jk
+                 paa_ll = dPj(1,1,j,kbas)
+                 pba_ll = dPj(3,1,j,kbas)
+                 pab_ll = dPj(1,3,j,kbas)
+                 pbb_ll = dPj(3,3,j,kbas)
+                 paa_ls = dPj(1,2,j,kbas)
+                 pba_ls = dPj(3,2,j,kbas)
+                 pab_ls = dPj(1,4,j,kbas)
+                 pbb_ls = dPj(3,4,j,kbas)
+                 paa_sl = dPj(2,1,j,kbas)
+                 pba_sl = dPj(4,1,j,kbas)
+                 pab_sl = dPj(2,3,j,kbas)
+                 pbb_sl = dPj(4,3,j,kbas)
+                 !> large-large block
+                 dGi(1,1,i,lbas) = dGi(1,1,i,lbas) - paa_ll*gg
+                 dGi(1,3,i,lbas) = dGi(1,3,i,lbas) - pab_ll*gg
+                 dGi(3,1,i,lbas) = dGi(3,1,i,lbas) - pba_ll*gg
+                 dGi(3,3,i,lbas) = dGi(3,3,i,lbas) - pbb_ll*gg
+                 !> large-small block
+                 dGi(1,2,i,lbas) = dGi(1,2,i,lbas) - paa_ls*ggaa - pab_ls*ggba  
+                 dGi(1,4,i,lbas) = dGi(1,4,i,lbas) - paa_ls*ggab - pab_ls*ggbb
+                 dGi(3,2,i,lbas) = dGi(3,2,i,lbas) - pba_ls*ggaa - pbb_ls*ggba
+                 dGi(3,4,i,lbas) = dGi(3,4,i,lbas) - pba_ls*ggab - pbb_ls*ggbb
+                 !> small-large block
+                 dGi(2,1,i,lbas) = dGi(2,1,i,lbas) - gaag*paa_sl - gabg*pba_sl 
+                 dGi(2,3,i,lbas) = dGi(2,3,i,lbas) - gaag*pab_sl - gabg*pbb_sl 
+                 dGi(4,1,i,lbas) = dGi(4,1,i,lbas) - gbag*paa_sl - gbbg*pba_sl 
+                 dGi(4,3,i,lbas) = dGi(4,3,i,lbas) - gbag*pab_sl - gbbg*pbb_sl 
+              !> end
+              !> contraction [ij|lk]*jl
+                 paa_ll = dPj(1,1,j,lbas)
+                 pba_ll = dPj(3,1,j,lbas)
+                 pab_ll = dPj(1,3,j,lbas)
+                 pbb_ll = dPj(3,3,j,lbas)
+                 paa_ls = dPj(1,2,j,lbas)
+                 pba_ls = dPj(3,2,j,lbas)
+                 pab_ls = dPj(1,4,j,lbas)
+                 pbb_ls = dPj(3,4,j,lbas)
+                 paa_sl = dPj(2,1,j,lbas)
+                 pba_sl = dPj(4,1,j,lbas)
+                 pab_sl = dPj(2,3,j,lbas)
+                 pbb_sl = dPj(4,3,j,lbas)
+                 !> large-large block
+                 dGi(1,1,i,kbas) = dGi(1,1,i,kbas) - paa_ll*gg
+                 dGi(1,3,i,kbas) = dGi(1,3,i,kbas) - pab_ll*gg
+                 dGi(3,1,i,kbas) = dGi(3,1,i,kbas) - pba_ll*gg
+                 dGi(3,3,i,kbas) = dGi(3,3,i,kbas) - pbb_ll*gg
+                 !> large-small block
+                 dGi(1,2,i,kbas) = dGi(1,2,i,kbas) - paa_ls*ggbb + pab_ls*ggba  
+                 dGi(1,4,i,kbas) = dGi(1,4,i,kbas) + paa_ls*ggab - pab_ls*ggaa
+                 dGi(3,2,i,kbas) = dGi(3,2,i,kbas) - pba_ls*ggbb + pbb_ls*ggba
+                 dGi(3,4,i,kbas) = dGi(3,4,i,kbas) + pba_ls*ggab - pbb_ls*ggaa
+                 !> small-large block
+                 dGi(2,1,i,kbas) = dGi(2,1,i,kbas) - gaag*paa_sl - gabg*pba_sl 
+                 dGi(2,3,i,kbas) = dGi(2,3,i,kbas) - gaag*pab_sl - gabg*pbb_sl 
+                 dGi(4,1,i,kbas) = dGi(4,1,i,kbas) - gbag*paa_sl - gbbg*pba_sl 
+                 dGi(4,3,i,kbas) = dGi(4,3,i,kbas) - gbag*pab_sl - gbbg*pbb_sl 
+              !> end
+              !> contraction [ji|kl]*ik
+                 paa_ll = dPi(1,1,i,kbas)
+                 pba_ll = dPi(3,1,i,kbas)
+                 pab_ll = dPi(1,3,i,kbas)
+                 pbb_ll = dPi(3,3,i,kbas)
+                 paa_ls = dPi(1,2,i,kbas)
+                 pba_ls = dPi(3,2,i,kbas)
+                 pab_ls = dPi(1,4,i,kbas)
+                 pbb_ls = dPi(3,4,i,kbas)
+                 paa_sl = dPi(2,1,i,kbas)
+                 pba_sl = dPi(4,1,i,kbas)
+                 pab_sl = dPi(2,3,i,kbas)
+                 pbb_sl = dPi(4,3,i,kbas)
+                 !> large-large block
+                 dGj(1,1,j,lbas) = dGj(1,1,j,lbas) - paa_ll*gg
+                 dGj(1,3,j,lbas) = dGj(1,3,j,lbas) - pab_ll*gg
+                 dGj(3,1,j,lbas) = dGj(3,1,j,lbas) - pba_ll*gg
+                 dGj(3,3,j,lbas) = dGj(3,3,j,lbas) - pbb_ll*gg
+                 !> large-small block
+                 dGj(1,2,j,lbas) = dGj(1,2,j,lbas) - paa_ls*ggaa - pab_ls*ggba  
+                 dGj(1,4,j,lbas) = dGj(1,4,j,lbas) - paa_ls*ggab - pab_ls*ggbb
+                 dGj(3,2,j,lbas) = dGj(3,2,j,lbas) - pba_ls*ggaa - pbb_ls*ggba
+                 dGj(3,4,j,lbas) = dGj(3,4,j,lbas) - pba_ls*ggab - pbb_ls*ggbb
+                 !> small-large block
+                 dGj(2,1,j,lbas) = dGj(2,1,j,lbas) - gbbg*paa_sl + gabg*pba_sl 
+                 dGj(2,3,j,lbas) = dGj(2,3,j,lbas) - gbbg*pab_sl + gabg*pbb_sl 
+                 dGj(4,1,j,lbas) = dGj(4,1,j,lbas) + gbag*paa_sl - gaag*pba_sl 
+                 dGj(4,3,j,lbas) = dGj(4,3,j,lbas) + gbag*pab_sl - gaag*pbb_sl 
+              !> end
+              !> contraction [ji|lk]*il
+                 paa_ll = dPi(1,1,i,lbas)
+                 pba_ll = dPi(3,1,i,lbas)
+                 pab_ll = dPi(1,3,i,lbas)
+                 pbb_ll = dPi(3,3,i,lbas)
+                 paa_ls = dPi(1,2,i,lbas)
+                 pba_ls = dPi(3,2,i,lbas)
+                 pab_ls = dPi(1,4,i,lbas)
+                 pbb_ls = dPi(3,4,i,lbas)
+                 paa_sl = dPi(2,1,i,lbas)
+                 pba_sl = dPi(4,1,i,lbas)
+                 pab_sl = dPi(2,3,i,lbas)
+                 pbb_sl = dPi(4,3,i,lbas)
+                 !> large-large block
+                 dGj(1,1,j,kbas) = dGj(1,1,j,kbas) - paa_ll*gg
+                 dGj(1,3,j,kbas) = dGj(1,3,j,kbas) - pab_ll*gg
+                 dGj(3,1,j,kbas) = dGj(3,1,j,kbas) - pba_ll*gg
+                 dGj(3,3,j,kbas) = dGj(3,3,j,kbas) - pbb_ll*gg
+                 !> large-small block
+                 dGj(1,2,j,kbas) = dGj(1,2,j,kbas) - paa_ls*ggbb + pab_ls*ggba  
+                 dGj(1,4,j,kbas) = dGj(1,4,j,kbas) + paa_ls*ggab - pab_ls*ggaa
+                 dGj(3,2,j,kbas) = dGj(3,2,j,kbas) - pba_ls*ggbb + pbb_ls*ggba
+                 dGj(3,4,j,kbas) = dGj(3,4,j,kbas) + pba_ls*ggab - pbb_ls*ggaa
+                 !> small-large block
+                 dGj(2,1,j,kbas) = dGj(2,1,j,kbas) - gbbg*paa_sl + gabg*pba_sl 
+                 dGj(2,3,j,kbas) = dGj(2,3,j,kbas) - gbbg*pab_sl + gabg*pbb_sl 
+                 dGj(4,1,j,kbas) = dGj(4,1,j,kbas) + gbag*paa_sl - gaag*pba_sl 
+                 dGj(4,3,j,kbas) = dGj(4,3,j,kbas) + gbag*pab_sl - gaag*pbb_sl 
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+    subroutine process_dG_llll_4x(ic,jc,kc,lc,io,jo,ko,lo,nbas,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG) 
+      !> input
+      logical,    intent(in) :: doK
+      integer,    intent(in) :: nbas
+      integer,    intent(in) :: ic, jc, kc, lc
+      integer,    intent(in) :: io, jo, ko, lo
+      complex(8), intent(in) :: dPi(4,4,ic,nbas)
+      complex(8), intent(in) :: dPj(4,4,jc,nbas)
+      complex(8), intent(in) :: dP (4,4,nbas,nbas)
+      real(8),    intent(in) :: gout(kc,lc,ic,jc)
+      !> input/output
+      complex(8), intent(inout) :: dGij(4,4,ic,jc)
+      complex(8), intent(inout) :: dGi (4,4,ic,nbas)
+      complex(8), intent(inout) :: dGj (4,4,jc,nbas)
+      complex(8), intent(inout) :: dG  (4,4,nbas,nbas)
+      !> local
+      integer    :: i, j, k, l, m
+      integer    :: ibas, jbas, kbas, lbas
+      complex(8) :: pll
+      complex(8) :: paa, pab, pba, pbb
+      complex(8) :: gg, fgg, fgaag, fgabg
+      complex(8) :: gaag, gabg, gbag, gbbg
+      complex(8) :: ggaa, ggab, ggba, ggbb   
+      complex(8) :: gaagaa, gabgaa, gbagaa, gbbgaa
+      complex(8) :: gaagab, gabgab, gbagab, gbbgab
+      complex(8) :: gaagba, gabgba, gbagba, gbbgba
+      complex(8) :: gaagbb, gabgbb, gbagbb, gbbgbb
+      complex(8) :: paa_ll, pab_ll, pba_ll, pbb_ll
+      complex(8) :: paa_ls, pab_ls, pba_ls, pbb_ls
+      complex(8) :: paa_sl, pab_sl, pba_sl, pbb_sl
+      complex(8) :: paa_ss, pab_ss, pba_ss, pbb_ss
+      !>
+      !> coulomb part
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          do l=1,lc
+            lbas=lo+l
+            do k=1,kc
+              kbas=ko+k
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(k,l,i,j), 0.0d0 )
+              !> end
+              !> contraction [ij] = [ij|kl]*lk = [ij|kl]*dconjg(kl)
+                 pll = dconjg(dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas))  !=dP(1,1,lbas,kbas) + dP(3,3,lbas,kbas)
+                 !>
+                 fgg = gg*pll 
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+              !> end
+              !> contraction [ij] = [ij|lk]*kl
+                 pll = dconjg(pll)        !=dP(1,1,kbas,lbas) + dP(3,3,kbas,lbas)
+                 !>
+                 fgg = gg*pll
+                 !>
+                 dGij(1,1,i,j) = dGij(1,1,i,j) +        fgg
+                 dGij(3,3,i,j) = dGij(3,3,i,j) + dconjg(fgg)
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+      !> exchange part
+      if( .not. doK )return
+      do l=1,lc
+        lbas=lo+l
+        do k=1,kc
+          kbas=ko+k
+          do j=1,jc
+            do i=1,ic
+              !> integrals processing: [ij|kl]
+                 !> large-large block 
+                 gg = dcmplx( gout(k,l,i,j), 0.0d0 )
+              !> end
+              !> contraction [ij|kl]*jk
+                 paa_ll = dPj(1,1,j,kbas)
+                 pba_ll = dPj(3,1,j,kbas)
+                 pab_ll = dPj(1,3,j,kbas)
+                 pbb_ll = dPj(3,3,j,kbas)
+                 dGi(1,1,i,lbas) = dGi(1,1,i,lbas) - paa_ll*gg
+                 dGi(1,3,i,lbas) = dGi(1,3,i,lbas) - pab_ll*gg
+                 dGi(3,1,i,lbas) = dGi(3,1,i,lbas) - pba_ll*gg
+                 dGi(3,3,i,lbas) = dGi(3,3,i,lbas) - pbb_ll*gg
+              !> end
+              !> contraction [ij|lk]*jl
+                 paa_ll = dPj(1,1,j,lbas)
+                 pba_ll = dPj(3,1,j,lbas)
+                 pab_ll = dPj(1,3,j,lbas)
+                 pbb_ll = dPj(3,3,j,lbas)
+                 dGi(1,1,i,kbas) = dGi(1,1,i,kbas) - paa_ll*gg
+                 dGi(1,3,i,kbas) = dGi(1,3,i,kbas) - pab_ll*gg
+                 dGi(3,1,i,kbas) = dGi(3,1,i,kbas) - pba_ll*gg
+                 dGi(3,3,i,kbas) = dGi(3,3,i,kbas) - pbb_ll*gg
+              !> end
+              !> contraction [ji|kl]*ik
+                 paa_ll = dPi(1,1,i,kbas)
+                 pba_ll = dPi(3,1,i,kbas)
+                 pab_ll = dPi(1,3,i,kbas)
+                 pbb_ll = dPi(3,3,i,kbas)
+                 dGj(1,1,j,lbas) = dGj(1,1,j,lbas) - paa_ll*gg
+                 dGj(1,3,j,lbas) = dGj(1,3,j,lbas) - pab_ll*gg
+                 dGj(3,1,j,lbas) = dGj(3,1,j,lbas) - pba_ll*gg
+                 dGj(3,3,j,lbas) = dGj(3,3,j,lbas) - pbb_ll*gg
+              !> end
+              !> contraction [ji|lk]*il
+                 paa_ll = dPi(1,1,i,lbas)
+                 pba_ll = dPi(3,1,i,lbas)
+                 pab_ll = dPi(1,3,i,lbas)
+                 pbb_ll = dPi(3,3,i,lbas)
+                 dGj(1,1,j,kbas) = dGj(1,1,j,kbas) - paa_ll*gg
+                 dGj(1,3,j,kbas) = dGj(1,3,j,kbas) - pab_ll*gg
+                 dGj(3,1,j,kbas) = dGj(3,1,j,kbas) - pba_ll*gg
+                 dGj(3,3,j,kbas) = dGj(3,3,j,kbas) - pbb_ll*gg
+              !> end
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+
+    subroutine max_shell_pair_contributions( dP, nrow, gmax, pmax, nshl )
+      !> input
+      integer,    intent(in) :: nrow
+      integer,    intent(in) :: nshl 
+      complex(8), intent(in) :: dP(4,4,nrow,nrow)
+      !> output
+      real(8), intent(out) :: gmax(  2,nshl,nshl)
+      real(8), intent(out) :: pmax(2,2,nshl,nshl)
+      !> local 
+      real(8) :: gout(441*441*25)    !todo: rozumnejsia definicia
+      integer :: i, ii, li, ni, oi
+      integer :: j, jj, lj, nj, oj
+      real(8) :: ei, ci, xi, yi, zi 
+      real(8) :: ej, cj, xj, yj, zj 
+      real(8) :: praa, piaa, prab, piab
+      real(8) :: prba, piba, prbb, pibb
+      !>
+      !> find max{dsqrt(abs[ij|ij])}
+      do j=1,nshl
+        lj =       gto(j)%lvalue
+        oj =       gto(j)%offset
+        nj =       gto(j)%cdegen
+        ej =       gto(j)%exponent(1)
+        xj = atom( gto(j)%origin )%coordinate_x
+        yj = atom( gto(j)%origin )%coordinate_y
+        zj = atom( gto(j)%origin )%coordinate_z
+        cj =       gto(j)%coefficient(1)
+        do i=1,nshl
+          li =       gto(i)%lvalue
+          oi =       gto(i)%offset
+          ni =       gto(i)%cdegen
+          ei =       gto(i)%exponent(1)
+          xi = atom( gto(i)%origin )%coordinate_x
+          yi = atom( gto(i)%origin )%coordinate_y
+          zi = atom( gto(i)%origin )%coordinate_z
+          ci =       gto(i)%coefficient(1)
+          !>
+          call interest_eri_rkb('ssss',1.0d0,gout,&
+                                li,ei,xi,yi,zi,ci,&
+                                lj,ej,xj,yj,zj,cj,&
+                                li,ei,xi,yi,zi,ci,&
+                                lj,ej,xj,yj,zj,cj )
+          !>
+          call get_max_elements( ni, nj, gout, gmax(1,i,j), gmax(2,i,j) )
+        enddo
+      enddo
+      !> find max{abs(dP(i,j))}
+      pmax = 0.0d0
+      do j=1,nshl
+        oj = gto(j)%offset
+        nj = gto(j)%cdegen
+        do i=1,nshl
+          oi = gto(i)%offset
+          ni = gto(i)%cdegen
+          do jj=1,nj
+            do ii=1,ni
+              !> large-large
+              praa = dreal(dP(1,1,oi+ii,oj+jj))
+              piaa = dimag(dP(1,1,oi+ii,oj+jj))
+              prab = dreal(dP(1,3,oi+ii,oj+jj))
+              piab = dimag(dP(1,3,oi+ii,oj+jj))
+              prba = dreal(dP(3,1,oi+ii,oj+jj))
+              piba = dimag(dP(3,1,oi+ii,oj+jj))
+              prbb = dreal(dP(3,3,oi+ii,oj+jj))
+              pibb = dimag(dP(3,3,oi+ii,oj+jj))
+              pmax(1,1,i,j) = max(pmax(1,1,i,j),             &
+                                  dsqrt(praa*praa+piaa*piaa),&
+                                  dsqrt(prab*prab+piab*piab),&
+                                  dsqrt(prba*prba+piba*piba),&
+                                  dsqrt(prbb*prbb+pibb*pibb) )
+              !> small-large
+              praa = dreal(dP(2,1,oi+ii,oj+jj))
+              piaa = dimag(dP(2,1,oi+ii,oj+jj))
+              prab = dreal(dP(2,3,oi+ii,oj+jj))
+              piab = dimag(dP(2,3,oi+ii,oj+jj))
+              prba = dreal(dP(4,1,oi+ii,oj+jj))
+              piba = dimag(dP(4,1,oi+ii,oj+jj))
+              prbb = dreal(dP(4,3,oi+ii,oj+jj))
+              pibb = dimag(dP(4,3,oi+ii,oj+jj))
+              pmax(2,1,i,j) = max(pmax(2,1,i,j),             &
+                                  dsqrt(praa*praa+piaa*piaa),&
+                                  dsqrt(prab*prab+piab*piab),&
+                                  dsqrt(prba*prba+piba*piba),&
+                                  dsqrt(prbb*prbb+pibb*pibb) )
+              !> large-small
+              praa = dreal(dP(1,2,oi+ii,oj+jj))
+              piaa = dimag(dP(1,2,oi+ii,oj+jj))
+              prab = dreal(dP(1,4,oi+ii,oj+jj))
+              piab = dimag(dP(1,4,oi+ii,oj+jj))
+              prba = dreal(dP(3,2,oi+ii,oj+jj))
+              piba = dimag(dP(3,2,oi+ii,oj+jj))
+              prbb = dreal(dP(3,4,oi+ii,oj+jj))
+              pibb = dimag(dP(3,4,oi+ii,oj+jj))
+              pmax(1,2,i,j) = max(pmax(1,2,i,j),             &
+                                  dsqrt(praa*praa+piaa*piaa),&
+                                  dsqrt(prab*prab+piab*piab),&
+                                  dsqrt(prba*prba+piba*piba),&
+                                  dsqrt(prbb*prbb+pibb*pibb) )
+              !> small-small
+              praa = dreal(dP(2,2,oi+ii,oj+jj))
+              piaa = dimag(dP(2,2,oi+ii,oj+jj))
+              prab = dreal(dP(2,4,oi+ii,oj+jj))
+              piab = dimag(dP(2,4,oi+ii,oj+jj))
+              prba = dreal(dP(4,2,oi+ii,oj+jj))
+              piba = dimag(dP(4,2,oi+ii,oj+jj))
+              prbb = dreal(dP(4,4,oi+ii,oj+jj))
+              pibb = dimag(dP(4,4,oi+ii,oj+jj))
+              pmax(2,2,i,j) = max(pmax(2,2,i,j),             &
+                                  dsqrt(praa*praa+piaa*piaa),&
+                                  dsqrt(prab*prab+piab*piab),&
+                                  dsqrt(prba*prba+piba*piba),&
+                                  dsqrt(prbb*prbb+pibb*pibb) )
+            enddo
+          enddo
+        enddo
+      enddo
+    end subroutine
+    
+    subroutine get_max_elements( ni, nj, gout, gll, gss ) 
+      !> input
+      integer, intent(in) :: ni, nj
+      real(8), intent(in) :: gout(5,ni,nj,5,ni,nj) 
+      !> output
+      real(8), intent(out) :: gll, gss
+      !> local
+      integer :: i, j
+      !>
+      gll = 0.0d0 
+      gss = 0.0d0 
+      do j=1,nj
+        do i=1,ni
+          gll = max(gll,dsqrt(abs(gout(1,i,j,1,i,j))))
+          gss = max(gss,dsqrt(abs(gout(2,i,j,2,i,j)+gout(3,i,j,3,i,j))),&
+                        dsqrt(abs(gout(4,i,j,4,i,j)+gout(5,i,j,5,i,j))) )
         enddo
       enddo
     end subroutine
