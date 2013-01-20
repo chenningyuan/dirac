@@ -2573,7 +2573,8 @@ CTF
               do IRR=1,NIRREP,1
                 if (NGSSH(IRR,IGS).gt.MXTSOB) then
                 write(LUOUT,*) 'Too many orbitals per GAS and symmetry!'
-                  write(LUOUT,*) 'My maximum is  ',MXTSOB
+                write(LUOUT,*) 'You ask for ',NGSSH(IRR,IGS)
+                  write(LUOUT,*) 'but my maximum is  ',MXTSOB
                   write(LUOUT,*) 'Please redefine your GAS spaces.'
                   Call Abend2( 'Quitting.' )
                 end if

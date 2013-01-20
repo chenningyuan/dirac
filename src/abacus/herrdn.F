@@ -2479,6 +2479,7 @@ C
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
+      NBAS_ATOMTYPE(1:NONTYP,0:2) = 0
       DO 100 I = 1,NONTYP
 C
 C        Convert information to a string that can be understood by the innocent user
@@ -2496,6 +2497,8 @@ C
                NBAS(ISET) = 0
             END IF
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
+            NBAS_ATOMTYPE(I,ISET) = NBAS(ISET)
+            NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NBAS(ISET)
          END DO
 C
          NUCLEI_IN_TYPE = 0
@@ -2530,7 +2533,7 @@ C
      &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
             ENDIF
          END IF
-  100 CONTINUE
+  100 CONTINUE ! I = 1, NONTYP
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)

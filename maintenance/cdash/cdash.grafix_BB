@@ -30,28 +30,41 @@ BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
 # configure step
 ./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
 cd $BUILD_GNU
+#cmake ..
+#make ExperimentalUpdate
+cmake ..
+make clean
 make Experimental
+
 
 cd $DIRAC
 # now the second buildup with serial ifort
 BUILD_INTEL=build_ifort_mkl_int64
 export MATH_ROOT=/opt/intel/mkl
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
-cd $DIRAC/$BUILD_INTEL
+cd $BUILD_INTEL
+#cmake ..
+#make ExperimentalUpdate
+cmake ..
+make clean
 make Experimental
 
 #
 # now do the nightly build
 #
-#TMP_DIR=/tmp/ilias/dirac_build
-#mkdir -p $TMP_DIR
-#git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
-#cd $TMP_DIR
-#./pamadm -a 
-#./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64_nightly" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
-#cd $DIRAC/build
-#make Nightly
-#make info_ext
-#rm -rf $TMP_DIR
+TMP_DIR=/tmp/milias/dirac_build
+if [[ -d "$TMP_DIR" ]]; then
+  /bin/rm -rf $TMP_DIR
+  mkdir -p $TMP_DIR
+else
+  mkdir -p $TMP_DIR
+fi
+git  clone git@repo.ctcc.no:dirac.git  $TMP_DIR
+cd $TMP_DIR
+./pamadm -a 
+export MATH_ROOT=/opt/intel/mkl
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_ilp64_master" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF
+cd build
+make Nightly
 
 exit 0

@@ -1,0 +1,24 @@
+
+
+12.1
+----
+
+- Improved documentation.
+- Added test "kallay_mrcc_interface".
+- Made it possible to run MPI binary on one processor.
+- Compilation fix for older ifort (10.1) together with gcc 4.1.
+- Fix for too slow MCSCF convergence.
+
+
+12.2
+----
+
+- Fixed memory allocations in dirgp.F which now allows pre- and post-SCF orbital reordering
+  as well as simple magnetic balance for larger basis sets.
+
+
+FUTURE
+------
+
+- XCFun will not compile hidden cpp files.
+- Code stops if user gives orbital occupation which is inconsistent with NFSYM.

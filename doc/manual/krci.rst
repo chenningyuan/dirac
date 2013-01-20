@@ -1,7 +1,7 @@
 
 star(KRCI)
 
-or star(KRCICALC) (deprecated)
+or (deprecated) star(KRCICALC)
 
 *2- and 4-component relativistic GASCI module* written by Timo Fleig
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.

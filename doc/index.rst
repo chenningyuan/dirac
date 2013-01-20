@@ -63,31 +63,42 @@ Tutorials and walkthrus
   :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
   :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
 
+* **Relativistic effective core potentials:**
+  :doc:`Getting started <tutorials/ecp/first>`
+
 * **Nonrelativistic limit:**
   :doc:`Reproducing nonrelativistic results <tutorials/reproducing_nr_results>`
 
 * **DFT:**
   :doc:`TDDFT <tutorials/dft/tddft>` |
   :doc:`BSSE <tutorials/dft/bsse>` |
-  :doc:`CAM functional <tutorials/dft/cam>`
+  :doc:`CAM functional <tutorials/dft/cam>` |
+  :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
 
 * **Property calculations:**
-  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>`
+  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
 
 * **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
   :doc:`Atom <tutorials/reladc/atom>`
+
+* **ECP:**
+  :doc:`First calculation <tutorials/ecp/first>` |
+  :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -97,6 +108,15 @@ Tutorials and walkthrus
   :doc:`MP2 <tutorials/dusty_attic/mp2>` |
   :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
   :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
+
+
+Exercises
+=========
+
+.. toctree::
+   :maxdepth: 1
+
+   exercises/index.rst
 
 
 Reference manual
@@ -113,7 +133,8 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Beta testing <programmers/beta_testing>`
+  :doc:`Beta testing <programmers/beta_testing>` |
+  :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |

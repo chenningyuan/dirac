@@ -251,10 +251,13 @@ class pam_enviroment:
         self.basdir='.:'
         basis_dir= os.path.join(pam_directory, 'basis')
         basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+        basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
         if os.path.isdir(basis_dir):
             self.basdir = self.basdir + basis_dir
         if os.path.isdir(basis_dalton_dir):
             self.basdir = self.basdir+':'+basis_dalton_dir
+        if os.path.isdir(basis_ecp_dir):
+            self.basdir = self.basdir+':'+basis_ecp_dir
 
     def show_settings(self):
         '''
@@ -568,7 +571,7 @@ Options are also read from ~/.diracrc"""
             type='int',
             action='store',
             dest='dest_mpi',
-            default=1,
+            default=None,
             help='set number of cores in parallel run [default: %default]',
             metavar='INTEGER',
             )
@@ -788,9 +791,7 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
-            # only if nr of proc is larger than 1 run through MPI
-            if self.nr_proc > 1:
-                self.parallel_run = True
+            self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -1209,11 +1210,14 @@ Options are also read from ~/.diracrc"""
         if self.machinefile:
             self.handle_machinefile()
 
+        master_id = '' 
         # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
                 line = line.split()[0]   # first entry is each line should the the name of the node
-                if line != self.master:  # append only slaves different from the master
+                if len(master_id) == 0:  # set master id from first line in machinefile
+                    master_id = line
+                if line != master_id:    # append only slaves different from the master
                     self.nodes.append(line)
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes))

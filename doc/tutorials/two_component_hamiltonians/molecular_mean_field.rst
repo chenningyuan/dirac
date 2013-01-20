@@ -3,15 +3,13 @@
 I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) - what do i need to consider?
 --------------------------------------------------------------------------------------------------
 
-The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present (Dirac11
-release Nov 2011) **available** for the following methods:
+The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present **available** for the following methods:
 
 -  Coupled-Cluster
 -  Fock-space Coupled Cluster (including the intermediate Hamiltonian
    version)
 
-The remaining modules are **not supported** at the Dirac11 release date
-but patches are planned in the course of 2012:
+The remaining modules are **not supported** yet but patches are planned in the course of 2013:
 
 -  KR-MCSCF
 -  KR-CI
