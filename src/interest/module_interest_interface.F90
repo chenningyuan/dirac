@@ -56,11 +56,11 @@ MODULE MODULE_INTEREST_INTERFACE
 
   !> matrix dimensions
      !> note: by definition nrow, ncol refer to the number of cartesian GTOs
-     integer :: nshl = 1
-     integer :: nrow = 0
-     integer :: ncol = 0
-     integer :: nr_shells = 0 
-     real(8) :: screening_threshold = 1.d-15
+     integer, save :: nshl = 1
+     integer, save :: nrow = 0
+     integer, save :: ncol = 0
+     integer, save :: nr_shells = 0 
+     real(8), save :: screening_threshold = 1.d-15
   !> end
 
   !> definition of "constant" data type 
@@ -122,6 +122,7 @@ CONTAINS
 #include "dcbdhf.h"
 #include "nucdata.h"
 #include "dcbgen.h"
+#include "cbihr2.h"
 
     !> local variables
        integer :: i
@@ -192,9 +193,10 @@ CONTAINS
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
 
-       nrow      = sum( gto(:)%cdegen)
-       ncol      = sum( gto(:)%cdegen)
-       nr_shells = size(gto)
+       nrow                = sum( gto(:)%cdegen)
+       ncol                = sum( gto(:)%cdegen)
+       nr_shells           = size(gto)
+       screening_threshold = scrfck
 
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
@@ -801,8 +803,8 @@ CONTAINS
     enddo
 
     !> call core InteRest routine
-    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
-   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+   !call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+    call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
 
     !> data backward alignment 
     fsl = constant%alpha /2.0d0 
@@ -1370,32 +1372,15 @@ CONTAINS
     !> output
     complex(8), intent(out) :: dG(4,4,nrow,nrow) 
 
-!   !> local
-!   logical :: doK
-!   real(8) :: fijkl
-!   integer :: li, ni, oi   
-!   integer :: lj, nj, oj   
-!   integer :: lk, nk, ok   
-!   integer :: ll, nl, ol   
-!   integer :: nint, lmax
-!   integer :: i, j, k, l, ibas
-!   real(8) :: gout(441*441*25)    !todo
-!   integer :: nij, nkl, ij
-!   real(8) :: ei, ci, xi, yi, zi 
-!   real(8) :: ej, cj, xj, yj, zj 
-!   real(8) :: ek, ck, xk, yk, zk 
-!   real(8) :: el, cl, xl, yl, zl 
-
     !> local
     logical    :: doK
-    real(8)    :: Fc,Fx
     real(8)    :: a2, aa4
     real(8)    :: fij, fijkl
     integer    :: li, ni, oi   
     integer    :: lj, nj, oj   
     integer    :: lk, nk, ok   
     integer    :: ll, nl, ol   
-    integer    :: i, j, k, l, kl
+    integer    :: i, j, k, l
     real(8)    :: ei, ci, xi, yi, zi 
     real(8)    :: ej, cj, xj, yj, zj 
     real(8)    :: ek, ck, xk, yk, zk 
@@ -1410,6 +1395,7 @@ CONTAINS
     complex(8), allocatable :: dGi (:,:,:) 
     complex(8), allocatable :: dGj (:,:,:) 
 
+    real(8)              :: Fc(3),Fx(3)
     real(8), allocatable :: gmax(:,:,:)
     real(8), allocatable :: pmax(:,:,:,:)
     character(len=4)     :: eri_class_local
@@ -1421,7 +1407,7 @@ CONTAINS
     !> init for DFT
     doK = ( hfxfac /= 0.0d0 )
 
-    allocate(   dGij(4,4,21*21)     )   !todo: rozumnejsia definicia 
+    allocate(   dGij(4,4,21*21)  )   !todo: rozumnejsia definicia 
     if( doK )then
       allocate( dPi(4,4,21*nrow) )   !todo: rozumnejsia definicia 
       allocate( dPj(4,4,21*nrow) )   !todo: rozumnejsia definicia 
@@ -1432,7 +1418,6 @@ CONTAINS
     allocate( gmax(  2,nr_shells,nr_shells) )
     allocate( pmax(2,2,nr_shells,nr_shells) )
     call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
-
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -1487,90 +1472,89 @@ CONTAINS
                if( k==l )fijkl = fij*0.5d0 
        
                SELECT CASE( eri_class )
-                 CASE( 'llll' )
-                     eri_class_local = 'llll' 
-                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)), &
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i))  )
-                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)), &
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i))  )
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
-                 CASE( 'ssll' )
-                     eri_class_local = 'ssll' 
-                     !> llll
-                     Fc = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,&  
-                               (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
-                     Fx = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    &
-                               (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     )
-                     Fx=Fx*a2
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
-                     !> exit
-                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
-                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                !CASE( 'llll' )
+                !    eri_class_local = 'llll' 
+                !    Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)), &
+                !              (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i))  )
+                !    Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)), &
+                !              (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i))  )
+                !    if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                !CASE( 'ssll' )
+                !    eri_class_local = 'ssll' 
+                !    !> llll
+                !    Fc = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
+                !              (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
+                !              (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,&  
+                !              (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
+                !    Fx = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    &
+                !              (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
+                !              (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
+                !              (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     )
+                !    Fx=Fx*a2
+                !    if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
+                !    !> exit
+                !    Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
+                !              (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
+                !    Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
+                !              (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
+                !    if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
                  CASE( 'ssss' )
                      eri_class_local = 'ssss' 
                      !> ssll
-                     Fc = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),&
-                               (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,i)) ) 
-                     Fx = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,k)),&
-                               (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,i)) ) 
-                     Fc=Fc*aa4
-                     Fx=Fx*aa4
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='ssll'  
+                     Fc(1) = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),&
+                                  (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,i)) ) 
+                     Fx(1) = max( (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,j,k)),&
+                                  (gmax(2,i,j)*gmax(2,k,l)*pmax(2,2,l,i)) ) 
+                     Fc(1)=Fc(1)*aa4
+                     Fx(1)=Fx(1)*aa4
+                    !if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='ssll'  
                      !> llll
-                     Fc = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,& 
-                               (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
-                     Fx = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    & 
-                               (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
-                               (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     ) 
-                     Fx=Fx*a2
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
+                     Fc(2) = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(2,2,l,k)),    & 
+                                  (gmax(2,i,j)*gmax(1,k,l)*pmax(2,2,j,i)),    & 
+                                  (gmax(2,i,j)*gmax(1,k,l)*pmax(1,1,l,k))*aa4,& 
+                                  (gmax(1,i,j)*gmax(2,k,l)*pmax(1,1,j,i))*aa4 ) 
+                     Fx(2) = max( (gmax(1,i,j)*gmax(2,k,l)*pmax(1,2,j,k)),    & 
+                                  (gmax(1,i,j)*gmax(2,k,l)*pmax(2,1,l,i)),    & 
+                                  (gmax(2,i,j)*gmax(1,k,l)*pmax(2,1,j,k)),    & 
+                                  (gmax(2,i,j)*gmax(1,k,l)*pmax(1,2,l,i))     ) 
+                     Fx(2)=Fx(2)*a2
+                    !if( (Fc<screening_threshold).and.(Fx<screening_threshold) )eri_class_local='llll'
                      !> exit
-                     Fc = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
-                     Fx = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
-                               (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
-                     if( (Fc<screening_threshold).and.(Fx<screening_threshold) )cycle
+                     Fc(3) = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,k)),&
+                                  (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,i)) )
+                     Fx(3) = max( (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,j,k)),&
+                                  (gmax(1,i,j)*gmax(1,k,l)*pmax(1,1,l,i)) )
+                     if( (maxval(Fc)<screening_threshold).and.(maxval(Fx)<screening_threshold) )cycle
                  CASE DEFAULT; stop 'Error: the ERI class is not implemented yet => stop'
                END SELECT
 
                SELECT CASE( eri_class_local )
                  CASE( 'llll' )
-                     call interest_eri(.false.,          &
-                                       fijkl,gout,nint,  &
-                                       li,ei,xi,yi,zi,ci,&
-                                       lj,ej,xj,yj,zj,cj,&
-                                       lk,ek,xk,yk,zk,ck,&
-                                       ll,el,xl,yl,zl,cl )
-                     call process_dG_llll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
-                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                     write(6,*) 'stop: the LLLL-class not finished yet ...'
+                     call interest_eri_rkb('llll',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
+                                           ll,el,xl,yl,zl,cl )
+                     call process_dG_llll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                 &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG )
                  CASE( 'ssll' )
-                     call interest_eri(.true.,           &
-                                       fijkl,gout,nint,  &
-                                       li,ei,xi,yi,zi,ci,&
-                                       lj,ej,xj,yj,zj,cj,&
-                                       lk,ek,xk,yk,zk,ck,&
-                                       ll,el,xl,yl,zl,cl )
-                     call process_dG_ssll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
-                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                     write(6,*) 'stop: the SSLL-class not finished yet ...'
+                     call interest_eri_rkb('ssll',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
+                                           ll,el,xl,yl,zl,cl )
+                     call process_dG_ssll_4x(ni,nj,nk,nl,oi,oj,ok,ol,                 &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG )
                  CASE( 'ssss' ) 
-                     call interest_eri(.true.,           &
-                                       fijkl,gout,nint,  &
-                                       li,ei,xi,yi,zi,ci,&
-                                       lj,ej,xj,yj,zj,cj,&
-                                       lk,ek,xk,yk,zk,ck,&
-                                       ll,el,xl,yl,zl,cl )
-                     call process_dG_ssss_4x(ni,nj,nk,nl,oi,oj,ok,ol,                   &
-                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG)
+                     call interest_eri_rkb('ssss',fijkl,gout,&
+                                           li,ei,xi,yi,zi,ci,&
+                                           lj,ej,xj,yj,zj,cj,&
+                                           lk,ek,xk,yk,zk,ck,&
+                                           ll,el,xl,yl,zl,cl )
+                     call process_dG_ssss_4x(ni,nj,nk,nl,oi,oj,ok,ol,                 &
+                                             nrow,doK,gout,dGij,dPi,dPj,dGi,dGj,dP,dG )
                  CASE DEFAULT; stop 'Error: the ERI class is not implemented yet => stop'
                END SELECT
 
