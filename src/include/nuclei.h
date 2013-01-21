@@ -9,7 +9,7 @@
      &    NFLOAT, NBASIS, NLARGE, NSMALL, NPBAS, NPLRG, NPSML,          &
      &    NUCNET, INCENT(MXCENT), INUNIQ(MXCENT), NDEGNM(MXCENT),       &
      &    NAMFA, IAMFA(MXCENT), IATOMTYP(MXCENT),                       &
-     &    NONTYP, NONT(MXATOM), NBAS_ATOMTYPE(MXATOM,0:2),              & ! <--- atom type info
+     &    NONTYP, NONT(MXATOM), NBAS_ATOMTYPE(MXATOM,0:MXBSETS),        & ! <--- atom type info
      &    NBASISAUX, NPBASAUX, NAUX, NPAUX,                             & ! <--- density fitting basis info
      &    NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT,     &
      &    NPSML_FIT
