@@ -1065,6 +1065,9 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
+      use module_interest_interface,                                    &
+     &    only: initialize_interest_herd,                               &
+     &          process_two_electron_integrals_4comp_slaves 
       implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1202,6 +1205,16 @@ C
 C        start KR-MCSCF calculation.
 C
          CALL KRMC_NODE_DRIVER()
+      ELSE IF (ITASK .EQ. 8) THEN
+C
+C        initialize the InteRest two-electron MPI calculation
+C
+         call initialize_interest_herd 
+      ELSE IF (ITASK .EQ. 9) THEN
+C
+C        start the InteRest two-electron MPI calculation
+C
+         call process_two_electron_integrals_4comp_slaves 
 #endif /* VAR_MPI2 */
       ELSE
 C
