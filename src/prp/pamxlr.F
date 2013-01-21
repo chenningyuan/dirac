@@ -1583,13 +1583,13 @@ C
 ! if shielding_rearrange then here form: \kappa = \kappa - T:
       if (shielding_rearrange) then
         nlength=nxpar*ndamp*nfreq
-        call combine_kappa_T(xpo, nlength, nbtyp, rsplab)
+        call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
 C
 C     Print section
 C     -------------
 C
-      IF(IPRXLR.GE.3) THEN
+!gosia      IF(IPRXLR.GE.3) THEN
         IF(NFREQ.EQ.1) THEN
           WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
      &   '- part of solution vectors for one frequency:'
@@ -1600,7 +1600,7 @@ C
 CPP.....make space for complex case
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
-      ENDIF
+!gosia      ENDIF
 C
 C     Next form linear response functions
 C     ===================================

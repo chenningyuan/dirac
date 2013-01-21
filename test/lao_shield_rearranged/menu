@@ -1,10 +1,12 @@
 quick
-lao_shield_unchanged_nc.inp     h2o.mol
-lao_shield_unchanged_sc.inp     h2o.mol
-lao_shield_rearranged_nc.inp    h2o.mol
-lao_shield_rearranged_sc.inp    h2o.mol
-lao_shield_lr_rearranged.inp    h2o.mol
+lao_shield_lr_rearranged.inp    co2_c1.mol
+lao_shield_lr_rearranged.inp    co2_d2h.mol
 
-lao_shield_unchanged_sc_16.inp     h2o.mol
-lao_shield_rearranged_sc_16.inp    h2o.mol
-lao_shield_lr_rearranged_16.inp    h2o.mol
+lao_shield_rearranged_sc.inp    co2_c1.mol
+lao_shield_rearranged_sc.inp    co2_d2h.mol
+lao_shield_rearranged_nc.inp    co2_c1.mol
+lao_shield_rearranged_nc.inp    co2_d2h.mol
+
+lao_shield_unchanged_sc.inp    co2_c1.mol
+lao_shield_unchanged_sc.inp    co2_d2h.mol
+

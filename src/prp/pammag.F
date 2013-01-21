@@ -1130,7 +1130,6 @@ C  ... in gp/gpsaue.F
         CALL FLSHFO(LUPRI)
       ENDIF
 CTROND
-      !gosiaSTOP 'End of GETMDM'    
       CALL QEXIT('GETMDM')
       RETURN
       END

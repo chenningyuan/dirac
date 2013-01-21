@@ -228,15 +228,6 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
-! in lao_lr_rearrange take only 'ai' blocks:
-      if (lao_lr_rearrange) then
-        ee = .true.
-        ep = .true.
-        if (xlr_skipep .or. .not. doeprn) ep = .false.
-        if (xlr_skipee) ee = .false.
-        call get_m_ai(tb, ee, ep)
-      end if
-
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
 ! *) how many components:
@@ -252,7 +243,7 @@ contains
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
 
-      debug_me = .false.
+      debug_me = .true.
       if (debug_me) then
          write(lupri, *) 'T^B in MO basis,icomp = ', icomp
          write(lupri, *) 'isym,iopsy = ', isym(icomp),iopsy(icomp)
@@ -261,9 +252,19 @@ contains
                      nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
+! in lao_lr_rearrange take only 'ai' blocks:
+      if (lao_lr_rearrange) then
+        ee = .true.
+        ep = .true.
+        if (xlr_skipep .or. .not. doeprn) ep = .false.
+        if (xlr_skipee) ee = .false.
+        call get_m_ai(tb, ee, ep)
+      end if
+
+
 ! get final result to buf
 
-!      call dzero(buf, n2orbxq)
+      call dzero(buf, n2orbxq)
 
 !     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
 !     it is set in getfck
