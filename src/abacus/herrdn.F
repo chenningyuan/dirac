@@ -2485,8 +2485,7 @@ C
         NTPRIM(ISET) = 0
         NTBAS(ISET)  = 0
       ENDDO
-      NBAS_ATOMTYPE(1:NONTYP,0:2) = 0
-
+      NBAS_ATOMTYPE(1:NONTYP,0:mxbsets) = 0
       DO 100 I = 1,NONTYP
 C
          NUCLEI_IN_TYPE = 0

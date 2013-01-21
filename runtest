@@ -102,7 +102,7 @@ group.add_option('--mpi',
                  type='int',
                  action='store',
                  dest='mpi',
-                 default=1,
+                 default=None,
                  help='set number of cores [default: %default]',
                  metavar='INTEGER')
 parser.add_option_group(group)
@@ -528,7 +528,7 @@ class run:
          if program_is_dalton:
              launcher_flags += '-nobackup '
              launcher_flags += '-noarch '
-         if options.mpi > 1:
+         if options.mpi:
              launcher_flags += '--mpi=%i ' % options.mpi
          self.launcher_flags = launcher_flags
 
