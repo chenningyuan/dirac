@@ -40,9 +40,14 @@
 
 MODULE MODULE_INTEREST_INTERFACE
 
+#ifdef VAR_MPI
+  use mpi
+#endif
+
   implicit none
 
   public initialize_interest 
+  public initialize_interest_herd 
   public process_overlap_integrals_2comp 
   public process_overlap_integrals_4comp 
   public process_two_electron_integrals_4comp
@@ -52,6 +57,8 @@ MODULE MODULE_INTEREST_INTERFACE
   public process_nuclear_attraction_integrals_2comp
   public process_nuclear_attraction_integrals_4comp
 
+  public process_two_electron_integrals_4comp_slaves
+
   private
 
   !> matrix dimensions
@@ -60,7 +67,7 @@ MODULE MODULE_INTEREST_INTERFACE
      integer, save :: nrow = 0
      integer, save :: ncol = 0
      integer, save :: nr_shells = 0 
-     real(8), save :: screening_threshold = 1.d-15
+     real(8), save :: screening_threshold = 1.d-20
   !> end
 
   !> definition of "constant" data type 
@@ -94,6 +101,7 @@ MODULE MODULE_INTEREST_INTERFACE
      type type_gto
           integer :: index
           integer :: offset
+          integer :: worker
           integer :: lvalue
           integer :: origin
           integer :: sdegen 
@@ -129,13 +137,10 @@ CONTAINS
        integer :: j
        integer :: ij
        integer :: ier
+       integer :: nr_cpus 
        type( type_gto ) :: tmpgto
     !> end
   
-
-    !> initialize InteRest integral package 
-       call interest_initialize()
-    !> end
 
     !> test if the large component basis is uncontracted
        if( nplrg.ne.nlarge )then
@@ -170,6 +175,7 @@ CONTAINS
            i=i+1
            gto(i) = type_gto( ij,                      &
                               ij,                      &
+                              0,                       &
                               nhkt(i),                 &
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
@@ -180,23 +186,28 @@ CONTAINS
            ij=ij+(nhkt(i)*(nhkt(i)+1))/2
          enddo
        enddo
+#ifdef VAR_MPI
+       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
+       do i=1,size(gto),nr_cpus    
+         do j=0,nr_cpus-1
+           if( i+j>size(gto) )exit
+           gto(i+j)%worker = j
+         enddo
+       enddo
+#endif
     !> end
 
     !> temporary print ... 
        do i=1,size(gto)
-         write(6,'(1x,5(a,i3,3x),3(a,d15.5,3x))') ' i = ',i,                             &
+         write(6,'(1x,6(a,i3,3x),2(a,d15.5,3x))') ' i = ',i,                             &
                                                   ' index  = ',     gto(i)%index,        &
                                                   ' offset = ',     gto(i)%offset,       &
+                                                  ' worker = ',     gto(i)%worker,       &
                                                   ' lvalue = ',     gto(i)%lvalue,       &
                                                   ' origin = ',     gto(i)%origin,       &
                                                   ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
-
-       nrow                = sum( gto(:)%cdegen)
-       ncol                = sum( gto(:)%cdegen)
-       nr_shells           = size(gto)
-       screening_threshold = scrfck
 
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
@@ -204,6 +215,139 @@ CONTAINS
        write(6,'(2x,a,i5,a)') 'Total number of cartesian basis functions:',sum(gto(:)%cdegen),' (used in InteRest calculations)'
        write(6,*) 
     !> end
+
+    !> global module variables
+    nshl                = 1
+    nrow                = sum( gto(:)%cdegen)
+    ncol                = sum( gto(:)%cdegen)
+    nr_shells           = size(gto)
+    if( scrfck > 0.0d0 ) screening_threshold = scrfck
+
+
+#ifdef VAR_MPI
+    call dirac_parctl( 8 ) 
+#endif
+
+    call initialize_interest_herd
+
+  END SUBROUTINE
+
+
+
+! ------------------------------------------------------------------------------------
+!> 
+  SUBROUTINE initialize_interest_herd()
+
+#ifdef VAR_MPI
+    !> local MPI related variables
+    integer :: i,ier, nr_atoms, myrank
+    integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
+    integer                        :: blocklen(9), typex(9)
+    integer                        :: newtype
+#endif
+  
+
+    !> initialize InteRest integral package 
+    call interest_initialize()
+
+#ifdef VAR_MPI
+    !> broadcast constants 
+       !> define the local absolute address of each element within a derived data type
+       call mpi_get_address(constant%alpha, disp(1),ier)
+       call mpi_get_address(constant%alpha2,disp(2),ier)
+       !> define the basic data type of each element within a derived data type
+       typex(1:2) = mpi_real8
+       !> define the length of each element within a derived data type
+       blocklen(1:2) = 1
+       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
+       disp(2) = disp(2) - disp(1) 
+       disp(1) = disp(1) - disp(1) 
+       !> create a MPI derived data type structure
+       call mpi_type_create_struct(2,blocklen,disp,typex,newtype,ier)
+       call mpi_type_commit(newtype,ier)
+       call mpi_bcast(constant,1,newtype,0,mpi_comm_world,ier)
+       call mpi_type_free(newtype,ier)
+    !> end
+
+    !> broadcast atom 
+       if( allocated(atom) ) nr_atoms = size(atom)
+       call mpi_bcast(nr_atoms,1,mpi_integer,0,mpi_comm_world,ier)
+       if( .not. allocated(atom) ) allocate( atom(nr_atoms), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
+       !> define the local absolute address of each element within a derived data type
+       call mpi_get_address(atom(1)%charge,      disp(1),ier)
+       call mpi_get_address(atom(1)%coordinate_x,disp(2),ier)
+       call mpi_get_address(atom(1)%coordinate_y,disp(3),ier)
+       call mpi_get_address(atom(1)%coordinate_z,disp(4),ier)
+       call mpi_get_address(atom(1)%gnu_exponent,disp(5),ier)
+       !> define the basic data type of each element within a derived data type
+       typex(1:5) = mpi_real8
+       !> define the length of each element within a derived data type
+       blocklen(1:5) = 1
+       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
+       disp(5) = disp(5) - disp(1) 
+       disp(4) = disp(4) - disp(1) 
+       disp(3) = disp(3) - disp(1) 
+       disp(2) = disp(2) - disp(1) 
+       disp(1) = disp(1) - disp(1) 
+       !> create a MPI derived data type structure
+       call mpi_type_create_struct(5,blocklen,disp,typex,newtype,ier)
+       call mpi_type_commit(newtype,ier)
+       call mpi_bcast(atom,nr_atoms,newtype,0,mpi_comm_world,ier)
+       call mpi_type_free(newtype,ier)
+    !> end
+
+    !> broadcast gto 
+       if( allocated(gto) ) nr_shells = size(gto)
+       call mpi_bcast(nr_shells,1,mpi_integer,0,mpi_comm_world,ier)
+       if( .not. allocated(gto) ) allocate( gto(nr_shells), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
+       !> define the local absolute address of each element within a derived data type
+       call mpi_get_address(gto(1)%index,         disp(1),ier)
+       call mpi_get_address(gto(1)%offset,        disp(2),ier)
+       call mpi_get_address(gto(1)%worker,        disp(3),ier)
+       call mpi_get_address(gto(1)%lvalue,        disp(4),ier)
+       call mpi_get_address(gto(1)%origin,        disp(5),ier)
+       call mpi_get_address(gto(1)%sdegen,        disp(6),ier)
+       call mpi_get_address(gto(1)%cdegen,        disp(7),ier)
+       call mpi_get_address(gto(1)%exponent(1),   disp(8),ier)
+       call mpi_get_address(gto(1)%coefficient(1),disp(9),ier)
+       !> define the basic data type of each element within a derived data type
+       typex(8:9) = mpi_real8
+       typex(1:7) = mpi_integer
+       !> define the length of each element within a derived data type
+       blocklen(1:9) = 1
+       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
+       disp(9) = disp(9) - disp(1) 
+       disp(8) = disp(8) - disp(1) 
+       disp(7) = disp(7) - disp(1) 
+       disp(6) = disp(6) - disp(1) 
+       disp(5) = disp(5) - disp(1) 
+       disp(4) = disp(4) - disp(1) 
+       disp(3) = disp(3) - disp(1) 
+       disp(2) = disp(2) - disp(1) 
+       disp(1) = disp(1) - disp(1) 
+       !> create a MPI derived data type structure
+       call mpi_type_create_struct(9,blocklen,disp,typex,newtype,ier)
+       call mpi_type_commit(newtype,ier)
+       call mpi_bcast(gto,nr_shells,newtype,0,mpi_comm_world,ier)
+       call mpi_type_free(newtype,ier)
+    !> end
+
+    !> final broadcasting (global module variables)
+       call mpi_bcast(nshl,               1,mpi_integer,0,mpi_comm_world,ier)
+       call mpi_bcast(nrow,               1,mpi_integer,0,mpi_comm_world,ier)
+       call mpi_bcast(ncol,               1,mpi_integer,0,mpi_comm_world,ier)
+       call mpi_bcast(screening_threshold,1,mpi_real8,  0,mpi_comm_world,ier)
+    !> end
+
+    !> test printing
+       call mpi_comm_rank( mpi_comm_world, myrank, ier )
+       do i=1,size(gto)
+         if( myrank /= gto(i)%worker )cycle
+         write(6,*) ' Rank = ',myrank,gto(i)%exponent(1),gto(i)%lvalue
+       enddo
+      !call mpi_abort( mpi_comm_world, 1, ier )
+    !> end 
+#endif
 
   END SUBROUTINE
 
@@ -753,7 +897,7 @@ CONTAINS
     real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
-    integer :: i, j
+    integer :: i, j, ier
     real(8) :: fll, fsl, fss 
 
     complex(8), allocatable :: dP(:,:,:,:)
@@ -802,9 +946,21 @@ CONTAINS
       enddo
     enddo
 
-    !> call core InteRest routine
-   !call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+#ifdef VAR_MPI
+    !> send the AO-density matrix
+    call dirac_parctl( 9 ) 
+    call mpi_bcast( eri_class, 4,            mpi_character,      0, mpi_comm_world, ier )
+    call mpi_bcast( hfxfac,    1,            mpi_real8,          0, mpi_comm_world, ier )
+    call mpi_bcast( dP,        16*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
+#endif
+
+    !> call core InteRest routine (sequential part)
     call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+
+#ifdef VAR_MPI
+    !> collect the final two-electron Fock matrix
+    call mpi_reduce( mpi_in_place, dG, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+#endif
 
     !> data backward alignment 
     fsl = constant%alpha /2.0d0 
@@ -836,6 +992,42 @@ CONTAINS
 
     deallocate( dP )
     deallocate( dG )
+
+  END SUBROUTINE
+
+
+
+! ------------------------------------------------------------------------------------
+!> 
+  SUBROUTINE process_two_electron_integrals_4comp_slaves( ) 
+
+    !> slave local
+    integer :: ier
+    real(8) :: hfxfac
+    character(len=4) :: eri_class
+    
+    complex(8), allocatable :: dP(:,:,:,:)
+    complex(8), allocatable :: dG(:,:,:,:)
+
+
+#ifdef VAR_MPI
+    allocate( dP(4,4,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
+    allocate( dG(4,4,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
+
+    !> receive the AO-density matrix
+    call mpi_bcast( eri_class, 4,            mpi_character,      0, mpi_comm_world, ier )
+    call mpi_bcast( hfxfac,    1,            mpi_real8,          0, mpi_comm_world, ier )
+    call mpi_bcast( dP,        16*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
+
+    !> call core InteRest routine (sequential part)
+    call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+
+    !> send the two-electron Fock matrix of a particular slave upwards to the master
+    call mpi_reduce( dG, mpi_in_place, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+
+    deallocate( dP )
+    deallocate( dG )
+#endif
 
   END SUBROUTINE
 
@@ -1395,6 +1587,8 @@ CONTAINS
     complex(8), allocatable :: dGi (:,:,:) 
     complex(8), allocatable :: dGj (:,:,:) 
 
+    integer              :: ierr 
+    integer              :: myrank=0
     real(8)              :: Fc(3),Fx(3)
     real(8), allocatable :: gmax(:,:,:)
     real(8), allocatable :: pmax(:,:,:,:)
@@ -1419,7 +1613,12 @@ CONTAINS
     allocate( pmax(2,2,nr_shells,nr_shells) )
     call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
 
+#ifdef VAR_MPI
+    call mpi_comm_rank(mpi_comm_world,myrank,ierr)
+#endif
+
  iloop:do i=1,nr_shells
+         if( myrank /= gto(i)%worker )cycle
          li =       gto(i)%lvalue
          oi =       gto(i)%offset
          ni =       gto(i)%cdegen
@@ -1561,8 +1760,8 @@ CONTAINS
              enddo lloop
            enddo kloop
 
-           if( doK ) call add_dG_exchange( dG, nrow,         oj, nj, dGj, hfxfac  )
-                     call add_dG_coulomb ( dG, nrow, oi, ni, oj, nj, dGij         )
+                     call add_dG_coulomb ( dG, nrow, oi, ni, oj, nj, dGij        )
+           if( doK ) call add_dG_exchange( dG, nrow,         oj, nj, dGj, hfxfac )
 
          enddo jloop
 
