@@ -243,7 +243,7 @@ contains
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
 
-      debug_me = .true.
+      debug_me = .false.
       if (debug_me) then
          write(lupri, *) 'T^B in MO basis,icomp = ', icomp
          write(lupri, *) 'isym,iopsy = ', isym(icomp),iopsy(icomp)

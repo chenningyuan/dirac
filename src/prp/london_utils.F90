@@ -241,7 +241,7 @@ contains
         call quit('error in combine_kappa_T')
      end if
 
-     debug_me = .true.
+     debug_me = .false.
      if (debug_me) then
         write(*, *) 'combine_kappa_T: solution vector for operator = ', lab1
         write(*, *) 'which class of rotations: ee, ep = ', ee, ep
@@ -366,30 +366,30 @@ contains
      integer :: iz, is, iq, iqsym(nz), i, s, ih
      real(8) :: factor, f
 
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'matrix_to_vector'
+        call prqmat(matrix, norbt, norbt, norbt, norbt, nz,  &
+                    ipqtoq(1,irep), lupri)
+     end if
 
-     write(*, *) 'matrix_to_vector'
-     call prqmat(matrix, norbt, norbt, norbt, norbt, nz,  &
-                 ipqtoq(1,irep), lupri)
+     !ih = -1
+     !do iz = 1, nz
 
-     ih = -1
-     do iz = 1, nz
+     !   iq = ipqtoq(iz, irep)
+     !   iqsym(iz) = ihqmat(iq, ih)
 
-        iq = ipqtoq(iz, irep)
-        iqsym(iz) = ihqmat(iq, ih)
-
-     end do
-
-    !call qgetam(matrix, norbt, nz, norbt, norbt, iqsym)
+     !end do
 
     do iz = 1, nz
 
-        if (iqsym(iz) == 2) then
-           factor = -1.0d0
-        else if (iqsym(iz) == 1) then
-           factor = 1.0d0
-        else
-           write(*, *) 'error in matrix_to_vector'
-        end if
+        !if (iqsym(iz) == 2) then
+        !   factor = -1.0d0
+        !else if (iqsym(iz) == 1) then
+        !   factor = 1.0d0
+        !else
+        !   write(*, *) 'error in matrix_to_vector'
+        !end if
 
         if (ipqtoq(iz, irep) > 1) then
           f = -1.0
@@ -400,7 +400,6 @@ contains
         do is = 1, length
            i = orbital_rotation_indices(1, is)
            s = orbital_rotation_indices(2, is)
-           !vector(is, iz) = -f*factor*matrix(s, i, iz)
            vector(is, iz) = -f*matrix(s, i, iz)
         end do
      end do
@@ -485,76 +484,6 @@ contains
                         i, orbital_rotation_indices(1, i), orbital_rotation_indices(2, i) 
         end do
      end if
-
-  end subroutine
-
-
-
-  subroutine collect_matrix_to_vector(length,         &
-                            orbital_rotation_indices, &
-             !               ih,                        &
-                            vector,                   &
-                            matrix,                   &
-                            irep, iqsym)
-
-!   subroutine "opposite" to scatter_vector in openrsp/openrsp_interface_response.F90
-!   it makes a vector from a matrix
-!   it takes indices from orbital_rotation_indices 
-!   ----------------------------------------------------------------------------
-    integer, intent(in)  :: length
-    integer, intent(in)  :: orbital_rotation_indices(2, length)
-   ! integer, intent(in)  :: ih
-    real(8), intent(out) :: vector(length, nz)
-    real(8), intent(in)  :: matrix(norbt, norbt, nz)
-    integer, intent(in)  :: irep, iqsym(nz)
-!   ----------------------------------------------------------------------------
-    integer              :: i, s, is, iz
-    real(8)              :: f, h
-!   ----------------------------------------------------------------------------
-
-    debug_me = .false.
-    if (debug_me) then
-      write(*, *) 'collect_matrix_to_vector: matrix, irep, ipqtoq(1, irep) =', irep, ipqtoq(1, irep)
-      call prqmat(matrix, norbt, norbt, norbt, norbt, nz,  &
-                  ipqtoq(1,irep), lupri)
-    end if
-
-    do iz = 1, nz
-
-!      there are symmetric and antisymmetric blocks:
-       if (iqsym(iz) == 2) then
-         h = -1.0d0
-       else if (iqsym(iz) == 1) then
-         h = 1.0d0
-       end if
-
-       if (ipqtoq(iz, irep) > 1) then
-         f = -1.0d0
-       else
-         f =  1.0d0
-       end if
-
-       do is = 1, length
-
-          i = orbital_rotation_indices(1, is)
-          s = orbital_rotation_indices(2, is)
-
-          vector(is, iz) = -f*h*matrix(s, i, iz) 
-
-
-!          matrix(s,i,iz) = vector(is, iz)
-
-!          matrix(i,s,iz) = -f*h*vector(is, iz)
-
-      end do
-    end do
- 
-    debug_me = .false.
-    if (debug_me) then
-      write(*, *) 'collect_matrix_to_vector: vector'
-      call prqmat(vector, length, 1, length, 1, nz,  &
-                  ipqtoq(1,irep), lupri)
-    end if
 
   end subroutine
 
