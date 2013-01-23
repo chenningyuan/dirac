@@ -3382,8 +3382,10 @@ C       =============================================================
         imat = 1
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
-          NPSH(IFRP)  = NFORB(IFRP,1)
-          NORB(IFRP)  = NESH(IFRP)    * 2
+!         NPSH(IFRP)  = NFORB(IFRP,1)
+!         NORB(IFRP)  = NESH(IFRP)    * 2
+          NPSH(IFRP)  = NFORB(IFRP,2)
+          NORB(IFRP)  = NESH(IFRP)    + NPSH(IFRP)
           NTMO(IFRP)  = NORB(IFRP)
           lMAT        = NFBAS(ifrp,0)*NORB(ifrp)*NZ
           call resort_mdirac_vmat(tmat(imat),vmat(imat),

@@ -112,6 +112,10 @@ MODULE MODULE_INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
+  !> mpi
+     integer, save, allocatable :: task_list_mpi(:)
+  !> end
+
 CONTAINS
 
 
@@ -137,7 +141,6 @@ CONTAINS
        integer :: j
        integer :: ij
        integer :: ier
-       integer :: nr_cpus 
        type( type_gto ) :: tmpgto
     !> end
   
@@ -186,15 +189,6 @@ CONTAINS
            ij=ij+(nhkt(i)*(nhkt(i)+1))/2
          enddo
        enddo
-#ifdef VAR_MPI
-       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
-       do i=1,size(gto),nr_cpus    
-         do j=0,nr_cpus-1
-           if( i+j>size(gto) )exit
-           gto(i+j)%worker = j
-         enddo
-       enddo
-#endif
     !> end
 
     !> temporary print ... 
@@ -240,7 +234,8 @@ CONTAINS
 
 #ifdef VAR_MPI
     !> local MPI related variables
-    integer :: i,ier, nr_atoms, myrank
+    integer :: cpu, nr_cpus 
+    integer :: i, j, ij, ier, nr_atoms
     integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
     integer                        :: blocklen(9), typex(9)
     integer                        :: newtype
@@ -284,11 +279,9 @@ CONTAINS
        !> define the length of each element within a derived data type
        blocklen(1:5) = 1
        !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(5) = disp(5) - disp(1) 
-       disp(4) = disp(4) - disp(1) 
-       disp(3) = disp(3) - disp(1) 
-       disp(2) = disp(2) - disp(1) 
-       disp(1) = disp(1) - disp(1) 
+       do i=5,1,-1
+         disp(i) = disp(i) - disp(1) 
+       enddo
        !> create a MPI derived data type structure
        call mpi_type_create_struct(5,blocklen,disp,typex,newtype,ier)
        call mpi_type_commit(newtype,ier)
@@ -301,14 +294,14 @@ CONTAINS
        call mpi_bcast(nr_shells,1,mpi_integer,0,mpi_comm_world,ier)
        if( .not. allocated(gto) ) allocate( gto(nr_shells), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
        !> define the local absolute address of each element within a derived data type
-       call mpi_get_address(gto(1)%index,         disp(1),ier)
-       call mpi_get_address(gto(1)%offset,        disp(2),ier)
-       call mpi_get_address(gto(1)%worker,        disp(3),ier)
-       call mpi_get_address(gto(1)%lvalue,        disp(4),ier)
-       call mpi_get_address(gto(1)%origin,        disp(5),ier)
-       call mpi_get_address(gto(1)%sdegen,        disp(6),ier)
-       call mpi_get_address(gto(1)%cdegen,        disp(7),ier)
-       call mpi_get_address(gto(1)%exponent(1),   disp(8),ier)
+       call mpi_get_address(gto(1)%index,         disp(1), ier)
+       call mpi_get_address(gto(1)%offset,        disp(2), ier)
+       call mpi_get_address(gto(1)%worker,        disp(3), ier)
+       call mpi_get_address(gto(1)%lvalue,        disp(4), ier)
+       call mpi_get_address(gto(1)%origin,        disp(5), ier)
+       call mpi_get_address(gto(1)%sdegen,        disp(6), ier)
+       call mpi_get_address(gto(1)%cdegen,        disp(7), ier)
+       call mpi_get_address(gto(1)%exponent(1),   disp(8), ier)
        call mpi_get_address(gto(1)%coefficient(1),disp(9),ier)
        !> define the basic data type of each element within a derived data type
        typex(8:9) = mpi_real8
@@ -316,15 +309,9 @@ CONTAINS
        !> define the length of each element within a derived data type
        blocklen(1:9) = 1
        !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(9) = disp(9) - disp(1) 
-       disp(8) = disp(8) - disp(1) 
-       disp(7) = disp(7) - disp(1) 
-       disp(6) = disp(6) - disp(1) 
-       disp(5) = disp(5) - disp(1) 
-       disp(4) = disp(4) - disp(1) 
-       disp(3) = disp(3) - disp(1) 
-       disp(2) = disp(2) - disp(1) 
-       disp(1) = disp(1) - disp(1) 
+       do i=9,1,-1
+         disp(i) = disp(i) - disp(1) 
+       enddo
        !> create a MPI derived data type structure
        call mpi_type_create_struct(9,blocklen,disp,typex,newtype,ier)
        call mpi_type_commit(newtype,ier)
@@ -339,14 +326,21 @@ CONTAINS
        call mpi_bcast(screening_threshold,1,mpi_real8,  0,mpi_comm_world,ier)
     !> end
 
-    !> test printing
-       call mpi_comm_rank( mpi_comm_world, myrank, ier )
-       do i=1,size(gto)
-         if( myrank /= gto(i)%worker )cycle
-         write(6,*) ' Rank = ',myrank,gto(i)%exponent(1),gto(i)%lvalue
+    !> creating a simple eri task list
+       allocate( task_list_mpi(nr_shells*(nr_shells+1)/2), stat=ier )
+       if( ier.ne.0 )stop ' Error in allocation: task_list_mpi(:)'
+       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
+       ij =1
+       cpu=1
+       do i=1,nr_shells
+         do j=1,i
+           if( cpu > nr_cpus )cpu=1
+           task_list_mpi(ij)=cpu-1  
+           ij =ij +1
+           cpu=cpu+1
+         enddo
        enddo
-      !call mpi_abort( mpi_comm_world, 1, ier )
-    !> end 
+    !> end
 #endif
 
   END SUBROUTINE
@@ -1002,7 +996,7 @@ CONTAINS
   SUBROUTINE process_two_electron_integrals_4comp_slaves( ) 
 
     !> slave local
-    integer :: ier
+    integer :: ier, i
     real(8) :: hfxfac
     character(len=4) :: eri_class
     
@@ -1578,7 +1572,7 @@ CONTAINS
     real(8)    :: ek, ck, xk, yk, zk 
     real(8)    :: el, cl, xl, yl, zl 
 
-    integer    :: nint
+    integer    :: ij, nint
     real(8)    :: gout(441*441*25)    !todo: rozumnejsia definicia
  
     complex(8), allocatable :: dGij(:,:,:) 
@@ -1614,11 +1608,11 @@ CONTAINS
     call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
 
 #ifdef VAR_MPI
+    ij = 0
     call mpi_comm_rank(mpi_comm_world,myrank,ierr)
 #endif
 
  iloop:do i=1,nr_shells
-         if( myrank /= gto(i)%worker )cycle
          li =       gto(i)%lvalue
          oi =       gto(i)%offset
          ni =       gto(i)%cdegen
@@ -1639,6 +1633,11 @@ CONTAINS
            yj = atom( gto(j)%origin )%coordinate_y
            zj = atom( gto(j)%origin )%coordinate_z
            cj =       gto(j)%coefficient(1)
+
+#ifdef VAR_MPI
+          ij=ij+1
+          if( myrank /= task_list_mpi(ij) )cycle
+#endif
 
                      fij = 1.0d0 
            if( i==j )fij = 0.5d0
