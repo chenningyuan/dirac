@@ -106,6 +106,7 @@ MODULE MODULE_INTEREST_INTERFACE
           integer :: origin
           integer :: sdegen 
           integer :: cdegen 
+          real(8) :: timing
           real(8) :: exponent(1)
           real(8) :: coefficient(1)
      end  type
@@ -180,6 +181,7 @@ CONTAINS
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
                               (nhkt(i)*(nhkt(i)+1))/2, &
+                              0.0d0,                   &
                               priexp(i),               &
                               priccf(i,j)              )
            !> note: cartesian indexation
@@ -205,6 +207,7 @@ CONTAINS
                                                   ' worker = ',     gto(i)%worker,       &
                                                   ' lvalue = ',     gto(i)%lvalue,       &
                                                   ' origin = ',     gto(i)%origin,       &
+                                                  ' timing   = ',   gto(i)%timing,       &
                                                   ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
@@ -241,8 +244,8 @@ CONTAINS
 #ifdef VAR_MPI
     !> local MPI related variables
     integer :: i,ier, nr_atoms, myrank
-    integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
-    integer                        :: blocklen(9), typex(9)
+    integer(kind=mpi_address_kind) :: disp(10)                      !mpi_address_kind is always = 8
+    integer                        :: blocklen(10), typex(10)
     integer                        :: newtype
 #endif
   
@@ -301,32 +304,34 @@ CONTAINS
        call mpi_bcast(nr_shells,1,mpi_integer,0,mpi_comm_world,ier)
        if( .not. allocated(gto) ) allocate( gto(nr_shells), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
        !> define the local absolute address of each element within a derived data type
-       call mpi_get_address(gto(1)%index,         disp(1),ier)
-       call mpi_get_address(gto(1)%offset,        disp(2),ier)
-       call mpi_get_address(gto(1)%worker,        disp(3),ier)
-       call mpi_get_address(gto(1)%lvalue,        disp(4),ier)
-       call mpi_get_address(gto(1)%origin,        disp(5),ier)
-       call mpi_get_address(gto(1)%sdegen,        disp(6),ier)
-       call mpi_get_address(gto(1)%cdegen,        disp(7),ier)
-       call mpi_get_address(gto(1)%exponent(1),   disp(8),ier)
-       call mpi_get_address(gto(1)%coefficient(1),disp(9),ier)
+       call mpi_get_address(gto(1)%index,         disp(1), ier)
+       call mpi_get_address(gto(1)%offset,        disp(2), ier)
+       call mpi_get_address(gto(1)%worker,        disp(3), ier)
+       call mpi_get_address(gto(1)%lvalue,        disp(4), ier)
+       call mpi_get_address(gto(1)%origin,        disp(5), ier)
+       call mpi_get_address(gto(1)%sdegen,        disp(6), ier)
+       call mpi_get_address(gto(1)%cdegen,        disp(7), ier)
+       call mpi_get_address(gto(1)%timing,        disp(8), ier)
+       call mpi_get_address(gto(1)%exponent(1),   disp(9), ier)
+       call mpi_get_address(gto(1)%coefficient(1),disp(10),ier)
        !> define the basic data type of each element within a derived data type
-       typex(8:9) = mpi_real8
-       typex(1:7) = mpi_integer
+       typex(8:10) = mpi_real8
+       typex(1:7)  = mpi_integer
        !> define the length of each element within a derived data type
-       blocklen(1:9) = 1
+       blocklen(1:10) = 1
        !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(9) = disp(9) - disp(1) 
-       disp(8) = disp(8) - disp(1) 
-       disp(7) = disp(7) - disp(1) 
-       disp(6) = disp(6) - disp(1) 
-       disp(5) = disp(5) - disp(1) 
-       disp(4) = disp(4) - disp(1) 
-       disp(3) = disp(3) - disp(1) 
-       disp(2) = disp(2) - disp(1) 
-       disp(1) = disp(1) - disp(1) 
+       disp(10) = disp(10) - disp(1) 
+       disp(9)  = disp(9)  - disp(1) 
+       disp(8)  = disp(8)  - disp(1) 
+       disp(7)  = disp(7)  - disp(1) 
+       disp(6)  = disp(6)  - disp(1) 
+       disp(5)  = disp(5)  - disp(1) 
+       disp(4)  = disp(4)  - disp(1) 
+       disp(3)  = disp(3)  - disp(1) 
+       disp(2)  = disp(2)  - disp(1) 
+       disp(1)  = disp(1)  - disp(1) 
        !> create a MPI derived data type structure
-       call mpi_type_create_struct(9,blocklen,disp,typex,newtype,ier)
+       call mpi_type_create_struct(10,blocklen,disp,typex,newtype,ier)
        call mpi_type_commit(newtype,ier)
        call mpi_bcast(gto,nr_shells,newtype,0,mpi_comm_world,ier)
        call mpi_type_free(newtype,ier)
@@ -902,6 +907,7 @@ CONTAINS
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
+    real(8),    allocatable :: timer(:)
 
     character(len=4) :: eri_class = 'ssss'
 
@@ -960,6 +966,19 @@ CONTAINS
 #ifdef VAR_MPI
     !> collect the final two-electron Fock matrix
     call mpi_reduce( mpi_in_place, dG, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+    allocate(timer(size(gto)))
+    do i = 1, size(gto)
+      timer(i) = gto(i)%timing
+    end do
+    !> send the shell timings of a particular slave upwards to the master
+    call mpi_reduce( mpi_in_place, timer, size(gto), mpi_real8, mpi_sum, 0, mpi_comm_world, ier )
+
+    do i = 1, size(gto)
+      write(6,*) ' timing for shell ',i,' on rank ',gto(i)%worker,' is ',timer(i),'s'
+    end do
+
+    deallocate( timer)
+  
 #endif
 
     !> data backward alignment 
@@ -1002,12 +1021,13 @@ CONTAINS
   SUBROUTINE process_two_electron_integrals_4comp_slaves( ) 
 
     !> slave local
-    integer :: ier
+    integer :: ier, i
     real(8) :: hfxfac
     character(len=4) :: eri_class
     
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
+    real(8),    allocatable :: timer(:)
 
 
 #ifdef VAR_MPI
@@ -1025,6 +1045,13 @@ CONTAINS
     !> send the two-electron Fock matrix of a particular slave upwards to the master
     call mpi_reduce( dG, mpi_in_place, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
 
+    allocate(timer(size(gto)))
+    do i = 1, size(gto)
+      timer(i) = gto(i)%timing
+    end do
+    !> send the shell timings of a particular slave upwards to the master
+    call mpi_reduce( timer, mpi_in_place, size(gto), mpi_real8, mpi_sum, 0, mpi_comm_world, ier )
+    deallocate( timer)
     deallocate( dP )
     deallocate( dG )
 #endif
@@ -1619,6 +1646,9 @@ CONTAINS
 
  iloop:do i=1,nr_shells
          if( myrank /= gto(i)%worker )cycle
+#ifdef VAR_MPI
+         gto(i)%timing = MPI_Wtime()
+#endif
          li =       gto(i)%lvalue
          oi =       gto(i)%offset
          ni =       gto(i)%cdegen
@@ -1767,6 +1797,9 @@ CONTAINS
 
          if( doK ) call add_dG_exchange( dG, nrow, oi, ni, dGi, hfxfac )
 
+#ifdef VAR_MPI
+         gto(i)%timing = MPI_Wtime() - gto(i)%timing
+#endif
        enddo iloop
     !> end
 
