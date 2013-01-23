@@ -106,7 +106,6 @@ MODULE MODULE_INTEREST_INTERFACE
           integer :: origin
           integer :: sdegen 
           integer :: cdegen 
-          real(8) :: timing
           real(8) :: exponent(1)
           real(8) :: coefficient(1)
      end  type
@@ -184,7 +183,6 @@ CONTAINS
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
                               (nhkt(i)*(nhkt(i)+1))/2, &
-                              0.0d0,                   &
                               priexp(i),               &
                               priccf(i,j)              )
            !> note: cartesian indexation
@@ -201,7 +199,6 @@ CONTAINS
                                                   ' worker = ',     gto(i)%worker,       &
                                                   ' lvalue = ',     gto(i)%lvalue,       &
                                                   ' origin = ',     gto(i)%origin,       &
-                                                  ' timing   = ',   gto(i)%timing,       &
                                                   ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
@@ -238,9 +235,9 @@ CONTAINS
 #ifdef VAR_MPI
     !> local MPI related variables
     integer :: cpu, nr_cpus 
-    integer :: i, j, ij, ier, nr_atoms, myrank
-    integer(kind=mpi_address_kind) :: disp(10)                      !mpi_address_kind is always = 8
-    integer                        :: blocklen(10), typex(10)
+    integer :: i, j, ij, ier, nr_atoms
+    integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
+    integer                        :: blocklen(9), typex(9)
     integer                        :: newtype
 #endif
   
@@ -282,11 +279,9 @@ CONTAINS
        !> define the length of each element within a derived data type
        blocklen(1:5) = 1
        !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(5) = disp(5) - disp(1) 
-       disp(4) = disp(4) - disp(1) 
-       disp(3) = disp(3) - disp(1) 
-       disp(2) = disp(2) - disp(1) 
-       disp(1) = disp(1) - disp(1) 
+       do i=5,1,-1
+         disp(i) = disp(i) - disp(1) 
+       enddo
        !> create a MPI derived data type structure
        call mpi_type_create_struct(5,blocklen,disp,typex,newtype,ier)
        call mpi_type_commit(newtype,ier)
@@ -306,27 +301,19 @@ CONTAINS
        call mpi_get_address(gto(1)%origin,        disp(5), ier)
        call mpi_get_address(gto(1)%sdegen,        disp(6), ier)
        call mpi_get_address(gto(1)%cdegen,        disp(7), ier)
-       call mpi_get_address(gto(1)%timing,        disp(8), ier)
-       call mpi_get_address(gto(1)%exponent(1),   disp(9), ier)
-       call mpi_get_address(gto(1)%coefficient(1),disp(10),ier)
+       call mpi_get_address(gto(1)%exponent(1),   disp(8), ier)
+       call mpi_get_address(gto(1)%coefficient(1),disp(9),ier)
        !> define the basic data type of each element within a derived data type
-       typex(8:10) = mpi_real8
-       typex(1:7)  = mpi_integer
+       typex(8:9) = mpi_real8
+       typex(1:7) = mpi_integer
        !> define the length of each element within a derived data type
-       blocklen(1:10) = 1
+       blocklen(1:9) = 1
        !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(10) = disp(10) - disp(1) 
-       disp(9)  = disp(9)  - disp(1) 
-       disp(8)  = disp(8)  - disp(1) 
-       disp(7)  = disp(7)  - disp(1) 
-       disp(6)  = disp(6)  - disp(1) 
-       disp(5)  = disp(5)  - disp(1) 
-       disp(4)  = disp(4)  - disp(1) 
-       disp(3)  = disp(3)  - disp(1) 
-       disp(2)  = disp(2)  - disp(1) 
-       disp(1)  = disp(1)  - disp(1) 
+       do i=9,1,-1
+         disp(i) = disp(i) - disp(1) 
+       enddo
        !> create a MPI derived data type structure
-       call mpi_type_create_struct(10,blocklen,disp,typex,newtype,ier)
+       call mpi_type_create_struct(9,blocklen,disp,typex,newtype,ier)
        call mpi_type_commit(newtype,ier)
        call mpi_bcast(gto,nr_shells,newtype,0,mpi_comm_world,ier)
        call mpi_type_free(newtype,ier)
@@ -339,11 +326,10 @@ CONTAINS
        call mpi_bcast(screening_threshold,1,mpi_real8,  0,mpi_comm_world,ier)
     !> end
 
-    !> creating an eri task list
+    !> creating a simple eri task list
        allocate( task_list_mpi(nr_shells*(nr_shells+1)/2), stat=ier )
        if( ier.ne.0 )stop ' Error in allocation: task_list_mpi(:)'
        call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
-call mpi_comm_rank( mpi_comm_world, myrank, ier )
        ij =1
        cpu=1
        do i=1,nr_shells
@@ -352,7 +338,6 @@ call mpi_comm_rank( mpi_comm_world, myrank, ier )
            task_list_mpi(ij)=cpu-1  
            ij =ij +1
            cpu=cpu+1
-if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',task_list_mpi(ij) 
          enddo
        enddo
     !> end
@@ -911,7 +896,6 @@ if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
-    real(8),    allocatable :: timer(:)
 
     character(len=4) :: eri_class = 'ssss'
 
@@ -970,19 +954,6 @@ if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',
 #ifdef VAR_MPI
     !> collect the final two-electron Fock matrix
     call mpi_reduce( mpi_in_place, dG, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
-    allocate(timer(size(gto)))
-    do i = 1, size(gto)
-      timer(i) = gto(i)%timing
-    end do
-    !> send the shell timings of a particular slave upwards to the master
-    call mpi_reduce( mpi_in_place, timer, size(gto), mpi_real8, mpi_sum, 0, mpi_comm_world, ier )
-
-   !do i = 1, size(gto)
-   !  write(6,*) ' timing for shell ',i,' on rank ',gto(i)%worker,' is ',timer(i),'s'
-   !end do
-
-    deallocate( timer)
-  
 #endif
 
     !> data backward alignment 
@@ -1031,7 +1002,6 @@ if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',
     
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
-    real(8),    allocatable :: timer(:)
 
 
 #ifdef VAR_MPI
@@ -1049,13 +1019,6 @@ if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',
     !> send the two-electron Fock matrix of a particular slave upwards to the master
     call mpi_reduce( dG, mpi_in_place, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
 
-    allocate(timer(size(gto)))
-    do i = 1, size(gto)
-      timer(i) = gto(i)%timing
-    end do
-    !> send the shell timings of a particular slave upwards to the master
-    call mpi_reduce( timer, mpi_in_place, size(gto), mpi_real8, mpi_sum, 0, mpi_comm_world, ier )
-    deallocate( timer)
     deallocate( dP )
     deallocate( dG )
 #endif
