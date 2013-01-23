@@ -893,7 +893,10 @@ contains
                                                ndim,           &
                                                nr_entries,     &
                                                fh,             &
-                                               print_lvl)
+                                               print_lvl,      &
+                                               loop_read,      &
+                                               loop_factor     &
+                                              )
 !**********************************************************************
 !
 !    purpose: read the 4c-Fock operator matrix elements (in SA-AO basis) 
@@ -906,6 +909,8 @@ contains
      integer,           intent(in)    :: nr_entries
      integer,           intent(in)    :: fh
      integer,           intent(in)    :: print_lvl
+     logical, optional  intent(in)    :: loop_read
+     real(8), optional  intent(in)    :: loop_factor(0:nr_entries-1)
      real(8),           intent(out)   :: xmat(ndim * nr_entries)
 !----------------------------------------------------------------------
      integer                          :: ndim_check
@@ -934,7 +939,16 @@ contains
          call quit('*** error in read_fock_matrices_saao_basis_x2c: mismatch of fock matrix dimensions.')
        end if
 
-       read(fh) xmat
+       if(.not.present(loop_read) .or. .not.loop_read)then
+         read(fh) xmat
+       else
+         offset = 1
+         do i = 1, nr_entries
+           call readt(fh,ndim,xmat(offset+(i-1)*ndim))
+           if(i > 1) call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat(1),1)
+           offset = offset + ndim
+         end do
+       end if
 
   end subroutine read_fock_matrices_saao_basis_x2c
 
@@ -1249,7 +1263,7 @@ contains
 !    purpose: retain only two-electron spin-orbit elements in 2-el Fock matrix
 !
 !**********************************************************************
-     real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
+     real(8), intent(inout)   :: Gmat(nrow,ncol,4)
      integer, intent(in)      :: nrow
      integer, intent(in)      :: ncol
      integer, intent(in)      :: nz
@@ -1260,10 +1274,8 @@ contains
 !      check dimensionalities
        if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
  
-       if(nrow /= ncol) stop '2-el Fock matrix is not in MDIRAC format'
-
 !      take out scalar parts
-       do j=1,nrow
+       do j=1,ncol
          do i=1,nrow
            !> quaternion(0) 
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll

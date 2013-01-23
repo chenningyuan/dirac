@@ -228,6 +228,7 @@ contains
            file_name_1e_fock_matrix   = 'DFFCK1'
            file_name_2e_fock_matrices = 'DFFCK2'
            x2c_prep_bnccorr           = .false.
+           x2c_dfopen(0:mxopen)       = df(0:mxopen)
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3

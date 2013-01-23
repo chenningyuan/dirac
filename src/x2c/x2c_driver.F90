@@ -388,6 +388,7 @@ contains
                                  x2c_prep_bnccorr,              &
                                  x2c_1e_system,                 &
                                  x2c_is_defining_h1mat,         &
+                                 x2c_dfopen,                    &
                                  nr_2e_fock_matrices,           &
                                  file_name_1e_fock_matrix,      &
                                  file_name_2e_fock_matrices,    &

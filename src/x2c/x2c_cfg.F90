@@ -34,6 +34,7 @@ module x2cmod_cfg
   integer, parameter, public :: x2c_lowdin_scrF =  99    ! file unit for scratch file containing the 4c-Lowdin matrix
   integer, parameter, public :: x2c_famfi       =  77
   integer, parameter, public :: x2c_mxatom      =  20    ! keep in syc with mxatom in mxcent.h
+  integer, parameter, public :: x2c_mxopen      =  10    ! keep in syc with mxopne in dcbdhf.h
   integer, parameter, public :: x2c_mxcent      =  300   ! keep in syc with mxcent in mxcent.h
 
 ! character block
@@ -41,26 +42,27 @@ module x2cmod_cfg
   character (len=6), public :: file_name_2e_fock_matrices = 'undef '
 
 ! logical block
-  logical, public :: x2cmod_x2c              =  .false.
-  logical, public :: x2cmod_fragment_x2c     =  .false.
-  logical, public :: x2cmod_debug            =  .false.
-  logical, public :: x2cmod_h1dirty          =  .false.
-  logical, public :: x2c_linsym              =  .false.
-  logical, public :: x2c_prep_bnccorr        =  .false.
-  logical, public :: x2c_do_spherical        =  .false.
-  logical, public :: x2c_free_part_mtx_defh1 =  .false.
-  logical, public :: x2c_1e_system           =  .false.
-  logical, public :: x2c_4c_fock_mtx_defh1   =  .false.
-  logical, public :: x2c_mdirac              =  .false. ! .true. if MDIRAC in DIRAC is active
-  logical, public :: x2c_spinfree            =  .false. ! .true. if spinfree in DIRAC is active
-  logical, public :: x2cmod_mmf              =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
-  logical, public :: x2c_2c_mmf_mos          =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
-                                                        ! but i think it's much nicer (more intuitive name for programmers) 
-                                                        ! to have this logical on the outside of the X2Cmod - stefan, may 2011
-  logical, public :: x2c_fock_saao_basis     =  .false.
+  logical, public :: x2cmod_x2c                       =  .false.
+  logical, public :: x2cmod_fragment_x2c              =  .false.
+  logical, public :: x2cmod_debug                     =  .false.
+  logical, public :: x2cmod_h1dirty                   =  .false.
+  logical, public :: x2c_linsym                       =  .false.
+  logical, public :: x2c_prep_bnccorr                 =  .false.
+  logical, public :: x2c_do_spherical                 =  .false.
+  logical, public :: x2c_free_part_mtx_defh1          =  .false.
+  logical, public :: x2c_1e_system                    =  .false.
+  logical, public :: x2c_4c_fock_mtx_defh1            =  .false.
+  logical, public :: x2c_mdirac                       =  .false. ! .true. if MDIRAC in DIRAC is active
+  logical, public :: x2c_spinfree                     =  .false. ! .true. if spinfree in DIRAC is active
+  logical, public :: x2cmod_mmf                       =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
+  logical, public :: x2c_2c_mmf_mos                   =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
+                                                                 ! but i think it's much nicer (more intuitive name for programmers) 
+                                                                 ! to have this logical on the outside of the X2Cmod - stefan, may 2011
+  logical, public :: x2c_fock_saao_basis              =  .false.
 
 ! real(8) block
-  real(8), public :: x2c_cspeed
+  real(8), public :: x2c_cspeed                       = 0.0d0
+  real(8), public :: x2c_dfopen(0:x2c_mxopen)         = 0.0d0
 
 ! integer block
   integer, public :: x2c_prt                          =  0 ! print level

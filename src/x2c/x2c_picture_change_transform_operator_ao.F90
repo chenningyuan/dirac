@@ -77,6 +77,7 @@ contains
                                    prep_bncorr,                  &
                                    is_1e_system,                 &
                                    defining_h1mat,               &
+                                   aoc_open_shell_factors,       &
                                    nr_2e_fock_matrices,          &
                                    file_name_1e_fock_matrix,     &
                                    file_name_2e_fock_matrices,   &
@@ -89,6 +90,7 @@ contains
 !             1e Dirac Hamiltonian.
 !
 !----------------------------------------------------------------------
+     real(8), intent(in)             :: aoc_open_shell_factors(0:nr_2e_fock_matrices-1)
      integer, intent(in)             :: naosh_ls
      integer, intent(in)             :: nr_ao_L
      integer, intent(in)             :: naosh_all(nfsym)
@@ -158,7 +160,6 @@ contains
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
 !      ---------------------------------------------------------
        if(defining_h1mat == 2 .and. .not. is_1e_system)then
-!#ifdef not_needed_at_all
          call pctrafo_fockmatrices_4cto2c_saao_bas(naosh_ls,                   &
                                                    nr_ao_L,                    &
                                                    naosh_all,                  &
@@ -169,21 +170,11 @@ contains
                                                    ioff_aomx,                  &
                                                    x2c_file_glb,               &
                                                    op_bs_to_fs,                &
+                                                   aoc_open_shell_factors,     &
                                                    nr_2e_fock_matrices,        &
                                                    file_name_1e_fock_matrix,   &
                                                    file_name_2e_fock_matrices, &
                                                    print_lvl)
-!#else
-!        the picture-change transformation of the 1e/2e-Fock matrices in AO basis
-!        is superfluous - for completeness we delete the files here.
-!        stefan - june 2011
-         open(99,file=file_name_2e_fock_matrices,status='old',form='unformatted',      &
-              access='sequential',action="readwrite",position='rewind')
-         close(99,status='delete')
-         open(99,file=file_name_1e_fock_matrix,status='old',form='unformatted',        &
-              access='sequential',action="readwrite",position='rewind')
-         close(99,status='delete')
-!#endif
        end if
 
 !      step 3: picture-change transform the list of 1e property operator
@@ -650,6 +641,7 @@ contains
                                                   ioff_aomx,                   &
                                                   x2c_file_glb,                &
                                                   op_bs_to_fs,                 &
+                                                  aoc_open_shell_factors,      &
                                                   nr_2e_fock_matrices,         &
                                                   file_name_1e_fock_matrix,    &
                                                   file_name_2e_fock_matrices,  &
@@ -671,6 +663,7 @@ contains
 !             basic equation applied in this subroutine: 
 !                      f_{2c}^++ = U+ * f_{4c} * U
 !----------------------------------------------------------------------
+     real(8), intent(in)            :: aoc_open_shell_factors(0:nr_2e_fock_matrices-1)
      integer, intent(in)            :: naosh_ls
      integer, intent(in)            :: nr_ao_L
      integer, intent(in)            :: naosh_all(nfsym)
@@ -734,14 +727,21 @@ contains
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &
                                               fh,                    &
-                                              print_lvl)
+                                              print_lvl,             &
+                                              print_lvl,             &
+                                              print_lvl              &
+                                             )
 
 !      debug print
        if(print_lvl > 2)then
          call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2',6)
        end if
 
-!      step 2b: perform the pct: f_2c^++ == U+ * f_4c * U
+!      step 2b: zero LL block from f^2_4c to avoid double counting of 2e-SOC in the LL block after the pct transformation
+!      ------------------------------------------------------------------------------------------------------------------
+       
+
+!      step 2c: perform the pct: f_2c^++ == U+ * f_4c * U
 !      --------------------------------------------------
 !              in : f_4c    --> scr_mat1; U --> pctmat
 !              out: f_2c^++ --> scr_mat1

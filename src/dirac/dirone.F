@@ -2852,6 +2852,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 .false.,
      &                                 onesys, 
      &                                 -1,
+     &                                 df,
      &                                 -1,
      &                                 'undef ',
      &                                 'undef ',
