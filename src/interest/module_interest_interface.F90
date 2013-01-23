@@ -113,6 +113,10 @@ MODULE MODULE_INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
+  !> mpi
+     integer, save, allocatable :: task_list_mpi(:)
+  !> end
+
 CONTAINS
 
 
@@ -138,7 +142,6 @@ CONTAINS
        integer :: j
        integer :: ij
        integer :: ier
-       integer :: nr_cpus 
        type( type_gto ) :: tmpgto
     !> end
   
@@ -188,15 +191,6 @@ CONTAINS
            ij=ij+(nhkt(i)*(nhkt(i)+1))/2
          enddo
        enddo
-#ifdef VAR_MPI
-       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
-       do i=1,size(gto),nr_cpus    
-         do j=0,nr_cpus-1
-           if( i+j>size(gto) )exit
-           gto(i+j)%worker = j
-         enddo
-       enddo
-#endif
     !> end
 
     !> temporary print ... 
@@ -243,7 +237,8 @@ CONTAINS
 
 #ifdef VAR_MPI
     !> local MPI related variables
-    integer :: i,ier, nr_atoms, myrank
+    integer :: cpu, nr_cpus 
+    integer :: i, j, ij, ier, nr_atoms, myrank
     integer(kind=mpi_address_kind) :: disp(10)                      !mpi_address_kind is always = 8
     integer                        :: blocklen(10), typex(10)
     integer                        :: newtype
@@ -344,14 +339,23 @@ CONTAINS
        call mpi_bcast(screening_threshold,1,mpi_real8,  0,mpi_comm_world,ier)
     !> end
 
-    !> test printing
-       call mpi_comm_rank( mpi_comm_world, myrank, ier )
-       do i=1,size(gto)
-         if( myrank /= gto(i)%worker )cycle
-         write(6,*) ' Rank = ',myrank,gto(i)%exponent(1),gto(i)%lvalue
+    !> creating an eri task list
+       allocate( task_list_mpi(nr_shells*(nr_shells+1)/2), stat=ier )
+       if( ier.ne.0 )stop ' Error in allocation: task_list_mpi(:)'
+       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
+call mpi_comm_rank( mpi_comm_world, myrank, ier )
+       ij =1
+       cpu=1
+       do i=1,nr_shells
+         do j=1,i
+           if( cpu > nr_cpus )cpu=1
+           task_list_mpi(ij)=cpu-1  
+           ij =ij +1
+           cpu=cpu+1
+if( myrank == 0 ) write(6,'(a,i10,a,i3)')  'Eri ij = ',ij, ' was assigned to: ',task_list_mpi(ij) 
+         enddo
        enddo
-      !call mpi_abort( mpi_comm_world, 1, ier )
-    !> end 
+    !> end
 #endif
 
   END SUBROUTINE
@@ -973,9 +977,9 @@ CONTAINS
     !> send the shell timings of a particular slave upwards to the master
     call mpi_reduce( mpi_in_place, timer, size(gto), mpi_real8, mpi_sum, 0, mpi_comm_world, ier )
 
-    do i = 1, size(gto)
-      write(6,*) ' timing for shell ',i,' on rank ',gto(i)%worker,' is ',timer(i),'s'
-    end do
+   !do i = 1, size(gto)
+   !  write(6,*) ' timing for shell ',i,' on rank ',gto(i)%worker,' is ',timer(i),'s'
+   !end do
 
     deallocate( timer)
   
@@ -1605,7 +1609,7 @@ CONTAINS
     real(8)    :: ek, ck, xk, yk, zk 
     real(8)    :: el, cl, xl, yl, zl 
 
-    integer    :: nint
+    integer    :: ij, nint
     real(8)    :: gout(441*441*25)    !todo: rozumnejsia definicia
  
     complex(8), allocatable :: dGij(:,:,:) 
@@ -1641,14 +1645,11 @@ CONTAINS
     call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
 
 #ifdef VAR_MPI
+    ij = 0
     call mpi_comm_rank(mpi_comm_world,myrank,ierr)
 #endif
 
  iloop:do i=1,nr_shells
-         if( myrank /= gto(i)%worker )cycle
-#ifdef VAR_MPI
-         gto(i)%timing = MPI_Wtime()
-#endif
          li =       gto(i)%lvalue
          oi =       gto(i)%offset
          ni =       gto(i)%cdegen
@@ -1669,6 +1670,11 @@ CONTAINS
            yj = atom( gto(j)%origin )%coordinate_y
            zj = atom( gto(j)%origin )%coordinate_z
            cj =       gto(j)%coefficient(1)
+
+#ifdef VAR_MPI
+          ij=ij+1
+          if( myrank /= task_list_mpi(ij) )cycle
+#endif
 
                      fij = 1.0d0 
            if( i==j )fij = 0.5d0
@@ -1797,9 +1803,6 @@ CONTAINS
 
          if( doK ) call add_dG_exchange( dG, nrow, oi, ni, dGi, hfxfac )
 
-#ifdef VAR_MPI
-         gto(i)%timing = MPI_Wtime() - gto(i)%timing
-#endif
        enddo iloop
     !> end
 
