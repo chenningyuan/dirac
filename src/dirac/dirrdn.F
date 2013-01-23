@@ -339,9 +339,10 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
-      LOGICAL   NOGENINP
+      LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
+#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
@@ -357,10 +358,11 @@ C
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
-C     Initialise NOGENINP
+C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP   = .FALSE.
+      USER_STOL  = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
       SKIP2E     = .FALSE.
@@ -369,7 +371,7 @@ C
       DOQJACO    = .FALSE.
       RKBIMP_PRJTHR = 1.0D-5
 C
-C     Look for 2c. Hamiltonians
+C     Look for 2c. Hamiltonians, MDIRAC and more
 C
       CALL HAMSCAN
 C
@@ -461,6 +463,7 @@ C&&&& PCMOUT: Write coefficients to formatted DFPCMO
   108    CONTINUE
 C&&& LINDEP: Thresholds for linear dependence (eigenvalues of overlap matrix)
             READ(LUCMD,*) STOL(1),STOL(2)
+            USER_STOL = .TRUE.
             GO TO 100
   109    CONTINUE
 C&&&& SPHTRA: Embed transformation to spherical harmonics in
@@ -536,6 +539,15 @@ ctec we require that it is a direct calculation
          IGTDIR = 1
          IDFLAG = 15
       ENDIF
+
+!     InteRest uses a different normalization of small component
+!     from Hermit, we must therefore correct STOL(2) in order to
+!     get the desired threshold for linear dependence in LOWDIN module.
+
+      if(mdirac .and. .not.USER_STOL)then
+!       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
+        STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
+      end if
 C
 C     Print section
 C     =============
