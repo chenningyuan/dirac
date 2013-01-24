@@ -14,5 +14,3 @@ test/*/compare
 test/list_of_tests
 diracrc
 .diracrc
-*/Makefile
-*/*/Makefile
