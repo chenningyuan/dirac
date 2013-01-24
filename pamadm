@@ -497,10 +497,8 @@ for directory in directories_with_sources:
         source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_include_files.append(source)
 
-# add binary_info.F90 unless
-# pamadm found them already
-if not 'src/gp/binary_info.F90' in list_of_free_fortran_sources:
-    list_of_free_fortran_sources.append('src/gp/binary_info.F90')
+# add binary_info.F90
+list_of_free_fortran_sources.append('${CMAKE_BINARY_DIR}/binary_info.F90')
 
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))

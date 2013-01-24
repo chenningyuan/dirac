@@ -68,11 +68,11 @@ include(BinaryInfo) # has to come after ConfigVersion
 
 add_custom_command(
     OUTPUT
-    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
+    ${PROJECT_BINARY_DIR}/fortran_interface.h
     DEPENDS
     gen_fortran_interface_h
     COMMAND
-    gen_fortran_interface_h > ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
+    gen_fortran_interface_h > ${PROJECT_BINARY_DIR}/fortran_interface.h
     )
 
 add_executable(
@@ -86,6 +86,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     ${PROJECT_BINARY_DIR}/unit-tests
+    ${PROJECT_BINARY_DIR}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -136,7 +137,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
 
 set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/src/include/fortran_interface.h
+    ${PROJECT_BINARY_DIR}/fortran_interface.h
     )
 add_custom_target(dirac_interfaces
     ALL

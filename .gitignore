@@ -3,8 +3,6 @@
 *.pyc
 *.r
 maintenance/delete_flags
-src/gp/binary_info.F90
-src/include/fortran_interface.h
 basis_dalton/*\*
 build*/*
 test/*/*out
