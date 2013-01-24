@@ -3,8 +3,6 @@
 *.pyc
 *.r
 maintenance/delete_flags
-DFCOEF
-PAMXVC
 src/gp/binary_info.F90
 basis_dalton/*\*
 build*/*
