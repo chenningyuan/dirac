@@ -2618,7 +2618,7 @@ C     Get total density matrix
 C
       CALL GENDEN(DSO,WORK(KCMO),1,IPRINT)
       IF (NASHT.GT.0) THEN
-         IF (NOPEN .GE. 1) THEN
+         IF (NOPEN > 1) THEN
             CALL QUIT('GETDSO only implemented for one open shell')
          END IF
          CALL MEMGET('REAL',KDVSO,N2BBASXQ,WORK,KFREE,LFREE)

@@ -2479,7 +2479,7 @@ C
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
-      NBAS_ATOMTYPE(1:NONTYP,0:2) = 0
+      NBAS_ATOMTYPE(1:NONTYP,0:mxbsets) = 0
       DO 100 I = 1,NONTYP
 C
 C        Convert information to a string that can be understood by the innocent user

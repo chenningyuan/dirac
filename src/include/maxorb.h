@@ -6,12 +6,10 @@
 ! MXPRIM = max number of symmetry independent primitive shells
 !  (e.g. a p shell contains 3 components)
 ! MXCORB = max total number of contracted functions = max NBASIS
-! MXBSETS = max number of basis sets (typically 4 : large comp., small comp. + 
-!           density fit sets for both)
 !
 !     IF you change any of these parameters you should do a "make depend"
 !     and then rebuild the program using the command "make".
 !
-      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
+      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT
       PARAMETER (MXSHEL = 3000,MXPRIM = 12000, MXCORB = 10000,          &
-     &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
+     &           MXORBT = MXCORB*(MXCORB+1)/2)
