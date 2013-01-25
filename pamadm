@@ -577,11 +577,6 @@ f = open('cmake/pamadm-generated/pamadm-flags', 'w')
 f.write(string.join(sys.argv[1:]))
 f.close()
 
-# generate basis set files containing "*"
-if sys.platform != "win32":
-    for f in glob.glob('basis_dalton/*-star'):
-        shutil.copy(f, string.replace(f, '-star', '*'))
-
 # get delete flags (used by make release)
 delete_flags = ''
 for module in dirac_modules:

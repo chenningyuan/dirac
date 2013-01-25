@@ -3,7 +3,6 @@
 *.pyc
 *.r
 maintenance/delete_flags
-basis_dalton/*\*
 build*/*
 test/*/*out
 test/*/compare
