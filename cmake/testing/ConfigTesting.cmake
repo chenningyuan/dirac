@@ -21,6 +21,6 @@ if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
     set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
 endif()
 
-include(TestsList)
+include(Tests)
 include(CTest)
 enable_testing()
