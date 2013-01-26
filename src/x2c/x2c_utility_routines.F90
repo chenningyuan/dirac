@@ -909,11 +909,11 @@ contains
      integer,           intent(in)    :: nr_entries
      integer,           intent(in)    :: fh
      integer,           intent(in)    :: print_lvl
-     logical, optional  intent(in)    :: loop_read
-     real(8), optional  intent(in)    :: loop_factor(0:nr_entries-1)
-     real(8),           intent(out)   :: xmat(ndim * nr_entries)
+     logical, optional                :: loop_read
+     real(8), optional                :: loop_factor(0:nr_entries-1)
+     real(8),           intent(inout) :: xmat(ndim * nr_entries)
 !----------------------------------------------------------------------
-     integer                          :: ndim_check
+     integer                          :: ndim_check, offset, i
      integer                          :: nr_entries_check
      character (len=74)               :: info_text
      character (len=72)               :: file_name

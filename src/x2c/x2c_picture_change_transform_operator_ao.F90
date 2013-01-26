@@ -728,8 +728,8 @@ contains
                                               nr_2e_fock_matrices,   &
                                               fh,                    &
                                               print_lvl,             &
-                                              print_lvl,             &
-                                              print_lvl              &
+                                              .true.,                &
+                                              aoc_open_shell_factors &
                                              )
 
 !      debug print
