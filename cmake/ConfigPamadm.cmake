@@ -17,7 +17,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
     endif()
 
     execute_process(
-        COMMAND python pamadm ${PAMADM_FLAGS} --builddir=${PROJECT_BINARY_DIR}
+        COMMAND python pamadm ${PAMADM_FLAGS}
         TIMEOUT 1
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_QUIET
