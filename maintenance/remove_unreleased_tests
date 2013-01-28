@@ -7,9 +7,10 @@ fi
 
 TEMPORARY_DIR=deleteme
 mkdir $TEMPORARY_DIR
-for dir in `cat $2/pamadm-generated/list_of_tests`; do
+for dir in `cat $1/test/list_of_tests`; do
     mv $1/test/$dir $TEMPORARY_DIR
 done
+mv $1/test/list_of_tests $TEMPORARY_DIR
 rm -rf $1/test/*
 mv $TEMPORARY_DIR/* $1/test
 rm -rf $TEMPORARY_DIR

@@ -1,3 +1,9 @@
+*.mod
+*.o
+*.pyc
+*.r
+maintenance/delete_flags
 build*/*
 test/*/*out
 test/*/compare
+test/list_of_tests

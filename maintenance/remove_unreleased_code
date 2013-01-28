@@ -18,7 +18,7 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
-delete_flags=`cat $2/pamadm-generated/delete_flags`
+delete_flags=`cat $SCRIPT_DIR/delete_flags`
 
 for file in `find $1 -type f`; do
     $SCRIPT_DIR/cppp.py $delete_flags $file

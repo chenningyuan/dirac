@@ -300,17 +300,16 @@ def setup_build_path(build_path, only_show_command):
     if args.show:
         return
     if os.path.isdir(build_path):
-        fname = os.path.join(build_path, 'CMakeCache.txt')
-        if os.path.exists(fname):
-            if not only_show_command:
-                if args.force:
+        if not only_show_command:
+            if args.force:
+                fname = os.path.join(build_path, 'CMakeCache.txt')
+                if os.path.exists(fname):
                     os.unlink(fname)
-                else:
-                    print('aborting setup - build directory %s which contains CMakeCache.txt' % build_path)
-                    print('exists already')
-                    print('you have two options: first remove it and then rerun setup')
-                    print('                      or force configuration with --force')
-                    sys.exit()
+            else:
+                print('aborting setup - build directory %s exists already' % build_path)
+                print('you have two options: first remove it and then rerun setup')
+                print('                      or force configuration with --force')
+                sys.exit()
     else:
         os.makedirs(build_path, 0755)
 
