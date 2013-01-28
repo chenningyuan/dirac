@@ -1,15 +1,15 @@
 if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
     # check whether all pamadm-generated files exist
-    if(EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Sources.cmake"      AND
-       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Definitions.cmake"  AND
-       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/IncludeFiles.cmake" AND
-       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Tests.cmake"        AND
-       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/pamadm-flags")
+    if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/SourcesList.cmake"      AND
+       EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/DefinitionsList.cmake"  AND
+       EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/IncludeFilesList.cmake" AND
+       EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/TestsList.cmake"        AND
+       EXISTS "${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags")
        # they exist, read previously used flags from "pamadm-flags"
-       file(READ ${PROJECT_BINARY_DIR}/pamadm-generated/pamadm-flags PAMADM_FLAGS)
+       file(READ ${CMAKE_SOURCE_DIR}/cmake/pamadm-generated/pamadm-flags PAMADM_FLAGS)
        # check for Windows
        if(PAMADM_FLAGS STREQUAL "")
-           message(FATAL_ERROR "No pamadm flags in ${PROJECT_BINARY_DIR}/pamadm-generated/pamadm-flags")
+           message(FATAL_ERROR "No pamadm flags in cmake/pamadm-generated/pamadm-flags")
        endif()
     else()
         # set flags to '-a'

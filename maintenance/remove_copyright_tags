@@ -5,24 +5,11 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
-for file in `find $1 -name "*.f90"`; do
-    grep -v copyright_start $file | grep -v copyright_end > deleteme
-    mv -f deleteme $file
-done
-
-for file in `find $1 -name "*.F90"`; do
-    grep -v copyright_start $file | grep -v copyright_end > deleteme
-    mv -f deleteme $file
-done
-
-for file in `find $1 -name "*.F"`; do
-    grep -v copyright_start $file | grep -v copyright_end > deleteme
-    mv -f deleteme $file
-done
-
-for file in `find $1 -name "*.c"`; do
-    grep -v copyright_start $file | grep -v copyright_end > deleteme
-    mv -f deleteme $file
+for suffix in '*.F90' '*.f90' '*.F' '*.c'; do
+    for file in `find $1 -name $suffix`; do
+        grep -v copyright_start $file | grep -v copyright_end > deleteme
+        mv -f deleteme $file
+    done
 done
 
 exit 0
