@@ -676,7 +676,7 @@ contains
      integer, intent(in)           :: ndim_x
      integer, intent(in)           :: ndim_y
      integer, intent(in)           :: nz
-     integer, intent(in)           :: ipq_off(4,0:7)
+     integer, intent(in)           :: ipq_off(4,*)
      integer, intent(in)           :: prntunit
      logical, optional, intent(in) :: lrlc_equal
      character(*), intent(in)      :: title
@@ -1279,24 +1279,6 @@ contains
          do i=1,nrow
            !> quaternion(0) 
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll
-           Gmat(i+nrow,j     ,1) = 0.0d0                 ! sl
-           Gmat(i     ,j+nrow,1) = 0.0d0                 ! sl
-           Gmat(i+nrow,j+nrow,1) = 0.0d0                 ! ss
-           !> quaternion(i) 
-           Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
-           Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) ! sl
-           Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) ! sl
-           Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) ! ss
-           !> quaternion(j) 
-           Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
-           Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) ! sl
-           Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) ! sl
-           Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) ! ss
-           !> quaternion(k) 
-           Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
-           Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) ! sl
-           Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) ! sl
-           Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) ! ss
          enddo
        enddo
 

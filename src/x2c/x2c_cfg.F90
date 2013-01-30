@@ -101,6 +101,7 @@ module x2cmod_cfg
   integer, public :: x2c_cb_pq_to_uq(4, 0:7)          =  0
   integer, public :: x2c_cb_uq_to_pq(4, 0:7)          =  0
   integer, public :: x2c_bs_to_fs(0:7, 2)             =  0
+  integer, public :: x2c_qdef(1:4)                    =  0
   integer, public :: x2c_tot_charge_for_mfsum         =  0
   integer, public :: fh_1int_4c                       =  0
   integer, public :: all_prp_op                       =  0

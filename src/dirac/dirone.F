@@ -2596,6 +2596,8 @@ C*****************************************************************************
       use x2c_fio
       use x2c_pct_mo_coefficients, only: 
      &    x2c_molecular_mean_field_mos
+      use x2c_cb_interface, only:
+     &    renew_x2c_cb_orb_shell_dim
       use quaternion_algebra
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -2846,6 +2848,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 iqtopq,
      &                                 iqmult,
      &                                 jqbas,
+     &                                 iqdef,
      &                                 i2basx,
      &                                 lux2c,
      &                                 lu1int,
@@ -2877,12 +2880,12 @@ C         2) do picture change transformation of integrals on AOPROPER
 
           else if(x2c)then
 
-!           put in an interface routine to be called inside x2c_driver
+!           todo: put in an interface routine to be called inside x2c_driver
             if(mdirac)then
               NZT = 1
               DO IFRP = 1,NFSYM
                 NESH(IFRP)  = NFORB(IFRP,1)
-                NPSH(IFRP)  = NFORB(IFRP,1)
+                NPSH(IFRP)  = NFORB(IFRP,2) ! check!!!
                 NORB(IFRP)  = NESH(IFRP)    * 2
                 NTMO(IFRP)  = NORB(IFRP)
               END DO
@@ -3142,8 +3145,23 @@ C
         call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
      &                                    work(kcmomat),work(kscratch),
      &                                    i2tmt,i2tmot,icmoq,ntmo,
-     &                                    nfbas,nesh,nz,nzt,nfsym,
+     &                                    nfbas(1,0),nfbas(1,1),nesh,nz,
+     &                                    nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
+          TWOCOMP = .TRUE.
+          RDINPC = .FALSE.
+          IPREAD = IPREAD - 5
+          CALL READIN(.FALSE.)
+          CALL SETDC1(IPREAD)
+!         set AO-labels for large components - in x2c_main initialized for large and small components
+          call getlab(ipread)
+          IPREAD = IPREAD + 5
+C.........reset NEWPRP to re-initialize AOPROPER
+          NEWPRP = .TRUE.
+          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+          CALL ONEGEN(WORK,LWORK)
+          call renew_x2c_cb_orb_shell_dim(3)
+
         else if(aoomod)then 
 #ifdef MOD_AOOSOC
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run

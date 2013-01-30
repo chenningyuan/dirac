@@ -381,6 +381,7 @@ contains
                                  x2c_cb_uq_to_pq,               &
                                  x2c_iqmult_trip_q,             &
                                  x2c_pointer_quat,              &
+                                 x2c_qdef,                      &
                                  ioff_aomat_x,                  &
                                  x2c_funit,                     &
                                  fh_1int_4c,                    &

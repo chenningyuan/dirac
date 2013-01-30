@@ -204,6 +204,7 @@ contains
          x2c_bs_irrep_mat(1:4, 0:7)       = irqmat(1:4, 0:7)
          x2c_iqmult_trip_q(1:4, 1:4, 1:4) = iqmult(1:4, 1:4, 1:4)
          x2c_pointer_quat_op(0:7)         = jm4pos(0:7)
+         x2c_qdef(1:4)                    = iqdef(1:4)
 
          fh_1int_4c = lu1int
          all_prp_op = nprps

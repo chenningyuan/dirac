@@ -70,6 +70,7 @@ contains
                                    iqp_off_in,                   &
                                    iqmult_trip_q,                &
                                    quat_pointer,                 &
+                                   qdef,                         &
                                    ioff_aomx,                    &
                                    x2c_file_glb,                 &
                                    int1_4c_file,                 &
@@ -106,6 +107,7 @@ contains
      integer, intent(in)             :: bs_irrep_mat(4,0:7)
      integer, intent(in)             :: iqmult_trip_q(4,4,4)
      integer, intent(in)             :: quat_pointer(0:7,2)
+     integer, intent(in)             :: qdef(4)
      integer, intent(in)             :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)             :: x2c_file_glb
      integer, intent(in)             :: int1_4c_file
@@ -179,6 +181,7 @@ contains
                                                    iqp_off_in,                 &
                                                    iqmult_trip_q,              &
                                                    quat_pointer,               &
+                                                   qdef,                       &
                                                    ioff_aomx,                  &
                                                    x2c_file_glb,               &
                                                    op_bs_to_fs,                &
@@ -187,6 +190,7 @@ contains
                                                    file_name_1e_fock_matrix,   &
                                                    file_name_2e_fock_matrices, &
                                                    print_lvl)
+!                                                  3)
        end if
 
 !      step 3: picture-change transform the list of 1e property operator
@@ -654,6 +658,7 @@ contains
                                                   iqp_off_in,                  &
                                                   iqmult_trip_q,               &
                                                   quat_pointer,                &
+                                                  qdef,                        &
                                                   ioff_aomx,                   &
                                                   x2c_file_glb,                &
                                                   op_bs_to_fs,                 &
@@ -694,6 +699,7 @@ contains
      integer, intent(in)            :: bs_irrep_mat(4,0:7)
      integer, intent(in)            :: iqmult_trip_q(4,4,4)
      integer, intent(in)            :: quat_pointer(0:7,2)
+     integer, intent(in)            :: qdef(4)
      integer, intent(in)            :: nr_2e_fock_matrices
      integer, intent(in)            :: print_lvl
      character (len=6), intent(in)  :: file_name_1e_fock_matrix
@@ -708,11 +714,14 @@ contains
      integer                        :: op_fer_rep
      integer                        :: ioff_pct_mat
      integer                        :: fh
+     integer                        :: nz_c1
      character (len=12)             :: flabel
 !**********************************************************************
 
+       nz_c1 = max(nz,4)
+
 !      allocate scratch matrices
-       allocate(scr_mat1(naosh_ls**2 * nz * nr_2e_fock_matrices))
+       allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices))
        scr_mat1 = 0
 
 !      !> read the 4c 2-electron fock matrices from file
@@ -749,7 +758,7 @@ contains
 
        call bstobu_no_work(scr_mat1,nz)
        
-       allocate(scr_mat2(naosh_ls**2 * nz))
+       allocate(scr_mat2(naosh_ls**2 * nz_c1))
        scr_mat2   = 0
 
 !      transform from SO-AO-basis to AO basis
@@ -768,14 +777,23 @@ contains
                      print_lvl)
        end do
 
+!      debug print
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat2,naosh_ls,naosh_ls,nz_c1,qdef,'x2c - 4cfock2-with SC',6)
+       end if
+
 !      take out LL-part and scalar-relativistic terms
        call make_two_e_fock_so_exclusive(                            &
                                          scr_mat2,                   & 
                                          naosh_ls,                   &
                                          naosh_ls,                   &
-                                         4                           &
+                                         nz_c1                       &
                                         )
 
+!      debug print
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat2,naosh_ls,naosh_ls,nz_c1,qdef,'x2c - 4cfock2-no SC',6)
+       end if
 
 !      transform from AO basis to SO-AO-basis
 !      -----------------------------------------
@@ -914,7 +932,7 @@ contains
                                               fh,                    &
                                               print_lvl              &
                                              )
-       close(fh,status='keep')
+       close(fh,status='delete')
 
 !      add 2e-part to 1e-Hamiltonian
 !      -----------------------------
