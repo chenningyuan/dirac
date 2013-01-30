@@ -2596,6 +2596,7 @@ C*****************************************************************************
       use x2c_fio
       use x2c_pct_mo_coefficients, only: 
      &    x2c_molecular_mean_field_mos
+      use quaternion_algebra
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
       use module_aoosoc_pfg
@@ -2840,7 +2841,11 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 nfbas(1,1),
      &                                 nfsym,
      &                                 nz,
+     &                                 irqmat,
      &                                 ipqtoq,
+     &                                 iqtopq,
+     &                                 iqmult,
+     &                                 jqbas,
      &                                 i2basx,
      &                                 lux2c,
      &                                 lu1int,

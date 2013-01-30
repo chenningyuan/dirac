@@ -65,7 +65,11 @@ contains
                                    naosh_L,                      &
                                    nfsym,                        &
                                    nz,                           &
+                                   bs_irrep_mat,                 &
                                    ipq_off_in,                   &
+                                   iqp_off_in,                   &
+                                   iqmult_trip_q,                &
+                                   quat_pointer,                 &
                                    ioff_aomx,                    &
                                    x2c_file_glb,                 &
                                    int1_4c_file,                 &
@@ -98,6 +102,10 @@ contains
      integer, intent(in)             :: nfsym
      integer, intent(in)             :: nz
      integer, intent(in)             :: ipq_off_in(4,0:7)
+     integer, intent(in)             :: iqp_off_in(4,0:7)
+     integer, intent(in)             :: bs_irrep_mat(4,0:7)
+     integer, intent(in)             :: iqmult_trip_q(4,4,4)
+     integer, intent(in)             :: quat_pointer(0:7,2)
      integer, intent(in)             :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)             :: x2c_file_glb
      integer, intent(in)             :: int1_4c_file
@@ -166,7 +174,11 @@ contains
                                                    naosh_L,                    &
                                                    nfsym,                      &
                                                    nz,                         &
+                                                   bs_irrep_mat,               &
                                                    ipq_off_in,                 &
+                                                   iqp_off_in,                 &
+                                                   iqmult_trip_q,              &
+                                                   quat_pointer,               &
                                                    ioff_aomx,                  &
                                                    x2c_file_glb,               &
                                                    op_bs_to_fs,                &
@@ -637,7 +649,11 @@ contains
                                                   naosh_L,                     &
                                                   nfsym,                       &
                                                   nz,                          &
+                                                  bs_irrep_mat,                &
                                                   ipq_off_in,                  &
+                                                  iqp_off_in,                  &
+                                                  iqmult_trip_q,               &
+                                                  quat_pointer,                &
                                                   ioff_aomx,                   &
                                                   x2c_file_glb,                &
                                                   op_bs_to_fs,                 &
@@ -671,9 +687,13 @@ contains
      integer, intent(in)            :: nfsym
      integer, intent(in)            :: nz
      integer, intent(in)            :: ipq_off_in(4,0:7)
+     integer, intent(in)            :: iqp_off_in(4,0:7)
      integer, intent(in)            :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: op_bs_to_fs(0:7,1:2)
+     integer, intent(in)            :: bs_irrep_mat(4,0:7)
+     integer, intent(in)            :: iqmult_trip_q(4,4,4)
+     integer, intent(in)            :: quat_pointer(0:7,2)
      integer, intent(in)            :: nr_2e_fock_matrices
      integer, intent(in)            :: print_lvl
      character (len=6), intent(in)  :: file_name_1e_fock_matrix
@@ -682,44 +702,21 @@ contains
      real(8), allocatable           :: scr_mat1(:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
-     integer                        :: i
-     integer                        :: j
-     integer                        :: fh
+     integer                        :: i, j
+     integer                        :: iq, ipq, iz, irepd
      integer                        :: fock_mat_offset
      integer                        :: op_fer_rep
      integer                        :: ioff_pct_mat
+     integer                        :: fh
      character (len=12)             :: flabel
 !**********************************************************************
 
-!      step 1: read the picture-change transformation matrix U in SA-AO basis from global file
-!      ---------------------------------------------------------------------------------------
-       j = 0
-       do i = 1, nfsym
-         j = j + naosh_all(i)*naosh_L(i)*nz
-       end do
-!      allocate pct-matrix
-       allocate(pctmat(j))
-       pctmat = 0
-
-!      initialize offset
-       ioff_pct_mat = 1
-       do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
-         call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
-         ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
-       end do
-
 !      allocate scratch matrices
        allocate(scr_mat1(naosh_ls**2 * nz * nr_2e_fock_matrices))
-       allocate(scr_mat2(naosh_ls**2 * nz))
-       scr_mat2   = 0
        scr_mat1 = 0
 
-!      step 2: transform the 2-electron fock matrices
-!      ----------------------------------------------
-
-!      step 2a: read the 4c 2-electron fock matrices from file
-!      -------------------------------------------------------
+!      !> read the 4c 2-electron fock matrices from file
+!      -------------------------------------------------
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
@@ -736,10 +733,99 @@ contains
        if(print_lvl > 2)then
          call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2',6)
        end if
+       !> end
 
-!      step 2b: zero LL block from f^2_4c to avoid double counting of 2e-SOC in the LL block after the pct transformation
-!      ------------------------------------------------------------------------------------------------------------------
+!      !> zero LL block from f^2_4c to avoid double counting of 2e-SOC in the LL block after the pct transformation
+!      ------------------------------------------------------------------------------------------------------------
+!
+!      insert quaternion phase factors
+!      ----------------------------------
+       if(nz < 4)then
+         do iz = 1, nz                                                
+           iq = ipq_off_in(iz,0)
+           call q2bphase('F',iq,1,scr_mat1(1+(naosh_ls*naosh_ls*(iz-1))))
+         end do           
+       end if
+
+       call bstobu_no_work(scr_mat1,nz)
        
+       allocate(scr_mat2(naosh_ls**2 * nz))
+       scr_mat2   = 0
+
+!      transform from SO-AO-basis to AO basis
+!      --------------------------------------
+!        in : h2_SO-AO -> scr_mat2
+!        out: h2_AO    -> scr_mat1
+       i       = op_bs_to_fs(0,1)
+       do iz = 1, 4
+         irepd = bs_irrep_mat(iz,0)
+         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+         ipq   = iqp_off_in(iq,0)
+         call mtsoao(scr_mat1(1+(naosh_ls*naosh_ls*(ipq-1))),    &
+                     scr_mat2(1+(naosh_ls*naosh_ls*(iz -1))),    &
+                     naosh_ls,                                   &
+                     irepd,                                      &
+                     print_lvl)
+       end do
+
+!      take out LL-part and scalar-relativistic terms
+       call make_two_e_fock_so_exclusive(                            &
+                                         scr_mat2,                   & 
+                                         naosh_ls,                   &
+                                         naosh_ls,                   &
+                                         4                           &
+                                        )
+
+
+!      transform from AO basis to SO-AO-basis
+!      -----------------------------------------
+!        in : h2_AO    -> scr_mat2
+!        out: h2_SO-A0 -> scr_mat1
+       scr_mat1 = 0.0d0
+       i        = op_bs_to_fs(0,1)
+       do iz = 1, 4
+         irepd  = bs_irrep_mat(iz,0)
+         iq     = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+         ipq    = iqp_off_in(iq,0)
+         call mtaoso(scr_mat2(1+(naosh_ls*naosh_ls*(iz-1))),     &
+                     scr_mat1(1+(naosh_ls*naosh_ls*(ipq-1))),    &
+                     naosh_ls,                                   &
+                     irepd,                                      &
+                     print_lvl)
+       end do
+
+!      transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+       call butobs_no_work(scr_mat1,nz)
+
+!      insert quaternion phase factors
+!      ----------------------------------
+       if(nz < 4)then
+         do iz = 1, nz                                                
+           iq = ipq_off_in(iz,0)
+           call q2bphase('F',iq,1,scr_mat1(1+(naosh_ls*naosh_ls*(iz-1))))
+         end do           
+       end if 
+       !> end
+
+!      !> read the picture-change transformation matrix U in SA-AO basis from global file
+!      ----------------------------------------------------------------------------------
+       j = 0
+       do i = 1, nfsym
+         j = j + naosh_all(i)*naosh_L(i)*nz
+       end do
+!      allocate pct-matrix
+       allocate(pctmat(j))
+       pctmat = 0
+
+!      initialize offset
+       ioff_pct_mat = 1
+       do i = 1, nfsym
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
+         call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
+         ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
+       end do
+       !> end
 
 !      step 2c: perform the pct: f_2c^++ == U+ * f_4c * U
 !      --------------------------------------------------
@@ -748,73 +834,7 @@ contains
 
        op_fer_rep = 0
 
-!      initialize offset for fock matrix array
-       fock_mat_offset = 1
-
-       do i = 1, nr_2e_fock_matrices
-
-         call perform_pct_saao_bas(scr_mat1(fock_mat_offset),    &
-                                   pctmat,                       &
-                                   scr_mat2,                     &
-                                   naosh_ls,                     &
-                                   nr_ao_L,                      &
-                                   naosh_all,                    &
-                                   naosh_L,                      &
-                                   nfsym,                        &
-                                   nz,                           &
-                                   ipq_off_in,                   &
-                                   ioff_aomx,                    &
-                                   op_fer_rep,                   &
-                                   op_bs_to_fs,                  &
-                                   .true.,                       &
-                                   print_lvl)
-
-!        keep track of correct offset
-         fock_mat_offset = fock_mat_offset + i * naosh_ls**2 * nz
-
-       end do
-
-!      step 2c: store the picture-change transformed fock matrices on file
-!      -------------------------------------------------------------------
-       call write_fock_matrices_saao_basis_x2c(scr_mat1,              &
-                                               naosh_ls**2*nz,        &
-                                               nr_2e_fock_matrices,   &
-                                               fh,                    &
-                                               print_lvl)
-       close(fh,status='keep')
-
-!      step 3: transform the 1-electron fock matrix
-!      --------------------------------------------
-
-!      step 2a: read the 4c 1-electron fock matrix from file
-!      -----------------------------------------------------
-       scr_mat1 = 0
-       scr_mat2 = 0
-       fh = 99
-       open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
-                                              naosh_ls**2*nz,        &
-                                              1,                     &
-                                              fh,                    &
-                                              print_lvl)
-
-!      debug print
-       if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock1',6)
-       end if
-
-!      step 3b: perform the pct: f_2c^++ == U+ * f_4c * U
-!      --------------------------------------------------
-!              in : f_4c    --> scr_mat1; U --> pctmat
-!              out: f_2c^++ --> scr_mat1
-
-       op_fer_rep = 0
-
-!      initialize offset for fock matrix array
-       fock_mat_offset = 1
-
-       call perform_pct_saao_bas(scr_mat1(fock_mat_offset),    &
+       call perform_pct_saao_bas(scr_mat1,                     &
                                  pctmat,                       &
                                  scr_mat2,                     &
                                  naosh_ls,                     &
@@ -830,14 +850,87 @@ contains
                                  .true.,                       &
                                  print_lvl)
 
-!      step 3c: store the picture-change transformed fock matrix on file
+!      step 2c: store the picture-change transformed fock matrix on file
 !      -----------------------------------------------------------------
+       call write_fock_matrices_saao_basis_x2c(scr_mat1,             &
+                                               nr_ao_L**2*nz,        &
+                                               1,                    &
+                                               fh,                   &
+                                               print_lvl)
+       close(fh,status='keep')
+
+!      !> transform the 1-electron fock matrix
+!      ---------------------------------------
+
+!      read the 4c 1-electron fock matrix from file
+!      --------------------------------------------
+       scr_mat1 = 0.0d0
+       scr_mat2 = 0.0d0
+       fh       = 99
+       open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
+       call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
+                                              naosh_ls**2*nz,        &
+                                              1,                     &
+                                              fh,                    &
+                                              print_lvl)
+
+       close(fh,status='keep')
+
+!      debug print
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock1',6)
+       end if
+
+!      perform the pct: f_2c^++ == U+ * f_4c * U
+!      -----------------------------------------
+!              in : f_4c    --> scr_mat1; U --> pctmat
+!              out: f_2c^++ --> scr_mat1
+
+       op_fer_rep = 0
+
+       call perform_pct_saao_bas(scr_mat1,                     &
+                                 pctmat,                       &
+                                 scr_mat2,                     &
+                                 naosh_ls,                     &
+                                 nr_ao_L,                      &
+                                 naosh_all,                    &
+                                 naosh_L,                      &
+                                 nfsym,                        &
+                                 nz,                           &
+                                 ipq_off_in,                   &
+                                 ioff_aomx,                    &
+                                 op_fer_rep,                   &
+                                 op_bs_to_fs,                  &
+                                 .true.,                       &
+                                 print_lvl)
+
+       fh = 99
+       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
+       call read_fock_matrices_saao_basis_x2c(scr_mat2,              &
+                                              nr_ao_L**2*nz,         &
+                                              1,                     &
+                                              fh,                    &
+                                              print_lvl              &
+                                             )
+       close(fh,status='keep')
+
+!      add 2e-part to 1e-Hamiltonian
+!      -----------------------------
+       call daxpy(nr_ao_L**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
+
+!      store the picture-change transformed 1e+2e fock matrix on file
+!      --------------------------------------------------------------
+       open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
        call write_fock_matrices_saao_basis_x2c(scr_mat1,              &
-                                               naosh_ls**2*nz,        &
+                                               nr_ao_L**2*nz,         &
                                                1,                     &
                                                fh,                    &
                                                print_lvl)
        close(fh,status='keep')
+       !> end
 
        deallocate(scr_mat2)
        deallocate(scr_mat1)

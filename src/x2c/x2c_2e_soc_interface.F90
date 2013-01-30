@@ -149,7 +149,6 @@ contains
                                    iqmult_trip_q,        &
                                    op_bs_to_fs,          &
                                    quat_pointer,         &
-                                   quat_pointer_op,      &
                                    cspeed,               &
                                    max_quant_num,        &
                                    nuclei_totnum,        &
@@ -493,7 +492,6 @@ contains
                                   iqmult_trip_q,         &
                                   op_bs_to_fs,           &
                                   quat_pointer,          &
-                                  quat_pointer_op,       &
                                   cspeed,                &
                                   max_quant_num,         &
                                   nuclei_totnum,         &
@@ -536,7 +534,6 @@ contains
      integer, intent(in)             :: bs_irrep_mat(4,0:7)
      integer, intent(in)             :: iqmult_trip_q(4,4,4)
      integer, intent(in)             :: quat_pointer(0:7,2)
-     integer, intent(in)             :: quat_pointer_op(0:7)
      integer, intent(in)             :: x2c_file_amf
      integer, intent(in)             :: x2c_file_glb
      integer, intent(in)             :: is_len_wrk

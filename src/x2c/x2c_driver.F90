@@ -376,7 +376,11 @@ contains
                                  nr_ao_l,                       &
                                  nr_fsym,                       &
                                  nr_quat,                       &
+                                 x2c_bs_irrep_mat,              &
                                  x2c_cb_pq_to_uq,               &
+                                 x2c_cb_uq_to_pq,               &
+                                 x2c_iqmult_trip_q,             &
+                                 x2c_pointer_quat,              &
                                  ioff_aomat_x,                  &
                                  x2c_funit,                     &
                                  fh_1int_4c,                    &
