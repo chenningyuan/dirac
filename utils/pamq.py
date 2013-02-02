@@ -74,7 +74,7 @@ class PamQVariables:
     self.is_serial=False
 
     self.nnodes=0  # must be configured 
-    self.proc_per_node=0 # must be configured 
+    self.proc_per_node=None # must be configured 
     self.mpi_procs=0 # calculated later as nnodes*proc_per_node
 
     # ... dirac tests 
@@ -124,16 +124,17 @@ class PamQVariables:
       print 'set_pam_mpi: extracted pam arguments:', self.pam_arguments
 
     # extend pam flags with the necessary -mpi arguments
-    self.mpi_procs=self.nnodes*self.proc_per_node
-    if self.mpi_procs==0:
-      print 'number of mpi_procs.eq.0!'
+    if self.proc_per_node:
+      self.mpi_procs=self.nnodes*self.proc_per_node
+    else: # set default - one mpi thread
+      self.mpi_procs=1
 
     if self.iprint >= 5:
       print 'set_pam_mpi: calculated # mpi=',self.mpi_procs
       print 'using self.nnodes=',self.nnodes
       print 'and self.proc_per_node=',self.proc_per_node
 
-    # ... add mpi stuff
+    # ... add mpi stuff, always ?
     self.pam_arguments=' --mpi='+str(self.mpi_procs)+self.pam_arguments
 
     if self.iprint >= 7:
@@ -183,7 +184,7 @@ class PamQVariables:
       print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF NODES !\n'
       error_exit=True 
 
-    if (self.proc_per_node>0) :
+    if self.proc_per_node:
       f.write('# ... default number of processors (CPU) per 1 node\n')
       f.write('PROCESSORS_PER_NODE='+str(self.proc_per_node)+'\n')
       print 'saved PROCESSORS_PER_NODE=',self.proc_per_node
@@ -370,12 +371,19 @@ def process_pbs_script():
 #
 #PBS -N %s''' % GlobalVars.job_name+str('\n')
 # continue...
-  s += '''\
+  if GlobalVars.proc_per_node:
+    s += '''\
 #
 # number nodes (NOTE: different from number of processors specified by -mpi pam flag !)
-# number of CPUs per node
+# plus number of CPUs per node
 #
 #PBS -l nodes='''+str(GlobalVars.nnodes)+''':ppn='''+str(GlobalVars.proc_per_node)+str('\n')
+  else:
+    s += '''\
+#
+# number nodes only (NOTE: different from number of processors specified by -mpi pam flag !)
+#
+#PBS -l nodes='''+str(GlobalVars.nnodes)+str('\n')
 #
 #   if the queue_name is specified in the input, add it
 #
@@ -864,7 +872,7 @@ def process_pamq_arguments():
                   help=queue_label,metavar="STRING")
 
   # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
-  if (int(GlobalVars.proc_per_node) <=0):
+  if GlobalVars.proc_per_node==None:
     queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)+'<= YOU MUST SET IT !'
   else:
     queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
