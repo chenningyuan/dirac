@@ -7,6 +7,8 @@
 ! Direct evaluation of two-electron integrals
 .DIRECT
 1 1 1
+.CVALUE
+1.0D3
 **INTEGRALS
 .PRINT
 1
@@ -17,9 +19,6 @@
 *TWOINT
 .SCREEN
 1.0D-16
-**GENERAL
-.CVALUE
-1.0D3
 **HAMILTONIAN
 .PRINT
 1
