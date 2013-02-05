@@ -1,0 +1,44 @@
+INTGRL
+BASIS
+daug-cc-pVDZ
+  LiH molecule ; r_exp=1.595710 A (NIST web-diatomic constants)
+  d-aug-cc-PVDZ basis 
+Atomtypes=2 Generators=2 Y X Angstrom
+Charge=3.0 Atoms=1 Spherical=true
+Li    0.0000000000        0.0000000000         1.597100000
+Charge=1.0 Atoms=1 Spherical=true
+H     0.00000000000        .0000000000         .0000000000
+
+**DALTON INPUT
+.RUN PROPERTIES
+**INTEGRALS
+.NUCMOD
+1
+**WAVE FUNCTIONS
+.HF
+!.MP2
+!.MCSCF
+*SCF INPUT
+.DOUBLY OCCUPIED
+2 0 0 0
+.THRESH
+1.0D-9
+*ORBITAL INPUT
+.NOSUPSYM
+**PROPERTIES
+!.GAUGEO
+! 0.00  0.00  0.00
+.PRINT
+3 
+!.NOLOND
+!.SHIELD
+.MAGNET
+*LINRES
+.PRINT
+3
+.THRESH
+1.0D-9
+.MAX IT
+100
+*END OF INPUT
+
