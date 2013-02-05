@@ -1,4 +1,3 @@
-INTGRL
 BASIS
 daug-cc-pVDZ
   LiH molecule ; r_exp=1.595710 A (NIST web-diatomic constants)
@@ -11,6 +10,8 @@ H     0.00000000000        .0000000000         .0000000000
 
 **DALTON INPUT
 .RUN PROPERTIES
+*MOLBAS
+.UNCONT
 **INTEGRALS
 .NUCMOD
 1
