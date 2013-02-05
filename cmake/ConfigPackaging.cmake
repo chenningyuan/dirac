@@ -101,7 +101,7 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     )
 
 include(CPack)
-include(IncludeFilesList)
+include(IncludeFiles)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
@@ -110,19 +110,20 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
         COMMAND rm     ${EXPORT_DIR}/sources.tar
         COMMAND rm -rf ${EXPORT_DIR}/build
-        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_code  ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_code  ${EXPORT_DIR} ${PROJECT_BINARY_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/basis                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/basis_dalton                 ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/basis_ecp                    ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_basis_sets       ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/test                         ${EXPORT_DIR}
-        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR} ${PROJECT_BINARY_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CMakeLists.txt               ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/COPYING                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CHANGELOG                    ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CTestConfig.cmake            ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
+        COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
