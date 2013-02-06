@@ -599,28 +599,30 @@ C     ITYPE = 9 : direct SCF (SO-basis)
 C     ITYPE = 2 : gradient
 C     ITYPE = 4 : (rs|**)-distributions
 C
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
-C       ... broadcast screening matrix
-        N2RED = NSYMBL*NSYMBL
-        CAll interface_mpi_BCAST(N2RED,1,MPARID,
-     &                 global_communicator)
-        CAll interface_mpi_bcast_r1_work_f77(DMRAO,N2RED*NDMAT,MPARID,
-     &                 global_communicator)
-        IF (ITYPE .EQ. 2) THEN
-           CAll interface_mpi_bcast_r1_work_f77(GABRAO,4*N2RED,MPARID,
-     &                    global_communicator)
-        ELSE
-           CAll interface_mpi_bcast_r1_work_f77(GABRAO,N2RED,MPARID,
-     &                    global_communicator)
+      IF(SCREEN.GT.-1.0D0) THEN
+        IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
+C         ... broadcast screening matrix
+          N2RED = NSYMBL*NSYMBL
+          CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &                   global_communicator)
+          CAll interface_mpi_bcast_r1_work_f77(DMRAO,N2RED*NDMAT,MPARID,
+     &                   global_communicator)
+          IF (ITYPE .EQ. 2) THEN
+             CAll interface_mpi_bcast_r1_work_f77(GABRAO,4*N2RED,MPARID,
+     &                      global_communicator)
+          ELSE
+             CAll interface_mpi_bcast_r1_work_f77(GABRAO,N2RED,MPARID,
+     &                      global_communicator)
+          END IF
         END IF
-      END IF
-      IF(ITYPE.EQ.9) THEN
-        N2RED = MAXSHL*MAXSHL
-        CAll interface_mpi_BCAST(N2RED,1,MPARID,
-     &                 global_communicator)
-        CAll interface_mpi_bcast_r1_work_f77(DMRSO,N2RED*NDMAT,MPARID,
-     &                 global_communicator)
-      END IF
+        IF(ITYPE.EQ.9) THEN
+          N2RED = MAXSHL*MAXSHL
+          CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &                   global_communicator)
+          CAll interface_mpi_bcast_r1_work_f77(DMRSO,N2RED*NDMAT,MPARID,
+     &                   global_communicator)
+        END IF
+      ENDIF
 #endif
       RETURN
       END
@@ -1416,36 +1418,35 @@ C
 
       call interface_mpi_bcast_l0(spinfr, 1, mparid,
      &               global_communicator)
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
-        CAll interface_mpi_BCAST(N2RED,1,MPARID,
-     &               global_communicator)
-        LDMRAO = NDMAT*N2RED
-        CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
-        CAll interface_mpi_BCAST(WORK(KDMRAO),LDMRAO,
+      KDMRAO = KFREE
+      KGABAO = KFREE
+      KDMRSO = KFREE
+      IF(SCREEN.GT.-1.0D0) THEN
+        IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
+          CAll interface_mpi_BCAST(N2RED,1,MPARID,
+     &                 global_communicator)
+          LDMRAO = NDMAT*N2RED
+          CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
+          CAll interface_mpi_BCAST(WORK(KDMRAO),LDMRAO,
+     &                 MPARID,global_communicator)
+          IF (ITYPE.EQ.2) THEN
+             CALL MEMGET('REAL',KGABAO,4*N2RED,WORK,KFREE,LFREE)
+             CAll interface_mpi_BCAST(WORK(KGABAO),4*N2RED,
+     &                    MPARID,global_communicator)
+          ELSE
+             CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
+             CAll interface_mpi_BCAST(WORK(KGABAO),N2RED,
+     &                    MPARID,global_communicator)
+          END IF
+        ENDIF
+        IF(ITYPE.EQ.9) THEN
+          CAll interface_mpi_BCAST(N2RED,1,
      &               MPARID,global_communicator)
-        IF (ITYPE.EQ.2) THEN
-           CALL MEMGET('REAL',KGABAO,4*N2RED,WORK,KFREE,LFREE)
-           CAll interface_mpi_BCAST(WORK(KGABAO),4*N2RED,
-     &                  MPARID,global_communicator)
-        ELSE
-           CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-           CAll interface_mpi_BCAST(WORK(KGABAO),N2RED,
-     &                  MPARID,global_communicator)
-        END IF
-      ELSE
-        KDMRAO = KFREE
-        KGABAO = KFREE
-      ENDIF
-
-      IF(ITYPE.EQ.9) THEN
-        CAll interface_mpi_BCAST(N2RED,1,
+          LDMRSO = NDMAT*N2RED
+          CALL MEMGET('REAL',KDMRSO,LDMRSO,WORK,KFREE,LFREE)
+          CAll interface_mpi_BCAST(WORK(KDMRSO),LDMRSO,
      &               MPARID,global_communicator)
-        LDMRSO = NDMAT*N2RED
-        CALL MEMGET('REAL',KDMRSO,LDMRSO,WORK,KFREE,LFREE)
-        CAll interface_mpi_BCAST(WORK(KDMRSO),LDMRSO,
-     &               MPARID,global_communicator)
-      ELSE
-         KDMRSO = KFREE
+        ENDIF
       ENDIF
 #endif
 C
