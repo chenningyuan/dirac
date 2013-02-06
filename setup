@@ -65,13 +65,6 @@ group.add_argument('--sgi-mpt',
         default='off',
         const='on',
         help='enable SGI MPT [default: %(default)s]')
-group.add_argument('--openmp',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='enable OpenMP [default: %(default)s]')
 group.add_argument('--blas',
         nargs='?',
         action='store',
@@ -221,7 +214,6 @@ def gen_cmake_command():
 
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
-    command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
     command += ' -DENABLE_BLAS=%s'           % args.blas.upper()
     command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
@@ -300,16 +292,17 @@ def setup_build_path(build_path, only_show_command):
     if args.show:
         return
     if os.path.isdir(build_path):
-        if not only_show_command:
-            if args.force:
-                fname = os.path.join(build_path, 'CMakeCache.txt')
-                if os.path.exists(fname):
+        fname = os.path.join(build_path, 'CMakeCache.txt')
+        if os.path.exists(fname):
+            if not only_show_command:
+                if args.force:
                     os.unlink(fname)
-            else:
-                print('aborting setup - build directory %s exists already' % build_path)
-                print('you have two options: first remove it and then rerun setup')
-                print('                      or force configuration with --force')
-                sys.exit()
+                else:
+                    print('aborting setup - build directory %s which contains CMakeCache.txt' % build_path)
+                    print('exists already')
+                    print('you have two options: first remove it and then rerun setup')
+                    print('                      or force configuration with --force')
+                    sys.exit()
     else:
         os.makedirs(build_path, 0755)
 

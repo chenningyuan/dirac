@@ -24,3 +24,9 @@
 - Code stops if user gives orbital occupation which is inconsistent with NFSYM.
 - runtest --mpi=1 runs tests on one processor with MPI interface.
 - Fixed wrong program stop in open-shell geometry optimization.
+
+
+FUTURE
+------
+
+- Fix for sequential KRCI property runs - file label was not properly dimensioned.
