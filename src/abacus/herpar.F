@@ -808,23 +808,11 @@ C
             ENDDO
 C
          ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-CMI    ***  TEC made this part of code inactive ***
-CMI      ... this is added ...
             CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
-C           DO 200 J = 0, 2
-C              LPOS = J*NNBASX + 1
-C              MPOS = J*N2BASX + 1
-C              CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
-C200        CONTINUE
-C
             IF (ITYPE .EQ. -5) THEN
-C              NPOS = 3*NNBASX + 1
-C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
-
-             CAll interface_mpi_RECV(SUS2ELBUF,9,NWHO,40,
+              CALL interface_mpi_RECV(SUS2ELBUF,9,NWHO,40,
      &                global_communicator)
               CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
-
             END IF
          END IF
 C
@@ -1947,7 +1935,6 @@ C
           CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
           CAll interface_mpi_SEND(SUS2ELBUF,9,MPARID,40,
      &                 global_communicator)
-
       ENDIF
 C
 C
