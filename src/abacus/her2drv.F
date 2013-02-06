@@ -4180,7 +4180,7 @@ C
 C
 C     Magnetic field derivatives
 C
-      ELSE IF (ABS(ITYPE) .EQ. 5) THEN
+      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. -5) THEN
          DOPREP(ISYMAX(1,2)) = .TRUE.
          DOPREP(ISYMAX(2,2)) = .TRUE.
          DOPREP(ISYMAX(3,2)) = .TRUE.
@@ -4346,7 +4346,7 @@ C
 C     h) Derivatives with respect to magnetic field
 C     =============================================
 C
-      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. - 5) THEN
+      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. -5) THEN
          LONDON = .TRUE.
          MAXDER = MAXDIF
          IF (MAXDER .EQ. 2) SUSCEP = .TRUE.
