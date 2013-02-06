@@ -65,13 +65,6 @@ group.add_argument('--sgi-mpt',
         default='off',
         const='on',
         help='enable SGI MPT [default: %(default)s]')
-group.add_argument('--openmp',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='enable OpenMP [default: %(default)s]')
 group.add_argument('--blas',
         nargs='?',
         action='store',
@@ -221,7 +214,6 @@ def gen_cmake_command():
 
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
-    command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
     command += ' -DENABLE_BLAS=%s'           % args.blas.upper()
     command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
