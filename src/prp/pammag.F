@@ -1603,7 +1603,7 @@ C     and the full relativistic (fermion symm.) mode
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
-      CALL SUSC2EL(WORK(KBEIG),WORK(KCMO),WORK(KFREE),LFREE)
+      CALL SUSC2EL(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
 
 C  2. Compute highest order reorthonormalization term {T(2),h(0)+g(0)}
 
@@ -1619,7 +1619,7 @@ C  3. Compute lowest order reorthonormalization term  ...many more terms...
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SUSC2EL  */
-      SUBROUTINE SUSC2EL(IBEIG,CMO,WORK,LWORK)
+      SUBROUTINE SUSC2EL(CMO,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
 C   Routine that calculates two-electron expectation value contribution
@@ -1664,14 +1664,11 @@ C
 
       NDMAT = 4 ! Number of dens.matrixes (closed shell)
       NCOMP = 6 ! tensor components 
-
-      CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASX*NDMAT,WORK,KFREE,LFREE) ! Contravariant density matrixes
       CALL MEMGET('INTE',KIREP,NDMAT*NCOMP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFCT,NDMAT*NCOMP,WORK,KFREE,LFREE)
 C     get contavariant density matrixes
-      CALL GTCNVD(WORK(KDMAT),CMO,IBEIG,IPRPRP,WORK,LWORK)
-
+      CALL GTCNVD(WORK(KDMAT),CMO,IBEIG,IPRPRP,WORK(KFREE),LFREE)
 C set up for second derivative g12 over B
       DO I=1,NCOMP
          ISYMOP(I) = 1
@@ -1698,8 +1695,6 @@ CMI   EXPECT is for nucl.coordinate derivates !!!
       SUSCEP = .TRUE.
       FIRST = .TRUE.
       SCRDUM=-1.0D0
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(WORK(KFMAT),NCOMP*NDMAT*N2BBASX)
 C
 C     Check what type of two-electron integrals to include
 C
@@ -1718,20 +1713,25 @@ C
          IF (PARCAL) THEN
             CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
             CALL DIRAC_PARCTL( 1 )
-            CALL HER_PARDRV(WORK(KFREE),LWRK,WORK(KFMAT),WORK(KDMAT),
+CTROND            CALL HER_PARDRV(WORK(KFREE),LWRK,WORK(KFMAT),WORK(KDMAT),
+            CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDMAT),
      &            NDMAT,WORK(KIREP),WORK(KIFCT),
      &            ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
      &            TKTIME,.FALSE.,FIRST,WORK(KNPOS),MTOTTK(I2TYP),
      &            I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,
      &            DUMMY)
+            CALL MEMREL('SUSC2EL.par',WORK,1,KNPOS,KFREE,LFREE)
          ELSE
 #endif
-             CALL TWOINT(WORK(KFREE),LWRK,WORK(KFMAT),WORK(KDMAT),
-     &        NDMAT,WORK(KIREP),WORK(KIFCT),
-     &        DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
-     &        TKTIME,IPRPRP,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
-     &        I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
-     &        .false.,IDUMMY,DUMMY)
+             CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,
+     &       WORK,KFREE,LFREE)
+             CALL TWOINT(WORK(KFREE),LFREE,WORK(KFMAT),WORK(KDMAT),
+     &       NDMAT,WORK(KIREP),WORK(KIFCT),
+     &       DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
+     &       TKTIME,IPRPRP,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
+     &       I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
+     &       .false.,IDUMMY,DUMMY)
+            CALL MEMREL('SUSC2EL.seq',WORK,1,KFMAT,KFREE,LFREE)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
 #endif
@@ -1739,6 +1739,7 @@ C
       END DO
       CALL GETTIM(CPU2,WALL2)
 C
+      CALL MEMREL('SUSC2EL',WORK,1,KWORK,KFREE,LFREE)
       CPUTOT = CPU2 - CPU1
       WLLTOT = WALL2 - WALL1
       WRITE(LUPRI,'(/A,F13.4,A,F13.4,A/)') 
