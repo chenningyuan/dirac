@@ -26,8 +26,8 @@
 - Fixed wrong program stop in open-shell geometry optimization.
 
 
-FUTURE
-------
+12.4
+----
 
 - Fix for sequential KRCI property runs - file label was not properly dimensioned.
 - Remove unsupported options from CMakeLists.txt and setup.
