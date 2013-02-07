@@ -180,6 +180,12 @@ if(ENABLE_UNIT_TESTS)
         )
 endif()
 
+# add binary_info.F90
+set(FREE_FORTRAN_SOURCES
+    ${FREE_FORTRAN_SOURCES}
+    ${CMAKE_BINARY_DIR}/binary_info.F90
+    )
+
 set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
