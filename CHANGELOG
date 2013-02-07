@@ -30,3 +30,4 @@ FUTURE
 ------
 
 - Fix for sequential KRCI property runs - file label was not properly dimensioned.
+- Remove unsupported options from CMakeLists.txt and setup.
