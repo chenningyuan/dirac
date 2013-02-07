@@ -576,6 +576,14 @@ Options are also read from ~/.diracrc"""
             metavar='INTEGER',
             )
 
+        group.add_option('--mpirun',
+            type='string',
+            action='store',
+            dest='dest_mpirun',
+            default=self.mpirun,
+            help='set the MPI run command [default: %default]',
+                 metavar='STRING')
+
         group.add_option(
             '--mpiarg',
             type='string',
@@ -778,6 +786,9 @@ Options are also read from ~/.diracrc"""
             self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
+
+        if options.dest_mpirun:
+            self.mpirun = options.dest_mpirun
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -1153,7 +1164,7 @@ Options are also read from ~/.diracrc"""
             if self.mpiarg:
                 self.dirac_cmd += self.mpiarg + ' '
 
-            # OpenMPI debuggin with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
+            # OpenMPI debugging with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
             # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
             if self.vg_debug:
             # master the final command launcher (as std debugger); TODO: adapt for Windows
