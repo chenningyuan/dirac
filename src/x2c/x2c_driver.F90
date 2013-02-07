@@ -515,6 +515,7 @@ contains
      real(8), allocatable   :: eigvl(:)
      real(8), allocatable   :: wrk(:)
      integer                :: is_allocated_dyn
+     integer                :: local_lwrk
      integer                :: fulllowdmat_dim_tmp
      integer                :: dim1_fsym_Sao
      integer                :: dim2_fsym_Sao
@@ -564,7 +565,8 @@ contains
 
 !    set maximum allowed length of wrk array allocations
      is_allocated_dyn = is_allocated_dyn + naosh_ls         + naosh_ls**2 * nz + j
-     lwrk             = lwrk             - is_allocated_dyn
+     local_lwrk       = lwrk
+     local_lwrk       = local_lwrk       - is_allocated_dyn
 
 !    ------------------------------------------------------------------------------
 !    step 2: get LOWDIN matrix
@@ -663,7 +665,7 @@ contains
 
        case (0, 3) ! 1-el Dirac Hamiltonian / free particle
 
-         allocate(wrk(lwrk))
+         allocate(wrk(local_lwrk))
          call modham(A%scr1mat,                                         &
                      A%xmat,                                            &
                      A%scr2mat,                                         &
@@ -672,7 +674,7 @@ contains
                      .false.,                                           &
                      defining_h1mat,                                    &
                      wrk,                                               &
-                     lwrk)
+                     local_lwrk)
          deallocate(wrk)
 !        ------------------------------------------------------------------------------------
 !        step 4: transfer dimensions on common blocks concerning the orthonormal MO basis -
