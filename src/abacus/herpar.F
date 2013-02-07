@@ -197,7 +197,7 @@ C
       ELSE IF (ITYPE .EQ. 9) THEN
          NREQUI = NDMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-         NREQUI = 3*NDMAT*N2BASX     
+         NREQUI = 0
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
@@ -424,7 +424,7 @@ C
       ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9 .OR. ITYPE. EQ. 7) THEN
          NFMAT  = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
-         NFMAT  = 3*NDMAT
+         NFMAT  = 6*NDMAT
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT  = 3*NDMAT*NUCDEG(IATOM)
       ELSE
@@ -790,8 +790,10 @@ C
 C
 Cjth & trond - this is a bit risky
 C
-         CAll interface_mpi_RECV(WORK,NREQUI,NWHO,40,
+         IF(ITYPE.NE.-5) THEN
+           CALL interface_mpi_RECV(WORK,NREQUI,NWHO,40,
      &                 global_communicator)
+         ENDIF
 C
 C        Add results to final matrices.
 C
@@ -809,13 +811,12 @@ C
               DINTSKP(J) = DINTSKP(J) + DNSKBF(J)
             ENDDO
 C
-         ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
+         ELSE IF (ITYPE .EQ. 8) THEN
             CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
-            IF (ITYPE .EQ. -5) THEN
+         ELSE IF (ITYPE .EQ. -5) THEN
               CALL interface_mpi_RECV(SUS2ELBUF,9,NWHO,40,
      &                global_communicator)
               CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
-            END IF
          END IF
 C
 C        The time each index-pair calculation need is collected in TIMES
@@ -1931,8 +1932,6 @@ C
          CAll interface_mpi_SEND(GRADEE,NUMGRA,MPARID,40,
      &                 global_communicator)
       ELSE IF(ITYPE.EQ.-5) THEN 
-          CAll interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
-     &                 global_communicator)
           CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
           CAll interface_mpi_SEND(SUS2ELBUF,9,MPARID,40,
      &                 global_communicator)
