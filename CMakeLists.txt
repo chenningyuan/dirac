@@ -181,8 +181,8 @@ if(ENABLE_UNIT_TESTS)
 endif()
 
 # add binary_info.F90
-set(FREE_FORTRAN_SOURCES
-    ${FREE_FORTRAN_SOURCES}
+set(GENERATED_FILES
+    ${GENERATED_FILES}
     ${CMAKE_BINARY_DIR}/binary_info.F90
     )
 
