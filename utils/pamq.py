@@ -66,26 +66,25 @@ class PamQVariables:
     self.queue_name='' # must be configured
     self.queue_name_specified=False
 
-    # time 
-    self.queue_time='00:20:00'
-    self.queue_time_specified=False
+    # walltime, deafult None 
+    self.queue_time=None
 
     # ... is pure serial job (no mpi added to pam)
     self.is_serial=False
 
     self.nnodes=0  # must be configured 
-    self.proc_per_node=None # must be configured 
-    self.mpi_procs=0 # calculated later as nnodes*proc_per_node
+    self.proc_per_node=None # can be None
+    self.mpi_procs=None # calculated later as nnodes*proc_per_node
 
     # ... dirac tests 
     self.dirac_tests_run=False
     self.testrun_arguments=''
 
     # ... what is going to be in script
-    self.batch_script_command=''
+    self.batch_script_command=None
 
     # ... default DIRAC pam from the current directory
-    self.pam_script=self.dirac_home+'/pam' 
+    self.pam_script=os.path.join(self.dirac_home,'pam') 
 
     # ... set home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
@@ -126,8 +125,8 @@ class PamQVariables:
     # extend pam flags with the necessary -mpi arguments
     if self.proc_per_node:
       self.mpi_procs=self.nnodes*self.proc_per_node
-    else: # set default - one mpi thread
-      self.mpi_procs=1
+    else: # self.proc_per_node not defined, so take all CPU's at hand:)
+      self.mpi_procs=str("$NUM_ALL_CORES")
 
     if self.iprint >= 5:
       print 'set_pam_mpi: calculated # mpi=',self.mpi_procs
@@ -171,12 +170,12 @@ class PamQVariables:
       print 'Implemented queue systems=',self.implemented_queue_systems
       error_exit=True 
 
-    if (len(self.queue_name)>0) :
+    if self.queue_name:
       f.write('# ... default queue name \n')
       f.write('QUEUE_NAME='+self.queue_name+'\n')
       print 'saved QUEUE_NAME=',self.queue_name
 
-    if (self.nnodes>0) :
+    if self.nnodes > 0:
       f.write('# ... default number of nodes for (parallel) run\n')
       f.write('NODES='+str(self.nnodes)+'\n')
       print 'saved NODES=',self.nnodes
@@ -385,33 +384,33 @@ def process_pbs_script():
 #
 #   if the queue_name is specified in the input, add it
 #
-  if GlobalVars.queue_name_specified:
+  if GlobalVars.queue_name:
     s += '''\
 #
-# specify queue name
+# specify the queue name
 #
-#PBS -q %s ''' % GlobalVars.queue_name+str('\n')
+#PBS -q %s ''' % GlobalVars.queue_name
   else:
     s += '''\
 #
 #
-# queue name not specified (command incative), using queue system default 
+# queue name not specified by the pamq.py user (command incative), using queue system default 
 #
 ##PBS -q %s ''' % GlobalVars.queue_name+str('\n')
 #
 #  if time is specified in the input, add it
 #
-  if GlobalVars.queue_time_specified:
+  if GlobalVars.queue_time:
     s += '''\
 #
 #
-# specify time
+# specify the walltime 
 #
 #PBS -l walltime=%s'''%GlobalVars.queue_time+str('\n')
   else:
     s+='''\
 #
-# queue time not specified, using system default and inactive
+# queue time not specified by the user, takes system default values in 
 #
 ##PBS -l walltime=%s'''%GlobalVars.queue_time+str('\n')
 # ...continue ...
@@ -459,9 +458,13 @@ cat $PBS_NODEFILE
 #
 #mpdboot -f $PBS_NODEFILE
 #
-echo -e  'Number of processors available:\c'; cat /proc/cpuinfo | grep processor | wc -l
+NUM_OF_CPUS=$(cat /proc/cpuinfo | grep processor | wc -l)
+echo -e  'Number of all processors available per core, NUM_OF_CPUS='$NUM_OF_CPUS
 NUM_OF_PROCESSES=$(cat ${PBS_NODEFILE} | wc -l)
-echo -e 'Number of processors requested:' ${NUM_OF_PROCESSES}
+echo -e 'Number of cores requested, NUM_OF_PROCESSES='$NUM_OF_PROCESSES
+# parameter - number of all cores
+let NUM_ALL_CORES="$NUM_OF_CPUS*$NUM_OF_PROCESSES"
+echo -e 'Number of all processors at disposal, NUM_ALL_CORES='$NUM_ALL_CORES
 
 # ... always change to the home directory 
 #  from where you execute DIRAC pam - this is PBS variable 
@@ -481,7 +484,7 @@ echo " %s "
   s += '''\
 #
 #
-# ... that's whole script, exit
+# ... that's whole PBS script, exit
 #
 exit
 '''
@@ -871,7 +874,7 @@ def process_pamq_arguments():
 
   # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
   if GlobalVars.proc_per_node==None:
-    queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)+'<= YOU MUST SET IT !'
+    queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)+'<= takes all CPUs per core'
   else:
     queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
 
@@ -880,10 +883,8 @@ def process_pamq_arguments():
                   help=queue_ppn_label, metavar="INT")
 
   # ... GlobalVars.queue_time
- # queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
   queue_time_label='specify the time in the queue (default set by the system)'
   parser.add_option("-t", "--qtime", type="string", nargs=1,
-                 # action="store", dest="dest_queue_time", default=GlobalVars.queue_time, \
                   action="store", dest="dest_queue_time", 
                   help=queue_time_label,metavar="STRING")
 
@@ -995,10 +996,8 @@ def process_pamq_arguments():
   # ... deal with queue_time
   if (options.dest_queue_time is not None) :
     GlobalVars.queue_time=options.dest_queue_time
-    GlobalVars.queue_time_specified=True
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.queue_time=',GlobalVars.queue_name
-      print 'assigned GlobalVars.queue_time_specified=',GlobalVars.queue_time_specified
 
   # ... deal with creating variables_defaults file
   if (options.dest_prep_config is not None) :
