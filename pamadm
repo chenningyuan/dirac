@@ -506,9 +506,6 @@ for directory in directories_with_sources:
         source = string.replace(source, '\\', '/')
         list_of_include_files.append(source)
 
-# add binary_info.F90
-list_of_free_fortran_sources.append('${CMAKE_BINARY_DIR}/binary_info.F90')
-
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
 list_of_free_fortran_sources = set(list_of_free_fortran_sources)

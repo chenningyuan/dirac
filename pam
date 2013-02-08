@@ -147,7 +147,7 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-    # put/get files (flag controlled) #
+        # put/get files
         self.put_files = None
         self.get_files = None
 
@@ -576,6 +576,14 @@ Options are also read from ~/.diracrc"""
             metavar='INTEGER',
             )
 
+        group.add_option('--mpirun',
+            type='string',
+            action='store',
+            dest='dest_mpirun',
+            default=self.mpirun,
+            help='set the MPI run command [default: %default]',
+                 metavar='STRING')
+
         group.add_option(
             '--mpiarg',
             type='string',
@@ -779,6 +787,9 @@ Options are also read from ~/.diracrc"""
 
         self.max_memory_dynamic = int(options.dest_aw)
 
+        if options.dest_mpirun:
+            self.mpirun = options.dest_mpirun
+
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
 
@@ -810,12 +821,12 @@ Options are also read from ~/.diracrc"""
         if options.dest_noarch:
             self.archive = False
 
-        if options.dest_put:
-            self.put_files = options.dest_put.split()
-
         if options.dest_distribute:
             # wildcards...
             self.distribute = glob.glob(options.dest_distribute)
+
+        if options.dest_put:
+            self.put_files = options.dest_put
 
         if options.dest_get:
             self.get_files = options.dest_get
@@ -1023,10 +1034,16 @@ Options are also read from ~/.diracrc"""
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
+        # put files to scratch
         if self.put_files is not None:
-            for file_name in self.put_files:
-                for f in glob.glob(file_name):
-                    copy_single_file(f,f)
+            for p in self.put_files.split():
+                if '=' in p:
+                    f1 = p.split('=')[0]
+                    f2 = p.split('=')[1]
+                    copy_single_file(f1, f2)
+                else:
+                    for f in glob.glob(p):
+                        copy_single_file(f, f)
 
     # copies files to scratch_dir
         if self.incmo:
@@ -1153,7 +1170,7 @@ Options are also read from ~/.diracrc"""
             if self.mpiarg:
                 self.dirac_cmd += self.mpiarg + ' '
 
-            # OpenMPI debuggin with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
+            # OpenMPI debugging with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
             # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
             if self.vg_debug:
             # master the final command launcher (as std debugger); TODO: adapt for Windows
@@ -1443,31 +1460,33 @@ Options are also read from ~/.diracrc"""
 
     def save_files(self):
         "save files in various manners from the scratch directory"
-        def save_single_file(file_name):
-            full_file_name = os.path.join(self.scratch_dir,file_name)
-            if os.path.isfile(full_file_name):
-                file_name_home = os.path.join(self.input_directory,file_name)
-        # backup file if it's there
+        def save_single_file(file_name_scratch, file_name_local=''):
+            if file_name_local == '':
+                file_name_local = file_name_scratch
+            full_file_name_scratch = os.path.join(self.scratch_dir, file_name_scratch)
+            full_file_name_local   = os.path.join(self.input_directory, file_name_local)
+            if os.path.isfile(full_file_name_scratch):
+                self.copy_file(full_file_name_scratch, full_file_name_local)
+                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
                 if not self.nobackup:
-                    backup_file(some_file=file_name_home, upto=None)
-        # finally copy
-                self.copy_file(full_file_name, file_name_home)
-                if not self.nobackup:
-                    print '  Saved file "',file_name,'" from the scratch directory. Also backuped in home dir.'
-                else:
-                    print '  Saved file "',file_name,'" from the scratch directory.'
+                    # backup file if it's there
+                    backup_file(some_file=full_file_name_local, upto=None)
             else:
-                print_error_message(file_name+' not found in the scratch directory.')
+                print_error_message('%s not found in the scratch directory.' % file_name)
 
         if self.archive:
             self.archive_working_files()
 
-    # take care of the rest - get files from scratch_dir to home dir
-
+        # get files from scratch
         if self.get_files is not None:
             for p in self.get_files.split():
-                for f in glob.glob(p):
-                    save_single_file(f)
+                if '=' in p:
+                    f1 = p.split('=')[0]
+                    f2 = p.split('=')[1]
+                    save_single_file(f1, f2)
+                else:
+                    for f in glob.glob(p):
+                        save_single_file(f, f)
 
         if self.outcmo:
             save_single_file('DFCOEF')
