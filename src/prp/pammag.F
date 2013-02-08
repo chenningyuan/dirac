@@ -61,7 +61,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO_ANG','.XXXXXX','.XXXXXX'   /
+     &            '.GO_ANG','.SEPTEP','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -96,6 +96,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       GORG   = .FALSE.
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
+      SEPTEP = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
@@ -226,8 +227,11 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
                gagorg = gagorg/xtang
                gorg = .true.
                go to 100
-
    14          CONTINUE
+!              .SEPTEP
+!              gosia: SEParate T matrix to electronic and positronic blocks
+!              it does not affect shieldings, it is only for analysis.
+               SEPTEP = .true.
                GO TO 100
    15          CONTINUE
                GO TO 100
@@ -406,6 +410,237 @@ C   .... defined conventional atomic orbitals (AO), not London AO
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETCON_septep(ee,ep,W,CONMAT,DMAT,ORTO,WORK,
+     &                  KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C   Get the reortonormalization contribution term,
+C   {T(1),h(m_K)}, when using LAO. Calculated as expectation value.
+C
+C   MI/sept.2003: The .DOEPRN parameter decides whether to do
+C   reorthonormalization over both p+e shells, or only over
+C   the electronic shells. 
+C
+C***********************************************************************
+      use london_helper
+      use london_utils
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcborb.h"   
+#include "dcbbas.h"   
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbprp.h"
+#include "dcbnmr.h"
+#include "dcbxpr.h"
+#include "dcbxlr.h"
+#include "dummy.h"
+      PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
+!               Array for {T,h(mK)}_ic product
+      DIMENSION W(NORBT,NORBT,NZ,3),
+!              Array for h(mK) property matrix
+     &         CONMAT(NORBT,NORBT,NZ),
+!              Density matrix
+     &         DMAT(NORBT,NORBT,NZ),
+     &         ORTO(3,*),WORK(*), iqsym(4)
+      LOGICAL AH,EPMIX,DOPCTRA_SAVE,ee,ep
+      real(8), allocatable :: t_ee(:), t_ep(:)
+C
+#include "ibtfun.h"
+      CALL QENTER('GETCON')
+
+      KFRSAV = KFREE
+
+C  ...array for MO coefficients
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+C boson irreps identification (read with MO coeff.)
+      CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
+      IF (SPINFR) THEN
+       IOPT = 10 ! read MO coeff.+boson irreps ident.
+       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
+     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+      ELSE
+       IOPT = 2 ! read only MO coefficients
+       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
+     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+      ENDIF
+
+C Open property file
+      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCON')
+
+C  ... arrays for T(2)_comp connection matrixes in MO basis
+      CALL MEMGET('REAL',KTMAT,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTHMAT,N2ORBXQ,WORK,KFREE,LFREE)
+
+      IF (IPRINT.GE.5) CALL HEADER(
+     &'GETCON: Creating transformed matrix; {T_c, h_mK}',-1)
+C --------------------------------------------
+C -- Calculate expect. value of {T(1),h(m)} --
+C --------------------------------------------
+      NSCOOR = 3*NUCDEP
+      NOP = 0
+      DO N = 1, NSCOOR  ! Run over coordinates m_K
+         INDOP = IPSHIELD(N)
+         IF (INDOP.GT.0) THEN ! Get h(m_K) in MO basis into CONMAT
+           NOP = NOP + 1
+           INDXPR = LLRAPU(INDOP) ! Index of h(m_K)
+           ISYM  = IPRPSYM(INDXPR)
+           IREP = ISYM - 1
+           IOPSY = JBTOF(ISYM-1,1)
+           CALL DZERO(CONMAT,N2ORBXQ)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
+     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           IF (IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(2A)')
+     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
+            CALL PRQMAT(CONMAT,NORBT,NORBT,NORBT,
+     &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
+           ENDIF
+C --------------------------------------------------------------------
+C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
+C    as expectation value
+C --------------------------------------------------------------------
+C .. do not perform the picture change transformation 
+C    of connection matrixes !
+           DOPCTRA_SAVE=DOPCT
+           DOPCT=.FALSE.
+
+           DO ICOMP  = 1, 3 ! Run over x,y,z components
+C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
+             INDXPR2 = IPCON(ICOMP) ! Get index of S(1)/W(1)
+             ISYM2   = IPRPSYM(INDXPR2)
+             ITIM2   = IPRPTIM(INDXPR2)
+             IOPSY2  = JBTOF(ISYM2-1,1)
+             IREP2   = ISYM2 - 1 ! 0-7
+             CALL DZERO(WORK(KTMAT),N2ORBXQ)
+!            gosia:
+             if (lao_lr_rearrange) then
+               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+!              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
+!              integrals in def_d1hblond subroutine
+             else
+             IF (.NOT.SYMCON) THEN
+              IF (ITIM2.NE.0)
+     &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
+              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+             ELSE
+              IF (ITIM2.NE.-1)
+     &         CALL QUIT('GETCON: Wrong TR symm. of S(1)!')
+
+              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+             ENDIF
+             end if ! if (lao_lr_rearrange)
+     
+!             if (SEPTEP) then
+                if (ee) then
+                   call alloc(t_ee, n2orbxq)
+                   call dcopy(3,work(ktmat),1,t_ee,1)
+                   call get_m_ee(t_ee)
+                else if (ep) then
+                   call alloc(t_ep, n2orbxq)
+                   call dcopy(3,work(ktmat),1,t_ep,1)
+                   call get_m_ep(t_ep)
+                end if
+!             end if
+
+!g             if (shielding_rearrange .or. lao_lr_rearrange) then
+!g               call get_m_ij(work(ktmat))
+!g             end if
+
+             if (shielding_rearrange) then
+!              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
+               ih = -1
+               do iz = 1, nz
+                 iq = ipqtoq(iz, irep2)
+                 iqsym(iz) = ihqmat(iq, ih)
+               end do
+               call qgetam(work(ktmat), norbt, nz, norbt, norbt, iqsym)
+               call get_m_ij(work(ktmat))
+             end if
+             if (lao_lr_rearrange) then
+               call get_m_ij(work(ktmat))
+             end if
+
+             IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
+             CALL DZERO(WORK(KTHMAT),N2ORBXQ)
+             EPMIX = DOEPRN
+             AH  = .TRUE. ! T_icomp is antihermitian ! 
+             !if (shielding_rearrange .or. lao_lr_rearrange) then
+             if (shielding_rearrange.or.lao_lr_rearrange) then
+             CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             else
+C ... do the reorthonormalization ...
+             CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             end if !if (shielding_rearrange .or. lao_lr_rearrange) then
+             IF (IPRINT.GE.5) THEN
+              WRITE(LUPRI,'(4A/)')
+     &         'GETCON: Transformed term {}', PRPNAM(INDXPR),';',
+     &          PRPNAM(IPCON(ICOMP))
+              CALL PRQMAT(WORK(KTHMAT),NORBT,NORBT,NORBT,
+     &              NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
+             ENDIF
+C ... calculate the expectation value of the {T_ic,h(mK)} matrix
+              EXPVAL = D0
+              DO IFS = 1, NFSYM
+              IF (NOCC(IFS).GT.0) THEN
+C ... run only over occupied electronic states
+              DO I = NPSH(IFS)+1, NPSH(IFS)+NISH(IFS)
+               IADR1  = IORB(IFS)+I
+               IADR2  = (IADR1-1)*NORBT+IADR1 ! diagonal element
+               EXPVAL = EXPVAL+WORK(KTHMAT+IADR2-1)
+              ENDDO
+              ENDIF
+              ENDDO
+
+C ... store the reorthonormalization contribution into ORTO
+              ITMP = IPTAX(ICOMP,2)
+              ORTO(ITMP,NOP) = DM2*EXPVAL
+
+              IF (IPRINT.GE.4) THEN
+                 WRITE(LUPRI,'(4A,1X,E15.8,/)')
+     &           'GETCON: Expect. value {Tc,h(m_K)} for ',
+     &            PRPNAM(IPCON(ICOMP)),' and ',
+     &            PRPNAM(INDXPR),
+     &            ORTO(ITMP,NOP)
+              ENDIF
+           ENDDO ! Of x,y,z connection matrixes...
+           DOPCT=DOPCTRA_SAVE ! restore the pict.change transf.
+         ENDIF
+      ENDDO
+C
+C close property file
+C
+      CLOSE(LU1INT,STATUS = 'KEEP')      
+
+C ... release the memmory...
+      CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
+      if (ee) then
+         call dealloc(t_ee)
+      else if (ep) then
+         call dealloc(t_ep)
+      end if
+
+      CALL QEXIT('GETCON')
+      RETURN
+      END
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETCON */
       SUBROUTINE GETCON(W,CONMAT,DMAT,ORTO,WORK,
      &                  KFREE,LFREE,IPRINT)
@@ -539,7 +774,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
              ENDIF
              end if ! if (lao_lr_rearrange)
-
+     
 !g             if (shielding_rearrange .or. lao_lr_rearrange) then
 !g               call get_m_ij(work(ktmat))
 !g             end if
@@ -562,7 +797,8 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
              EPMIX = DOEPRN
              AH  = .TRUE. ! T_icomp is antihermitian ! 
-             if (shielding_rearrange .or. lao_lr_rearrange) then
+             !if (shielding_rearrange .or. lao_lr_rearrange) then
+             if (shielding_rearrange.or.lao_lr_rearrange) then
              CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
      &                   CONMAT,WORK(KTHMAT),IPRINT)
              else
@@ -577,7 +813,6 @@ C ... do the reorthonormalization ...
               CALL PRQMAT(WORK(KTHMAT),NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
              ENDIF
-
 C ... calculate the expectation value of the {T_ic,h(mK)} matrix
               EXPVAL = D0
               DO IFS = 1, NFSYM

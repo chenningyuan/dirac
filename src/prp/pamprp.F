@@ -6206,6 +6206,8 @@ C
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATRE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREP,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,2*NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDISO,NUCDEP,WORK,KFREE,LFREE)
@@ -6223,7 +6225,7 @@ C
 C     (-29: accept .SELECT specification)
       CALL SETATM(WORK(KATOM),NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
-     &     WORK(KDMATLO),WORK(KDMATRE),
+     &     WORK(KDMATLO),WORK(KDMATRE),WORK(KDMATREE),WORK(KDMATREP),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
      &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
@@ -6234,7 +6236,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD1 */
       SUBROUTINE PRP_SHIELD1(EXPVAL,ABLRF,TMPMAT,TMAT,
-     &      DMATLO,DMATRE,DMAT,PMAT,TISO,
+     &      DMATLO,DMATRE,DMATREE,DMATREP,DMAT,PMAT,TISO,
      &      DISO,PISO,ANIS,ASYM,SKEW,SPAN,IBUFA,
      &      DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -6260,10 +6262,11 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbxlr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
-      LOGICAL TEST,DOATOM(NUCIND)
+      LOGICAL TEST,DOATOM(NUCIND), ee, ep
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
      &     DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
+     &     DMATREE(3,3,NUCDEP),DMATREP(3,3,NUCDEP),
      &     PMAT(3,3,NUCDEP,2),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
      &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
      &     IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
@@ -6301,6 +6304,8 @@ C
       CALL DZERO(DMAT,NCMAT)
       CALL DZERO(DMATLO,NCMAT)
       CALL DZERO(DMATRE,NCMAT)
+      CALL DZERO(DMATREE,NCMAT)
+      CALL DZERO(DMATREP,NCMAT)
       CALL DZERO(TMAT,NCMAT)
       CALL DZERO(PMAT,2*NCMAT)
 C--------------------------------------------------------------------------
@@ -6364,6 +6369,38 @@ C--------------------------------------------------------------------
 C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
+        if (SEPTEP) then
+!       we call GETCON twice to get separately contributions from
+!       e-occ and p-occ blocks of T matrix:
+! e-occ:
+           ee = .true.
+           ep = .false.
+           CALL DZERO(TMPMAT,NCMAT)
+           CALL DZERO(PMAT,NCMAT)
+           CALL MEMGET('REAL',KW   ,3*N2ORBXQ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCON ,N2ORBXQ  ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KDMAT,N2ORBXQ  ,WORK,KFREE,LFREE)
+           CALL GETCON_septep(ee,ep,WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
+     &             WORK,KFREE,LFREE,IPRPRP)
+           CALL MEMREL('PRP_SHIELD1_GETCON',WORK,1,KW,KFREE,LFREE)
+           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
+! p-occ:
+           ee = .false.
+           ep = .true.
+           CALL DZERO(TMPMAT,NCMAT)
+           CALL DZERO(PMAT,NCMAT)
+           CALL MEMGET('REAL',KW   ,3*N2ORBXQ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCON ,N2ORBXQ  ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KDMAT,N2ORBXQ  ,WORK,KFREE,LFREE)
+           CALL GETCON_septep(ee, ep,WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
+     &             WORK,KFREE,LFREE,IPRPRP)
+           CALL MEMREL('PRP_SHIELD1_GETCON',WORK,1,KW,KFREE,LFREE)
+           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
+        end if
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
@@ -6537,6 +6574,7 @@ C
             IF (DOATOM(I)) THEN
               CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
      &             DMATLO(1,1,IATOM),DMATRE(1,1,IATOM),
+     &             DMATREE(1,1,IATOM), DMATREP(1,1,IATOM),
      &             PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
      &             TISO(IATOM),DISO(IATOM),PISO(IATOM),
      &             ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
@@ -6583,7 +6621,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck SHIANA */
-      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,DMATRE,PMATEE,PMATEP,
+      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,DMATRE,DMATREE,DMATREP,
+     &                  PMATEE,PMATEP,
      &                  AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
@@ -6614,13 +6653,16 @@ C***********************************************************************
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
      &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
-     &          DMATRE(3,3),PVAL(6), WRK(3), IWRK(3), ABSP(3)
+     &          DMATRE(3,3),DMATREE(3,3),DMATREP(3,3),
+     &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
       CALL DSCAL(9,FACTOR,DMATLO,1)
       CALL DSCAL(9,FACTOR,DMATRE,1)
+      CALL DSCAL(9,FACTOR,DMATREE,1)
+      CALL DSCAL(9,FACTOR,DMATREP,1)
       CALL DSCAL(9,FACTOR,PMATEE,1)
       CALL DSCAL(9,FACTOR,PMATEP,1)
 C     Total shielding
@@ -6640,6 +6682,8 @@ C     ... use result of e-p response equations
 C       ...add London + reorthonormalization contribution
           AVEDIA1 = (DMATLO(1,1) + DMATLO(2,2) + DMATLO(3,3))/D3
           AVEDIA3 = (DMATRE(1,1) + DMATRE(2,2) + DMATRE(3,3))/D3
+          AVEDIA3E = (DMATREE(1,1) + DMATREE(2,2) + DMATREE(3,3))/D3
+          AVEDIA3P = (DMATREP(1,1) + DMATREP(2,2) + DMATREP(3,3))/D3
           AVEDIA  = AVEDIA + AVEDIA1 + AVEDIA3
 !gosia fixme: it would be better to keep AVEDIA and AVEDIA1 separated
 !it is confusing to calculate AVEDIA like that, while to print
@@ -6769,6 +6813,10 @@ C   ... make separate print out of e-e and e-p response contributions
           END DO
           WRITE (LUPRI,'(/A,F14.6)') 
      &    ' Reorthonormalization contribution:',AVEDIA3
+          if (SEPTEP) then
+           write(*, *) 'contribution from "occ-e" blocks of T = ', AVEDIA3E
+           write(*, *) 'contribution from "occ-p" blocks of T = ', AVEDIA3P
+        end if
         ENDIF
 C
         CALL HEADER

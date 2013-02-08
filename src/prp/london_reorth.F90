@@ -228,6 +228,9 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+!!!TEST
+!!      call test_new_routines(tb)
+
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
 ! *) how many components:

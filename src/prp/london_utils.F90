@@ -12,6 +12,9 @@ module london_utils
   public combine_kappa_T
   public get_m_ai 
   public get_m_ij 
+  public get_m_ee 
+  public get_m_ep 
+  public test_new_routines
   save
 
   private
@@ -208,7 +211,7 @@ contains
      integer :: which_icomp, chosen_icomp, irep, iz, i, j
      logical :: sum_ep_rn, ep, ee
      real(8) :: h
-     integer :: iht, iq, iqsym(nz)
+     integer :: iht, iq, iqsym(nz), iih
 
 !    this subroutine does:
 !    kappa_{ai}^B := kappa_{ai}^B - T_{ai}^B
@@ -315,37 +318,36 @@ contains
 
      call get_m_ai(T, ee, ep)
 
-     debug_me = .false.
+     debug_me = .true.
      if (debug_me) then
         write(*, *) 'combine_kappa_t: T_ai,ee, ep = ', ee, ep
         call prqmat(T, norbt, norbt, norbt, norbt, nz,  &
                     ipqtoq(1,irep), lupri)
      end if
 
+!    create a vector, T_ai_vec, from matrix T
+!    the order of indices on T_ai_vec is the same as on kappa vector:
+!    gosia fixme: it works now, but we should be careful, because:
+!    *) if symcon then T is antihermitian 
+!    *) if natural con. then T is a general matrix
+!    and we take only "virt-occ" elements to a vector
+!    we want T to "follow" kappas, but in case of natural connection now we 
+!    neglect all "occ-virt" part that is not related to 'virt-occ"
+!    note for me: i tried to antisymmetrize it (qgetam) and to separate the
+!    hermitian and antihermitian parts, but it's not better
 
-!    kappa_ai are elements of an antihermitian matrix
-!    but T_ai, in general, are elements of a general matrix, so:
-!    1. we scatter kappa to a matrix (i copy scatter_vector subroutine from visual.F90)
-!    ----------------------------------------------------------------------------------
-     call alloc(kappa_matrix, n2orbxq)
-     kappa_matrix = 0.0d0
-     call scatter_vector(length,                   &
-                         orbital_rotation_indices, &
-                         kappa,                    &
-                         kappa_matrix,             &
-                         irep)
+     call alloc(T_ai_vec, length,nz)
+     call dzero(T_ai_vec, length*nz)
+     call matrix_to_vector(T_ai_vec, length, T, irep, ih, orbital_rotation_indices)
+     write(*, *) 'combine_kappa_t: T_ai_vec, length,ee,ep = ', length,ee, ep
+     call prqmat(T_ai_vec(1,1), length, 1, length, 1, nz,  &
+                 ipqtoq(1,irep), lupri)
 
-!    2. substract kappa_ai := kappa_ai - T_ai
-!    ----------------------------------------
-!     kappa = kappa - T
-     call daxpy(n2orbxq, -1.0d0, T, 1, kappa_matrix, 1)
+!    substract T from kappa:
+     !kappa = kappa - T_ai_vec
+     call daxpy(length*nz, -1.0d0, T_ai_vec, 1, kappa, 1)
 
-!    3. create a vector of 'new' kappas:
-!    -----------------------------------
-     kappa = 0.0d0
-     call matrix_to_vector(kappa, length, kappa_matrix, irep, ih, orbital_rotation_indices)
-
-     call dealloc(kappa_matrix)
+     call dealloc(T_ai_vec)
      call dealloc(T)
      call dealloc(orbital_rotation_indices)
 
@@ -359,48 +361,17 @@ contains
   end subroutine
 
 
-  subroutine matrix_to_vector(vector, length, matrix, irep, orbital_rotation_indices)
+  subroutine matrix_to_vector(vector, length, matrix, irep, ih, orbital_rotation_indices)
      real(8), intent(inout) :: vector(length, nz)
      real(8), intent(inout) :: matrix(norbt, norbt, nz)
-     integer, intent(in)    :: length, irep, orbital_rotation_indices(2, length)
-     integer :: iz, is, iq, iqsym(nz), i, s, ih
-     real(8) :: factor, f
+     integer, intent(in)    :: length, irep, orbital_rotation_indices(2, length), ih
+     integer :: iz, i, s, is
 
-     debug_me = .false.
-     if (debug_me) then
-        write(*, *) 'matrix_to_vector'
-        call prqmat(matrix, norbt, norbt, norbt, norbt, nz,  &
-                    ipqtoq(1,irep), lupri)
-     end if
-
-     !ih = -1
-     !do iz = 1, nz
-
-     !   iq = ipqtoq(iz, irep)
-     !   iqsym(iz) = ihqmat(iq, ih)
-
-     !end do
-
-    do iz = 1, nz
-
-        !if (iqsym(iz) == 2) then
-        !   factor = -1.0d0
-        !else if (iqsym(iz) == 1) then
-        !   factor = 1.0d0
-        !else
-        !   write(*, *) 'error in matrix_to_vector'
-        !end if
-
-        if (ipqtoq(iz, irep) > 1) then
-          f = -1.0
-        else
-          f =  1.0
-        end if
-
+     do iz = 1, nz
         do is = 1, length
            i = orbital_rotation_indices(1, is)
            s = orbital_rotation_indices(2, is)
-           vector(is, iz) = -f*matrix(s, i, iz)
+           vector(is, iz) = matrix(s, i, iz)
         end do
      end do
    
@@ -668,9 +639,168 @@ contains
         matrix(s, i, iz) = matrix(s, i, iz) &
                          +     response_vector(is, iz)
         matrix(i, s, iz) = matrix(i, s, iz) &
-                         - f*h*response_vector(is, iz)
+                          - f*h*response_vector(is, iz)
       end do
     end do
 
   end subroutine
+
+
+
+  subroutine get_m_ee(m)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout) :: m(norbt, norbt, nz)
+     real(8), allocatable   :: m_cp(:,:,:)
+     integer, allocatable :: indices_virt(:)
+     integer, allocatable :: indices_occ(:)
+     integer :: isym, iz, i, j, ip
+!    ---------------------------------------------------------------------------
+
+     call alloc(m_cp, norbt, norbt, nz)
+     call dzero(m_cp, n2orbxq)
+
+     do isym = 1, nfsym
+
+!       find absolute indices of occuppied orbitals
+!       -------------------------------------------
+        call alloc(indices_occ, nocc(isym))
+        indices_occ = 0
+        call get_orbital_indices_from_strings(xlr_indstr(1, isym),         &
+                                              indices_occ,                 &
+                                              .true., .false., .false.,    &
+                                              isym)
+
+!       find absolute indices of virtual orbitals
+!       -----------------------------------------
+        call alloc(indices_virt, norb(isym) - nocc(isym))
+        indices_virt = 0
+        call get_orbital_indices_from_strings(xlr_indstr(3, isym),     &
+                                              indices_virt,            &
+                                              .false., .true., .false.,         &
+                                              isym)
+
+
+!       copy only needed elements of matrix m to helper matrix m_cp
+!       -----------------------------------------------------------
+        do iz = 1, nz
+           do j = 1, norb(isym) - nocc(isym)
+              do i = 1, nocc(isym)
+                 if (indices_occ(i) .ne. 0 .and. indices_virt(j) .ne. 0) then
+!                   occ-'virt-e'
+                    m_cp(indices_occ(i), indices_virt(j), iz) = &
+                       m(indices_occ(i), indices_virt(j), iz)
+!                   'virt-e'-occ
+                    m_cp(indices_virt(j), indices_occ(i), iz) = &
+                       m(indices_virt(j), indices_occ(i), iz)
+!                   occ-occ
+                    m_cp(indices_occ(i), indices_occ(i), iz) = &
+                       m(indices_occ(i), indices_occ(i), iz)
+                 end if
+              end do
+           end do
+        end do
+
+        call dealloc(indices_occ)
+        call dealloc(indices_virt)
+     end do
+
+
+!    clean
+!    -----
+     call dzero(m, n2orbxq)
+     call dcopy(n2orbxq, m_cp, 1, m, 1)
+     call dealloc(m_cp)
+
+
+  end subroutine
+
+  subroutine get_m_ep(m)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout) :: m(norbt, norbt, nz)
+     real(8), allocatable   :: m_cp(:,:,:)
+     integer, allocatable :: indices_virt(:)
+     integer, allocatable :: indices_occ(:)
+     integer :: isym, iz, i, j, ip
+!    ---------------------------------------------------------------------------
+
+     call alloc(m_cp, norbt, norbt, nz)
+     call dzero(m_cp, n2orbxq)
+
+     do isym = 1, nfsym
+
+!       find absolute indices of occuppied orbitals
+!       -------------------------------------------
+        call alloc(indices_occ, nocc(isym))
+        indices_occ = 0
+        call get_orbital_indices_from_strings(xlr_indstr(1, isym),         &
+                                              indices_occ,                 &
+                                              .true., .false., .false.,    &
+                                              isym)
+
+!       find absolute indices of virtual orbitals
+!       -----------------------------------------
+        call alloc(indices_virt, norb(isym) - nocc(isym))
+        indices_virt = 0
+        call get_orbital_indices_from_strings(xlr_indstr(3, isym),     &
+                                              indices_virt,            &
+                                              .false., .false., .true.,         &
+                                              isym)
+
+
+!       copy only needed elements of matrix m to helper matrix m_cp
+!       -----------------------------------------------------------
+        do iz = 1, nz
+           do j = 1, norb(isym) - nocc(isym)
+              do i = 1, nocc(isym)
+                 if (indices_occ(i) .ne. 0 .and. indices_virt(j) .ne. 0) then
+!                   occ-'virt-p'
+                    m_cp(indices_occ(i), indices_virt(j), iz) = &
+                       m(indices_occ(i), indices_virt(j), iz)
+!                   'virt-p'-occ
+                    m_cp(indices_virt(j), indices_occ(i), iz) = &
+                       m(indices_virt(j), indices_occ(i), iz)
+                 end if
+              end do
+           end do
+        end do
+
+        call dealloc(indices_occ)
+        call dealloc(indices_virt)
+     end do
+
+
+!    clean
+!    -----
+     call dzero(m, n2orbxq)
+     call dcopy(n2orbxq, m_cp, 1, m, 1)
+     call dealloc(m_cp)
+
+
+  end subroutine
+
+
+  subroutine test_new_routines(m)
+     real(8), intent(inout) :: m(norbt, norbt, nz)
+     real(8), allocatable   :: m_cp(:,:,:)
+     logical :: ee, ep
+
+     ee = .true.
+     ep = .true.
+     if (xlr_skipep .or. .not. doeprn) ep = .false.
+     if (xlr_skipee) ee = .false.
+
+     call alloc(m_cp, norbt, norbt, nz)
+     call dzero(m_cp, n2orbxq)
+     call dcopy(n2orbxq, m, 1, m_cp, 1)
+
+     call get_m_ij(m_cp)
+     call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
+
+     call get_m_ai(m, ee, ep)
+     call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
+
+     call dealloc(m_cp)     
+
+  end subroutine
+
 end module
