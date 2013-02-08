@@ -28,7 +28,6 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
-option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 
@@ -276,21 +275,6 @@ endforeach()
 #enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
 if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
-endif()
-
-#  stefan --> miro: please fix it properly or create a ticket but this is NOT
-#  OK; i encountered on some platforms severe performance
-#  degradation in parallel runs other than twoel. London integrals... (Jan
-#  2012)
-#  miro: after playing a lot with this there is no other way to fix it,
-#  I made this optimization decrease conditional in order not to affect other
-#  functionalities
-if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
-Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
-    message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
-error in the slave process of abacus/her2drv.F" )
-    set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
-"-O0")
 endif()
 
 # build unit tests

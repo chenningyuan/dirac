@@ -1583,27 +1583,9 @@ C
 
       CALL QENTER('EXPVSUSLO')
 #include "memint.h" 
-
-C 1. Get tensor of two-electron expectation value terms 
-
-C--- Try to get the exp.value over two-electron integrals !!!
-C prepare all arrays and density matrixes !
-C
-      NDMAT = 4 ! Number of dens.matrixes (closed shell)
-      NCOMP = 6 ! tensor components 
-
-      CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT,N2BBASX*NDMAT,WORK,KFREE,LFREE) ! Contravariant density matrixes
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
+C 0. Allocate memory and read coefficients etc.
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE) ! MO coefficients
-
-      CALL MEMGET('INTE',KIREP,NDMAT*NCOMP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIFCT,NDMAT*NCOMP,WORK,KFREE,LFREE)
-
-C ... boson irreps identification
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-
-C get MO coefficients and boson irreps info
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXVSUSLO')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
@@ -1617,28 +1599,20 @@ C     and the full relativistic (fermion symm.) mode
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
-
-      CALL SUSC2EL(WORK(KFMAT), WORK(KFOCK), WORK(KBEIG),
-     &     WORK(KCMO),WORK(KDMAT),WORK(KIREP),WORK(KIFCT),
-     &     NCOMP,WORK(KFREE),LFREE)
-
+C  1. Get tensor of two-electron expectation value terms 
+      CALL SUSC2EL(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
 C  2. Compute highest order reorthonormalization term {T(2),h(0)+g(0)}
-
       CALL HORDRNT(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-
 C  3. Compute lowest order reorthonormalization term  ...many more terms...
-
       CALL LORDRNT(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-
+C
       CALL MEMREL('EXPVSUSLO',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('EXPVSUSLO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SUSC2EL  */
-      SUBROUTINE SUSC2EL(FMAT,FOCK,IBEIG,
-     &             CMO,DMAT,IREPDM,IFCTYP,NCOMP,
-     &                      WORK,LWORK)
+      SUBROUTINE SUSC2EL(CMO,IBEIG,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C   Routine that calculates two-electron expectation value contribution
@@ -1673,24 +1647,21 @@ C
 #include "dcbprp.h"
 #include "dcbfir.h"
 C
-      DIMENSION FMAT(N2BBASX,4,NCOMP),FOCK(N2BBASX,NZ)
-      DIMENSION DMAT(N2BBASX*4),CMO(*),IBEIG(*),WORK(*)
-      DIMENSION IFCTYP(4,NCOMP),IREPDM(4,NCOMP)
+      DIMENSION CMO(*),IBEIG(*),WORK(*)
       DIMENSION ISYMOP(6),IHRMOP(6),IFCKOP(6),MTOTTK(3)
       LOGICAL   LBIT,NODV,NOPV,NOCONT,RETUR,
      &          FCKDDR,DDFOCK,FIRST,SUSCEP
-      LOGICAL PARCAL_SAVE
 
       CALL QENTER('SUSC2EL')
-#include "memint.h"
-
-      NDMAT = 4
-      NCOMP = 6
-
+      KFRSAV=KFREE
+C
+      NDMAT = 4 ! Number of dens.matrixes (closed shell)
+      NCOMP = 6 ! tensor components 
+      CALL MEMGET('REAL',KDMAT,N2BBASX*NDMAT,WORK,KFREE,LFREE) ! Contravariant density matrixes
+      CALL MEMGET('INTE',KIREP,NDMAT*NCOMP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFCT,NDMAT*NCOMP,WORK,KFREE,LFREE)
 C     get contavariant density matrixes
-
-      CALL GTCNVD(DMAT,CMO,IBEIG,IPRPRP,WORK,LWORK)
-
+      CALL GTCNVD(WORK(KDMAT),CMO,IBEIG,IPRPRP,WORK(KFREE),LFREE)
 C set up for second derivative g12 over B
       DO I=1,NCOMP
          ISYMOP(I) = 1
@@ -1698,19 +1669,13 @@ C set up for second derivative g12 over B
          IFCKOP(I) = 1
       END DO
 C prepare IFCTYP and IREPDM
-      CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRPRP)
-
+      CALL SETFCK(WORK(KIFCT),WORK(KIREP),NCOMP,NDMAT,
+     &            ISYMOP,IHRMOP,IFCKOP,IPRPRP)
 C call TWOINT and modify routines inside her2ave
-
 C ...Integral type - London orbitals and without EXPECT in her2ave !!!
       ITYPE = -5  
-CMI   EXPECT is for nucl.coordinate derivates !!!
       MAXDIF = 2  ! Second derivate...=> SUSCEPTIBILITIES !!
-      NODV = .TRUE.
-      NOPV = .TRUE.
-      NDMAT = 4 ! 4 matrixes for each quater.unit.
       IATOM = 0
-      NOCONT = .FALSE.
       RETUR  = .FALSE.
       RELCAL = .TRUE.
       DDFOCK = .TRUE.
@@ -1718,9 +1683,7 @@ CMI   EXPECT is for nucl.coordinate derivates !!!
       LONDON = .TRUE.  
       SUSCEP = .TRUE.
       FIRST = .TRUE.
-
-      LWRK = LWORK - KFREE + 1
-      CALL DZERO(FMAT,3*NDMAT*N2BBASX)
+      SCRDUM=-1.0D0
 C
 C     Check what type of two-electron integrals to include
 C
@@ -1732,28 +1695,30 @@ C
       FIRST2 = .TRUE.
       FIRST3 = .TRUE.
 #endif
-CLV   ... temporary fix for parallel runs...
-      PARCAL_SAVE = PARCAL
       CALL GETTIM(CPU1,WALL1)
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
-CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
-            CALL DIRAC_PARCTL( 1 )
-            CALL HER_PARDRV(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,
-     &            IFCTYP,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
-     &            TKTIME,.FALSE.,FIRST,WORK(KNPOS),MTOTTK(I2TYP),
-     &            I2TYP,IDUMMY,SCRFCK,DUMMY,DUMMY,DUMMY,
-     &            DUMMY)
+           CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
+           CALL DIRAC_PARCTL( 1 )
+           CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDMAT),
+     &          NDMAT,WORK(KIREP),WORK(KIFCT),
+     &          ITYPE,MAXDIF,IATOM,.TRUE.,.TRUE.,.FALSE.,
+     &          TKTIME,.FALSE.,FIRST,WORK(KNPOS),MTOTTK(I2TYP),
+     &          I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY)
+           CALL MEMREL('SUSC2EL.par',WORK,1,KNPOS,KFREE,LFREE)
          ELSE
 #endif
-             CALL TWOINT(WORK(KFREE),LWRK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP
-     &        ,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT
-     &        ,TKTIME,IPRPRP,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
-     &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,.false.
-     &        ,IDUMMY,DUMMY)
+           CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,
+     &          WORK,KFREE,LFREE)
+           CALL TWOINT(WORK(KFREE),LFREE,WORK(KFMAT),WORK(KDMAT),
+     &          NDMAT,WORK(KIREP),WORK(KIFCT),DUMMY,IDUMMY,IDUMMY,
+     &          ITYPE,MAXDIF,IATOM,.TRUE.,.TRUE.,.FALSE.,
+     &          TKTIME,IPRPRP,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,
+     &          I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
+     &          .FALSE.,IDUMMY,DUMMY)
+           CALL MEMREL('SUSC2EL.seq',WORK,1,KFMAT,KFREE,LFREE)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
 #endif
@@ -1761,8 +1726,7 @@ CMI      .... replace PARDRV by HER_PARDRV and IFTHRS by SCRFCK
       END DO
       CALL GETTIM(CPU2,WALL2)
 C
-      PARCAL = PARCAL_SAVE
-C
+      CALL MEMREL('SUSC2EL',WORK,1,KFRSAV,KFREE,LFREE)
       CPUTOT = CPU2 - CPU1
       WLLTOT = WALL2 - WALL1
       WRITE(LUPRI,'(/A,F13.4,A,F13.4,A/)') 
@@ -1996,7 +1960,6 @@ C*****************************************************************************
       CALL QENTER('LORDRNT')
 
       KFRSAV = KFREE
-
 C ... allocate space for the F(0) matrix and for the MO coefficients
 
 C   Get the Fock matrix in MO basis
