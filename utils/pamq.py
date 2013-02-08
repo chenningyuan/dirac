@@ -181,16 +181,14 @@ class PamQVariables:
       f.write('NODES='+str(self.nnodes)+'\n')
       print 'saved NODES=',self.nnodes
     else :
-      print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF NODES !\n'
-      error_exit=True 
+      print 'FYI: you did not set default ppn value, never mind... '
 
     if self.proc_per_node:
       f.write('# ... default number of processors (CPU) per 1 node\n')
       f.write('PROCESSORS_PER_NODE='+str(self.proc_per_node)+'\n')
       print 'saved PROCESSORS_PER_NODE=',self.proc_per_node
     else :
-      print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF PROCESSORS_PER_NODE !\n'
-      error_exit=True 
+      print 'FYI:default number of processors (CPU) per node - ppn - not set, never mind...'
 
     if (len(self.pam_script)>0) :
       f.write('# ... default location of the DIRAC pam script \n')
@@ -1079,4 +1077,3 @@ def main(*args):
 ###########################################################################
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
