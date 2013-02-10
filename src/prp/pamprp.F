@@ -5653,7 +5653,6 @@ C=============================================================================
       CALL DZERO(SUS2EL,9)
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
-
 C     ... evaluate expectation value terms first
       IF (LONDON) THEN
 #if defined MOD_MAGNETIZ
@@ -5680,33 +5679,31 @@ C     ... evaluate expectation value terms first
       CALL DZERO(SUSDIA_EX,9)
 
       IF (.NOT.LONDON) THEN
-       IF (MSUSCDIA) THEN
-        IJ = 0
-        DO I = 1, 3
-        DO J = I, 3
-          IJ = IJ + 1
-          IJX = IPDSUSC(IJ) 
-          IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
-     &   "PRP_MSUSCP: NEXPP is exceeded!"
-         IF (XLR_SKIPEP) THEN
+        IF (MSUSCDIA) THEN
+          IJ = 0
+          DO I = 1, 3
+          DO J = I, 3
+            IJ = IJ + 1
+            IJX = IPDSUSC(IJ) 
+            IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
+     &   "     PRP_MSUSCP: NEXPP is exceeded!"
+           IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
-         ELSE                
-          SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-          SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
-         ENDIF
-        ENDDO
-        ENDDO
+             SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
+             SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
+           ELSE                
+             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
+           ENDIF
+          ENDDO
+          ENDDO
 
-        IF (XLR_SKIPEP.AND.IPRPRP.GE.1) THEN
-         CALL HEADER('Expectation values part of susceptibilities',-1)
-         CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
-         CALL FLSHFO(LUPRI)
-        ENDIF 
-
-       ENDIF 
-
+          IF (XLR_SKIPEP.AND.IPRPRP.GE.1) THEN
+           CALL HEADER('Expectation values part of susceptibilities',-1)
+           CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
+           CALL FLSHFO(LUPRI)
+          ENDIF 
+        ENDIF ! IF (MSUSCDIA) THEN
       ELSE IF (LONDON) THEN 
 #if defined MOD_MAGNETIZ
 C ... accumulate one-electron expectation values into SUSDIA
@@ -5716,23 +5713,23 @@ C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSU
 C
         CALL DZERO(SUSDIA,9)
         IJ = 0
-        NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3
+        NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3: second magnetic derivatives of the Dirac Hamiltonian
         DO K = 1, NEXPVALTERMS
         DO I = 1, 3
         DO J = I, 3 
           IJ = IJ + 1
           IJX = IPDSUSC(IJ) 
           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
-     &   SUSDIA(IPTAX(J,2),IPTAX(I,2))  
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = 
-     &   SUSDIA(IPTAX(J,2),IPTAX(I,2))
+     &    SUSDIA(IPTAX(J,2),IPTAX(I,2))  
+          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = SUSDIA(IPTAX(J,2),IPTAX(I,2))
         ENDDO
         ENDDO
         ENDDO
 
 C -------------------------------------------------------
-C     RDSUSLL - 9 tensor terms, of which nondiagonal
-C have to be symmetrized according to derived formulas
+C     RDSUSLL - first magnetic derivative of London magnetic dipole operator
+C     These are 9 tensor terms, of which nondiagonal
+C     have to be symmetrized according to derived formulas
 C -------------------------------------------------------
 C
 C      ...  EXPVAL(IPDSUSC(19..27))
@@ -5795,19 +5792,19 @@ C ------------------------------------------------------------------------------
 C  LAST 6 Aucars (Sternheim) diamagnetic terms, RDSUSNL, extracted if wanted
 C ------------------------------------------------------------------------------
         IF (MSUSCDIA) THEN  
-         DO I = 1, 3
-         DO J = I, 3 
-          IJ = IJ + 1
-         IJX = IPDSUSC(IJ) 
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
+          DO I = 1, 3
+          DO J = I, 3 
+           IJ = IJ + 1
+           IJX = IPDSUSC(IJ) 
+           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
+           SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
-C         ... save them only when e-p rotations are active!
-          IF (.NOT.XLR_SKIPEP) THEN
-            SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX)
-            SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX)
-          ENDIF
+C          ... save them only when e-p rotations are active!
+           IF (.NOT.XLR_SKIPEP) THEN
+             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX)
+           ENDIF
          ENDDO
          ENDDO
 
@@ -5820,9 +5817,9 @@ C ... This is needed for compatibility with Dalton
           SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
          ENDDO
-        ENDIF
+       ENDIF
 
-! ... Write output - always print out partial results for compatibility with Dalton
+! ...  Write output - always print out partial results for compatibility with Dalton
        IF (IPRPRP.GE.0) THEN
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
@@ -5892,20 +5889,20 @@ CMI  ...    extract first character, like 'X magnetic field'
          DO IA = 1, 3
           IF (LONDON) THEN
 #if defined MOD_MAGNETIZ
-           IAX = IPLONDON(1,IA)
-           READ (PRPNAM((IAX)),'(4X,A1)') JCA
-           JA = ICONVXYZ(JCA)  
+            IAX = IPLONDON(1,IA)
+            READ (PRPNAM((IAX)),'(4X,A1)') JCA
+            JA = ICONVXYZ(JCA)  
 #endif
           ELSE
-           IAX = IPMSUSC(1,IA)
-           READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
-           JA = ICONVXYZ(JCA)
-           IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
-           write(lupri,*)
-     &    'PRP_MSUSCP: operator..',PRPNAM(LLRAPU(IA))
-           write(lupri,*) 'extracted JCA,JA=',JCA,JA
-           CALL QUIT('PRP_MSUSCP: wrong extracted number !')
-           ENDIF
+            IAX = IPMSUSC(1,IA)
+            READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
+            JA = ICONVXYZ(JCA)
+            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
+              write(lupri,*)
+     &        'PRP_MSUSCP: operator..',PRPNAM(LLRAPU(IA))
+              write(lupri,*) 'extracted JCA,JA=',JCA,JA
+              CALL QUIT('PRP_MSUSCP: wrong extracted number !')
+            ENDIF
           ENDIF
           ! store the relaxation part
           KA = IPMSUSC(1,IA)
@@ -5936,7 +5933,7 @@ C ....write out e-e and e-p contributions...
           CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
      &      ' contributions (au):',1)
           DO IROW = 1, 3
-           WRITE(LUPRI,'(2X,I1,1X,3F12.8,3X,3F12.8)')
+           WRITE(LUPRI,'(2X,I1,1X,3F20.12,3X,3F20.12)')
      &       IROW,(SUSREL_EP(IROW,ICOL,2),ICOL=1,3),
      &            (SUSREL_EP(IROW,ICOL,1),ICOL=1,3)
           ENDDO
@@ -5988,11 +5985,11 @@ C        ... the case with London atomic orbitals ...
          DO I = 1, 3
          DO J = 1, 3
            DIASUSC(I,J) = DIASUSC(I,J) + SUSCOM(I,J)
-           SUSTOT(I,J)  = SUSTOT(I,J) + SUSREL(I,J)
-     &                                + SUSDIA(I,J)
-     &                                + SUS2EL(I,J)
-     &                                + SUSFS (I,J)
-     &                                + SUSFSY(I,J)
+           SUSTOT(I,J)  = SUSTOT(I,J) + SUSREL(I,J) ! response part
+     &                                + SUSDIA(I,J) ! one-electron expectation values
+     &                                + SUS2EL(I,J) ! two-electron expectation values
+     &                                + SUSFS (I,J) ! high-order renormalization terms
+     &                                + SUSFSY(I,J) ! low-order renormalization terms
            PARSUS(I,J) = SUSTOT(I,J) - DIASUSC(I,J)
          ENDDO
          ENDDO
