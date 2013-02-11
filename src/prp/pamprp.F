@@ -6264,6 +6264,7 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
+#include "dcbnmr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
       LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -6374,6 +6375,8 @@ C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
         if (SEPTEP) then
+
+         if (.not. XLR_SKIPEE) then
 ! occ-occ:
            ee = .false.
            ep = .false.
@@ -6396,6 +6399,8 @@ C--------------------------------------------------------------------
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
 
+         end if
+         if (DOEPRN .and. .not. XLR_SKIPEP) then
 ! p-occ:
            ee = .false.
            ep = .true.
@@ -6406,6 +6411,8 @@ C--------------------------------------------------------------------
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
+
+         end if
 
         end if
 
