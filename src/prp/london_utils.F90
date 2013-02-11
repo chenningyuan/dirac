@@ -766,7 +766,6 @@ contains
         call dealloc(indices_virt)
      end do
 
-
 !    clean
 !    -----
      call dzero(m, n2orbxq)

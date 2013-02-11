@@ -558,8 +558,14 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 EPMIX = DOEPRN
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
-                CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                     CONMAT,WORK(KTHMAT),IPRINT)
+                if (lao_lr_rearrange .or.shielding_rearrange) then
+!                 then all contribution to {T,h} comes from occ-occ blocks
+                  CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                else 
+                  CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                end if
              end if
 
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
@@ -3546,7 +3552,7 @@ C ... specify sign for herm.conjugate of TMAT
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
           I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
           I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NPSH(I1),NPSH(I3),NPSH(I2),D1,
+          CALL QGEMM(NORB(I1),NORB(I3),NORB(I2),D1,
 !                    -------------------------------------------------
      &               'N', 'N', IPQTOQ(1,IREPH),
      &               HMAT(IORB(I1)+1,IORB(I2)+1,1),
@@ -3563,7 +3569,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NPSH(I1), NPSH(I3), NPSH(I2), DSGN,
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),

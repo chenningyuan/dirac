@@ -6402,7 +6402,7 @@ C--------------------------------------------------------------------
            occ = .false.
            CALL DZERO(TMPMAT,NCMAT)
            CALL DZERO(PMAT,NCMAT)
-           CALL GETCON_septep(ee, ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
+           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
