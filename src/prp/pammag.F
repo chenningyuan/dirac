@@ -410,17 +410,8 @@ C   .... defined conventional atomic orbitals (AO), not London AO
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETCON_septep(ee,ep,W,CONMAT,DMAT,ORTO,WORK,
-     &                  KFREE,LFREE,IPRINT)
-C***********************************************************************
-C
-C   Get the reortonormalization contribution term,
-C   {T(1),h(m_K)}, when using LAO. Calculated as expectation value.
-C
-C   MI/sept.2003: The .DOEPRN parameter decides whether to do
-C   reorthonormalization over both p+e shells, or only over
-C   the electronic shells. 
-C
+      SUBROUTINE GETCON_septep(ee,ep,occ,ORTO,WORK,KFREE,LFREE,IPRINT)
+!gosia: later i will merge it with GETCON, now it is easier....
 C***********************************************************************
       use london_helper
       use london_utils
@@ -445,15 +436,9 @@ C
 #include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
-!               Array for {T,h(mK)}_ic product
-      DIMENSION W(NORBT,NORBT,NZ,3),
-!              Array for h(mK) property matrix
-     &         CONMAT(NORBT,NORBT,NZ),
-!              Density matrix
-     &         DMAT(NORBT,NORBT,NZ),
-     &         ORTO(3,*),WORK(*), iqsym(4)
-      LOGICAL AH,EPMIX,DOPCTRA_SAVE,ee,ep
-      real(8), allocatable :: t_ee(:), t_ep(:)
+      DIMENSION ORTO(3,*),WORK(*), iqsym(4)
+      LOGICAL AH,EPMIX,DOPCTRA_SAVE, ee, ep, occ
+      real(8), allocatable:: conmat(:)
 C
 #include "ibtfun.h"
       CALL QENTER('GETCON')
@@ -489,6 +474,7 @@ C -- Calculate expect. value of {T(1),h(m)} --
 C --------------------------------------------
       NSCOOR = 3*NUCDEP
       NOP = 0
+      call alloc(conmat, n2orbxq)
       DO N = 1, NSCOOR  ! Run over coordinates m_K
          INDOP = IPSHIELD(N)
          IF (INDOP.GT.0) THEN ! Get h(m_K) in MO basis into CONMAT
@@ -500,12 +486,6 @@ C --------------------------------------------
            CALL DZERO(CONMAT,N2ORBXQ)
            CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
      &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-           IF (IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(2A)')
-     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
-            CALL PRQMAT(CONMAT,NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
-           ENDIF
 C --------------------------------------------------------------------
 C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
 C    as expectation value
@@ -544,22 +524,6 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              ENDIF
              end if ! if (lao_lr_rearrange)
      
-!             if (SEPTEP) then
-                if (ee) then
-                   call alloc(t_ee, n2orbxq)
-                   call dcopy(3,work(ktmat),1,t_ee,1)
-                   call get_m_ee(t_ee)
-                else if (ep) then
-                   call alloc(t_ep, n2orbxq)
-                   call dcopy(3,work(ktmat),1,t_ep,1)
-                   call get_m_ep(t_ep)
-                end if
-!             end if
-
-!g             if (shielding_rearrange .or. lao_lr_rearrange) then
-!g               call get_m_ij(work(ktmat))
-!g             end if
-
              if (shielding_rearrange) then
 !              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
                ih = -1
@@ -574,26 +538,33 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                call get_m_ij(work(ktmat))
              end if
 
+
+             if (ee) then
+                call get_m_ee(work(ktmat))
+                CALL DZERO(WORK(KTHMAT),N2ORBXQ)
+                EPMIX = DOEPRN
+                AH  = .TRUE. ! T_icomp is antihermitian ! 
+                CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                    CONMAT,WORK(KTHMAT),IPRINT)
+             else if (ep) then
+                call get_m_ep(work(ktmat))
+                CALL DZERO(WORK(KTHMAT),N2ORBXQ)
+                EPMIX = DOEPRN
+                AH  = .TRUE. ! T_icomp is antihermitian ! 
+                CALL TTRA3P(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                     CONMAT,WORK(KTHMAT),IPRINT)
+             else if (occ) then
+                call get_m_ij(work(ktmat))
+                CALL DZERO(WORK(KTHMAT),N2ORBXQ)
+                EPMIX = DOEPRN
+                AH  = .TRUE. ! T_icomp is antihermitian ! 
+                CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
+     &                     CONMAT,WORK(KTHMAT),IPRINT)
+             end if
+
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
-             CALL DZERO(WORK(KTHMAT),N2ORBXQ)
-             EPMIX = DOEPRN
-             AH  = .TRUE. ! T_icomp is antihermitian ! 
-             !if (shielding_rearrange .or. lao_lr_rearrange) then
-             if (shielding_rearrange.or.lao_lr_rearrange) then
-             CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
-             else
-C ... do the reorthonormalization ...
-             CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
-             end if !if (shielding_rearrange .or. lao_lr_rearrange) then
-             IF (IPRINT.GE.5) THEN
-              WRITE(LUPRI,'(4A/)')
-     &         'GETCON: Transformed term {}', PRPNAM(INDXPR),';',
-     &          PRPNAM(IPCON(ICOMP))
-              CALL PRQMAT(WORK(KTHMAT),NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
-             ENDIF
+
+      
 C ... calculate the expectation value of the {T_ic,h(mK)} matrix
               EXPVAL = D0
               DO IFS = 1, NFSYM
@@ -611,17 +582,11 @@ C ... store the reorthonormalization contribution into ORTO
               ITMP = IPTAX(ICOMP,2)
               ORTO(ITMP,NOP) = DM2*EXPVAL
 
-              IF (IPRINT.GE.4) THEN
-                 WRITE(LUPRI,'(4A,1X,E15.8,/)')
-     &           'GETCON: Expect. value {Tc,h(m_K)} for ',
-     &            PRPNAM(IPCON(ICOMP)),' and ',
-     &            PRPNAM(INDXPR),
-     &            ORTO(ITMP,NOP)
-              ENDIF
            ENDDO ! Of x,y,z connection matrixes...
            DOPCT=DOPCTRA_SAVE ! restore the pict.change transf.
          ENDIF
       ENDDO
+       call dealloc(conmat)
 C
 C close property file
 C
@@ -629,11 +594,6 @@ C
 
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
-      if (ee) then
-         call dealloc(t_ee)
-      else if (ep) then
-         call dealloc(t_ep)
-      end if
 
       CALL QEXIT('GETCON')
       RETURN
@@ -3463,6 +3423,163 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
       ENDDO
 
       CALL QEXIT('TTRA2')
+      RETURN
+      END
+
+      SUBROUTINE TTRA3E(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
+C*****************************************************************************
+      use london_helper
+      use london_reorth_hb
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      LOGICAL EPMIX, AH
+      DIMENSION  TMAT(NORBT,NORBT,NZ), 
+     &           HMAT(NORBT,NORBT,NZ),
+     &          THMAT(NORBT,NORBT,NZ)
+C
+#include "ibtfun.h"
+      CALL QENTER('TTRA3E')
+
+      IREPT = ISYMT-1
+      IOPSYT = JBTOF(IREPT,1)
+
+      IREPH = ISYMH-1
+      IOPSYH = JBTOF(IREPH,1)
+
+      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
+      IOPSYTH = JBTOF(IREPTH,1)
+
+C ... specify sign for herm.conjugate of TMAT 
+      IF (AH) THEN ! anti-hermitian
+        DSGN = DM1
+      ELSE
+        DSGN = D1
+      ENDIF
+
+C ... do matrix multiplications - run over fermion irreps
+C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
+
+      DO I1 = 1, NFSYM
+
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
+
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
+!                    ---------------------------------------------- --
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
+
+      ENDDO
+
+      CALL QEXIT('TTRA3E')
+      RETURN
+      END
+
+      SUBROUTINE TTRA3P(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
+C*****************************************************************************
+      use london_helper
+      use london_reorth_hb
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      LOGICAL EPMIX, AH
+      DIMENSION  TMAT(NORBT,NORBT,NZ), 
+     &           HMAT(NORBT,NORBT,NZ),
+     &          THMAT(NORBT,NORBT,NZ)
+C
+#include "ibtfun.h"
+      CALL QENTER('TTRA3P')
+
+      IREPT = ISYMT-1
+      IOPSYT = JBTOF(IREPT,1)
+
+      IREPH = ISYMH-1
+      IOPSYH = JBTOF(IREPH,1)
+
+      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
+      IOPSYTH = JBTOF(IREPTH,1)
+
+C ... specify sign for herm.conjugate of TMAT 
+      IF (AH) THEN ! anti-hermitian
+        DSGN = DM1
+      ELSE
+        DSGN = D1
+      ENDIF
+
+      DO I1 = 1, NFSYM
+
+C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
+          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
+          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
+          CALL QGEMM(NPSH(I1),NPSH(I3),NPSH(I2),D1,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1,IORB(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1,IORB(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1,IORB(I3)+1,1),
+     &               NORBT,NORBT,NZ)
+
+C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
+          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
+          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
+          CALL QGEMM(NPSH(I1), NPSH(I3), NPSH(I2), DSGN,
+!                    -----------------------------------
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
+     &               NORBT,NORBT,NZ,
+!                    -----------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ, 
+!                    -----------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
+
+      ENDDO
+
+      CALL QEXIT('TTRA3P')
       RETURN
       END
 

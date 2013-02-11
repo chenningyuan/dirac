@@ -1,5 +1,7 @@
 quick
 
+lao_shield_unchanged_sc_septep.inp     co2_c1.mol
+
 lao_shield_unchanged_sc.inp     co2_c1.mol
 lao_shield_unchanged_nc.inp     co2_c1.mol
 lao_shield_rearranged_sc.inp    co2_c1.mol
@@ -31,4 +33,5 @@ lao_shield_unchanged_nc_orbstr_co2_d2h.inp    co2_d2h.mol
 lao_shield_rearranged_sc_orbstr_co2_d2h.inp   co2_d2h.mol
 lao_shield_rearranged_nc_orbstr_co2_d2h.inp   co2_d2h.mol
 lao_shield_lr_rearranged_orbstr_co2_d2h.inp   co2_d2h.mol
+
 

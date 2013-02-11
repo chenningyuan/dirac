@@ -654,6 +654,7 @@ contains
      integer, allocatable :: indices_virt(:)
      integer, allocatable :: indices_occ(:)
      integer :: isym, iz, i, j, ip
+! get occ-"virtual-electronic" blocks of matrix m
 !    ---------------------------------------------------------------------------
 
      call alloc(m_cp, norbt, norbt, nz)
@@ -692,9 +693,6 @@ contains
 !                   'virt-e'-occ
                     m_cp(indices_virt(j), indices_occ(i), iz) = &
                        m(indices_virt(j), indices_occ(i), iz)
-!                   occ-occ
-                    m_cp(indices_occ(i), indices_occ(i), iz) = &
-                       m(indices_occ(i), indices_occ(i), iz)
                  end if
               end do
            end do
@@ -784,22 +782,42 @@ contains
      real(8), allocatable   :: m_cp(:,:,:)
      logical :: ee, ep
 
-     ee = .true.
-     ep = .true.
-     if (xlr_skipep .or. .not. doeprn) ep = .false.
-     if (xlr_skipee) ee = .false.
+! test "ij" and "ai"
+!     ee = .true.
+!     ep = .true.
+!     if (xlr_skipep .or. .not. doeprn) ep = .false.
+!     if (xlr_skipee) ee = .false.
+!
+!     call alloc(m_cp, norbt, norbt, nz)
+!     call dzero(m_cp, n2orbxq)
+!     call dcopy(n2orbxq, m, 1, m_cp, 1)
+!
+!     call get_m_ij(m_cp)
+!     call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
+!
+!     call get_m_ai(m, ee, ep)
+!     call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
+!
+!     call dealloc(m_cp)     
+
+! test "ee" and "ep":
 
      call alloc(m_cp, norbt, norbt, nz)
      call dzero(m_cp, n2orbxq)
      call dcopy(n2orbxq, m, 1, m_cp, 1)
 
-     call get_m_ij(m_cp)
+     call get_m_ee(m_cp)
      call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
 
-     call get_m_ai(m, ee, ep)
+     call get_m_ep(m)
+     call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
+
+     call get_m_ij(m)
      call daxpy(n2orbxq, 1.0d0, m_cp, 1, m, 1)
 
      call dealloc(m_cp)     
+
+
 
   end subroutine
 
