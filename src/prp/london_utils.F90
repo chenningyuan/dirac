@@ -327,14 +327,13 @@ contains
 
 !    create a vector, T_ai_vec, from matrix T
 !    the order of indices on T_ai_vec is the same as on kappa vector:
-!    gosia fixme: it works now, but we should be careful, because:
+!    gosia fixme: it works now for symcon, but we should be careful, because:
 !    *) if symcon then T is antihermitian 
 !    *) if natural con. then T is a general matrix
 !    and we take only "virt-occ" elements to a vector
 !    we want T to "follow" kappas, but in case of natural connection now we 
 !    neglect all "occ-virt" (we take only 'virt-occ")
-!    note for me: i tried to antisymmetrize it (qgetam) and to separate the
-!    hermitian and antihermitian parts, but it's not better
+!    i think we should treat 'kappa_ia - T_ia' and 'kappa_ai - T_ai' separately
 
      call alloc(T_ai_vec, length,nz)
      call dzero(T_ai_vec, length*nz)
