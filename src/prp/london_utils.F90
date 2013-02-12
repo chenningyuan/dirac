@@ -332,16 +332,19 @@ contains
 !    *) if natural con. then T is a general matrix
 !    and we take only "virt-occ" elements to a vector
 !    we want T to "follow" kappas, but in case of natural connection now we 
-!    neglect all "occ-virt" part that is not related to 'virt-occ"
+!    neglect all "occ-virt" (we take only 'virt-occ")
 !    note for me: i tried to antisymmetrize it (qgetam) and to separate the
 !    hermitian and antihermitian parts, but it's not better
 
      call alloc(T_ai_vec, length,nz)
      call dzero(T_ai_vec, length*nz)
      call matrix_to_vector(T_ai_vec, length, T, irep, ih, orbital_rotation_indices)
-     write(*, *) 'combine_kappa_t: T_ai_vec, length,ee,ep = ', length,ee, ep
-     call prqmat(T_ai_vec(1,1), length, 1, length, 1, nz,  &
-                 ipqtoq(1,irep), lupri)
+     debug_me = .false.
+     if (debug_me) then
+       write(*, *) 'combine_kappa_t: T_ai_vec, length,ee,ep = ', length,ee, ep
+       call prqmat(T_ai_vec(1,1), length, 1, length, 1, nz,  &
+                   ipqtoq(1,irep), lupri)
+     end if
 
 !    substract T from kappa:
      !kappa = kappa - T_ai_vec
@@ -365,7 +368,14 @@ contains
      real(8), intent(inout) :: vector(length, nz)
      real(8), intent(inout) :: matrix(norbt, norbt, nz)
      integer, intent(in)    :: length, irep, orbital_rotation_indices(2, length), ih
-     integer :: iz, i, s, is
+     integer :: iz, i, s, is,iih,iq,iqsym(4)
+
+     !iih = -1
+     !do iz = 1, nz
+     !  iq = ipqtoq(iz, irep)
+     !  iqsym(iz) = ihqmat(iq, ih)
+     !end do
+     !call qgetam(matrix, norbt, nz, norbt, norbt, iqsym)
 
      do iz = 1, nz
         do is = 1, length
