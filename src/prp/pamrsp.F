@@ -4404,18 +4404,20 @@ C
       IPAR = INERT(2) - NEPROT
 !     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
       if(nasht .le. 0)then
-        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
+        IF(IPRINT.GE.2 .OR. IPAR.GT.0 .OR. INERT(3).ne.0) THEN
           WRITE(LUPRI,'(3X,A,F12.5)') '* Reduced matrix. Frequency:',W
           WRITE(LUPRI,'(4(5X,A,I5))')
-     &        '* Number of positive eigenvalues:',INERT(1),
-     &        '* Number of zero     eigenvalues:',INERT(3),
-     &        '* Number of negative eigenvalues:',INERT(2),
-     &        '  number of +- (ep) trial vectors:',NEPROT
-          IF(IPAR.GT.0.and. iprint >= 5) THEN
-            WRITE(LUPRI,'(A)')
-     &        '*** WARNING - Possible instability detected '//
-     &        'in reduced system !'
-          ENDIF
+     &        '* Number of positive eigenvalues :',INERT(1),
+     &        '* Number of zero     eigenvalues :',INERT(3),
+     &        '* Number of negative eigenvalues :',INERT(2),
+     &        '* Number of +- (ep) trial vectors:',NEPROT
+          IF(IPAR.GT.0) WRITE(LUPRI,'(//A,I3/A/A/)')
+     &      '*** WARNING - If your reference state is not the'//
+     &         ' excited state with index',IPAR,
+     &      '    WARNING - then you probably have an instability in'//
+     &        ' your reference state !!!',
+     &      '    WARNING - (e.g. unrestricted lower energy than'//
+     &        ' restricted, or ...)'
         ENDIF
       ENDIF
       CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)

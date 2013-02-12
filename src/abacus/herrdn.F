@@ -450,9 +450,7 @@ C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
       use codata
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -779,22 +777,13 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-C     ****************************************
-C     **** This is for generating ARGOSIN ****
-C     ****************************************
-#ifdef MOD_ECP
-      nsag   = NUCIND
-      naordsag = blk
-      ngcsag = blk
-      nstag = MAXREP + 1
-      do i = 0, nstag-1
-         ndag(i) = 1
-      enddo
+C     ********************************
+C     **** This is for ECP module ****
+C     ********************************
       CALL RECP_LNK_CHECKMOL(DOCART)
       CALL RECP_LNK_IRREP(MAXREP)
       CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
      &     IQM,JCO,KATOM,KANG)
-#endif
 C
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
@@ -1891,12 +1880,10 @@ C
 C       End of loop over small/large fitsets.
         ENDDO
 C
-#ifdef MOD_ECP
 C
 C       Read RECP parameter if exist
 C
         CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
-#endif
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -2148,12 +2135,10 @@ C*****************************************************************************
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-#ifdef MOD_ECP
 C      For ECP integeral
        CALL RECP_LNK_RDORB(IQM(1,1),JCO(1,1,1),NUC(1,1),NRC(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM)
-#endif /* ifdef MOD_ECP */ 
       NLRGSH = ISHELL
       NLARGE = IORBD
       NORBL  = IORB
@@ -2494,6 +2479,7 @@ C
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
+      NBAS_ATOMTYPE(1:NONTYP,0:mxbsets) = 0
       DO 100 I = 1,NONTYP
 C
 C        Convert information to a string that can be understood by the innocent user
@@ -2511,6 +2497,8 @@ C
                NBAS(ISET) = 0
             END IF
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
+            NBAS_ATOMTYPE(I,ISET) = NBAS(ISET)
+            NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NBAS(ISET)
          END DO
 C
          NUCLEI_IN_TYPE = 0
@@ -2545,7 +2533,7 @@ C
      &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
             ENDIF
          END IF
-  100 CONTINUE
+  100 CONTINUE ! I = 1, NONTYP
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
@@ -4377,9 +4365,7 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
-#ifdef MOD_ECP
       USE RECP_NTR
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4606,12 +4592,10 @@ C
           ENDDO
         ENDDO
       ENDDO
-#ifdef MOD_ECP
 C
 C     For ECP integral
 C
       CALL RECP_LNK_CTRAN(blk)
-#endif /* ifdef MOD_ECP */
 C
       RETURN
       END

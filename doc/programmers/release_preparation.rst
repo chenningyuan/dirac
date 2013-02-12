@@ -63,7 +63,17 @@ Again, do not commit to master, commit to the release branch::
   $ git commit                    # commit your modifications
   $ git checkout master           # switch immediately to the master branch
   $ git merge --no-ff release-12  # merge changes to master, fix conflicts if any
-  $ git push                      # pushes changes both to master and to branch
+  $ git push                      # pushes changes both to master and to branch (newer versions of git)
+
+With older versions of git you have to push changes separately to the release and to master branch, respectivelly::
+
+  $ git checkout release-12
+  $ git pull                      # update the local release-12 branch
+  $ git commit                    # commit your modifications
+  $ git push                      # push your changes to release-12 branch
+  $ git checkout master           # switch immediately to the master branch
+  $ git merge --no-ff release-12  # merge changes to master, fix conflicts if any
+  $ git push                      # stamp your changes to master 
 
 If you have no time, you don't have to merge to master yourself, you can wait
 until somebody else does it for his/her commits. No commit can get lost.

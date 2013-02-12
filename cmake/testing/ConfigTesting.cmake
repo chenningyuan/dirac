@@ -20,11 +20,7 @@ endif()
 if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
     set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
 endif()
-# choose full path binary - override diracrc setting
-if(NOT "${RUNTEST_BINARY}" STREQUAL "")
-    set(RUNTEST_FLAG_BINARY "--binary=${RUNTEST_BINARY}")
-endif()
 
-include(TestsList)
+include(Tests)
 include(CTest)
 enable_testing()

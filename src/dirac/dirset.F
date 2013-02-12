@@ -92,10 +92,10 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-!     youngc:  RECP integral     
-#ifdef MOD_ECP
+
+C     Start RECP integral     
+C     ===================
       IF (ECPCALC) CALL RECP
-#endif
 
 #ifdef BUILD_GEN1INT
 !     test suite of gen1int interface

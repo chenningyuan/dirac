@@ -52,7 +52,7 @@ implicit none
 !   thfull - threshold; see lgfull for the explanation                                        !
 !   lggrad - it is used when heskey = FULL or heskey = DIAG or                                !
 !            in the second stage of the heskey = COMB option                                  !
-!            True  - converge when the difference between the functional value                !
+!            True  - converge when the difference between the gradient of the functional      !
 !                    of two subsequent iterations is lower than threshold (thgrad)            !
 !            False - the functional value criterion or criterion of the number                !
 !                    of negative eigenvalues equals zero will be used                         !

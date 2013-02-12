@@ -18,6 +18,9 @@
 #
 #           select modules for release
 #           ./pamadm --release
+#
+# information for developers:
+#     - NEVER EVER generate any files outside the builddir
 
 from optparse import OptionParser
 import sys
@@ -31,6 +34,9 @@ import glob
 # sys.argv contains: ['./pamadm', '--adm --hsfsdyn --auto']
 sys.argv = [w for arg in sys.argv for w in arg.split()]
 # sys.argv now contains: ['./pamadm', '--adm', '--hsfsdyn', '--auto']
+
+root_directory = os.path.dirname(os.path.realpath(__file__))
+default_build_path = os.path.join(root_directory, 'build')
 
 class dirac_module:
      def __init__(self, flag, message):
@@ -75,6 +81,7 @@ vital_directories.append('src/abacus')
 vital_directories.append('src/amfi')
 vital_directories.append('src/dirac')
 vital_directories.append('src/dirrci')
+vital_directories.append('src/ecp')
 vital_directories.append('src/embedding')
 vital_directories.append('src/gp')
 vital_directories.append('src/grid')
@@ -102,6 +109,7 @@ vital_directories.append('src/xcint/src')
 vital_directories.append('utils')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
+vital_directories.append('basis_ecp')
 vital_directories.append('cmake')
 
 # these tests are always packaged
@@ -137,6 +145,7 @@ list_of_tests.append('dft_response')
 list_of_tests.append('dft_response_symmetry')
 list_of_tests.append('dft_response_xcfun')
 list_of_tests.append('efg')
+list_of_tests.append('ecp')
 list_of_tests.append('electrostatic_potential')
 list_of_tests.append('fde_static-vemb_dipole')
 list_of_tests.append('free-particle_projection')
@@ -147,6 +156,7 @@ list_of_tests.append('fscc_intensities')
 list_of_tests.append('gaunt')
 list_of_tests.append('geo_opt')
 list_of_tests.append('geo_opt_saddle')
+list_of_tests.append('kallay_mrcc_interface')
 list_of_tests.append('krci_energy')
 list_of_tests.append('krci_properties_omega_tdm')
 list_of_tests.append('krci_properties_perm_dipmom')
@@ -159,6 +169,7 @@ list_of_tests.append('mcscf_energy')
 list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
 list_of_tests.append('mp2_energy')
 list_of_tests.append('mp2_properties')
+list_of_tests.append('mp2_srdft_energies')
 list_of_tests.append('open-shells')
 list_of_tests.append('projection_analysis')
 list_of_tests.append('pvc_scf')
@@ -195,7 +206,7 @@ list_of_tests.append('lao_shield_rearranged')
 # then list directories that are to be skipped as whole
 
 files_never_compiled = []
-files_never_compiled.append('src/argosecp/argos_input.F')
+files_never_compiled.append('src/gp/unit_testing.F90')
 files_never_compiled.append('src/utils/cube2pov.c')
 files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('src/relccsd/ccints_nomemget.F')
@@ -220,7 +231,6 @@ files_never_compiled.append('src/xcint/src/fake_input.F90')
 directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('cmake')
-directories_never_compiled.append('src/gen1int')
 
 for directory in directories_never_compiled:
     for file in glob.glob('%s/*.F90' % directory):
@@ -308,7 +318,6 @@ dirac_modules[this_module] = dirac_module('cap', 'CAP module (together with obje
 dirac_modules[this_module].add_cppflag('MOD_CAP')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('src/cap')
-#dirac_modules[this_module].add_test('cap')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hscc'
@@ -342,13 +351,6 @@ this_module = 'magnetiz'
 dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
 dirac_modules[this_module].add_test('response_lao_magnetiz')
-dirac_modules[this_module].take_out_of_release()
-
-this_module = 'ecp'
-dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
-dirac_modules[this_module].add_cppflag('MOD_ECP')
-dirac_modules[this_module].add_directory('src/argosecp')
-dirac_modules[this_module].add_test('ecp')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'srdft'
@@ -410,6 +412,9 @@ parser.add_option('--release',
                   dest='release',
                   default=False,
                   help="Include selected modules for the release")
+parser.add_option('--builddir',
+                  default=default_build_path,
+                  help="Build path where pamadm will generate files for CMake [default: %default]")
 
 # complain if user still uses ./pamadm ... make
 if sys.argv[-1] == 'make':
@@ -460,6 +465,11 @@ for module in dirac_modules:
        print '       ' + dirac_modules[module].message
 print
 
+if not os.path.exists(options.builddir):
+    os.mkdir(options.builddir)
+if not os.path.exists(os.path.join(options.builddir, 'pamadm-generated')):
+    os.mkdir(os.path.join(options.builddir, 'pamadm-generated'))
+
 # prepare files for cmake
 
 directories_with_sources = []
@@ -479,28 +489,23 @@ list_of_fixed_fortran_sources = []
 list_of_include_files         = []
 for directory in directories_with_sources:
     for source in glob.glob('%s/*.F' % directory):
-        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        source = string.replace(source, '\\', '/')
         list_of_fixed_fortran_sources.append(source)
     for source in glob.glob('%s/*.F90' % directory):
-        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        source = string.replace(source, '\\', '/')
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.f90' % directory):
-        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        source = string.replace(source, '\\', '/')
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.c' % directory):
-        source = string.replace(source, '\\', '/')  # fix cmake on Windows
+        source = string.replace(source, '\\', '/')
         list_of_c_sources.append(source)
     for source in glob.glob('%s/*.h' % directory):
-        # this is only important for "make release" it does not have to work on windows
+        source = string.replace(source, '\\', '/')
         list_of_include_files.append(source)
     for source in glob.glob('%s/*.inc' % directory):
-        # this is only important for "make release" it does not have to work on windows
+        source = string.replace(source, '\\', '/')
         list_of_include_files.append(source)
-
-# add binary_info.F90 unless
-# pamadm found them already
-if not 'src/gp/binary_info.F90' in list_of_free_fortran_sources:
-    list_of_free_fortran_sources.append('src/gp/binary_info.F90')
 
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
@@ -527,14 +532,14 @@ s += '\nset(C_SOURCES\n%s    )' % s_c
 s += '\nset(FREE_FORTRAN_SOURCES\n%s    )' % s_free_fortran
 s += '\nset(FIXED_FORTRAN_SOURCES\n%s    )' % s_fixed_fortran
 
-f = open('cmake/pamadm-generated/SourcesList.cmake', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'Sources.cmake'), 'w')
 f.write(s)
 f.close()
 
 s  = '# file generated by the minions of DIRAC - this is not important for compilation, only for the "make release" target\n'
 s += '\nset(INCLUDE_FILES\n%s    )' % s_include_files
 
-f = open('cmake/pamadm-generated/IncludeFilesList.cmake', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'IncludeFiles.cmake'), 'w')
 f.write(s)
 f.close()
 
@@ -544,7 +549,7 @@ for module in dirac_modules:
         for cppflag in dirac_modules[module].cppflags:
             s += '-D%s ' % cppflag
 
-f = open('cmake/pamadm-generated/DefinitionsList.cmake', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'Definitions.cmake'), 'w')
 f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
 f.write('add_definitions(%s)' % s)
 f.close()
@@ -555,36 +560,23 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
         for test in dirac_modules[module].tests:
             list_of_tests.append(test)
-f = open('test/list_of_tests', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'list_of_tests'), 'w')
 for test in list_of_tests:
     f.write(test + '\n')
 f.close()
 
 # package tests for cmake's "make test"; include flags
 
-f = open('cmake/pamadm-generated/TestsList.cmake', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'Tests.cmake'), 'w')
 f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
-if sys.platform != "win32":
-    #join_path_dirac=os.path.join('${PROJECT_BINARY_DIR}','dirac.x')
-    join_path_dirac='${PROJECT_BINARY_DIR}/dirac.x'
-else:
-#miro: ${PROJECT_BINARY_DIR} contains "/", can not use os.path.join under Windows as this spoils path string with "\"!
-    #join_path_dirac=os.path.join('${PROJECT_BINARY_DIR}','dirac.x.exe')  
-    join_path_dirac='${PROJECT_BINARY_DIR}/dirac.x.exe'
-	
 for test in list_of_tests:
-    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --binary=%s --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} ${RUNTEST_FLAG_BINARY} --tests=%s)\n' % (test, join_path_dirac, test))
+    f.write('add_test(%s python ${CMAKE_SOURCE_DIR}/runtest --showdiff --builddir=${PROJECT_BINARY_DIR} --verbose ${RUNTEST_FLAG_NR_PROC} ${RUNTEST_FLAG_TIMEOUT} --tests=%s)\n' % (test, test))
 f.close()
 
 # write pamadm flags to file
-f = open('cmake/pamadm-generated/pamadm-flags', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'pamadm-flags'), 'w')
 f.write(string.join(sys.argv[1:]))
 f.close()
-
-# generate basis set files containing "*"
-if sys.platform != "win32":
-    for f in glob.glob('basis_dalton/*-star'):
-        shutil.copy(f, string.replace(f, '-star', '*'))
 
 # get delete flags (used by make release)
 delete_flags = ''
@@ -598,6 +590,6 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
        for cppflag in dirac_modules[module].cppflags:
            delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
-f = open('maintenance/delete_flags', 'w')
+f = open(os.path.join(options.builddir, 'pamadm-generated', 'delete_flags'), 'w')
 f.write(delete_flags)
 f.close()

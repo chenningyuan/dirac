@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# FYI:  crontab inscription:
+#30 00 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/trunk; $DIRAC/maintenance/cdash/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64 > $DIRAC/maintenance/cdash_buildup_log_$timestamp
+
+
+# enviroment variables ...
+export PATH=/home/milias/bin/openmpi_ilp64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64:/usr/local/lib
+
+####  server's Intel compilers  ####
+if [[ -z $PROD_DIR ]]; then
+  #source /home/ilias/intel/bin/compilervars.sh intel64
+  source /opt/intel/bin/compilervars.sh intel64
+  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+fi
+alias mkl='export MATH_ROOT=/opt/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"'
+
+# the directory where your DIRAC sits
+DIRAC=/home/milias/work/qch/dirac_git/trunk
+OMPI=/home/milias/bin/openmpi_ilp64/bin
+
+# go to the local DIRAC directory
+cd $DIRAC
+git pull
+
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
+
+BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
+# configure step
+./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
+cd $BUILD_GNU
+#cmake ..
+#make ExperimentalUpdate
+cmake ..
+make clean
+make Experimental
+
+
+cd $DIRAC
+# now the second buildup with serial ifort
+BUILD_INTEL=build_ifort_mkl_int64
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
+export MATH_ROOT=/opt/intel/mkl
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
+cd $BUILD_INTEL
+#cmake ..
+#make ExperimentalUpdate
+cmake ..
+make clean
+make Experimental
+
+#
+# now do the nightly build
+#
+TMP_DIR=/tmp/milias/dirac_build
+if [[ -d "$TMP_DIR" ]]; then
+  /bin/rm -rf $TMP_DIR
+  mkdir -p $TMP_DIR
+else
+  mkdir -p $TMP_DIR
+fi
+git  clone git@repo.ctcc.no:dirac.git  $TMP_DIR
+cd $TMP_DIR
+./pamadm -a --hsfsdyn --hscc --auto 
+export MATH_ROOT=/opt/intel/mkl
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_ilp64_master" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF
+cd build
+make Nightly
+
+exit 0
