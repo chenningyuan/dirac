@@ -368,14 +368,7 @@ contains
      real(8), intent(inout) :: vector(length, nz)
      real(8), intent(inout) :: matrix(norbt, norbt, nz)
      integer, intent(in)    :: length, irep, orbital_rotation_indices(2, length), ih
-     integer :: iz, i, s, is,iih,iq,iqsym(4)
-
-     !iih = -1
-     !do iz = 1, nz
-     !  iq = ipqtoq(iz, irep)
-     !  iqsym(iz) = ihqmat(iq, ih)
-     !end do
-     !call qgetam(matrix, norbt, nz, norbt, norbt, iqsym)
+     integer :: iz, i, s, is
 
      do iz = 1, nz
         do is = 1, length
