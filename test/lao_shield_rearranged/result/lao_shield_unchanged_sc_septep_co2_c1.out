@@ -4,150 +4,155 @@ DIRAC serial has no limitations in place for the amount of dynamically allocated
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
- ******************************************************************************
- *                                                                            *
- *                                O U T P U T                                 *
- *                                   from                                     *
- *                                                                            *
- *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
- *                   @@  @@        @@  @@   @@  @@   @@                       *
- *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
- *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
- *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
- *                                                                            *
- *                                                                            *
- %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
- $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
- (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
- $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
- SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
- SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
- ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
- S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
- (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
- $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
- S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
- c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
- S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
- $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
- $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
- ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
- Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
- (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
- SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
- $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
- %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
- $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
- $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
- )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
- $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
- $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
- Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
- $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
- &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
- =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
- $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
- MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
- MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
- MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
- MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
- MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
- MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
- MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
- MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
- MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
- MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
- MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
- MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
- MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
- MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
- MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
- MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
- MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
- MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
- MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
- MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
- MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
- MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
- MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
- MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
- ******************************************************************************
- *                                                                            *
- *         =========================================================          *
- *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic All-electron Calculations           *
- *         =========================================================          *
- *                                                                            *
- *                                                                            *
- *    Written by:                                                             *
- *                                                                            *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
- *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *                                                                            *
- *    with contributions from:                                                *
- *                                                                            *
- *    Vebjoern Bakken          University of Oslo                Norway       *
- *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Sebastien Dubillard      University of Strasbourg          France       *
- *    Ulf Ekstroem             University of Oslo                Norway       *
- *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
- *    Olav Fossgaard           University of Tromsoe             Norway       *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Trygve Helgaker          University of Oslo                Norway       *
- *    Jon K. Laerdahl          University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           Matej Bel University              Slovakia     *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            University of Southern Denmark    Denmark      *
- *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
- *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linkoeping University             Sweden       *
- *    Gosia Olejniczak         University of Warsaw              Poland       *
- *    Jeppe Olsen              Aarhus University                 Denmark      *
- *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
- *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
- *    Joern Thyssen            University of Southern Denmark    Denmark      *
- *    Joost van Stralen        VU University Amsterdam           Netherlands  *
- *    Sebastien Villaume       Linkoeping University             Sweden       *
- *    Olivier Visser           University of Groningen           Netherlands  *
- *    Toke Winther             University of Southern Denmark    Denmark      *
- *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
- *                                                                            *
- *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.vu.nl                                         *
- *                                                                            *
- *    This is an experimental code. The authors accept no responsibility      *
- *    for the performance of the code or for the correctness of the results.  *
- *                                                                            *
- *    The code (in whole or part) is not to be reproduced for further         *
- *    distribution without the written permission of the authors or           *
- *    their representatives.                                                  *
- *                                                                            *
- *    If results obtained with this code are published, an                    *
- *    appropriate citation would be:                                          *
- *                                                                            *
- *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC11 (2011),                                                 *
- *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
- *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
- *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
- *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
- *                                                                            *
- ******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France        *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
+ *    Olav Fossgaard           University of Tromsoe             Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
+ *    Stefan Knecht            University of Southern Denmark    Denmark       *
+ *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For the complete list of contributors to the DIRAC code see our          *
+ *    website http://www.diracprogram.org                                      *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC12 (2012),                                                  *
+ *    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,            *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee, J. Henriksson,   *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
+ *    C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak, J. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud, P. Salek,          *
+ *    B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen,           *
+ *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
+ *    (see http://www.diracprogram.org).                                       *
+ *                                                                             *
+ *******************************************************************************
 
 
 Binary information
@@ -176,15 +181,15 @@ Binary information
  LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
                           | las-base/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 073ea3fc652166691f2b298db739fe5c2e45d687
- Configuration time       | 2013-02-11 14:39:17.848276
+ Last Git revision        | c899f9eec2fff4c3c65ab870b32fb6d963e15c72
+ Configuration time       | 2013-02-12 13:59:23.239722
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Feb 11 14:42:58 2013
+     Date and time (Linux)  : Tue Feb 12 18:59:36 2013
      Host name              : not found                               
 
 
@@ -1030,7 +1035,7 @@ NMRINP: The gauge & dipole origin :    0.000000    0.000000    0.000000
 No. of positive energy orbitals (NESH):    45
 No. of negative energy orbitals (NPSH):    45
 Total no. of orbitals           (NORB):    90
- >>> Time used in PAMSET is   0.29 seconds
+ >>> Time used in PAMSET is   0.28 seconds
 
 
    ****************************************************************************
@@ -1042,168 +1047,168 @@ Total no. of orbitals           (NORB):    90
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Feb 11 14:42:58 2013
+########## START ITERATION NO.   1 ##########   Tue Feb 12 18:59:36 2013
 
 
 => Calculating sum of orbital energies
-It.    1    -43.52231479538      0.00D+00  0.00D+00  0.00D+00               0.13600799s   Scr. nuclei    Mon Feb 11
+It.    1    -43.52231479538      0.00D+00  0.00D+00  0.00D+00               0.13200799s   Scr. nuclei    Tue Feb 12
 
-########## START ITERATION NO.   2 ##########   Mon Feb 11 14:42:59 2013
+########## START ITERATION NO.   2 ##########   Tue Feb 12 18:59:36 2013
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   70.31%    0.11%    3.69%   0.07600397s
-SOfock:SL  1.00D-12    0.00%   74.64%    0.09%    1.36%   0.50403196s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 1.24407703s
+SOfock:LL  1.00D-12    0.00%   70.31%    0.11%    3.69%   0.07200402s
+SOfock:SL  1.00D-12    0.00%   74.64%    0.09%    1.36%   0.48803103s
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 1.23607701s
 
-########## END ITERATION NO.   2 ##########   Mon Feb 11 14:42:59 2013
+########## END ITERATION NO.   2 ##########   Tue Feb 12 18:59:36 2013
 
-It.    2    -185.0896856603      1.42D+02  6.53D+00  2.87D+00               1.24407703s   LL SL          Mon Feb 11
+It.    2    -185.0896856603      1.42D+02  6.53D+00  2.87D+00               1.23607701s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   3 ##########   Mon Feb 11 14:43:00 2013
+########## START ITERATION NO.   3 ##########   Tue Feb 12 18:59:38 2013
 
     3 *** Differential density matrix. DCOVLP     = 0.9180
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   70.59%    0.11%    3.61%   0.07600498s
-SOfock:SL  1.00D-12    0.00%   75.00%    0.09%    1.34%   0.47602904s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 1.03206599s
+SOfock:SL  1.00D-12    0.00%   75.00%    0.09%    1.34%   0.51203215s
+>>> Total wall time: 3.00000000s
+>>> Total CPU time : 1.11607015s
 
-########## END ITERATION NO.   3 ##########   Mon Feb 11 14:43:00 2013
+########## END ITERATION NO.   3 ##########   Tue Feb 12 18:59:38 2013
 
-It.    3    -185.5843933599      4.95D-01 -9.21D-01  5.06D-01   DIIS   2    1.03206599s   LL SL          Mon Feb 11
+It.    3    -185.5843933599      4.95D-01 -9.21D-01  5.06D-01   DIIS   2    1.11607015s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   4 ##########   Mon Feb 11 14:43:01 2013
+########## START ITERATION NO.   4 ##########   Tue Feb 12 18:59:41 2013
 
     4 *** Differential density matrix. DCOVLP     = 0.9975
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.01%    0.11%    3.11%   0.07200480s
-SOfock:SL  1.00D-12    0.00%   75.29%    0.09%    1.32%   0.49203110s
->>> Total wall time: 3.00000000s
->>> Total CPU time : 1.07606697s
+SOfock:LL  1.00D-12    0.00%   71.01%    0.11%    3.11%   0.07600498s
+SOfock:SL  1.00D-12    0.00%   75.29%    0.09%    1.32%   0.51203203s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 1.10406899s
 
-########## END ITERATION NO.   4 ##########   Mon Feb 11 14:43:01 2013
+########## END ITERATION NO.   4 ##########   Tue Feb 12 18:59:41 2013
 
-It.    4    -185.6164213741      3.20D-02  2.91D-01  1.91D-01   DIIS   3    1.07606697s   LL SL          Mon Feb 11
+It.    4    -185.6164213741      3.20D-02  2.91D-01  1.91D-01   DIIS   3    1.10406899s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   5 ##########   Mon Feb 11 14:43:04 2013
+########## START ITERATION NO.   5 ##########   Tue Feb 12 18:59:42 2013
 
     5 *** Differential density matrix. DCOVLP     = 1.0055
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.59%    0.11%    2.45%   0.08400488s
-SOfock:SL  1.00D-12    0.00%   76.04%    0.09%    1.31%   0.53603387s
->>> Total wall time: 2.00000000s
->>> Total CPU time : 1.14807105s
+SOfock:LL  1.00D-12    0.00%   71.59%    0.11%    2.45%   0.08000493s
+SOfock:SL  1.00D-12    0.00%   76.04%    0.09%    1.31%   0.50403214s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 1.08406639s
 
-########## END ITERATION NO.   5 ##########   Mon Feb 11 14:43:04 2013
+########## END ITERATION NO.   5 ##########   Tue Feb 12 18:59:42 2013
 
-It.    5    -185.6214467742      5.03D-03 -7.06D-02  2.10D-02   DIIS   4    1.14807105s   LL SL          Mon Feb 11
+It.    5    -185.6214467742      5.03D-03 -7.06D-02  2.10D-02   DIIS   4    1.08406639s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   6 ##########   Mon Feb 11 14:43:06 2013
+########## START ITERATION NO.   6 ##########   Tue Feb 12 18:59:43 2013
 
     6 *** Differential density matrix. DCOVLP     = 1.0009
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   72.71%    0.11%    2.37%   0.07600498s
-SOfock:SL  1.00D-12    0.00%   76.83%    0.09%    1.27%   0.52403212s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 1.10406971s
+SOfock:LL  1.00D-12    0.00%   72.71%    0.11%    2.37%   0.08400488s
+SOfock:SL  1.00D-12    0.00%   76.83%    0.09%    1.27%   0.50403118s
+>>> Total wall time: 2.00000000s
+>>> Total CPU time : 1.12407064s
 
-########## END ITERATION NO.   6 ##########   Mon Feb 11 14:43:06 2013
+########## END ITERATION NO.   6 ##########   Tue Feb 12 18:59:43 2013
 
-It.    6    -185.6216002393      1.53D-04 -1.03D-02  6.64D-03   DIIS   5    1.10406971s   LL SL          Mon Feb 11
+It.    6    -185.6216002393      1.53D-04 -1.03D-02  6.64D-03   DIIS   5    1.12407064s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   7 ##########   Mon Feb 11 14:43:07 2013
+########## START ITERATION NO.   7 ##########   Tue Feb 12 18:59:45 2013
 
     7 *** Differential density matrix. DCOVLP     = 1.0008
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   72.93%    0.11%    2.03%   0.07600498s
-SOfock:SL  1.00D-12    0.00%   77.25%    0.09%    1.26%   0.47202921s
+SOfock:LL  1.00D-12    0.00%   72.93%    0.11%    2.03%   0.07600403s
+SOfock:SL  1.00D-12    0.00%   77.25%    0.09%    1.26%   0.53203392s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 1.03206396s
+>>> Total CPU time : 1.14007187s
 
-########## END ITERATION NO.   7 ##########   Mon Feb 11 14:43:07 2013
+########## END ITERATION NO.   7 ##########   Tue Feb 12 18:59:45 2013
 
-It.    7    -185.6216167469      1.65D-05  1.79D-03  1.06D-03   DIIS   6    1.03206396s   LL SL          Mon Feb 11
+It.    7    -185.6216167469      1.65D-05  1.79D-03  1.06D-03   DIIS   6    1.14007187s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   8 ##########   Mon Feb 11 14:43:08 2013
+########## START ITERATION NO.   8 ##########   Tue Feb 12 18:59:46 2013
 
     8 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   73.91%    0.11%    1.69%   0.07600498s
-SOfock:SL  1.00D-12    0.00%   78.40%    0.13%    1.23%   0.46402884s
+SOfock:SL  1.00D-12    0.00%   78.40%    0.13%    1.23%   0.50403166s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 1.01206350s
+>>> Total CPU time : 1.11206865s
 
-########## END ITERATION NO.   8 ##########   Mon Feb 11 14:43:08 2013
+########## END ITERATION NO.   8 ##########   Tue Feb 12 18:59:46 2013
 
-It.    8    -185.6216172920      5.45D-07 -1.18D-04  1.14D-04   DIIS   7    1.01206350s   LL SL          Mon Feb 11
+It.    8    -185.6216172920      5.45D-07 -1.18D-04  1.14D-04   DIIS   7    1.11206865s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.   9 ##########   Mon Feb 11 14:43:09 2013
+########## START ITERATION NO.   9 ##########   Tue Feb 12 18:59:47 2013
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   75.52%    0.11%    1.20%   0.07200336s
-SOfock:SL  1.00D-12    0.00%   79.79%    0.14%    1.21%   0.46402931s
+SOfock:LL  1.00D-12    0.00%   75.52%    0.11%    1.20%   0.07600498s
+SOfock:SL  1.00D-12    0.00%   79.79%    0.14%    1.21%   0.50003052s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 1.02406406s
+>>> Total CPU time : 1.07206726s
 
-########## END ITERATION NO.   9 ##########   Mon Feb 11 14:43:09 2013
+########## END ITERATION NO.   9 ##########   Tue Feb 12 18:59:47 2013
 
-It.    9    -185.6216172969      4.88D-09  8.63D-06  9.93D-06   DIIS   8    1.02406406s   LL SL          Mon Feb 11
+It.    9    -185.6216172969      4.88D-09  8.63D-06  9.93D-06   DIIS   8    1.07206726s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.  10 ##########   Mon Feb 11 14:43:10 2013
+########## START ITERATION NO.  10 ##########   Tue Feb 12 18:59:48 2013
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   77.69%    0.00%    1.33%   0.07600498s
-SOfock:SL  1.00D-12    0.00%   82.24%    0.45%    1.27%   0.46002865s
+SOfock:LL  1.00D-12    0.00%   77.69%    0.00%    1.33%   0.07200432s
+SOfock:SL  1.00D-12    0.00%   82.24%    0.45%    1.27%   0.47202969s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 1.01606369s
+>>> Total CPU time : 1.03606510s
 
-########## END ITERATION NO.  10 ##########   Mon Feb 11 14:43:10 2013
+########## END ITERATION NO.  10 ##########   Tue Feb 12 18:59:48 2013
 
-It.   10    -185.6216172969      2.95D-11  1.93D-06  1.78D-06   DIIS   9    1.01606369s   LL SL          Mon Feb 11
+It.   10    -185.6216172969      2.95D-11  1.93D-06  1.78D-06   DIIS   9    1.03606510s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.  11 ##########   Mon Feb 11 14:43:11 2013
+########## START ITERATION NO.  11 ##########   Tue Feb 12 18:59:49 2013
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   79.46%    0.11%    0.89%   0.06800365s
-SOfock:SL  1.00D-12    0.00%   84.14%    0.53%    1.56%   0.44002724s
+SOfock:LL  1.00D-12    0.00%   79.46%    0.11%    0.89%   0.08000469s
+SOfock:SL  1.00D-12    0.00%   84.14%    0.53%    1.56%   0.46802998s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 0.98806190s
+>>> Total CPU time : 1.05206490s
 
-########## END ITERATION NO.  11 ##########   Mon Feb 11 14:43:11 2013
+########## END ITERATION NO.  11 ##########   Tue Feb 12 18:59:49 2013
 
-It.   11    -185.6216172969      7.02D-12  1.84D-07  6.42D-07   DIIS   9    0.98806190s   LL SL          Mon Feb 11
+It.   11    -185.6216172969      7.02D-12  1.84D-07  6.42D-07   DIIS   9    1.05206490s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.  12 ##########   Mon Feb 11 14:43:12 2013
+########## START ITERATION NO.  12 ##########   Tue Feb 12 18:59:50 2013
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   80.45%    0.00%    0.72%   0.07200527s
-SOfock:SL  1.00D-12    0.00%   85.56%    0.45%    1.77%   0.43602657s
+SOfock:LL  1.00D-12    0.00%   80.45%    0.00%    0.72%   0.06800365s
+SOfock:SL  1.00D-12    0.00%   85.56%    0.45%    1.77%   0.44802761s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 0.98406124s
+>>> Total CPU time : 1.03206539s
 
-########## END ITERATION NO.  12 ##########   Mon Feb 11 14:43:12 2013
+########## END ITERATION NO.  12 ##########   Tue Feb 12 18:59:50 2013
 
-It.   12    -185.6216172969     -1.42D-12 -1.12D-07  1.02D-07   DIIS   9    0.98406124s   LL SL          Mon Feb 11
+It.   12    -185.6216172969     -1.42D-12 -1.12D-07  1.02D-07   DIIS   9    1.03206539s   LL SL          Tue Feb 12
 
-########## START ITERATION NO.  13 ##########   Mon Feb 11 14:43:13 2013
+########## START ITERATION NO.  13 ##########   Tue Feb 12 18:59:51 2013
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   83.33%    0.00%    0.70%   0.07200336s
-SOfock:SL  1.00D-12    0.00%   88.13%    0.23%    3.45%   0.42002583s
+SOfock:LL  1.00D-12    0.00%   83.33%    0.00%    0.70%   0.07600498s
+SOfock:SL  1.00D-12    0.00%   88.13%    0.23%    3.45%   0.43602657s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 0.92405701s
+>>> Total CPU time : 0.96006107s
 
-########## END ITERATION NO.  13 ##########   Mon Feb 11 14:43:13 2013
+########## END ITERATION NO.  13 ##########   Tue Feb 12 18:59:51 2013
 
-It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.92405701s   LL SL          Mon Feb 11
+It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.96006107s   LL SL          Tue Feb 12
 
 
                                    SCF - CYCLE
@@ -1219,24 +1224,24 @@ It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.92
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -43.52231479538      0.00D+00  0.00D+00  0.00D+00               0.13600799s   Scr. nuclei    Mon Feb 11
-It.    2    -185.0896856603      1.42D+02  6.53D+00  2.87D+00               1.24407703s   LL SL          Mon Feb 11
-It.    3    -185.5843933599      4.95D-01 -9.21D-01  5.06D-01   DIIS   2    1.03206599s   LL SL          Mon Feb 11
-It.    4    -185.6164213741      3.20D-02  2.91D-01  1.91D-01   DIIS   3    1.07606697s   LL SL          Mon Feb 11
-It.    5    -185.6214467742      5.03D-03 -7.06D-02  2.10D-02   DIIS   4    1.14807105s   LL SL          Mon Feb 11
-It.    6    -185.6216002393      1.53D-04 -1.03D-02  6.64D-03   DIIS   5    1.10406971s   LL SL          Mon Feb 11
-It.    7    -185.6216167469      1.65D-05  1.79D-03  1.06D-03   DIIS   6    1.03206396s   LL SL          Mon Feb 11
-It.    8    -185.6216172920      5.45D-07 -1.18D-04  1.14D-04   DIIS   7    1.01206350s   LL SL          Mon Feb 11
-It.    9    -185.6216172969      4.88D-09  8.63D-06  9.93D-06   DIIS   8    1.02406406s   LL SL          Mon Feb 11
-It.   10    -185.6216172969      2.95D-11  1.93D-06  1.78D-06   DIIS   9    1.01606369s   LL SL          Mon Feb 11
-It.   11    -185.6216172969      7.02D-12  1.84D-07  6.42D-07   DIIS   9    0.98806190s   LL SL          Mon Feb 11
-It.   12    -185.6216172969     -1.42D-12 -1.12D-07  1.02D-07   DIIS   9    0.98406124s   LL SL          Mon Feb 11
-It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.92405701s   LL SL          Mon Feb 11
+It.    1    -43.52231479538      0.00D+00  0.00D+00  0.00D+00               0.13200799s   Scr. nuclei    Tue Feb 12
+It.    2    -185.0896856603      1.42D+02  6.53D+00  2.87D+00               1.23607701s   LL SL          Tue Feb 12
+It.    3    -185.5843933599      4.95D-01 -9.21D-01  5.06D-01   DIIS   2    1.11607015s   LL SL          Tue Feb 12
+It.    4    -185.6164213741      3.20D-02  2.91D-01  1.91D-01   DIIS   3    1.10406899s   LL SL          Tue Feb 12
+It.    5    -185.6214467742      5.03D-03 -7.06D-02  2.10D-02   DIIS   4    1.08406639s   LL SL          Tue Feb 12
+It.    6    -185.6216002393      1.53D-04 -1.03D-02  6.64D-03   DIIS   5    1.12407064s   LL SL          Tue Feb 12
+It.    7    -185.6216167469      1.65D-05  1.79D-03  1.06D-03   DIIS   6    1.14007187s   LL SL          Tue Feb 12
+It.    8    -185.6216172920      5.45D-07 -1.18D-04  1.14D-04   DIIS   7    1.11206865s   LL SL          Tue Feb 12
+It.    9    -185.6216172969      4.88D-09  8.63D-06  9.93D-06   DIIS   8    1.07206726s   LL SL          Tue Feb 12
+It.   10    -185.6216172969      2.95D-11  1.93D-06  1.78D-06   DIIS   9    1.03606510s   LL SL          Tue Feb 12
+It.   11    -185.6216172969      7.02D-12  1.84D-07  6.42D-07   DIIS   9    1.05206490s   LL SL          Tue Feb 12
+It.   12    -185.6216172969     -1.42D-12 -1.12D-07  1.02D-07   DIIS   9    1.03206539s   LL SL          Tue Feb 12
+It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.96006107s   LL SL          Tue Feb 12
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   13 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    1.00000000s
-      LL SL        :    1.25000000s
+      No 2-ints    :    0.00000000s
+      LL SL        :    1.33333333s
 
 
                                    TOTAL ENERGY
@@ -1360,7 +1365,7 @@ It.   13    -185.6216172969      4.89D-12  1.61D-08  1.00D-08   DIIS   9    0.92
     - Secondary orbitals :    -45..-1,    12..    45                               
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -185.621617296921357
-* Heading :DIRAC: No title specified !!!                     Mon Feb 11 14:43:13 2013
+* Heading :DIRAC: No title specified !!!                     Tue Feb 12 18:59:51 2013
 
 
                                 Output from SETFCK
@@ -1391,7 +1396,7 @@ Matrix symmetry:  A    A    A    A
     3(j)   12   S      0       1      A  
     4(k)   12   S      0       1      A  
 
-cpu time:       3.2562 wall time:       3.0000 used in call to twoint(in get_ao_fock_2el_lao).
+cpu time:       3.5562 wall time:       4.0000 used in call to twoint(in get_ao_fock_2el_lao).
 
 
 
@@ -1423,18 +1428,18 @@ Matrix symmetry:  A    A    A    A
     3(j)   12   S      0       1      A  
     4(k)   12   S      0       1      A  
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   69.73%    0.00%   10.61%   0.09600449s
-SOfock:SL  1.00D-12    0.00%   73.94%    0.00%    9.02%   0.72804642s
+SOfock:LL  1.00D-12    0.00%   69.73%    0.00%   10.61%   0.10000610s
+SOfock:SL  1.00D-12    0.00%   73.94%    0.00%    9.02%   0.78404999s
 
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Mon Feb 11 14:43:14 2013
+* Heading :DIRAC: No title specified !!!                     Tue Feb 12 18:59:52 2013
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Mon Feb 11 14:42:58 2013
+* Heading :DIRAC: No title specified !!!                     Tue Feb 12 18:59:36 2013
 
 
 
@@ -1447,99 +1452,99 @@ LAO-XRM1H1       - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  3.6735D+02
   and changed to:  2.2676D-10
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 11 14:43:20 2013
+########## START MICROITERATION NO.   1 ##########   Tue Feb 12 18:59:59 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   72.24%    0.00%    3.50%   0.07200623s
-SOfock:SL  2.27D-10    0.00%   74.52%    0.00%    0.41%   0.47202873s
+SOfock:LL  2.27D-10    0.00%   72.24%    0.00%    3.50%   0.08400536s
+SOfock:SL  2.27D-10    0.00%   74.52%    0.00%    0.41%   0.53203392s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.23E-03  3.67E-03  3.72E-03
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 11 14:43:20 2013
+########## START MICROITERATION NO.   2 ##########   Tue Feb 12 18:59:59 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.21%   76.75%    0.00%    2.86%   0.07600403s
-SOfock:SL  2.27D-10    0.25%   80.64%    0.00%    1.02%   0.51603317s
+SOfock:LL  2.27D-10    0.21%   76.75%    0.00%    2.86%   0.08800697s
+SOfock:SL  2.27D-10    0.25%   80.64%    0.00%    1.02%   0.59203720s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.67E-03  1.67E-03  9.20E-06
 
-########## START MICROITERATION NO.   3 ##########   Mon Feb 11 14:43:21 2013
+########## START MICROITERATION NO.   3 ##########   Tue Feb 12 19:00:00 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   77.40%    0.00%    2.69%   0.07200432s
-SOfock:SL  2.27D-10    0.25%   81.52%    0.00%    1.02%   0.45602798s
+SOfock:LL  2.27D-10    0.00%   77.40%    0.00%    2.69%   0.07200241s
+SOfock:SL  2.27D-10    0.25%   81.52%    0.00%    1.02%   0.47203064s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  4.08E-04  4.08E-04  6.52E-06
 
-########## START MICROITERATION NO.   4 ##########   Mon Feb 11 14:43:22 2013
+########## START MICROITERATION NO.   4 ##########   Tue Feb 12 19:00:01 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   79.05%    0.00%    5.56%   0.07600594s
-SOfock:SL  2.27D-10    0.25%   83.43%    0.00%    1.27%   0.51203156s
+SOfock:LL  2.27D-10    0.00%   79.05%    0.00%    5.56%   0.08000565s
+SOfock:SL  2.27D-10    0.25%   83.43%    0.00%    1.27%   0.54803467s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.20E-04  1.20E-04  1.82E-07
 
-########## START MICROITERATION NO.   5 ##########   Mon Feb 11 14:43:22 2013
+########## START MICROITERATION NO.   5 ##########   Tue Feb 12 19:00:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   80.01%    0.00%    1.10%   0.07200432s
-SOfock:SL  2.27D-10    0.25%   84.48%    0.00%    1.35%   0.46002960s
+SOfock:LL  2.27D-10    0.00%   80.01%    0.00%    1.10%   0.08000565s
+SOfock:SL  2.27D-10    0.25%   84.48%    0.00%    1.35%   0.46402931s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.11E-05  5.11E-05  1.92E-07
 
-########## START MICROITERATION NO.   6 ##########   Mon Feb 11 14:43:23 2013
+########## START MICROITERATION NO.   6 ##########   Tue Feb 12 19:00:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   81.00%    0.00%    1.44%   0.07600594s
-SOfock:SL  2.27D-10    0.26%   85.46%    0.00%    1.75%   0.47202873s
+SOfock:LL  2.27D-10    0.00%   81.00%    0.00%    1.44%   0.07200432s
+SOfock:SL  2.27D-10    0.26%   85.46%    0.00%    1.75%   0.46402931s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  9.86E-06  9.86E-06  2.03E-07
 
-########## START MICROITERATION NO.   7 ##########   Mon Feb 11 14:43:24 2013
+########## START MICROITERATION NO.   7 ##########   Tue Feb 12 19:00:03 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   83.33%    0.00%    7.50%   0.06800461s
-SOfock:SL  2.27D-10    0.34%   88.03%    0.00%    3.09%   0.45202637s
+SOfock:LL  2.27D-10    0.00%   83.33%    0.00%    7.50%   0.07200241s
+SOfock:SL  2.27D-10    0.34%   88.03%    0.00%    3.09%   0.52803421s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  3.52E-06  3.52E-06  8.75E-09
 
-########## START MICROITERATION NO.   8 ##########   Mon Feb 11 14:43:24 2013
+########## START MICROITERATION NO.   8 ##########   Tue Feb 12 19:00:03 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   84.41%    0.00%    1.11%   0.07200432s
-SOfock:SL  2.27D-10    0.90%   88.70%    0.00%    3.58%   0.46402931s
+SOfock:LL  2.27D-10    0.00%   84.41%    0.00%    1.11%   0.08000374s
+SOfock:SL  2.27D-10    0.90%   88.70%    0.00%    3.58%   0.50403214s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.00E-07  5.00E-07  9.77E-09
 
-########## START MICROITERATION NO.   9 ##########   Mon Feb 11 14:43:25 2013
+########## START MICROITERATION NO.   9 ##########   Tue Feb 12 19:00:04 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.27D-10    0.00%   88.32%    0.00%    1.20%   0.07600403s
-SOfock:SL  2.27D-10   19.10%   74.30%    0.00%   13.19%   0.38402557s
+SOfock:LL  2.27D-10    0.00%   88.32%    0.00%    1.20%   0.08000374s
+SOfock:SL  2.27D-10   19.10%   74.30%    0.00%   13.19%   0.34402275s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
@@ -1555,1050 +1560,42 @@ SOfock:SL  2.27D-10   19.10%   74.30%    0.00%   13.19%   0.38402557s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.59203529s  (LL SL    )     [  0]     [  1]
+* It.  1   0.67604256s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   5.23D-03 |   3.67D-03  3.72D-03
 ========================================================
-* It.  2   0.70004463s  (LL SL    )     [  1]     [  1]
+* It.  2   0.80004883s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.67D-03 |   1.67D-03  9.20D-06
 ========================================================
-* It.  3   0.58003426s  (LL SL    )     [  1]     [  0]
+* It.  3   0.60403824s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   4.08D-04 |   4.08D-04  6.52D-06
 ========================================================
-* It.  4   0.69604492s  (LL SL    )     [  1]     [  1]
+* It.  4   0.73204613s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.20D-04 |   1.20D-04  1.82D-07
 ========================================================
-* It.  5   0.58803749s  (LL SL    )     [  1]     [  0]
+* It.  5   0.60403824s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   5.11D-05 |   5.11D-05  1.92D-07
 ========================================================
-* It.  6   0.60003662s  (LL SL    )     [  1]     [  0]
+* It.  6   0.59603691s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   9.86D-06 |   9.86D-06  2.03D-07
 ========================================================
-* It.  7   0.62404060s  (LL SL    )     [  1]     [  1]
+* It.  7   0.71204376s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   3.52D-06 |   3.52D-06  8.75D-09
 ========================================================
-* It.  8   0.60003662s  (LL SL    )     [  1]     [  0]
+* It.  8   0.65204048s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   5.00D-07 |   5.00D-07  9.77D-09
 ========================================================
-* It.  9   0.51603127s  (LL SL    )     [  1]     [  0]
+* It.  9   0.48003006s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.08D-07 |   1.08D-07  9.83D-09
 ========================================================
-
- E-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1     6.191429D-09
-       4    -6.677720D-07
-       5     1.661257D-08
-       8     1.751810D-06
-      12    -3.832525D-07
-      13    -2.465919D-08
-      16    -3.046961D-06
-      17    -3.353348D-08
-      19     6.331526D-08
-      24    -2.206085D-07
-      26     2.104265D-07
-      28    -1.426138D-06
-      31     1.313446D-07
-      34     1.270319D-08
-      72    -2.206128D-12
-      82    -9.337898D-13
-      84     2.602811D-12
-     103    -8.282398D-12
-     104     4.148439D-12
-     105     3.826900D-12
-     106    -4.822693D-11
-     107    -3.241194D-12
-     108     3.806381D-12
-     109    -1.497255D-12
-     110    -2.410583D-11
-     113     1.665949D-12
-     114    -5.384659D-12
-     115    -3.113295D-12
-     116    -5.536533D-12
-     117     2.458320D-12
-     118     3.794045D-11
-     127     9.176500D-13
-     130    -9.944951D-13
-     137    -8.260175D-07
-     138    -6.250636D-12
-     139     5.908805D-12
-     140     4.321230D-06
-     141     2.039501D-05
-     142     2.366392D-12
-     143    -1.053988D-12
-     144    -2.791611D-06
-     147     1.729395D-12
-     148     2.289446D-06
-     149     7.602184D-07
-     150    -4.807420D-12
-     151     2.628963D-12
-     152     8.850516D-06
-     153    -2.307992D-06
-     155     4.195104D-07
-     160    -7.639416D-07
-     162     8.725632D-08
-     164     2.192609D-06
-     167    -4.722852D-07
-     170    -1.213971D-07
-     171     9.696424D-12
-     172    -3.289558D-11
-     174    -4.018978D-11
-     178    -9.314026D-12
-     180     1.307900D-12
-     182    -3.464345D-12
-     183    -5.368896D-12
-     184    -6.931465D-12
-     186     2.831809D-11
-     189    -2.442779D-12
-     195     1.611018D-12
-     198    -1.268595D-12
-     205    -3.427588D-07
-     206    -2.955425D-12
-     207    -2.638200D-11
-     208    -3.764198D-05
-     209     1.975804D-06
-     210    -3.338725D-12
-     212    -5.425359D-05
-     214     1.132827D-12
-     215    -2.307224D-12
-     216    -8.846151D-05
-     217     1.050266D-07
-     219    -9.454046D-12
-     220    -1.609376D-05
-     221     9.031534D-07
-     223     4.240831D-07
-     228    -4.466404D-07
-     230    -1.206720D-06
-     232    -2.539596D-07
-     235    -1.639968D-10
-     238    -3.571339D-12
-     239    -6.903948D-12
-     240    -2.261281D-05
-     241     3.520340D-11
-     242     2.101444D-11
-     243     2.464261D-12
-     244     1.512117D-05
-     245    -1.872607D-12
-     246     3.690162D-12
-     247     1.787307D-12
-     249     3.123949D-12
-     250    -8.869747D-13
-     252     2.517571D-05
-     253     1.224534D-11
-     254     1.726391D-12
-     256     1.306515D-06
-     257    -1.696628D-12
-     263     1.028755D-05
-     265    -9.483119D-13
-     266    -2.805244D-12
-     273     3.789794D-05
-     274    -1.020410D-11
-     275     7.319613D-12
-     276     4.319066D-06
-     277    -1.618213D-05
-     278     1.012075D-12
-     279    -1.097452D-12
-     280    -4.993504D-06
-     283     1.283132D-12
-     284    -1.026954D-05
-     285     7.909529D-07
-     286    -2.343830D-12
-     287     1.150415D-12
-     288     5.863815D-06
-     289     1.565314D-06
-     291     3.789126D-08
-     296     7.035214D-06
-     298    -1.408751D-06
-     300     8.392352D-07
-     303    -9.134822D-08
-     306    -2.315090D-08
-     308    -9.738073D-12
-     309     1.544679D-12
-     310    -4.083260D-11
-     314    -1.280281D-11
-     318     1.796837D-12
-     322     2.168880D-11
-     341    -9.557435D-12
-     343     9.221465D-11
-     344     1.364682D-11
-     345     1.032789D-12
-     347    -6.445532D-12
-     348    -4.150066D-12
-     349     2.832388D-12
-     350    -1.187276D-05
-     351     9.326920D-12
-     352    -2.160576D-12
-     355     2.354665D-11
-     356    -8.575512D-12
-     362     1.676163D-07
-     363    -1.750152D-12
-     367    -1.926294D-12
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1    -1.185968D-07
-       4     3.109927D-06
-       5     4.730759D-09
-       8     2.274507D-06
-      12     5.675640D-07
-      13    -1.018252D-07
-      16     8.206695D-06
-      17     9.744711D-10
-      19     4.291784D-07
-      24    -7.299149D-08
-      26    -7.669654D-08
-      28     3.541750D-06
-      31    -4.620927D-07
-      34    -2.515648D-08
-      71    -5.258703D-12
-      83    -6.907951D-12
-     105    -3.246696D-11
-     106    -2.194265D-11
-     107     6.765102D-12
-     109     1.420382D-11
-     110     1.303880D-11
-     113    -6.293264D-12
-     115     6.861693D-12
-     116     5.520302D-12
-     117    -1.586061D-11
-     118     1.419375D-11
-     137     6.886976D-06
-     139    -6.828291D-11
-     140    -1.622446D-05
-     141     8.162975D-06
-     143     9.503795D-12
-     144    -4.361090D-06
-     147    -1.912478D-11
-     148    -2.188538D-06
-     149    -3.247332D-06
-     151    -3.168870D-11
-     152    -1.737833D-05
-     153    -1.062525D-06
-     155    -1.654821D-06
-     160    -4.270851D-07
-     162    -1.511799D-08
-     164    -2.319865D-06
-     167     2.225942D-07
-     170     2.781793D-08
-     173    -1.921691D-10
-     174     9.827537D-12
-     177     1.839678D-11
-     178     1.448065D-11
-     179    -1.078399D-11
-     181    -2.879717D-11
-     183     7.845199D-12
-     184     6.291974D-12
-     185    -6.939675D-11
-     186     9.270159D-12
-     193     5.058494D-12
-     197     5.860714D-12
-     205     4.966096D-07
-     206     8.235931D-12
-     207    -1.035353D-11
-     208    -1.708805D-05
-     209    -6.800233D-06
-     212     3.374886D-05
-     216    -4.424865D-05
-     217    -2.247693D-07
-     220    -3.531179D-06
-     221     3.014190D-07
-     223     3.171251D-06
-     228    -9.830861D-07
-     230    -4.986772D-06
-     232     8.427602D-07
-     235     6.105178D-09
-     238    -5.558326D-09
-     239     1.415274D-11
-     240    -4.733684D-07
-     244    -1.727600D-05
-     252    -2.261148D-05
-     256     6.665656D-06
-     263    -4.986679D-06
-     273    -4.963555D-04
-     275    -5.158042D-11
-     276    -1.149237D-05
-     277    -7.571792D-06
-     280    -9.726464D-06
-     283    -1.156884D-11
-     284     8.840187D-06
-     285    -3.269094D-05
-     287    -1.708899D-11
-     288    -1.103952D-05
-     289     2.804459D-07
-     291     2.075665D-06
-     296     3.344609D-06
-     298    -1.066803D-07
-     300    -1.582802D-06
-     303     1.883644D-07
-     306     4.182987D-08
-     309    -6.695105D-11
-     310    -2.685510D-11
-     314     5.362211D-12
-     315    -5.971069D-12
-     317    -2.669652D-11
-     321    -4.540137D-11
-     322     8.773430D-12
-     341    -1.604641D-11
-     342     1.732553D-11
-     344    -4.412720D-11
-     348    -6.343460D-12
-     350     6.289149D-05
-     356     2.515757D-11
-     362    -1.433513D-05
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1     1.016187D-07
-       4     2.142095D-06
-       5     7.908725D-09
-       8     3.325201D-06
-      12     1.097200D-06
-      13    -6.429950D-08
-      16     3.454551D-06
-      17     1.048765D-07
-      19    -5.833264D-07
-      24     1.498958D-07
-      26    -1.123702D-07
-      28     1.675093D-07
-      31     1.100782D-07
-      34    -2.618051D-09
-      71     3.992229D-12
-      83     4.717537D-12
-     105     1.182515D-11
-     106     2.223965D-11
-     115    -3.947488D-12
-     116     5.039553D-12
-     130    -4.250128D-12
-     137    -4.529218D-06
-     140    -1.673922D-05
-     141     1.091412D-05
-     144    -7.599343D-06
-     148    -7.269274D-06
-     149    -1.544960D-06
-     150     5.110304D-12
-     152    -1.082521D-05
-     153     6.841287D-06
-     155     2.012074D-06
-     160     5.164578D-07
-     162    -1.505290D-07
-     164     4.758350D-07
-     167    -3.482674D-07
-     170    -9.254204D-08
-     173     1.134565D-10
-     174     5.714479D-11
-     177    -2.275548D-11
-     178    -1.661908D-11
-     179     1.062281D-11
-     180     6.866198D-12
-     181     1.741207D-11
-     183    -9.816478D-12
-     184     1.089518D-11
-     185     3.595252D-11
-     186    -1.878560D-11
-     189    -5.216904D-12
-     198    -4.171513D-12
-     205    -7.549001D-07
-     206    -1.773929D-11
-     207     1.648653D-11
-     208     1.547468D-05
-     209    -1.498628D-06
-     212     1.684799D-05
-     216     2.409467D-05
-     217     1.578630D-07
-     219     6.502933D-12
-     220    -1.042957D-06
-     221     2.501943D-08
-     223    -2.873197D-06
-     228    -4.346902D-07
-     230     2.955562D-06
-     232    -9.368756D-07
-     235    -5.944408D-09
-     238     5.340362D-09
-     239    -1.325522D-11
-     240     1.313583D-06
-     242     4.711923D-11
-     244    -1.022111D-05
-     246     2.429073D-11
-     250     6.058067D-12
-     252    -2.625679D-05
-     254    -3.000721D-11
-     256    -4.272480D-06
-     263     5.819641D-07
-     273     3.921493D-04
-     274    -7.271138D-12
-     275    -6.468475D-11
-     276    -1.031914D-05
-     277    -8.946447D-06
-     279     1.721519D-11
-     280    -1.424998D-05
-     283    -1.336122D-11
-     284     2.372180D-05
-     285    -1.144457D-05
-     287    -1.409123D-11
-     288    -5.397175D-06
-     289    -3.845612D-06
-     291    -2.506481D-06
-     296    -4.246663D-06
-     298     1.304423D-06
-     300     3.756253D-07
-     303    -1.606529D-07
-     306    -4.622589D-08
-     309     1.295148D-10
-     310     1.131784D-11
-     313    -7.537265D-12
-     315     4.243990D-12
-     317     1.968041D-11
-     321     4.090761D-11
-     342     7.838052D-12
-     343     7.411971D-12
-     344    -1.265389D-11
-     348    -7.898767D-12
-     350     3.423523D-05
-     362    -6.527483D-06
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1    -1.133089D-09
-       4     2.485752D-06
-       5    -1.242730D-08
-       8    -9.507139D-07
-      12     6.373662D-07
-      13     2.821882D-07
-      16     1.615002D-06
-      17     6.822387D-09
-      19    -1.321469D-06
-      24     6.134305D-08
-      26    -8.078401D-07
-      28    -1.310082D-05
-      31     1.049794D-05
-      34     4.250778D-06
-      37     4.587338D-06
-      41    -1.533804D-06
-      43     4.502107D-07
-      45     4.032099D-06
-      49    -9.228063D-06
-      54     1.099493D-06
-      55     3.026314D-07
-      57     6.367363D-07
-      61    -1.394231D-05
-      63    -1.748052D-07
-      64     1.063128D-05
-      66     2.496044D-08
-      67     4.265873D-06
-      71    -3.266337D-06
-      75     1.214693D-05
-      77     5.056850D-07
-      79     5.841194D-07
-      83     1.498915D-06
-      88     1.439538D-05
-      89    -1.219889D-07
-      91    -1.766411D-06
-      95    -9.085265D-08
-      97     1.069484D-05
-      98    -3.155310D-08
-     100     4.276088D-06
-     101     2.141963D-08
-     104    -1.121566D-11
-     105    -3.679959D-05
-     109    -6.593009D-06
-     110    -9.806398D-12
-     111    -1.628999D-05
-     113    -3.559682D-06
-     117     2.239739D-05
-     122    -7.213473D-06
-     123     9.546304D-07
-     125     1.160206D-06
-     129     8.323315D-06
-     131    -2.327956D-06
-     132    -3.094313D-06
-     134    -6.174780D-07
-     135    -8.238447D-07
-     137     8.083746D-07
-     138    -3.599963D-11
-     140    -1.459813D-05
-     141    -2.178097D-05
-     144     3.119953D-06
-     148    -3.484725D-06
-     149     9.118410D-06
-     152    -4.367600D-06
-     153     2.529435D-08
-     155     3.824372D-06
-     160     2.659947D-07
-     162    -6.201265D-07
-     164     8.049794D-06
-     167    -3.205740D-06
-     170    -9.083057D-07
-     171    -7.891104D-11
-     172    -9.690350D-11
-     173    -3.030676D-06
-     174    -7.066294D-11
-     177    -6.599183D-06
-     178    -4.313381D-11
-     179     1.006972D-04
-     181     1.795223D-05
-     184     8.923406D-12
-     185    -1.679362D-05
-     186     4.372623D-11
-     190    -5.844685D-06
-     191     7.793247D-06
-     193     6.258893D-06
-     197    -5.908121D-06
-     199    -1.641777D-06
-     200     2.461243D-06
-     202    -8.535321D-07
-     203     3.735652D-07
-     205     5.595891D-06
-     207    -1.157722D-10
-     208     1.154625D-05
-     209     1.278198D-06
-     212    -1.180939D-05
-     215    -1.086727D-11
-     216    -1.734796D-05
-     217     1.618121D-08
-     219    -4.671438D-11
-     220     7.031495D-06
-     221     7.801469D-07
-     223     1.476311D-06
-     228    -6.970322D-07
-     230     7.625231D-07
-     232     2.611542D-08
-     235    -1.062623D-09
-     238     1.237557D-09
-     240    -1.037974D-04
-     241    -1.866029D-10
-     242     2.366535D-11
-     244    -2.519289D-05
-     245     1.718831D-11
-     246    -1.109464D-11
-     249    -2.211530D-11
-     252    -1.937176D-05
-     253    -6.671203D-11
-     254    -1.059229D-11
-     256     3.531033D-06
-     263     2.611588D-06
-     273    -8.474475D-05
-     274    -8.609201D-11
-     276    -1.071415D-05
-     277     1.465772D-05
-     280     4.776327D-06
-     284     1.223004D-05
-     285     7.394537D-05
-     288    -3.017536D-06
-     289     6.571761D-08
-     291    -4.498156D-06
-     296    -1.599911D-06
-     298     5.993084D-06
-     300     4.527116D-06
-     303    -1.502719D-06
-     306    -4.803655D-07
-     308     8.944844D-12
-     309    -8.102038D-04
-     310     1.314499D-11
-     313     1.189048D-04
-     315     1.926387D-05
-     317     7.872657D-05
-     321     4.369053D-05
-     322    -1.154298D-11
-     326    -1.380639D-06
-     327    -3.149973D-06
-     329     8.979282D-06
-     333     2.076063D-06
-     335     1.563346D-07
-     336     2.259562D-07
-     338     1.132276D-07
-     339    -1.320241D-07
-     343    -1.857214D-10
-     344    -2.624380D-11
-     347     1.548693D-11
-     350     3.976217D-05
-     351    -1.894390D-11
-     355    -4.904377D-11
-     362    -1.997784D-06
-    ==== End of matrix output ====
-
- P-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1    -5.444065D-06
-       4    -7.397136D-05
-       7     3.155180D-07
-       9     9.067281D-05
-      11    -1.043979D-06
-      12    -4.061349D-06
-      17    -6.756691D-05
-      19     1.099892D-06
-      21    -1.521626D-06
-      24    -1.530442D-05
-      27    -3.211668D-05
-      29    -5.539024D-05
-      31    -1.620476D-05
-      34    -1.285708D-06
-      37    -7.140068D-06
-      39     4.939915D-06
-      40     4.109253D-06
-      44     7.021169D-06
-      49    -2.708367D-11
-      54     3.319854D-11
-      62    -2.481912D-11
-      72    -1.175659D-11
-      74    -2.027117D-11
-     181     1.898872D-06
-     184     1.416451D-05
-     187     1.172602D-07
-     189    -1.229905D-05
-     191     2.827019D-07
-     192    -1.259297D-05
-     197    -4.610715D-05
-     199    -9.314618D-05
-     201    -3.791959D-06
-     204    -1.816239D-04
-     207    -3.117991D-04
-     209    -3.558867D-04
-     211    -3.655255D-04
-     214    -1.018331D-04
-     217    -6.750574D-04
-     219     2.270020D-04
-     220     2.385468D-04
-     224     3.216541D-04
-     271     3.337345D-09
-     274     4.511829D-08
-     277    -1.059856D-06
-     279    -3.641485D-08
-     281    -6.549550D-08
-     282     7.991521D-06
-     287     1.162427D-06
-     289     1.506506D-05
-     291    -1.603599D-05
-     294     7.296904D-06
-     297    -2.418781D-05
-     299     3.448343D-05
-     301    -1.141411D-05
-     302    -1.366379D-11
-     304     2.254112D-04
-     307     6.000537D-05
-     309     3.952445D-04
-     310    -1.805130D-04
-     314    -8.864855D-05
-     329     6.920115D-05
-     335    -3.186737D-07
-     341     1.724977D-04
-     347    -1.782466D-04
-     353    -8.185181D-04
-     355     9.303945D-12
-     358     4.484029D-04
-     361     7.133732D-07
-     364     7.030717D-06
-     367     1.623063D-07
-     369    -7.913921D-06
-     371    -5.756831D-06
-     372     3.671776D-05
-     377    -3.638985D-05
-     379     1.467607D-04
-     381    -6.921378D-06
-     384     2.352973D-04
-     387     1.033343D-04
-     389    -4.638666D-04
-     391     3.178935D-04
-     394     2.250560D-05
-     397    -7.088022D-05
-     399     3.692096D-04
-     400    -1.053779D-04
-     404     4.301861D-04
-     465     2.120851D-05
-     478    -5.343719D-05
-     491     8.761005D-04
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1       0.00000053
-       4      -0.00003386
-       7      -0.00000013
-       9       0.00002731
-      11      -0.00000171
-      12      -0.00000232
-      17       0.00002854
-      19      -0.00000021
-      21       0.00000372
-      24      -0.00000425
-      27      -0.00000805
-      29       0.00000752
-      31      -0.00001697
-      34       0.00000569
-      37      -0.00000066
-      39      -0.00000381
-      40       0.00000427
-      44       0.00000005
-     181      -0.00000022
-     184       0.00000936
-     187      -0.00000003
-     189      -0.00000700
-     191       0.00000084
-     192      -0.00001365
-     197       0.00001439
-     199       0.00000680
-     201       0.00000986
-     204      -0.00007689
-     207      -0.00012735
-     209       0.00000962
-     211      -0.00051049
-     214       0.00021106
-     217      -0.00018242
-     219      -0.00014406
-     220       0.00033560
-     224       0.00006760
-     271       0.00000006
-     274      -0.00000014
-     277      -0.00001516
-     279       0.00000033
-     281       0.00000015
-     282      -0.00005279
-     287      -0.00000352
-     289       0.00001522
-     291      -0.00002175
-     294      -0.00012769
-     297      -0.00017141
-     299       0.00013587
-     301       0.00004745
-     304      -0.00015113
-     307       0.00030763
-     309       0.00054874
-     310       0.00077994
-     314      -0.00047432
-     329      -0.00008227
-     335       0.00013034
-     341      -0.00059686
-     347      -0.00030554
-     353       0.00027620
-     358      -0.00152395
-     361      -0.00000027
-     364       0.00000509
-     367      -0.00000022
-     369      -0.00000484
-     371      -0.00001418
-     372       0.00003709
-     377       0.00001629
-     379      -0.00001636
-     381       0.00001353
-     384       0.00010144
-     387       0.00003990
-     389       0.00000373
-     391       0.00040892
-     394      -0.00005897
-     397      -0.00001912
-     399      -0.00020674
-     400      -0.00013613
-     404       0.00010273
-     465       0.00011335
-     478      -0.00103924
-     491       0.00055549
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1    -2.805800D-06
-       4    -3.832238D-05
-       7     8.367840D-07
-       9     2.390778D-05
-      11    -2.321871D-08
-      12    -7.885416D-07
-      17    -1.776383D-05
-      19    -1.364883D-07
-      21    -3.957881D-07
-      24    -7.539322D-07
-      27     6.138437D-06
-      29    -1.415320D-06
-      31     6.805666D-06
-      34     2.216723D-06
-      37     1.414123D-06
-      39    -1.190935D-06
-      40    -1.651559D-06
-      44    -1.476740D-06
-      49    -1.402634D-11
-      54     8.748134D-12
-      62    -6.502949D-12
-     181     1.208221D-06
-     184     8.676112D-06
-     187     1.337351D-07
-     189    -2.411140D-06
-     191     3.599042D-08
-     192    -1.298289D-06
-     197    -1.547988D-05
-     199     7.333972D-06
-     201     1.353960D-06
-     204    -1.275925D-05
-     207     5.333233D-05
-     209     2.816219D-06
-     211     1.208149D-04
-     214     9.316664D-05
-     217     1.822080D-04
-     219    -9.608361D-05
-     220    -7.809631D-05
-     224    -1.291150D-04
-     271    -8.700168D-08
-     274    -1.099541D-09
-     277     1.563988D-05
-     279    -7.705368D-08
-     281    -3.443747D-08
-     282     1.704972D-05
-     287     9.561711D-06
-     289     3.805558D-05
-     291     1.073345D-05
-     294    -5.026266D-05
-     296    -7.311895D-12
-     297    -9.290113D-05
-     299     6.490749D-05
-     301     2.070607D-05
-     304     1.657534D-04
-     307     3.650014D-05
-     309     2.761109D-05
-     310     2.741467D-04
-     313    -1.927039D-11
-     314     7.935951D-05
-     329    -8.044155D-05
-     335    -1.151794D-04
-     341    -3.157917D-04
-     347    -4.355116D-04
-     353     2.951684D-04
-     354     8.078124D-12
-     355     8.803381D-12
-     358     2.396822D-04
-     359    -6.610857D-12
-     361     6.524746D-07
-     364     4.148463D-06
-     367     4.173707D-07
-     369    -1.683365D-06
-     371    -3.381555D-08
-     372     3.908477D-06
-     377    -1.687501D-05
-     379    -2.018611D-06
-     381     2.167045D-07
-     384     2.467006D-05
-     387    -1.316636D-05
-     389    -2.933014D-05
-     391    -1.098091D-04
-     394    -1.860210D-05
-     397     1.370229D-05
-     399    -9.868366D-05
-     400     3.566386D-05
-     404    -1.195498D-04
-     430    -1.342489D-11
-     435    -9.918339D-12
-     440     6.569181D-11
-     441    -1.340815D-11
-     447     4.176146D-11
-     450    -3.659941D-11
-     465     1.584831D-04
-     478    -3.576847D-04
-     491    -3.749045D-05
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1      -0.00002839
-       4       0.00008484
-       7       0.00001056
-       9      -0.00016256
-      11       0.00000185
-      12       0.00000892
-      17      -0.00013065
-      19       0.00000042
-      21       0.00000419
-      24       0.00000689
-      27       0.00000870
-      29       0.00002181
-      31       0.00000438
-      34      -0.00000522
-      37       0.00000557
-      39      -0.00000447
-      40      -0.00000152
-      44      -0.00000989
-      47      -0.00002912
-      48      -0.00000026
-      50      -0.00012426
-      51       0.00000155
-      53      -0.00000946
-      55       0.00019119
-      58      -0.00000824
-      61       0.00000247
-      63       0.00015007
-      67       0.00000788
-      68      -0.00000018
-      70       0.00003235
-      75      -0.00005720
-      78      -0.00001465
-      80      -0.00000316
-      81      -0.00001115
-      87       0.00000248
-      90       0.00000783
-      92      -0.00000013
-      93      -0.00003895
-      95       0.00000071
-      96      -0.00016355
-      98      -0.00000491
-     100       0.00000281
-     103       0.00003741
-     106       0.00025100
-     108      -0.00000648
-     112       0.00000674
-     113      -0.00021620
-     115      -0.00000178
-     120       0.00002111
-     123      -0.00006979
-     125       0.00001297
-     126      -0.00008947
-     132      -0.00001040
-     135       0.00000146
-     137       0.00000549
-     138       0.00000562
-     140       0.00002860
-     141       0.00003112
-     143      -0.00000048
-     145      -0.00003155
-     148      -0.00004942
-     151      -0.00003454
-     153       0.00007970
-     157       0.00005454
-     158      -0.00009767
-     160       0.00040027
-     165      -0.00040684
-     168      -0.00062151
-     170      -0.00003659
-     171      -0.00112312
-     177       0.00002460
-     180       0.00108046
-     181       0.00000570
-     184      -0.00002362
-     187       0.00000073
-     189       0.00003276
-     191      -0.00000088
-     192       0.00004514
-     197      -0.00006320
-     199      -0.00002232
-     201       0.00001271
-     204       0.00011518
-     207       0.00012389
-     209       0.00019592
-     211       0.00013934
-     214      -0.00020084
-     217       0.00066980
-     219      -0.00024159
-     220      -0.00012034
-     224      -0.00059419
-     227      -0.00000264
-     228       0.00000751
-     230      -0.00002367
-     231       0.00001821
-     233      -0.00000191
-     235       0.00001099
-     238      -0.00011949
-     241      -0.00004187
-     243      -0.00005800
-     247       0.00000683
-     248      -0.00012927
-     250       0.00016971
-     255       0.00069976
-     258      -0.00046295
-     260       0.00016003
-     261      -0.00037249
-     267      -0.00099316
-     270      -0.00024392
-     271      -0.00000001
-     274       0.00000002
-     277       0.00000217
-     279      -0.00000004
-     281       0.00000006
-     282       0.00000170
-     287      -0.00000074
-     289       0.00000070
-     291       0.00002283
-     294      -0.00001181
-     297      -0.00005068
-     299      -0.00002494
-     301       0.00004527
-     304      -0.00006764
-     307       0.00001974
-     309      -0.00024085
-     310       0.00067372
-     314       0.00002109
-     329       0.00013372
-     335      -0.00000014
-     341      -0.00011485
-     347      -0.00107534
-     353       0.00003770
-     358       0.00019134
-     361       0.00000304
-     364      -0.00000982
-     367       0.00000232
-     369       0.00001673
-     371       0.00001279
-     372      -0.00009780
-     377      -0.00006021
-     379       0.00004646
-     381       0.00001916
-     384      -0.00011820
-     387      -0.00002919
-     389       0.00021093
-     391      -0.00006522
-     394       0.00004918
-     397       0.00005814
-     399      -0.00034670
-     400       0.00003337
-     404      -0.00064635
-     407       0.00000074
-     408      -0.00000082
-     410      -0.00000243
-     411       0.00000115
-     413      -0.00000193
-     415      -0.00000480
-     418       0.00006082
-     421      -0.00001154
-     423       0.00001619
-     427      -0.00006489
-     428      -0.00002198
-     430      -0.00025406
-     435      -0.00018417
-     438       0.00004899
-     440       0.00115435
-     441      -0.00026204
-     447       0.00078420
-     450      -0.00069240
-     465      -0.00013722
-     478      -0.00025811
-     491       0.00117053
-    ==== End of matrix output ====
 
 
 
@@ -2611,143 +1608,143 @@ LAO-YRM1H1       - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  3.1853D+02
   and changed to:  1.9662D-10
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 11 14:43:27 2013
+########## START MICROITERATION NO.   1 ##########   Tue Feb 12 19:00:06 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.21%   72.21%    0.00%    3.41%   0.08400536s
-SOfock:SL  1.97D-10    0.00%   74.47%    0.00%    0.12%   0.50003052s
+SOfock:LL  1.97D-10    0.21%   72.21%    0.00%    3.41%   0.07600403s
+SOfock:SL  1.97D-10    0.00%   74.47%    0.00%    0.12%   0.48403168s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  8.86E+01  8.86E+01  3.57E-03
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 11 14:43:27 2013
+########## START MICROITERATION NO.   2 ##########   Tue Feb 12 19:00:06 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.97D-10    0.00%   70.22%    0.00%    2.62%   0.07200432s
-SOfock:SL  1.97D-10    0.19%   74.36%    0.00%    0.50%   0.47603035s
+SOfock:SL  1.97D-10    0.19%   74.36%    0.00%    0.50%   0.48802948s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.84E+00  5.84E+00  1.37E-02
 
-########## START MICROITERATION NO.   3 ##########   Mon Feb 11 14:43:28 2013
+########## START MICROITERATION NO.   3 ##########   Tue Feb 12 19:00:07 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   71.22%    0.00%    2.60%   0.08000565s
-SOfock:SL  1.97D-10    0.25%   75.43%    0.00%    0.47%   0.47202873s
+SOfock:LL  1.97D-10    0.00%   71.22%    0.00%    2.60%   0.07200432s
+SOfock:SL  1.97D-10    0.25%   75.43%    0.00%    0.47%   0.48003006s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  7.53E-01  7.53E-01  1.43E-02
 
-########## START MICROITERATION NO.   4 ##########   Mon Feb 11 14:43:28 2013
+########## START MICROITERATION NO.   4 ##########   Tue Feb 12 19:00:08 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   72.23%    0.00%    2.62%   0.08000565s
-SOfock:SL  1.97D-10    0.08%   76.71%    0.00%    0.47%   0.55603409s
+SOfock:LL  1.97D-10    0.00%   72.23%    0.00%    2.62%   0.08400536s
+SOfock:SL  1.97D-10    0.08%   76.71%    0.00%    0.47%   0.56403542s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.39E-01  1.39E-01  3.32E-04
 
-########## START MICROITERATION NO.   5 ##########   Mon Feb 11 14:43:29 2013
+########## START MICROITERATION NO.   5 ##########   Tue Feb 12 19:00:08 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   73.24%    0.00%    1.15%   0.06800461s
-SOfock:SL  1.97D-10    0.25%   77.53%    0.00%    0.46%   0.46402931s
+SOfock:LL  1.97D-10    0.00%   73.24%    0.00%    1.15%   0.07600594s
+SOfock:SL  1.97D-10    0.25%   77.53%    0.00%    0.46%   0.47602844s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.94E-02  1.94E-02  3.68E-04
 
-########## START MICROITERATION NO.   6 ##########   Mon Feb 11 14:43:30 2013
+########## START MICROITERATION NO.   6 ##########   Tue Feb 12 19:00:09 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.97D-10    0.00%   74.54%    0.00%    2.85%   0.08000565s
-SOfock:SL  1.97D-10    0.25%   79.08%    0.00%    0.49%   0.52803230s
+SOfock:SL  1.97D-10    0.25%   79.08%    0.00%    0.49%   0.53603172s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.11E-03  6.11E-03  1.55E-05
 
-########## START MICROITERATION NO.   7 ##########   Mon Feb 11 14:43:30 2013
+########## START MICROITERATION NO.   7 ##########   Tue Feb 12 19:00:10 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   75.46%    0.00%    0.74%   0.06800461s
-SOfock:SL  1.97D-10    0.25%   80.15%    0.00%    0.70%   0.44802856s
+SOfock:LL  1.97D-10    0.00%   75.46%    0.00%    0.74%   0.08000565s
+SOfock:SL  1.97D-10    0.25%   80.15%    0.00%    0.70%   0.46002769s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.10E-03  1.10E-03  1.81E-05
 
-########## START MICROITERATION NO.   8 ##########   Mon Feb 11 14:43:31 2013
+########## START MICROITERATION NO.   8 ##########   Tue Feb 12 19:00:10 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   76.40%    0.00%    4.00%   0.08000374s
-SOfock:SL  1.97D-10    0.25%   81.13%    0.00%    0.53%   0.52803421s
+SOfock:LL  1.97D-10    0.00%   76.40%    0.00%    4.00%   0.07600594s
+SOfock:SL  1.97D-10    0.25%   81.13%    0.00%    0.53%   0.52003098s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.62E-05  5.62E-05  1.91E-07
 
-########## START MICROITERATION NO.   9 ##########   Mon Feb 11 14:43:32 2013
+########## START MICROITERATION NO.   9 ##########   Tue Feb 12 19:00:11 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   80.08%    0.00%    2.38%   0.07600594s
-SOfock:SL  1.97D-10    0.48%   84.83%    0.00%    1.32%   0.43202591s
+SOfock:LL  1.97D-10    0.00%   80.08%    0.00%    2.38%   0.08000565s
+SOfock:SL  1.97D-10    0.48%   84.83%    0.00%    1.32%   0.44002533s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  2.43E-05  2.43E-05  2.30E-07
 
-########## START MICROITERATION NO.  10 ##########   Mon Feb 11 14:43:32 2013
+########## START MICROITERATION NO.  10 ##########   Tue Feb 12 19:00:12 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   81.55%    0.00%    0.94%   0.06800461s
-SOfock:SL  1.97D-10    0.49%   86.29%    0.00%    2.31%   0.46002769s
+SOfock:LL  1.97D-10    0.00%   81.55%    0.00%    0.94%   0.07600403s
+SOfock:SL  1.97D-10    0.49%   86.29%    0.00%    2.31%   0.46002960s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.02E-05  1.02E-05  2.44E-07
 
-########## START MICROITERATION NO.  11 ##########   Mon Feb 11 14:43:33 2013
+########## START MICROITERATION NO.  11 ##########   Tue Feb 12 19:00:12 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.97D-10    0.00%   83.10%    0.00%    7.03%   0.08000565s
-SOfock:SL  1.97D-10    0.78%   86.99%    0.00%    3.10%   0.52403259s
+SOfock:SL  1.97D-10    0.78%   86.99%    0.00%    3.10%   0.50403214s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.01E-06  1.01E-06  5.61E-09
 
-########## START MICROITERATION NO.  12 ##########   Mon Feb 11 14:43:34 2013
+########## START MICROITERATION NO.  12 ##########   Tue Feb 12 19:00:13 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.08%   88.20%    0.00%    1.16%   0.06800461s
-SOfock:SL  1.97D-10   15.90%   76.71%    0.00%   12.69%   0.34001923s
+SOfock:LL  1.97D-10    0.08%   88.20%    0.00%    1.16%   0.07600403s
+SOfock:SL  1.97D-10   15.90%   76.71%    0.00%   12.69%   0.35602188s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.26E-07  6.26E-07  6.05E-09
 
-########## START MICROITERATION NO.  13 ##########   Mon Feb 11 14:43:34 2013
+########## START MICROITERATION NO.  13 ##########   Tue Feb 12 19:00:13 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.08%   88.26%    0.00%    0.56%   0.06800461s
-SOfock:SL  1.97D-10   17.17%   75.99%    0.00%   13.36%   0.32801819s
+SOfock:LL  1.97D-10    0.08%   88.26%    0.00%    0.56%   0.07200241s
+SOfock:SL  1.97D-10   17.17%   75.99%    0.00%   13.36%   0.34802246s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
@@ -2763,1334 +1760,58 @@ SOfock:SL  1.97D-10   17.17%   75.99%    0.00%   13.36%   0.32801819s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.63603973s  (LL SL    )     [  0]     [  1]
+* It.  1   0.61603737s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   8.86D+01 |   8.86D+01  3.57D-03
 ========================================================
-* It.  2   0.60003662s  (LL SL    )     [  1]     [  0]
+* It.  2   0.61203957s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   5.84D+00 |   5.84D+00  1.37D-02
 ========================================================
-* It.  3   0.60403824s  (LL SL    )     [  1]     [  0]
+* It.  3   0.60803795s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   7.53D-01 |   7.53D-01  1.43D-02
 ========================================================
-* It.  4   0.73604584s  (LL SL    )     [  1]     [  1]
+* It.  4   0.75204659s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.39D-01 |   1.39D-01  3.32D-04
 ========================================================
-* It.  5   0.58803749s  (LL SL    )     [  1]     [  0]
+* It.  5   0.60403824s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.94D-02 |   1.94D-02  3.68D-04
 ========================================================
-* It.  6   0.70804405s  (LL SL    )     [  1]     [  1]
+* It.  6   0.72404480s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   6.11D-03 |   6.11D-03  1.55D-05
 ========================================================
-* It.  7   0.57203484s  (LL SL    )     [  1]     [  0]
+* It.  7   0.59203720s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.10D-03 |   1.10D-03  1.81D-05
 ========================================================
-* It.  8   0.72404480s  (LL SL    )     [  1]     [  1]
+* It.  8   0.70404243s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   5.62D-05 |   5.62D-05  1.91D-07
 ========================================================
-* It.  9   0.56403732s  (LL SL    )     [  1]     [  0]
+* It.  9   0.58003998s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   2.43D-05 |   2.43D-05  2.30D-07
 ========================================================
-* It. 10   0.58803558s  (LL SL    )     [  1]     [  0]
+* It. 10   0.59203339s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.02D-05 |   1.02D-05  2.44D-07
 ========================================================
-* It. 11   0.72404671s  (LL SL    )     [  1]     [  1]
+* It. 11   0.70404434s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.01D-06 |   1.01D-06  5.61D-09
 ========================================================
-* It. 12   0.46402740s  (LL SL    )     [  1]     [  0]
+* It. 12   0.49602890s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   6.26D-07 |   6.26D-07  6.05D-09
 ========================================================
-* It. 13   0.44802856s  (LL SL    )     [  1]     [  0]
+* It. 13   0.47603226s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.31D-07 |   1.31D-07  6.38D-09
 ========================================================
-
- E-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1      -0.00258864
-       2       0.00295097
-       4      -0.00000536
-       5       0.00069309
-       6       0.00083533
-       8      -0.00000353
-      12      -0.00000034
-      13      -0.00002683
-      14      -0.00000272
-      16      -0.00000614
-      17       0.00000517
-      18      -0.00022555
-      19      -0.00000072
-      24       0.00013039
-      25      -0.00038039
-      26      -0.00000049
-      28      -0.00000386
-      31       0.00000045
-      34       0.00000003
-      44       0.00029022
-      56       0.00000268
-      78      -0.00209949
-      90      -0.00011456
-     112      -0.01370365
-     124      -0.00124404
-     137      -0.25195292
-     138       0.34805468
-     140      -0.00006820
-     141       0.00788314
-     142       0.00812156
-     144       0.00001055
-     148      -0.00045323
-     149       0.02748286
-     150      -0.00329419
-     152       0.00009629
-     153      -0.00068653
-     154       0.00205800
-     155      -0.00000259
-     160       0.00691119
-     161      -0.01911919
-     162      -0.00003590
-     164      -0.00000592
-     167      -0.00000034
-     170      -0.00000013
-     180      -0.01194618
-     192      -0.00135153
-     205      -0.00163618
-     206       0.00186582
-     208      -0.46369464
-     209      -0.00093127
-     210       0.00280318
-     212      -0.11650929
-     216       0.01991591
-     217       0.00025433
-     218      -0.00076971
-     220       0.06682879
-     221      -0.00015250
-     222       0.00037363
-     223       0.13630126
-     228      -0.00006655
-     229       0.00027760
-     230       0.01310348
-     232       0.47380153
-     235       0.23626939
-     238      -0.09655255
-     239       0.00000404
-     242       0.60934412
-     243      -0.00034173
-     246      -0.23626113
-     250      -0.05484951
-     251       0.00077896
-     254      -0.59076057
-     255      -0.00011008
-     257      -0.17098437
-     262       0.00024287
-     264      -0.02190849
-     266      -0.42386466
-     269      -0.24216285
-     272       0.09984981
-     273       0.39169317
-     274      -0.47590845
-     276      -0.02547746
-     277       0.05221991
-     278       0.04726006
-     280      -0.01016519
-     284       0.00115850
-     285       0.01446665
-     286       0.00305801
-     288       0.04251261
-     289      -0.00045742
-     290       0.00493431
-     291      -0.00149075
-     296       0.00481871
-     297      -0.01298668
-     298       0.00007446
-     300      -0.00340569
-     303       0.00038989
-     306      -0.00030770
-     309       0.00000007
-     313       0.00000003
-     316      -0.00006892
-     317       0.00000002
-     321       0.00000007
-     326      -0.00000001
-     328      -0.00000552
-     329      -0.00000001
-     333      -0.00000002
-     336      -0.00000001
-     343      -0.47302837
-     347      -0.16741395
-     349      -0.03078646
-     351      -0.15083604
-     355      -0.43492105
-     360       0.04094523
-     361       0.00569825
-     363       0.08014638
-     367       0.14147009
-     369      -0.01206459
-     370       0.06494526
-     372       0.00577064
-     373      -0.02626928
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1      -0.00013582
-       2       0.00014219
-       4      -0.00000115
-       5      -0.00243614
-       6       0.00046235
-       8       0.00000272
-      12      -0.00000023
-      13       0.00000651
-      14      -0.00000593
-      16      -0.00000228
-      17       0.00017660
-      18      -0.00051355
-      19       0.00000011
-      24      -0.00039416
-      25       0.00016234
-      26      -0.00000133
-      28      -0.00000156
-      31       0.00000013
-      34       0.00000001
-      44      -0.00012529
-      56      -0.00000334
-      78       0.00090635
-      90       0.00014282
-     112       0.00591584
-     124       0.00155082
-     137      -0.05085263
-     138       0.04540792
-     140      -0.00002535
-     141      -0.01976313
-     142       0.00181758
-     144      -0.00000636
-     148      -0.00032780
-     149      -0.01366516
-     150       0.01525751
-     152       0.00004612
-     153      -0.00193058
-     154       0.00594189
-     155       0.00000140
-     160      -0.02010377
-     161       0.00499954
-     162      -0.00012770
-     164      -0.00000016
-     167       0.00000242
-     170      -0.00000083
-     180       0.00515715
-     192       0.00168482
-     205      -0.01545913
-     206       0.00368032
-     208      -0.17648396
-     209       0.00146967
-     210       0.00218437
-     212       0.14745367
-     216      -0.02398573
-     217      -0.00003185
-     218      -0.00078911
-     220       0.62705655
-     221      -0.00056978
-     222      -0.00016721
-     223      -0.11630592
-     228      -0.00006761
-     229       0.00039567
-     230       0.00006158
-     232      -0.12623572
-     235      -0.01479127
-     238       0.00125468
-     239      -0.00000686
-     242      -0.92038721
-     243      -0.00016238
-     246      -0.54130473
-     250       0.08360920
-     251       0.00043766
-     254       1.38655492
-     255       0.00027718
-     257       0.01667506
-     262      -0.00007176
-     264       0.00317170
-     266      -0.14159968
-     269      -0.01769444
-     272       0.00489145
-     273       0.08978177
-     274      -0.04609159
-     276      -0.00689264
-     277      -0.15967228
-     278       0.01564615
-     280       0.00746113
-     284       0.00069152
-     285      -0.00562201
-     286       0.00866439
-     288       0.01883038
-     289      -0.00391047
-     290       0.01532278
-     291       0.00016364
-     296      -0.01189625
-     297       0.00321514
-     298       0.00014306
-     300      -0.00170344
-     303       0.00026723
-     306      -0.00016631
-     316       0.00002975
-     328       0.00000688
-     343       0.01705195
-     347       0.00603502
-     349       0.00110981
-     351       0.00543741
-     355       0.01567824
-     360      -0.00147601
-     361      -0.00020541
-     363      -0.00288916
-     367      -0.00509978
-     369       0.00043491
-     370      -0.00234118
-     372      -0.00020802
-     373       0.00094697
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1       0.00002392
-       2      -0.00006273
-       4       0.00000428
-       5       0.00182217
-       6       0.00186721
-       8      -0.00000148
-      12       0.00000038
-      13      -0.00007441
-      14       0.00006012
-      16       0.00000121
-      17      -0.00003595
-      18      -0.00013251
-      19      -0.00000222
-      24       0.00010964
-      25       0.00015702
-      26       0.00000510
-      28      -0.00001430
-      31       0.00001021
-      34       0.00000446
-      37       0.00000522
-      41      -0.00000102
-      43       0.00076893
-      44       0.00067511
-      45      -0.00015080
-      49      -0.00000854
-      54       0.00000160
-      55      -0.00003493
-      56       0.00003496
-      57       0.00000293
-      61      -0.00001468
-      63      -0.00000056
-      64       0.00001063
-      66       0.00000016
-      67       0.00000436
-      71       0.00000212
-      75       0.00000660
-      77      -0.00555578
-      78      -0.00488388
-      79       0.00112251
-      83      -0.00000260
-      88       0.00001437
-      89       0.00150667
-      90      -0.00149509
-      91      -0.00010703
-      95       0.00000166
-      97       0.00001123
-      98       0.00000069
-     100       0.00000441
-     101      -0.00000026
-     105       0.00021176
-     109      -0.00009019
-     111      -0.03630089
-     112      -0.03187773
-     113       0.00731664
-     117       0.00006142
-     122      -0.00001255
-     123       0.01636315
-     124      -0.01623509
-     125      -0.00116258
-     129      -0.00000444
-     131      -0.00000158
-     132      -0.00001010
-     134      -0.00000110
-     135       0.00000203
-     137       0.01874435
-     138       0.02259424
-     140       0.00004232
-     141       0.01233952
-     142       0.01670536
-     144       0.00000414
-     148       0.00030350
-     149       0.07502703
-     150      -0.06432603
-     152      -0.00000751
-     153      -0.00050763
-     154       0.00244354
-     155      -0.00001004
-     160       0.00176276
-     161       0.01004218
-     162       0.00030553
-     164      -0.00002569
-     167      -0.00002153
-     170       0.00000660
-     173       0.00121536
-     177       0.00004319
-     179      -0.03145574
-     180      -0.02778948
-     181       0.00658393
-     185       0.00063359
-     190      -0.00006358
-     191       0.01777660
-     192      -0.01763787
-     193      -0.00137860
-     197      -0.00022977
-     199       0.00001421
-     200      -0.00010062
-     202      -0.00000875
-     203       0.00004226
-     205      -0.00150696
-     206       0.01453397
-     208      -0.83827716
-     209      -0.00316837
-     210      -0.00488753
-     212      -0.54387293
-     216       0.07468644
-     217      -0.00024541
-     218       0.00086104
-     220       1.37397169
-     221       0.00058821
-     222      -0.00021238
-     223      -0.02023616
-     228       0.00002180
-     229       0.00007695
-     230      -0.00002075
-     232      -0.23131526
-     235      -0.06159825
-     238       0.02253898
-     239       0.00024487
-     242       0.22223393
-     243      -0.00003838
-     246      -0.08049527
-     250       0.02208227
-     251      -0.00011650
-     254      -0.66558835
-     255       0.00024470
-     257       0.11822606
-     262      -0.00018183
-     264       0.00051661
-     266       0.12864082
-     269       0.01549219
-     272      -0.00146859
-     273      -0.00344964
-     274      -0.05494276
-     276       0.01519483
-     277       0.11811053
-     278       0.13833079
-     280      -0.00557950
-     284      -0.00085789
-     285       0.05090352
-     286      -0.04246674
-     288      -0.00245726
-     289      -0.00075656
-     290       0.00530780
-     291      -0.00641912
-     296       0.00250439
-     297       0.00512495
-     298      -0.00045674
-     300      -0.01960130
-     303      -0.00992834
-     306       0.00404742
-     309      -0.50218125
-     313      -0.17723984
-     315      -0.03272740
-     316      -0.00016033
-     317      -0.15980428
-     321      -0.46091726
-     326       0.04338870
-     327       0.00612984
-     328      -0.00007201
-     329       0.08495484
-     333       0.14995537
-     335      -0.01278286
-     336       0.06884061
-     338       0.00611482
-     339      -0.02784490
-     343      -0.01407189
-     347      -0.00498032
-     349      -0.00091585
-     351      -0.00448715
-     355      -0.01293826
-     360       0.00121806
-     361       0.00016951
-     363       0.00238424
-     367       0.00420853
-     369      -0.00035890
-     370       0.00193203
-     372       0.00017167
-     373      -0.00078147
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1       0.00221820
-       2       0.00169939
-       4      -0.00000369
-       5       0.00115878
-       6       0.00258510
-       8      -0.00000516
-      12      -0.00000065
-      13      -0.00001695
-      14       0.00005337
-      16      -0.00000259
-      17       0.00055290
-      18      -0.00007722
-      19       0.00000098
-      24      -0.00026799
-      25       0.00024549
-      26      -0.00000071
-      28      -0.00000018
-      31      -0.00000011
-      44       0.00024127
-      56       0.00000249
-      78      -0.00174540
-      90      -0.00010661
-     112      -0.01139245
-     124      -0.00115762
-     137       0.28080303
-     138       0.14609406
-     140      -0.00004054
-     141       0.00615794
-     142       0.01731354
-     144       0.00001063
-     148      -0.00072501
-     149       0.00555415
-     150      -0.04703809
-     152       0.00003022
-     153      -0.00644173
-     154       0.00054090
-     155       0.00000617
-     160      -0.01585246
-     161       0.01464689
-     162      -0.00007610
-     164       0.00000308
-     167       0.00000256
-     170      -0.00000068
-     180      -0.00993139
-     192      -0.00125765
-     205       0.00106842
-     206       0.00194826
-     208      -0.64939383
-     209       0.00554364
-     210       0.00095510
-     212       0.18072703
-     216       0.06335551
-     217       0.00030099
-     218      -0.00071194
-     220       0.67166140
-     221       0.00037783
-     222      -0.00026483
-     223       0.17129839
-     228       0.00012439
-     229      -0.00004513
-     230       0.02121989
-     232       0.38291181
-     235       0.22309381
-     238      -0.09190331
-     239      -0.00000099
-     242      -0.32287106
-     243      -0.00006884
-     246      -0.09500952
-     250       0.01107607
-     251      -0.00058947
-     254      -0.16178848
-     255      -0.00007449
-     257       0.13584710
-     262       0.00015394
-     264       0.01145306
-     266       0.47428088
-     269       0.22488435
-     272      -0.09115380
-     273      -0.36665531
-     274      -0.25002325
-     276      -0.01751178
-     277       0.04725790
-     278       0.15078760
-     280      -0.01207988
-     284       0.00213693
-     285       0.00523816
-     286      -0.03092422
-     288       0.01811738
-     289      -0.01668916
-     290       0.00281639
-     291       0.00363984
-     296      -0.01032741
-     297       0.00849975
-     298       0.00011946
-     300       0.00166214
-     303       0.00107122
-     306      -0.00038914
-     309       0.00000003
-     313       0.00000001
-     316      -0.00005730
-     317       0.00000001
-     321       0.00000002
-     328      -0.00000513
-     333      -0.00000001
-     343       0.16538686
-     347       0.05853363
-     349       0.01076400
-     351       0.05273743
-     355       0.15206324
-     360      -0.01431585
-     361      -0.00199230
-     363      -0.02802191
-     367      -0.04946277
-     369       0.00421819
-     370      -0.02270708
-     372      -0.00201761
-     373       0.00918464
-    ==== End of matrix output ====
-
- P-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1      -0.00000052
-       4       0.00003387
-       7       0.00000010
-       9      -0.00002722
-      11       0.00000252
-      12       0.00000195
-      14       0.00000036
-      17      -0.00002841
-      19      -0.00000183
-      20      -0.00000002
-      21      -0.00000923
-      24       0.00000897
-      26      -0.00000001
-      27       0.00000321
-      29      -0.00000625
-      31      -0.00000457
-      32       0.00000371
-      34       0.00001864
-      37       0.00000008
-      38      -0.00000269
-      39       0.00001043
-      40      -0.00002043
-      43      -0.00000153
-      60       0.00000022
-      73      -0.00000003
-      86      -0.00000053
-     105      -0.00000013
-     118       0.00000025
-     131      -0.00001840
-     150       0.00000839
-     163       0.00000910
-     176      -0.00017045
-     181      -0.00000026
-     184      -0.00001032
-     187       0.00000125
-     189       0.00000800
-     191      -0.00003841
-     192       0.00001423
-     194       0.00001137
-     197      -0.00000770
-     199      -0.00000902
-     200       0.00000297
-     201      -0.00005585
-     204       0.00002571
-     206       0.00000260
-     207       0.00010130
-     209      -0.00000797
-     211       0.00015735
-     212       0.00017033
-     214       0.00020607
-     217       0.00008221
-     218      -0.00012560
-     219       0.00002561
-     220      -0.00009572
-     223      -0.00008492
-     224      -0.00001474
-     240       0.00001834
-     253       0.00002563
-     266      -0.00028125
-     271       0.00000034
-     274      -0.00000001
-     277       0.00000832
-     279       0.00000023
-     281       0.00000020
-     282       0.00000688
-     284      -0.00007470
-     287       0.00000099
-     289       0.00002199
-     290       0.00010544
-     291       0.00000844
-     294      -0.00002292
-     296      -0.00040581
-     297      -0.00004544
-     299       0.00001895
-     301       0.00002543
-     302      -0.00008339
-     304       0.00008211
-     307       0.00001617
-     308       0.00015882
-     309      -0.00002153
-     310       0.00020363
-     313      -0.00103197
-     314       0.00003879
-     316      -0.00000033
-     319      -0.00000016
-     322      -0.00000605
-     324      -0.00000581
-     326       0.00000306
-     327      -0.00009879
-     332      -0.00000637
-     334       0.00003067
-     336      -0.00001480
-     339      -0.00019354
-     342      -0.00010219
-     344       0.00023943
-     346       0.00003292
-     349      -0.00008584
-     352       0.00040202
-     354       0.00012184
-     355       0.00030285
-     359      -0.00070533
-     361      -0.00000023
-     364      -0.00000403
-     367      -0.00000118
-     369       0.00000152
-     371       0.00003000
-     372      -0.00003051
-     374      -0.00002748
-     377      -0.00000582
-     379       0.00000439
-     380      -0.00000322
-     381      -0.00000415
-     384      -0.00000456
-     386      -0.00002450
-     387      -0.00006190
-     389      -0.00003589
-     391      -0.00038991
-     392      -0.00008309
-     394       0.00036503
-     397       0.00002964
-     398       0.00008217
-     399       0.00029954
-     400       0.00013877
-     403      -0.00008398
-     404       0.00000898
-     420       0.00010092
-     433       0.00016082
-     446      -0.00112068
-     452       0.00000006
-     453       0.00000031
-     455      -0.00000024
-     456      -0.00000404
-     458       0.00000080
-     460      -0.00000126
-     463      -0.00012953
-     466       0.00002327
-     468      -0.00001037
-     472       0.00004625
-     473      -0.00005816
-     475       0.00046642
-     480       0.00035108
-     483      -0.00034572
-     485      -0.00050587
-     486      -0.00042526
-     492      -0.00092906
-     495       0.00037330
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1    -5.434406D-06
-       4    -7.406551D-05
-       7     2.504923D-07
-       9     9.056900D-05
-      11    -1.542297D-06
-      12    -3.418034D-06
-      14     2.016693D-08
-      17    -6.734640D-05
-      19    -9.761066D-06
-      20     1.150263D-06
-      21    -3.775614D-06
-      24    -3.229403D-05
-      26     8.625787D-08
-      27    -1.282711D-05
-      29    -4.597700D-05
-      31     4.367146D-06
-      32    -3.349285D-07
-      34     4.207719D-06
-      37    -8.116013D-07
-      38    -1.376609D-07
-      39     1.352034D-05
-      40     1.967819D-05
-      43     4.176745D-06
-      44    -6.373012D-07
-      49    -2.711737D-11
-      54     3.315902D-11
-      60     1.754108D-07
-      62    -2.473943D-11
-      69    -1.182142D-11
-      73     2.478189D-10
-      74    -1.682515D-11
-      85     7.203134D-12
-      86    -7.761011D-08
-     105    -1.060256D-07
-     118    -2.186671D-09
-     131    -2.714227D-06
-     150     6.844781D-06
-     163    -7.980278D-08
-     176    -2.513931D-05
-     181     4.330289D-07
-     184     1.921477D-05
-     187     4.611305D-06
-     189    -2.459493D-05
-     191     2.409927D-05
-     192    -2.718271D-05
-     194     2.811485D-06
-     197    -2.603826D-05
-     199    -9.540330D-05
-     200    -2.293689D-05
-     201    -3.797010D-05
-     204    -7.050590D-05
-     206    -7.811459D-06
-     207    -3.159864D-04
-     209    -2.162772D-04
-     211    -1.324890D-04
-     212    -1.161956D-05
-     214     4.098546D-05
-     217    -5.929398D-04
-     218    -4.310971D-05
-     219     4.221095D-05
-     220     8.250538D-05
-     223     1.525600D-04
-     224     3.707764D-04
-     240     1.495833D-05
-     253    -2.248435D-07
-     266    -4.148066D-05
-     271    -4.795080D-08
-     274    -2.404104D-08
-     277    -8.551368D-07
-     279     5.622077D-08
-     281    -5.823305D-07
-     282    -8.791439D-07
-     284    -5.055854D-05
-     287    -3.220207D-07
-     289    -4.859864D-06
-     290    -2.353395D-05
-     291     1.005033D-05
-     294     3.020970D-07
-     296    -7.834433D-05
-     297    -1.255579D-05
-     299    -1.353228D-05
-     301     3.279873D-05
-     302     1.118597D-04
-     304    -5.648106D-05
-     307     5.317237D-06
-     308     3.378496D-04
-     309    -1.257733D-04
-     310     2.883419D-04
-     313    -1.361162D-04
-     314     1.676460D-08
-     316     1.643220D-08
-     319    -7.692844D-08
-     322     1.565366D-07
-     324    -1.347510D-06
-     326     1.826271D-06
-     327    -2.611695D-05
-     332    -1.196803D-06
-     334    -1.726732D-05
-     336     7.376964D-06
-     339    -4.719963D-05
-     342    -4.933601D-06
-     344    -1.316600D-05
-     346     1.529220D-05
-     347    -7.658510D-12
-     349    -1.667963D-04
-     352    -1.681467D-05
-     354    -5.945087D-05
-     355     1.333505D-04
-     359     4.079526D-05
-     361     4.249586D-07
-     364     8.737738D-06
-     367    -1.104131D-07
-     369    -6.206055D-06
-     371    -1.745858D-05
-     372     6.480882D-05
-     374    -4.269816D-06
-     377    -3.643491D-05
-     379     6.621188D-05
-     380     2.566139D-05
-     381    -2.238952D-06
-     384     1.336642D-05
-     386     3.914652D-05
-     387     1.899731D-04
-     389    -5.298753D-04
-     391     3.098369D-04
-     392     5.755776D-06
-     394     9.906846D-05
-     397    -2.549475D-04
-     398     2.321017D-05
-     399     4.320586D-04
-     400    -1.127405D-04
-     403     1.467045D-04
-     404     4.480394D-04
-     420     8.230479D-05
-     433    -1.411026D-06
-     446    -1.652853D-04
-     452    -2.282681D-09
-     453    -1.099778D-08
-     455     8.705868D-09
-     456     1.455630D-07
-     458    -2.874040D-08
-     460     4.545693D-08
-     463     4.669267D-06
-     466    -8.390008D-07
-     468     3.737202D-07
-     472    -1.667169D-06
-     473     2.096451D-06
-     475    -1.681379D-05
-     480    -1.265604D-05
-     483     1.246271D-05
-     485     1.823597D-05
-     486     1.532994D-05
-     492     3.349121D-05
-     495    -1.345689D-05
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1      -0.00002835
-       4       0.00008493
-       7       0.00000839
-       9      -0.00016235
-      11       0.00000274
-      12       0.00000751
-      14      -0.00000030
-      17      -0.00013024
-      19      -0.00000370
-      20       0.00000013
-      21       0.00001040
-      24       0.00001453
-      26       0.00000033
-      27       0.00000348
-      29       0.00001810
-      31      -0.00000118
-      32       0.00000201
-      34       0.00001711
-      37       0.00000063
-      38       0.00000225
-      39      -0.00001224
-      40      -0.00000726
-      43       0.00000342
-      44       0.00000090
-      47      -0.00002909
-      48       0.00000014
-      50      -0.00012437
-      51       0.00000004
-      53      -0.00000869
-      55       0.00019094
-      58      -0.00000901
-      60      -0.00000026
-      61      -0.00000099
-      63       0.00015039
-      67       0.00000758
-      68      -0.00001137
-      70       0.00002954
-      73      -0.00000014
-      75      -0.00005180
-      78       0.00000847
-      80      -0.00001537
-      81      -0.00000664
-      86      -0.00000022
-      87      -0.00000298
-      90       0.00000701
-      92       0.00000011
-      93      -0.00003912
-      95      -0.00000029
-      96      -0.00016293
-      98      -0.00000046
-     100      -0.00000013
-     103       0.00002843
-     105       0.00000015
-     106       0.00025419
-     108       0.00000011
-     112      -0.00000862
-     113      -0.00020847
-     115      -0.00003962
-     118       0.00000126
-     120       0.00000260
-     123      -0.00009743
-     125      -0.00001784
-     126       0.00000629
-     131      -0.00000766
-     132      -0.00000637
-     135       0.00000628
-     137       0.00000612
-     138       0.00000724
-     140       0.00002700
-     141       0.00002973
-     143       0.00003213
-     145      -0.00003765
-     148      -0.00005907
-     150      -0.00001000
-     151      -0.00004906
-     153       0.00008365
-     157       0.00004363
-     158      -0.00005616
-     160       0.00032928
-     163       0.00004583
-     165      -0.00030712
-     168      -0.00005832
-     170      -0.00022128
-     171      -0.00070243
-     176      -0.00007099
-     177       0.00008065
-     180       0.00066367
-     181       0.00000665
-     184      -0.00001864
-     187      -0.00004742
-     189       0.00003454
-     191      -0.00003831
-     192       0.00004637
-     194      -0.00000829
-     197      -0.00006674
-     199      -0.00005193
-     200      -0.00000553
-     201       0.00006082
-     204       0.00002271
-     206      -0.00006835
-     207       0.00004014
-     209       0.00005333
-     211       0.00001785
-     212       0.00009818
-     214       0.00020776
-     217       0.00034466
-     218       0.00013681
-     219      -0.00002591
-     220      -0.00001983
-     223       0.00017076
-     224      -0.00039612
-     227      -0.00000384
-     228       0.00000502
-     230      -0.00001878
-     231       0.00002840
-     233       0.00003547
-     235       0.00001923
-     238      -0.00012529
-     240      -0.00002185
-     241      -0.00001509
-     243      -0.00009524
-     247       0.00004343
-     248      -0.00003281
-     250       0.00018398
-     253       0.00012912
-     255       0.00065723
-     258      -0.00068444
-     260       0.00031738
-     261       0.00020108
-     266      -0.00011714
-     267      -0.00112333
-     270      -0.00028546
-     271      -0.00000004
-     274       0.00000010
-     277      -0.00000133
-     279      -0.00000029
-     281      -0.00000091
-     282      -0.00000783
-     284      -0.00008093
-     287      -0.00000021
-     289      -0.00000656
-     290       0.00000264
-     291       0.00000560
-     294      -0.00001750
-     296       0.00015267
-     297      -0.00000835
-     299      -0.00000052
-     301       0.00001958
-     302       0.00061518
-     304      -0.00014267
-     307       0.00000716
-     308      -0.00005579
-     309      -0.00013829
-     310       0.00018354
-     313      -0.00003652
-     314      -0.00001149
-     316       0.00000005
-     322       0.00000059
-     324       0.00000008
-     326      -0.00000182
-     327       0.00001194
-     332       0.00000445
-     334       0.00000697
-     336      -0.00001087
-     339       0.00002781
-     342       0.00003311
-     344       0.00003646
-     346      -0.00003851
-     349       0.00008311
-     352      -0.00005625
-     354       0.00003908
-     355      -0.00032157
-     359       0.00005087
-     361       0.00000271
-     364      -0.00000991
-     367       0.00001557
-     369       0.00001041
-     371       0.00003532
-     372      -0.00013576
-     374       0.00001835
-     377      -0.00007418
-     379       0.00003011
-     380       0.00000389
-     381       0.00000411
-     384      -0.00000580
-     386       0.00021264
-     387      -0.00004462
-     389       0.00017466
-     391      -0.00009565
-     392      -0.00005702
-     394       0.00041515
-     397       0.00018274
-     398      -0.00007115
-     399      -0.00030554
-     400       0.00004726
-     403       0.00013544
-     404      -0.00057656
-     407      -0.00000032
-     408       0.00000042
-     410       0.00000109
-     411      -0.00000046
-     413       0.00000113
-     415       0.00000238
-     418      -0.00003041
-     420      -0.00012021
-     421       0.00000565
-     423      -0.00000827
-     427       0.00003301
-     428       0.00001073
-     430       0.00012639
-     433       0.00081032
-     435       0.00009397
-     438      -0.00002770
-     440      -0.00057787
-     441       0.00013138
-     446      -0.00046677
-     447      -0.00039637
-     450       0.00034724
-     453       0.00000001
-     455      -0.00000001
-     456      -0.00000012
-     458       0.00000002
-     460      -0.00000004
-     463      -0.00000385
-     466       0.00000069
-     468      -0.00000031
-     472       0.00000138
-     473      -0.00000173
-     475       0.00001388
-     480       0.00001044
-     483      -0.00001028
-     485      -0.00001505
-     486      -0.00001265
-     492      -0.00002764
-     495       0.00001111
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1     2.799389D-06
-       4     3.833917D-05
-       7    -6.646924D-07
-       9    -2.384788D-05
-      11     3.371936D-08
-      12     6.624087D-07
-      14     1.019680D-07
-      17     1.768668D-05
-      19    -1.214231D-06
-      20    -3.182822D-08
-      21     9.811282D-07
-      24     1.580605D-06
-      26     9.427446D-08
-      27    -2.455794D-06
-      29     1.161044D-06
-      31     1.835854D-06
-      32     2.322955D-06
-      34     7.260208D-06
-      37    -1.609959D-07
-      38     3.284917D-06
-      39     3.263308D-06
-      40     7.916628D-06
-      43     5.345624D-07
-      44    -1.342360D-07
-      49     1.403289D-11
-      54    -8.726607D-12
-      60     1.081110D-07
-      62     6.474491D-12
-      73    -7.713851D-09
-      86     1.604577D-07
-     105    -6.534681D-08
-     118     6.806434D-08
-     131     5.611620D-06
-     150     4.218646D-06
-     163     2.484013D-06
-     176     5.197511D-05
-     181    -1.306576D-06
-     184    -5.426376D-06
-     187     8.723226D-06
-     189     2.901837D-07
-     191     9.038157D-06
-     192    -2.916092D-06
-     194     2.622011D-06
-     197     1.603343D-05
-     199    -8.482654D-06
-     200     2.718339D-07
-     201     6.307694D-06
-     204    -4.011182D-06
-     206    -1.236263D-05
-     207    -8.714893D-05
-     209    -4.620897D-06
-     211    -8.808800D-05
-     212     6.932009D-05
-     214     3.496480D-05
-     217    -1.723823D-04
-     218     1.853993D-04
-     219     9.196143D-06
-     220     5.322011D-05
-     223     2.080427D-05
-     224     1.202818D-04
-     240     9.219275D-06
-     253     6.998682D-06
-     266     8.576060D-05
-     271     2.252528D-07
-     274    -1.587278D-07
-     277     7.668806D-06
-     279     7.855778D-07
-     281     1.178149D-06
-     282     1.890672D-05
-     284    -6.884771D-05
-     287     3.212417D-07
-     289    -1.134875D-05
-     290    -8.741720D-05
-     291     1.287214D-05
-     294     5.705521D-05
-     296    -2.033980D-04
-     297     7.945789D-05
-     299    -4.887479D-05
-     301    -3.692214D-05
-     302    -1.639668D-04
-     304     5.022265D-05
-     307    -1.453038D-04
-     308     9.016105D-05
-     309    -3.377340D-04
-     310    -3.539298D-04
-     313     1.342201D-04
-     314     2.066382D-04
-     316     4.427109D-07
-     319     2.019866D-09
-     322     5.798771D-06
-     324     1.333705D-06
-     326    -6.229878D-07
-     327     3.103120D-05
-     332     1.684582D-05
-     334     7.648815D-05
-     336     6.475884D-06
-     339    -8.625771D-05
-     341     5.433636D-12
-     342    -6.613315D-05
-     344     1.171209D-04
-     346     2.229888D-05
-     349     1.274104D-04
-     352     7.068054D-05
-     354     9.792264D-06
-     355     1.682499D-04
-     358     1.306260D-11
-     359     8.395596D-05
-     361    -4.893819D-07
-     364    -2.539062D-06
-     367    -2.725917D-06
-     369    -2.928487D-08
-     371    -5.757049D-06
-     372     7.698620D-06
-     374    -8.336864D-06
-     377     1.445405D-05
-     379     1.074011D-05
-     380     1.130283D-06
-     381     3.365445D-08
-     384     1.185412D-06
-     386     4.327597D-05
-     387     6.063051D-05
-     389    -4.526840D-05
-     391     2.031430D-04
-     392    -4.371594D-05
-     394     1.087691D-04
-     397    -9.076570D-05
-     398    -9.624736D-05
-     399     1.483291D-04
-     400    -7.221853D-05
-     403     2.340821D-05
-     404     1.838326D-04
-     420     5.072696D-05
-     430    -6.528285D-12
-     433     4.392095D-05
-     435    -4.931223D-12
-     440     3.264156D-11
-     441    -6.864610D-12
-     446     3.417246D-04
-     447     2.109122D-11
-     450    -1.813734D-11
-     452    -2.213972D-08
-     453    -1.066674D-07
-     455     8.443819D-08
-     456     1.411815D-06
-     458    -2.787531D-07
-     460     4.408866D-07
-     463     4.528721D-05
-     466    -8.137468D-06
-     468     3.624711D-06
-     472    -1.616987D-05
-     473     2.033348D-05
-     475    -1.630769D-04
-     480    -1.227509D-04
-     483     1.208758D-04
-     485     1.768706D-04
-     486     1.486850D-04
-     492     3.248311D-04
-     495    -1.305183D-04
-    ==== End of matrix output ====
 
 
 
@@ -4103,131 +1824,131 @@ LAO-ZRM1H1       - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  3.1853D+02
   and changed to:  1.9662D-10
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 11 14:43:36 2013
+########## START MICROITERATION NO.   1 ##########   Tue Feb 12 19:00:15 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.97D-10    0.21%   72.21%    0.00%    3.41%   0.07200623s
-SOfock:SL  1.97D-10    0.00%   74.47%    0.00%    0.11%   0.50003052s
+SOfock:SL  1.97D-10    0.00%   74.47%    0.00%    0.11%   0.47602844s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  8.86E+01  8.86E+01  3.57E-03
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 11 14:43:36 2013
+########## START MICROITERATION NO.   2 ##########   Tue Feb 12 19:00:16 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   70.22%    0.00%    1.73%   0.07600403s
-SOfock:SL  1.97D-10    0.25%   74.33%    0.00%    0.48%   0.48003006s
+SOfock:LL  1.97D-10    0.00%   70.22%    0.00%    1.73%   0.08400726s
+SOfock:SL  1.97D-10    0.25%   74.33%    0.00%    0.48%   0.50003052s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.84E+00  5.84E+00  1.37E-02
 
-########## START MICROITERATION NO.   3 ##########   Mon Feb 11 14:43:37 2013
+########## START MICROITERATION NO.   3 ##########   Tue Feb 12 19:00:16 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   71.22%    0.00%    2.28%   0.07200241s
-SOfock:SL  1.97D-10    0.25%   75.43%    0.00%    0.47%   0.46802902s
+SOfock:LL  1.97D-10    0.00%   71.22%    0.00%    2.28%   0.07600403s
+SOfock:SL  1.97D-10    0.25%   75.43%    0.00%    0.47%   0.48003006s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  7.53E-01  7.53E-01  1.43E-02
 
-########## START MICROITERATION NO.   4 ##########   Mon Feb 11 14:43:38 2013
+########## START MICROITERATION NO.   4 ##########   Tue Feb 12 19:00:17 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   72.23%    0.00%    2.74%   0.08000565s
-SOfock:SL  1.97D-10    0.08%   76.71%    0.00%    0.47%   0.54803467s
+SOfock:LL  1.97D-10    0.00%   72.23%    0.00%    2.74%   0.08800507s
+SOfock:SL  1.97D-10    0.08%   76.71%    0.00%    0.47%   0.57603455s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.39E-01  1.39E-01  3.32E-04
 
-########## START MICROITERATION NO.   5 ##########   Mon Feb 11 14:43:38 2013
+########## START MICROITERATION NO.   5 ##########   Tue Feb 12 19:00:18 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   73.24%    0.00%    1.12%   0.07200623s
-SOfock:SL  1.97D-10    0.25%   77.53%    0.00%    0.46%   0.45602798s
+SOfock:LL  1.97D-10    0.00%   73.24%    0.00%    1.12%   0.07600403s
+SOfock:SL  1.97D-10    0.25%   77.53%    0.00%    0.46%   0.46002960s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.94E-02  1.94E-02  3.68E-04
 
-########## START MICROITERATION NO.   6 ##########   Mon Feb 11 14:43:39 2013
+########## START MICROITERATION NO.   6 ##########   Tue Feb 12 19:00:18 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.97D-10    0.00%   74.54%    0.00%    2.81%   0.07600403s
-SOfock:SL  1.97D-10    0.25%   79.08%    0.00%    0.49%   0.54803848s
+SOfock:SL  1.97D-10    0.25%   79.08%    0.00%    0.49%   0.54003143s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.11E-03  6.11E-03  1.55E-05
 
-########## START MICROITERATION NO.   7 ##########   Mon Feb 11 14:43:40 2013
+########## START MICROITERATION NO.   7 ##########   Tue Feb 12 19:00:19 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   75.46%    0.00%    0.58%   0.07200241s
-SOfock:SL  1.97D-10    0.25%   80.15%    0.00%    0.70%   0.46002960s
+SOfock:LL  1.97D-10    0.00%   75.46%    0.00%    0.58%   0.08000565s
+SOfock:SL  1.97D-10    0.25%   80.15%    0.00%    0.70%   0.46402740s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.10E-03  1.10E-03  1.81E-05
 
-########## START MICROITERATION NO.   8 ##########   Mon Feb 11 14:43:40 2013
+########## START MICROITERATION NO.   8 ##########   Tue Feb 12 19:00:20 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   76.40%    0.00%    4.13%   0.07600403s
-SOfock:SL  1.97D-10    0.25%   81.13%    0.00%    0.53%   0.52403259s
+SOfock:LL  1.97D-10    0.00%   76.40%    0.00%    4.13%   0.08400345s
+SOfock:SL  1.97D-10    0.25%   81.13%    0.00%    0.53%   0.58803940s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.62E-05  5.62E-05  1.91E-07
 
-########## START MICROITERATION NO.   9 ##########   Mon Feb 11 14:43:41 2013
+########## START MICROITERATION NO.   9 ##########   Tue Feb 12 19:00:21 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   80.08%    0.00%    2.36%   0.06800461s
-SOfock:SL  1.97D-10    0.48%   84.83%    0.00%    1.32%   0.42802429s
+SOfock:LL  1.97D-10    0.00%   80.08%    0.00%    2.36%   0.08000183s
+SOfock:SL  1.97D-10    0.48%   84.83%    0.00%    1.32%   0.47203064s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  2.43E-05  2.43E-05  2.30E-07
 
-########## START MICROITERATION NO.  10 ##########   Mon Feb 11 14:43:41 2013
+########## START MICROITERATION NO.  10 ##########   Tue Feb 12 19:00:21 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   81.55%    0.00%    1.07%   0.06800461s
-SOfock:SL  1.97D-10    0.49%   86.29%    0.00%    2.30%   0.42402649s
+SOfock:LL  1.97D-10    0.00%   81.55%    0.00%    1.07%   0.07200241s
+SOfock:SL  1.97D-10    0.49%   86.29%    0.00%    2.30%   0.44403076s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.02E-05  1.02E-05  2.44E-07
 
-########## START MICROITERATION NO.  11 ##########   Mon Feb 11 14:43:42 2013
+########## START MICROITERATION NO.  11 ##########   Tue Feb 12 19:00:22 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.00%   83.10%    0.00%    7.10%   0.07200623s
-SOfock:SL  1.97D-10    0.78%   86.99%    0.00%    3.09%   0.45202637s
+SOfock:LL  1.97D-10    0.00%   83.10%    0.00%    7.10%   0.07600403s
+SOfock:SL  1.97D-10    0.78%   86.99%    0.00%    3.09%   0.48802948s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.01E-06  1.01E-06  5.61E-09
 
-########## START MICROITERATION NO.  12 ##########   Mon Feb 11 14:43:43 2013
+########## START MICROITERATION NO.  12 ##########   Tue Feb 12 19:00:22 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.08%   88.20%    0.00%    0.74%   0.06800461s
+SOfock:LL  1.97D-10    0.08%   88.20%    0.00%    0.74%   0.07200623s
 SOfock:SL  1.97D-10   15.90%   76.70%    0.00%   12.69%   0.35602188s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
@@ -4235,11 +1956,11 @@ SOfock:SL  1.97D-10   15.90%   76.70%    0.00%   12.69%   0.35602188s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.26E-07  6.26E-07  6.05E-09
 
-########## START MICROITERATION NO.  13 ##########   Mon Feb 11 14:43:43 2013
+########## START MICROITERATION NO.  13 ##########   Tue Feb 12 19:00:23 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.97D-10    0.08%   88.26%    0.00%    0.67%   0.06400299s
-SOfock:SL  1.97D-10   17.17%   76.00%    0.00%   13.37%   0.32802200s
+SOfock:LL  1.97D-10    0.08%   88.26%    0.00%    0.67%   0.07200241s
+SOfock:SL  1.97D-10   17.17%   76.00%    0.00%   13.37%   0.34402084s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
@@ -4255,1334 +1976,58 @@ SOfock:SL  1.97D-10   17.17%   76.00%    0.00%   13.37%   0.32802200s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.62403870s  (LL SL    )     [  0]     [  1]
+* It.  1   0.60403442s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   8.86D+01 |   8.86D+01  3.57D-03
 ========================================================
-* It.  2   0.60803604s  (LL SL    )     [  1]     [  0]
+* It.  2   0.63604355s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   5.84D+00 |   5.84D+00  1.37D-02
 ========================================================
-* It.  3   0.59203720s  (LL SL    )     [  1]     [  0]
+* It.  3   0.61203766s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   7.53D-01 |   7.53D-01  1.43D-02
 ========================================================
-* It.  4   0.73204803s  (LL SL    )     [  1]     [  1]
+* It.  4   0.77204895s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.39D-01 |   1.39D-01  3.32D-04
 ========================================================
-* It.  5   0.58403397s  (LL SL    )     [  1]     [  0]
+* It.  5   0.58803558s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.94D-02 |   1.94D-02  3.68D-04
 ========================================================
-* It.  6   0.72804642s  (LL SL    )     [  1]     [  1]
+* It.  6   0.73604584s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   6.11D-03 |   6.11D-03  1.55D-05
 ========================================================
-* It.  7   0.58803558s  (LL SL    )     [  1]     [  0]
+* It.  7   0.60003662s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.10D-03 |   1.10D-03  1.81D-05
 ========================================================
-* It.  8   0.70804596s  (LL SL    )     [  1]     [  1]
+* It.  8   0.78804779s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   5.62D-05 |   5.62D-05  1.91D-07
 ========================================================
-* It.  9   0.54803467s  (LL SL    )     [  1]     [  0]
+* It.  9   0.61204147s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   2.43D-05 |   2.43D-05  2.30D-07
 ========================================================
-* It. 10   0.54403305s  (LL SL    )     [  1]     [  0]
+* It. 10   0.57603455s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.02D-05 |   1.02D-05  2.44D-07
 ========================================================
-* It. 11   0.62804031s  (LL SL    )     [  1]     [  1]
+* It. 11   0.67604446s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.01D-06 |   1.01D-06  5.61D-09
 ========================================================
-* It. 12   0.48003006s  (LL SL    )     [  1]     [  0]
+* It. 12   0.48402786s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   6.26D-07 |   6.26D-07  6.05D-09
 ========================================================
-* It. 13   0.44802856s  (LL SL    )     [  1]     [  0]
+* It. 13   0.47203064s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.31D-07 |   1.31D-07  6.36D-09
 ========================================================
-
- E-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1      -0.00221825
-       2       0.00169932
-       4       0.00000369
-       5      -0.00116016
-       6       0.00258562
-       8       0.00000516
-      12       0.00000065
-      13       0.00001698
-      14       0.00005339
-      16       0.00000258
-      17      -0.00055283
-      18      -0.00007712
-      19      -0.00000098
-      24       0.00026783
-      25       0.00024550
-      26       0.00000071
-      28       0.00000019
-      31       0.00000010
-      44       0.00024127
-      56       0.00000249
-      78      -0.00174540
-      90      -0.00010661
-     112      -0.01139245
-     124      -0.00115762
-     137      -0.28209903
-     138       0.14385903
-     140       0.00002951
-     141      -0.00991036
-     142       0.02004601
-     144      -0.00001168
-     148       0.00062535
-     149      -0.02105721
-     150      -0.05966642
-     152      -0.00002462
-     153       0.00625351
-     154       0.00055728
-     155      -0.00000398
-     160       0.01364797
-     161       0.01590222
-     162       0.00000538
-     164       0.00000197
-     167       0.00000187
-     170      -0.00000068
-     180      -0.00993139
-     192      -0.00125765
-     205      -0.00210179
-     206       0.00065677
-     208      -0.46288930
-     209       0.00630594
-     210      -0.00251208
-     212       0.32867465
-     216       0.03756496
-     217       0.00033419
-     218       0.00104810
-     220       0.46220771
-     221       0.00009586
-     222       0.00023971
-     223       0.14089666
-     228       0.00009774
-     229      -0.00002816
-     230       0.02012228
-     232       0.38746193
-     235       0.22214635
-     238      -0.09194651
-     239      -0.00001304
-     242       0.28001477
-     243       0.00006563
-     246       0.08191256
-     250      -0.00960476
-     251       0.00060889
-     254       0.24363410
-     255       0.00006947
-     257      -0.14168916
-     262      -0.00014567
-     264      -0.01135586
-     266      -0.48509382
-     269      -0.22585316
-     272       0.09120179
-     273       0.37087064
-     274      -0.24442979
-     276       0.01300922
-     277      -0.09437651
-     278       0.16875695
-     280       0.01398119
-     284      -0.00179545
-     285      -0.01535698
-     286      -0.03919871
-     288      -0.01391680
-     289       0.01564123
-     290       0.00111473
-     291      -0.00232015
-     296       0.00753437
-     297       0.00862873
-     298      -0.00000778
-     300       0.00169750
-     303       0.00082846
-     306      -0.00039347
-     309       0.00000003
-     313       0.00000001
-     316      -0.00005730
-     317       0.00000001
-     321       0.00000002
-     328      -0.00000513
-     333      -0.00000001
-     343      -0.16538686
-     347      -0.05853363
-     349      -0.01076400
-     351      -0.05273743
-     355      -0.15206324
-     360       0.01431585
-     361       0.00199230
-     363       0.02802191
-     367       0.04946277
-     369      -0.00421819
-     370       0.02270708
-     372       0.00201761
-     373      -0.00918464
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1       0.00002393
-       2       0.00006423
-       4       0.00000428
-       5       0.00182155
-       6      -0.00186604
-       8      -0.00000147
-      12       0.00000038
-      13      -0.00007440
-      14      -0.00006010
-      16       0.00000121
-      17      -0.00003615
-      18       0.00013241
-      19      -0.00000222
-      24       0.00010970
-      25      -0.00015705
-      26       0.00000510
-      28      -0.00001430
-      31       0.00001021
-      34       0.00000446
-      37       0.00000522
-      41      -0.00000102
-      43       0.00076893
-      44      -0.00067511
-      45      -0.00015080
-      49      -0.00000854
-      54       0.00000160
-      55      -0.00003493
-      56      -0.00003496
-      57       0.00000293
-      61      -0.00001468
-      63      -0.00000056
-      64       0.00001063
-      66       0.00000016
-      67       0.00000436
-      71       0.00000212
-      75       0.00000660
-      77      -0.00555578
-      78       0.00488388
-      79       0.00112251
-      83      -0.00000260
-      88       0.00001437
-      89       0.00150667
-      90       0.00149509
-      91      -0.00010703
-      95       0.00000166
-      97       0.00001123
-      98       0.00000069
-     100       0.00000441
-     101      -0.00000026
-     105       0.00021176
-     109      -0.00009019
-     111      -0.03630089
-     112       0.03187773
-     113       0.00731664
-     117       0.00006142
-     122      -0.00001255
-     123       0.01636315
-     124       0.01623509
-     125      -0.00116258
-     129      -0.00000444
-     131      -0.00000158
-     132      -0.00001010
-     134      -0.00000110
-     135       0.00000203
-     137      -0.01734059
-     138       0.03251720
-     140       0.00005441
-     141       0.01027680
-     142      -0.01235826
-     144       0.00000118
-     148       0.00047198
-     149       0.07022783
-     150       0.05351148
-     152      -0.00002047
-     153       0.00080848
-     154      -0.00212969
-     155      -0.00001083
-     160       0.00428810
-     161      -0.00841033
-     162       0.00031632
-     164      -0.00002528
-     167      -0.00002153
-     170       0.00000659
-     173       0.00121536
-     177       0.00004319
-     179      -0.03145574
-     180       0.02778948
-     181       0.00658393
-     185       0.00063359
-     190      -0.00006358
-     191       0.01777660
-     192       0.01763787
-     193      -0.00137860
-     197      -0.00022977
-     199       0.00001421
-     200      -0.00010062
-     202      -0.00000875
-     203       0.00004226
-     205       0.00154928
-     206       0.01463282
-     208       1.04654310
-     209       0.00194146
-     210      -0.00378469
-     212       0.49997593
-     216      -0.08971260
-     217       0.00010672
-     218       0.00048061
-     220      -1.47036081
-     221      -0.00060962
-     222      -0.00017822
-     223      -0.05052521
-     228      -0.00003423
-     229       0.00012469
-     230      -0.00776819
-     232       0.02551178
-     235      -0.04555892
-     238       0.02128097
-     239       0.00024428
-     242       0.22034266
-     243      -0.00002341
-     246      -0.06735878
-     250       0.02317783
-     251      -0.00010811
-     254      -0.63603382
-     255       0.00025193
-     257       0.11582445
-     262      -0.00019795
-     264       0.00057542
-     266       0.11528065
-     269       0.01057988
-     272       0.00045789
-     273      -0.00220977
-     274      -0.07296712
-     276       0.02222692
-     277       0.09690290
-     278      -0.09833580
-     280      -0.00147240
-     284      -0.00141824
-     285       0.04589481
-     286       0.03597151
-     288      -0.01287758
-     289       0.00240515
-     290      -0.00379098
-     291      -0.00663245
-     296       0.00350601
-     297      -0.00559634
-     298      -0.00047681
-     300      -0.01871274
-     303      -0.00987728
-     306       0.00404299
-     309      -0.50218125
-     313      -0.17723984
-     315      -0.03272740
-     316       0.00016033
-     317      -0.15980428
-     321      -0.46091727
-     326       0.04338870
-     327       0.00612984
-     328       0.00007201
-     329       0.08495484
-     333       0.14995537
-     335      -0.01278286
-     336       0.06884061
-     338       0.00611482
-     339      -0.02784490
-     343       0.01407189
-     347       0.00498032
-     349       0.00091585
-     351       0.00448715
-     355       0.01293826
-     360      -0.00121806
-     361      -0.00016951
-     363      -0.00238424
-     367      -0.00420853
-     369       0.00035890
-     370      -0.00193203
-     372      -0.00017167
-     373       0.00078147
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1       0.00013424
-       2       0.00014166
-       4       0.00000115
-       5       0.00243603
-       6       0.00046285
-       8      -0.00000272
-      12       0.00000023
-      13      -0.00000651
-      14      -0.00000592
-      16       0.00000228
-      17      -0.00017677
-      18      -0.00051349
-      19      -0.00000011
-      24       0.00039428
-      25       0.00016255
-      26       0.00000133
-      28       0.00000156
-      31      -0.00000013
-      34      -0.00000001
-      44      -0.00012529
-      56      -0.00000334
-      78       0.00090635
-      90       0.00014282
-     112       0.00591584
-     124       0.00155082
-     137      -0.02041529
-     138      -0.01231362
-     140       0.00001457
-     141       0.02039869
-     142       0.00150033
-     144       0.00000747
-     148       0.00028697
-     149       0.01829354
-     150       0.01202317
-     152      -0.00002865
-     153       0.00223927
-     154       0.00545148
-     155      -0.00000234
-     160       0.02219900
-     161       0.00971148
-     162       0.00012363
-     164      -0.00000123
-     167      -0.00000263
-     170       0.00000084
-     180       0.00515715
-     192       0.00168482
-     205      -0.01525948
-     206      -0.00347782
-     208      -0.12801753
-     209      -0.00006110
-     210      -0.00249727
-     212       0.07259904
-     216      -0.03234183
-     217      -0.00003932
-     218       0.00076446
-     220       0.45908824
-     221      -0.00065924
-     222       0.00001365
-     223      -0.11732352
-     228      -0.00010711
-     229      -0.00044849
-     230      -0.00169081
-     232      -0.09684320
-     235      -0.00986016
-     238      -0.00034405
-     239       0.00000711
-     242       0.96320039
-     243       0.00014499
-     246       0.52990162
-     250      -0.08688204
-     251      -0.00037383
-     254      -1.41172606
-     255      -0.00028040
-     257      -0.03065586
-     262       0.00008035
-     264      -0.00476915
-     266       0.10212626
-     269      -0.00323990
-     272       0.00368461
-     273       0.04676870
-     274       0.00044110
-     276       0.00495844
-     277       0.15623386
-     278       0.03193535
-     280      -0.00705103
-     284      -0.00081792
-     285       0.00721355
-     286       0.00261074
-     288      -0.01349758
-     289       0.00651998
-     290       0.01440968
-     291      -0.00104620
-     296       0.01414760
-     297       0.00692991
-     298      -0.00014506
-     300       0.00074457
-     303      -0.00036810
-     306       0.00017032
-     316       0.00002975
-     328       0.00000688
-     343       0.01705195
-     347       0.00603502
-     349       0.00110981
-     351       0.00543741
-     355       0.01567824
-     360      -0.00147601
-     361      -0.00020541
-     363      -0.00288916
-     367      -0.00509978
-     369       0.00043491
-     370      -0.00234118
-     372      -0.00020802
-     373       0.00094697
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 374   1 374   1
-
-
-               Column   1
-       1      -0.00258868
-       2      -0.00295100
-       4      -0.00000536
-       5       0.00069278
-       6      -0.00083606
-       8      -0.00000353
-      12      -0.00000034
-      13      -0.00002685
-      14       0.00000271
-      16      -0.00000614
-      17       0.00000522
-      18       0.00022577
-      19      -0.00000072
-      24       0.00013029
-      25       0.00038029
-      26      -0.00000048
-      28      -0.00000387
-      31       0.00000045
-      34       0.00000003
-      44      -0.00029022
-      56      -0.00000268
-      78       0.00209949
-      90       0.00011456
-     112       0.01370365
-     124       0.00124404
-     137      -0.25489333
-     138      -0.35093234
-     140      -0.00006844
-     141       0.00479322
-     142      -0.00955358
-     144       0.00000939
-     148      -0.00048419
-     149       0.02986536
-     150       0.00509377
-     152       0.00010258
-     153      -0.00108523
-     154      -0.00335263
-     155      -0.00000302
-     160       0.00298048
-     161       0.01697023
-     162      -0.00003696
-     164      -0.00000775
-     167      -0.00000148
-     170       0.00000021
-     180       0.01194618
-     192       0.00135153
-     205      -0.00232478
-     206      -0.00232641
-     208       0.21135925
-     209       0.00050971
-     210       0.00324941
-     212       0.02243724
-     216      -0.00764679
-     217      -0.00030315
-     218      -0.00074129
-     220       0.38760057
-     221       0.00014570
-     222       0.00043977
-     223      -0.16027559
-     228       0.00005245
-     229       0.00015524
-     230      -0.01240481
-     232      -0.52952368
-     235      -0.24100904
-     238       0.09680410
-     239       0.00001153
-     242       0.56332267
-     243      -0.00035140
-     246      -0.26887516
-     250      -0.04930843
-     251       0.00079824
-     254      -0.53277485
-     255      -0.00008634
-     257      -0.16587539
-     262       0.00023246
-     264      -0.02166679
-     266      -0.42681043
-     269      -0.24215045
-     272       0.09986758
-     273       0.39521524
-     274       0.47861604
-     276      -0.02337291
-     277       0.04122432
-     278      -0.07198556
-     280      -0.00941781
-     284       0.00110396
-     285       0.02157062
-     286       0.00261708
-     288       0.04420960
-     289      -0.00128782
-     290      -0.00848451
-     291      -0.00249712
-     296       0.00290767
-     297       0.01112224
-     298       0.00002126
-     300      -0.00691893
-     303      -0.00124912
-     306       0.00035463
-     309      -0.00000007
-     313      -0.00000003
-     316       0.00006892
-     317      -0.00000002
-     321      -0.00000007
-     326       0.00000001
-     328       0.00000552
-     329       0.00000001
-     333       0.00000002
-     336       0.00000001
-     343      -0.47302837
-     347      -0.16741395
-     349      -0.03078646
-     351      -0.15083604
-     355      -0.43492105
-     360       0.04094523
-     361       0.00569825
-     363       0.08014638
-     367       0.14147009
-     369      -0.01206459
-     370       0.06494526
-     372       0.00577064
-     373      -0.02626928
-    ==== End of matrix output ====
-
- P-- part of solution vectors for one frequency:
-* Vector nr.    1
-
-*** A real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1    -2.791043D-06
-       4    -3.839167D-05
-       7     6.618096D-07
-       9     2.393272D-05
-      11    -3.515548D-08
-      12    -6.660971D-07
-      14     1.018575D-07
-      17    -1.766123D-05
-      19     1.212564D-06
-      20    -3.213346D-08
-      21    -9.859460D-07
-      24    -1.595562D-06
-      26     9.436469D-08
-      27     2.450663D-06
-      29    -1.181422D-06
-      31    -1.834108D-06
-      32     2.323767D-06
-      34    -7.264964D-06
-      37     1.605255D-07
-      38     3.285753D-06
-      39    -3.254874D-06
-      40    -7.908075D-06
-      43     5.344993D-07
-      44     1.337252D-07
-      49    -1.405223D-11
-      54     8.757979D-12
-      60     1.081110D-07
-      62    -6.464654D-12
-      73    -7.713849D-09
-      86     1.604577D-07
-     105    -6.534681D-08
-     118     6.806435D-08
-     131     5.611620D-06
-     150     4.218646D-06
-     163     2.484013D-06
-     176     5.197511D-05
-     181     1.674382D-08
-     184     1.037974D-05
-     187     1.041005D-06
-     189    -8.854667D-06
-     191     4.275608D-07
-     192    -8.215053D-06
-     194     7.401777D-07
-     197    -4.655337D-06
-     199     1.121971D-05
-     200     9.164706D-07
-     201    -2.085929D-05
-     204    -5.800955D-06
-     206    -2.480145D-05
-     207     5.364466D-05
-     209    -2.213153D-05
-     211     7.270736D-05
-     212     8.777135D-05
-     214    -7.153247D-05
-     217     5.691567D-05
-     218     2.111818D-04
-     219    -7.766738D-07
-     220    -4.198228D-05
-     223     4.208794D-05
-     224    -1.266806D-05
-     240     9.219275D-06
-     253     6.998682D-06
-     266     8.576060D-05
-     271     2.125044D-07
-     274    -1.782081D-07
-     277     7.378470D-06
-     279     8.224517D-07
-     281     1.193543D-06
-     282     1.950798D-05
-     284     5.801742D-05
-     287     2.812328D-07
-     289    -1.033909D-05
-     290     8.868825D-05
-     291     1.316274D-05
-     294     5.812557D-05
-     296     2.451656D-04
-     297     7.438081D-05
-     299    -4.921354D-05
-     301    -3.212223D-05
-     302     2.710955D-04
-     304     6.759275D-05
-     307    -1.381106D-04
-     308    -1.737767D-04
-     309    -3.164638D-04
-     310    -3.128021D-04
-     313    -1.050624D-04
-     314     1.984035D-04
-     316    -4.441072D-07
-     319    -4.297071D-09
-     322    -5.814639D-06
-     324    -1.378613D-06
-     326     7.832390D-07
-     327    -3.247985D-05
-     332    -1.709949D-05
-     334    -7.727561D-05
-     336    -5.611844D-06
-     339     8.298742D-05
-     341    -5.561072D-12
-     342     6.396804D-05
-     344    -1.193536D-04
-     346    -1.958779D-05
-     349    -1.371998D-04
-     352    -6.790171D-05
-     354    -1.389005D-05
-     355    -1.454690D-04
-     358    -1.322243D-11
-     359    -8.533301D-05
-     361     4.897123D-08
-     364     5.750805D-06
-     367    -2.335500D-07
-     369    -2.927666D-06
-     371    -3.849228D-06
-     372     2.837998D-05
-     374    -3.988514D-06
-     377    -6.542705D-06
-     379    -4.747545D-06
-     380    -2.522831D-06
-     381    -1.164601D-06
-     384     2.172104D-06
-     386     7.429954D-05
-     387    -1.847021D-05
-     389    -7.762408D-05
-     391    -1.268963D-04
-     392    -5.376396D-05
-     394    -1.647504D-04
-     397     1.135909D-05
-     398    -1.101752D-04
-     399    -1.469170D-05
-     400     4.224414D-05
-     403     2.274748D-05
-     404     3.325237D-06
-     420     5.072692D-05
-     430    -6.890843D-12
-     433     4.392104D-05
-     435    -5.019785D-12
-     440     2.857831D-11
-     441    -7.100977D-12
-     446     3.417246D-04
-     447     2.158860D-11
-     450    -1.857746D-11
-     452     2.213972D-08
-     453     1.066674D-07
-     455    -8.443820D-08
-     456    -1.411815D-06
-     458     2.787531D-07
-     460    -4.408867D-07
-     463    -4.528721D-05
-     466     8.137468D-06
-     468    -3.624711D-06
-     472     1.616987D-05
-     473    -2.033348D-05
-     475     1.630769D-04
-     480     1.227509D-04
-     483    -1.208758D-04
-     485    -1.768706D-04
-     486    -1.486850D-04
-     492    -3.248311D-04
-     495     1.305183D-04
-    ==== End of matrix output ====
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1      -0.00002835
-       4       0.00008491
-       7       0.00000839
-       9      -0.00016234
-      11       0.00000274
-      12       0.00000751
-      14       0.00000030
-      17      -0.00013024
-      19      -0.00000370
-      20      -0.00000013
-      21       0.00001040
-      24       0.00001453
-      26      -0.00000033
-      27       0.00000348
-      29       0.00001810
-      31      -0.00000118
-      32      -0.00000201
-      34       0.00001711
-      37       0.00000063
-      38      -0.00000225
-      39      -0.00001225
-      40      -0.00000726
-      43      -0.00000343
-      44       0.00000090
-      47      -0.00002909
-      48       0.00000014
-      50      -0.00012437
-      51       0.00000004
-      53      -0.00000869
-      55       0.00019094
-      58      -0.00000901
-      60       0.00000026
-      61      -0.00000099
-      63       0.00015039
-      67       0.00000758
-      68      -0.00001137
-      70       0.00002954
-      73       0.00000014
-      75      -0.00005180
-      78       0.00000847
-      80      -0.00001537
-      81      -0.00000664
-      86       0.00000022
-      87      -0.00000298
-      90       0.00000701
-      92       0.00000011
-      93      -0.00003912
-      95      -0.00000029
-      96      -0.00016293
-      98      -0.00000046
-     100      -0.00000013
-     103       0.00002843
-     105      -0.00000015
-     106       0.00025419
-     108       0.00000011
-     112      -0.00000862
-     113      -0.00020847
-     115      -0.00003962
-     118      -0.00000126
-     120       0.00000260
-     123      -0.00009743
-     125      -0.00001784
-     126       0.00000629
-     131       0.00000766
-     132      -0.00000637
-     135       0.00000628
-     137       0.00000612
-     138       0.00000724
-     140       0.00002700
-     141       0.00002973
-     143       0.00003213
-     145      -0.00003765
-     148      -0.00005907
-     150       0.00001000
-     151      -0.00004906
-     153       0.00008365
-     157       0.00004363
-     158      -0.00005616
-     160       0.00032928
-     163      -0.00004583
-     165      -0.00030712
-     168      -0.00005832
-     170      -0.00022128
-     171      -0.00070243
-     176       0.00007099
-     177       0.00008065
-     180       0.00066367
-     181       0.00000678
-     184      -0.00001640
-     187      -0.00004817
-     189       0.00003312
-     191      -0.00003634
-     192       0.00004485
-     194       0.00000947
-     197      -0.00006781
-     199      -0.00004846
-     200       0.00000568
-     201       0.00006246
-     204       0.00002106
-     206       0.00006464
-     207       0.00004859
-     209       0.00005366
-     211       0.00002276
-     212      -0.00006972
-     214       0.00018088
-     217       0.00036443
-     218      -0.00010718
-     219      -0.00002906
-     220      -0.00002255
-     223      -0.00016934
-     224      -0.00040970
-     227      -0.00000384
-     228       0.00000502
-     230      -0.00001878
-     231       0.00002840
-     233       0.00003547
-     235       0.00001923
-     238      -0.00012529
-     240       0.00002185
-     241      -0.00001509
-     243      -0.00009524
-     247       0.00004343
-     248      -0.00003281
-     250       0.00018398
-     253      -0.00012912
-     255       0.00065723
-     258      -0.00068444
-     260       0.00031738
-     261       0.00020108
-     266       0.00011714
-     267      -0.00112333
-     270      -0.00028546
-     271      -0.00000009
-     274      -0.00000005
-     277      -0.00000236
-     279       0.00000004
-     281       0.00000055
-     282       0.00000155
-     284      -0.00010914
-     287      -0.00000009
-     289       0.00000389
-     290       0.00000609
-     291      -0.00001014
-     294       0.00000865
-     296       0.00000729
-     297      -0.00000010
-     299       0.00000744
-     301      -0.00001579
-     302       0.00052665
-     304       0.00010530
-     307       0.00002285
-     308       0.00000331
-     309       0.00021312
-     310      -0.00013846
-     313      -0.00023478
-     314      -0.00004508
-     316       0.00000004
-     322       0.00000045
-     324       0.00000019
-     326      -0.00000188
-     327       0.00001334
-     332       0.00000369
-     334       0.00000165
-     336      -0.00001073
-     339       0.00003885
-     342       0.00004006
-     344       0.00002207
-     346      -0.00004075
-     349       0.00007852
-     352      -0.00007306
-     354       0.00003452
-     355      -0.00034013
-     359       0.00006875
-     361       0.00000275
-     364      -0.00000845
-     367       0.00001578
-     369       0.00000983
-     371       0.00003020
-     372      -0.00012774
-     374      -0.00002393
-     377      -0.00007351
-     379       0.00002645
-     380      -0.00000411
-     381       0.00000468
-     384      -0.00000507
-     386      -0.00020213
-     387      -0.00004388
-     389       0.00018351
-     391      -0.00006408
-     392       0.00003317
-     394       0.00032049
-     397       0.00018861
-     398       0.00006512
-     399      -0.00037366
-     400       0.00003559
-     403      -0.00014105
-     404      -0.00059360
-     407      -0.00000032
-     408       0.00000042
-     410       0.00000109
-     411      -0.00000046
-     413       0.00000113
-     415       0.00000238
-     418      -0.00003041
-     420       0.00012021
-     421       0.00000565
-     423      -0.00000827
-     427       0.00003301
-     428       0.00001073
-     430       0.00012639
-     433      -0.00081032
-     435       0.00009397
-     438      -0.00002770
-     440      -0.00057787
-     441       0.00013138
-     446       0.00046677
-     447      -0.00039637
-     450       0.00034724
-     453      -0.00000001
-     455       0.00000001
-     456       0.00000012
-     458      -0.00000002
-     460       0.00000004
-     463       0.00000385
-     466      -0.00000069
-     468       0.00000031
-     472      -0.00000138
-     473       0.00000173
-     475      -0.00001388
-     480      -0.00001044
-     483       0.00001028
-     485       0.00001505
-     486       0.00001265
-     492       0.00002764
-     495      -0.00001111
-    ==== End of matrix output ====
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1     5.433369D-06
-       4     7.406578D-05
-       7    -2.502539D-07
-       9    -9.057133D-05
-      11     1.543174D-06
-      12     3.418521D-06
-      14     2.007208D-08
-      17     6.733099D-05
-      19     9.760788D-06
-      20     1.150261D-06
-      21     3.772057D-06
-      24     3.229670D-05
-      26     8.628952D-08
-      27     1.282899D-05
-      29     4.597444D-05
-      31    -4.369318D-06
-      32    -3.355292D-07
-      34    -4.203351D-06
-      37     8.116768D-07
-      38    -1.357131D-07
-      39    -1.351765D-05
-      40    -1.968781D-05
-      43     4.177449D-06
-      44     6.373434D-07
-      49     2.711766D-11
-      54    -3.316002D-11
-      60     1.754108D-07
-      62     2.473372D-11
-      69     1.182242D-11
-      73     2.478198D-10
-      74     1.682419D-11
-      85    -7.205758D-12
-      86    -7.761011D-08
-     105    -1.060256D-07
-     118    -2.186673D-09
-     131    -2.714227D-06
-     150     6.844781D-06
-     163    -7.980277D-08
-     176    -2.513931D-05
-     181    -3.753065D-07
-     184    -2.039202D-05
-     187    -4.923175D-06
-     189     2.558802D-05
-     191    -3.172128D-05
-     192     2.957353D-05
-     194     7.358089D-07
-     197     2.276175D-05
-     199     9.218818D-05
-     200    -2.298937D-05
-     201     2.579438D-05
-     204     7.425834D-05
-     206    -9.075604D-06
-     207     3.353014D-04
-     209     2.103163D-04
-     211     1.668168D-04
-     212    -3.928694D-05
-     214    -2.623088D-06
-     217     6.088626D-04
-     218    -3.772944D-06
-     219    -3.699198D-05
-     220    -1.033175D-04
-     223     1.672901D-04
-     224    -3.745380D-04
-     240     1.495833D-05
-     253    -2.248435D-07
-     266    -4.148066D-05
-     271    -1.864749D-08
-     274     1.108046D-08
-     277    -6.211756D-07
-     279    -7.033052D-08
-     281    -7.701879D-07
-     282    -3.488030D-06
-     284     4.958906D-05
-     287    -1.504378D-07
-     289     2.968067D-06
-     290    -2.139255D-05
-     291     8.573274D-06
-     294    -1.772366D-05
-     296     1.215812D-04
-     297    -4.007116D-05
-     299     2.450528D-06
-     301     4.515372D-05
-     302    -1.235789D-04
-     304    -4.595638D-05
-     307     4.124904D-05
-     308    -3.362507D-04
-     309    -4.851833D-05
-     310     3.989648D-04
-     313     3.951482D-04
-     314    -3.734105D-05
-     316    -4.953256D-08
-     319     6.783214D-08
-     322    -6.838681D-07
-     324     9.741547D-07
-     326    -1.629579D-06
-     327     1.949214D-05
-     332     2.927282D-07
-     334     1.649632D-05
-     336    -8.404156D-06
-     339     3.896584D-05
-     342     1.291357D-06
-     344     2.286549D-05
-     346    -1.412181D-05
-     347     7.749752D-12
-     349     1.575007D-04
-     352     3.716928D-05
-     354     6.587980D-05
-     355    -1.214128D-04
-     359    -8.318114D-05
-     361    -3.716605D-07
-     364    -8.772444D-06
-     367     3.499241D-07
-     369     6.294502D-06
-     371     2.338108D-05
-     372    -6.965775D-05
-     374    -5.028463D-07
-     377     3.177858D-05
-     379    -6.512932D-05
-     380     2.563294D-05
-     381     1.400749D-06
-     384    -1.398071D-05
-     386     4.970799D-05
-     387    -2.055637D-04
-     389     5.142126D-04
-     391    -4.058524D-04
-     392     1.343455D-05
-     394    -4.735631D-05
-     397     2.676565D-04
-     398    -8.835646D-06
-     399    -3.885252D-04
-     400     1.468212D-04
-     403     1.614269D-04
-     404    -4.632802D-04
-     420     8.230480D-05
-     433    -1.411030D-06
-     446    -1.652851D-04
-     452    -2.282681D-09
-     453    -1.099778D-08
-     455     8.705868D-09
-     456     1.455630D-07
-     458    -2.874040D-08
-     460     4.545692D-08
-     463     4.669267D-06
-     466    -8.390008D-07
-     468     3.737202D-07
-     472    -1.667169D-06
-     473     2.096451D-06
-     475    -1.681379D-05
-     480    -1.265604D-05
-     483     1.246271D-05
-     485     1.823597D-05
-     486     1.532994D-05
-     492     3.349121D-05
-     495    -1.345689D-05
-    ==== End of matrix output ====
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ: 495   1 495   1
-
-
-               Column   1
-       1      -0.00000053
-       4       0.00003387
-       7       0.00000011
-       9      -0.00002724
-      11       0.00000252
-      12       0.00000195
-      14      -0.00000036
-      17      -0.00002847
-      19      -0.00000184
-      20       0.00000002
-      21      -0.00000923
-      24       0.00000896
-      26       0.00000001
-      27       0.00000321
-      29      -0.00000626
-      31      -0.00000457
-      32      -0.00000371
-      34       0.00001865
-      37       0.00000008
-      38       0.00000269
-      39       0.00001044
-      40      -0.00002043
-      43       0.00000153
-      60      -0.00000022
-      73       0.00000003
-      86       0.00000053
-     105       0.00000013
-     118      -0.00000025
-     131       0.00001840
-     150      -0.00000839
-     163      -0.00000910
-     176       0.00017045
-     181       0.00000033
-     184      -0.00000776
-     187      -0.00000145
-     189       0.00000564
-     191      -0.00003575
-     192       0.00001212
-     194      -0.00001104
-     197      -0.00001761
-     199      -0.00003129
-     200       0.00000198
-     201      -0.00005743
-     204       0.00001313
-     206       0.00000412
-     207       0.00004062
-     209      -0.00004586
-     211       0.00012946
-     212      -0.00017171
-     214       0.00022514
-     217      -0.00000902
-     218       0.00012093
-     219       0.00003131
-     220      -0.00007905
-     223       0.00004052
-     224       0.00002792
-     240      -0.00001834
-     253      -0.00002563
-     266       0.00028125
-     271      -0.00000034
-     274       0.00000002
-     277      -0.00000838
-     279      -0.00000027
-     281      -0.00000052
-     282      -0.00000847
-     284      -0.00004109
-     287      -0.00000106
-     289      -0.00002342
-     290       0.00010469
-     291      -0.00000444
-     294       0.00001787
-     296      -0.00040069
-     297       0.00003830
-     299      -0.00002116
-     301      -0.00001220
-     302      -0.00024225
-     304      -0.00012264
-     307      -0.00001250
-     308       0.00008563
-     309      -0.00003933
-     310      -0.00008587
-     313      -0.00093837
-     314      -0.00003932
-     316      -0.00000033
-     319      -0.00000016
-     322      -0.00000601
-     324      -0.00000587
-     326       0.00000310
-     327      -0.00009967
-     332      -0.00000628
-     334       0.00002985
-     336      -0.00001470
-     339      -0.00019490
-     342      -0.00010119
-     344       0.00023936
-     346       0.00003248
-     349      -0.00009239
-     352       0.00039841
-     354       0.00011949
-     355       0.00029937
-     359      -0.00069990
-     361       0.00000031
-     364      -0.00000397
-     367       0.00000146
-     369       0.00000209
-     371       0.00003181
-     372      -0.00004057
-     374       0.00002430
-     377      -0.00002484
-     379       0.00002148
-     380      -0.00000224
-     381      -0.00000374
-     384      -0.00000294
-     386      -0.00001934
-     387      -0.00003264
-     389      -0.00010245
-     391      -0.00033693
-     392       0.00008904
-     394       0.00044175
-     397       0.00001279
-     398      -0.00007182
-     399       0.00031776
-     400       0.00012169
-     403       0.00003157
-     404      -0.00000645
-     420      -0.00010092
-     433      -0.00016082
-     446       0.00112068
-     452       0.00000006
-     453       0.00000031
-     455      -0.00000024
-     456      -0.00000404
-     458       0.00000080
-     460      -0.00000126
-     463      -0.00012953
-     466       0.00002327
-     468      -0.00001037
-     472       0.00004625
-     473      -0.00005816
-     475       0.00046642
-     480       0.00035108
-     483      -0.00034572
-     485      -0.00050587
-     486      -0.00042526
-     492      -0.00092906
-     495       0.00037330
-    ==== End of matrix output ====
 
 
                           Linear response; final output
@@ -6205,11 +2650,11 @@ SOfock:SL  1.97D-10   17.17%   76.00%    0.00%   13.37%   0.32802200s
 
 
  
-     Date and time (Linux)  : Mon Feb 11 14:43:53 2013
+     Date and time (Linux)  : Tue Feb 12 19:00:33 2013
      Host name              : not found                               
 
->>>> Node 0, utime: 51, stime: 0, minflt: 21597, majflt: 0, nvcsw: 26, nivcsw: 5315, maxrss: 15640
->>>> Total WALL time used in DIRAC: 55s
+>>>> Node 0, utime: 53, stime: 0, minflt: 21592, majflt: 3, nvcsw: 36, nivcsw: 5359, maxrss: 15652
+>>>> Total WALL time used in DIRAC: 57s
   
   Dynamical Memory Usage Summary
   
