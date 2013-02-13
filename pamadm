@@ -198,6 +198,7 @@ list_of_tests.append('visual_lao_symmetry')
 list_of_tests.append('visual_frac_occupation')
 list_of_tests.append('xyz_input')
 list_of_tests.append('zora')
+list_of_tests.append('lao_shield_rearranged')
 
 # list of directories and files
 # that are never compiled as part of the "dirac" library
