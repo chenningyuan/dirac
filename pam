@@ -53,9 +53,6 @@ class pam_enviroment:
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
-        # default: do not show pam settings
-        self.just_show_settings = False
-
         self.expert_mode = False # disable various safety checks
 
         # set the basis set directories
@@ -256,37 +253,6 @@ class pam_enviroment:
             self.basdir = self.basdir+':'+basis_dalton_dir
         if os.path.isdir(basis_ecp_dir):
             self.basdir = self.basdir+':'+basis_ecp_dir
-
-    def show_settings(self):
-        '''
-        Print current settings to stdout
-        TODO: do we want to show also content of the .diracrc file ?
-        Miro: this shows setting read in from the .diracrc file,
-        but without specifying which from where
-        '''
-        print "Operating system:     ",  self.operating_system
-        print "Current settings:"
-        print "  Basis directories   ",  self.basdir
-        disk= disk_space_find(self.scratch_dir)
-        if disk.available:
-            scratch_disk_usage="(avail=%10.3f[GB])"%(disk.available)
-            scratch_disk_usage=scratch_disk_usage.replace(" ","")
-            print "  Scratch directory   ",  self.scratch_dir,scratch_disk_usage
-        else:
-            print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
-        print "  Relevant for parallel builds:"
-        print "    mpi launcher         ",  self.mpirun
-        print "    mpirun extra args    ",  self.mpiarg
-        print "    global scratch disk  ",  self.global_scratch_disk
-        print "    Machine file         ", self.machinefile
-        print "  Profiler            ",  self.profiler
-        print "  Debugger            ",  self.debugger
-        print "  Dirac command       ",  self.dirac_cmd
-        print "  Dirac executable    ",  self.dirac_exe
-        if self.diracrc_file:
-            print "  sole diracrc file, which was read: ",self.diracrc_file
-        if self.diracrc_args:
-            print "  default pam arguments from this file: ",self.diracrc_args
 
     def create_scratch_dir(self):
         ''' create the scratch directory  '''
@@ -710,9 +676,6 @@ Options are also read from ~/.diracrc"""
         group = OptionGroup(parser,
                             'Advanced options for programming and debugging'
                             )
-        group.add_option('--show', action='store_true',
-                         dest='just_show_settings', default=False,
-                         help='print current settings (including those from .diracrc) and exit')
         group.add_option('--silent', action='store_true',
                          dest='silent_pam', default=False,
                          help='run pam silent with minimal output')
@@ -841,7 +804,6 @@ Options are also read from ~/.diracrc"""
             self.full_restart = True
 
         self.keep_scratch = options.dest_keep_scratch
-        self.just_show_settings = options.just_show_settings
 
         if options.dest_debug:
             self.debug = True
@@ -869,16 +831,15 @@ Options are also read from ~/.diracrc"""
 #   check that they are there, if not exit
 #   if yes, assign output file name
 
-        if not self.just_show_settings:
-            if options.mol_file is not None and options.inp_file \
-                is not None:
-                self.input_molecule = options.mol_file
-                self.input_dirac = options.inp_file
-                self.assign_mol_inp_files()
-            else:
-                if not self.full_restart:
-                    print_error_message("both --mol and --inp input parameters are required !")
-                    sys.exit(22)
+        if options.mol_file is not None and options.inp_file \
+            is not None:
+            self.input_molecule = options.mol_file
+            self.input_dirac = options.inp_file
+            self.assign_mol_inp_files()
+        else:
+            if not self.full_restart:
+                print_error_message("both --mol and --inp input parameters are required !")
+                sys.exit(22)
 
         self.set_output_name()
 
@@ -1621,9 +1582,6 @@ class pam_run(pam_enviroment):
     def perform(self):
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            sys.exit()
         self.pam_variables.print_header()
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
