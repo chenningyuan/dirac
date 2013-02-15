@@ -722,7 +722,7 @@ contains
 
 !      allocate scratch matrices
        allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices))
-       scr_mat1 = 0
+       scr_mat1 = 0.0d0
 
 !      !> read the 4c 2-electron fock matrices from file
 !      -------------------------------------------------
@@ -737,6 +737,7 @@ contains
                                               .true.,                &
                                               aoc_open_shell_factors &
                                              )
+       close(fh,status='keep')
 
 !      debug print
        if(print_lvl > 2)then
@@ -759,7 +760,7 @@ contains
        call bstobu_no_work(scr_mat1,nz)
        
        allocate(scr_mat2(naosh_ls**2 * nz_c1))
-       scr_mat2   = 0
+       scr_mat2 = 0.0d0
 
 !      transform from SO-AO-basis to AO basis
 !      --------------------------------------
@@ -824,6 +825,9 @@ contains
            call q2bphase('F',iq,1,scr_mat1(1+(naosh_ls*naosh_ls*(iz-1))))
          end do           
        end if 
+
+!      put matrix in buffer space
+       call dcopy(naosh_ls**2*nz,scr_mat1,1,scr_mat2,1)
        !> end
 
 !      !> read the picture-change transformation matrix U in SA-AO basis from global file
@@ -834,7 +838,7 @@ contains
        end do
 !      allocate pct-matrix
        allocate(pctmat(j))
-       pctmat = 0
+       pctmat = 0.0d0
 
 !      initialize offset
        ioff_pct_mat = 1
@@ -845,45 +849,12 @@ contains
        end do
        !> end
 
-!      step 2c: perform the pct: f_2c^++ == U+ * f_4c * U
-!      --------------------------------------------------
-!              in : f_4c    --> scr_mat1; U --> pctmat
-!              out: f_2c^++ --> scr_mat1
-
-       op_fer_rep = 0
-
-       call perform_pct_saao_bas(scr_mat1,                     &
-                                 pctmat,                       &
-                                 scr_mat2,                     &
-                                 naosh_ls,                     &
-                                 nr_ao_L,                      &
-                                 naosh_all,                    &
-                                 naosh_L,                      &
-                                 nfsym,                        &
-                                 nz,                           &
-                                 ipq_off_in,                   &
-                                 ioff_aomx,                    &
-                                 op_fer_rep,                   &
-                                 op_bs_to_fs,                  &
-                                 .true.,                       &
-                                 print_lvl)
-
-!      step 2c: store the picture-change transformed fock matrix on file
-!      -----------------------------------------------------------------
-       call write_fock_matrices_saao_basis_x2c(scr_mat1,             &
-                                               nr_ao_L**2*nz,        &
-                                               1,                    &
-                                               fh,                   &
-                                               print_lvl)
-       close(fh,status='keep')
-
-!      !> transform the 1-electron fock matrix
-!      ---------------------------------------
+!      !> transform the 1- + 2-electron fock matrix
+!      --------------------------------------------
 
 !      read the 4c 1-electron fock matrix from file
 !      --------------------------------------------
        scr_mat1 = 0.0d0
-       scr_mat2 = 0.0d0
        fh       = 99
        open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
@@ -895,9 +866,15 @@ contains
 
        close(fh,status='keep')
 
+!      add 2e-part to 1e-Hamiltonian
+!      -----------------------------
+       call daxpy(naosh_ls**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
+       scr_mat2 = 0.0d0
+
+
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock1',6)
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock12',6)
        end if
 
 !      perform the pct: f_2c^++ == U+ * f_4c * U
@@ -922,21 +899,6 @@ contains
                                  op_bs_to_fs,                  &
                                  .true.,                       &
                                  print_lvl)
-
-       fh = 99
-       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       call read_fock_matrices_saao_basis_x2c(scr_mat2,              &
-                                              nr_ao_L**2*nz,         &
-                                              1,                     &
-                                              fh,                    &
-                                              print_lvl              &
-                                             )
-       close(fh,status='delete')
-
-!      add 2e-part to 1e-Hamiltonian
-!      -----------------------------
-       call daxpy(nr_ao_L**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
 
 !      store the picture-change transformed 1e+2e fock matrix on file
 !      --------------------------------------------------------------
