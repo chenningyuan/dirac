@@ -1459,11 +1459,11 @@ Options are also read from ~/.diracrc"""
             full_file_name_scratch = os.path.join(self.scratch_dir, file_name_scratch)
             full_file_name_local   = os.path.join(self.input_directory, file_name_local)
             if os.path.isfile(full_file_name_scratch):
-                self.copy_file(full_file_name_scratch, full_file_name_local)
-                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
                 if not self.nobackup:
                     # backup file if it's there
                     backup_file(some_file=full_file_name_local, upto=None)
+                self.copy_file(full_file_name_scratch, full_file_name_local)
+                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
             else:
                 print_error_message('%s not found in the scratch directory.' % file_name)
 
