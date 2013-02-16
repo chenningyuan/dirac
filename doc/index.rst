@@ -85,7 +85,8 @@ Tutorials and walkthrus
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
-  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
+  :doc:`Magnetizability density <tutorials/magnetizability_density/orbital_densities/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
