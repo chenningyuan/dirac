@@ -20,7 +20,7 @@ Let us use the following molecule input (h2o.mol):
 
 Together with a simple job input (magnetizability.inp):
 
-.. literalinclude:: magetizability.inp
+.. literalinclude:: magnetizability.inp
 
 We can get the wave function with the following run script:
 
@@ -28,6 +28,18 @@ We can get the wave function with the following run script:
 
 After running the script you should see the files DFCOEF and PAMXVC in your
 submit directory.
+
+And here is the magnetizability tensor::
+
+              Total magnetizability tensor (au)
+              ---------------------------------
+
+                       Bx                  By                  Bz
+
+
+  Bx        -1.804460514289     -0.000000000000     -0.000000000001
+  By        -0.000000000000     -1.617444735515      0.000000000000
+  Bz        -0.000000000001     -0.000000000000     -1.709814652525
 
 
 Plotting the magnetizability density
