@@ -12,9 +12,11 @@ lao_shield_lr_rearranged.inp    co2_c1.mol
 
 regular
 
-lao_shield_unchanged_sc_b3lyp.inp     co2_c1.mol
-lao_shield_rearranged_sc_b3lyp.inp    co2_c1.mol
-lao_shield_lr_rearranged_b3lyp.inp    co2_c1.mol
+# radovan: these are slow and bring no new information
+#          DFT is covered with sym tests and C1 is covered with HF
+# lao_shield_unchanged_sc_b3lyp.inp     co2_c1.mol
+# lao_shield_rearranged_sc_b3lyp.inp    co2_c1.mol
+# lao_shield_lr_rearranged_b3lyp.inp    co2_c1.mol
 
 
 lao_shield_unchanged_sc.inp     co2_d2h.mol
