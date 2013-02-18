@@ -98,8 +98,7 @@ contains
          call add_class('S1MAGR ', '+00'//ss)
          call add_class('S2MKET ', '+00'//ss)
          call add_class('S2MMIX ', '+00'//ss)
-         !call add_class('RDSUSLL', '00+0')
-         call add_class('RDSUSLL', '0++0')
+         call add_class('RDSUSLL', '00+0')
          call add_class('DSUSNOL', '+00'//ss)
          if (need_1el_f) then
             call add_class('CM1    ', '+00'//ss)
@@ -505,9 +504,8 @@ contains
                               (/s/))
          end do
 
-         !blocks = '00+0'
-         blocks = '0++0'
-         f = -1.0d0*cval
+         blocks = '00+0'
+         f = -2.0d0*cval
 
          call add_operator('XXrdsusll       ',                      &
                            blocks,                                  &
