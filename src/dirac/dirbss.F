@@ -8604,7 +8604,7 @@ c     logical dirbss_verbose
 
 c     dirbss_verbose = .false.
       iprint_save = iprint
-      iprint      = 5
+!     iprint      = 5
 
       CALL HEADER('Output from AMFIIN',-1)
       IF (IPRINT.GE.3) THEN
@@ -8905,7 +8905,8 @@ C
 C                 The cycle for AMFI over unique nuclei
 C
 C *************************************************************************
-      icenter     = 0 
+      icenter = 0 
+      ndeg    = 0
       DO IATOM = 1, NUNUC ! note: NUNUC == NONTYP (atomic types)
 
        READ(LUTMP2,*) ICHARGE
@@ -8914,21 +8915,28 @@ C *************************************************************************
      & IATOM,' with atomic charge ',ICHARGE
 
 C      ... determine total number of nuclei of type IATOM with charge ICHARGE
+       CALL IZERO(IANUCS,NUCDEP)
        NICHARGE        = 0
        INDXMINCH       = 100000000 ! that is an unbelievable large # of atoms in a Dirac run -> sknecht feb 2013 fixme: challenge me!
-       icenter_tmp     = 0
        DO I = 1, NONT(IATOM)
          icenter       =     icenter + 1
-         icenter_tmp   = icenter_tmp + 1
          do j = 1, nucdeg(icenter)
-           IF(IZTNUCS(icenter+j-1) == ICHARGE)THEN
-             NICHARGE  = NICHARGE + 1
-             INDXMINCH = min(icenter,INDXMINCH)
+!          print *, 'icenter, ndeg, j, iz...',
+!    &               icenter, ndeg, j, IZTNUCS(ndeg+j)
+           IF(IZTNUCS(ndeg+j) == ICHARGE)THEN
+             NICHARGE         = NICHARGE + 1
+             INDXMINCH        = min(ndeg+j,INDXMINCH)
+             IANUCS(NICHARGE) = ndeg     + j
            ENDIF
          END DO
+         ndeg          = ndeg        + nucdeg(icenter)
        END DO
+
        IF (NICHARGE.EQ.0) THEN
-        CALL QUIT('AMFIIN: The nucleus does not exist is system!')
+        CALL QUIT('AMFIIN: atom type with given charge not found!')
+       ENDIF 
+       IF (INDXMINCH > NUCDEP) THEN
+        CALL QUIT('AMFIIN: atom type index out of bounds!')
        ENDIF 
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
@@ -8942,28 +8950,8 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
           CALL FLSHFO(LUPRI)
        endif
 
-C      ... check the number of NICHARGE centers on IZTNUCS of H2CAO with ICHARGE
-C      use IANUCS(nucdep) with nucdep == total number of atoms (including degeneracies)
-       CALL IZERO(IANUCS,NUCDEP)
-       icenter     = icenter - icenter_tmp ! reset icenter counter for atomtype IATOM
-       IX          = 0
-       DO I = 1, NONT(IATOM)
-         icenter   = icenter + 1
-         IF(ICHARGE == IZTNUCS(icenter))THEN
-           do j = 1, nucdeg(icenter)
-             IX         = IX + 1
-             IANUCS(IX) = j  + icenter - 1
-           end do
-         end if
-       end do
-
-       IF (IX.NE.NICHARGE) THEN
-         CALL QUIT('AMFIIN: # of nuclei for atom type '//
-     &             'do not correspond !')
-       else
-         WRITE(LUPRI,'(A,i4)')
+       WRITE(LUPRI,'(A,i4)')
      &   '  *** number of nuclei with identical atom type:',nicharge
-       ENDIF
        CALL FLSHFO(LUPRI)
 
 C ... now find out if all these (AMFI) nuclei are to be skipped...
@@ -9017,14 +9005,13 @@ C      ... find out the correct index of nuclear exponent
        EXPNUCL=D0
        IF (GAUNUC) THEN
         
-        IATOM1 = icenter - icenter_tmp + 1
-        IF (IATOM1.EQ.0) THEN
-         CALL QUIT('AMFIIN: IATOM1 not found')
+        IF(INDXMINCH .EQ. 0) THEN
+         CALL QUIT('AMFIIN: atom type index == 0')
         ELSE
-         if (IPRINT.GE.3) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
-     &        CHARGE(IATOM1),ICHARGE,
-     &   ' nucl. exponent:',GNUEXP(IATOM1)
-         EXPNUCL = GNUEXP(IATOM1)
+         if (IPRINT.GE.3) write(lupri,*) ' indx=',INDXMINCH,' CHARGE=',
+     &        CHARGE(INDXMINCH),ICHARGE,
+     &   ' nucl. exponent:',GNUEXP(INDXMINCH)
+         EXPNUCL = GNUEXP(INDXMINCH)
         ENDIF
 
 C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
