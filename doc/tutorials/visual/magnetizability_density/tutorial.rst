@@ -65,8 +65,7 @@ density. By selectively deactivating contributions in density.inp you can
 single out specific components or paramagnetic and diamagnetic contributions
 separately.
 
-And this is how the magnetizability density of water looks (a bit cubistic but
-this can be improved by increasing the number of steps under :ref:`.3D`):
+And this is how the magnetizability density of water looks:
 
 .. image:: magnetizability_h2o.jpg
        :width: 400px
