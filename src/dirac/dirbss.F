@@ -8603,8 +8603,8 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
-!     iprint_save = iprint
-!     iprint      = 3
+      iprint = iprint_save
+      iprint = 5
 
       IF (IPRINT.GE.3) THEN
       CALL HEADER('*** Output from AMFIIN ***',-1)
@@ -9144,8 +9144,6 @@ CMI   if (dirbss_verbose) write(lupri,*)
         CALL QUIT('AMFIIN: Wrong x,y,z quaternions !')
       ENDIF   
 
-      iprint = iprint_save
-      iprint = 5
       DO IANUC = 1, NICHARGE
 
        ISREMOVED = 0

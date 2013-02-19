@@ -330,8 +330,7 @@ contains
                    amfi_order_contrib,     &
                    quat_pointer_op,        &
                    cspeed,                 &
-!                  5        ,              &
-                   print_lvl*3,            &
+                   print_lvl,              &
                    wrk,                    &
                    lwrk)
 
