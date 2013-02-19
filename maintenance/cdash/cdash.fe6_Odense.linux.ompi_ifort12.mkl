@@ -31,15 +31,11 @@ BUILD=build_ompi_ifort_icc_mkl_ilp64
 OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin
 
 cd $DIRAC
-
-./pamadm -a --hscc --hsfsdyn --auto
-
 #
 # reset back to the launching directory and rerun setup command with new parameters
 #
-cd $DIRAC
-
 export MATH_ROOT=/people/disk2/ilias/intel/mkl
+./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
 ./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD
 cd $BUILD
 make ExperimentalUpdate 

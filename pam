@@ -78,7 +78,6 @@ class pam_enviroment:
         self.current_pid=os.getpid()
 
         self.dirac_p=None # dirac.x/dirac mpi-launcher subprocess
-        self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
 
         # dirac error output (stderr stream)
@@ -233,7 +232,6 @@ class pam_enviroment:
 
     # total spent time for pam script + job execution
         self.start_time=time.time()
-        self.elapsed_time=0.0
 
     #  read diracrc file, full path
         self.diracrc_file = None
@@ -408,17 +406,16 @@ class pam_enviroment:
 
     def exit_function(self):
         '''prints message on the DIRAC executable exit according to the input parameter'''
-        self.elapsed_time=(time.time() - self.start_time)
-        elapsed_time_str = time.strftime('%Hh%Mm%Ss', time.gmtime(self.elapsed_time))
+        elapsed_time = time.time() - self.start_time
         print
         print '  exit date      :', datetime.datetime.now()
-        print '  elapsed time   :', elapsed_time_str
-        print '  exit code      :', self.returncode
-        if self.returncode == 0:
+        print '  elapsed time   :', time.strftime('%Hh%Mm%Ss', time.gmtime(elapsed_time))
+        f = open(self.output_file)
+        if 'E N D   of   D I R A C  output' in f.read():
             print '  exit           : normal'
         else:
             print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
-        print
+        f.close()
         sys.stdout.flush()
 
     def get_rc_arguments(self):
@@ -575,6 +572,14 @@ Options are also read from ~/.diracrc"""
             help='set number of cores in parallel run [default: %default]',
             metavar='INTEGER',
             )
+
+        group.add_option('--mpirun',
+            type='string',
+            action='store',
+            dest='dest_mpirun',
+            default=self.mpirun,
+            help='set the MPI run command [default: %default]',
+                 metavar='STRING')
 
         group.add_option(
             '--mpiarg',
@@ -778,6 +783,9 @@ Options are also read from ~/.diracrc"""
             self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
+
+        if options.dest_mpirun:
+            self.mpirun = options.dest_mpirun
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -1159,7 +1167,7 @@ Options are also read from ~/.diracrc"""
             if self.mpiarg:
                 self.dirac_cmd += self.mpiarg + ' '
 
-            # OpenMPI debuggin with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
+            # OpenMPI debugging with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
             # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
             if self.vg_debug:
             # master the final command launcher (as std debugger); TODO: adapt for Windows
@@ -1280,11 +1288,11 @@ Options are also read from ~/.diracrc"""
         elif self.parallel_run == False:
             print '  debugging dirac.x in plain serial run, command:'
             print  self.dirac_cmd
-            self.returncode = os.system(self.dirac_cmd)
+            os.system(self.dirac_cmd)
         elif self.parallel_run and self.vg_debug:
             print '  debugging dirac.x with valgrind in parallel run, command:'
             print  self.dirac_cmd
-            self.returncode = os.system(self.dirac_cmd)
+            os.system(self.dirac_cmd)
         else:
             print '...no dirac run - wrong parallel & classic debugger combination'
 
@@ -1348,7 +1356,6 @@ Options are also read from ~/.diracrc"""
             self.stderr_message()
             # clean the working directory and exit
             self.remove_scratch_dir()
-            self.returncode = signum_kill
             self.exit_function()
         sys.exit()
 
@@ -1414,9 +1421,6 @@ Options are also read from ~/.diracrc"""
         self.dirac_stderr = self.dirac_p.communicate()[1]
 
         self.dirac_p.wait()
-        self.returncode = self.dirac_p.returncode
-        if not self.silent:
-            print '  command ended with return code:',self.returncode
 
         # deal with the error output only if happens
         if self.dirac_stderr and not self.silent:
@@ -1455,11 +1459,11 @@ Options are also read from ~/.diracrc"""
             full_file_name_scratch = os.path.join(self.scratch_dir, file_name_scratch)
             full_file_name_local   = os.path.join(self.input_directory, file_name_local)
             if os.path.isfile(full_file_name_scratch):
-                self.copy_file(full_file_name_scratch, full_file_name_local)
-                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
                 if not self.nobackup:
                     # backup file if it's there
                     backup_file(some_file=full_file_name_local, upto=None)
+                self.copy_file(full_file_name_scratch, full_file_name_local)
+                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
             else:
                 print_error_message('%s not found in the scratch directory.' % file_name)
 

@@ -31,3 +31,10 @@
 
 - Fix for sequential KRCI property runs - file label was not properly dimensioned.
 - Remove unsupported options from CMakeLists.txt and setup.
+
+
+FUTURE
+------
+
+- Allow pam --get and --put with rename (example: pam --get DFCOEF=dz.coef).
+- Correct pam exit message when dirac.x crashes.

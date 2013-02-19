@@ -382,9 +382,11 @@ C
          REWIND LUPAO
       END IF
       IF (SUSCEP) THEN
-         IF (.NOT.NOPV) REWIND LUPAO
-         IF (.NOT.NOPV) REWIND LUPAS
-CMI ... we are intering more loops (LL,LS,SS integrals) and thus we need
+         IF (.NOT.NOPV) THEN
+            REWIND LUPAO
+            REWIND LUPAS
+         ENDIF
+CMI ... we are entering more loops (LL,LS,SS integrals) and thus we need
 CMI     to accumulate integral contributions
 CMI      CALL DZERO(SUS2EL,9)
       END IF
