@@ -63,8 +63,13 @@ RKBIMP-ep-LAO(go=cm)+diamag,LL+SL <-- wrong, ep terms are confused
 
 UKB-ep-LAO(go=cm)
    LL+SL                -5.0942              0.3767
-   LL+SL,cval=2000      -5.1003              0.3758
    LL+SL+SS             -5.0942              0.3767
+   LL+SL,cval=2000      -5.1003              0.3758
+   LL+SL,cval=5000      -5.1003              0.3758
+
+UKB-ee-LAO(gp=cm)+diam.
+   LL+SL                -5.9832              0.3019       
+   LL+SL,cval=2000      -5.9906              0.3003
 
 RKBIMP-ep-CGO(go=cm)  
    LL+SL                -22.3284             -12.7181 (automatic symm.detection)

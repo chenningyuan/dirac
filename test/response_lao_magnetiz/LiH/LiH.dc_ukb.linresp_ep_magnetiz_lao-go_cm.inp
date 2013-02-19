@@ -12,6 +12,11 @@
 1
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 1
+*READIN
+.UNCONT
+*TWOINT
+.SCREEN
+1.0D-16
 **HAMILTONIAN
 .URKBAL
 .PRINT

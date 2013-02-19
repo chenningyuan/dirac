@@ -37,7 +37,7 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-
+         use london_helper
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -85,7 +85,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.EFFDE2','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
 
 C
       CALL QENTER('PRPINP')
@@ -420,7 +420,12 @@ C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
-C&&&& XXXXXX
+C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
+            DOXLR  = .TRUE.
+            LONDON = .TRUE.
+            call set_london_keywords('shiel2')
+!gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
+! i will have to fix that...
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
