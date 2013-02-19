@@ -8604,7 +8604,7 @@ c     logical dirbss_verbose
 
 c     dirbss_verbose = .false.
       iprint_save = iprint
-!     iprint      = 5
+      iprint      = 5
 
       CALL HEADER('Output from AMFIIN',-1)
       IF (IPRINT.GE.3) THEN
@@ -8921,7 +8921,7 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
          icenter       =     icenter + 1
          icenter_tmp   = icenter_tmp + 1
          do j = 1, nucdeg(icenter)
-           IF(IZTNUCS(j) == ICHARGE)THEN
+           IF(IZTNUCS(icenter+j-1) == ICHARGE)THEN
              NICHARGE  = NICHARGE + 1
              INDXMINCH = min(icenter,INDXMINCH)
            ENDIF
