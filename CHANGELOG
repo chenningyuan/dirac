@@ -44,7 +44,7 @@
   2
   H2 molecule
   Ha 0.0 0.0 0.0
-  Hb 0.0 0.0 0.0
+  Hb 0.0 0.0 0.8
 
   and the SCF input in C1 symmetry for Dirac (scf_x2c.inp):
   **DIRAC
