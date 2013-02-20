@@ -8918,8 +8918,10 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
        CALL IZERO(IANUCS,NUCDEP)
        NICHARGE        = 0
        INDXMINCH       = 100000000 ! that is an unbelievable large # of atoms in a Dirac run -> sknecht feb 2013 fixme: challenge me!
+       icenter_tmp     = 0
        DO I = 1, NONT(IATOM)
-         icenter       =     icenter + 1
+         icenter       =     icenter     + 1
+         icenter_tmp   =     icenter_tmp + 1
          do j = 1, nucdeg(icenter)
 !          print *, 'icenter, ndeg, j, iz...',
 !    &               icenter, ndeg, j, IZTNUCS(ndeg+j)
@@ -9005,13 +9007,15 @@ C      ... find out the correct index of nuclear exponent
        EXPNUCL=D0
        IF (GAUNUC) THEN
         
-        IF(INDXMINCH .EQ. 0) THEN
-         CALL QUIT('AMFIIN: atom type index == 0')
+        
+        IF( (icenter - icenter_tmp + 1) == 0 )THEN
+         CALL QUIT('AMFIIN: atom type minimum index == 0')
         ELSE
-         if (IPRINT.GE.3) write(lupri,*) ' indx=',INDXMINCH,' CHARGE=',
-     &        CHARGE(INDXMINCH),ICHARGE,
-     &   ' nucl. exponent:',GNUEXP(INDXMINCH)
-         EXPNUCL = GNUEXP(INDXMINCH)
+         if (IPRINT.GE.3) write(lupri,*) ' indx=',
+     &   icenter - icenter_tmp + 1,' CHARGE=',
+     &   CHARGE(icenter - icenter_tmp + 1),ICHARGE,
+     &   ' nucl. exponent:',GNUEXP(icenter - icenter_tmp + 1)
+         EXPNUCL = GNUEXP(icenter - icenter_tmp + 1)
         ENDIF
 
 C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
@@ -9042,6 +9046,10 @@ C  ... allocate memmory for this AMFI center
       CALL MEMGET('REAL',KSOX,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOY,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOZ,length3,WORK,KFREE,LFREE)
+
+!     call dzero(work(KSOX),length3)
+!     call dzero(work(KSOY),length3)
+!     call dzero(work(KSOZ),length3)
 
 !     CALL MEMCHK('after AMFI 2',WORK,1)
 
@@ -9118,6 +9126,8 @@ C   ... write out mapping function correspondance....
 
 C     if (dirbss_verbose) write(lupri,*)
       READ(LUMNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
+!     write(lupri,*) ' xpart: ',
+!    &               (WORK(KSOX+irun),irun=0,length3-1)
       READ(LUMNFPRP) ya
       READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
       READ(LUMNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
@@ -9297,6 +9307,12 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
+!       print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
+!    &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
+!       print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
+!    &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
+!       print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
+!    &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 
