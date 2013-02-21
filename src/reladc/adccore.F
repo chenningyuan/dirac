@@ -6812,13 +6812,6 @@ C
         ENDDO
       ENDDO
 
-c     write(iw,*) 'CMATSYM control:'
-c     do i=1,nr
-c       do j=1,nr
-c         write(iw,*) i,j,e(i,j)
-c       enddo
-c     enddo
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
