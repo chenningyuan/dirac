@@ -7,7 +7,7 @@ DIR_TEMP=$DIR_BUILD/html_temp
 DIR_FINAL=$DIR_BUILD/html
 
 rm -rf $DIR_TEMP
-cp -r $DIR_DOC $DIR_TEMP
+cp -rL $DIR_DOC $DIR_TEMP
 
 for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
 

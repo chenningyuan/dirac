@@ -27,6 +27,12 @@ Setting up DIRAC
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
+Updates and patches
+===================
+
+* :doc:`ChangeLog <patches/CHANGELOG>`
+
+
 First steps in DIRAC territory
 ==============================
 
