@@ -27,6 +27,12 @@ Setting up DIRAC
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
+Updates and patches
+===================
+
+* :doc:`ChangeLog <patches/CHANGELOG>`
+
+
 First steps in DIRAC territory
 ==============================
 
@@ -85,7 +91,8 @@ Tutorials and walkthrus
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
-  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |

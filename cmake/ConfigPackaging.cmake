@@ -119,12 +119,12 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR} ${PROJECT_BINARY_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CMakeLists.txt               ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/COPYING                      ${EXPORT_DIR}
-        COMMAND cp     ${CMAKE_SOURCE_DIR}/CHANGELOG                    ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/CHANGELOG.rst                ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CTestConfig.cmake            ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
+        COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}

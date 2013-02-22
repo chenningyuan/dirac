@@ -8603,30 +8603,37 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
-!     iprint_save = iprint
-!     iprint      = 3
+      iprint_save = iprint
+!     iprint      = 5
 
+      CALL HEADER('Output from AMFIIN',-1)
       IF (IPRINT.GE.3) THEN
-      CALL HEADER('*** Output from AMFIIN ***',-1)
-      write(lupri,*) 'NUCIND=',NUCIND
-      write(lupri,*) 'NLRGSH=',NLRGSH
-      write(lupri,*) 'charge:',(charge(i),i=1,nucind)
-      write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
-      write(lupri,*) 'Total number of centers:',NUCDEP
+      write(lupri,*) '# individual centers   : ',NUCIND
+      write(lupri,*) '# of large-comp. shells: ',NLRGSH
+      write(lupri,*) 'charge of atoms        : ',(charge(i),i=1,nucind)
+      write(lupri,*) 'Total number of atoms  : ',NUCDEP
 C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
-      WRITE(LUPRI,'(2X,A)') 'Total list of nucleis:'
       ENDIF
 
-      IX = 1
-      DO I=1,NUCIND
-      DO J=1,NUCDEG(I)
-       IZTNUCS(IX) = NINT(CHARGE(I))
-       IF (IPRINT.GE.3) THEN
-        write(lupri,*) IX,'. nuclei of charge:',IZTNUCS(IX) 
-       ENDIF
-       IX = IX + 1
-      ENDDO
-      ENDDO
+      ix      = 1
+      icenter = 0
+      do I=1,NONTYP
+        ndeg = 0
+        do J=1,NONT(I)
+          icenter     = icenter + 1
+          ndeg        = ndeg + nucdeg(icenter)
+          do k = 1, nucdeg(icenter)
+            IZTNUCS(IX) = NINT(CHARGE(icenter))
+            IX          = IX + 1
+          end do
+        end do
+        if(iprint.ge.3) then
+          write(lupri,*) 'atomtype:',i,
+     &    ' ==> # nuclei of charge ',IZTNUCS(IX-1), 
+     &    ' ==',ndeg
+     &     
+        endif
+      end do
 
 C    .. make ready the IPTYPAO, INDXLM,IPNUC
       IF (IPRINT.GE.3) THEN
@@ -8886,8 +8893,8 @@ C     ... skip text
       READ(LUTMP2,*) 
 C     ... read number of unique nuclei
       READ(LUTMP2,*) NUNUC
-      write(lupri,'(/2X,A,I2)')
-     &'*** MNF.INP - read number of unique nuclei:',NUNUC
+      write(lupri,'(/A,I2)')
+     &'  *** number of unique nuclei (from file MNF.INP):',NUNUC
 
       TOTDIFX=D0
       TOTDIFY=D0
@@ -8898,24 +8905,40 @@ C
 C                 The cycle for AMFI over unique nuclei
 C
 C *************************************************************************
-      DO IATOM = 1, NUNUC
+      icenter = 0 
+      ndeg    = 0
+      DO IATOM = 1, NUNUC ! note: NUNUC == NONTYP (atomic types)
 
        READ(LUTMP2,*) ICHARGE
-       WRITE(LUPRI,'(/2X,A,I2,A,I5)')
-     &   '>>> AMFI is going to calculate ',
-     & IATOM,'. unique nucleus of charge ',ICHARGE
+       WRITE(LUPRI,'(/A,I2,A,I5)')
+     &   '  *** calculate AMFI for atom type',
+     & IATOM,' with atomic charge ',ICHARGE
 
-C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
-       NICHARGE = 0
-       INDXMINCH=0
-       DO I = 1, NUCDEP
-        IF (IZTNUCS(I).EQ.ICHARGE) THEN
-          NICHARGE=NICHARGE+1
-          INDXMINCH=I
-         ENDIF
-       ENDDO
+C      ... determine total number of nuclei of type IATOM with charge ICHARGE
+       CALL IZERO(IANUCS,NUCDEP)
+       NICHARGE        = 0
+       INDXMINCH       = 100000000 ! that is an unbelievable large # of atoms in a Dirac run -> sknecht feb 2013 fixme: challenge me!
+       icenter_tmp     = 0
+       DO I = 1, NONT(IATOM)
+         icenter       =     icenter     + 1
+         icenter_tmp   =     icenter_tmp + 1
+         do j = 1, nucdeg(icenter)
+!          print *, 'icenter, ndeg, j, iz...',
+!    &               icenter, ndeg, j, IZTNUCS(ndeg+j)
+           IF(IZTNUCS(ndeg+j) == ICHARGE)THEN
+             NICHARGE         = NICHARGE + 1
+             INDXMINCH        = min(ndeg+j,INDXMINCH)
+             IANUCS(NICHARGE) = ndeg     + j
+           ENDIF
+         END DO
+         ndeg          = ndeg        + nucdeg(icenter)
+       END DO
+
        IF (NICHARGE.EQ.0) THEN
-        CALL QUIT('AMFIIN: The nucleus does not exist is system!')
+        CALL QUIT('AMFIIN: atom type with given charge not found!')
+       ENDIF 
+       IF (INDXMINCH > NUCDEP) THEN
+        CALL QUIT('AMFIIN: atom type index out of bounds!')
        ENDIF 
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
@@ -8929,24 +8952,9 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
           CALL FLSHFO(LUPRI)
        endif
 
-C      ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
-C       use IANUCS(1-NUCDEP)
-        CALL IZERO(IANUCS,NUCDEP)
-        IX = 0
-        DO I=1,NUCDEP
-         IF (ICHARGE.EQ.IZTNUCS(I)) THEN
-           IX = IX + 1
-           IANUCS(IX)=I
-         ENDIF
-        ENDDO
-        IF (IX.NE.NICHARGE) THEN
-          CALL QUIT('AMFIIN: nuclei do not correspond !')
-        ENDIF
-
-        WRITE(LUPRI,'(/2X,A,$)')
-     &  '    *** AMFIIN: corresponding DIRAC nuclei :'
-        WRITE(LUPRI,*) (IANUCS(I),I=1,NICHARGE)
-        CALL FLSHFO(LUPRI)
+       WRITE(LUPRI,'(A,i4)')
+     &   '  *** number of nuclei with identical atom type:',nicharge
+       CALL FLSHFO(LUPRI)
 
 C ... now find out if all these (AMFI) nuclei are to be skipped...
        NOAMFC = .FALSE.
@@ -8959,6 +8967,9 @@ C ... now find out if all these (AMFI) nuclei are to be skipped...
        IF (IXC.EQ.NICHARGE) NOAMFC = .TRUE.
 
 C     ... file name for AMFI integrals of center
+!      FIXME: name tag of file cannot be charge otherwise we do not allow to have different basis sets 
+!      on atoms with the same charge (which will be assigned different atom types)
+!      sknecht - feb 2013
        IF (ICHARGE.LT.10) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)
        ELSE IF (ICHARGE.LT.100) THEN
@@ -8976,8 +8987,8 @@ C     ... file name for AMFI integrals of center
      &   '    *** This (AMFI) unique nuclei is not to be calculated !'//
      &   ' Only pass (to read input basis) through the AMFI routine.'
        ELSE
-         WRITE(LUPRI,'(2X,A,A)')
-     &   '    *** AMFIIN: The file name with AMFI integrals: ',AFN
+         WRITE(LUPRI,'(2A)')
+     &   '  *** file for storage of AMFI integrals: ',AFN
        ENDIF
 
 C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
@@ -8995,17 +9006,16 @@ C    &  '...this file does not exist, AMFI is utilized ! '
 C      ... find out the correct index of nuclear exponent
        EXPNUCL=D0
        IF (GAUNUC) THEN
-        IATOM1 = 0
-        DO J = 1, NUCIND
-          IF (NINT(CHARGE(J)).EQ.ICHARGE) IATOM1=J
-        ENDDO
-        IF (IATOM1.EQ.0) THEN
-         CALL QUIT('AMFIIN: IATOM1 not found')
+        
+        
+        IF( (icenter - icenter_tmp + 1) == 0 )THEN
+         CALL QUIT('AMFIIN: atom type minimum index == 0')
         ELSE
-         if (IPRINT.GE.3) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
-     &        CHARGE(IATOM1),ICHARGE,
-     &   ' nucl. exponent:',GNUEXP(IATOM1)
-         EXPNUCL = GNUEXP(IATOM1)
+         if (IPRINT.GE.3) write(lupri,*) ' indx=',
+     &   icenter - icenter_tmp + 1,' CHARGE=',
+     &   CHARGE(icenter - icenter_tmp + 1),ICHARGE,
+     &   ' nucl. exponent:',GNUEXP(icenter - icenter_tmp + 1)
+         EXPNUCL = GNUEXP(icenter - icenter_tmp + 1)
         ENDIF
 
 C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
@@ -9036,6 +9046,10 @@ C  ... allocate memmory for this AMFI center
       CALL MEMGET('REAL',KSOX,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOY,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOZ,length3,WORK,KFREE,LFREE)
+
+!     call dzero(work(KSOX),length3)
+!     call dzero(work(KSOY),length3)
+!     call dzero(work(KSOZ),length3)
 
 !     CALL MEMCHK('after AMFI 2',WORK,1)
 
@@ -9112,6 +9126,8 @@ C   ... write out mapping function correspondance....
 
 C     if (dirbss_verbose) write(lupri,*)
       READ(LUMNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
+!     write(lupri,*) ' xpart: ',
+!    &               (WORK(KSOX+irun),irun=0,length3-1)
       READ(LUMNFPRP) ya
       READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
       READ(LUMNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
@@ -9291,6 +9307,12 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
+!       print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
+!    &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
+!       print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
+!    &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
+!       print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
+!    &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 
@@ -9334,7 +9356,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
-!     iprint = iprint_save
+      iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN
@@ -9914,6 +9936,8 @@ C
 !    ... all atomic centers are included for the AMFI contribution
       ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
       ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
+      NAMFA    = 0
+      call izero(iamfa,nucdep)
 !     order of Amfi contributions 
       ISORDER_AMFI_in = -1
 C
@@ -9968,7 +9992,7 @@ C&&&  .AMFICH:    Get the artificial charge of the molecule
                  READ(LUCMD,*) IMFCH
                  GO TO 100
  5               CONTINUE
-C&&& .NOAMFC: specify centers for AMFI which only are to be added to the BSS+AMFI Hamiltonian
+C&&& .NOAMFC: specify centers for which AMFI is not to be added to the BSS/X2C Hamiltonian
                  ALLAMFA = .FALSE.
                  READ(LUCMD,*) NAMFA
                  READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
@@ -10067,7 +10091,6 @@ C ... take care of AMFI centers if specified in the input
               IZX=1
              ENDIF
            ENDDO
-           IF (IZX.EQ.0) write(lupri,*)
           ENDDO
           ENDDO
 C          ... do some check of entering values of NAMFA,IAMFA
