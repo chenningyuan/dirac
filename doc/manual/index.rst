@@ -35,6 +35,13 @@ Keyword reference
    - :doc:`RHO1 <analyze/density>` --- Rho1
 
 * :doc:`**PROPERTIES <properties>` --- Property module
+   - :doc:`EXPECTATION VALUES <properties/expectation>` --- Expectation values
+   - :doc:`EXCITATION ENERGIES <properties/excitation>` --- Excitation energies
+   - :doc:`LINEAR RESPONSE <properties/linear_response>` --- Linear response
+   - :doc:`QUADRATIC RESPONSE <properties/quadratic_response>` --- Quadratic response
+   - :doc:`MOLGRD <properties/molgrd>` --- Molecular gradient
+   - :doc:`NMR <properties/nmr>` --- NMR directives
+
 
 * :doc:`**VISUAL <visual>` --- Visualization module
 
