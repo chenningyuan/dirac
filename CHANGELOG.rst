@@ -2,8 +2,6 @@
 12.5
 ----
 
-- Allow pam --get and --put with rename (example: pam --get DFCOEF=dz.coef).
-- Correct pam exit message when dirac.x crashes.
 - IMPORTANT fix for two-component calculations based on the X2C/BSS Hamiltonian with two-electron spin-orbit corrections from AMFI.
   All DIRAC versions since DIRAC10 were affected.
   All two-component calculation based on a molecular input (.mol/.xyz) where atoms of the same nuclear charge were
@@ -74,6 +72,9 @@
     ----------------------------------------------------------------------
     X         ...       10     ...    ...       ...
     Y         ...       10     ...    ...       ...
+
+- Allow pam --get and --put with rename (example: pam --get DFCOEF=dz.coef).
+- Correct pam exit message when dirac.x crashes.
 
 
 12.4
