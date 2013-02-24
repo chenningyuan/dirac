@@ -1,5 +1,4 @@
 
-
 Keyword reference
 =================
 
@@ -15,20 +14,25 @@ Keyword reference
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
 
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
-   - :doc:`SCF <scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
-   - :doc:`MP2CAL <mp2cal>` --- second-order Møller-Plesset perturbation theory
-   - :doc:`RESOLVE <resolve>` --- resolve open-shell states
-   - :doc:`GOSCIP <goscip>`  --- Complete Open-Shell module
-   - :doc:`DIRRCI <dirrci>` --- Direct Relativistic CI module
-   - :doc:`LUCITA <lucita>` --- Spinfree large-scale CI module
-   - :doc:`KR CI <krci>` --- Kramers-restricted relativistic large-scale CI module
-   - :doc:`KRMCSCF <krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
-   - :doc:`RELCCSD <relccsd>` --- Coupled cluster module
-   - :doc:`RELADC <reladc>` --- Propagator module (Green's functions) for ionizations
-   - :doc:`MVOCAL <mvocal>` --- Modified virtual orbitals
-   - :doc:`MP2 NO <mp2no>` --- MP2 natural orbitals module
+   - :doc:`SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
+   - :doc:`MP2CAL <wave_function/mp2cal>` --- second-order Møller-Plesset perturbation theory
+   - :doc:`RESOLVE <wave_function/resolve>` --- resolve open-shell states
+   - :doc:`GOSCIP <wave_function/goscip>`  --- Complete Open-Shell module
+   - :doc:`DIRRCI <wave_function/dirrci>` --- Direct Relativistic CI module
+   - :doc:`LUCITA <wave_function/lucita>` --- Spinfree large-scale CI module
+   - :doc:`KR CI <wave_function/krci>` --- Kramers-restricted relativistic large-scale CI module
+   - :doc:`KRMCSCF <wave_function/krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
+   - :doc:`RELCCSD <wave_function/relccsd>` --- Coupled cluster module
+   - :doc:`RELADC <wave_function/reladc>` --- Propagator module (Green's functions) for ionizations
+   - :doc:`MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
+   - :doc:`MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
+   - :doc:`MULPOP <analyze/mulpop>` --- Mulliken population analysis
+   - :doc:`PROJECTION <analyze/prjana>` --- Projection analysis
+   - :doc:`LOCALIZATION <analyze/localization>` --- Localization 
+   - :doc:`DENSITY <analyze/density>` --- Density
+   - :doc:`RHO1 <analyze/density>` --- Rho1
 
 * :doc:`**PROPERTIES <properties>` --- Property module
 
