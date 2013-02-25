@@ -30,6 +30,7 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
+option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -98,8 +99,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(src/xcfun)
-set(LIBS xcfun ${LIBS})
+if(ENABLE_XCFUN)
+    add_subdirectory(src/xcfun)
+    set(LIBS xcfun ${LIBS})
+else()
+    add_definitions(-DEXCLUDE_XCFUN)
+endif()
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
