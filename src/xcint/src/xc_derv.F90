@@ -23,7 +23,7 @@ module xc_derv
 
    use xc_max_block_length
    use xc_mpi
-   use xcfun
+   use xcfun_1_0
    use dft_cfg
  
    implicit none

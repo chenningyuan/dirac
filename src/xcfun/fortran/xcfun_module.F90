@@ -1,5 +1,5 @@
 
-module xcfun
+module xcfun_1_0
   use xcfun_autogen
   implicit none
 

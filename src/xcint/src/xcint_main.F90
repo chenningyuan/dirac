@@ -21,7 +21,7 @@ module xcint_main
    use xc_response
 #endif
    use xc_mpi
-   use xcfun
+   use xcfun_1_0
 
    implicit none
 
