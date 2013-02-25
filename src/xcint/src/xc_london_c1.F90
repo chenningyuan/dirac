@@ -41,7 +41,7 @@ module xc_london_c1
 ! todo (*) work only on matrix blocks that couple AOs of different centers
 
    use interface_ao
-   use ao_eval
+   use dirac_ao_eval
 
    implicit none
 

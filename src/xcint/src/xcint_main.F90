@@ -10,7 +10,7 @@ module xcint_main
    use extra
    use file_units
    use interface_grid
-   use ao_eval
+   use dirac_ao_eval
    use density_eval
    use xc_blas3
    use xc_max_block_length
@@ -480,7 +480,7 @@ contains
         max_ao_m_order = 1
       end if
      
-      call ao_eval_init(max_ao_g_order, &
+      call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
 

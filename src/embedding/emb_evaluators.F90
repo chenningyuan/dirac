@@ -59,7 +59,7 @@ module fde_dens_eval
    use interface_mo
 
    use dft_cfg
-   use ao_eval
+   use dirac_ao_eval
    use density_eval
    use xc_max_block_length
 
@@ -106,7 +106,7 @@ module fde_dens_eval
            max_ao_g_order = 1
          end if
      
-         call ao_eval_init(max_ao_g_order, &
+         call dirac_ao_eval_init(max_ao_g_order, &
                            max_ao_m_order, &
                            .true.)
 
