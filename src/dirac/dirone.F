@@ -2649,18 +2649,26 @@ C   PAMIOU: LUTMAT
 
       CALL QENTER('GMOTRA')
 
-      IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
+!     set local 2c-relativistic run flag
+      is_2c_rel_run = bss.or.x2c
 
       call legacy_lwork_get(LWORK)
+
+!     set file unit number for X2CMAT
+      lux2c = 40
+
+      IF(GOFAST)then
+        if (.NOT.(BSS.or.x2c)) GOTO 10
+        if(x2c)then
+          goto 7
+        end if
+      end if
+
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in GMOTRA')
       KFRSAV = KFREE
 C
-!     set file unit number for X2CMAT
-      lux2c = 40
 
-!     set local 2c-relativistic run flag
-      is_2c_rel_run = bss.or.x2c
 
 !     logical flag for keeping track of whether case 3 in gmotra has
 !     been entered
@@ -2742,7 +2750,7 @@ C
 !       Case 1: Unrestricted kinetic balance 
 !               or 2-component non-relativistic calculation
 !       ---------------------------------------------------
-      IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
+  7   IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
         NZT = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -2867,6 +2875,8 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 iprham)
 
           close(lux2c,status='keep')
+
+          if(gofast) goto 10
 
           end if
 
