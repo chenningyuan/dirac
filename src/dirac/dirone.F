@@ -2876,6 +2876,24 @@ C         2) do picture change transformation of integrals on AOPROPER
 
           close(lux2c,status='keep')
 
+!         re-allocate 
+          call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
+#include "memint.h"
+          TWOCOMP = .TRUE.
+          RDINPC = .FALSE.
+          IPREAD = IPREAD - 5
+          CALL READIN(.FALSE.)
+          CALL SETDC1(IPREAD)
+!         set AO-labels for large components - in x2c_main initialized for large and small components
+          call getlab(ipread)
+          IPREAD = IPREAD + 5
+C.........reset NEWPRP to re-initialize AOPROPER
+          NEWPRP = .TRUE.
+          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+          CALL ONEGEN(WORK,LWORK)
+
+          call dealloc(work)
+
           if(gofast) goto 10
 
           end if
