@@ -1827,7 +1827,10 @@ C
       CALL QENTER('BUTOBS')
 C
 
-      call alloc(buf, mz*n2bbasx, id='buf in butobs')
+      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
+      call flshfo(lupri)
+!     call alloc(buf, mz*n2bbasx, id='buf in butobs')
+      allocate(buf(mz*n2bbasx))
       CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
       IZOFF = 0
       DO IZ = 1,MZ
@@ -1851,7 +1854,8 @@ C
         IZOFF = IZOFF + N2BBASX
       ENDDO
 C
-      call dealloc(buf)
+!     call dealloc(buf)
+      deallocate(buf)
       CALL QEXIT ('BUTOBS')
       RETURN
 C
