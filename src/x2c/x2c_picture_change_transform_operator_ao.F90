@@ -385,7 +385,7 @@ contains
                                scr_mat2,                   &
                                scr_mat1,                   &
                                quat_array_filled_tmp,      &
-     &                         op_fer_rep,                 &
+                               op_fer_rep,                 &
                                prop_op_trsym(i),           &
                                print_lvl)
 

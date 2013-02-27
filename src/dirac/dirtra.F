@@ -1799,7 +1799,7 @@ C     Memory deallocation
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck butobs */
-      SUBROUTINE BUTOBS_no_work(AMAT,MZ,bmat)
+      SUBROUTINE BUTOBS_no_work(AMAT,MZ)
 C***********************************************************************
 C
 C     Matrix transform:
@@ -1824,22 +1824,10 @@ C
 C
       DIMENSION AMAT(*)
       real(8), allocatable             :: buf(:)
-      real(8), intent(inout), optional :: bmat(*)
-      logical                          :: no_alloc
       CALL QENTER('BUTOBS')
 C
-      no_alloc = .false.
-      if((present(bmat))) no_alloc = .true.
-
-      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
-      call flshfo(lupri)
-!     call alloc(buf, mz*n2bbasx, id='buf in butobs')
-      if(no_alloc)then
-        CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
-      else
-        allocate(buf(mz*n2bbasx))
-        CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
-      end if
+      call alloc(buf, mz*n2bbasx, id='buf in butobs')
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
       IZOFF = 0
       DO IZ = 1,MZ
         DO JC = 1,2
@@ -1852,13 +1840,8 @@ C
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
                   if(NBBAS(IREP,IC).GT.0)then
-                    if(no_alloc)then
-                      CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
-     &                                          AMAT(ISOFF+1)   ,1)
-                    else
-                      CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
-     &                                          AMAT(ISOFF+1)   ,1)
-                    end if
+                    CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
                   end if
                 ENDDO
               ENDDO
@@ -1868,7 +1851,64 @@ C
         IZOFF = IZOFF + N2BBASX
       ENDDO
 C
-      if(allocated(buf)) deallocate(buf)
+      call dealloc(buf)
+      CALL QEXIT ('BUTOBS')
+      RETURN
+C
+      END
+      SUBROUTINE BUTOBS_no_work2(AMAT,MZ,bmat)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), intent(inout) :: bmat(*)
+      CALL QENTER('BUTOBS')
+C
+      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
+      call flshfo(lupri)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  if(NBBAS(IREP,IC).GT.0)then
+                    CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
+                  end if
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
       CALL QEXIT ('BUTOBS')
       RETURN
 C

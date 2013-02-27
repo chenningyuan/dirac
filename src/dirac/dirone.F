@@ -2000,7 +2000,7 @@ CMI   ... in this case PTRI is dummy, only PMAT exists
             ENDIF
           ENDIF
             if(is_square)then
-              CALL BUTOBS_no_work(PMAT(1,IZ),1,PTRI(1,IZ))
+              CALL BUTOBS_no_work2(PMAT(1,IZ),1,PTRI(1,IZ))
             else
               CALL BUTOBS_no_work(PMAT(1,IZ),1)
             end if
