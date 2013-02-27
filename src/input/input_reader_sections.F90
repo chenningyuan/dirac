@@ -1309,6 +1309,11 @@
          x2c_fock_saao_basis = .true.
       end if
 
+!     completely skip any PCT of property operators in restart X2C energy calcs
+      if (kw_matches(word, '.skippc')) then
+         x2cmod_skip_op_pct = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

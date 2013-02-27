@@ -2843,44 +2843,46 @@ C         2) do picture change transformation of integrals on AOPROPER
 !             nothing to do here for now: x2cmod_fragment_x2c is always false.
             end if
  
-!           find first property integral... and step back
-            if(fndlab12('prpint2c0001',lux2c))then
-              backspace(lux2c)
-              call x2c_write('thisisadummy',work,-1,lux2c)
-            end if
+            if(.not.x2cmod_skip_op_pct)then
+!             find first property integral... and step back
+              if(fndlab12('prpint2c0001',lux2c))then
+                backspace(lux2c)
+                call x2c_write('thisisadummy',work,-1,lux2c)
+              end if
 
-            call pctrafo_all_op_driver(ntbas(0),
-     &                                 ntbas(1),
-     &                                 nfbas(1,0),
-     &                                 nfbas(1,1),
-     &                                 nfsym,
-     &                                 nz,
-     &                                 irqmat,
-     &                                 ipqtoq,
-     &                                 iqtopq,
-     &                                 iqmult,
-     &                                 jqbas,
-     &                                 iqdef,
-     &                                 i2basx,
-     &                                 lux2c,
-     &                                 lu1int,
-     &                                 jbtof,
-     &                                 nprps,
-     &                                 lwork,
-     &                                 dosphe,
-     &                                 mdirac,
-     &                                 .false.,
-     &                                 onesys, 
-     &                                 -1,
-     &                                 df,
-     &                                 -1,
-     &                                 'undef ',
-     &                                 'undef ',
-     &                                 iprham)
+              call pctrafo_all_op_driver(ntbas(0),
+     &                                   ntbas(1),
+     &                                   nfbas(1,0),
+     &                                   nfbas(1,1),
+     &                                   nfsym,
+     &                                   nz,
+     &                                   irqmat,
+     &                                   ipqtoq,
+     &                                   iqtopq,
+     &                                   iqmult,
+     &                                   jqbas,
+     &                                   iqdef,
+     &                                   i2basx,
+     &                                   lux2c,
+     &                                   lu1int,
+     &                                   jbtof,
+     &                                   nprps,
+     &                                   lwork,
+     &                                   dosphe,
+     &                                   mdirac,
+     &                                   .false.,
+     &                                   onesys, 
+     &                                   -1,
+     &                                   df,
+     &                                   -1,
+     &                                   'undef ',
+     &                                   'undef ',
+     &                                   iprham)
 
+          end if
           close(lux2c,status='keep')
 
-!         re-allocate 
+!         allocate 
           call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
 #include "memint.h"
           TWOCOMP = .TRUE.
