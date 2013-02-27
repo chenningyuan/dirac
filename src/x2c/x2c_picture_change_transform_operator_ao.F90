@@ -353,6 +353,8 @@ contains
        scr_mat1        = 0
        scr_mat2        = 0
 
+       print *, 'memory used so far: ',naosh_ls**2*nz*2 + ioff_pct_mat
+
 !      loop over all pre-defined property operator f
        do i = 1, num_prp_op
 
@@ -440,7 +442,7 @@ contains
 
          if(spherical_on)then
 
-           lwrk = is_len_wrk
+           lwrk = is_len_wrk - naosh_ls**2*nz*2 - ioff_pct_mat
            allocate(wrk(lwrk))
            call sph_iotc(scr_mat1,scr_mat2,nr_sph,print_lvl,wrk,lwrk)
            deallocate(wrk)

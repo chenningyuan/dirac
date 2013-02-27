@@ -1799,7 +1799,7 @@ C     Memory deallocation
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck butobs */
-      SUBROUTINE BUTOBS_no_work(AMAT,MZ)
+      SUBROUTINE BUTOBS_no_work(AMAT,MZ,bmat)
 C***********************************************************************
 C
 C     Matrix transform:
@@ -1823,15 +1823,23 @@ C
 #include "symmet.h"
 C
       DIMENSION AMAT(*)
-      real(8), allocatable :: buf(:)
+      real(8), allocatable             :: buf(:)
+      real(8), intent(inout), optional :: bmat(*)
+      logical                          :: no_alloc
       CALL QENTER('BUTOBS')
 C
+      no_alloc = .false.
+      if((present(bmat))) no_alloc = .true.
 
       write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
       call flshfo(lupri)
 !     call alloc(buf, mz*n2bbasx, id='buf in butobs')
-      allocate(buf(mz*n2bbasx))
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
+      if(no_alloc)then
+        CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
+      else
+        allocate(buf(mz*n2bbasx))
+        CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
+      end if
       IZOFF = 0
       DO IZ = 1,MZ
         DO JC = 1,2
@@ -1843,9 +1851,15 @@ C
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
-                  IF(NBBAS(IREP,IC).GT.0) 
-     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
+                  if(NBBAS(IREP,IC).GT.0)then
+                    if(no_alloc)then
+                      CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
+     &                                          AMAT(ISOFF+1)   ,1)
+                    else
+                      CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+     &                                          AMAT(ISOFF+1)   ,1)
+                    end if
+                  end if
                 ENDDO
               ENDDO
             ENDDO
@@ -1854,8 +1868,7 @@ C
         IZOFF = IZOFF + N2BBASX
       ENDDO
 C
-!     call dealloc(buf)
-      deallocate(buf)
+      if(allocated(buf)) deallocate(buf)
       CALL QEXIT ('BUTOBS')
       RETURN
 C

@@ -1999,7 +1999,11 @@ CMI   ... in this case PTRI is dummy, only PMAT exists
               CALL QUIT('SORT2SAO_no_work: wrong value of IDIMENS !') 
             ENDIF
           ENDIF
-            CALL BUTOBS_no_work(PMAT(1,IZ),1)
+            if(is_square)then
+              CALL BUTOBS_no_work(PMAT(1,IZ),1,PTRI(1,IZ))
+            else
+              CALL BUTOBS_no_work(PMAT(1,IZ),1)
+            end if
         ELSE 
 CMI ... zeroed out non-used quaternionic blocks of property matrixes...
           CALL DZERO(PMAT(1,IZ),N2BBASX)  
