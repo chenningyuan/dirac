@@ -46,7 +46,8 @@ First steps in DIRAC territory
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` |
+  :doc:`Augmenting basis sets <molecule_and_basis/augment>`
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
