@@ -46,7 +46,8 @@ Correct static executables
   usr/lib/gcc/x86_64-linux-gnu/4.6/../../../x86_64-linux-gnu/libpthread.a(sem_open.o): In function `sem_open':
   /home/aurel32/eglibc/eglibc-2.13/nptl/sem_open.c:333: warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
  This is due to the " -Wl,--whole-archive -lpthread -Wl,--no-whole-archive " linking command containg pthread-library, but this must be,
- because placing "-lpthread" elsewhere generates wrong executable giving error ::
+ because placing "-lpthread" elsewhere generates wrong executable giving error 
+ ::
    Program received signal 11 (SIGSEGV): Segmentation fault.
    Backtrace for this error:
    + function __restore_rt (0x15D0620)
@@ -106,7 +107,8 @@ Here we describe cases of static dirac.x executables crashing already at the sta
 
 * ilias, miro_ilias_desktop:
   Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
-  ATLAS-static; -g -static -fpic -O0, giving ::
+  ATLAS-static; -g -static -fpic -O0, giving
+   ::
    Program received signal 11 (SIGSEGV): Segmentation fault.
    Backtrace for this error:
     + function __restore_rt (0x15C4220)
@@ -130,6 +132,7 @@ Executables not compilable
 We give some cases when one can not obtain static dirac.x executable due to error at linking stage.
 
 Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example 
+
 ::
 
   /home/ilias/bin/openmpi_ilp64/lib/libopen-pal.a(dlopen.o): In function 'vm_open':
@@ -142,6 +145,7 @@ Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example
 
 * ilias, opteron.tau.ac.il
    export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t' , static buildup does not work with MKL libs, giving :
+
 ::
 
   /opt/intel/fce/10.1.015/bin/ifort -static -Wl,-E -w -assume byterecl -DVART -g -traceback -static-libgcc -static-intel -i8 -O0 CMakeFiles/dirac.x.dir/main/main.F90.o  -o dirac.x lib/libdirac.a lib/libxcfun.a  -Wl,--start-g   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_lapack.a    /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_core.a   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkls_ilp64.a  /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_sequential.a /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_em64t.a   /opt/intel/mkl/10.0.3.020/lib/emibguide.a  /usr/lib64/libpthread.a /usr/lib64/libm.a -Wl,--end-group
@@ -149,7 +153,9 @@ Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example
 
 * ilias@grid3.ui.savba.sk, SL5 Linux,  2.6.18-348.1.1.el5, x86_64; i32lp64 using system static blas+lapack
  /usr/bin/gfortran44    -static  -Wl,-E -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check -static -O0 CMakeFiles/dirac.x.dir/src/main/main.F90.o  -o dirac.x   lib/libdirac.a lib/libxcfun.a -lstdc++ /usr/lib64/liblapack.a /usr/lib64/libblas.a
+
  ::
+
  /usr/lib64/liblapack.a(ilaenv.o): In function `ilaenv_':
  (.text+0x25d): undefined reference to `_gfortran_copy_string'
  /usr/lib64/liblapack.a(ilaenv.o): In function `ilaenv_':
@@ -170,4 +176,5 @@ Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example
  (.text+0xe15): undefined reference to `_gfortran_pow_r8_i4'
  /usr/lib64/liblapack.a(dlamch.o):(.text+0xe39): more undefined references to `_gfortran_pow_r8_i4' follow
  collect2: ld returned 1 exit status
-This problem is fixed by abandoning /usr//lib64/liblapack.a completely, by using "--lapack=off" in setup stage
+
+This problem is fixed by abandoning /usr//lib64/liblapack.a completely, what menas by using "--lapack=off" in the  setup stage.
