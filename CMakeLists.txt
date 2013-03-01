@@ -20,6 +20,7 @@ option(ENABLE_PROFILING       "Enable profiling"                                
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
@@ -28,7 +29,6 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
-option(ENABLE_MAGNETIZ_FIX    "Enable special fix of magnetizabilities"                   OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
@@ -47,8 +47,12 @@ set(CMAKE_MODULE_PATH
     )
 
 if(ENABLE_STATIC_LINKING)
-# FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -Wl,--no-export-dynamic") 
+    if (NOT ENABLE_OLD_LINKER)
+       # Miro: the "-Wl,--no-export-dynamic" flag is only for newer
+       # ld-linkers, fix for older linkers
+       set(NODYNEXPORT "-Wl,--no-export-dynamic")
+    endif()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
@@ -266,8 +270,7 @@ foreach(
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
     if(ENABLE_STATIC_LINKING)
-        # FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
-        target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
+        target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
         if (BLAS_TYPE MATCHES Atlas)
             # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
@@ -278,19 +281,9 @@ foreach(
 
 endforeach()
 
-#  stefan --> miro: please fix it properly or create a ticket but this is NOT
-#  OK; i encountered on some platforms severe performance
-#  degradation in parallel runs other than twoel. London integrals... (Jan
-#  2012)
-#  miro: after playing a lot with this there is no other way to fix it,
-#  I made this optimization decrease conditional in order not to affect other
-#  functionalities
-if (CMAKE_Fortran_COMPILER_ID MATCHES Intel AND CMAKE_BUILD_TYPE MATCHES
-Release AND ENABLE_MPI AND ENABLE_MAGNETIZ_FIX)
-    message("--  main.F90 - no ifort optimization => fix of magnetizabilities MEMCHK
-error in the slave process of abacus/her2drv.F" )
-    set_source_files_properties(src/main/main.F90 PROPERTIES COMPILE_FLAGS
-"-O0")
+#enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
+if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+    SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
 endif()
 
 # build unit tests
