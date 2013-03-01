@@ -64,7 +64,7 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 echo -e "\n downloading the fresh clone..."
 git pull
 
-./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD
+./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLDER_LINKER=ON --force $BUILD
 
 cd $BUILD
  #cmake ..
@@ -77,13 +77,13 @@ cd $BUILD
 
  ls -lt $DIRAC/$BUILD/dirac.x
  ldd $DIRAC/$BUILD/dirac.x
- cmake .. > VERSION  2>&1  # get version
+ cmake .. > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
 
 cd $DIRAC
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD_SERIAL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLDER_LINKER=ON --force $BUILD_SERIAL
 cd $BUILD_SERIAL
  #cmake ..
  #make -j2 dirac.x
@@ -95,7 +95,7 @@ cd $BUILD_SERIAL
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL/dirac.x
- cmake .. > VERSION  2>&1  # get version
+ cmake .. > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
@@ -103,7 +103,7 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 # cancel the variable #
 unset MATH_ROOT
 cd $DIRAC
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=OFF --force $BUILD_GNU_SERIAL
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLDER_LINKER=ON --force $BUILD_GNU_SERIAL
 cd $BUILD_GNU_SERIAL
  #cmake ..
  #make -j2 dirac.x
@@ -115,7 +115,7 @@ cd $BUILD_GNU_SERIAL
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_GNU_SERIAL/dirac.x
- cmake .. > VERSION  2>&1  # get version
+ cmake .. > VERSION_cmake  2>&1  # get version
 
  timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
  echo -e "\n build 3 - GNU,serial,static -  finished at $timestamp \n"
@@ -147,7 +147,7 @@ ls -lt dirac_grid_suite.tgz
 
 #another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
 echo -e "\n\n packing slim DIRAC suite for grid computations..."
-tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
 echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
 ls -lt dirac_grid_suite_slim.tgz
 echo -e "\n Done. Tarball with static execs ready."
