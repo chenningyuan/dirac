@@ -117,7 +117,8 @@ macro(find_atlas)
         find_math_header(lapack clapack.h)
         find_math_libs(lapack lapack_atlas lapack)
     endif()
-    find_math_libs(lapack atlas)
+    # miro: ATLAS package usually does not contain all lapack routines!
+    find_math_libs(lapack atlas lapack_atlas lapack)
     cache_math_result(lapack Atlas)
 endmacro()
 
