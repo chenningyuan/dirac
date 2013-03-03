@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #PBS -S /bin/bash
-#PBS -N cdash_buildup
+#PBS -N DIRACbuild
 ### Declare myprogram non-rerunable
 #PBS -r n
 #PBS -l nodes=1
-#PBS -l walltime=6:00:00
+#PBS -l walltime=10:00:00
 #PBS -l mem=8g
 #PBS -j oe
 #PBS -q batch
@@ -40,22 +40,23 @@ echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "PBS_O_QUEUE=$PBS_O_QUEUE"
 echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
 
-
-NPROCS=4 # set number of procs for computations
+NPROCS=4 # hard set number of procs for computations
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n Running DIRAC cdash buildups at "$timestamp
+echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 #
 
+export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+
 cd $DIRAC
+#git pull
 
 BUILD=build_Intel_OpenMPI_MKL_ILP64
 echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
 ./pamadm -a --builddir=$BUILD
-export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=4 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64=on -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD
 cd $BUILD
 make clean
 make Experimental
@@ -91,7 +92,7 @@ BUILD_STATIC=build_Intel_OpenMPI_MKL_ILP64_static
 echo -e "\n\n Running OpenMPI parallel, static DIRAC buildup in $BUILD_STATIC"
 cd $DIRAC
 ./pamadm -a --builddir=$BUILD_STATIC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=8 -D DART_TESTING_TIMEOUT=99999 --force $BUILD_STATIC
+./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=$NPROCS -D DART_TESTING_TIMEOUT=99999 --force $BUILD_STATIC
 cd $BUILD_STATIC
 make clean
 make Experimental 
