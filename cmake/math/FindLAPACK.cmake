@@ -110,7 +110,7 @@ endmacro()
 
 macro(find_atlas)
     set(MATH_LIBRARY_PATH_SUFFIXES
-        atlas atlas-base atlas-base/atlas)
+        atlas atlas-base atlas-base/atlas atlas-sse3)
     set(MATH_INCLUDE_PATH_SUFFIXES atlas)
 
     if (MATH_LANG STREQUAL "C")
