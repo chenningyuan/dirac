@@ -79,16 +79,6 @@ group.add_argument('--lapack',
         default='on',
         const='on',
         help='enable LAPACK [default: %(default)s]')
-group.add_argument('--blas-dir',
-        action='store',
-        default=None,
-        help='directory containing BLAS libraries [default: pick automatically based on BLAS_ROOT (see INSTALL.rst)]',
-        metavar='PATH')
-group.add_argument('--lapack-dir',
-        action='store',
-        default=None,
-        help='directory containing LAPACK libraries [default: pick automatically based on LAPACK_ROOT (see INSTALL.rst)]',
-        metavar='PATH')
 group.add_argument('--int64',
         nargs='?',
         action='store',
@@ -211,12 +201,6 @@ def gen_cmake_command():
     command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
     command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
-
-    if args.blas_dir:
-        command += ' -DBLAS_ROOT=%s' % args.blas_dir
-
-    if args.lapack_dir:
-        command += ' -DLAPACK_ROOT=%s' % args.lapack_dir
 
     if args.explicit_libs:
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
