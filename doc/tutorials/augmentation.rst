@@ -3,7 +3,7 @@ Basis sets augmentation
 
 DIRAC suite offers possibility to easily modify employed basis sets.
 
-The purpose of this tutorial (and test case) is to show nonstandard automatic augmentation of provided standard basis sets, like
+The purpose of this tutorial (and the test  *basis_automatic_augmentation*) is to show nonstandard automatic augmentation of provided standard basis sets, like
 cc-pVXZ, Turbmole and dyall.
 
 In the following table we demonstrate influence of the (contracted) basis set extension on the total 
@@ -45,5 +45,6 @@ decontracted cc-pVDZ basis for hydrogen and decontracted dyall.v2z basis for bro
 
 On the other side, for the "pure relativistic" Br2 molecule with chosen Dirac-Coulomb (DC) Hamiltonian for calculations, 
 you can use specially designed relativistically contracted dyall.v2z basis.
-If you would like to perform 2-component relativistic calculations with the X2C Hamiltonian, you should decontract Dyall's basis sets
-as these were constructed (and contracted) in the the 4-component DC framework.
+If you would like to perform 2-component relativistic calculations with the X2C Hamiltonian, 
+you should decontract Dyall's basis sets
+as these were constructed (contracted) in the the 4-component DC framework.
