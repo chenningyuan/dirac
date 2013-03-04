@@ -46,8 +46,7 @@ First steps in DIRAC territory
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` |
-  :doc:`Augmenting basis sets <molecule_and_basis/augment>`
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` 
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -56,6 +55,9 @@ First steps in DIRAC territory
 
 Tutorials and walkthrus
 =======================
+
+* **Basis sets:**
+  :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start/tutorial>`
