@@ -473,7 +473,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
-      use ao_eval
+      use dirac_ao_eval
 
 #include "implicit.h"
 #include "priunit.h"

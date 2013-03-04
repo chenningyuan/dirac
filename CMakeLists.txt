@@ -20,6 +20,7 @@ option(ENABLE_PROFILING       "Enable profiling"                                
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
@@ -30,6 +31,7 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
+option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -45,8 +47,12 @@ set(CMAKE_MODULE_PATH
     )
 
 if(ENABLE_STATIC_LINKING)
-# FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -Wl,--no-export-dynamic") 
+    if (NOT ENABLE_OLD_LINKER)
+       # Miro: the "-Wl,--no-export-dynamic" flag is only for newer
+       # ld-linkers, fix for older linkers
+       set(NODYNEXPORT "-Wl,--no-export-dynamic")
+    endif()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
@@ -98,8 +104,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-add_subdirectory(src/xcfun)
-set(LIBS xcfun ${LIBS})
+if(ENABLE_XCFUN)
+    add_subdirectory(src/xcfun)
+    set(LIBS xcfun ${LIBS})
+else()
+    add_definitions(-DEXCLUDE_XCFUN)
+endif()
 
 if(ENABLE_PCMMOD)
     set(ExternalProjectCMakeArgs
@@ -260,8 +270,7 @@ foreach(
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
     if(ENABLE_STATIC_LINKING)
-        # FYI: -Wl,--no-export-dynamic flag is for newer ld-linkers
-        target_link_libraries(${EXECUTABLE} -Wl,--no-export-dynamic)
+        target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
         if (BLAS_TYPE MATCHES Atlas)
             # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7

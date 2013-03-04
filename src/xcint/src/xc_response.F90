@@ -4,7 +4,7 @@ module xc_response
   use xc_derv
   use density_eval
   use openrsp_cfg
-  use xcfun
+  use xcfun_1_0
   use xc_max_block_length
 
   implicit none
