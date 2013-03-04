@@ -60,7 +60,7 @@ unpack_DIRAC
 
 echo -e "\n Job started at : \c"; date
 
-echo -e "\n --- Launching simple pam test  --- \n "; 
+echo -e "\n --- Launching simple parallel pam test  --- \n "; 
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs
 
 #####################################################################
@@ -110,7 +110,7 @@ fi
 
  # echo -e "\n\n --- Launching parallel runtest - OpenMPI+Intel+MKL - with selected tests --- \n "; date 
  # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --quick
+  python ./runtest  --verbose --backup --builddir=$PWD/$BUILD --mpi=$nprocs --quick
 
   #echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
   #python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
@@ -140,7 +140,7 @@ fi
 
   #echo -e "\n\n --- Launching selected serial runtest - Intel+MKL --- \n "; date 
   #python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --quick
+  python ./runtest --verbose --backup --builddir=$PWD/$BUILD_SERIAL  --quick
 
   #echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
   #python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
@@ -165,7 +165,7 @@ fi
 
  # echo -e "\n\n --- Launching serial runtest - GNU - with selected tests  --- \n "; date
  # python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --quick
+  python ./runtest  --verbose --backup --builddir=$PWD/$BUILD_GNU_SERIAL --quick
 
  # echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
  # python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
@@ -322,7 +322,7 @@ fi
    echo -e "\n\n --- Launching  runtest - selected tests - of own dirac.x buildup on CE --- \n "; date
    echo -e "dirac.x file: \c "; ls -lt $dirac_file
    #python ./runtest --verbose --backup --binary=$dirac_file --tests="$regular_subset"
-   python ./runtest --verbose --backup --binary=$dirac_file --quick
+   #python ./runtest --verbose --backup --builddir=$dirac_file --quick
    BUILD_LOCAL=build
  else
    echo -e "\n own buildup of dirac.x failed, no tests run \n"
