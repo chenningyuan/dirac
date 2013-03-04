@@ -2478,9 +2478,9 @@ CSK      IGSOCCX(I + MXPNGAS) = NGSP(2,I)
       END DO
 C     Energy convergence threshold
       IF (NZ.EQ.1) THEN
-        THRES_E = 1.0D-10
+        THRES_E =          threci
       ELSE
-        THRES_E = 0.5D-5
+        THRES_E = 0.5*sqrt(threci)
       END IF
 C     Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
