@@ -24,16 +24,11 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 cd $DIRAC
 git pull
 
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
-
 BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
 # configure step
 ./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_GNU 
 cd $BUILD_GNU
-#cmake ..
-#make ExperimentalUpdate
-cmake ..
-make clean
 make Experimental
 
 
@@ -44,10 +39,6 @@ BUILD_INTEL=build_ifort_mkl_int64
 export MATH_ROOT=/opt/intel/mkl
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
 cd $BUILD_INTEL
-#cmake ..
-#make ExperimentalUpdate
-cmake ..
-make clean
 make Experimental
 
 #
@@ -62,9 +53,9 @@ else
 fi
 git  clone git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
-./pamadm -a --hsfsdyn --hscc --auto 
+./pamadm  -a  --hsfsdyn  --hscc  --auto  # make buildup into the "build" directory
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_ilp64_master" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_ilp64_master" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF 
 cd build
 make Nightly
 

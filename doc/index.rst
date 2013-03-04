@@ -27,6 +27,12 @@ Setting up DIRAC
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
 
+Updates and patches
+===================
+
+* :doc:`ChangeLog <patches/CHANGELOG>`
+
+
 First steps in DIRAC territory
 ==============================
 
@@ -40,7 +46,7 @@ First steps in DIRAC territory
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` 
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -49,6 +55,9 @@ First steps in DIRAC territory
 
 Tutorials and walkthrus
 =======================
+
+* **Basis sets:**
+  :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start/tutorial>`
