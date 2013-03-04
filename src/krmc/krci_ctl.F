@@ -93,7 +93,7 @@ C
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
-     &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
+     &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
@@ -174,6 +174,7 @@ C
       DKRCI_CNVINT(1) = DUMMY
       DKRCI_CNVINT(2) = DUMMY
       DKRCI_THRPCI = 1.0D-3
+      DKRCI_THRGCI = 1.0d-10
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -625,8 +626,9 @@ C                          using j_z = l_z + s_z
                   DOPROP_KRCI  = .TRUE.
                   DOJZEXP = .TRUE.
                GO TO 100
-!  xxx
+!     THRECI:  energy convergence threshold
    34          CONTINUE
+               read(lucmd,*) DKRCI_THRGCI
                GO TO 100
    35          CONTINUE
 C&&&  CHECKP:  write intermediate check point file that is readable by 
@@ -1056,6 +1058,9 @@ C
      &   ' Control parameters for KR-CI optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
+      write(lupri,'(a,1e18.12)')  
+     &     ' * Energy convergence threshold: ',
+     &     DKRCI_THRGCI
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',

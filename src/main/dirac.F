@@ -989,7 +989,8 @@ C
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0D-3
+      THR_CVEC       = 1.0d-03
+      THRECI         = DKRCI_THRGCI
 C
 C     Set common block DCLOPT
 C
