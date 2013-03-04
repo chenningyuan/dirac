@@ -3,7 +3,7 @@ Basis sets augmentation
 
 DIRAC suite offers possibility to easily modify employed basis sets.
 
-The purpose of this tutorial (and test case) is to show nonstandard automatic augmentation of provided standard basis sets, like
+The purpose of this tutorial (and the test set basis_automatic_augmentation) is to show nonstandard automatic augmentation of provided standard basis sets, like
 cc-pVXZ, Turbmole and dyall.
 
 In the following table we demonstrate influence of the (contracted) basis set extension on the total 
