@@ -21,6 +21,7 @@ make clean
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
+make ExperimentalTest
 make ExperimentalSubmit
 
 
