@@ -60,9 +60,9 @@ if [[ -n $DO_UPDATE ]]; then
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
-# download fresh clone...
-#echo -e "\n downloading the fresh clone..."
-#git pull
+# update the local trunk...
+echo -e "\n updating the local $DIRAC"
+git pull
 
  ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON --force $BUILD
 
@@ -153,14 +153,14 @@ fi # of DO_UPDATE
 echo -e "leaving here, you will have to upload tarball onto SE"
 exit 0
 
-######################################################## 
+################################################################################ 
 #
-# initialize your certificate from grid computing
+#      initialize your certificate from grid computing
 #
 #  voms-proxy-init --voms voce -hours 24 -vomslife 24:00 
 #  voms-proxy-init --voms compchem -hours 24 -vomslife 24:00 
 # 
-######################################################## 
+################################################################################ 
 
 echo -e "\n ---  My valid certificate (voms-proxy-info --all)  ---"
 voms-proxy-info --all 
@@ -200,8 +200,13 @@ echo -e "\n File attributes lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
 lcg-lr    lfn://grid/$VO/ilias/dirac_grid_suite.tgz
 #  do also uberftp se.ui.savba.sk "ls /dpm/ui.savba.sk/home...."
 
+##############################################################################################
 # change the ACL attributes, see https://edms.cern.ch/file/722398/1.4/gLite-3-UserGuide.pdf
+##############################################################################################
 lfc-setacl -m group::0,other:0  /grid/$VO/ilias
+# control output of ACL attributes
+echo -e "\n ACL attributes of /grid/$VO/ilias:"
+lfc-getacl /grid/$VO/ilias
 
 ##########################################################################
 #             submit external launching script with glite                #

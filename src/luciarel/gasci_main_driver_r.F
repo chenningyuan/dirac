@@ -44,7 +44,6 @@
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"

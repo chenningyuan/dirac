@@ -174,7 +174,7 @@ C
       DKRCI_CNVINT(1) = DUMMY
       DKRCI_CNVINT(2) = DUMMY
       DKRCI_THRPCI = 1.0D-3
-      DKRCI_THRGCI = 1.0d-10
+      DKRCI_THRGCI = 1.0d-8
 C
 C     Initialize /DCOKRCI/
 C     ===================
