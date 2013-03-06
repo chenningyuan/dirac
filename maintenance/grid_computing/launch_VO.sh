@@ -40,7 +40,7 @@ get_nprocs_CE nprocs
 echo -e "\n Number of #CPU obtained from the function: $nprocs \n"
 
 ##########################################
-#  make it executable and finally launch
+#      set build dirs and paths          #
 ##########################################
 # directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
 export BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
@@ -55,13 +55,16 @@ export PATH=$PWD/$BUILD:$PATH
 echo -e "Modified PATH=$PATH"
 echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
+unpack_DIRAC
+#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
+
+#############################################################
+#           check own static cmake, mpirun stuff
+#############################################################
 echo -e "\n\n"
 echo -e "own cmake in PATH ? \c"; which cmake; cmake --version
 echo -e "own ctest in PATH ? \c"; which ctest; ctest --version
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
-
-unpack_DIRAC
-#RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
 
 echo -e "\n Job started at : \c"; date
 
@@ -76,19 +79,6 @@ regular_subset='fscc fscc_highspin fscc_intensities krci_energy krci_properties_
 
 benchmark_subset='cc_benchmark cc_linear fscc_intensities gaunt mcscf_energy moltra_4or6'
 
-
-#############################################################
-#               check own static cmake stuff
-#############################################################
-
-  #echo -e "\n Performing pamadm step:"
-  #python ./pamadm -a
-
-  #cp maintenance/grid_computing/diracrc_build_grid  $BUILD/diracrc
-  #cp maintenance/grid_computing/diracrc_build_grid  $BUILD_SERIAL/diracrc
-  #cp maintenance/grid_computing/diracrc_build_grid  $BUILD_GNU_SERIAL/diracrc
-  #echo -e "\n ---- own diracrc in build-directories created: "; cat $BUILD/diracrc
-
 #######################################################################################
 #unset DO_CMAKE
 DO_CMAKE=1
@@ -102,7 +92,7 @@ if [[ -n $DO_CMAKE ]]; then
 #CMake Error: The source "/tmp/ilias_OUWzTUf41_ntFwYFY3Pk7Q/CMakeLists.txt" does not match the source "/home/ilias/qch_work/software/dirac_git/trunk_current/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
   mv CMakeCache.txt CMakeCache.txt_STORED
 #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
-  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999  ..
+  cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_ompi_intel_mkl_static" -DENABLE_MPI=OFF  -DRUNTEST_NR_PROC=$nprocs -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999  ..
 # make ExperimentalConfigure
   make ExperimentalStart
   make ExperimentalTest
@@ -115,7 +105,7 @@ fi
 
   echo -e "\n\n --- Going to launch parallel runtest - OpenMPI+Intel+MKL - with quick tests suite  --- \n "; date 
  # python ./runtest  --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs --tests="$regular_subset"
-  python ./runtest  --verbose --backup --builddir=$BUILD --mpi=$nprocs --quick
+  python ./runtest  --verbose --backup --builddir=$PWD/$BUILD --mpi=$nprocs --quick
 
   #echo -e "\n\n --- Launching benchmark parallel runtest - OpenMPI+Intel+MKL --- \n "; date 
   #python ./runtest --benchmark --verbose --backup --binary=$PWD/$BUILD/dirac.x --mpi=$nprocs  --tests="$benchmark_subset"
@@ -133,7 +123,7 @@ if [[ -n $DO_CMAKE ]]; then
   echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt
   mv CMakeCache.txt CMakeCache.txt_STORED
   #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
- ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 ..
+  cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_intel_mkl_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999 ..
   make ExperimentalStart
   make ExperimentalTest
   make ExperimentalSubmit
@@ -145,7 +135,7 @@ fi
 
   echo -e "\n\n --- Going to launching selected serial runtest - Intel+MKL - with quick test suite --- \n "; date 
   #python ./runtest --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest --verbose --backup --builddir=$BUILD_SERIAL  --quick
+  python ./runtest --verbose --backup --builddir=$PWD/$BUILD_SERIAL  --quick
 
   #echo -e "\n\n --- Launching benchmark serial runtest - Intel+MKL --- \n "; date 
   #python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_SERIAL/dirac.x --tests="$benchmark_subset"
@@ -158,7 +148,7 @@ if [[ -n $DO_CMAKE ]]; then
   echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
   mv CMakeCache.txt CMakeCache.txt_STORED
   #note: make  -DENABLE_MPI=OFF in order to avoid cmake's MPI configuration on an unknown grid's CE
-  ./cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999  ..
+  cmake  -DVERBOSE_OUTPUT=ON -DBUILDNAME="$THIS_HOSTNAME.grid_serial_GNU_static" -DENABLE_MPI=OFF -DRUNTEST_TIMEOUT="00:18:00" -DDART_TESTING_TIMEOUT=99999  ..
   make ExperimentalStart
   make ExperimentalTest
   make ExperimentalSubmit
@@ -170,7 +160,7 @@ fi
 
   echo -e "\n\n --- Goind to launching serial runtest - GNU - with selected tests  --- \n "; date
  # python ./runtest  --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$regular_subset"
-  python ./runtest  --verbose --backup --builddir=$BUILD_GNU_SERIAL --quick
+  python ./runtest  --verbose --backup --builddir=$PWD/$BUILD_GNU_SERIAL --quick
 
  # echo -e "\n\n --- Launching benchmark serial runtest - GNU  --- \n "; date 
  # python ./runtest --all --benchmark --verbose --backup --binary=$PWD/$BUILD_GNU_SERIAL/dirac.x --tests="$benchmark_subset"
