@@ -1655,8 +1655,7 @@ Options are also read from ~/.diracrc"""
                 sys.exit(20)
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
-            print_error_message('\n pam: Parallel run with local disks but without machinefile ! ')
-            print_error_message(' for this case add --global-scratch-disk to your pam-flags. \n ')
+            print_error_message('\npam: Parallel run set with local disks but without machinefile!')
             sys.exit(21)
 
 class pam_run(pam_enviroment):
