@@ -5,9 +5,9 @@ Na/Na.dc_rkb.2fs.scf_prptra_e_edm.inp                       Na/Na.sto-2g.lsym.mo
 Na/Na.dc_rkb.2fs.scf_prptra_e_edm2.inp                      Na/Na.sto-2g.lsym.mol
 
 regular
-Na/cc/Na.dc_rkb.scf.inp                                     Na/cc/Na.sto-2g.C2.mol      --outcmo
-Na/cc/Na.dc_rkb_EDM_0.001_zdm_0.002.cc.inp                  Na/cc/Na.sto-2g.C2.mol      --incmo
-rm DFCOEF
+#Na/cc/Na.dc_rkb.scf.inp                                     Na/cc/Na.sto-2g.C2.mol      --outcmo
+#Na/cc/Na.dc_rkb_EDM_0.001_zdm_0.002.cc.inp                  Na/cc/Na.sto-2g.C2.mol      --incmo
+#rm DFCOEF
 MgF/W_A_constants/MgF.dc_rkb.dft_prptra_W_A.inp             MgF/W_A_constants/MgF.sto-2g.lsym.mol
 MgF/eEDM/MgF.dc_rkb.scf_relcc.inp                           MgF/eEDM/MgF.sto-2g.C1.mol --outcmo
 MgF/eEDM/MgF.dc_rkb.motra_relcc_e_edm.+0.0005.inp           MgF/eEDM/MgF.sto-2g.C1.mol --incmo

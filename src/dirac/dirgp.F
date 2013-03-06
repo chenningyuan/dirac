@@ -2790,6 +2790,25 @@ C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
 C     information for a set of fragments.
 C
+C     Returns:
+C
+C         CSEL - selected coefficient adapted to molecule basis dimensions
+C         ESEL - corresponding orbital energies 
+C         IBSEL - corresponding irrep information
+C         NVECS(IFRP) - number of selected coefficients
+C         NFRAG - number of fragments
+C         NSTR(IFRP,I,NFRAG) - number of orbitals
+C            I = 0: total
+C            I = 1: positive-energy orbitals
+C            I = 2: negative-energy orbitals
+C         OWNBAS - logical variable; if true, then fragments are defined 
+C                  in their own basis
+C         NUCFRAG(NFRAG) - number of symmmetry-independent nuclei of this fragment
+C         IOPT - flag for the coefficient reader CMO
+C         KVEC - (IFRP,NFRAG) - start address for given fragment of fermion irrep 
+C                IFRP in the WORK array
+C         CMO, EIG,IBEIG - buffer space for all coefficients, energies, irrep info
+C         IOFF - offset in list of orbitals; allows to fill CSEL in several calls to SELFRAG
 C     For each fragments, this information is first read into:
 C        CMO - coefficients
 C        EIG - eigenvalues

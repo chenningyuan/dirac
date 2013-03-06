@@ -19,10 +19,6 @@ of!
    information correctly.  Until you get familiar with the format, we recommend to
    copy existing mol files and adapt them.
 
-.. warning::
-
-   add info about automatic augmentation
-
 We will learn the mol file format using the following example::
 
   DIRAC
@@ -103,6 +99,18 @@ point value somewhere within the space specified below::
   C   2              A
           1.    2--------here--------
   [...]
+
+As an example, here is the Ne atom with a custom nuclear
+exponent of 10.0D8::
+
+  DIRAC
+
+                 --------here--------
+  C   1
+        10.     1   10.0D+08
+  Ne    0.0  0.0  0.0
+  LARGE BASIS cc-pVDZ
+  FINISH
 
 
 Fitting basis set
@@ -480,6 +488,45 @@ You can change this in the mol file::
 
 This is water with charge plus 1.  Alternatively you can specify the occupation
 explicitly in the inp file and leave it blank in the mol file.
+
+
+Automatic augmentation with diffuse functions
+---------------------------------------------
+
+By using a augmentation prefix you can use automatic augmentation to extend
+Dunning, Dyall, and Turbomole basis sets with diffuse exponents.
+
+The following augmentation prefixes are recognized::
+
+  d-aug-cc-p...
+  t-aug-cc-p...
+  q-aug-cc-p...
+  5-aug-cc-p...
+  6-aug-cc-p...
+  7-aug-cc-p...
+
+  s-aug-dyall...
+  d-aug-dyall...
+  t-aug-dyall...
+  q-aug-dyall...
+
+  s-a-Turbomole...
+  d-a-Turbomole...
+  t-a-Turbomole...
+  q-a-Turbomole...
+
+What the code does is that it sorts exponents for each angular momentum,
+calculates the factor between the two most diffuse exponents, and adds a new
+exponent (or new exponents) by keeping this factor (even tempered
+augmentation).  If an angular momentum only has one exponent, then the
+progression cannot be calculated (obviously), and a factor 3.5 is used.  This
+is a choice.
+
+Automatic augmentation can be useful but it should not be used in a black box
+manner.  You are strongly encouraged to define DEBUG_PRIMITIVES in
+abacus/herrdn.F and to examine which exponents have been added. The code simply
+augments and does not consider whether it uses the original SCF set exponents
+or correlating exponents.
 
 
 How to force specific symmetry

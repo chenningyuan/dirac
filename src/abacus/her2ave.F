@@ -2349,18 +2349,11 @@ C
                               abcd = pint(int, i)
                               abdc = qint(int, i)
             
-!miro/1.7.2012: optimization ifort+OMPI is somehow hurt upon these structures, but can be 'fixed'
-!by canceling optimization of the main source file, main/main.F90.
-!This problem shows in commands like "ft(a, b, 1, i) ="; any assignement to ft(:,:,:,:) variable
-! hurts the dirac.x parallel run.
-
-             !if (allow) then
              ft(a, b, 1, i) = ft(a, b, 1, i) + abcd*ddc + abdc*dcd
              ft(c, d, 1, i) = ft(c, d, 1, i) + abcd*dba + abdc*dab
 
              ft(b, a, 1, i) = ft(b, a, 1, i) + abcd*dcd + abdc*ddc
              ft(d, c, 1, i) = ft(d, c, 1, i) + abcd*dab + abdc*dba
-             !endif
                            end do
                         else
                            do i = 1, 3

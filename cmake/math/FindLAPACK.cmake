@@ -110,14 +110,14 @@ endmacro()
 
 macro(find_atlas)
     set(MATH_LIBRARY_PATH_SUFFIXES
-        atlas atlas-base atlas-base/atlas)
+        atlas atlas-base atlas-base/atlas atlas-sse3)
     set(MATH_INCLUDE_PATH_SUFFIXES atlas)
 
     if (MATH_LANG STREQUAL "C")
         find_math_header(lapack clapack.h)
         find_math_libs(lapack lapack_atlas lapack)
     endif()
-    find_math_libs(lapack lapack_atlas lapack)
+    find_math_libs(lapack atlas lapack)
     cache_math_result(lapack Atlas)
 endmacro()
 

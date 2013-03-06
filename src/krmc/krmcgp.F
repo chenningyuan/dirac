@@ -2478,10 +2478,15 @@ CSK      IGSOCCX(I + MXPNGAS) = NGSP(2,I)
       END DO
 C     Energy convergence threshold
       IF (NZ.EQ.1) THEN
-        THRES_E = 1.0D-10
+        THRES_E =          threci
       ELSE
-        THRES_E = 0.5D-5
+        THRES_E = 0.5*sqrt(threci)
       END IF
+#if defined (VAR_MPI)
+        IF( ISYNC_NODES .eq. 1 )
+     &    call interface_mpi_BCAST(thres_e,1,MASTER,
+     &                   global_communicator)
+#endif
 C     Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
 C     Maximum number of CI iterations
