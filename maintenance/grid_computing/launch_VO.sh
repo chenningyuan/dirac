@@ -66,7 +66,14 @@ echo -e "own cmake in PATH ? \c"; which cmake; cmake --version
 echo -e "own ctest in PATH ? \c"; which ctest; ctest --version
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
 
-echo -e "\n Job started at : \c"; date
+#
+# Perform pamadm steps to equip build directories with proper cmake sources
+#
+python ./pamadm -a --builddir=$PWD/$BUILD
+python ./pamadm -a --builddir=$PWD/$BUILD_SERIAL
+python ./pamadm -a --builddir=$PWD/$BUILD_GNU_SERIAL
+
+echo -e "\n\n Job started at : \c"; date
 
 echo -e "\n --- Launching simple parallel pam test  --- \n "; 
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs --dirac=$BUILD/dirac.x
