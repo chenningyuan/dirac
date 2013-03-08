@@ -939,12 +939,11 @@ contains
          call quit('*** error in read_fock_matrices_saao_basis_x2c: mismatch of fock matrix dimensions.')
        end if
 
-       if(.not.present(loop_read) .or. .not.loop_read)then
-         read(fh) xmat
-       else
+       read(fh) xmat
+
+       if(nr_entries > 1)then
          offset = 1
          do i = 1, nr_entries
-           call readt(fh,ndim,xmat(offset+(i-1)*ndim))
            if(i > 1) call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat(1),1)
            offset = offset + ndim
          end do

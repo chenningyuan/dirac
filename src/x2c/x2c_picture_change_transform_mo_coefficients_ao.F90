@@ -587,7 +587,6 @@ contains
        ndim_2c_mo_ao = k
        call dcopy(ndim_2c_mo_ao,scrmat,1,mo_coeff_2c_ao,1)
        dimension_info(3,1) = naosh_L(1);  if(nfsym == 2)  dimension_info(3,2) = naosh_L(2) 
-       print *, 'naosh_L(1), nfbas(1,0) ',naosh_L(1), nfbas(1,0)
        deallocate(scrmat)
 !stefan test
 
