@@ -1,0 +1,16 @@
+quick
+
+he.inp he.xyz --get="X2CMAT aoo2esoc.002"
+mv X2CMAT X2CMAT.002
+
+li.inp li.xyz --get="X2CMAT aoo2esoc.003"
+mv X2CMAT X2CMAT.003
+
+
+molecular-x2c-amfisoc.inp lihe.xyz 
+
+molecular-x2c-aoosoc.inp  lihe.xyz --put="aoo2esoc*"
+
+atomic-x2c-aoosoc.inp     lihe.xyz --put="X2CMAT.* aoo2esoc*"
+
+rm X2CMAT.002 X2CMAT.003 aoo2esoc.002 aoo2esoc.003
