@@ -56,7 +56,9 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-set(LIBS "stdc++")
+# radovan: i don't think we need libstdc++
+# set(LIBS "stdc++")
+set(LIBS)
 
 include(ConfigVersion)
 include(ConfigArchitecture)
