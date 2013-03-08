@@ -132,13 +132,13 @@ cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BU
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing fat DIRAC suite for grid computations..."
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
 echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
 
 #another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
 echo -e "\n\n packing slim DIRAC suite for grid computations..."
-tar czf dirac_grid_suite_slim.tgz  pam  runtest  test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite_slim.tgz  pam  runtest VERSION test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
 echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
 ls -lt dirac_grid_suite_slim.tgz
 echo -e "\n Done. Tarball with static execs ready."
