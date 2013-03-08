@@ -89,7 +89,6 @@ Tutorials and walkthrus
 
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
-  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
