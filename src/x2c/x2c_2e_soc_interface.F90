@@ -580,9 +580,9 @@ contains
        call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
 !      debug print
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
-!      end if
+       end if
 
 !      --------------------------------------------------------
 !      step 2. select LL-block of h1_++_saao_cartesian_gaussian
@@ -630,9 +630,9 @@ contains
        end do
 
 !      debug print
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',6)
-!      end if
+       end if
 
        deallocate(aooso_info)
 
@@ -662,9 +662,9 @@ contains
        else
 
 !        debug print
-!        if(print_lvl > 2)then
+         if(print_lvl > 2)then
            call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+ooSO',6)
-!        end if
+         end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
        end if

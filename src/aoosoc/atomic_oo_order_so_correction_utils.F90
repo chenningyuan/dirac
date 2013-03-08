@@ -277,7 +277,7 @@ contains
                       )
 
 !     debug print
-!     if(print_lvl > 2)then
+      if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
@@ -286,7 +286,7 @@ contains
                           'aoosoc - 2e-SOC',      &
                           6                       &
                          )
-!     end if
+      end if
   
 
   end subroutine get_normalized_2e_soc
