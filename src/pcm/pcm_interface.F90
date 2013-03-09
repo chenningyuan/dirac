@@ -90,7 +90,7 @@ module pcm_interface
 
    contains 
 
-   subroutine pcm_initialize(dmat, ndmat, work, lwork)
+   subroutine pcm_initialize(dmat, ndmat, work, lwork, do_lintra)
 !
 ! This subroutine sets all the global private variables.
 ! 
@@ -100,6 +100,7 @@ module pcm_interface
       real(8) :: work(*)
       integer :: ndmat
       integer :: lwork
+      logical :: do_lintra
 
       call get_cavity_size(nr_points)
   
@@ -113,12 +114,12 @@ module pcm_interface
 ! Get tesserae centers 
       call get_tess_centers(tess_cent)
 ! Compute total polarization charges
-      if (ndmat == 1) then
-      ! This is the case where we are calculating the energy  
-         call pcm_charges(dmat, ndmat, work, lwork, pcmmod_print)
-      else
+      if (do_lintra) then
       ! This is the case where we are calculating the linear response
          call pcm_lintra_charges(dmat, ndmat, work, lwork, pcmmod_print)
+      else
+      ! This is the case where we are calculating the energy  
+         call pcm_charges(dmat, ndmat, work, lwork, pcmmod_print)
       endif
       
    end subroutine
@@ -152,7 +153,7 @@ module pcm_interface
       integer :: ndmat
       integer :: lwork
 
-      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork, .false.)
 ! Compute polarization energy
       if (.not.pcmmod_separate) then
          call comp_pol_ene_pcm(pol_ene, 1)
@@ -179,7 +180,7 @@ module pcm_interface
       integer              :: ndmat
       integer              :: lwork
       
-      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork, .false.)
 ! Update Fock matrix with PCM contribution
       call pcm_fock(fock, factor, work, lwork)
 ! Free temporary allocated memory
@@ -207,7 +208,7 @@ module pcm_interface
 ! Local variables
 
 ! Calculate one-index transformed potentials and charges (ONLY ELECTRONIC!)
-      if (nr_points <= 0) call pcm_initialize(pert_dmat, ndmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(pert_dmat, ndmat, work, lwork, .true.)
 ! Update Fock matrix with PCM contribution:
 ! contraction of unperturbed potentials and perturbed electronic charges.
       call pcm_fock(fock, factor, work, lwork)
@@ -364,28 +365,20 @@ module pcm_interface
       integer              :: lwork
 
 ! Local variables
-      real(8), allocatable :: lintra_ele_pot(:), lintra_ele_chg(:)
       character(13)        :: potName, chgName
       integer              :: i
       
 ! Update Fock matrix with PCM contribution:
 ! contraction of unperturbed potentials and perturbed electronic charges.
-      allocate(lintra_ele_pot(nr_points))
-      lintra_ele_pot = 0.0d0
       potName = 'EleLinTraPot'//char(0)
-      allocate(lintra_ele_chg(nr_points))
-      lintra_ele_chg = 0.0d0
       chgName = 'EleLinTraChg'//char(0)
-      call pcm_electronic_charges(dmat, ndmat, lintra_ele_pot, lintra_ele_chg, work, lwork, potName, chgName)
+      call pcm_electronic_charges(dmat, ndmat, potentials, charges, work, lwork, potName, chgName)
 !TROND
 !      WRITE(6,*) 'Perturbed electronic charges..'
 !      do i = 1,nr_points
 !        WRITE(6,*) i,lintra_ele_chg(i)
 !      enddo
       
-      deallocate(lintra_ele_pot)
-      deallocate(lintra_ele_chg)
-
    end subroutine
 
    subroutine pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
