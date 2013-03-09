@@ -378,10 +378,10 @@ module pcm_interface
       chgName = 'EleLinTraChg'//char(0)
       call pcm_electronic_charges(dmat, ndmat, lintra_ele_pot, lintra_ele_chg, work, lwork, potName, chgName)
 !TROND
-      WRITE(6,*) 'Perturbed electronic charges..'
-      do i = 1,nr_points
-        WRITE(6,*) i,lintra_ele_chg(i)
-      enddo
+!      WRITE(6,*) 'Perturbed electronic charges..'
+!      do i = 1,nr_points
+!        WRITE(6,*) i,lintra_ele_chg(i)
+!      enddo
       
       deallocate(lintra_ele_pot)
       deallocate(lintra_ele_chg)
