@@ -313,7 +313,8 @@ CJTH check this
            write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
      &                    'J + X(D) contribution.'
 ! fmo is the Fock matrix in AO basis, fao is the density matrix
-           call pcm_fock_driver(fmo, fao, -1.0d0, work(kfree), lfree)
+           call pcm_fock_driver(fmo, fao, 1, -1.0d0, 
+     &    work(kfree), lfree)
         endif 
 #endif       
 

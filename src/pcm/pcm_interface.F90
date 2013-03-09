@@ -90,7 +90,7 @@ module pcm_interface
 
    contains 
 
-   subroutine pcm_initialize(dmat, work, lwork)
+   subroutine pcm_initialize(dmat, ndmat, work, lwork)
 !
 ! This subroutine sets all the global private variables.
 ! 
@@ -98,6 +98,7 @@ module pcm_interface
 ! Passed variables
       real(8) :: dmat(*)
       real(8) :: work(*)
+      integer :: ndmat
       integer :: lwork
 
       call get_cavity_size(nr_points)
@@ -112,7 +113,13 @@ module pcm_interface
 ! Get tesserae centers 
       call get_tess_centers(tess_cent)
 ! Compute total polarization charges
-      call pcm_charges(dmat, work, lwork, pcmmod_print)
+      if (ndmat == 1) then
+      ! This is the case where we are calculating the energy  
+         call pcm_charges(dmat, ndmat, work, lwork, pcmmod_print)
+      else
+      ! This is the case where we are calculating the linear response
+         call pcm_lintra_charges(dmat, ndmat, work, lwork, pcmmod_print)
+      endif
       
    end subroutine
    
@@ -129,7 +136,7 @@ module pcm_interface
       
    end subroutine 
    
-   subroutine pcm_energy_driver(pol_ene, dmat, work, lwork)
+   subroutine pcm_energy_driver(pol_ene, dmat, ndmat, work, lwork)
 !
 ! Polarizable Continuum Model:
 ! driver routine for polarization energy calculation, U_pol.
@@ -142,9 +149,10 @@ module pcm_interface
       real(8) :: pol_ene
       real(8) :: dmat(*)
       real(8) :: work(*)
+      integer :: ndmat
       integer :: lwork
 
-      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork)
 ! Compute polarization energy
       if (.not.pcmmod_separate) then
          call comp_pol_ene_pcm(pol_ene, 1)
@@ -155,7 +163,7 @@ module pcm_interface
 
    end subroutine
    
-   subroutine pcm_fock_driver(fock, dmat, factor, work, lwork)
+   subroutine pcm_fock_driver(fock, dmat, ndmat, factor, work, lwork)
 !
 ! Polarizable Continuum Model.
 ! Driver routine for Fock matrix contributions, j and X(D).
@@ -168,9 +176,10 @@ module pcm_interface
       real(8)              :: dmat(*)
       real(8)              :: factor
       real(8)              :: work(*)
+      integer              :: ndmat
       integer              :: lwork
       
-      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork)
 ! Update Fock matrix with PCM contribution
       call pcm_fock(fock, factor, work, lwork)
 ! Free temporary allocated memory
@@ -178,7 +187,7 @@ module pcm_interface
 
    end subroutine
 
-   subroutine pcm_lintra_driver(fock, pert_dmat, factor, work, lwork)
+   subroutine pcm_lintra_driver(fock, pert_dmat, ndmat, factor, work, lwork)
 !
 ! Polarizable Continuum Model.
 ! Driver routine for "explicit" contributions to linear response.
@@ -192,38 +201,19 @@ module pcm_interface
       real(8)              :: pert_dmat(*)
       real(8)              :: factor
       real(8)              :: work(*)
+      integer              :: ndmat
       integer              :: lwork
 
 ! Local variables
-      real(8), allocatable :: lintra_ele_pot(:)
-      real(8), allocatable :: lintra_ele_chg(:)
-      character(13)        :: potName
-      character(13)        :: chgName
-      integer              :: i
 
-! Calculate one-index transformed potentials and charges
-      if (nr_points <= 0) call pcm_initialize(pert_dmat, work, lwork)
+! Calculate one-index transformed potentials and charges (ONLY ELECTRONIC!)
+      if (nr_points <= 0) call pcm_initialize(pert_dmat, ndmat, work, lwork)
 ! Update Fock matrix with PCM contribution:
 ! contraction of unperturbed potentials and perturbed electronic charges.
-      allocate(lintra_ele_pot(nr_points))
-      lintra_ele_pot = 0.0d0
-      potName = 'EleLinTraPot'//char(0)
-      allocate(lintra_ele_chg(nr_points))
-      lintra_ele_chg = 0.0d0
-      chgName = 'EleLinTraChg'//char(0)
-      call pcm_electronic_charges(pert_dmat, lintra_ele_pot, lintra_ele_chg, work, lwork, potName, chgName)
-!TROND
-      WRITE(6,*) 'Perturbed electronic charges..'
-      do i = 1,nr_points
-        WRITE(6,*) i,lintra_ele_chg(i)
-      enddo
-      call pcm_lintra(fock, lintra_ele_chg, factor, work, lwork)
+      call pcm_fock(fock, factor, work, lwork)
 ! Free temporary allocated memory
       call pcm_finalize
        
-      deallocate(lintra_ele_pot)
-      deallocate(lintra_ele_chg)
-
    end subroutine
 
    function get_pcm_energy()
@@ -253,12 +243,13 @@ module pcm_interface
 !   2. the electronic potential @grid points.      
 !
 
-   subroutine pcm_charges(dmat, work, lwork, printlevel)
+   subroutine pcm_charges(dmat, ndmat, work, lwork, printlevel)
 
 ! Passed variables
       integer, intent(in)  :: printlevel
       real(8), intent(in)  :: dmat(*)
       real(8)              :: work(*)
+      integer              :: ndmat
       integer              :: lwork
 
 ! Local variables
@@ -307,7 +298,7 @@ module pcm_interface
          call pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
          potName  = 'ElePot'//char(0)
          chgName  = 'EleChg'//char(0)
-         call pcm_electronic_charges(dmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
+         call pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
 
 ! Print some information
         if (printlevel > 5) then
@@ -359,6 +350,43 @@ module pcm_interface
       end if
 
    end subroutine
+   
+   subroutine pcm_lintra_charges(dmat, ndmat, work, lwork, printlevel)
+! Calculation of b-transformed electronic polarization charges.
+! This is needed to get the "explicit" PCM contributions to the
+! linear response equations.
+
+! Passed variables
+      integer, intent(in)  :: printlevel
+      real(8), intent(in)  :: dmat(*)
+      real(8)              :: work(*)
+      integer              :: ndmat
+      integer              :: lwork
+
+! Local variables
+      real(8), allocatable :: lintra_ele_pot(:), lintra_ele_chg(:)
+      character(13)        :: potName, chgName
+      integer              :: i
+      
+! Update Fock matrix with PCM contribution:
+! contraction of unperturbed potentials and perturbed electronic charges.
+      allocate(lintra_ele_pot(nr_points))
+      lintra_ele_pot = 0.0d0
+      potName = 'EleLinTraPot'//char(0)
+      allocate(lintra_ele_chg(nr_points))
+      lintra_ele_chg = 0.0d0
+      chgName = 'EleLinTraChg'//char(0)
+      call pcm_electronic_charges(dmat, ndmat, lintra_ele_pot, lintra_ele_chg, work, lwork, potName, chgName)
+!TROND
+      WRITE(6,*) 'Perturbed electronic charges..'
+      do i = 1,nr_points
+        WRITE(6,*) i,lintra_ele_chg(i)
+      enddo
+      
+      deallocate(lintra_ele_pot)
+      deallocate(lintra_ele_chg)
+
+   end subroutine
 
    subroutine pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
 
@@ -384,20 +412,26 @@ module pcm_interface
 
    end subroutine
 
-   subroutine pcm_electronic_charges(dmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
+   subroutine pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
 
 ! Passed variables
       real(8)      :: dmat(*)                
       real(8)      :: ele_pot(nr_points)
       real(8)      :: ele_pol_chg(nr_points)
       real(8)      :: work(*)
+      integer      :: ndmat
       integer      :: lwork
       character(7) :: potName
       character(7) :: chgName
 
+! Local variables
+      integer      :: i
+
 ! Compute electronic MEP @tesserae centers
-      call get_electronic_mep(nr_points, dmat, tess_cent, ele_pot,    &
+      do i = 1, ndmat
+        call get_electronic_mep(nr_points, dmat(i), tess_cent, ele_pot,    &
                          work, lwork, 0, .false.)
+      enddo
 ! Set a cavity surface function with the electronic MEP
       call set_surface_function(nr_points, ele_pot, potName)
 ! Compute electronic polarization charges and set the proper surface function
@@ -409,7 +443,8 @@ module pcm_interface
    end subroutine
    
    subroutine pcm_fock(fock, factor, work, lwork)
-
+! This subroutine is completely general, it is used also
+! in the generation of the linear response terms.
 #include "dcbbas.h"
 #include "dgroup.h"
 
@@ -428,7 +463,7 @@ module pcm_interface
 ! Allocation
       allocate(fock_pcm(ntbas(0), ntbas(0), nz))
       fock_pcm = 0.0d0
-
+! Contraction of electrostatic potential integrals with polarization charges
       call get_electronic_mep(nr_points, fock_pcm, tess_cent, charges,    &
                         work, lwork, 0, get_matrix)
      
@@ -457,58 +492,6 @@ module pcm_interface
 
       deallocate(fock_pcm)
 
-   end subroutine
-
-   subroutine pcm_lintra(fock, lintra_ele_chg, factor, work, lwork)
-     
-#include "dcbbas.h"
-#include "dgroup.h"
-
-! Passed variables
-      real(8), intent(out) :: fock(*)
-      real(8), intent(in)  :: lintra_ele_chg(nr_points)
-      real(8), intent(in)  :: factor
-      real(8)              :: work(*)
-      integer              :: lwork
-
-! Local variables
-      real(8), allocatable :: fock_pcm(:, :, :)
-      real(8)              :: average
-      integer              :: i, j
-      logical              :: get_matrix = .true.
-
-! Allocation
-      allocate(fock_pcm(ntbas(0), ntbas(0), nz))
-      fock_pcm = 0.0d0
-
-      call get_electronic_mep(nr_points, fock_pcm, tess_cent, lintra_ele_chg,    &
-                        work, lwork, 0, get_matrix)
-     
-! Symmetrize Fock matrix contribution       
-      do i = 1, ntbas(0)
-        do j = 1, i
-          average = 0.5d0 * (fock_pcm(i, j, 1) + fock_pcm(j, i, 1))
-          fock_pcm(i, j, 1) = average    
-          fock_pcm(j, i, 1) = average
-        end do
-      end do
-       
-!     print *, "b-transformed charges"
-!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-!                      nz, ipqtoq(1,0), 6)
-!     print *, "Befor adding b-transformed charges"
-!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-!                      nz, ipqtoq(1,0), 6)
-
-! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, factor, fock_pcm, 1, fock, 1)
-
-!     print *, "After adding b-transformed charges"
-!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-!                      nz, ipqtoq(1,0), 6)
-
-      deallocate(fock_pcm)
- 
    end subroutine
 
    subroutine gauss_test(nuc_pol_chg, ele_pol_chg)

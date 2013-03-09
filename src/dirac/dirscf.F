@@ -694,7 +694,8 @@ C
            end do
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, -1.0d0, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &          work(kfree), lfree)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1520,7 +1521,8 @@ C
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, -1.0d0, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &              work(kfree), lfree)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1801,7 +1803,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif
