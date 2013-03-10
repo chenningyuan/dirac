@@ -31,5 +31,18 @@ and described in more detail in the paper XXX:
 --> atomic X2C approach using the transformation matrices U from atomic calculations 
   + atomic spin-orbit corrections from 4c-DC SCF calculations (large-atomic-x2c-aoosoc.inp)
 
+atomic X2C error wrt to full molecular X2C for SF6 (mH == milliHartree):
+    -0.211 mH
+    
+    HF energy for molecular X2C + AMFI   SOC (3-21G basis set):
+    -990.4072544134707 Hartree
+    
+    HF energy for molecular X2C + atomic SOC (3-21G basis set):
+    -990.4074298180304 Hartree
+    
+    HF energy for atomic    X2C + atomic SOC (3-21G basis set):
+    -990.4076404414430 Hartree
+
+
 bug reports to dirac-users@googlegroups.com or stefan.knecht@phys.chem.ethz.ch
 =================== =================== =====================
