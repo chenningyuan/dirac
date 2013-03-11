@@ -132,6 +132,7 @@ if(ENABLE_PCMMOD)
     add_external(pcmsolver)
 
     set(LIBS
+        stdc++
         solver
         green
         cavity
