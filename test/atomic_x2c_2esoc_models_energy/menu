@@ -33,4 +33,4 @@ large-molecular-x2c-aoosoc.inp          sf6.xyz --put="aoo2esoc*"
 
 large-molecular-x2c-amfisoc.inp         sf6.xyz --put="aoo2esoc* X2CMAT.009 X2CMAT.016" 
 
-sh rm X2CMAT.002 X2CMAT.003 aoo2esoc.009 aoo2esoc.016
+sh rm X2CMAT.016 X2CMAT.009 aoo2esoc.009 aoo2esoc.016
