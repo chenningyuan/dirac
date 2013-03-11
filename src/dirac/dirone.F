@@ -3369,6 +3369,7 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       LOGICAL SLGROUP,LSYMAD
+      logical, save :: print_header = .true.
       integer is_defining_h1mat
       CALL QENTER('MODHAM')
 #include "memint.h" 
@@ -3451,6 +3452,8 @@ C       =============================================================
           iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
         END DO
 
+        print_header = .false.
+
       ELSE      
 C
 C       The modified Dirac equation at the matrix level (Hermit):
@@ -3461,13 +3464,15 @@ C       =========================================================
 C
 C     Print section
 C
-      IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
+      if(print_header)then
         CALL HEADER('Output from MODHAM',-1)
-        WRITE(LUPRI,'(A)') ' * All positronic solutions deleted !'
-      ELSE
-        CALL HEADER('Output from MODHAM',-1)
-        WRITE(LUPRI,'(A)') ' * Applied strict kinetic balance !'
-      ENDIF
+        IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
+          WRITE(LUPRI,'(A)') ' * All positronic solutions deleted !'
+        ELSE
+          WRITE(LUPRI,'(A)') ' * Applied strict kinetic balance !'
+        ENDIF
+      end if
+      print_header = .false.
       IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)

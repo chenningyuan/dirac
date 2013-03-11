@@ -353,8 +353,6 @@ contains
        scr_mat1        = 0
        scr_mat2        = 0
 
-       print *, 'memory used so far: ',naosh_ls**2*nz*2 + ioff_pct_mat
-
 !      loop over all pre-defined property operator f
        do i = 1, num_prp_op
 

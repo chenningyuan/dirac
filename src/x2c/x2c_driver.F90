@@ -160,6 +160,7 @@ contains
      integer                :: dimension_for_2mat
      integer                :: i,j
      character (len=12)     :: flabel                   ! label for matrices on file
+     character (len=51)     :: path
 !**********************************************************************
 
 !    print header
@@ -174,6 +175,21 @@ contains
 !    initialize variables
      final_ham_lvl_x2c = 0
      lwrk              = len_wrk_f77_x2c
+
+!    inform user about the chosen path in X2C module
+     path = ''
+     select case(fragment_x2c_info%fragment_approach_enabled)
+       case(.true.)
+                          path = 'fragment/atomic X2C (with spin-orbit contributions)'
+         if(x2c_spinfree) path = 'fragment/atomic X2C (spinfree)                     '
+       case(.false.)
+                          path = 'molecular X2C (with spin-orbit contributions)      '
+         if(x2c_spinfree) path = 'molecular X2C (spinfree)                           '
+       case default
+         call quit('default path for logical not possible in x2c_main')
+     end select
+
+     print '(/18x,a,a)', ' *** chosen path in X2C module: ',path
  
 !    ------------------------------------------------------------------------------
 !    step 1.1: initialize and open files
