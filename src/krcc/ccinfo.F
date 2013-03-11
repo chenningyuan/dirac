@@ -4390,7 +4390,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0000
+      NTEST = 0005
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -4405,6 +4405,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       MX_TBLK_AS = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
+       LENGTH2 = 0
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP
        IF(NTEST.GE.100) CALL WRT_SPOX_TP_CC_KRCC(ITSOSO_TP(1,ITSS_TP),1)
 *. Occupation to group translation
@@ -4413,7 +4414,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+2*NGAS,ITSS_TP),IAA_GRP,1)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+3*NGAS,ITSS_TP),IAB_GRP,1)
 *
-       if (NTEST.ge.50) then
+       if (NTEST.ge.500) then
          write(6,*) ' Output from OCC_TO_GRP : '
          write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
          write(6,*) ' ICA_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
@@ -4426,6 +4427,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        NEL_AA = IELSUM(ITSOSO_TP(1+2*NGAS,ITSS_TP),NGAS)
        NEL_AB = IELSUM(ITSOSO_TP(1+3*NGAS,ITSS_TP),NGAS)
 *
+C      print*,'LENGTH outside',LENGTH
        IBTSOSO_TP(ITSS_TP) = LENGTH + 1
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
@@ -4459,8 +4461,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
              END IF
 *
-             LENGTH = LENGTH + LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             LENGTH2 = LENGTH2 + LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            LENGTH2 = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LLEN = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH = LENGTH + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH2 = LENGTH2 + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            print*,'LLEN,LENGTH,LENGTH2',LLEN,LENGTH,LENGTH2
              if (NTEST.ge.1000) then
                write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
                write(6,*) 'LENGTH2 ',LENGTH2
@@ -6315,6 +6320,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
 * Stay inside GAS
 * Correct number of holes and particles
 * Cannot exceede Kramers flip 
+* Stay within the restrictions from min max occupation in GAS
 * Notice this is passed down since a restriction 
 * on the Kramers Flip for T will not give the same 
 * restriction on the way for an Intermediate operator
@@ -6404,7 +6410,28 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
       END DO
       IF(IH.NE.NHOLE.OR.IP.NE.NPART) RETURN
       IF(NTEST.EQ.100) WRITE(6,*) " right number of holes ",NHOLE,NPART
-      
+*
+* Ensure that the GAS restraints is obeyed 
+* Keep this in mind for spin. There may be changes
+* First the virtuals
+      NCGAS = 0
+      DO IGAS=NGAS,1,-1
+* Only count creators in the virtual space
+        IF(IHPVGAS(IGAS).EQ.1) EXIT
+        IMXNELGS = MXNELGS(IGAS)
+Calculate the number of CA and CB in GAS
+        NCGAS = NCGAS + IOP(IGAS+0*NGAS) + IOP(IGAS+1*NGAS)
+        IF(NCGAS.GT.IMXNELGS) RETURN
+      END DO
+* Now the occupied
+      NAGAS = 0
+      DO IGAS=1,NGAS
+        IF(IHPVGAS(IGAS).EQ.2) EXIT
+        IMXNELGS = IGSOCCX(IGAS,2,1)-IGSOCCX(IGAS,1,1)
+Calculate the number of AA and AB in GAS
+        NAGAS = NAGAS + IOP(IGAS+2*NGAS) + IOP(IGAS+3*NGAS)
+        IF(NAGAS.GT.IMXNELGS) RETURN
+      END DO
 *
 * Is this an allowed operator in the GAS.
 * For all indices yet to be contracted rules are different
@@ -7475,11 +7502,9 @@ C     Double group
 *
 * Find the number of operators with given N,Mk,Mub
 *
-C     print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
-C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
       END DO
 *
       IF(NTEST.GE.100) THEN
@@ -7616,6 +7641,26 @@ C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
           WRITE(6,*) ' Number of AB  = ',NAB
         END IF
       END IF
+*
+      RETURN
+      END
+
+      SUBROUTINE REDEFINE_MAPPING_FOR_T(NEWORDER,ISOX_TO_OX,NDIM)
+*
+* Just a little routine to restore some mapping between SOX and OX after
+* the sorting of the cluster operator
+*
+#include "implicit.inc"
+*
+      INTEGER NEWORDER(NDIM),ISOX_TO_OX(NDIM)
+* local scratch
+      INTEGER ISCRATCH(NDIM)
+*
+      DO I=1,NDIM
+        ISCRATCH(I) = ISOX_TO_OX(NEWORDER(I))
+      END DO
+*
+      CALL ICOPVE(ISCRATCH,ISOX_TO_OX,NDIM)
 *
       RETURN
       END

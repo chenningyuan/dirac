@@ -92,11 +92,11 @@ contains
          nr_quat               = nz
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
+         x2c_1e_system         = onesys
 
 !        set value for amfi module (if at all)
-         if(noamfi)then
-           x2c_add_amfi = -1
-         end if
+         if(noamfi)        x2c_add_amfi = -1
+         if(x2c_1e_system) x2c_add_amfi = -1 
 
 !        common block variables for AMFI(old +new(?))
          if(x2c_add_amfi > 0)then
@@ -180,7 +180,6 @@ contains
          x2c_linsym       = linear
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
-         x2c_1e_system    = onesys
   
 !        initialize real*8
          x2c_cspeed = cval

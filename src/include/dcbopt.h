@@ -88,14 +88,14 @@
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       E_LVCORR_MC,THR_CVEC
+     &       E_LVCORR_MC,THR_CVEC, threci
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                E_LVCORR_MC,THR_CVEC
+     &                E_LVCORR_MC,THR_CVEC, threci
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)

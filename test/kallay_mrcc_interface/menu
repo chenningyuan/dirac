@@ -1,15 +1,15 @@
 regular   
 ccsd.inp Be_D2h.mol --mw=128 --noarch --get="MRCONEE MDCINT"
-sh ../../utils/dirac_mointegral_export.x
-# adapt location of the binaries
-sh ../../goldstone
-sh ../../mrcc
+sh $DIRAC_UTILS_PATH/dirac_mointegral_export.x
+# default location of the MRCC binaries - user needs to define the MRCCDIR variable
+sh $MRCCDIR/goldstone
+sh $MRCCDIR/mrcc
 rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface
 
 benchmark
 ccsd.inp CO_C2v.mol --mw=600 --noarch --get="MRCONEE MDCINT"
-sh ../../utils/dirac_mointegral_export.x
-# adapt location of the binaries
-sh ../../goldstone
-sh ../../mrcc
+sh $DIRAC_UTILS_PATH/dirac_mointegral_export.x
+# default location of the MRCC binaries - user needs to define the MRCCDIR variable
+sh $MRCCDIR/goldstone
+sh $MRCCDIR/mrcc
 rm MRCONEE MDCINT fort.10 fort.14 fort.16 fort.55 fort.56 iface

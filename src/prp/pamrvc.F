@@ -3348,6 +3348,7 @@ C***********************************************************************
 C
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
       PARAMETER(DLIM = 1.0D-6)
+!     PARAMETER(DLIM = 1.0D-3) sk+hjaaj test
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -3420,13 +3421,14 @@ C         X(+) - vector
             BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
             IF (JBTYP .EQ. JBCNDX) THEN
               IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
-              THRBVEC = ABS(BVEC(IVAR,1,IP))/1.0D1
+              THRBVEC = ABS(BVEC(IVAR,1,IP))*1.0D-1
 CHJ           THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
 CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
               THRBVEC = THRZER
+!sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ
               DO IVAR = 1,NVAR
@@ -3441,6 +3443,7 @@ C
      &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG(IVAR))
                   ELSE
                     BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
+!sk+hjaaj test      BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP) / DLIM
                   END IF
                 ELSE
                   BVEC(IVAR,IZ,IP) = D0
@@ -3976,6 +3979,7 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+        use london_helper
         use dirac_cfg
         use dft_cfg
         use xcint_main

@@ -8,7 +8,7 @@ module fde_eval_dirac
    use fde_integrate
    use electrostatic_potential
    use density_eval
-   use ao_eval
+   use dirac_ao_eval
    use interface_ao
    use interface_mo_specific
    use xc_max_block_length

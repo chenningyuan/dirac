@@ -577,6 +577,10 @@
          openrsp_cfg_skip_pn = .true.
       end if
 
+      if (kw_matches(word, '.MLLSUS')) then
+         openrsp_cfg_mllsus = .true.
+      end if
+
       if (kw_matches(word, '.SKIP1E')) then
          openrsp_cfg_skip_1el = .true.
       end if

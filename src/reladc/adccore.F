@@ -624,6 +624,10 @@ C
       real*8 ddot
       logical done
       complex*16 zdotc
+
+#ifdef SYS_AIX
+      integer(8) :: ivmax
+#endif
 C
 C--------------- description of buffer pointers for the CC array  --------
 C

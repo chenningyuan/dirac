@@ -1,8 +1,21 @@
+#ifdef USE_OWN_LAPACK
+#define USE_OWN_AUXLAPACK
+#endif
+
+! ESSL LAPACK la(pa)cks almost everything
+! switch on own LAPACK until better solution is found
+#ifndef USE_OWN_LAPACK
+#ifdef HAVE_ESSL_LAPACK
+#define USE_OWN_AUXLAPACK
+#endif
+#endif
+
+
 ! FILE : gp_auxlapack.F
 !
 ! lapack real (single and double precision) routines, taken from the netlib site on 20080612
 !
-#ifdef USE_OWN_LAPACK
+#ifdef USE_OWN_AUXLAPACK
       SUBROUTINE ZDROT( N, CX, INCX, CY, INCY, C, S )
 *
 *     .. Scalar Arguments ..
@@ -2143,7 +2156,8 @@ CMI   ... needs proper quit !
 *     ==== End of IPARMQ ====
 *
       END
-#else
-      subroutine dummy_auxlapack()
+#endif /* USE_OWN_AUXLAPACK */
+
+      ! dummy routine to avoid empty file
+      subroutine dummy_dirac_auxlapack()
       end
-#endif

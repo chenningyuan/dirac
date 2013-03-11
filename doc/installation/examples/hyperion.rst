@@ -1,6 +1,6 @@
 
 
-Installation on Hyperion (Toulouse)
+Installation on `Hyperion <http://www.calmip.cict.fr/spip/spip.php?rubrique90>`_ (Toulouse)
 ===================================
 
 We will use SGI MPT parallelization.

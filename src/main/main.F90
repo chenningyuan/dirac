@@ -29,6 +29,7 @@ program DIRAC12_PROGRAM
   use interface_ao
   use interface_mo
   use memory_allocator
+  use machine_parameters
 
 #ifdef USE_MPI_MOD_F90
   use mpi
@@ -59,6 +60,8 @@ program DIRAC12_PROGRAM
   numnod  = 0
   parcal  = .false.
   iparex  = 0
+! detect machine parameters
+  call get_machine_parameters()
 #ifdef VAR_MPI
 ! check for sequential run with parallel executable 
 ! iparex = 1 for parallel run mode with MPI executable (default)

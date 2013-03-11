@@ -681,7 +681,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#ifdef SYS_AIX
+      ! radovan: otherwise mod() type does not match
+      INTEGER   IA, IB, ID
+#else
       INTEGER*8 IA, IB, ID
+#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"

@@ -254,12 +254,10 @@ module electrostatic_potential
       logical :: do_matrix
 
       if (nbsym > 1) then
-         call quit('Electrostatic potential calculation cannot          &
-      handle symmetry!')
+         call quit('ESP calculation cannot handle symmetry!')
       end if
       if (BSS.or.x2c) then
-         call quit('Electrostatic potential calculation not working     &
-      with X2C Hamiltonian!')
+         call quit('ESP calculation not working with X2C Hamiltonian!')
       end if
 
 ! Fock matrix contribution or potential calculation?      

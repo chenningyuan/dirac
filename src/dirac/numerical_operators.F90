@@ -195,7 +195,7 @@ module numoper_integrals
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use interface_ao_specific
-         use ao_eval
+         use dirac_ao_eval
 
          implicit none
          logical :: doint(4)
@@ -225,7 +225,7 @@ module numoper_integrals
          enddo
 
          call interface_ao_write()
-         call ao_eval_init(0, 0, .false.)
+         call dirac_ao_eval_init(0, 0, .false.)
 
          ndim = n_ao
          call alloc(ao,ndim)

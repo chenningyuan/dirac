@@ -23,7 +23,7 @@ module interface_functional_read
 
    use dft_cfg
    use xc_derv
-   use xcfun
+   use xcfun_1_0
 
    implicit none
 

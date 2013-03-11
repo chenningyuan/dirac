@@ -1,37 +1,27 @@
 
 
-.. _\*AMFI:
-
-\*AMFI
-======
+star(AMFI)
 
 Specification of the AMFI, RELSCF directives.
 
-**This page describes unreleased functionality. The keywords may not be
-available in your version of DIRAC.**
-
 The AMFI program of B.Schimmelpfennig serves for calculating spin-orbit
-contributions to various quasirelativistic two-component Hamiltonians.
-Its important part is the independent scalar atomic code - RELSCF (named
-as AT34), which is providing atomic orbital coefficients for the AMFI
-mean-field summation.
+contributions to various quasirelativistic two-component Hamiltonians.  Its
+important part is the independent scalar atomic code - RELSCF (named as AT34),
+which is providing atomic orbital coefficients for the AMFI mean-field
+summation.
 
-The user may control not only the extent of the output, but also provide
-here some parameters for the RELSCF code. Note that closed/open-shell
-HF-SCF code gives both the nonrelativistic and the spin-free
-second-order Douglass-Krol-Hess SCF energies, which can be compared with
-DIRAC results.
+The user may control not only the extent of the output, but also provide here
+some parameters for the RELSCF code. Note that closed/open-shell HF-SCF code
+gives both the nonrelativistic and the spin-free second-order
+Douglass-Krol-Hess SCF energies, which can be compared with DIRAC results.
 
-RELSCF is using only decontrated basis sets restricted to occupied
-shells only; for example, if you set some spdf-basis for a DIRAC
-BSS+AMFI run of Magnesium (12 electrons), RELSCF will use, for the sake
-of computational effectivity, this basis set with only s- and p-
-exponents.
+RELSCF is using only decontrated basis sets restricted to occupied shells only;
+for example, if you set some spdf-basis for a DIRAC BSS+AMFI run of Magnesium
+(12 electrons), RELSCF will use, for the sake of computational effectivity,
+this basis set with only s- and p- exponents.
 
-**Only in the development version of DIRAC**
 
-.PRNT\_A
---------
+keyword(PRNT_A)
 
 Print level for AMFI calculations.
 
@@ -42,8 +32,8 @@ Print level for AMFI calculations.
     .PRNT_A
      0
 
-.PRNT\_S
---------
+
+keyword(PRNT_S)
 
 Print level for the RELSCF part.
 
@@ -54,8 +44,8 @@ Print level for the RELSCF part.
     .PRNT_S
      0
 
-.MXITER
--------
+
+keyword(MXITER)
 
 Maximum number of iterations in RELSCF.
 
@@ -66,8 +56,8 @@ Maximum number of iterations in RELSCF.
     .MXITER
      50
 
-.AMFICH
--------
+
+keyword(AMFICH)
 
 Set up an artificial charge of the calculated system which has effect
 only on the AMFI mean-field summation(s). This does not change the
@@ -95,10 +85,8 @@ Example:
 The user can check the mean-field occupation/charge of each handled atom
 in the AMFI/RELSCF output, together with the RELSCF convergence status.
 
-.. _.NOAMFC:
 
-.NOAMFC
---------
+keyword(NOAMFC)
 
 Discard selected centers from AMFI calculations. Related the
 :ref:`.BSS` keyword, whose
@@ -120,14 +108,14 @@ orbit term (SO1) from AMFI. Centers 1 and 3 are neglected.
     2
     1  3
 
-.ONLSCF
--------
+
+keyword(ONLSCF)
 
 Stop DIRAC calculation after RELSCF program has finished. The
 (converged) AO coefficients are written to the file *RELSCF\_COEF* and
 can be used to restart from.
 
-This may be useful in combination with the keyword **.AMFICH**, *i.e.*
+This may be useful in combination with the keyword :ref:`.AMFICH`, *i.e.*
 the user may first run the RELSCF step for an atom with an artificial
 charge.
 
