@@ -152,7 +152,8 @@ Developers
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
-  :doc:`Further development <programmers/further_development>` 
+  :doc:`Further development <programmers/further_development>` |
+  :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |
