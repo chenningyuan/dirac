@@ -104,8 +104,6 @@ and we make sure to recover the coefficient file ``DFCOEF`` when running the cal
 
 .. literalinclude:: scf.run
 
-Note that the above command refers to a parallel calculation with eight nodes.
-
 
 Step 2: Response calculation
 ----------------------------
@@ -135,9 +133,9 @@ With the above computational procedure we obtain the following NMR shielding con
 
   ---------------------------------------------------
 
-  H            29.9502       -1.9992       31.9494
+  H            29.9502       21.8737        8.0765
 
-  F           415.8316       14.5348      401.2967
+  F           415.8316      480.2015      -64.3699
 
   ---------------------------------------------------
 
@@ -151,9 +149,9 @@ By not adding the UKB complement (deleting .RKBIMP and .URKBAL), that is, using 
 
   --------------------------------------------------------
 
-  H            28.8028       -1.9992       30.8020
+  H            28.8028       20.7264        8.0765
 
-  F           323.2672       14.5348      308.7323
+  F           323.2672      387.6459      -64.3787
 
   --------------------------------------------------------
 
