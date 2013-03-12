@@ -1,16 +1,17 @@
 Basis sets augmentation
 =======================
 
-DIRAC suite offers possibility to easily modify employed basis sets.
+DIRAC suite offers possibility to modify employed basis sets easily.
 
-The purpose of this tutorial (and the test  *basis_automatic_augmentation*) is to show nonstandard automatic augmentation of provided standard basis sets, like
+The purpose of this tutorial, which is reflected in the test *basis_automatic_augmentation*,  
+is to show nonstandard automatic augmentation of provided standard basis sets, like
 cc-pVXZ, Turbmole and dyall.
 
 In the following table we demonstrate influence of the (contracted) basis set extension on the total 
 (nonrelativistic) energy and on the dipole moment, which is calculated as simple SCF wave-function expectation value.
 
 Two molecules were chosen: HF and HBr. For the former molecule, the pre-cc-pVXZ and Turbomole basis sets are used for both F and H atoms.
-In the latter molecule, the heavy Br atom is described with Dyall's relativistic basis set, while H atom is provided
+In the latter molecule, the heavy Br atom is described with Dyall's relativistic basis set, while the H atom is provided
 with the nonrelativistic basis set.
 
 +---------------------+--------------------------------+--------------------+---------------+-------------+
@@ -36,15 +37,14 @@ with the nonrelativistic basis set.
 +---------------------+--------------------------------+--------------------+---------------+-------------+
   (  H-atom in parenthesis has cc-pVDZ basis sets. )
 
-Note that in all these demonstrative cases the nonrelativistic Hamiltonian with contracted basis sets was used.
+Note that the nonrelativistic Hamiltonian with contracted basis sets was used in all these examples.
+Contracted basis sets were set for light elements (F,H), while for Br atom uncontracted scheme with Dyall's basis
+was preferred.
 
 For relativistic calculation with either 2-component of 4-component Hamiltonians the nonrelativistic contraction
 of light elements basis sets is no longer suitable, especially if the molecule contains heavy elements.
-The user is adviced to resort to uncontracting his basis sets. As an example, for the HBr molecule you can combine
-decontracted cc-pVDZ basis for hydrogen and decontracted dyall.v2z basis for bromine.
+The user is adviced to resort to uncontracting his basis sets. 
+For example, for the HBr molecule you can combine
+decontracted cc-pVDZ basis set for hydrogen with the decontracted (as is) dyall.v2z basis for bromine.
 
-On the other side, for the "pure relativistic" Br2 molecule with chosen Dirac-Coulomb (DC) Hamiltonian for calculations, 
-you can use specially designed relativistically contracted dyall.v2z basis.
-If you would like to perform 2-component relativistic calculations with the X2C Hamiltonian, 
-you should decontract Dyall's basis sets
-as these were constructed (contracted) in the the 4-component DC framework.
+Dyall's basis sets, which are constructed without contractions, can be used also with the X2C Hamiltonian.
