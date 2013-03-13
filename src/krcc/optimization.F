@@ -93,12 +93,10 @@ C
      &      WORK,KFREE,LFREE)
 *
 *
-      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' OPTIM_CC : Diagonal '
         CALL WRTMAT(CCVEC1,1,2*N_CC_AMP,1,2*N_CC_AMP)
       END IF
-      NTEST = 0
 *. Save Diagonal on Disc 
 *  Should probably also save the imaginary part, needed later
 *  so just here a null vector.
