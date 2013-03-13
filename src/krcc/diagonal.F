@@ -197,7 +197,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 C       print*,'IFETCH',IFETCH
         DIA_AL(I) = FOCK(IFETCH)
         DIA_BE(I) = FOCK(IFETCH)
-        print*,'DIA_AL(I),I',DIA_AL(I),I
+C       print*,'DIA_AL(I),I',DIA_AL(I),I
       END DO
 *
       RETURN
@@ -609,7 +609,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 100
+      NTEST = 00
       IT = 0
 C     print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS

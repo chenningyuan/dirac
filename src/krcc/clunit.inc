@@ -8,7 +8,7 @@
      &              LUDIA,LUC,LUHC,
      &              LUSC1,LUSC2,LUSC3,LUSC4,LUSC5,LUSC6,
      &              LUSC41,
-     &              LUSC81,LUSC82,
+     &              LUSC81,LUSC82,LU_ARDUCCA,
 *   Added for MRCC
      &              LU_CCVEC,LU_CCVECT,LU_CCAMP,
      &              LU_CCVECF,LU_CCVECL,LU_CCVECFL,LU_CCEXC_OP,

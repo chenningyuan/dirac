@@ -476,9 +476,6 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
 *. Alpha- and beta-excitations constituting the spinorbital excitations
 *. Number
       CALL MEMCHK_KRCC(WORK)
-      DO I =1,1000
-      print*,' Here should be aspecial fix for HE where 2 is included'
-      END DO
       CALL SPOBEX_TO_ABOBEX_CC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,NGAS,
      &     1,NAOBEX_TP,NBOBEX_TP,IDUMMY,IDUMMY)
 *. And the alpha-and beta-excitations
