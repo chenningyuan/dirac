@@ -629,7 +629,11 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
+
+! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
+! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
       maxcor = nint((total_mem_new/8.0d0),kind(8))
+
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
