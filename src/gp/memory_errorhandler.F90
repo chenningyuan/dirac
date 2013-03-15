@@ -209,7 +209,7 @@
                      write (*,*) ErrorMessage
                      write (*,*) InfoMessage
 #ifdef PRG_DIRAC
-                     write (ErrorMessage,'(a,i8)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
+                     write (ErrorMessage,'(a,i18)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
 #endif
                      call quit(ErrorMessage)
                   endif
