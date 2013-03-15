@@ -136,6 +136,10 @@
                   case (allocateFailure)
                      call get_memory_info(kbytesAvailable,charArrayLength)
                      kbytesRequested = (sizeLocal*kindLocal)/b2kbfac
+                     ! miro: added...
+                     mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
+                     call allocator_get_meminuse(mbytesInUse)  
+                     mbytesInUse = mbytesInUse/b2mbfac
 
                      InfoMessage  = 'Error! Allocation failed!'
                      write (InfoMessage,'(a,i18,a)')                    &
