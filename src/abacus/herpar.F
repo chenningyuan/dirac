@@ -1390,7 +1390,7 @@ C
       IF(NFMAT.GT.0) THEN       
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
-        CAll interface_mpi_BCAST(WORK(KIRD),NDMAT,MPARID,
+        call interface_mpi_bcast_i1_work_f77(WORK(KIRD),NDMAT,MPARID,
      &               global_communicator)
       ELSE
         KFMAT = KFREE
@@ -1400,12 +1400,12 @@ C
         KIFC = KFREE
       ELSEIF (ITYPE.EQ.2) THEN
         CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
-        CAll interface_mpi_BCAST(WORK(KIFC),NDMAT,MPARID,
-     &                 global_communicator)
+        call interface_mpi_bcast_i1_work_f77(WORK(KIFC),NDMAT,MPARID,
+     &               global_communicator)
       ELSE
         CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-        CAll interface_mpi_BCAST(WORK(KIFC),NFMAT,MPARID,
-     &                  global_communicator)
+        call interface_mpi_bcast_i1_work_f77(WORK(KIFC),NFMAT,MPARID,
+     &               global_communicator)
       END IF
       CAll interface_mpi_BCAST(HFXFAC,1,MPARID,
      &               global_communicator)
