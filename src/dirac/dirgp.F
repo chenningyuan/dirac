@@ -2813,8 +2813,8 @@ C         OWNBAS - logical variable; if true, then fragments are defined
 C                  in their own basis
 C         NUCFRAG(NFRAG) - number of symmmetry-independent nuclei of this fragment
 C         IOPT - flag for the coefficient reader CMO
-C         KVEC - (IFRP,NFRAG) - start address for given fragment of fermion irrep 
-C                IFRP in the WORK array
+C         KVEC - (IFRP,NFRAG) - start address for list of selected orbitals of fermion ircop
+C                IFRP for each fragment
 C         CMO, EIG,IBEIG - buffer space for all coefficients, energies, irrep info
 C         IOFF - offset in list of orbitals; allows to fill CSEL in several calls to SELFRAG
 C     For each fragments, this information is first read into:
