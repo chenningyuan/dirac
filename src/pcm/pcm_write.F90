@@ -71,7 +71,7 @@ module pcm_write
       if (pcm_file_exists) then
          open(pcm_file_unit, &
               file = pcm_file_name, &
-              status = 'unknown', &
+              status = 'old', &
               form = 'formatted', &
               access = 'sequential')
          close(pcm_file_unit, status = 'delete')

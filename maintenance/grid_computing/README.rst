@@ -95,9 +95,14 @@ What you have in your VO's lfn-space:
   lcg-ls -l  lfn://grid/voce/ilias/
   lcg-ls -l  lfn://grid/compchem/ilias
  
-Copy (upload) file to your VO's data storage space:
+Put (upload) file to your VO's data storage space:
 :: 
-  lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
+
+  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz
+
   lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
 
 And you get answer like:
@@ -116,14 +121,17 @@ Delete selected data from your SE space:
 ::
 
   lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
   lcg-del -a lfn://grid/compchem/ilias/dirac_grid_suite.tgz
 
 Donwload files from SE into your server's current directory:
 
 :: 
 
- lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz      file://$PWD/dirac_grid_suite.tgz
- lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz             file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz        file://$PWD/dirac_grid_suite_slim.tgz
+ lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz         file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz    file://$PWD/dirac_grid_suite_slim.tgz
 
 
 -----------------------------------

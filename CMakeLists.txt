@@ -23,6 +23,7 @@ option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                 
 option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
+option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
@@ -56,7 +57,9 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-set(LIBS "stdc++")
+# radovan: i don't think we need libstdc++
+# set(LIBS "stdc++")
+set(LIBS)
 
 include(ConfigVersion)
 include(ConfigArchitecture)
@@ -129,6 +132,7 @@ if(ENABLE_PCMMOD)
     add_external(pcmsolver)
 
     set(LIBS
+        stdc++
         solver
         green
         cavity

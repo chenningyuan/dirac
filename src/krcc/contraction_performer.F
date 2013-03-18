@@ -3711,11 +3711,6 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
       INTEGER IOCC_CB(2*MX_ST_TSOSO_BLK_MX)
       INTEGER IOCC_AA(2*MX_ST_TSOSO_BLK_MX)
       INTEGER IOCC_AB(2*MX_ST_TSOSO_BLK_MX)
-* temporary increase for helium
-C     INTEGER IOCC_CA(8*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_CB(8*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_AA(8*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_AB(8*MX_ST_TSOSO_BLK_MX)
 *. Local scratch
       INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
       INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
@@ -3773,13 +3768,17 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. integrals and amplitudes.
        IHTYPE = IMTOH(ITSS)
 C      print*,'IHTYPE',IHTYPE
-       IF(IHTYPE.EQ.0) CYCLE
+       IF(IHTYPE.EQ.0) STOP 'is this a problem' !CYCLE
 *. Find the sign to bring the Hamiltonian operator to cluster operator
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
 C      print*,'ISIGN_DE from perm parity',ISIGN_DE
 * Not sure if this sign is correct yet!!!
-       IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
+       IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) THEN
+         ISIGN_DE = - ISIGN_DE
+         IF(N.EQ.1) STOP 'also change for 1'
+       END IF
+C      IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
 C      print*,'ISIGN_DE after possible change',ISIGN_DE
 C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
 C      IF(MK.GT.0) ISIGN_DE = - ISIGN_DE
@@ -3849,10 +3848,6 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
           IF(NEL_CB*NSTR_CB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
           IF(NEL_AA*NSTR_AA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
           IF(NEL_AB*NSTR_AB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
-C         IF(NEL_CA*NSTR_CA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
-C         IF(NEL_CB*NSTR_CB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
-C         IF(NEL_AA*NSTR_AA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
-C         IF(NEL_AB*NSTR_AB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
           ISTRTOT = NSTR_AB * NSTR_AA * NSTR_CB * NSTR_CA
           IF(ISTRTOT.EQ.0) CYCLE
           DO I_AB = 1, NSTR_AB

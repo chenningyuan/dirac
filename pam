@@ -150,7 +150,9 @@ class pam_enviroment:
         self.put_files = None
         self.get_files = None
 
-    # memory allocation
+        self.string_replace_list = []
+
+        # memory allocation
         mw = 64
         self.mw_to_mb = 7.62939453
         self.default_memory_work_master = mw
@@ -339,6 +341,28 @@ class pam_enviroment:
                 stream.flush()
             sys.exit(13)
 
+    def copy_with_replacement(self, src, dst):
+        try:
+            if self.verbose: print "pam: Copying %s to %s" % (src, dst)
+            if self.string_replace_list == []:
+                if src.endswith('.gz') and not dst.endswith('.gz'):
+                    # -ifile.gz=file
+                    # guzip file after copyin
+                    shutil.copy2(src, dst+'.gz')
+                    os.system('gunzip %s.gz' % dst)
+                else:
+                    shutil.copy2(src, dst)
+            else:
+                of = open(dst, 'w')
+                for l in open(src, 'r').readlines():
+                    for r in self.string_replace_list:
+                        l = l.replace(r.split('=')[0], r.split('=')[1])
+                    of.write(l)
+                of.close()
+        except IOError, e:
+            print >> sys.stderr, "pam: Error copying file %s" % src
+            raise
+
     def list_scratch_dir(self):
         '''
         lists the content of the master scratch directory;
@@ -379,12 +403,12 @@ class pam_enviroment:
     def remove_scratch_dir(self):
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
-            if not self.silent:
+            if self.verbose:
                  self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
-                if not self.silent:
+                if self.verbose:
                     sys.stdout.write('  going to delete the scratch directory ... ')
                 count=1
                 #miro: I had to use this solution on Windows, because dirac.x.exe process is sometimes 
@@ -400,7 +424,7 @@ class pam_enviroment:
                     sys.stdout.write('done')
                 print
             else:
-                if not self.silent:
+                if self.verbose:
                     print '  keeping the scratch directory'
         sys.stdout.flush()
 
@@ -644,6 +668,14 @@ Options are also read from ~/.diracrc"""
             metavar='"file1 file2 my_file*..."',
             )
 
+        group.add_option(
+            '--replace',
+            action='append',
+            default=[],
+            help='replace NAME by VALUE in the mol and inp files',
+            metavar='NAME=VALUE',
+            )
+
         group.add_option('--incmo', action='store_true',
                          dest='dest_incmo', default=False,
                          help='copy DFCOEF to scratch directory [default: %default]'
@@ -767,7 +799,10 @@ Options are also read from ~/.diracrc"""
             sys.exit()
 
         # produce minimal output
-        self.silent = options.silent_pam
+        if options.silent_pam:
+            self.verbose = False
+        else:
+            self.verbose = True
 
         self.output_suffix = options.dest_suffix
 
@@ -827,6 +862,9 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_get:
             self.get_files = options.dest_get
+
+        if options.replace:
+            self.string_replace_list = options.replace
 
         self.incmo = options.dest_incmo
         self.outcmo = options.dest_outcmo
@@ -1017,19 +1055,21 @@ Options are also read from ~/.diracrc"""
                 tar.extract(tar_member,path=self.scratch_dir)
             tar.close()
 
-    # the existence of self.input_file molecule,self.input_file_dirac is verified
+        # copy input files
         if self.input_file_molecule:
-            if self.xyz_molecule_input == True:
-                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.XYZ'),message=True)
+            if self.xyz_molecule_input:
+                self.copy_with_replacement(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.XYZ'))
+              # self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.XYZ'), message=True)
             else:
-                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.MOL'),message=True)
+                self.copy_with_replacement(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.MOL'))
+              # self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.MOL'), message=True)
         else:
-            print '  No molecule input file provided, assuming it is obtained from the restart file.'
-
+            print '  No molecule file provided; pam will assume that it is obtained from the restart file.'
         if self.input_file_dirac:
-            self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir,'DIRAC.INP'),message=True)
+            self.copy_with_replacement(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'))
+          # self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'), message=True)
         else:
-            print '  No input file provided, assuming it is obtained from the restart file.'
+            print '  No input file provided; pam will assume that it is obtained from the restart file.'
 
         # put files to scratch
         if self.put_files is not None:
@@ -1042,7 +1082,7 @@ Options are also read from ~/.diracrc"""
                     for f in glob.glob(p):
                         copy_single_file(f, f)
 
-    # copies files to scratch_dir
+        # copies files to scratch_dir
         if self.incmo:
             file_name = 'DFCOEF'
             copy_single_file(file_name,file_name)
@@ -1085,7 +1125,7 @@ Options are also read from ~/.diracrc"""
                         # TODO: replace the shell command by some pure python solution
                         command = self.rcp + ' ' + this_file_full + ' ' \
                             + node + ':' + this_file_full
-                        if not self.silent:
+                        if self.verbose:
                             print '  ', command
                         os.system(command)
         else:
@@ -1096,9 +1136,13 @@ Options are also read from ~/.diracrc"""
     which is prepared in set_output_name(self) routine'''
 
         if len(self.output_name) > 0 and len(self.output_suffix) > 0:
-            self.output_file = self.output_name + '.' \
-                + self.output_suffix
-            self.output_file_full = os.path.join(self.input_directory,self.output_file)
+
+            output_file_base = self.output_name
+            if self.string_replace_list != []:
+                for r in self.string_replace_list:
+                    output_file_base += '_' + r
+            self.output_file = output_file_base + '.' + self.output_suffix
+            self.output_file_full = os.path.join(self.input_directory, self.output_file)
         else:
             print 'can not set output file - some strings not set up !'
             print 'self.output_name=', self.output_name
@@ -1276,7 +1320,7 @@ Options are also read from ~/.diracrc"""
             backup_file(some_file=os.path.join(self.input_directory,self.output_file),upto=None)
 
         basis_set_directory_list = self.basdir.split(':')
-        if not self.silent:
+        if self.verbose:
             print '  basis set dirs : %s' % basis_set_directory_list[0]
             if len(basis_set_directory_list) > 1:
                 for i in range(1, len(basis_set_directory_list)):
@@ -1414,7 +1458,7 @@ Options are also read from ~/.diracrc"""
             self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
         self.pgid = self.dirac_p.pid
-        if not self.silent:
+        if self.verbose:
             print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
 
         # catch the stderr stream
@@ -1423,7 +1467,7 @@ Options are also read from ~/.diracrc"""
         self.dirac_p.wait()
 
         # deal with the error output only if happens
-        if self.dirac_stderr and not self.silent:
+        if self.dirac_stderr and self.verbose:
             # attach stderr to the pam output
             self.f.write('\n ====  below this line is the stderr stream  ====\n' + str(self.dirac_stderr))
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
@@ -1559,7 +1603,7 @@ Options are also read from ~/.diracrc"""
         print
         print '  DIRAC python script running:'
         print
-        if not self.silent:
+        if self.verbose:
             print '  user           :', self.user_name
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
@@ -1611,8 +1655,7 @@ Options are also read from ~/.diracrc"""
                 sys.exit(20)
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
-            print_error_message('\n pam: Parallel run with local disks but without machinefile ! ')
-            print_error_message(' for this case add --global-scratch-disk to your pam-flags. \n ')
+            print_error_message('\npam: Parallel run set with local disks but without machinefile!')
             sys.exit(21)
 
 class pam_run(pam_enviroment):

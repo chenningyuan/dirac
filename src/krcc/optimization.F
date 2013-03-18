@@ -93,12 +93,10 @@ C
      &      WORK,KFREE,LFREE)
 *
 *
-      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' OPTIM_CC : Diagonal '
         CALL WRTMAT(CCVEC1,1,2*N_CC_AMP,1,2*N_CC_AMP)
       END IF
-      NTEST = 0
 *. Save Diagonal on Disc 
 *  Should probably also save the imaginary part, needed later
 *  so just here a null vector.
@@ -184,7 +182,7 @@ C Notice the identety is now number one and not the last element!
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
-        IF(XNORM.GE.50) STOP 'NOT CONVERGING'
+        IF(XNORM.GE.500) STOP 'NOT CONVERGING'
 *
 * =========================
 * Obtain  correction vector 
@@ -198,7 +196,7 @@ C Notice the identety is now number one and not the last element!
 * Hardwirering
         I_DO_SBSPJA = 1
         IF(I_DO_SBSPJA.EQ.0) THEN
-        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP,WORK,KFREE,LFREE)
 *
 * Simple perturbation update
 *. find change of CC coefficients as - Scaled(diag)-1 * CC_VEC_FNC on CCVEC1
@@ -207,15 +205,15 @@ C Notice the identety is now number one and not the last element!
 C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 C Both real and imagenary
 C          print*,'before VEC_FROM_DISC'
-         CALL VEC_FROM_DISC(WORK(KDIA),IMULTFAC*N_CC_AMP+1,1,LBLK,LUDIA)
+         CALL VEC_FROM_DISC(WORK(KDIA),IMULTFAC*N_CC_AMP-1,1,LBLK,LUDIA)
            print*,'after VEC_FROM_DISC'
           CALL MEMCHK_KRCC(WORK)
            print*,'after rmemchk'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1,CCVEC2',CCVEC1(i),CCVEC2(i),i
 C          end do
-          CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA+1),
-     &                ZERO,IMULTFAC*N_CC_AMP)
+          CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA),
+     &                ZERO,IMULTFAC*N_CC_AMP-1)
            print*,'after DIAVC2'
 C          CALL DUMDUM(N_CC_AMP,CCVEC1,WORK(KDIA))
 C          do i=1,IMULTFAC*N_CC_AMP
@@ -224,7 +222,7 @@ C          end do
           CALL MEMCHK_KRCC(WORK)
            print*,'after 2'
           ONEM = -1.0D0
-          CALL SCALVE(CCVEC1(2),ONEM,IMULTFAC*N_CC_AMP) !see if correct
+          CALL SCALVE(CCVEC1(2),ONEM,IMULTFAC*N_CC_AMP-1) !see if correct
         CALL MEMREL('MAPPING',WORK,KDIA,KDIA,KFREE,LFREE)
         ELSE
 * Silly Lasse edition due to laziness
