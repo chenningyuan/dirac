@@ -2786,13 +2786,11 @@ C
          ELSE IF (ICONV_TOT .EQ. -2) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum number of micro iterations,',
-     &           MAX_CI_IT, ', is reached.'
-            CALL QUIT('maximum number of micro iterations is reached')
+     &           MAX_CI_IT, ', is reached, CI aborted.'
          ELSE IF (ICONV_TOT .EQ. -3) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum reduced space dimension of',
-     &           MAX_HRED, ' reached.'
-            CALL QUIT('maximum reduced space dimension reached')
+     &           MAX_HRED, ' reached, CI aborted.'
          ELSE
             WRITE(LUPRI,'(//A,I4/A)') ' (GASCIP_RCISTD) '//
      &        'WARNING: micro iterations aborted while not converged.',
