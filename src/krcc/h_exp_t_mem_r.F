@@ -155,7 +155,7 @@ C This may not be true for the intermediates!!!
 C Should move this allocation
       CALL FIND_LARGEST_DIFF_FOR_NEIGHBOURS(LOPSCR,IOFFINTTYPE,
      &                                      NSPOBEX_TP)
-      LOPSCR = LOPSCR*80
+      LOPSCR = LOPSCR*250
       print*,'LOPSCR',LOPSCR
       CALL MEMGET('REAL',KLOPSCR,LOPSCR,WORK,KFREE,LFREE)
 *. Number and symmetries of each substring for 6 complete T-blocks 

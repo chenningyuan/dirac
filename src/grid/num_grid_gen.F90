@@ -66,11 +66,6 @@ contains
 !     --------------------------------------------------------------------------
 
       if (.not. grid_is_done) then
-         call dftgrd(dmat, 1)
-         grid_is_done = .true.
-      end if
-
-      if (.not. grid_is_done) then
 !       calculate grid
         call dftgrd(dmat, 1)
         grid_is_done = .true.

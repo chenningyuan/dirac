@@ -94,7 +94,7 @@
       ONE = 1.0D0
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
-      ISKIP = 5 ! from which commutator to skip
+      ISKIP = 5 ! from which commutator +1  to skip
       I_EXCLUDE_M10 = 0
 *         
 * Real or complex algebra
