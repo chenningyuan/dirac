@@ -12,3 +12,4 @@
 
   .THRECI
   1.0d-10
+- Bugfix for MPI interface on Cray/MPICH2 systems (thanks to Juho for pointing out the problem)

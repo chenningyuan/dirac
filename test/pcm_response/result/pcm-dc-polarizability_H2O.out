@@ -1,0 +1,3516 @@
+DIRAC pam run in /home/roberto/Workspace/dirac/test/pcm_response
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by pam --aw
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *                                                                            *
+ *    with contributions from:                                                *
+ *                                                                            *
+ *    Vebjoern Bakken          University of Oslo                Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Sebastien Dubillard      University of Strasbourg          France       *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Olav Fossgaard           University of Tromsoe             Norway       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Trygve Helgaker          University of Oslo                Norway       *
+ *    Jon K. Laerdahl          University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Gosia Olejniczak         University of Warsaw              Poland       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands  *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Olivier Visser           University of Groningen           Netherlands  *
+ *    Toke Winther             University of Southern Denmark    Denmark      *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC11 (2011),                                                 *
+ *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
+ *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
+ *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
+ *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
+ *                                                                            *
+ ******************************************************************************
+ 
+ 
+Binary information
+------------------
+ 
+ Who compiled             | roberto@manchot
+ System                   | Linux-3.2.0-25-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2011_sp1.9.293/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 12.1.3 20120212
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O3 
+                          | -ip
+ C compiler               | /opt/intel/composer_xe_2011_sp1.9.293/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 12.1.3 20120212
+ C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
+                          | 7 -O2
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | thread.so;/usr/lib/x86_64-linux-gnu/libpthread.so;
+                          | /usr/lib/x86_64-linux-gnu/libm.so;/opt/intel/mkl/l
+                          | ib/intel64/libmkl_intel_lp64.so;-openmp;-Wl,--end-
+                          | group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_lp64.a;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | 186d6e8
+ Configuration time       | 2012-06-30 16:26:50.243928
+
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Sat Jun 30 19:27:55 2012
+     Host name              : not found                               
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.PROPERTIES                                                                                         
+**HAMILTONIAN                                                                                       
+*PCM                                                                                                
+.DOSS                                                                                               
+.PRINT                                                                                              
+ 1                                                                                                  
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.PRINT                                                                                              
+ 1                                                                                                  
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**PROPERTIES                                                                                        
+.POLARIZABILITY                                                                                     
+*END OF                                                                                             
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+Water                                                                                               
+                                                                                                    
+C   2    0                                                                                          
+        8.    1                                                                                     
+O      .0000000000        0.0000000000        -.2249058930                                          
+LARGE BASIS cc-pVDZ                                                                                 
+        1.    2                                                                                     
+H     1.4523499293         .0000000000         .8996235720                                          
+H     -1.4523499293         .0000000000         .8996235720                                         
+LARGE BASIS cc-pVDZ                                                                                 
+FINISH                                                                                              
+                                                                                                    
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Water                                                                   
+                                                                          
+
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :      9.055003146800
+
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  H           2       1       7       7      L  - [4s1p|4s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
+  ----------------------------------------------------------------------
+                             41      41      L  - large components
+                            106     106      S  - small components
+  ----------------------------------------------------------------------
+  total:      3      10     147     147
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.2249058930
+
+   4   H        x      1.4523499293
+   5            y      0.0000000000
+   6            z      0.8996235720
+
+   7   H        x     -1.4523499293
+   8            y      0.0000000000
+   9            z      0.8996235720
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    3
+ 
+O      0.0000000000   0.0000000000  -0.1190150726
+H      0.7685504811   0.0000000000   0.4760602904
+H     -0.7685504811   0.0000000000   0.4760602904
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.972000    0.000000
+   H       0.972000    1.537101    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.972000
+  bond distance:    H          O                              0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    104.500
+
+
+  Nuclear repulsion energy :    9.055003146800
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   18
+     1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L O   1 dxx      6  L O   1 dxy 
+     7  L O   1 dxz      8  L O   1 dyy      9  L O   1 dyz     10  L O   1 dzz     11  L H   1 s       12  L H   1 px  
+    13  L H   1 py      14  L H   1 pz      15  L H   1 s       16  L H   1 px      17  L H   1 py      18  L H   1 pz  
+   * Small components:   40
+    19  S O   1 s       20  S O   1 px      21  S O   1 py      22  S O   1 pz      23  S O   1 dxx     24  S O   1 dxy 
+    25  S O   1 dxz     26  S O   1 dyy     27  S O   1 dyz     28  S O   1 dzz     29  S O   1 fxxx    30  S O   1 fxxy
+    31  S O   1 fxxz    32  S O   1 fxyy    33  S O   1 fxyz    34  S O   1 fxzz    35  S O   1 fyyy    36  S O   1 fyyz
+    37  S O   1 fyzz    38  S O   1 fzzz    39  S H   1 s       40  S H   1 px      41  S H   1 py      42  S H   1 pz  
+    43  S H   1 dxx     44  S H   1 dxy     45  S H   1 dxz     46  S H   1 dyy     47  S H   1 dyz     48  S H   1 dzz 
+    49  S H   1 s       50  S H   1 px      51  S H   1 py      52  S H   1 pz      53  S H   1 dxx     54  S H   1 dxy 
+    55  S H   1 dxz     56  S H   1 dyy     57  S H   1 dyz     58  S H   1 dzz 
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          147
+  Number of large orbitals in each symmetry:     41
+  Number of small orbitals in each symmetry:    106
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        9 functions:    O  s   
+        4 functions:    O  px  
+        4 functions:    O  py  
+        4 functions:    O  pz  
+        1 functions:    O  dxx 
+        1 functions:    O  dxy 
+        1 functions:    O  dxz 
+        1 functions:    O  dyy 
+        1 functions:    O  dyz 
+        1 functions:    O  dzz 
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    O  s   
+       10 functions:    O  px  
+       10 functions:    O  py  
+       10 functions:    O  pz  
+        4 functions:    O  dxx 
+        4 functions:    O  dxy 
+        4 functions:    O  dxz 
+        4 functions:    O  dyy 
+        4 functions:    O  dyz 
+        4 functions:    O  dzz 
+        1 functions:    O  fxxx
+        1 functions:    O  fxxy
+        1 functions:    O  fxxz
+        1 functions:    O  fxyy
+        1 functions:    O  fxyz
+        1 functions:    O  fxzz
+        1 functions:    O  fyyy
+        1 functions:    O  fyyz
+        1 functions:    O  fyzz
+        1 functions:    O  fzzz
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+  ===== Polarizable Continuum Model calculation set-up =====
+ * Polarizable Continuum Model using PCMSolver external module:
+   1: Converged potentials and charges at tesserae representative points written
+  on file.
+   2: Calculate the SS block of the electrostatic potential matrix.
+   3: Use total potentials and apparent charges.
+   4: Do not print potentials and charges.
+ * References: 
+   - J. Tomasi, B. Mennucci and R. Cammi:
+    "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
+   - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem
+     L. Frediani et al. 
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  0
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * do NOT perform the picture change transformation of the four-component property operators
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    0
+ * e-e rotations are allowed in the linear response function.
+ * e-p rotations are allowed in the linear response function.
+ * Maximum number of iterations:   50
+ * Threshold for convergence   :1.000000D-05
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals from iteration    1
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000D+00 a.u.
+===========================================================================
+ Electric dipole polarizabilities
+===========================================================================
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   10 electrons in
+       5 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   1
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          1(Proj:          1, Lindep:          0)
+   S   A     * Deleted:          9(Proj:          9, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    40
+No. of negative energy orbitals (NPSH):    40
+Total no. of orbitals           (NORB):    80
+Setting eq type NUM 1
+~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+
+========== Solver section
+Solver Type: Traditional
+Solvent name:           Water
+Static diel. constant:  78.39
+Optical diel. constant: 1.776
+Solvent radius:         1.385
+
+========== Cavity section
+Cavity type: GePol
+Number of spheres: 3
+Number of tesserae: 80
+
+ PCMSolver initialized.
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Sat Jun 30 19:27:55 2012
+
+
+     *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
+         X=L,S ; G(a,r_C)=exp(-a*r_C^2)
+
+               Nucleus    Charge=(-Zeff)   Exponent(a)
+              -----------------------------------------
+              -- Subshell n = 0, l = 0
+                O             -1.00           0.40
+                H             -1.00           0.40
+                H             -1.00           0.40
+              -- Subshell n = 1, l = 0
+                O             -1.00          31.71
+              -- Subshell n = 2, l = 0,1
+                O             -6.00           1.05
+              -----------------------------------------
+
+
+
+                                Output from ONEERG
+                                ------------------
+
+Electronic energy         :   -42.152802061310346
+Nuclear potential energy  :     9.055003146800487
+Total energy              :   -33.097798914509859
+   * Quaternion diagonalization(CPU): 0.01200100s
+   * Two-electron Fock matrix  (CPU): 0.00000000s
+It.    1    -33.09779891451      1.00D+20  0.00D+00  0.00D+00               0.03600200s   Scr. nuclei    Sat Jun 30
+
+########## START ITERATION NO.   2 ##########   Sat Jun 30 19:27:55 2012
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   46.90%    0.00%    1.85%   0.05600400s
+SOfock:SL  1.00D-12    0.00%   53.07%    0.00%    0.10%   0.37202302s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -84.63703636155550
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.02851712122607
+Total energy                       :    -75.61055030761302
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         1
+* B matrix dimension:         2
+* B matrix condition: 0.000D+00
+   * Two-electron Fock matrix  (CPU): 0.49603102s
+   * PCM Fock matrix contribution  (CPU): 0.02400202s
+   * Quaternion diagonalization(CPU): 0.01600105s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.70804402s
+
+########## END ITERATION NO.   2 ##########   Sat Jun 30 19:27:55 2012
+
+It.    2    -75.61055030761      4.25D+01  9.75D+00  2.69D+00               0.70804402s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   3 ##########   Sat Jun 30 19:27:55 2012
+
+    3 *** Differential density matrix. DCOVLP     = 0.9407
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   47.00%    0.00%    1.85%   0.05200303s
+SOfock:SL  1.00D-12    0.00%   53.33%    0.00%    0.10%   0.37602293s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.00221364068126
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01034377375395
+Total energy                       :    -75.95755423926667
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         2
+* B matrix dimension:         3
+* B matrix condition: 1.008D-01
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     2.420D-01
+         2      2.371D-01
+         3      7.629D-01
+   * Two-electron Fock matrix  (CPU): 0.43202698s
+   * PCM Fock matrix contribution  (CPU): 0.02400100s
+   * Quaternion diagonalization(CPU): 0.01200104s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.65204096s
+
+########## END ITERATION NO.   3 ##########   Sat Jun 30 19:27:55 2012
+
+It.    3    -75.95755423927      3.47D-01 -2.06D+00  9.59D-01   DIIS   2    0.65204096s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   4 ##########   Sat Jun 30 19:27:56 2012
+
+    4 *** Differential density matrix. DCOVLP     = 0.9577
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   47.21%    0.00%    1.74%   0.04800296s
+SOfock:SL  1.00D-12    0.00%   53.55%    0.00%    0.10%   0.37202299s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.12870761001969
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01978045483755
+Total energy                       :    -76.09348488968868
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         3
+* B matrix dimension:         4
+* B matrix condition: 1.869D-02
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     3.034D-03
+         2     -1.924D-02
+         3      1.489D-01
+         4      8.703D-01
+   * Two-electron Fock matrix  (CPU): 0.42802703s
+   * PCM Fock matrix contribution  (CPU): 0.02400088s
+   * Quaternion diagonalization(CPU): 0.01200104s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.64004004s
+
+########## END ITERATION NO.   4 ##########   Sat Jun 30 19:27:56 2012
+
+It.    4    -76.09348488969      1.36D-01  8.48D-01  2.19D-01   DIIS   3    0.64004004s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   5 ##########   Sat Jun 30 19:27:56 2012
+
+    5 *** Differential density matrix. DCOVLP     = 1.0003
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   47.65%    0.00%    1.72%   0.05200291s
+SOfock:SL  1.00D-12    0.00%   54.37%    0.00%    0.12%   0.36402297s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13668290111842
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01834763410369
+Total energy                       :    -76.10002736005356
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         4
+* B matrix dimension:         5
+* B matrix condition: 1.360D-04
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     2.426D-05
+         2      1.010D-03
+         3     -1.404D-02
+         4     -6.576D-02
+         5      1.079D+00
+   * Two-electron Fock matrix  (CPU): 0.41602588s
+   * PCM Fock matrix contribution  (CPU): 0.02000213s
+   * Quaternion diagonalization(CPU): 0.01200104s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.59603691s
+
+########## END ITERATION NO.   5 ##########   Sat Jun 30 19:27:56 2012
+
+It.    5    -76.10002736005      6.54D-03 -1.46D-01  6.60D-03   DIIS   4    0.59603691s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   6 ##########   Sat Jun 30 19:27:57 2012
+
+    6 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.19%    0.00%    1.80%   0.05600381s
+SOfock:SL  1.00D-12    0.00%   55.23%    0.00%    0.14%   0.36002207s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13658234512050
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01846354529914
+Total energy                       :    -76.10004271525108
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         5
+* B matrix dimension:         6
+* B matrix condition: 6.965D-07
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     4.195D-07
+         2     -8.006D-05
+         3      1.747D-03
+         4      7.590D-03
+         5     -2.261D-01
+         6      1.217D+00
+   * Two-electron Fock matrix  (CPU): 0.42402697s
+   * PCM Fock matrix contribution  (CPU): 0.02400208s
+   * Quaternion diagonalization(CPU): 0.01200008s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.56803608s
+
+########## END ITERATION NO.   6 ##########   Sat Jun 30 19:27:57 2012
+
+It.    6    -76.10004271525      1.54D-05  1.47D-03  1.14D-03   DIIS   5    0.56803608s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   7 ##########   Sat Jun 30 19:27:57 2012
+
+    7 *** Differential density matrix. DCOVLP     = 1.0001
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.87%    0.00%    1.87%   0.05200315s
+SOfock:SL  1.00D-12    0.00%   56.25%    0.00%    0.16%   0.37202287s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13654559659285
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01850099628986
+Total energy                       :    -76.10004341771416
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         6
+* B matrix dimension:         7
+* B matrix condition: 8.405D-09
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.927D-08
+         2      3.651D-05
+         3     -3.249D-04
+         4     -2.253D-03
+         5      6.038D-02
+         6     -3.866D-01
+         7      1.329D+00
+   * Two-electron Fock matrix  (CPU): 0.43202710s
+   * PCM Fock matrix contribution  (CPU): 0.02400184s
+   * Quaternion diagonalization(CPU): 0.00800085s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.58403587s
+
+########## END ITERATION NO.   7 ##########   Sat Jun 30 19:27:57 2012
+
+It.    7    -76.10004341771      7.02D-07  2.11D-04  2.41D-04   DIIS   6    0.58403587s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   8 ##########   Sat Jun 30 19:27:57 2012
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   49.94%    0.00%    1.67%   0.04400301s
+SOfock:SL  1.00D-12    0.00%   58.13%    0.00%    0.21%   0.36402297s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13653764986174
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01850896959360
+Total energy                       :    -76.10004344428678
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         7
+* B matrix dimension:         8
+* B matrix condition: 3.555D-10
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     2.720D-10
+         2     -5.706D-06
+         3      1.732D-05
+         4      3.295D-04
+         5     -6.617D-03
+         6      5.890D-02
+         7     -3.766D-01
+         8      1.324D+00
+   * Two-electron Fock matrix  (CPU): 0.41202617s
+   * PCM Fock matrix contribution  (CPU): 0.02400208s
+   * Quaternion diagonalization(CPU): 0.01200008s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.53603435s
+
+########## END ITERATION NO.   8 ##########   Sat Jun 30 19:27:57 2012
+
+It.    8    -76.10004344429      2.66D-08 -7.33D-05  4.28D-05   DIIS   7    0.53603435s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.   9 ##########   Sat Jun 30 19:27:58 2012
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   51.58%    0.00%    1.74%   0.03600216s
+SOfock:SL  1.00D-12    0.00%   60.57%    0.00%    0.42%   0.35202169s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13653576146643
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01851085898283
+Total energy                       :    -76.10004344528070
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         8
+* B matrix dimension:         9
+* B matrix condition: 4.375D-12
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     8.848D-12
+         2      1.943D-06
+         3     -4.720D-07
+         4     -1.039D-04
+         5      1.624D-03
+         6     -1.628D-02
+         7      1.232D-01
+         8     -5.094D-01
+         9      1.401D+00
+   * Two-electron Fock matrix  (CPU): 0.39202356s
+   * PCM Fock matrix contribution  (CPU): 0.02400112s
+   * Quaternion diagonalization(CPU): 0.00799990s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.68004179s
+
+########## END ITERATION NO.   9 ##########   Sat Jun 30 19:27:58 2012
+
+It.    9    -76.10004344528      9.94D-10  7.52D-06  6.18D-06   DIIS   8    0.68004179s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.  10 ##########   Sat Jun 30 19:27:58 2012
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   53.42%    0.00%    1.62%   0.05200291s
+SOfock:SL  1.00D-12    0.00%   62.68%    0.00%    0.96%   0.34402132s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13653560154623
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01851101893252
+Total energy                       :    -76.10004344531021
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         9
+* B matrix dimension:        10
+* B matrix condition: 1.465D-13
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     6.361D-13
+         2     -3.362D-07
+         3     -2.602D-07
+         4      1.826D-05
+         5     -2.563D-04
+         6      2.722D-03
+         7     -2.213D-02
+         8      9.317D-02
+         9     -3.576D-01
+        10      1.284D+00
+   * Two-electron Fock matrix  (CPU): 0.40402555s
+   * PCM Fock matrix contribution  (CPU): 0.02000093s
+   * Quaternion diagonalization(CPU): 0.01600122s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.66804218s
+
+########## END ITERATION NO.  10 ##########   Sat Jun 30 19:27:58 2012
+
+It.   10    -76.10004344531      2.95D-11 -1.21D-06  1.09D-06   DIIS   9    0.66804218s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.  11 ##########   Sat Jun 30 19:27:59 2012
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   55.99%    0.01%    1.49%   0.05200291s
+SOfock:SL  1.00D-12    0.00%   67.42%    0.01%    2.92%   0.33602095s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13653558131469
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01851103916546
+Total energy                       :    -76.10004344531160
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:        10
+* B matrix dimension:        10
+* B matrix condition: 1.261D-14
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     2.794D-14
+         3      1.800D-07
+         4     -3.970D-07
+         5     -8.971D-08
+         6     -9.316D-05
+         7      1.317D-03
+         8     -4.722D-03
+         9      6.038D-02
+        10     -6.217D-01
+        11      1.565D+00
+   * Two-electron Fock matrix  (CPU): 0.39202356s
+   * PCM Fock matrix contribution  (CPU): 0.01199961s
+   * Quaternion diagonalization(CPU): 0.01600075s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.70404387s
+
+########## END ITERATION NO.  11 ##########   Sat Jun 30 19:27:59 2012
+
+It.   11    -76.10004344531      1.39D-12 -2.35D-07  3.62D-07   DIIS   9    0.70404387s   LL SL          Sat Jun 30
+
+########## START ITERATION NO.  12 ##########   Sat Jun 30 19:27:59 2012
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   58.22%    0.02%    1.46%   0.05600405s
+SOfock:SL  1.00D-12    0.00%   70.30%    0.05%    4.85%   0.34402132s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    8.0000 --> Small component charge :  -0.00200000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000028368
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.13653558307215
+Nuclear potential energy           :      9.05500314680049
+SS Coulombic correction            :      0.00000002836807
+Polarization energy                :     -0.01851103740822
+Total energy                       :    -76.10004344531181
+ cp DFCOEF DFCOEF.BEST
+* Calling pcm_fock_driver
+   * Two-electron Fock matrix  (CPU): 0.40002537s
+   * PCM Fock matrix contribution  (CPU): 0.02800131s
+   * Quaternion diagonalization(CPU): 0.01600075s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.67604208s
+
+########## END ITERATION NO.  12 ##########   Sat Jun 30 19:27:59 2012
+
+It.   12    -76.10004344531      2.13D-13 -1.01D-07  5.68D-08   DIIS   9    0.67604208s   LL SL          Sat Jun 30
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -33.09779891451      1.00D+20  0.00D+00  0.00D+00               0.03600200s   Scr. nuclei    Sat Jun 30
+It.    2    -75.61055030761      4.25D+01  9.75D+00  2.69D+00               0.70804402s   LL SL          Sat Jun 30
+It.    3    -75.95755423927      3.47D-01 -2.06D+00  9.59D-01   DIIS   2    0.65204096s   LL SL          Sat Jun 30
+It.    4    -76.09348488969      1.36D-01  8.48D-01  2.19D-01   DIIS   3    0.64004004s   LL SL          Sat Jun 30
+It.    5    -76.10002736005      6.54D-03 -1.46D-01  6.60D-03   DIIS   4    0.59603691s   LL SL          Sat Jun 30
+It.    6    -76.10004271525      1.54D-05  1.47D-03  1.14D-03   DIIS   5    0.56803608s   LL SL          Sat Jun 30
+It.    7    -76.10004341771      7.02D-07  2.11D-04  2.41D-04   DIIS   6    0.58403587s   LL SL          Sat Jun 30
+It.    8    -76.10004344429      2.66D-08 -7.33D-05  4.28D-05   DIIS   7    0.53603435s   LL SL          Sat Jun 30
+It.    9    -76.10004344528      9.94D-10  7.52D-06  6.18D-06   DIIS   8    0.68004179s   LL SL          Sat Jun 30
+It.   10    -76.10004344531      2.95D-11 -1.21D-06  1.09D-06   DIIS   9    0.66804218s   LL SL          Sat Jun 30
+It.   11    -76.10004344531      1.39D-12 -2.35D-07  3.62D-07   DIIS   9    0.70404387s   LL SL          Sat Jun 30
+It.   12    -76.10004344531      2.13D-13 -1.01D-07  5.68D-08   DIIS   9    0.67604208s   LL SL          Sat Jun 30
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   12 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL        :    0.45454545s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -85.136535583072146
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      9.055003146800487
+   Solvation energy                         :     -0.018511037408223
+   SS Coulombic correction                  :      0.000000028368065
+
+   Sum of all contributions to the energy
+   Total energy                             :    -76.100043445311812
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+   -20.56623076886  ( 2)       -1.33295693308  ( 2)       -0.69076170201  ( 2)       -0.57359198409  ( 2)       -0.49931116260  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     0.20009684892  ( 2)        0.27647701541  ( 2)        0.66398694890  ( 2)        0.75168113661  ( 2)        1.05919488425  ( 2)
+     1.11039348160  ( 2)        1.19210437099  ( 2)        1.41976001690  ( 2)        1.48615139993  ( 2)        1.62972720324  ( 2)
+     1.67648454615  ( 2)        1.90754199874  ( 2)        2.32969825815  ( 2)        2.41034032973  ( 2)        3.26661228905  ( 2)
+     3.30809438343  ( 2)        3.31967810432  ( 2)        3.40884709233  ( 2)        3.52442014751  ( 2)        3.82869140628  ( 2)
+     4.12686984492  ( 2)        6.11818651745  ( 2)        6.55298672051  ( 2)        6.82228466970  ( 2)       13.05234189863  ( 2)
+    22.17493635016  ( 2)       22.33868098766  ( 2)       33.42069580992  ( 2)       33.66335075139  ( 2)       33.82176113222  ( 2)
+    61.53102497078  ( 2)      230.57178015381  ( 2)      852.00311872937  ( 2)     3409.91969064635  ( 2)    15466.31594760222  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.20009685 au (symmetry E1 )
+  - E(HOMO) :    -0.49931116 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.69940801 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     5                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :    -40..-1,     6..    40                               
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.1000434453115986
+* Heading :DIRAC: No title specified !!!                     Sat Jun 30 19:27:59 2012
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+X-Dipole length  - Symmetry: A    T+
+
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /home/roberto/Scratch/diracscr/roberto/DIRAC_pcm-dc-polariza
+* Heading :DIRAC: No title specified !!!                     Sat Jun 30 19:27:59 2012
+* Calling pcm_fock_driver to get J + X(D) contribution.
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /home/roberto/Scratch/diracscr/roberto/DIRAC_pcm-dc-polariza
+* Heading :DIRAC: No title specified !!!                     Sat Jun 30 19:27:55 2012
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  6.80D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.47D+03
+* Screening threshold in LR solver scaled with norm of property vector:  2.7810D+00
+  and changed to:  1.8919D-08
+
+########## START MICROITERATION NO.   1 ##########   Sat Jun 30 19:28:00 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   49.55%    0.32%    1.91%   0.05200338s
+SOfock:SL  1.89D-08    0.00%   57.40%    0.08%    1.71%   0.36402273s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  9.93E-01  9.93E-01  9.04E-03
+
+########## START MICROITERATION NO.   2 ##########   Sat Jun 30 19:28:00 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   50.92%    0.31%    1.93%   0.04800272s
+SOfock:SL  1.89D-08    0.00%   58.65%    0.11%    2.95%   0.35602236s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.72E-01  2.72E-01  1.29E-02
+
+########## START MICROITERATION NO.   3 ##########   Sat Jun 30 19:28:00 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   51.32%    0.80%    2.83%   0.06000423s
+SOfock:SL  1.89D-08    0.00%   59.60%    1.14%    2.00%   0.44802761s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  5.34E-02  5.34E-02  9.01E-04
+
+########## START MICROITERATION NO.   4 ##########   Sat Jun 30 19:28:00 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   53.75%    4.97%    8.74%   0.06000328s
+SOfock:SL  1.89D-08    0.00%   62.50%    6.70%    3.30%   0.43602753s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  8.24E-03  8.24E-03  9.00E-05
+
+########## START MICROITERATION NO.   5 ##########   Sat Jun 30 19:28:01 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   56.01%   16.04%   17.20%   0.05600262s
+SOfock:SL  1.89D-08    0.00%   66.48%   14.09%    6.22%   0.38802528s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.30E-03  1.30E-03  7.90E-06
+
+########## START MICROITERATION NO.   6 ##########   Sat Jun 30 19:28:01 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   61.09%    0.02%    4.82%   0.05200291s
+SOfock:SL  1.89D-08    0.00%   72.56%    0.86%   10.04%   0.30001831s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.80E-04  1.80E-04  7.97E-06
+
+########## START MICROITERATION NO.   7 ##########   Sat Jun 30 19:28:01 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.89D-08    0.00%   66.68%   14.26%   18.07%   0.05600262s
+SOfock:SL  1.89D-08    0.02%   79.89%    9.28%   10.13%   0.32001972s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.13E-05  2.07E-05  5.14E-06
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E+ norm   P+ norm 
+========================================================
+* It.  1   0.49203110s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   9.93D-01 |   9.93D-01  9.04D-03
+========================================================
+* It.  2   0.48403025s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.72D-01 |   2.72D-01  1.29D-02
+========================================================
+* It.  3   0.59203625s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   5.34D-02 |   5.34D-02  9.01D-04
+========================================================
+* It.  4   0.58403587s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   8.24D-03 |   8.24D-03  9.00D-05
+========================================================
+* It.  5   0.52403355s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.30D-03 |   1.30D-03  7.90D-06
+========================================================
+* It.  6   0.42802715s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.80D-04 |   1.80D-04  7.97D-06
+========================================================
+* It.  7   0.46402836s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.13D-05 |   2.07D-05  5.14D-06
+========================================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+Y-Dipole length  - Symmetry: A    T+
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  6.80D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.47D+03
+* Screening threshold in LR solver scaled with norm of property vector:  2.3449D+00
+  and changed to:  1.5952D-08
+
+########## START MICROITERATION NO.   1 ##########   Sat Jun 30 19:28:01 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   49.83%    2.62%    1.72%   0.04800320s
+SOfock:SL  1.60D-08    0.00%   58.14%    1.54%    1.22%   0.36402225s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  5.79E-01  5.79E-01  1.16E-02
+
+########## START MICROITERATION NO.   2 ##########   Sat Jun 30 19:28:02 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   51.16%    2.81%    3.59%   0.05600262s
+SOfock:SL  1.60D-08    0.00%   60.11%    2.01%    1.94%   0.41602612s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.24E-01  2.24E-01  4.20E-03
+
+########## START MICROITERATION NO.   3 ##########   Sat Jun 30 19:28:02 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   51.49%    3.58%    5.04%   0.05200291s
+SOfock:SL  1.60D-08    0.00%   60.79%    3.58%    2.48%   0.44402790s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  5.13E-02  5.13E-02  4.98E-04
+
+########## START MICROITERATION NO.   4 ##########   Sat Jun 30 19:28:02 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   53.96%    1.94%    1.92%   0.05600262s
+SOfock:SL  1.60D-08    1.14%   62.93%    2.98%    7.74%   0.36802292s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.05E-02  1.04E-02  4.72E-04
+
+########## START MICROITERATION NO.   5 ##########   Sat Jun 30 19:28:03 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   56.03%   11.63%   10.18%   0.06000423s
+SOfock:SL  1.60D-08    0.00%   66.83%   11.06%    5.16%   0.41602612s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  9.37E-04  8.91E-04  2.93E-04
+
+########## START MICROITERATION NO.   6 ##########   Sat Jun 30 19:28:03 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   60.71%    8.34%   13.43%   0.04800224s
+SOfock:SL  1.60D-08    0.00%   72.49%    8.83%    6.14%   0.38002396s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  3.08E-04  9.61E-05  2.92E-04
+
+########## START MICROITERATION NO.   7 ##########   Sat Jun 30 19:28:03 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.00%   68.93%    5.91%   12.23%   0.05600357s
+SOfock:SL  1.60D-08    0.00%   76.90%    7.66%    8.39%   0.36002254s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.93E-04  1.22E-05  2.92E-04
+
+########## START MICROITERATION NO.   8 ##########   Sat Jun 30 19:28:03 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.02%   78.41%    4.28%    6.47%   0.05600452s
+SOfock:SL  1.60D-08    0.00%   76.57%    8.84%   11.01%   0.34802151s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.   9 ##########   Sat Jun 30 19:28:04 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.46%   83.87%    4.59%    2.55%   0.04800320s
+SOfock:SL  1.60D-08    0.00%   76.83%   11.16%    0.13%   0.34002113s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  10 ##########   Sat Jun 30 19:28:04 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.89%   83.91%    3.23%    1.72%   0.07200336s
+SOfock:SL  1.60D-08    0.00%   77.19%    9.12%    0.13%   0.41202641s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  11 ##########   Sat Jun 30 19:28:04 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.64%   83.33%    3.89%    1.56%   0.06000328s
+SOfock:SL  1.60D-08    0.00%   77.79%   10.38%    0.08%   0.32402039s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  12 ##########   Sat Jun 30 19:28:04 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.69%   82.45%    3.68%    1.97%   0.04000282s
+SOfock:SL  1.60D-08    0.00%   79.62%   10.31%    0.10%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  13 ##########   Sat Jun 30 19:28:05 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.35%   83.49%    3.60%    1.88%   0.03600311s
+SOfock:SL  1.60D-08    0.00%   79.47%   10.52%    0.10%   0.35602188s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  14 ##########   Sat Jun 30 19:28:05 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.60%   83.34%    3.24%    1.85%   0.04800415s
+SOfock:SL  1.60D-08    0.00%   78.50%   10.27%    0.08%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  15 ##########   Sat Jun 30 19:28:06 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.86%   83.25%    4.66%    2.62%   0.07600594s
+SOfock:SL  1.60D-08    0.00%   80.07%   11.11%    0.10%   0.32001877s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  16 ##########   Sat Jun 30 19:28:06 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.51%   84.55%    3.12%    1.35%   0.04800415s
+SOfock:SL  1.60D-08    0.00%   78.67%   10.41%    0.07%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  17 ##########   Sat Jun 30 19:28:06 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.62%   84.21%    4.33%    1.83%   0.04800415s
+SOfock:SL  1.60D-08    0.00%   80.43%   11.41%    0.10%   0.34002113s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  18 ##########   Sat Jun 30 19:28:06 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.06%   82.96%    5.17%    2.31%   0.06400299s
+SOfock:SL  1.60D-08    0.00%   79.23%   11.75%    0.10%   0.45202827s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  19 ##########   Sat Jun 30 19:28:07 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.39%   82.25%    4.16%    2.51%   0.08000565s
+SOfock:SL  1.60D-08    0.00%   78.83%   10.97%    0.09%   0.46402931s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  20 ##########   Sat Jun 30 19:28:07 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.57%   84.13%    3.88%    2.02%   0.05200195s
+SOfock:SL  1.60D-08    0.00%   79.80%   10.67%    0.08%   0.52003288s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  21 ##########   Sat Jun 30 19:28:07 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.52%   85.02%    2.94%    1.55%   0.08400726s
+SOfock:SL  1.60D-08    0.00%   78.65%   10.27%    0.07%   0.55203247s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  22 ##########   Sat Jun 30 19:28:08 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.39%   84.23%    3.27%    1.72%   0.06800270s
+SOfock:SL  1.60D-08    0.00%   79.36%   10.73%    0.09%   0.55603600s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  23 ##########   Sat Jun 30 19:28:08 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.70%   83.04%    3.09%    1.99%   0.07200623s
+SOfock:SL  1.60D-08    0.00%   78.28%    9.76%    0.07%   0.42002487s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  24 ##########   Sat Jun 30 19:28:08 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.56%   84.57%    2.74%    1.45%   0.08000565s
+SOfock:SL  1.60D-08    0.00%   78.26%   10.45%    0.07%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  25 ##########   Sat Jun 30 19:28:09 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    3.25%   85.48%    2.39%    1.73%   0.04000473s
+SOfock:SL  1.60D-08    0.00%   80.28%   10.29%    0.08%   0.44802666s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  26 ##########   Sat Jun 30 19:28:09 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.11%   83.36%    1.71%    1.46%   0.04400444s
+SOfock:SL  1.60D-08    0.00%   78.26%    9.66%    0.06%   0.43602562s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  27 ##########   Sat Jun 30 19:28:09 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.68%   84.42%    1.38%    1.47%   0.06400490s
+SOfock:SL  1.60D-08    0.00%   78.75%    9.33%    0.08%   0.34802055s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  28 ##########   Sat Jun 30 19:28:10 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.48%   83.38%    2.62%    1.67%   0.04000282s
+SOfock:SL  1.60D-08    0.00%   79.68%   10.51%    0.10%   0.29201889s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  29 ##########   Sat Jun 30 19:28:10 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.41%   83.41%    2.42%    1.69%   0.04400253s
+SOfock:SL  1.60D-08    0.00%   78.97%    9.99%    0.08%   0.31201935s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  30 ##########   Sat Jun 30 19:28:10 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.83%   83.59%    3.18%    1.63%   0.04800415s
+SOfock:SL  1.60D-08    0.00%   79.82%   10.62%    0.08%   0.34802055s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  31 ##########   Sat Jun 30 19:28:10 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.15%   82.94%    2.25%    1.36%   0.03600311s
+SOfock:SL  1.60D-08    0.00%   79.39%   10.24%    0.09%   0.32802010s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  32 ##########   Sat Jun 30 19:28:11 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    4.34%   81.59%    2.28%    1.63%   0.04400063s
+SOfock:SL  1.60D-08    0.00%   80.85%   10.11%    0.11%   0.30801964s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  33 ##########   Sat Jun 30 19:28:11 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.47%   82.25%    1.83%    1.43%   0.04400444s
+SOfock:SL  1.60D-08    0.00%   78.61%    9.46%    0.08%   0.38802338s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  34 ##########   Sat Jun 30 19:28:11 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.13%   83.53%    2.62%    1.50%   0.06800270s
+SOfock:SL  1.60D-08    0.00%   80.67%   10.05%    0.07%   0.37602425s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  35 ##########   Sat Jun 30 19:28:11 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.75%   84.34%    2.10%    1.25%   0.04400253s
+SOfock:SL  1.60D-08    0.00%   78.94%    9.79%    0.07%   0.32402039s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  36 ##########   Sat Jun 30 19:28:12 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.75%   83.64%    1.76%    1.49%   0.04400444s
+SOfock:SL  1.60D-08    0.00%   79.93%    9.10%    0.11%   0.36402130s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  37 ##########   Sat Jun 30 19:28:12 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.03%   83.02%    2.13%    1.63%   0.05200195s
+SOfock:SL  1.60D-08    0.00%   79.64%    9.35%    0.07%   0.40802574s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  38 ##########   Sat Jun 30 19:28:12 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.77%   82.64%    2.48%    1.80%   0.05200386s
+SOfock:SL  1.60D-08    0.00%   79.00%    9.56%    0.07%   0.42802620s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  39 ##########   Sat Jun 30 19:28:12 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    3.18%   83.84%    1.74%    1.29%   0.04000092s
+SOfock:SL  1.60D-08    0.00%   81.25%    8.84%    0.08%   0.48402977s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  40 ##########   Sat Jun 30 19:28:13 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.62%   83.42%    1.45%    1.25%   0.04800224s
+SOfock:SL  1.60D-08    0.00%   78.92%    8.42%    0.07%   0.32402039s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  41 ##########   Sat Jun 30 19:28:13 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.27%   82.66%    1.41%    1.40%   0.04800224s
+SOfock:SL  1.60D-08    0.00%   79.06%    8.18%    0.08%   0.32402039s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  42 ##########   Sat Jun 30 19:28:13 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.32%   82.42%    2.10%    1.98%   0.05200195s
+SOfock:SL  1.60D-08    0.00%   80.20%    9.43%    0.09%   0.33202362s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  43 ##########   Sat Jun 30 19:28:13 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.61%   81.90%    2.55%    1.91%   0.05200195s
+SOfock:SL  1.60D-08    0.00%   78.84%    9.57%    0.07%   0.41602707s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  44 ##########   Sat Jun 30 19:28:14 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.75%   83.67%    3.09%    1.34%   0.02799988s
+SOfock:SL  1.60D-08    0.00%   78.93%   10.31%    0.07%   0.32002258s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  45 ##########   Sat Jun 30 19:28:14 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.74%   82.58%    2.72%    1.64%   0.04400253s
+SOfock:SL  1.60D-08    0.00%   79.96%   10.20%    0.08%   0.31201935s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  46 ##########   Sat Jun 30 19:28:14 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.02%   81.61%    1.58%    1.93%   0.04800034s
+SOfock:SL  1.60D-08    0.00%   78.88%    9.05%    0.06%   0.32802200s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  47 ##########   Sat Jun 30 19:28:14 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.91%   82.11%    1.62%    1.96%   0.04400253s
+SOfock:SL  1.60D-08    0.00%   79.14%    9.27%    0.07%   0.29601669s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  48 ##########   Sat Jun 30 19:28:15 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    2.45%   84.64%    1.96%    1.63%   0.05600357s
+SOfock:SL  1.60D-08    0.00%   80.31%   10.57%    0.10%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  49 ##########   Sat Jun 30 19:28:15 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    0.71%   81.80%    1.91%    1.76%   0.05600357s
+SOfock:SL  1.60D-08    0.00%   77.73%    9.15%    0.07%   0.40402603s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  50 ##########   Sat Jun 30 19:28:15 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.60D-08    1.58%   82.42%    1.54%    1.81%   0.05200195s
+SOfock:SL  1.60D-08    0.00%   79.33%    9.34%    0.09%   0.35602188s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.92E-04  2.89E-06  2.92E-04
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+ *** WARNING-Maximum number of microiterations,  50, reached
+
+            Freq.(au)   Total norm    E+ norm   P+ norm 
+========================================================
+* It.  1   0.44802856s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   5.79D-01 |   5.79D-01  1.16D-02
+========================================================
+* It.  2   0.55603504s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.24D-01 |   2.24D-01  4.20D-03
+========================================================
+* It.  3   0.55603504s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   5.13D-02 |   5.13D-02  4.98D-04
+========================================================
+* It.  4   0.49603081s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.04D-02 |   1.04D-02  4.72D-04
+========================================================
+* It.  5   0.56403542s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   9.38D-04 |   8.91D-04  2.93D-04
+========================================================
+* It.  6   0.52403259s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   3.07D-04 |   9.61D-05  2.92D-04
+========================================================
+* It.  7   0.50803089s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   1.22D-05  2.92D-04
+========================================================
+* It.  8   0.50003242s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It.  9   0.46802902s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 10   0.57203484s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 11   0.46402931s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 12   0.46402931s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 13   0.50403023s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 14   0.47203064s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 15   0.47602844s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 16   0.47603035s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 17   0.46402931s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 18   0.62803841s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 19   0.64804268s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 20   0.65604019s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 21   0.70804405s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 22   0.73604584s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 23   0.59203720s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 24   0.53603363s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 25   0.58003616s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 26   0.60003662s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 27   0.50003242s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 28   0.41202545s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 29   0.43602753s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 30   0.48003006s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 31   0.42402649s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 32   0.42802620s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 33   0.53603363s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 34   0.52403259s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 35   0.42002678s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 36   0.51603317s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 37   0.55603218s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 38   0.55603600s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 39   0.61203766s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 40   0.42402649s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 41   0.45203018s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 42   0.46802902s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 43   0.53603363s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 44   0.41202545s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 45   0.44002533s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 46   0.44403076s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 47   0.42402267s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 48   0.48403168s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 49   0.53603363s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+* It. 50   0.48403168s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.92D-04 |   2.89D-06  2.92D-04
+========================================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+Z-Dipole length  - Symmetry: A    T+
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  6.80D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.47D+03
+* Screening threshold in LR solver scaled with norm of property vector:  2.5818D+00
+  and changed to:  1.7563D-08
+
+########## START MICROITERATION NO.   1 ##########   Sat Jun 30 19:28:15 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   49.56%    0.00%    1.90%   0.05600357s
+SOfock:SL  1.76D-08    0.00%   57.13%    0.00%    1.55%   0.36402130s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.06E+00  1.06E+00  1.27E-02
+
+########## START MICROITERATION NO.   2 ##########   Sat Jun 30 19:28:16 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   50.23%    0.34%    2.87%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   58.32%    0.77%    1.75%   0.51203156s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  3.63E-01  3.63E-01  6.06E-03
+
+########## START MICROITERATION NO.   3 ##########   Sat Jun 30 19:28:16 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   51.49%    1.77%    4.40%   0.06400299s
+SOfock:SL  1.76D-08    0.00%   59.55%    2.96%    2.57%   0.49203110s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  9.97E-02  9.97E-02  1.33E-03
+
+########## START MICROITERATION NO.   4 ##########   Sat Jun 30 19:28:16 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   52.59%    2.60%    7.49%   0.06000519s
+SOfock:SL  1.76D-08    0.00%   61.10%    3.91%    3.01%   0.44002533s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.19E-02  2.19E-02  3.01E-04
+
+########## START MICROITERATION NO.   5 ##########   Sat Jun 30 19:28:17 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   54.79%   10.22%   12.54%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   63.47%   10.73%    4.84%   0.38802338s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  4.35E-03  4.34E-03  2.05E-04
+
+########## START MICROITERATION NO.   6 ##########   Sat Jun 30 19:28:17 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   57.16%    9.83%   13.43%   0.05600357s
+SOfock:SL  1.76D-08    0.00%   66.74%    9.77%    5.28%   0.51603317s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  6.04E-04  5.70E-04  2.01E-04
+
+########## START MICROITERATION NO.   7 ##########   Sat Jun 30 19:28:17 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   62.67%    7.86%   14.19%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   74.98%    6.45%    6.20%   0.37602234s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.22E-04  9.55E-05  2.01E-04
+
+########## START MICROITERATION NO.   8 ##########   Sat Jun 30 19:28:18 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.00%   69.04%    6.01%   11.46%   0.05600357s
+SOfock:SL  1.76D-08    0.00%   79.33%    5.27%    7.63%   0.42402649s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  1.60E-05  2.01E-04
+
+########## START MICROITERATION NO.   9 ##########   Sat Jun 30 19:28:18 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.02%   78.95%    2.32%    6.20%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   80.33%    5.19%    9.28%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  5.58E-06  2.01E-04
+
+########## START MICROITERATION NO.  10 ##########   Sat Jun 30 19:28:18 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.15%   82.60%    1.56%    4.40%   0.06000137s
+SOfock:SL  1.76D-08    0.00%   77.81%    7.31%   10.90%   0.37602615s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  11 ##########   Sat Jun 30 19:28:18 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    0.33%   82.48%    0.93%    2.89%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   77.31%    7.41%    0.08%   0.36802292s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  12 ##########   Sat Jun 30 19:28:19 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    1.93%   84.31%    1.26%    3.34%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   80.07%    8.91%    0.09%   0.35602188s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  13 ##########   Sat Jun 30 19:28:19 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    1.36%   84.55%    0.70%    3.01%   0.03600311s
+SOfock:SL  1.76D-08    0.00%   80.38%    7.51%    0.11%   0.33201981s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  14 ##########   Sat Jun 30 19:28:19 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    1.54%   83.80%    0.90%    3.01%   0.04800034s
+SOfock:SL  1.76D-08    0.00%   79.97%    8.23%    0.11%   0.35602188s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  15 ##########   Sat Jun 30 19:28:19 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.31%   83.61%    0.71%    3.15%   0.04400253s
+SOfock:SL  1.76D-08    0.00%   80.79%    8.15%    0.13%   0.32801819s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  16 ##########   Sat Jun 30 19:28:20 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    5.16%   81.52%    1.38%    2.83%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   80.70%    8.71%    0.12%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  17 ##########   Sat Jun 30 19:28:20 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.35%   83.24%    1.51%    2.72%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   81.58%    8.83%    0.17%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  18 ##########   Sat Jun 30 19:28:20 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    1.97%   84.87%    0.77%    2.76%   0.02400208s
+SOfock:SL  1.76D-08    0.00%   80.46%    7.59%    0.10%   0.33201981s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  19 ##########   Sat Jun 30 19:28:20 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.15%   83.65%    0.91%    2.90%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   80.84%    7.63%    0.10%   0.36402130s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  20 ##########   Sat Jun 30 19:28:21 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    5.02%   82.61%    1.13%    3.18%   0.04800034s
+SOfock:SL  1.76D-08    0.00%   82.21%    8.00%    0.13%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  21 ##########   Sat Jun 30 19:28:21 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.32%   84.63%    1.14%    2.40%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   81.68%    7.97%    0.14%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  22 ##########   Sat Jun 30 19:28:21 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.73%   84.35%    1.09%    2.66%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   81.96%    7.58%    0.16%   0.34001923s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  23 ##########   Sat Jun 30 19:28:21 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.08%   82.61%    1.17%    2.85%   0.04800034s
+SOfock:SL  1.76D-08    0.00%   82.14%    7.77%    0.09%   0.33202362s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  24 ##########   Sat Jun 30 19:28:22 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.96%   82.44%    1.32%    1.85%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   81.56%    8.26%    0.08%   0.34001923s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  25 ##########   Sat Jun 30 19:28:22 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.18%   83.27%    1.09%    1.33%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.29%    8.55%    0.08%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  26 ##########   Sat Jun 30 19:28:22 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.89%   82.19%    1.01%    1.55%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.39%    8.44%    0.12%   0.32802200s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  27 ##########   Sat Jun 30 19:28:22 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.53%   82.69%    1.34%    1.48%   0.04000473s
+SOfock:SL  1.76D-08    0.00%   80.77%    8.80%    0.13%   0.33602142s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  28 ##########   Sat Jun 30 19:28:23 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.81%   82.94%    1.19%    1.91%   0.04400253s
+SOfock:SL  1.76D-08    0.00%   82.88%    8.11%    0.15%   0.33201981s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  29 ##########   Sat Jun 30 19:28:23 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    1.44%   84.18%    0.72%    2.03%   0.05200577s
+SOfock:SL  1.76D-08    0.00%   79.87%    7.27%    0.14%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  30 ##########   Sat Jun 30 19:28:23 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.08%   84.77%    1.08%    1.48%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.28%    8.78%    0.12%   0.34402084s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  31 ##########   Sat Jun 30 19:28:23 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.60%   84.43%    1.09%    1.67%   0.04400635s
+SOfock:SL  1.76D-08    0.00%   80.94%    8.72%    0.11%   0.33601761s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  32 ##########   Sat Jun 30 19:28:23 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.22%   82.87%    1.20%    2.38%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   80.72%    8.63%    0.13%   0.35202026s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  33 ##########   Sat Jun 30 19:28:24 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.20%   83.74%    1.01%    2.06%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.01%    8.68%    0.15%   0.34001923s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  34 ##########   Sat Jun 30 19:28:24 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.66%   85.57%    1.09%    1.67%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   80.83%    8.69%    0.13%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  35 ##########   Sat Jun 30 19:28:24 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.50%   83.85%    1.05%    1.71%   0.04800034s
+SOfock:SL  1.76D-08    0.00%   80.35%    8.23%    0.13%   0.33602142s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  36 ##########   Sat Jun 30 19:28:24 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    5.26%   81.47%    1.41%    2.25%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   82.20%    8.83%    0.16%   0.33201981s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  37 ##########   Sat Jun 30 19:28:25 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.84%   82.36%    1.37%    2.19%   0.04000473s
+SOfock:SL  1.76D-08    0.00%   81.41%    9.08%    0.15%   0.35202026s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  38 ##########   Sat Jun 30 19:28:25 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.19%   83.38%    1.29%    1.23%   0.07600403s
+SOfock:SL  1.76D-08    0.00%   80.53%    8.36%    0.12%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  39 ##########   Sat Jun 30 19:28:25 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.97%   83.71%    1.46%    1.48%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.30%    8.87%    0.11%   0.36402130s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  40 ##########   Sat Jun 30 19:28:25 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.52%   81.73%    1.07%    1.53%   0.07200623s
+SOfock:SL  1.76D-08    0.00%   80.94%    8.43%    0.09%   0.33602142s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  41 ##########   Sat Jun 30 19:28:26 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.80%   81.21%    1.12%    1.40%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   82.17%    8.33%    0.11%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  42 ##########   Sat Jun 30 19:28:26 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.50%   82.27%    1.30%    1.72%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.71%    8.37%    0.10%   0.32001877s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  43 ##########   Sat Jun 30 19:28:26 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.63%   82.13%    1.28%    1.51%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   81.87%    8.27%    0.10%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  44 ##########   Sat Jun 30 19:28:26 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.80%   83.65%    1.17%    1.56%   0.05200195s
+SOfock:SL  1.76D-08    0.00%   81.96%    8.68%    0.08%   0.32802200s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  45 ##########   Sat Jun 30 19:28:27 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.42%   81.90%    1.22%    1.39%   0.02400208s
+SOfock:SL  1.76D-08    0.00%   81.02%    8.73%    0.08%   0.34002304s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  46 ##########   Sat Jun 30 19:28:27 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.62%   82.49%    1.20%    1.26%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.16%    8.91%    0.08%   0.33602142s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  47 ##########   Sat Jun 30 19:28:27 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    4.65%   82.63%    1.20%    1.99%   0.04800415s
+SOfock:SL  1.76D-08    0.00%   81.48%    9.30%    0.11%   0.32801819s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  48 ##########   Sat Jun 30 19:28:27 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    3.05%   82.25%    1.32%    1.82%   0.04400253s
+SOfock:SL  1.76D-08    0.00%   80.36%    9.06%    0.09%   0.33602142s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  49 ##########   Sat Jun 30 19:28:28 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    5.92%   80.63%    1.14%    2.36%   0.04800034s
+SOfock:SL  1.76D-08    0.00%   82.56%    8.54%    0.13%   0.34802246s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+* XRSORT: Second round of orthonormalization !
+
+########## START MICROITERATION NO.  50 ##########   Sat Jun 30 19:28:28 2012
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.76D-08    2.41%   83.00%    0.83%    1.51%   0.03200150s
+SOfock:SL  1.76D-08    0.00%   80.54%    7.57%    0.08%   0.35202408s
+* Calling pcm_lintra_driver to get b-transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.01E-04  4.98E-06  2.01E-04
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+ *** WARNING-Maximum number of microiterations,  50, reached
+
+            Freq.(au)   Total norm    E+ norm   P+ norm 
+========================================================
+* It.  1   0.49602890s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.06D+00 |   1.06D+00  1.27D-02
+========================================================
+* It.  2   0.68404388s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   3.63D-01 |   3.63D-01  6.06D-03
+========================================================
+* It.  3   0.64403915s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   9.97D-02 |   9.97D-02  1.33D-03
+========================================================
+* It.  4   0.58403778s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.19D-02 |   2.19D-02  3.01D-04
+========================================================
+* It.  5   0.52403259s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.34D-03 |   4.34D-03  2.05D-04
+========================================================
+* It.  6   0.68404388s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   6.04D-04 |   5.70D-04  2.01D-04
+========================================================
+* It.  7   0.52403259s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.23D-04 |   9.55D-05  2.01D-04
+========================================================
+* It.  8   0.56803513s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.02D-04 |   1.60D-05  2.01D-04
+========================================================
+* It.  9   0.45602798s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   5.58D-06  2.01D-04
+========================================================
+* It. 10   0.52403259s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 11   0.50003052s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 12   0.48802948s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 13   0.42403030s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 14   0.48003006s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 15   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 16   0.47202682s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 17   0.48003006s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 18   0.43202972s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 19   0.49202728s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 20   0.48003006s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 21   0.47203064s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 22   0.46403122s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 23   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 24   0.46402740s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 25   0.46802902s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 26   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 27   0.44802856s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 28   0.45203018s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 29   0.47202682s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 30   0.46002960s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 31   0.46002960s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 32   0.47602844s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 33   0.46002960s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 34   0.47602844s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 35   0.46403122s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 36   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 37   0.47203064s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 38   0.50003052s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 39   0.48802948s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 40   0.50803375s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 41   0.47602844s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 42   0.45202637s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 43   0.47203064s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 44   0.46002960s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 45   0.41202545s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 46   0.46002960s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 47   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 48   0.45602798s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 49   0.47203064s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+* It. 50   0.46002579s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.01D-04 |   4.98D-06  2.01D-04
+========================================================
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -8.383898081800 a.u.                       7.67E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.15669697D-14 a.u.                       1.25E-04   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.89171700D-11 a.u.                       7.77E-05   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.11588690D-13 a.u.                       7.67E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -3.774809495996 a.u.                       1.25E-04   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.36950973D-11 a.u.                       7.77E-05   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.83280287D-11 a.u.                       7.67E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.25779784D-13 a.u.                       1.25E-04   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -6.073407403877 a.u.                       7.77E-05   (**NOT** converged!)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+
+
+                         +--------------------------------+
+                         ! Electric dipole polarizability !
+                         +--------------------------------+
+
+ 
+ 
+@
+@   Elements of the electric dipole
+@   polarizability tensor
+@
+ 
+@   xx            8.38389808 a.u.   (converged)      
+@   yy            3.77480950 a.u.   (NOT converged!) 
+@   zz            6.07340740 a.u.   (NOT converged!) 
+ 
+@   average       6.07737166 a.u.
+@   anisotropy    3.992      a.u.
+
+@   xx            1.24236550 angstrom**3
+@   yy            0.55936905 angstrom**3
+@   zz            0.89998611 angstrom**3
+ 
+@   average       0.90057355 angstrom**3
+@
+ 
+----------------------------------------------
+
+ 
+     Date and time (Linux)  : Sat Jun 30 19:28:28 2012
+     Host name              : not found                               
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         3.24
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine MAIN__+0x55d                               for work array at main                        
+        0.16 Mb at subroutine butobs_no_work_+0xf8                       for buf in butobs                             
+        0.16 Mb at subroutine lowdi1_+0x1b8                              for unnamed variable                          
+        0.08 Mb at subroutine gtovlx_+0xd6                               for unnamed variable                          
+        0.08 Mb at subroutine lowdi1_+0x1a4                              for unnamed variable                          
+        0.02 Mb at subroutine qtrans90_+0x218                            for QTRANS90-buffer-space                     
+        0.02 Mb at subroutine qtrans90_+0x218                            for QTRANS90-buffer-space                     
+        0.02 Mb at subroutine qtrans90_+0x218                            for QTRANS90-buffer-space                     
+        0.02 Mb at subroutine qtrans90_+0x218                            for QTRANS90-buffer-space                     
+        0.02 Mb at subroutine qtrans90_+0x218                            for QTRANS90-buffer-space                     
+  
+  Peak memory usage    (Mb) :       489.00
+       reached at subroutine : lowdi1_+0x1b8                             
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
+>>>> Node 0, utime: 60, stime: 2, minflt: 28471, majflt: 0, nvcsw: 377, nivcsw: 6433, maxrss: 24668
+>>>> Total WALL time used in DIRAC: 33s

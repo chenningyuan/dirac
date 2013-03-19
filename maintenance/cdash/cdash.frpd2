@@ -18,6 +18,7 @@ BUILD_GNU=build_ompi_gnu_ilp64_static
 ./setup --fc=mpif90  --cc=mpicc  --cxx=mpiCC  --int64  -D BUILDNAME="frpd2.ompi_gnu_ilp64_static" -D RUNTEST_NR_PROC=2  --mpi --static  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF --force $BUILD_GNU 
 cd $BUILD_GNU
 make clean
+cmake ..
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
@@ -40,6 +41,7 @@ BUILD_INTEL=build_intel_mkl_ilp64_static_check
 ./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intel_mkl_ilp64_static_CHECK" --static  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
 cd $BUILD_INTEL
 make clean
+cmake ..
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild

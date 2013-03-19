@@ -76,6 +76,7 @@ module pcm_interface
    
    public pcm_energy_driver   
    public pcm_fock_driver
+   public pcm_lintra_driver
    public get_pcm_energy
 
    private
@@ -84,11 +85,12 @@ module pcm_interface
    real(8), allocatable :: potentials(:)
    real(8), allocatable :: tess_cent(:, :)
    real(8)              :: pcm_energy
-   integer              :: nr_points = -1
+! nr_points is 32 bit to avoid mess in passing it from C++ to FORTRAN
+   integer(4)           :: nr_points = -1
 
    contains 
 
-   subroutine pcm_initialize(dmat, work, lwork)
+   subroutine pcm_initialize(dmat, ndmat, work, lwork, do_lintra)
 !
 ! This subroutine sets all the global private variables.
 ! 
@@ -96,7 +98,9 @@ module pcm_interface
 ! Passed variables
       real(8) :: dmat(*)
       real(8) :: work(*)
+      integer :: ndmat
       integer :: lwork
+      logical :: do_lintra
 
       call get_cavity_size(nr_points)
   
@@ -110,7 +114,13 @@ module pcm_interface
 ! Get tesserae centers 
       call get_tess_centers(tess_cent)
 ! Compute total polarization charges
-      call pcm_charges(dmat, work, lwork, pcmmod_print)
+      if (do_lintra) then
+      ! This is the case where we are calculating the linear response
+         call pcm_lintra_charges(dmat, ndmat, work, lwork, pcmmod_print)
+      else
+      ! This is the case where we are calculating the energy  
+         call pcm_charges(dmat, ndmat, work, lwork, pcmmod_print)
+      endif
       
    end subroutine
    
@@ -127,7 +137,7 @@ module pcm_interface
       
    end subroutine 
    
-   subroutine pcm_energy_driver(pol_ene, dmat, work, lwork)
+   subroutine pcm_energy_driver(pol_ene, dmat, ndmat, work, lwork)
 !
 ! Polarizable Continuum Model:
 ! driver routine for polarization energy calculation, U_pol.
@@ -140,9 +150,10 @@ module pcm_interface
       real(8) :: pol_ene
       real(8) :: dmat(*)
       real(8) :: work(*)
+      integer :: ndmat
       integer :: lwork
 
-      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork, .false.)
 ! Compute polarization energy
       if (.not.pcmmod_separate) then
          call comp_pol_ene_pcm(pol_ene, 1)
@@ -153,7 +164,7 @@ module pcm_interface
 
    end subroutine
    
-   subroutine pcm_fock_driver(fock, dmat, work, lwork)
+   subroutine pcm_fock_driver(fock, dmat, ndmat, factor, work, lwork)
 !
 ! Polarizable Continuum Model.
 ! Driver routine for Fock matrix contributions, j and X(D).
@@ -164,15 +175,46 @@ module pcm_interface
 ! Passed variables
       real(8)              :: fock(*)
       real(8)              :: dmat(*)
+      real(8)              :: factor
       real(8)              :: work(*)
+      integer              :: ndmat
       integer              :: lwork
-
-      if (nr_points <= 0) call pcm_initialize(dmat, work, lwork)
+      
+      if (nr_points <= 0) call pcm_initialize(dmat, ndmat, work, lwork, .false.)
 ! Update Fock matrix with PCM contribution
-      call pcm_fock(fock, work, lwork)
+      call pcm_fock(fock, factor, work, lwork)
 ! Free temporary allocated memory
       call pcm_finalize
 
+   end subroutine
+
+   subroutine pcm_lintra_driver(fock, pert_dmat, ndmat, factor, work, lwork)
+!
+! Polarizable Continuum Model.
+! Driver routine for "explicit" contributions to linear response.
+! pert_dmat is the b-transformed AO density matrix.
+!
+! Roberto Di Remigio, 2012
+! 
+
+! Passed variables
+      real(8)              :: fock(*)
+      real(8)              :: pert_dmat(*)
+      real(8)              :: factor
+      real(8)              :: work(*)
+      integer              :: ndmat
+      integer              :: lwork
+
+! Local variables
+
+! Calculate one-index transformed potentials and charges (ONLY ELECTRONIC!)
+      if (nr_points <= 0) call pcm_initialize(pert_dmat, ndmat, work, lwork, .true.)
+! Update Fock matrix with PCM contribution:
+! contraction of unperturbed potentials and perturbed electronic charges.
+      call pcm_fock(fock, factor, work, lwork)
+! Free temporary allocated memory
+      call pcm_finalize
+       
    end subroutine
 
    function get_pcm_energy()
@@ -202,12 +244,13 @@ module pcm_interface
 !   2. the electronic potential @grid points.      
 !
 
-   subroutine pcm_charges(dmat, work, lwork, printlevel)
+   subroutine pcm_charges(dmat, ndmat, work, lwork, printlevel)
 
 ! Passed variables
       integer, intent(in)  :: printlevel
       real(8), intent(in)  :: dmat(*)
       real(8)              :: work(*)
+      integer              :: ndmat
       integer              :: lwork
 
 ! Local variables
@@ -217,7 +260,7 @@ module pcm_interface
       real(8)              :: factor = 1.0d0
       character(7)         :: potName, potName1, potName2
       character(7)         :: chgName, chgName1, chgName2
-
+      
       if (.not.(pcmmod_separate)) then 
 ! Compute MEP @tesserae centers
          potName = 'TotPot'//char(0)
@@ -253,30 +296,10 @@ module pcm_interface
          allocate(ele_pol_chg(nr_points))
          ele_pol_chg = 0.0d0
       
-! Compute nuclear MEP @tesserae centers
-         potName = 'NucPot'//char(0)
-         chgName = 'NucChg'//char(0)
-         call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
-! Set a cavity surface function with the nuclear MEP
-         call set_surface_function(nr_points, nuc_pot, potName)
-! Compute nuclear polarization charges and set the proper surface function
-         call comp_chg_pcm(potName, chgName)
-! Get nuclear polarization charges @tesserae centers
-! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-         call get_surface_function(nr_points, nuc_pol_chg, chgName)
-
-! Compute electronic MEP @tesserae centers
-         potName = 'ElePot'//char(0)
-         chgName = 'EleChg'//char(0)
-         call get_electronic_mep(nr_points, dmat, tess_cent, ele_pot,    &
-                        work, lwork, 0, .false.)
-! Set a cavity surface function with the electronic MEP
-         call set_surface_function(nr_points, ele_pot, potName)
-! Compute electronic polarization charges and set the proper surface function
-         call comp_chg_pcm(potName, chgName)
-! Get electronic polarization charges @tesserae centers
-! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-         call get_surface_function(nr_points, ele_pol_chg, chgName)
+         call pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
+         potName  = 'ElePot'//char(0)
+         chgName  = 'EleChg'//char(0)
+         call pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
 
 ! Print some information
         if (printlevel > 5) then
@@ -328,14 +351,99 @@ module pcm_interface
       end if
 
    end subroutine
+   
+   subroutine pcm_lintra_charges(dmat, ndmat, work, lwork, printlevel)
+! Calculation of b-transformed electronic polarization charges.
+! This is needed to get the "explicit" PCM contributions to the
+! linear response equations.
 
-   subroutine pcm_fock(fock, work, lwork)
+! Passed variables
+      integer, intent(in)  :: printlevel
+      real(8), intent(in)  :: dmat(*)
+      real(8)              :: work(*)
+      integer              :: ndmat
+      integer              :: lwork
 
+! Local variables
+      character(13)        :: potName, chgName
+      integer              :: i
+      
+! Update Fock matrix with PCM contribution:
+! contraction of unperturbed potentials and perturbed electronic charges.
+      potName = 'EleLinTraPot'//char(0)
+      chgName = 'EleLinTraChg'//char(0)
+      call pcm_electronic_charges(dmat, ndmat, potentials, charges, work, lwork, potName, chgName)
+!TROND
+!      WRITE(6,*) 'Perturbed electronic charges..'
+!      do i = 1,nr_points
+!        WRITE(6,*) i,lintra_ele_chg(i)
+!      enddo
+      
+   end subroutine
+
+   subroutine pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
+
+! Passed variables      
+      real(8)      :: nuc_pot(nr_points)
+      real(8)      :: nuc_pol_chg(nr_points)
+
+! Local variables
+      character(7) :: potName
+      character(7) :: chgName
+         
+! Compute nuclear MEP @tesserae centers
+      potName = 'NucPot'//char(0)
+      chgName = 'NucChg'//char(0)
+      call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
+! Set a cavity surface function with the nuclear MEP
+      call set_surface_function(nr_points, nuc_pot, potName)
+! Compute nuclear polarization charges and set the proper surface function
+      call comp_chg_pcm(potName, chgName)
+! Get nuclear polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+      call get_surface_function(nr_points, nuc_pol_chg, chgName)
+
+   end subroutine
+
+   subroutine pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
+
+! Passed variables
+      real(8)      :: dmat(*)                
+      real(8)      :: ele_pot(nr_points)
+      real(8)      :: ele_pol_chg(nr_points)
+      real(8)      :: work(*)
+      integer      :: ndmat
+      integer      :: lwork
+      character(7) :: potName
+      character(7) :: chgName
+
+! Local variables
+      integer      :: i
+
+! Compute electronic MEP @tesserae centers
+      do i = 1, ndmat
+        call get_electronic_mep(nr_points, dmat(i), tess_cent, ele_pot,    &
+                         work, lwork, 0, .false.)
+      enddo
+! Set a cavity surface function with the electronic MEP
+      call set_surface_function(nr_points, ele_pot, potName)
+! Compute electronic polarization charges and set the proper surface function
+      call comp_chg_pcm(potName, chgName)
+! Get electronic polarization charges @tesserae centers
+! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
+      call get_surface_function(nr_points, ele_pol_chg, chgName)
+ 
+   end subroutine
+   
+   subroutine pcm_fock(fock, factor, work, lwork)
+! This subroutine is completely general, it is used also
+! in the generation of the linear response terms.
 #include "dcbbas.h"
 #include "dgroup.h"
 
 ! Passed variables
       real(8), intent(out) :: fock(*)
+      real(8)              :: factor
       real(8)              :: work(*)
       integer              :: lwork
 
@@ -348,7 +456,7 @@ module pcm_interface
 ! Allocation
       allocate(fock_pcm(ntbas(0), ntbas(0), nz))
       fock_pcm = 0.0d0
-
+! Contraction of electrostatic potential integrals with polarization charges
       call get_electronic_mep(nr_points, fock_pcm, tess_cent, charges,    &
                         work, lwork, 0, get_matrix)
      
@@ -361,11 +469,19 @@ module pcm_interface
         end do
       end do
        
-!      print *, "FOCK_PCM"
-!      call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
-!                       nz, ipqtoq(1,0), 6)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+!     print *, "FOCK BEFORE PCM"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+
 ! Add fock_pcm to Fock matrix
-      call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+      call daxpy(n2bbasx, factor, fock_pcm, 1, fock, 1)
+
+!     print *, "FOCK AFTER PCM"
+!     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
 
       deallocate(fock_pcm)
 

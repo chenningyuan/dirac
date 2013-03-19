@@ -184,7 +184,7 @@ C     END DO
       IIT = 0
       DO ITSS = 1, NSPOBEX_TP
         CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,ITSS),1)
-        WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
+C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. Transform from occupations to groups
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1   )
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+1*NGAS,ITSS),IGRP_CB,1   )
@@ -241,7 +241,7 @@ C    &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                I_CA_MIN = 1
              DO I_CA = I_CA_MIN, NSTR_CA
               IT = IT + 1
-              WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
+C             WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
               IF(ILOOP .EQ. 1 ) THEN
                 NTVAR = NTVAR + 1

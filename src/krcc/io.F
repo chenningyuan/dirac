@@ -56,6 +56,8 @@
       LUSC81 = 51
 *. INDICES FILE FROM SORTING
       LUSC82 = 52
+*. INTEGRALS FROM THE ARDUCCA CODE
+      LU_ARDUCCA = 53
 * =================
 * Internal files
 * =================
