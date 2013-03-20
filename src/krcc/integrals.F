@@ -1233,6 +1233,18 @@ C     CALL MEMCHK_KRCC(WORK)
           WRITE(6,*) ' INTEGRAL OFFSET ',IOFFINTTYPE(I),' FOR HTYPE ',I
         END DO
       END IF
+      ICHECK = 1
+      IF(ICHECK.EQ.1) THEN
+        open(unit=54,file='INTE',
+     &       status='REPLACE',form='FORMATTED',iostat=ios)
+        if(ios.ne.0) then
+          call abend2('problem with file integrals')
+        end if
+        rewind(54)
+        DO I=1,NALLINT
+        WRITE(54,*) T(I)
+        END DO
+      END IF
 *
       return
       end
