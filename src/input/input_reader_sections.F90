@@ -1140,7 +1140,7 @@
 
    end subroutine
 !
-!  new reladc input subroutine
+!  reladc input subroutine
 !
    subroutine read_input_reladc(word, kw_section)
 
@@ -1156,8 +1156,6 @@
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
 
-!     write(*,*) 'In reladc input reader:',word,kw_section,len(word)
-
       call reset_available_kw_list()
 
       if (kw_matches(word, '.ADCLEV')) then
@@ -1172,6 +1170,10 @@
          reladc_dodips = .true.
       end if
 
+      if (kw_matches(word, '.DOEXCI')) then
+         reladc_doexci = .true.
+      end if
+
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_sipreps, user_req_symmetries)
@@ -1180,6 +1182,11 @@
       if (kw_matches(word, '.DIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_dipreps, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.EXCREP')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_excreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.READQK')) then
@@ -1198,6 +1205,14 @@
          reladc_dofull = .true.
       end if
 
+      if (kw_matches(word, '.DOXEXT')) then
+         reladc_doxext = .true.
+      end if
+
+      if (kw_matches(word, '.DOHPDI')) then
+         reladc_dohpdiag = .true.
+      end if
+
       if (kw_matches(word, '.VCONV ')) then
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
@@ -1210,7 +1225,7 @@
 
    end subroutine
 !
-!  new lanczos input subroutine
+!  lanczos input subroutine
 !
    subroutine read_input_lanczos(word, kw_section)
 
@@ -1237,6 +1252,10 @@
          read(get_file_unit(),'(i8)') reladc_dipiter
       end if
 
+      if (kw_matches(word, '.EXCITER')) then
+         read(get_file_unit(),'(i8)') reladc_exciter
+      end if
+
       if (kw_matches(word, '.SIPEIGV')) then
          read(get_file_unit(),'(i8)') user_req_symmetries
          call kw_read(word, reladc_sipeigv, user_req_symmetries)
@@ -1247,6 +1266,11 @@
          call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
+      if (kw_matches(word, '.EXCEIGV')) then
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_exceigv, user_req_symmetries)
+      end if
+
       if (kw_matches(word, '.SIPPRNT')) then
          read(get_file_unit(),'(f18.6)') reladc_sipprnt
       end if
@@ -1255,8 +1279,16 @@
          read(get_file_unit(),'(f18.6)') reladc_dipprnt
       end if
 
+      if (kw_matches(word, '.EXCPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_excprnt
+      end if
+
       if (kw_matches(word, '.DOINCORE')) then
          reladc_doincore = .true.
+      end if
+
+      if (kw_matches(word, '.LANCMEM')) then
+         read(get_file_unit(),'(i12)') reladc_lancmem
       end if
 
       call check_whether_kw_found(word, kw_section)
