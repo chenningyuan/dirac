@@ -2636,7 +2636,7 @@ C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             NJOBS = NJOBS + 1
             GO TO 100
  115     CONTINUE
-C&&&& RELADC: Calculate one-particle electron propagator with ADC
+C&&&& RELADC: Calculate relativistic propagators with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
             NJOBS = NJOBS + 1

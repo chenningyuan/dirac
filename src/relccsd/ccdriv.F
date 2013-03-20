@@ -1352,6 +1352,7 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
+!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
 C
@@ -3893,6 +3894,24 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table  -----------------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  inverse multiplication table  ---------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
+
 C
 C     Get rid of offset for boson reps
 C
@@ -3908,6 +3927,23 @@ C
             MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table (no offset) ------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  inverse multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C

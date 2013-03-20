@@ -224,9 +224,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      10X,"****       FOUR-COMPONENT         ",10X,"****"/
      &      10X,"****      PROPAGATOR MODULE       ",10X,"****"/
      &      10X,"****",40X,"****"/
-     &      10X,"****        New features (Jul 2012):",8X,"****"/
-     &      10X,"****  *)  Partial incore Lanczos",12X,"****"/
-     &      10X,"****  *)  Improved eigenvector analysis",5X,"****"/
      &      10X,"************************************************"///
      &      10X,"****  written by"/
      &      10X,"****  M. Pernpointner
@@ -243,103 +240,183 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|
 !|
 !|
-      adclevel =   reladc_adclevel
-      dosips   =   reladc_dosips  
-      dodips   =   reladc_dodips  
+      adclevel = reladc_adclevel
+      dosips   = reladc_dosips  
+      dodips   = reladc_dodips  
+      doexci   = reladc_doexci  
       do i=1,32
-         sipreps(i) =   reladc_sipreps(i)
-         dipreps(i) =   reladc_dipreps(i)
+         sipreps(i) = reladc_sipreps(i)
+         dipreps(i) = reladc_dipreps(i)
+         excreps(i) = reladc_excreps(i)
       enddo
-      readqkl  =   reladc_readqkl 
-      doconst  =   reladc_doconst 
-      doadcpop =   reladc_doadcpop
-      dofull   =   reladc_dofull  
-      vconv    =   reladc_vconv   
+      readqkl  = reladc_readqkl 
+      doconst  = reladc_doconst 
+      doadcpop = reladc_doadcpop
+      dofull   = reladc_dofull  
+      dohpdiag = reladc_dohpdiag
+      doxext   = reladc_doxext  
+      vconv    = reladc_vconv   
       adcthr   = reladc_adcthr  
 
       sipiter  = reladc_sipiter 
       dipiter  = reladc_dipiter 
+      exciter  = reladc_exciter 
       do i=1,32
-        sipeigv(i)  = reladc_sipeigv(i) 
-        dipeigv(i)  = reladc_dipeigv(i) 
+        sipeigv(i) = reladc_sipeigv(i) 
+        dipeigv(i) = reladc_dipeigv(i) 
+        exceigv(i) = reladc_exceigv(i) 
       enddo
       sipprnt  = reladc_sipprnt 
       dipprnt  = reladc_dipprnt 
+      excprnt  = reladc_excprnt 
       doincore = reladc_doincore
+      lancmem  = reladc_lancmem
 !|
 !|
 !|___________________________________________________________
 !
 ! print overall job specification for the propagator run.
 !
-      write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(5X,A)') '****   Propagator and Lanczos      ****'
-      write(IW,'(5X,A)') '****      JOB CONTROL DATA:        ****'
-      write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(5X,A)') '****                               ****' 
-      write(IW,'(10X,A,T50,I3)') 'Order of SIP treatment:',adclevel
-      write(IW,'(10X,A,T50,I3)') 'Order of DIP always ADC-2x !'
-      write(IW,'(10X,A,T50,L1)') 'Calc. single ioniz. spectrum',dosips
-      write(IW,'(10X,A,T50,L1)') 'Calc. double ioniz. spectrum',dodips
-      write(IW,'(10X,A)') 'Requested SIP symmetries (sipreps):'
-      n=0
-      do i=1,32
-        n=n+sipreps(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None. Program will do it automatically.'
-      else
-        write(IW,'(10X,16I4)') (sipreps(i),i=1,16)
-        write(IW,'(10X,16I4)') (sipreps(i),i=17,32)
-      endif
-      write(IW,'(10X,A)') 'Requested DIP symmetries (dipreps):'
-      n=0
-      do i=1,32
-        n=n+dipreps(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None. Program will do it automatically.'
-      else
-        write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
-        write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
-      endif
-      write(IW,'(10X,A,T50,L1)') 'Read prev. calc. Qkl data:',readqkl
-      write(IW,'(10X,A,T50,L1)') 'Incl. const. diagr. in ADC-3:',doconst
-      write(IW,'(10X,A,T50,L1)') 'Do adv. final state anal.:',doadcpop
+      write(IW,'(10X,A)') '****                                 ****' 
+      write(IW,'(10X,A)') '****                                 ****' 
+      write(IW,'(10X,A)') '****       JOB CONTROL FOR           ****'
+      write(IW,'(10X,A)') '****   Propagator and Lanczos run    ****'
+      write(IW,'(10X,A)') '****                                 ****' 
+      write(IW,'(10X,A)') '****                                 ****' 
+      write(IW,*)
+      write(IW,*)
+      write(IW,*)
+      write(IW,'(10X,A)') 'Requested propagators:'
+      write(IW,'(10X,A,T50,L1)') 'Single ioniz. spectrum',dosips
+      write(IW,'(10X,A,T50,L1)') 'Double ioniz. spectrum',dodips
+      write(IW,'(10X,A,T50,L1)') 'Excitation    spectrum',doexci
+!
+!  print individual information for SIPS
+!
+      IF(dosips) then
+        write(IW,*)
+        write(IW,'(10X,A)') 'Control parameters for SIP:'
+        write(IW,*)
+        write(IW,'(10X,A,T50,I3)') 'Order of ADC treatment:',adclevel
+        write(IW,'(10X,A,T50,L1)') 'Read previous Qkl data:',readqkl
+        write(IW,'(10X,A,T50,L1)') 'Incl. constant diagrams:',doconst
+        write(IW,'(10X,A,T50,F18.6)') 'Convergence for CD:',vconv
+        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
+     &        sipprnt
+        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations',
+     &        sipiter
+        write(IW,'(10X,A)') 'Requested SIP symmetries (sipreps):'
+        n=0
+        do i=1,32
+          n=n+sipreps(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None. Program will do it automatically.'
+        else
+          write(IW,'(10X,16I4)') (sipreps(i),i=1,16)
+          write(IW,'(10X,16I4)') (sipreps(i),i=17,32)
+        endif
+        write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
+        write(IW,'(10X,A)') '(corresp. to valid entries in SIPREPS)'
+        n=0
+        do i=1,32
+          n=n+sipeigv(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None.'
+        else
+          write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
+          write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+        endif
+      ENDIF
+!
+!  print individual information for DIPS
+!
+      IF(dodips) then
+        write(IW,*)
+        write(IW,'(10X,A)') 'Control parameters for DIP:'
+        write(IW,*)
+        write(IW,'(10X,A,T50,I3)') 'Order of DIP always ADC-2x !'
+        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
+     &        dipprnt
+        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations',
+     &        dipiter
+        write(IW,'(10X,A)') 'Requested DIP symmetries (dipreps):'
+        n=0
+        do i=1,32
+          n=n+dipreps(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None. Program will do it automatically.'
+        else
+          write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
+          write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
+        endif
+        write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
+        write(IW,'(10X,A)') '(corresp. to valid entries in DIPREPS)'
+        n=0
+        do i=1,32
+          n=n+dipeigv(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None.'
+        else
+          write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
+          write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+        endif
+      ENDIF
+!
+!  print individual information for EXC
+!
+      IF(doexci) then
+        write(IW,*)
+        write(IW,'(10X,A)') 'Control parameters for EXC:'
+        write(IW,*)
+        if(doxext) then
+          write(IW,'(10X,A,T50,I3)') 'Order of EXC treatment: ADC(2-x)'
+        else
+          write(IW,'(10X,A,T50,I3)') 'Order of EXC treatment: ADC(2-s)'
+        endif
+        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
+     &        excprnt
+        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations:',
+     &        exciter
+        write(IW,'(10X,A)') 'Requested EXC symmetries (excreps):'
+        n=0
+        do i=1,32
+          n=n+excreps(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None. Program will do it automatically.'
+        else
+          write(IW,'(10X,16I4)') (excreps(i),i=1,16)
+          write(IW,'(10X,16I4)') (excreps(i),i=17,32)
+        endif
+        write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
+        write(IW,'(10X,A)') '(corresp. to valid entries in EXCREPS)'
+        n=0
+        do i=1,32
+          n=n+exceigv(i)
+        enddo
+        if(n.eq.0) then
+          write(IW,'(10X,A)') 'None.'
+        else
+          write(IW,'(10X,16I4)') (exceigv(i),i=1,16)
+          write(IW,'(10X,16I4)') (exceigv(i),i=17,32)
+        endif
+      ENDIF
+!
+!  print general information 
+!
+      write(IW,*)
+      write(IW,'(10X,A)') 'General parameters:'
+      write(IW,*)
+      write(IW,'(10X,A,T50,L1)') 'Do final state analysis.:',doadcpop
       write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
-      write(IW,'(10X,A,T50,F18.6)') 'Conv. of constant diagrams:',vconv
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP matrix elements:',
+      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP/EXC matrix elements:',
      & adcthr
-      write(IW,'(10X,A,T50,I7)') 'Number of iter. in SIP calc:',sipiter
-      write(IW,'(10X,A,T50,I7)') 'Number of iter. in DIP calc:',dipiter
-      write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
-      write(IW,'(10X,A)') '(corresponding to valid entries in SIPREPS)'
-      n=0
-      do i=1,32
-        n=n+sipeigv(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None.'
-      else
-        write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
-        write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
-      endif
-      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
-      write(IW,'(10X,A)') '(corresponding to valid entries in DIPREPS)'
-      n=0
-      do i=1,32
-        n=n+dipeigv(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None.'
-      else
-        write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
-        write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
-      endif
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for SIP scr. output:',sipprnt
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP scr. output:',dipprnt
       write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
+      write(IW,'(10X,A,T50,L1)') 'Memory limit for Lanczos:',lancmem
 !
 !  end of job control output
 !
@@ -436,7 +513,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       USEOE = .TRUE.
       WRITE (IW,*) 'Orbital energies from HF are used'
 
-      IF(DOSIPS.OR.DODIPS) then
+      IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
          DOCCSETI=.TRUE.
          DOSORT  =.TRUE.
       ENDIF
@@ -495,6 +572,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &              MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+
+      IF(DOEXCI) THEN
+        WRITE(IW,*) 'Memory for excitation calculations is',
+     &              ' dynamically allocated.'
+      ENDIF
 !
 ! MXCORR is a cumulative maximum of individual memory requirements
 ! ===> if any subroutine would need more core than MAXCORE we quit.
@@ -533,6 +615,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       IF(DODIPS) THEN
         CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+      ENDIF
+
+      IF(DOEXCI) THEN
+        CALL ADCEXC_MAIN (IW,ITAPADC,EPS)
       ENDIF
 !
 !     return after closing low-level I/O files
@@ -4514,8 +4600,8 @@ C   A_ak',bl   (VOVO1) ==> A_a>b,k'>l  (VVOO3)
 C
       CALL SRT1TT4(NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
      &             MVO,J2VOVO,JJVO,JJVO,VVOO2,VOVO3)
-      CALL SRT16(NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,
-     &           JVOVO,JJVO,JJVO,VOVO1,VOVO2)
+      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,
+     &            JVOVO,JJVO,JJVO,VOVO1,VOVO2)
       OFF1 = 1
       OFF3 = 1
       DO IREP = 1, NREP
@@ -4597,8 +4683,8 @@ C
       if(CARITH) THEN
         CALL CONJUGA(NV4,VOVO2,1)
       ENDIF
-      CALL SRT16(NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,
-     &           JVOVO,JJVO,JJVO,VOVO2,VOVO3)
+      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,
+     &            JVOVO,JJVO,JJVO,VOVO2,VOVO3)
       OFF1 = 1
       OFF3 = 1
       DO IREP = 1, NREP
@@ -5691,6 +5777,10 @@ C
  10   CONTINUE
       ENDDO
 C
+      IF(ABIJ.ne.IVVOOTT(nrep+1)) THEN
+        WRITE(*,*) 'ABIJ/IVVOOTT:',ABIJ,IVVOOTT(NREP+1)
+        STOP 'COUNTING ERROR IN DENOMVVOO!'
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6322,6 +6412,69 @@ C
 C       DO I=1,30
 C         write(iw,'(I3,8E13.4)') I,(E(I,J),J=1,8)
 C       ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION QMASYMR(E,LDE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Computes deviation from symmetry of a quadratic matrix
+C
+      REAL*8 QMASYMR
+      INTEGER LDE
+      REAL*8 E(LDE,LDE),ASYM
+C
+C---------------Executable code--------------------------------------
+C
+      ASYM=0.0d0
+      IF(LDE.eq.1) THEN
+       QMASYMR = ASYM
+       RETURN
+      ENDIF
+
+      DO I=2,LDE
+        DO J=1,I-1
+          ASYM = ASYM + DABS(E(I,J) - E(J,I))
+        ENDDO
+      ENDDO
+
+      QMASYMR = ASYM
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION QMASYMQ(E,LDE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Computes deviation from symmetry of a quadratic matrix
+C
+      REAL*8 QMASYMR
+      INTEGER LDE
+      REAL*8 ASYM
+      COMPLEX*16 E(LDE,LDE)
+C
+C---------------Executable code--------------------------------------
+C
+      ASYM=0.0d0
+      IF(LDE.eq.1) THEN
+       QMASYMQ = ASYM
+       RETURN
+      ENDIF
+
+      DO I=2,LDE
+        DO J=1,I-1
+          ASYM = ASYM + ABS(E(I,J) - E(J,I))
+        ENDDO
+      ENDDO
+
+      QMASYMQ = ASYM
 
       RETURN
       END
