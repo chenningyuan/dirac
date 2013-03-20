@@ -19,15 +19,15 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module ao_eval
+module dirac_ao_eval
 
 !   this is based on DIRAC and Dalton
 !   routines written by T. Helgaker, P. Salek, T. Saue, and others
 
 ! - in order to calculate aos using this module
 !   you need to initialize some data first
-!   by calling ao_eval_init from each node
-! - ao_eval_init will set symmetry and basis set information
+!   by calling dirac_ao_eval_init from each node
+! - dirac_ao_eval_init will set symmetry and basis set information
 !   that is needed in each point and then mpi_bcast this info to the nodes
 ! - we try to not recalculate data which does not change from point to point
 !   (like symmetry)
@@ -42,7 +42,7 @@ module ao_eval
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
 ! - this module is called dft_ao but should be usable also outside dft
-!   this is why some information is passed through ao_eval_init and not queried
+!   this is why some information is passed through dirac_ao_eval_init and not queried
 !   from dft_cfg, to keep this module generic, please dont "use dft_cfg" here
 
 !   FAQ
@@ -81,12 +81,12 @@ module ao_eval
    use interface_ao
    use xc_max_block_length
    use extra
-   use ao_eval_sub
+   use dirac_ao_eval_sub
 
    implicit none
 
    public get_ao
-   public ao_eval_init
+   public dirac_ao_eval_init
 
    integer, public :: ao_off_g1_m0(1:3, 0:0)
    integer, public :: ao_off_g0_m1(0:0, 1:3)
@@ -311,7 +311,7 @@ contains
 
    end subroutine
 
-   subroutine ao_eval_init(g_order, &
+   subroutine dirac_ao_eval_init(g_order, &
                            m_order, &
                            use_mpi_if_possible)
 

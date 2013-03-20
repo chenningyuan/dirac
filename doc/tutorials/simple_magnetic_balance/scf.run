@@ -1,1 +1,1 @@
-pam --inp=scf.inp --mol=hf.mol --get=DFCOEF
+pam --inp=scf.inp --mol=hf.mol --outcmo

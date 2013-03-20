@@ -75,7 +75,10 @@ install(
     )
 
 install(
-    DIRECTORY ${PROJECT_SOURCE_DIR}/basis ${PROJECT_SOURCE_DIR}/basis_dalton
+    DIRECTORY
+    ${PROJECT_SOURCE_DIR}/basis
+    ${PROJECT_SOURCE_DIR}/basis_dalton
+    ${PROJECT_SOURCE_DIR}/basis_ecp
     DESTINATION share/dirac
     PATTERN .git EXCLUDE
     )

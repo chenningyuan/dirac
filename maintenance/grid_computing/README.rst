@@ -42,11 +42,14 @@ Working with your certificate
 Simple initialization :
 ::
  voms-proxy-init --voms voce
+ voms-proxy-init --voms sivvp.slovakgrid.sk
+
 
 More advanced initialization:
 ::
 
   voms-proxy-init --voms voce -hours 24 -vomslife 24:00 --out ~/voce_cert; export X509_USER_PROXY=~/voce_cert; voms-proxy-info --all
+  voms-proxy-init --voms sivvp.slovakgrid.sk -hours 24 -vomslife 24:00 --out ~/sivvp.slovakgrid.sk_cert; export X509_USER_PROXY=~/sivvp.slovakgrid.sk_cert; voms-proxy-info --all
   voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
 
@@ -55,7 +58,8 @@ Create and store a long-term proxy (default 7 days):
   myproxy-init  --pshost myproxy.cnaf.infn.it -d -n # compchem
   myproxy-init  --pshost px.ui.savba.sk  -d -n       # voce
 
-  myproxy-init  --pshost px.ui.savba.sk  -d -n -c 1440       # voce, 60 days
+  myproxy-init  --pshost px.ui.savba.sk        -d -n -c 4780       # voce, cca 198.1 days (maximum) 
+  myproxy-init  --pshost myproxy.cnaf.infn.it  -d -n -c 4780       # compchem, cca 198.1 days (maximum) 
 
 where "--pshost <myproxy_server>" specifies the hostname of the machine where a MyProxy Server runs, 
 the -d option instructs the server to associate the user DN to the proxy, 
@@ -95,9 +99,17 @@ What you have in your VO's lfn-space:
   lcg-ls -l  lfn://grid/voce/ilias/
   lcg-ls -l  lfn://grid/compchem/ilias
  
-Copy (upload) file to your VO's data storage space:
+Put (upload) file to your VO's data storage space:
 :: 
-  lcg-cr file:$PWD/dirac_grid_suite.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
+
+  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite_slim.tgz
+
+  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
+  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz
+
   lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
 
 And you get answer like:
@@ -116,14 +128,17 @@ Delete selected data from your SE space:
 ::
 
   lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
   lcg-del -a lfn://grid/compchem/ilias/dirac_grid_suite.tgz
 
 Donwload files from SE into your server's current directory:
 
 :: 
 
- lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz      file://$PWD/dirac_grid_suite.tgz
- lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz  file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz             file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz        file://$PWD/dirac_grid_suite_slim.tgz
+ lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz         file://$PWD/dirac_grid_suite.tgz
+ lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz    file://$PWD/dirac_grid_suite_slim.tgz
 
 
 -----------------------------------

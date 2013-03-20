@@ -16,7 +16,7 @@ module fde_integrate
    use dft_cfg
    use emb_xcfun_interface
    use interface_grid
-   use ao_eval
+   use dirac_ao_eval
    use density_eval
    use xc_max_block_length
 
@@ -297,7 +297,7 @@ endif
      
       max_ao_m_order = 0
      
-      call ao_eval_init(max_ao_g_order, &
+      call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .false.)
 

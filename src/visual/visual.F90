@@ -24,7 +24,7 @@ module visual
   use memory_allocator
   use visual_cfg
   use codata
-  use ao_eval
+  use dirac_ao_eval
   use interface_ao
   use matrix_defop_old
   use matrix_genop_old, only: copy_matrix_sym
@@ -430,7 +430,7 @@ contains
 !   initialize ao module
 !   ====================
 
-    call ao_eval_init(max_ao_g_order, &
+    call dirac_ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
                       .false.)
 

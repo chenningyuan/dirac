@@ -3116,10 +3116,10 @@ C     print*,'NHX at the end',NHX
         end do
       end if
 *
-      NTEST = 00
+      NTEST = 100
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
-          WRITE(6,*) ' Information from  GET_HX_RELA_CC '
+          WRITE(6,*) ' Information from  GET_HX_RELA_KRCC '
           WRITE(6,*)
           write(6,*) ' Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
@@ -3994,6 +3994,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
         end do
       end if
 *
+      NTEST = 100
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
           WRITE(6,*) ' Information from  GET_HX_RELA '

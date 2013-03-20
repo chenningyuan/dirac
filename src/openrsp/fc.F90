@@ -6,7 +6,7 @@ module fc
 !           for E_PNC calculations and not for FC
 
    use interface_ao
-   use ao_eval
+   use dirac_ao_eval
    use matrix_defop_old
 
    implicit none
@@ -55,7 +55,7 @@ contains
       end if
 
       call interface_ao_read(.false.)
-      call ao_eval_init(1, 0, .false.)
+      call dirac_ao_eval_init(1, 0, .false.)
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0

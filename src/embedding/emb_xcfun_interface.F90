@@ -21,7 +21,7 @@
 
 module emb_xcfun_interface
 
-   use xcfun
+   use xcfun_1_0
    use xc_max_block_length
    use xc_mpi
 

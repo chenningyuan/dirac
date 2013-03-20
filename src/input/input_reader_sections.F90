@@ -1342,6 +1342,7 @@
 
    subroutine read_input_pcm(word, kw_section)
 
+      use dirac_cfg
 #ifdef PCM_MODULE
       use pcmmod_cfg
 #endif

@@ -4,7 +4,7 @@ program xc_example
 !  that are needed to "talk to" the xcfun library
 !  and demonstrates how to use them
 
-   use xcfun
+   use xcfun_1_0
 
    implicit none
 

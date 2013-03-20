@@ -1,9 +1,24 @@
 
+
+12.6
+----
+
+- Add basis_ecp to "make install" target.
+- Make it possible to compile without XCFun.
+- Enable creation of static executables with older linkers.
+- Add --replace option to the pam script.
+- introduce keyword .THRECI in KR-CI input to allow the user to change the default CI energy convergence criterion,
+  present default::
+
+    .THRECI
+     1.0d-10
+
+- Bugfix for MPI interface on Cray/MPICH2 systems (thanks to Juho for pointing out the problem).
+
+
 12.5
 ----
 
-- Allow pam --get and --put with rename (example: pam --get DFCOEF=dz.coef).
-- Correct pam exit message when dirac.x crashes.
 - IMPORTANT fix for two-component calculations based on the X2C/BSS Hamiltonian with two-electron spin-orbit corrections from AMFI.
   All DIRAC versions since DIRAC10 were affected.
   All two-component calculation based on a molecular input (.mol/.xyz) where atoms of the same nuclear charge were
@@ -74,6 +89,9 @@
     ----------------------------------------------------------------------
     X         ...       10     ...    ...       ...
     Y         ...       10     ...    ...       ...
+
+- Allow pam --get and --put with rename (example: pam --get DFCOEF=dz.coef).
+- Correct pam exit message when dirac.x crashes.
 
 
 12.4
