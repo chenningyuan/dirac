@@ -2981,7 +2981,7 @@ C
       INTFLG = INTXQR
 C
       IF (INTFLG.LE.0) THEN
-         WRITE(LUPRI,'(2(/A),/)') ' *** WARNING ****',
+         WRITE(LUPRI,'(/A/)') ' *** WARNING ****'//
      &        ' No integrals included in Fock matrix construction'
       END IF
 C
@@ -3221,7 +3221,7 @@ C
 C
          ZERO = .TRUE.
 C
-         WRITE(LUPRI,'(2(/A),A16,2(/A,D7.1),//2A)') 
+         WRITE(LUPRI,'(2(/A),A16,2(/A,1P,D7.1),//2A)')
      &        ' *** WARNING ****',
      &        ' Skipping property     : ',PRPNAM(INDPRP),
      &        ' since norm of gradient: ',GPTNRM,
