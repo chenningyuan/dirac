@@ -10,7 +10,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCEXC_MAIN (IW,IOBASE,EPS)
  
-      IMPLICIT INTEGER(A_Z)
+      IMPLICIT INTEGER(A-Z)
 
       integer iw       ! I/O file handle for screen output
       integer IOBASE   ! I/O base file handle, all purposes
