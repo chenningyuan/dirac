@@ -7800,6 +7800,7 @@ C
       REWIND (LUXYZ)
 
       WRITE (LUXYZ,'(I10/)') NUCDEP
+      WRITE (LUXYZ,*) " "
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
