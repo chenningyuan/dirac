@@ -3550,8 +3550,7 @@ C
             RTHRCI = OPT_THRGRD
             CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,
-     &                         OPT_CIPROGRAM,
+     &                         IOPT_ISTATE,ICONV_TOT,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
@@ -3562,8 +3561,7 @@ C
             CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_ISTATE,THRPCI,
-     &                           OPT_CIPROGRAM,IPROPT,
-     &                           WORK,KFREE,LFREE)
+     &                           IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,

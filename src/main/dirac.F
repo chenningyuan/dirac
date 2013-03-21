@@ -574,8 +574,6 @@ C
          NGSP(2,1) = NAELEC
       ELSE IF (CISELECT .EQ. 'ESRCI') THEN
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
-C            (Cxx are preparation for RESOLVE instead of FULLCI
-C             in the DHF open shells)
 
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
@@ -615,6 +613,8 @@ C
             END DO
          END IF
 
+C            (Cxx are preparation for RESOLVE instead of FULLCI
+C             in the DHF open shells)
 Cxx      XELEC = D2*NCESRT
          IF (NOPEN .NE. 1) THEN
             write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
