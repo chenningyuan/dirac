@@ -28,7 +28,7 @@ C***********************************************************************
 C
 C     Driver routine to PSIOP1
 C     Get second order optimized wave function.
-C     Either DHF or KR-MCSCF...
+C     Either DHF or KR-MCSCF... (WFTYP = 'SCF   ' or 'MCSCF ')
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
@@ -3946,7 +3946,7 @@ C
      &              get_orbital_rotation_indices_pp(),1)
          CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,
      &              get_orbital_rotation_indices_pn(),1)
-        
+
 C
       END IF
 C

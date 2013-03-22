@@ -2551,7 +2551,7 @@ C
 C     Calculate gradient
 C
 #ifdef PCM_MODULE
-      if (dirac_cfg_pcm) then
+      if (dirac_cfg_pcm .and. .not.dongrd) then
          write(lupri, *), 'Forcing numerical evaluation of molecular '// 
      &   'gradient for PCM.'
          dongrd = .true.
@@ -2566,7 +2566,6 @@ C
       EXABA = .TRUE.
 C
 #else /* PRG_DIRAC */
-      CLOSE (13)
 C
 C     Let's see if this is a wave function we know, if not: Do it numerically
 C

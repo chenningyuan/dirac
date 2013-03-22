@@ -445,7 +445,7 @@ C
       WRITE(LUPRI,'(1X,A)')
      &     '* Properties calculated for the following wave functions: '
       DO I = 1, NPRPWF
-         WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
+         WRITE(LUPRI,'(I6,2A)') I,': ',PRPWF(I)
       END DO
 
 CMI ...for magnetic susceptibility, NMR shielding constants and rotational
