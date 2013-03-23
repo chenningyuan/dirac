@@ -3498,13 +3498,22 @@ C
                         ISCOR2 = IPTCNT(3*(IATOM2-1)+ICOOR2,IREPO,2)
                         IF (ISCOR2 .GT. 0) THEN
                            NDSOIN = NDSOIN + 1
-                           PNAME = 'DSO '//NAMN(IATOM1)
-     &                      //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                      //NAMN(IATOM2)
-     &                      //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
-                           PLABEL(1) = 'DSO '
-     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           PNAME = 'DS'
+     &                       //NAMN(IATOM1)
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //NAMN(IATOM2)
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
+                           PLABEL(1) = 'DS'
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
                            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                            IF(IPRINT.GE.1) THEN
@@ -3686,8 +3695,8 @@ C
       DO I = 1,NDSOIN
         IOP = IPDSO(I)
         IPL = IPRPLBL(1,LEXPP(IOP))
-        READ(PRPLBL(IPL)(5:6),'(I2)') IA
-        READ(PRPLBL(IPL)(7:8),'(I2)') IB
+        READ(PRPLBL(IPL)(3:5),'(I3)') IA
+        READ(PRPLBL(IPL)(6:8),'(I3)') IB
         SPNMAT(IA,IB) = EXPVAL(IOP)
         SPNMAT(IB,IA) = EXPVAL(IOP)
       ENDDO
