@@ -646,7 +646,7 @@ C
          INTTYP = 12
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of diamagnetic spin-orbit integrals.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
      &               TRIANG)
          ANTI = .FALSE.
