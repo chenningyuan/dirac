@@ -1779,7 +1779,7 @@ C
 C
 C     Diamagnetic spin-orbit integrals
 C
-      ELSE IF(LABINT(1:3).EQ.'DSO') THEN
+      ELSE IF(LABINT(1:2).EQ.'DS') THEN
         CLASLB = 'DSO    '
 C
 C     Half-derivative overlap integrals
