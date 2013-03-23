@@ -308,20 +308,7 @@ class pam_enviroment:
         """copy file from directory "scr" to "dest"
      for the printout use 'purified' file names"""
         try:
-            src_pure=os.path.split(src)[1]; dest_pure=os.path.split(dest)[1]
-            if message:
-                if src_pure==dest_pure:
-                    if os.path.isfile(dest):
-                        print '  Copying file "',src_pure,'" to scratch dir. Overwriting identical file there. '
-                    else:
-                        print '  Copying file "',src_pure,'" to scratch dir. '
-
-                else:
-                    if os.path.isfile(dest):
-                        print '  Copying file "',src_pure,'" to scratch dir as "',dest_pure,'". Overwriting identical file there.'
-                    else:
-                        print '  Copying file "',src_pure,'" to scratch dir as "',dest_pure,'".'
-
+            if self.verbose: print "  Copying %s to %s" % (src, dest)
             shutil.copy(src, dest)
         except:
             if os.path.isfile(src):
@@ -343,7 +330,7 @@ class pam_enviroment:
 
     def copy_with_replacement(self, src, dst):
         try:
-            if self.verbose: print "pam: Copying %s to %s" % (src, dst)
+            if self.verbose: print "  Copying %s to %s" % (src, dst)
             if self.string_replace_list == []:
                 if src.endswith('.gz') and not dst.endswith('.gz'):
                     # -ifile.gz=file
