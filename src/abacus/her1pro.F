@@ -646,7 +646,7 @@ C
          INTTYP = 12
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of diamagnetic spin-orbit integrals.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
      &               TRIANG)
          ANTI = .FALSE.
@@ -2962,9 +2962,13 @@ C
                            ELSE
                               ISCOOR = 3*NUCDEP*(ISCOR1 - 1) + ISCOR2
                            END IF
-                           LABINT(ITYP) = 'DSO '
-     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           LABINT(ITYP) = 'DS'
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
                            INTREP(ITYP)   = 0
                            INTADR(ISCOOR) = ITYP
                         END IF

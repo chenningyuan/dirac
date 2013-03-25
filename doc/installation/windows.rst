@@ -2,41 +2,46 @@
 DIRAC on Windows
 ================
 
-DIRAC is beeing developed and is working mainly under Linux/Unix operating systems.
-Regarding the Windows system, the code is able to run under the *CygWin* intermediating enviroment
+DIRAC is beeing developed and works mainly on machines with Linux/Unix operating systems.
+Regarding the operating system Windows, DIRAC is able to run under the *CygWin* intermediating enviroment,
 which has all necessary Linux substitutes.
 
-Since many desktop computers are sold with preinstalled Windows operating system, it is worth to try the DIRAC software in  
-the pure Windows environment.
+Though many desktop computers are sold with preinstalled Windows operating system, it is worth to adapt the DIRAC software   
+for the Windows environment.
 
-Thanks to the *CMake* buildup system and related Windows supported software you can set up the DIRAC software
+Thanks to the modern  *CMake* buildup system and related Windows supported software you can fully set up the DIRAC software
 under the Microsoft Windows operating system. 
 
-We have tested the DIRAC downloading from its git-repositiry, configuration, compilation and tests running 
-within the Windows 7 version.
+We have tested the DIRAC downloading from its git-repository, configuration, compilation and tests running, 
+all in the framework of the Windows 7 operating system.
 
 Dependencies
 ------------
 
 The user has to equip his Windows Desktop machine with this software:
+
 1. The CMake system (www.cmake.org).
+
 2. The MinGW program suite ("Minimalist GNU for Windows"), containing  GNU compilers and various Linux commands. 
    For 32-bit  Windows operating systems, use www.mingw.org, for 64-bit Windows, employ MinGW64 - http://tdm-gcc.tdragon.net.
    If you want to use  the MinGW64 suite, check that "C:\MinGW64\bin" is before the 32-bit version, "C:\MinGW\bin", 
    in the PATH environmental variable.
+
 3. The Python programming language of version at least 2.7 (www.python.org).
 
-In addtion, developpers have to install also:
-4. The Git version control system (http://git-scm.com)
+In addtion, DIRAC developpers have to install :
+
+4. The Git version control system (http://git-scm.com).
+
 5. The Sphinx documentation generator, see below.
 
-The CMake suite can not be used when the shell command (sh.exe) from other package is found in the  %PATH% enviromental variable.
-Please avoid having "...\\Git\\bin" and "...\\MinGW\\msys\\1.0\\bin" (comes with the installation of 32-bit MinGW)
+Important: The CMake suite can not be used when the shell command (sh.exe) from other package is found in Windows %PATH% enviromental variable.
+Please avoid having "...\\Git\\bin" and "...\\MinGW\\msys\\1.0\\bin" (associated with the installation of 32-bit MinGW)
 in your %PATH% as these are causing conflict with CMake !
 
-The MinGW compilers and related Linux-like tools are reachable through the system %PATH% variable
-(you find "...\\MinGW\\bin", or "...\\MinGW64\\bin" in %PATH% and this gives no conflict with CMake),
-the same for the Python script and the CMake systen. See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues
+The MinGW(64) compilers and related Linux-like tools are reachable through the system %PATH% variable
+(you find strings like "...\\MinGW\\bin", or "...\\MinGW64\\bin" in %PATH% and this gives no conflict with CMake),
+the same holds for the Python script and the CMake systen. See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
 
 Documentation tool (developpers)
 --------------------------------
@@ -45,16 +50,16 @@ To be able to generate the documentation, the user has to download the *Sphinx* 
 package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools).
 
 We recommend to install the 32-bit version of Python also on 64-bit machines
-as you will also need the *matplotlib* (http://matplotlib.sourceforge.net/)
-and the *numpy* (http://numpy.scipy.org/) additional packages which might not be at disposal in 64-bit versions.
+as you will also need additional packages  *matplotlib* (http://matplotlib.sourceforge.net/)
+and *numpy* (http://numpy.scipy.org/) which might not be at disposal in 64-bit versions.
 
 Check that the *%Path%* Windows environmental variable points to both Python and its scripts,
-is has to contain string like "...C:\Python27;C:\Python27\Scripts;..."
+is has to contain string like "...C:\\Python27;C:\\Python27\\Scripts;...".
 
 Git & PuTTy (developpers)
 --------------------------
 
-To enable server connectivity please install full PuTTy package for handling SSH keys.
+To enable server connectivity please install full PuTTy package for handling your SSH key pair.
 The best way is through the PuTTy self installer, see
 http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 
@@ -62,8 +67,8 @@ Prepare your own pair of SSH keys - private and public. You can generate them
 with the PuTTyGen generator which writes private key in wanted ppk-format.
 
 Since the Git program runs under Windows, ensure that during Git installation the %PATH% system variable in not modified !
-Due to this issue you have to type the full path for running "git.exe" in DOS-type windows. We propose to install
-the Git package on the "C:" disk drive so that you get the shortest path for launching, "C:\\Git\\bin\\git.exe".
+Due to this issue you have to type the full path for running "git.exe" in DOS-type window. We propose to install
+the Git package on the "C:" disk drive so that you have to type the shortest path for launching, "C:\\Git\\bin\\git.exe".
 
 For dowloading/uploading from/to the DIRAC repository you have to have the *PuTTy "Pageant"* authentication agent 
 active with loaded private key, while the public key has to be placed in the DIRAC git repository user space.
@@ -90,37 +95,61 @@ Installation and running
 ========================
 
 Configuration, installation and own execution of DIRAC is possible from the Windows (or DOS) command line. 
-Windows operating systems creates executables with the ".exe" suffix, like dirac.x.exe.
+Windows operating systems are generating executables with the ".exe" suffix, like dirac.x.exe.
 
 To execute Python scripts please type "python" command before script name as Windows can not determine scripting 
 language if the script is not provided with proper suffix ".py".
 
-Finally, instead of "make" use its MinGW/MinGW64 version, what is "mingw32-make".
+Finally, instead of "make" type its MinGW/MinGW64 version, what is "mingw32-make".
 
-Here we give few examples:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*Some DIRAC buildup examples:*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For specifying parameters for Python scripts (either in the "diracrc" configuration file, or directly in the command line),
-use "...". For example, --scratch="C:\Users\dv6-2145ec\tmp"
+For specifying one or more parameters for Python scripts (either in the ".diracrc" configuration file, or directly by typing in the command line),
+you must enveloped them into iverted commas, "...". For example: :: 
+ --scratch="C:\Users\dv6-2145ec\tmp"
+
+Update your local DIRAC source (must have ssh connection enabled):  ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk>C:\Git\bin\git.exe pull
   
 Select modules: ::
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk>python pamadm -a
-Configure DIRAC: ::  
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk>python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force build
-  python setup -D VERBOSE_OUTPUT=ON --int64=on --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" --force build_MinGW64
-Compile executable: ::  
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make VERBOSE=1 dirac.x
-Run specific tests: ::  
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk>python runtest --tests="fscc cosci_energy" --verbose
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
-Perform the full CDash buildup: ::
-  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk>python pamadm -a
+
+Configure DIRAC: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk>python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force build
+ python setup -D VERBOSE_OUTPUT=ON --int64=on --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" --force build_MinGW64
+
+Compile executable:  ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>cmake ..
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make VERBOSE=1 dirac.x
+
+Run specific tests: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk>python runtest --tests="fscc cosci_energy" --verbose
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
+
+Perform the complete CDash buildup in one step: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+
+Make the CDash buildup in separate steps:  ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalUpdate
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalConfigure
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalBuild
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
+
   
 Final remarks
 -------------
-So far we have tested DIRAC sequential buildup with the MinGW/MinGW32 suite of compilers.
-For profiting from multithreading, enthusiastic developer has to investigate Open MPI parallelization, www.open-mpi.org. 
-Also, one should try commercial compilers, like Intel.
-Concerning mathematical libraries, we have to resort to own provided BLAS & LAPACK libraries. 
-The ATLAS library preparation for Windows is only in the experimental phase. Maybe, there is the Intel-MKL library
-available, but this costs money ;).
+So far we have tested DIRAC in sequential buildups with the MinGW/MinGW64 free of charge suite of compilers.
+To profit from multithreading under Windows, enthusiastic developers should investigate Open MPI parallelization, www.open-mpi.org. 
+Also, one should try some commercial compilers, like Intel.
+Concerning mathematical libraries, we have to resort to DIRAC own BLAS & LAPACK libraries. 
+The ATLAS library preparation for Windows is only in the experimental phase (http://math-atlas.sourceforge.net/errata.html#win64).
+Maybe, there is the Intel-MKL library at hand, but costs some money ;).

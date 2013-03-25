@@ -980,9 +980,11 @@ C           orbital common block is set (this info is currently needed
 C           to correctly process the orbital energy list), this is
 C           why we check for I_DCBORB_SET as well.
 C
+C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero lenght, 
+C           to DUMMY to satisfy run with runtime check flags
 C
             IP = - 666
-            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,DUMMY)
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
             CALL REACMO_no_work(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
@@ -2798,6 +2800,25 @@ C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
 C     information for a set of fragments.
 C
+C     Returns:
+C
+C         CSEL - selected coefficient adapted to molecule basis dimensions
+C         ESEL - corresponding orbital energies 
+C         IBSEL - corresponding irrep information
+C         NVECS(IFRP) - number of selected coefficients
+C         NFRAG - number of fragments
+C         NSTR(IFRP,I,NFRAG) - number of orbitals
+C            I = 0: total
+C            I = 1: positive-energy orbitals
+C            I = 2: negative-energy orbitals
+C         OWNBAS - logical variable; if true, then fragments are defined 
+C                  in their own basis
+C         NUCFRAG(NFRAG) - number of symmmetry-independent nuclei of this fragment
+C         IOPT - flag for the coefficient reader CMO
+C         KVEC - (IFRP,NFRAG) - start address for list of selected orbitals of fermion ircop
+C                IFRP for each fragment
+C         CMO, EIG,IBEIG - buffer space for all coefficients, energies, irrep info
+C         IOFF - offset in list of orbitals; allows to fill CSEL in several calls to SELFRAG
 C     For each fragments, this information is first read into:
 C        CMO - coefficients
 C        EIG - eigenvalues

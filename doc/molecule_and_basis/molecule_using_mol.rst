@@ -100,6 +100,18 @@ point value somewhere within the space specified below::
           1.    2--------here--------
   [...]
 
+As an example, here is the Ne atom with a custom nuclear
+exponent of 10.0D8::
+
+  DIRAC
+
+                 --------here--------
+  C   1
+        10.     1   10.0D+08
+  Ne    0.0  0.0  0.0
+  LARGE BASIS cc-pVDZ
+  FINISH
+
 
 Fitting basis set
 -----------------

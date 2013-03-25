@@ -46,7 +46,7 @@ First steps in DIRAC territory
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` 
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -55,6 +55,9 @@ First steps in DIRAC territory
 
 Tutorials and walkthrus
 =======================
+
+* **Basis sets:**
+  :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start/tutorial>`
@@ -86,7 +89,6 @@ Tutorials and walkthrus
 
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
-  :doc:`Case study: NMR shielding of UF3Cl3 <tutorials/nmr_uf3cl3/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
 * **Visualization:**
@@ -150,7 +152,8 @@ Developers
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
-  :doc:`Further development <programmers/further_development>` 
+  :doc:`Further development <programmers/further_development>` |
+  :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |

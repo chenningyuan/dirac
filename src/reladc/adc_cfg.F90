@@ -34,12 +34,16 @@ module adc_cfg
   integer, public                  :: reladc_adclevel   = 3
   logical, public                  :: reladc_dosips     = .false.
   logical, public                  :: reladc_dodips     = .false.
+  logical, public                  :: reladc_doexci     = .false.
   integer, dimension(1:32), public :: reladc_sipreps    = 0  
   integer, dimension(1:32), public :: reladc_dipreps    = 0  
+  integer, dimension(1:32), public :: reladc_excreps    = 0  
   logical, public                  :: reladc_readqkl    = .false.
   logical, public                  :: reladc_doconst    = .true.
   logical, public                  :: reladc_doadcpop   = .false.
   logical, public                  :: reladc_dofull     = .false.
+  logical, public                  :: reladc_doxext     = .false.
+  logical, public                  :: reladc_dohpdiag   = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06
   real*8,  public                  :: reladc_adcthr     = 0.0
 !
@@ -47,10 +51,14 @@ module adc_cfg
 !
   integer, public                  :: reladc_sipiter    = 500
   integer, public                  :: reladc_dipiter    = 500
+  integer, public                  :: reladc_exciter    = 500
   integer, dimension(1:32), public :: reladc_sipeigv    = 0
   integer, dimension(1:32), public :: reladc_dipeigv    = 0
+  integer, dimension(1:32), public :: reladc_exceigv    = 0
   real*8,  public                  :: reladc_sipprnt    = 50.0
   real*8,  public                  :: reladc_dipprnt    = 50.0
+  real*8,  public                  :: reladc_excprnt    = 50.0
   logical, public                  :: reladc_doincore   = .false.
+  integer, public                  :: reladc_lancmem    = 100000000
 
 end module

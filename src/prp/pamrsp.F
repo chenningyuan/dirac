@@ -3748,6 +3748,7 @@ C         trial vectors of this kind is generated
           IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
             NMDIM = NFREQ*NSTAT*NDAMP
             CALL IZERO(IVEC,NMDIM)
+            IFREQ = 0 ! MI : initialize to avoind runtime failure..
             DO IP = 1,NFREQ*NDAMP,NDAMP
               IFREQ = IFREQ + 1
               IM = IP + NFREQ*NDAMP

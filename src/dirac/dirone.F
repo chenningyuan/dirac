@@ -4832,7 +4832,6 @@ C
       DIMENSION P(4)
 C
 CTROND
-      WRITE(6,*) 'TEST, IPRINT = ', IPRINT
       IF(IPRINT.GE.7) THEN
          CALL HEADER('PRJORT: MO transformation matrix on input',-1)
          CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)

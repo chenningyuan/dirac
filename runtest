@@ -529,6 +529,7 @@ class run:
              for i in range(2, len(line.split())):
                  launcher_flags += line.split()[i] + ' '
          if program_is_dirac:
+             os.environ['DIRAC_UTILS_PATH'] = '%s' %options.builddir
              if not options.verbose:
                  launcher_flags += '--silent '
              if not options.backup:
