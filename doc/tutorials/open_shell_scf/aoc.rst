@@ -92,29 +92,42 @@ Gradient elements and off-diagonal blocks of the Fock matrix
 The generally non-zero elements of the gradient vector are:
 
 - inactive-secondary rotations:
-.. math:: \quad g_{ia}=h_{ai}+\sum_T Q_{ai}^T=F^I_{ai}
+.. math::
+
+  \quad g_{ia}=h_{ai}+\sum_T Q_{ai}^T=F^I_{ai}a
+
 - active-secondary rotations:
-.. math:: \quad g_{ua}=f_U\left[F^I_{au}+(a_U-1)Q^U_{au}\right];\quad u\in U
+.. math:: 
+
+  \quad g_{ua}=f_U\left[F^I_{au}+(a_U-1)Q^U_{au}\right];\quad u\in U
+
 - inactive-active rotations:
-.. math:: \quad g_{iu}=(1-f_U)\left[F^I_{ui}+f_U\alpha_UQ^U_{ui}\right];\quad u\in U
+.. math:: 
+
+  \quad g_{iu}=(1-f_U)\left[F^I_{ui}+f_U\alpha_UQ^U_{ui}\right];\quad u\in U
+
 - inter-shell active-active rotations
-.. math:: \quad g_{uv}=(f_U-f_V)F^I_{vu}-(\alpha_U-1)f_UQ^U_{vu}-(\alpha_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
+.. math:: 
+
+  quad g_{uv}=(f_U-f_V)F^I_{vu}-(\alpha_U-1)f_UQ^U_{vu}-(\alpha_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
 
 where we have introduced 
 
-.. math:: \quad \alpha_S = \frac{1-a_S}{1-f_S}
+.. math:: 
+
+  \quad \alpha_S = \frac{1-a_S}{1-f_S}
 
 These gradient elements allow the definition of the off-diagonal elements of the Fock matrix:
 
 - inactive-secondary block:
-.. math:: \quad {\cal F}_{ia}=F^I_{ia}
+.. math:`\quad {\cal F}_{ia}=F^I_{ia}`
 - active-secondary block:
-.. math:: \quad {\cal F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U
+.. math:`\quad {\cal F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U`
 - inactive-active block:
-.. math:: \quad {\cal F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U
+.. math:`\quad {\cal F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U`
 - inter-shell active-active rotations :math:`U\ne V`:
-.. math:: \quad {\cal F}_{uv}=F^I_{uv}-\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}-\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv};\quad f_U\ne f_V
-.. math:: \quad {\cal F}_{uv}=(a_U-1)Q^U_{uv}-(a_V-1)Q^V_{vu};\quad f_U = f_V
+.. math:`\quad {\cal F}_{uv}=F^I_{uv}-\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}-\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv};\quad f_U\ne f_V`
+.. math:`\quad {\cal F}_{uv}=(a_U-1)Q^U_{uv}-(a_V-1)Q^V_{vu};\quad f_U = f_V`
 
 Diagonal blocks of the Fock matrix
 ----------------------------------
@@ -130,21 +143,25 @@ from a specific shell :math:`T` and using the same orbital set as for the origin
 The energy difference becomes
 
 .. math::
+
    E^N_{av}-E^{N-1}_{av}=\frac{1}{M_T}\sum_{t\in T}\left[h_{tt}+\sum_S Q^S_{tt}+(a_{T}-1)Q_{tt}^T\right]
 
 If we now define the diagonal block of the Fock matrix corresponding to shell :math:`T` as
 
 .. math::
+
    {\cal F}_{pq} = h_{pq}+\sum_S Q^S_{pq}+(a_{T}-1)Q_{pq}^T
 
 the ionization potential associated with the electron removal becomes
 
 .. math::
+
    IP = E^{N-1}_{av}-E^N_{av}=-\frac{1}{M_T}\sum_{t\in T}\varepsilon_t
 
 In the case of a degenerate shell we simply find
 
 .. math::
+
    IP = E^{N-1}_{av}-E^N_{av}=-\varepsilon_t,\quad t\in T
 
 identical to the original Koopmans' theorem, whereas one in the general case gets an average over the orbital energies of the shell.
@@ -152,11 +169,19 @@ identical to the original Koopmans' theorem, whereas one in the general case get
 Based on these observations we define the diagonal blocks of the AOC Fock matrix as
 
 - inactive-inactive block:
-.. math:: \quad {\cal F}_{ij}=F^I_{ij}
+.. math:: 
+
+  \quad {\cal F}_{ij}=F^I_{ij}
+
 - secondary-secondary block:
-.. math:: \quad {\cal F}_{ab}=F^I_{ab}
+.. math:: 
+
+  \quad {\cal F}_{ab}=F^I_{ab}
+
 - active-active block:
-.. math:: \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
+.. math:: 
+
+  \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
 
 *These are the definitions employed in DIRAC12 and onwards* (and also the definition found in the thesis of Jørn Thyssen [Thyssen2004]_). 
 In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
@@ -176,7 +201,9 @@ Level shift
 Whenever there is almost degeneracy of orbitals between different shells the recommended strategy is to exploit the freedom in the
 definition of diagonal blocks of the Fock matrix and introduce a *level shift* :math:`\lambda`, that is
 
-.. math:: \quad F^U_{uv} \rightarrow F^U_{uv}+\lambda\delta_{uv}
+.. math:: 
+
+ \quad F^U_{uv} \rightarrow F^U_{uv}+\lambda\delta_{uv}
 
 The level shift of secondary (virtual) orbitals is controlled by the keyword :ref:`.LSHIFT`, whereas open shells can be shifted
 using the keyword :ref:`.OLEVEL`.
