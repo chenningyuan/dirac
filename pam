@@ -828,7 +828,7 @@ Options are also read from ~/.diracrc"""
         # check the executable
         if  os.path.isfile(self.dirac_exe) is False:
             err_message=\
-            "The dirac.x executable either does not exist (in default build directory) or its location is wrongly or not specified. Check also the corresponding diracrc file. Wanted executable:"+self.dirac_exe
+            "The dirac.x(.exe) executable either does not exist or its location is wrongly or not specified. Wanted executable:"+self.dirac_exe_file
             print_error_message(err_message)
 
         if options.dest_timeout:
