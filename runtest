@@ -534,7 +534,10 @@ class run:
              if not options.backup:
                  launcher_flags += '--nobackup '
                  launcher_flags += '--noarch '
-             launcher_flags += '--dirac=%s/dirac.x ' % options.builddir
+             if sys.platform != 'win32':
+                 launcher_flags += '--dirac=%s/dirac.x ' % options.builddir
+             else:
+                 launcher_flags += '--dirac=%s/dirac.x.exe ' % options.builddir
              if options.jobargs:
                  launcher_flags += ' %s ' % options.jobargs
          if program_is_dalton:
