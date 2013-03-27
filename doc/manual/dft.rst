@@ -150,14 +150,13 @@ Use the collinear approximation as a definition of the spin density.
 
 .. math::
 
-    s = m_z = \sum_i \phi_i^\dagger \Sigma_z \phi_i
+ s={m_{z}}={\sum\limits_{i}}{ \phi_{i}^{\dagger}{{\Sigma}_{z}}{\phi_{i}} }
 
 instead of the default noncollinear definition
 
-
 .. math::
 
-    s = \vert \mathbf{m} \vert
+ s = \vert \mathbf{m} \vert
 
 
 keyword(BETASIGMA)
@@ -166,13 +165,13 @@ use
 
 .. math::
 
-    \mathbf{m} = \sum_{i} \phi_{i}^{\dagger} \beta \mathbf{\Sigma} \phi_{i}
+ \mathbf{m}=\sum_{i}\{phi_{i}^{\dagger}{\beta}{\mathbf{\Sigma}}{\phi_{i}}}
 
 instead of the default form
 
 .. math::
 
-   \mathbf{m} = \sum_i \phi_i^\dagger \mathbf{\Sigma} \phi_i
+ \mathbf{m} = \sum_{i} \phi_{i}^\dagger \mathbf{\Sigma} \phi_{i}
 
 
 **Adiabatic local density approximation (ALDA)**
