@@ -5,9 +5,9 @@ General
 
 When you add your bleeding edge code to the master branch, there
 are a number of things you try to make sure:
- - That you do not break compilation for other developers because of missing dependencies.
- - That your code does not get released in any way (official release or simply "make release").
- - That your new tests are run iff your module is compiled and that they exit in a controlled way otherwise.
+- That you do not break compilation for other developers because of missing dependencies.
+- That your code does not get released in any way (official release or simply "make release").
+- That your new tests are run iff your module is compiled and that they exit in a controlled way otherwise.
 
 
 Conditional compilation
