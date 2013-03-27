@@ -121,8 +121,7 @@
         n = n + excreps(i)
       enddo
       if(n.eq.0) then
-        write(iw,*) 'User has not given explicit symmetries.'
-        write(iw,*) 'Program checks them automatically'
+        write(iw,*) 'Program checks symmetries automatically'
         do i=1,nrep
           excreps(i) = i
         enddo
@@ -238,9 +237,9 @@
 !| prepare diagonalization              |
 !|______________________________________|
 !
-! create configuration information
-! file is created within WCONDAT_X.
-! file handle is available after call!
+! configuration information file
+! is created within WCONDAT_X.
+! file handle is reusable after call!
 !
         NAMECNFFIL='ADCXCF'
         WRITE(IW,*)
@@ -439,7 +438,7 @@
 !                                in the corresponding contrct call!
 !  v_a,ckl  *  V*_b,ckl   -->  bab   <||>
 !  'hermitize'  the result in bab (add the transposed cc)
-!  **att** tha array bab is packed as nv1*nv1(beta1),...
+!  **att** the array bab is packed as nv1*nv1(beta1),...
 !
       call srt1t2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             sa_vvoott,buf1)
@@ -594,7 +593,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Description--------------------------------------------
 !
-!     Count through the VOVO integrals and distribute the
+!     Crawl through the VOVO structure and distribute the
 !     C(0), C(2A) and C(2B) contributions to the hphp block
 !
 !---------------Calling variables--------------------------------------

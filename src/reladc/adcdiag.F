@@ -90,10 +90,10 @@ c
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
+!     WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-      WRITE(IW,*) 'Memory check done.'
+!     WRITE(IW,*) 'Memory check done.'
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
@@ -212,19 +212,28 @@ C
 
       N=2*NP+1
       CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  1 done.' 
       N=(2*NP+1)*LADC*RCW
       CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  2 done.' 
       N=(NP+1)*NITER*RCW
       CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  3 done.' 
       N=LADC*RCW
       CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  4 done.' 
       CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  5 done.' 
       N=INTBUF*RCW
       CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  6 done.' 
       N=INTBUF
       CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  7 done.' 
       CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  8 done.' 
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+      write(*,*) 'allocation  9 done.' 
 c
 c  remember memory pointers before we do the huge incore parts.
 c
@@ -1781,8 +1790,8 @@ c
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -1794,15 +1803,15 @@ c
 
         ELSE
 c
-c  take care of double ionizations
+c  take care of double ionizations and excitations
 c
            idipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)') 
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)') 
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -2130,8 +2139,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
@@ -2151,8 +2160,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
