@@ -2238,18 +2238,32 @@ C  /* Deck priinf */
 C
 C     Prints important information at the end of an optimization.
 C
+      use codata
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
+      real(8), allocatable :: xyz_angstrom(:, :)
+
       TMPNRG = 0.0D0
       RED = .FALSE.
-      CALL HEADER('Final geometry',-1)
+
+      CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
+
+      allocate(xyz_angstrom(3, mxcent))
+      xyz_angstrom = cord
+      xyz_angstrom = xyz_angstrom*xtang
+      CALL HEADER('Final geometry (angstrom)',-1)
+      CALL PRIGEO(xyz_angstrom)
+      deallocate(xyz_angstrom)
+
       WRITE(LUPRI,*)
      & 'Iter     Energy     Change    GradNorm  Index   StepLen'
      & // '    TrustRad #Rej'
