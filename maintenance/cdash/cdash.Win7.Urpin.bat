@@ -36,9 +36,10 @@ rem plink -agent git@repo.ctcc.no
 rem download fresh Dirac - MUST HAVE full path of git
 rem C:\Git\bin\git.exe pull origin release-12
 C:\Git\bin\git.exe pull
-python pamadm -a
+rem python pamadm -a --builddir=%BUILD%
 
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-master"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=on --force %BUILD%
+rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-master"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=on --force %BUILD%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-master" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=on --force %BUILD%
 cd %BUILD%
 cmake ..
 mingw32-make clean
@@ -50,19 +51,19 @@ rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win
 rem cd %BUILD_DBG%
 rem mingw32-make Experimental
 
-C:\Git\bin\git.exe pull 
+rem C:\Git\bin\git.exe pull 
 rem return to the top of the DIRAC directory
-cd %DIRAC%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-check-static-master" --debug --static --check -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD_STATIC%
-cd %BUILD_STATIC%
-cmake ..
-mingw32-make clean
-mingw32-make Experimental
+rem cd %DIRAC%
+rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-check-static-master" --debug --static --check -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD_STATIC%
+rem cd %BUILD_STATIC%
+rem cmake ..
+rem mingw32-make clean
+rem mingw32-make Experimental
 
 C:\Git\bin\git.exe pull 
 rem return to the top of the DIRAC directory
 cd %DIRAC%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-master" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64%
 cmake ..
 mingw32-make clean
 cd %BUILD_I32LP64%
