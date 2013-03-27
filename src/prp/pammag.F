@@ -2622,7 +2622,7 @@ C     .... release the whole block used in this subroutine
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
-       SUBROUTINE DEF_D1HBLOND(IMP,WORK,LWORK,IPRINT)
+       SUBROUTINE DEF_D1HBLOND(IMP,IPRINT)
 C*****************************************************************************
 C
 C   PURPOSE:
@@ -2659,7 +2659,7 @@ C
 #include "dcbsusc.h"
 #include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_D1HBLOND')
 #include "memint.h"

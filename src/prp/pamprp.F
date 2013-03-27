@@ -1337,7 +1337,7 @@ C     Magnetizabilities (magnetic susceptibilities), relaxation,expectation valu
 C     and if wished, diamagnetic terms
 C
       IF(MSUSCP) THEN
-        CALL DEF_MSUSCP(WORK,LWORK)
+        CALL DEF_MSUSCP()
       ENDIF
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
@@ -1351,7 +1351,7 @@ C
 C     Optical rotation
 C
       IF (OPTROT) THEN
-        CALL DEF_OPTROT(WORK,LWORK,IPRPRP)
+        CALL DEF_OPTROT(IPRPRP)
       ENDIF
 C
 C
@@ -4020,7 +4020,7 @@ C     Define right hand operators
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
       IF (LONDON) THEN
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+        CALL DEF_D1HBLOND(1,IPRINT)
       ELSE
 C
 C  Conventional atomic orbitals (common gauge origin approach)
@@ -4853,7 +4853,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_msuscp */
-      SUBROUTINE DEF_MSUSCP(WORK,LWORK)
+      SUBROUTINE DEF_MSUSCP()
 C****************************************************************************
 C
 C    PURPOSE: 
@@ -4882,11 +4882,10 @@ C
 #include "dcbsusc.h"
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_MSUSCP')
-#include "memint.h"
-
+C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
      &  'DEF_MSUSCP: Magnetic susceptibility'
@@ -4923,7 +4922,7 @@ C
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
-       CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
+       CALL DEF_D1HBLOND(2,LPRINT)  
 #endif
       ELSE ! Conventional AO
 C      ... XAVECTOR
@@ -8255,7 +8254,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OPTROT */
-      SUBROUTINE DEF_OPTROT(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OPTROT(IPRINT)
 C***********************************************************************
 C
 C     Define operator for optical rotation; based on DEF_SHIELD
@@ -8268,15 +8267,12 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "nuclei.h"
-      DIMENSION WORK(LWORK)
-C
-#include "memint.h"
-      CALL DEF_OPTROT1(WORK(KFREE),LFREE,IPRINT)
+      CALL DEF_OPTROT1(IPRINT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_optrot1 */
-      SUBROUTINE DEF_OPTROT1(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OPTROT1(IPRINT)
 C***********************************************************************
 C
 C     Define operator for optical rotation; based on DEF_SHIELD
@@ -8304,7 +8300,7 @@ C
 #include "dcbnmr.h"
 #include "chrxyz.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -8347,7 +8343,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+        CALL DEF_D1HBLOND(1,IPRINT)
       ELSE
 C
 C     Conventional atomic orbitals
