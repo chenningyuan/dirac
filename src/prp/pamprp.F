@@ -291,7 +291,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dipol */
-      SUBROUTINE DEF_DIPOLE(INDDIP,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DIPOLE(INDDIP,IPRINT)
 C***********************************************************************
 C
 C     Define dipole moment operator
@@ -306,7 +306,7 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION INDDIP(3),WORK(LWORK),PFAC(3)
+      DIMENSION INDDIP(3),PFAC(3)
 C
 C
       PNAME     = 'Dipole length: X'
@@ -348,7 +348,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_quadru */
-      SUBROUTINE DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_QUADRU(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define quadrupole moment operator
@@ -363,7 +363,7 @@ C***********************************************************************
 #include "dcbxpr.h"
 #include "dcbexp.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'Quadrupole moment'
@@ -441,7 +441,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_epolar */
-      SUBROUTINE DEF_EPOLAR(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EPOLAR(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
@@ -460,7 +460,7 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbxlr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
 #include "dcbibt.h"
 C
       CALL QENTER('DEF_EPOLAR')
@@ -536,7 +536,7 @@ C  Print section
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFN */
-      SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field 
@@ -550,21 +550,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFNINT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_EFN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efn1 */
-      SUBROUTINE DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C*****************************************************************************
 C
 C     Define electric field at individual nuclei
@@ -587,7 +586,7 @@ C*****************************************************************************
 #include "dcbexp.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
       ITYP = 0
@@ -633,7 +632,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFG */
-      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field gradient
@@ -648,21 +647,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
 C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-30)
-      CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
-      SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define electric field gradient
@@ -678,7 +676,7 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -732,7 +730,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_PVC */
-      SUBROUTINE DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_PVC(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -746,21 +744,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     PVC: INTTYP = 62
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_PVC1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_pvc */
-      SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -778,7 +775,7 @@ C***********************************************************************
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -839,7 +836,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFT */
-      SUBROUTINE DEF_EFT(PNAME,PLABEL,PFAC,TRLESS,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFT(PNAME,PLABEL,PFAC,TRLESS,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field third derivatives
@@ -855,26 +852,24 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   TRLESS
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFTINT: INTTYP = 52 or INTTYP = 53
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KDATOM),NATOM,52)
+         CALL SETATM(DOATOM,NATOM,52)
       ELSE
-         CALL SETATM(WORK(KDATOM),NATOM,53)
+         CALL SETATM(DOATOM,NATOM,53)
       END IF
-      CALL DEF_EFT1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                TRLESS,WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
-      SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,
-     &                    WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,IPRINT)
 C***********************************************************************
 C
 C     Define operator for fourth derivative nuclear attraction
@@ -892,7 +887,7 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND),TRLESS
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -978,7 +973,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSPN */
-      SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for indirect spin-spin coupling
@@ -992,21 +987,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_SPNSPN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSP1 */
-      SUBROUTINE DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for indirect spin-spin coupling
@@ -1030,7 +1024,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -1234,7 +1228,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Dipole moment'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_DIPOLE(INDDIP,WORK,LWORK,IPRPRP)
+        CALL DEF_DIPOLE(INDDIP,IPRPRP)
         CALL OP1IND('XDIPOL',IPDIPOLE(1),LEXPP,NEXPP,INDDIP(1),MAXEXP)
         CALL OP1IND('YDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDDIP(2),MAXEXP)
         CALL OP1IND('ZDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDDIP(3),MAXEXP)
@@ -1246,7 +1240,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Quadrupole moments'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_QUADRU(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric fields at nuclei
@@ -1255,7 +1249,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric field at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric field gradients at nuclei
@@ -1264,7 +1258,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric field gradients'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electronic density at nuclei
@@ -1273,7 +1267,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_RHONUC(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Parity violation - Chirality
@@ -1282,7 +1276,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Parity violation - Chirality'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_PVC(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Non-traceless electric field third derivatives
@@ -1292,7 +1286,7 @@ C
         WRITE(LUPRI,'(1X,A)')
      &     'Non-traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,WORK,LWORK,IPRPRP)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,IPRPRP)
       ENDIF
 C
 C     Traceless electric field third derivatives
@@ -1302,7 +1296,7 @@ C
         WRITE(LUPRI,'(1X,A)')
      &     'Traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,WORK,LWORK,IPRPRP)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,IPRPRP)
       ENDIF
 C
 C     Nuclear quadrupole coupling
@@ -1311,7 +1305,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Nuclear quadrupole moments'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric polarizabilities
@@ -1320,7 +1314,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric dipole polarizabilities'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EPOLAR(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EPOLAR(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Diamagnetic spin-orbit
@@ -1330,13 +1324,13 @@ C
         WRITE(LUPRI,'(1X,A)')
      &    'NMR diamagnetic spin-orbit contribution:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_DSO(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Indirect spin-spin coupling
 C
       IF(SPNSPN) THEN
-        CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Magnetizabilities (magnetic susceptibilities), relaxation,expectation value,
@@ -1362,15 +1356,15 @@ C
 C
 C
 C     PV contribution to NMR shielding
-      IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD(WORK,LWORK)
+      IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD()
 C     PV contribution to spin-spin coupling
-      IF(PVC_SPINSPIN) CALL DEFINE_PVC_SPINSPIN(WORK,LWORK)
+      IF(PVC_SPINSPIN) CALL DEFINE_PVC_SPINSPIN()
 C
 C
 C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
-        CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
+        CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,IPREXP)
       !ELSE IF (SHIELD) THEN
       ELSE IF (SHIELD .OR. shielding_rearrange) THEN
       ! message has relevance if wanted NMR shieldings
@@ -1388,7 +1382,7 @@ C
 ! only for one component of magnetic field, i = x, y or z 
 ! i need it temporarily in visual
       IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
-        CALL DEF_BLAO(WORK, LWORK, IPRPRP)
+        CALL DEF_BLAO(WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Effective electronic densities at the nuclei - new code
@@ -1397,7 +1391,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Effective electronic densities at the nuclei - old code
@@ -1406,7 +1400,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 
       RETURN
@@ -1634,19 +1628,18 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
       LOGICAL CORR
 C
       KFRSAV = KFREE
-C
-C     Allocate memory
-C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,-30)
-      CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,WORK(KATOM),WORK(KAXIS),
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,DOATOM,WORK(KAXIS),
      &               WORK(KTEMP))
+      deallocate(DOATOM)
       CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -1878,19 +1871,21 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL CORR
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
 C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-30)
-      CALL PRP_EFG1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL PRP_EFG1(EXPVAL,EXP_CORR,DOATOM,WORK(KAXIS),WORK(KTEMP),
      &              CORR,IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -2213,12 +2208,13 @@ C
 C
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL   TRLESS
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM    ,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTEMP    ,15*NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP_CORR,15*NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KNUC     ,15*NUCDEP,WORK,KFREE,LFREE)
@@ -2226,11 +2222,11 @@ C
       CALL MEMGET('REAL',KCORR    ,15*NUCDEP,WORK,KFREE,LFREE)
 C
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KATOM),NATOM,52)
+         CALL SETATM(DOATOM,NATOM,52)
       ELSE
-         CALL SETATM(WORK(KATOM),NATOM,53)
+         CALL SETATM(DOATOM,NATOM,53)
       END IF
-      CALL PRP_EFT1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KTEMP),
+      CALL PRP_EFT1(EXPVAL,EXP_CORR,DOATOM,WORK(KTEMP),
      &              WORK(KTMP_CORR),WORK(KEL),WORK(KNUC),WORK(KCORR),
      &              TRLESS,CORR)
       CALL MEMREL('PRP_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2747,20 +2743,21 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTEMP,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KMPV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIS,NUCDEP,WORK,KFREE,LFREE)
 C
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-62)
-      CALL PRP_PVC1(EXPVAL,WORK(KATOM),WORK(KMPV),WORK(KQV),
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL PRP_PVC1(EXPVAL,DOATOM,WORK(KMPV),WORK(KQV),
      &              WORK(KIS),WORK(KTEMP),IPRPRP)
       CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -2892,6 +2889,7 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       IF(XLR_SKIPEP) THEN
         IC = 2
@@ -2904,7 +2902,7 @@ C
       NSCOOR  = NUCDEP*3
       N2SCOR  = NSCOOR*NSCOOR
       NNDEP   = NUCDEP*(NUCDEP+1)/2
-      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,IC*N2SCOR,WORK,KFREE,LFREE)
@@ -2913,9 +2911,9 @@ C
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
+      CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
-     &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &                DOATOM,WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &                WORK(KIBUF),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_SPNSPN',WORK,1,KFRSAV,KFREE,LFREE)
@@ -3408,7 +3406,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dso */
-      SUBROUTINE DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DSO(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic spin-orbit operator
@@ -3421,22 +3419,21 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     DSOINT: INTTYP = 12
 C     (-12: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-12)
-      CALL DEF_DSO1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_DSO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-12)
+      CALL DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_DSO1 */
-      SUBROUTINE DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic spin-orbit operator
@@ -3460,7 +3457,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -3554,11 +3551,12 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       NSCOOR  = NUCDEP*3
       N2SCOR  = NSCOOR*NSCOOR
       NNDEP   = NUCDEP*(NUCDEP+1)/2
-      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,N2SCOR   ,WORK,KFREE,LFREE)
@@ -3567,9 +3565,9 @@ C
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
 C     (-12: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-12)
+      CALL SETATM(DOATOM,NATOM,-12)
       CALL PRP_DSO1(EXPVAL,
-     &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &              DOATOM,WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &              WORK(KIBUF),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_DSO',WORK,1,KFRSAV,KFREE,LFREE)
@@ -3846,14 +3844,15 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK)
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_SHIELD1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_SHIELD1(DOATOM,WORK(KFREE),LFREE,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4217,7 +4216,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OSCILL */
-      SUBROUTINE DEF_OSCILL(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OSCILL(IPRINT)
 C***********************************************************************
 C
 C     Define operator for oscillator strength calculations
@@ -4243,7 +4242,7 @@ C
 C
 #ifdef CODE_NOT_WORKING
       CHARACTER PNAME(6)*16, PLABEL(6)*8
-      DIMENSION WORK(LWORK),PFAC(6),IOP(6)
+      DIMENSION PFAC(6),IOP(6)
 C
 C     define operator type, factor, name and label
 C
@@ -4278,7 +4277,7 @@ C     three components of dipole length integrals
       END DO
 #endif
       CHARACTER PNAME(3)*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 C     define operator type, factor, name and label
 C
@@ -4305,7 +4304,7 @@ C     three components of dipole length integrals
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OMEGAQUANT */
-      SUBROUTINE DEF_OMEGAQUANT(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OMEGAQUANT(IPRINT)
 C***********************************************************************
 C
 C     Define operator for determination of omega quantum numbers
@@ -4330,7 +4329,7 @@ C
 #include "pgroup.h"
 C
       CHARACTER PNAME(2)*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2),IOP(2)
+      DIMENSION PFAC(2),IOP(2)
 C
 C     define operator type, factor, name and label
 C
@@ -4353,7 +4352,7 @@ C     define s_z and l_z as j_z = s_z + l_z
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
-      SUBROUTINE DEFINE_PVC_SHIELD(WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================
 C     define operators for 
 C     PV contribution to NMR shielding
@@ -4367,21 +4366,17 @@ C-----------------------------------------------------------------------
 #include "mxcent.h"
 #include "nuclei.h"
 C
-      DIMENSION WORK(LWORK)
-#include "memint.h"
-C
-C
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-62)
-      CALL DEFINE_PVC_SHIELD_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
-      CALL MEMREL('DEFINE_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
-C
+      logical, allocatable :: DOATOM(:)
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEFINE_PVC_SHIELD_SUB(DOATOM)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SPINSPIN */
-      SUBROUTINE DEFINE_PVC_SPINSPIN(WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SPINSPIN()
 C=======================================================================
 C     define operators for 
 C     PV contribution to spin-spin coupling
@@ -4395,21 +4390,20 @@ C-----------------------------------------------------------------------
 #include "mxcent.h"
 #include "nuclei.h"
 C
-      DIMENSION WORK(LWORK)
+      logical, allocatable :: DOATOM(:)
 #include "memint.h"
 C
 C
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
-      CALL DEFINE_PVC_SPINSPIN_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
-      CALL MEMREL('DEFINE_PVC_SPINSPIN',WORK,1,KFREE,KFREE,LFREE)
-C
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEFINE_PVC_SPINSPIN_SUB(DOATOM)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD_SUB */
-      SUBROUTINE DEFINE_PVC_SHIELD_SUB(DOATOM,WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SHIELD_SUB(DOATOM)
 C=======================================================================
 C     define operators for
 C     PV contribution to NMR shielding
@@ -4440,9 +4434,7 @@ C
       LOGICAL   DOATOM(NUCIND)
       CHARACTER PNAME*16,
      &          PLABEL(3)*8
-      DIMENSION WORK(LWORK),
-     &          PFAC(3),
-     &          IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
@@ -4563,7 +4555,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SPINSPIN_SUB */
-      SUBROUTINE DEFINE_PVC_SPINSPIN_SUB(DOATOM,WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SPINSPIN_SUB(DOATOM)
 C=======================================================================
 C     define operators for
 C     PV contribution to spin-spin coupling
@@ -4594,9 +4586,7 @@ C
       LOGICAL   DOATOM(NUCIND)
       CHARACTER PNAME*16,
      &          PLABEL(3)*8
-      DIMENSION WORK(LWORK),
-     &          PFAC(3),
-     &          IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
@@ -4728,7 +4718,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA */
-      SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic contribution to shieldings
@@ -4745,23 +4735,23 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     NSTDIACGO: INTTYP = 38
 C     (-38: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-38)
-      CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_NSTDIA',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-38)
+      CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
 C
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA1 */
-      SUBROUTINE DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic contribution to shieldings
@@ -4787,7 +4777,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8, LABEL*4
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 
@@ -6206,8 +6196,10 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
@@ -6224,19 +6216,18 @@ C
       CALL MEMGET('REAL',KSKEW,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSPAN,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMAT,2*NCMAT,WORK,KFREE,LFREE)
 C
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
+      CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
      &     WORK(KDMATLO),WORK(KDMATRE),WORK(KDMATREE),WORK(KDMATREP),
      &     WORK(KDMATREO),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
-     &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
+     &     DOATOM,WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_SHIELD',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -7211,18 +7202,19 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL CORR
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KEFN ,9*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
 C
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
-      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),DOATOM,
      &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -7360,7 +7352,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_RHONUC */
-      SUBROUTINE DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_RHONUC(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electronic density at nuclei
@@ -7374,20 +7366,19 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     INTTYP = 9: One-electron Fermi contact integrals
-      CALL SETATM(WORK(KDATOM),NATOM,-9)
-      CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-9)
+      CALL DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_RHONU1 */
-      SUBROUTINE DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define electronic density at nuclei
@@ -7406,7 +7397,7 @@ C***********************************************************************
       PARAMETER (DFAC = D4*GFAC*PI/D3)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
@@ -8347,7 +8338,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(3,1) = INDOP1
 C
@@ -8378,7 +8369,7 @@ C X component of B-field
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
      &             LLRBPU,NLRBPT,INDXPR,MAXLLR)
 #if !defined (XH4)
@@ -8388,7 +8379,7 @@ C Y component of B-field
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C Z component of B-field
@@ -8397,7 +8388,7 @@ C Z component of B-field
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 #endif
@@ -8616,7 +8607,7 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8627,20 +8618,18 @@ C**********************************************************
 #include "nuclei.h"
 
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     (-99: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-99)
-      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-99)
+      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      allocate(DOATOM(NUCIND))
       RETURN  
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
-     &               IPRINT)
+      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8654,7 +8643,7 @@ C**********************************************************
       PARAMETER (D1 = 1.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
@@ -8678,7 +8667,7 @@ C
      &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                              //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                     INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('EFFDEN',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
           END IF
@@ -8688,7 +8677,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFFDEN */
-      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for effective density at nuclei
@@ -8705,21 +8694,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     PVC: INTTYP = 62
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFFDEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      allocate(DOATOM(NUCIND))
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_effden1 */
-      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -8737,7 +8725,7 @@ C***********************************************************************
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -8771,7 +8759,7 @@ C
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('PVC   '
      &                 ,IPEFFDEN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
