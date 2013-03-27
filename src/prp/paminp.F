@@ -1192,7 +1192,7 @@ CHJMAERKE: implement interpretation of class keyword
          ENDIF
 CMI      ... assign remaining parameters in dedicated subroutine
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
 
          IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
@@ -1270,7 +1270,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
 C*********************************************************************** 
 C
 C  Given a 4-component operator this routine returns an index
@@ -1287,7 +1287,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      DIMENSION PFAC(NPCOMP)
 C
 C Used from common blocks:
 C  XCBPRP: everything

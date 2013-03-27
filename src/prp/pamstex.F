@@ -96,7 +96,7 @@ C     Add diplen and dipvel to DCBPRP
       NSTXOP = 0
       DO I=1,STEX_NR_OP
          CALL XPRIND(PNAME(I),1,1,1.0D0,PNAME(I),INDXPR,STEX_OP_SYM(I),
-     &        STEX_OP_TIM(I),WORK,LWORK,0)
+     &        STEX_OP_TIM(I),0)
          CALL OP1IND('STXDOP',IND1OP,STEX_OP_IND,NSTXOP,INDXPR
      $        ,STEX_NR_OP)
       END DO

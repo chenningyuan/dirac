@@ -315,7 +315,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(1),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(1),ISYXPR,ITRXPR,IPRINT)
 C
       PNAME      = 'Dipole length: Y'
       IPTYP      = 1
@@ -323,7 +323,7 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(2),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(2),ISYXPR,ITRXPR,IPRINT)
 C
       PNAME      = 'Dipole length: Z'
       IPTYP      = 1
@@ -331,7 +331,7 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(3),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(3),ISYXPR,ITRXPR,IPRINT)
 C
       IF(IPRINT.GE.1) THEN
         DO I = 1,3
@@ -375,7 +375,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XXTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XXQUAD',IPQUADRU(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: XY'
@@ -384,7 +384,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XYTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XYQUAD',IPQUADRU(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: XZ'
@@ -393,7 +393,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XZQUAD',IPQUADRU(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: YY'
@@ -402,7 +402,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YYTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YYQUAD',IPQUADRU(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: YZ'
@@ -411,7 +411,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YZQUAD',IPQUADRU(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: ZZ'
@@ -420,7 +420,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'ZZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZZQUAD',IPQUADRU(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
 C     Print section
@@ -471,7 +471,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(1,1) = INDOP1
       CALL OP1IND('XEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -483,7 +483,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(2,1) = INDOP1
       CALL OP1IND('YEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -495,7 +495,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(3,1) = INDOP1
       CALL OP1IND('ZEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -610,7 +610,7 @@ C
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
      &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
@@ -710,7 +710,7 @@ C
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
      *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
@@ -817,7 +817,7 @@ C....             Point charge
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   ENDIF
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('PVC   '
      *                 ,IPPVC(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
@@ -940,7 +940,7 @@ Ctec
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   IF (TRLESS) THEN
                      CALL OP1IND(
      &                  CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
@@ -1097,7 +1097,7 @@ C
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('XSPNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
               IPSPNSPN(1,ISCOR1) = INDOP1
 C
@@ -3515,7 +3515,7 @@ C
      &                       //CHRNOS(MOD(ISCOR2,100)/10)
      &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
                            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                         INDXPR,ISYXPR,ITRXPR,IPRINT)
                            IF(IPRINT.GE.1) THEN
                              CALL WRIXPR(NDSOIN,INDXPR)
                            ENDIF
@@ -3965,7 +3965,7 @@ C
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
               !IF (SHIELD) THEN
               IF (SHIELD .OR. shielding_rearrange) THEN
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
@@ -4000,7 +4000,7 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
      &                          CHRNOS(ITHIRD)//LABEL//
      &                          CHRXYZ(ICOORP2)
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                          INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                          INDXPR,ISYXPR,ITRXPR,IPRINT)
                     IF (IPRINT.GE.5) THEN
                        !  print out assiged operators of wanted property
                        write(LUPRI,'(4X,A)')
@@ -4037,7 +4037,7 @@ C     PNAME     = 'MAGFLDX'
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4047,7 +4047,7 @@ C     PNAME     = 'MAGFLDX'
          IPTYP    =  13
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('X g_1 magfield',IPESR(1+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4057,7 +4057,7 @@ C        Sigma_X:
          IPTYP    =  10
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('x spin',IPSIGMA(1),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 #if !defined (XH4)
@@ -4068,7 +4068,7 @@ C     PNAME     = 'MAGFLDY'
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4078,7 +4078,7 @@ C     PNAME     = 'MAGFLDY'
          IPTYP    =  14
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('Y g_1 magfield',IPESR(2+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4088,7 +4088,7 @@ C        Sigma_Y:
          IPTYP    =  11
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 C Z component of B-field
@@ -4098,7 +4098,7 @@ C     PNAME     = 'MAGFLDZ'
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4108,7 +4108,7 @@ C     PNAME     = 'MAGFLDZ'
          IPTYP    =  15
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('Z g_1 magfield',IPESR(3+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4118,7 +4118,7 @@ C        Sigma_Z:
          IPTYP    =  12
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('z spin',IPSIGMA(3),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 #endif
@@ -4272,7 +4272,7 @@ C     three components of dipole length integrals
       PLABEL(6) = 'ZDIPVEL'
       DO II = 1, 6
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
@@ -4298,7 +4298,7 @@ C     three components of dipole length integrals
       PLABEL(3) = 'ZDIPLEN'
       DO II = 1, 3
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
@@ -4346,7 +4346,7 @@ C     define s_z and l_z as j_z = s_z + l_z
       PLABEL(2) = 'ZANGMOM'
       DO II = 1, 2
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
@@ -4470,7 +4470,7 @@ C     x - component
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XSHIELB',IP_PVC_SHIELD(1+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4480,7 +4480,7 @@ C     y - component
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YSHIELB',IP_PVC_SHIELD(2+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4490,7 +4490,7 @@ C     z - component
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZSHIELB',IP_PVC_SHIELD(3+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4544,7 +4544,7 @@ C
                 IPTYP = IOP(IXYZ)
                 PNAME(5:5) = CHRNOS(IXYZ)
                 CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
-     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
                 CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
@@ -4651,7 +4651,7 @@ C
      &                     //CHRNOS(ITHIRD)//' '
 C
               CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &                    INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('XSPNA',INDEXB,LLRBPU,NLRBPT,INDXPR,MAXLLR)
               IP_PVC_SPINSPIN(1,ISCOOR) = INDEXB
               CALL WRIXPR(INDEXB,INDXPR)
@@ -4709,7 +4709,7 @@ C
                 IPTYP = IOP(IXYZ)
                 PNAME(5:5) = CHRNOS(IXYZ)
                 CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
-     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
                 CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
@@ -4845,7 +4845,7 @@ C
                 PLABEL(1) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
      &                      CHRNOS(ITHIRD)//LABEL//CHRXYZ(ICOOR2)
                 CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
                 IF(IPRINT.GE.0) CALL WRIXPR(NNSTIN,INDXPR)
                 CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,
      &                      INDXPR,MAXEXP)
@@ -4954,7 +4954,7 @@ C      PNAME     = 'MAGFLDX'
        PLABEL(1) = 'ZDIPLEN'
        PLABEL(2) = 'YDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,1),LLRBPU,NLRBPT,INDXPR
@@ -4967,7 +4967,7 @@ C      PNAME     = 'MAGFLDY'
        PLABEL(1) = 'XDIPLEN'
        PLABEL(2) = 'ZDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,2),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
@@ -4979,7 +4979,7 @@ C      PNAME     = 'MAGFLDZ'
        PLABEL(1) = 'YDIPLEN'
        PLABEL(2) = 'XDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,3),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,3),LLRBPU,NLRBPT,INDXPR
@@ -5057,7 +5057,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XXSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XXDSUSC',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-XY'
@@ -5066,7 +5066,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XYSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XYDSUSC',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-XZ'
@@ -5075,7 +5075,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XZDSUSC',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-YY'
@@ -5084,7 +5084,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YYSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YYDSUSC',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-YZ'
@@ -5093,7 +5093,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YZDSUSC',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-ZZ'
@@ -5102,7 +5102,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'ZZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZZDSUSC',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
 C      Print section for CGO diamag.susceptibilities
@@ -5147,7 +5147,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H1',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H1'
@@ -5156,7 +5156,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H1',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H1'
@@ -5165,7 +5165,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H1',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H1'
@@ -5174,7 +5174,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2YY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H1',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H1'
@@ -5183,7 +5183,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2YZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H1',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H1'
@@ -5192,7 +5192,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2ZZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RM2H2 terms, IPDSUSC(7-12)
@@ -5203,7 +5203,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'XXRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H2',IPDSUSC(7),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H2'
@@ -5212,7 +5212,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'XYRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H2',IPDSUSC(8),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H2'
@@ -5221,7 +5221,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'XZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H2',IPDSUSC(9),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H2'
@@ -5230,7 +5230,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'YYRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H2',IPDSUSC(10),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H2'
@@ -5239,7 +5239,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'YZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H2',IPDSUSC(11),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H2'
@@ -5248,7 +5248,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'ZZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H2',IPDSUSC(12),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C -----------------------------------
@@ -5265,7 +5265,7 @@ C -----------------------------------
         PLABEL(2) = 'XXRM2H3Y'
         PLABEL(3) = 'XXRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H3',IPDSUSC(13),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H3'
@@ -5278,7 +5278,7 @@ C -----------------------------------
         PLABEL(2) = 'XYRM2H3Y'
         PLABEL(3) = 'XYRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H3',IPDSUSC(14),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H3'
@@ -5291,7 +5291,7 @@ C -----------------------------------
         PLABEL(2) = 'XZRM2H3Y'
         PLABEL(3) = 'XZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H3',IPDSUSC(15),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H3'
@@ -5304,7 +5304,7 @@ C -----------------------------------
         PLABEL(2) = 'YYRM2H3Y'
         PLABEL(3) = 'YYRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H3',IPDSUSC(16),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H3'
@@ -5317,7 +5317,7 @@ C -----------------------------------
         PLABEL(2) = 'YZRM2H3Y'
         PLABEL(3) = 'YZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H3',IPDSUSC(17),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H3'
@@ -5330,7 +5330,7 @@ C -----------------------------------
         PLABEL(2) = 'ZZRM2H3Y'
         PLABEL(3) = 'ZZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H3',IPDSUSC(18),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
@@ -5355,7 +5355,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'XXRDSULZ'
         PLABEL(2) = 'XXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRDSUL',IPDSUSC(19),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5367,7 +5367,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'XYRDSULX'
         PLABEL(2) = 'XYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRDSUL',IPDSUSC(20),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5379,7 +5379,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'XZRDSULY'
         PLABEL(2) = 'XZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRDSUL',IPDSUSC(21),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5391,7 +5391,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'YXRDSULZ'
         PLABEL(2) = 'YXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YXRDSUL',IPDSUSC(22),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5403,7 +5403,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'YYRDSULX'
         PLABEL(2) = 'YYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRDSUL',IPDSUSC(23),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5415,7 +5415,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'YZRDSULY'
         PLABEL(2) = 'YZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRDSUL',IPDSUSC(24),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5427,7 +5427,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'ZXRDSULZ'
         PLABEL(2) = 'ZXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZXRDSUL',IPDSUSC(25),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5439,7 +5439,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'ZYRDSULX'
         PLABEL(2) = 'ZYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZYRDSUL',IPDSUSC(26),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5451,7 +5451,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PLABEL(1) = 'ZZRDSULY'
         PLABEL(2) = 'ZZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRDSUL',IPDSUSC(27),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 !-----------------------------------------------------------------
@@ -5468,7 +5468,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'XXDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXDSUSN',IPDSUSC(28),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5478,7 +5478,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'XYDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYDSUSN',IPDSUSC(29),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5488,7 +5488,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'XZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZDSUSN',IPDSUSC(30),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5498,7 +5498,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'YYDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYDSUSN',IPDSUSC(31),
      &                LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5508,7 +5508,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'YZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZDSUSN',IPDSUSC(32),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5518,7 +5518,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         PFAC(1)   = D1
         PLABEL(1) = 'ZZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZDSUSN',IPDSUSC(33),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5530,7 +5530,7 @@ C ... for diamagnetic terms, we also need DSUSCGM DALTON analogues, pointers IPD
         PFAC(1)   = DM1
         PLABEL(1) = 'XXSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXDSUSC',IPDSUSC(34),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
         PNAME     = 'DSUSC_CGO-XY'
@@ -5539,7 +5539,7 @@ C
         PFAC(1)   = DM1
         PLABEL(1) = 'XYSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYDSUSC',IPDSUSC(35),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
         PNAME     = 'DSUSC_CGO-XZ'
@@ -5548,7 +5548,7 @@ C
         PFAC(1)   = DM1
         PLABEL(1) = 'XZSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZDSUSC',IPDSUSC(36),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
         PNAME     = 'DSUSC_CGO-YY'
@@ -5557,7 +5557,7 @@ C
         PFAC(1)   = DM1
         PLABEL(1) = 'YYSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYDSUSC',IPDSUSC(37),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'DSUSC_CGO-YZ'
@@ -5566,7 +5566,7 @@ C
         PFAC(1)   = DM1
         PLABEL(1) = 'YZSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZDSUSC',IPDSUSC(38),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'DSUSC_CGO-ZZ'
@@ -5575,7 +5575,7 @@ C
         PFAC(1)   = DM1
         PLABEL(1) = 'ZZSUSCGO'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
 
       ENDIF ! of MSUSCDIA
@@ -7430,7 +7430,7 @@ C
      &                            //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                            //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
             CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                   INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                   INDXPR,ISYXPR,ITRXPR,IPRINT)
             CALL OP1IND('RHONUC',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
           END IF
         END IF
@@ -7486,7 +7486,7 @@ C X componete of B-field
          PLABEL(1) = 'ZDIPLEN'
          PLABEL(2) = 'YDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,1),LLRBPU,NLRBPT,INDXPR
@@ -7498,7 +7498,7 @@ C Y componete of B-field
          PLABEL(1) = 'XDIPLEN'
          PLABEL(2) = 'ZDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,2),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,2),LLRBPU,NLRBPT,INDXPR
@@ -7509,7 +7509,7 @@ C Z componete of B-field
          PLABEL(1) = 'YDIPLEN'
          PLABEL(2) = 'XDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,3),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,3),LLRBPU,NLRBPT,INDXPR
@@ -8327,7 +8327,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(1,1) = INDOP1
 C
@@ -8337,7 +8337,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(2,1) = INDOP1
 C
