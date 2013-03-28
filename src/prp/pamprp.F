@@ -283,7 +283,6 @@ C
 #endif
 
 C
-CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)
       CALL QEXIT('PAMPRP_1')
 C
@@ -2229,6 +2228,7 @@ C
       CALL PRP_EFT1(EXPVAL,EXP_CORR,DOATOM,WORK(KTEMP),
      &              WORK(KTMP_CORR),WORK(KEL),WORK(KNUC),WORK(KCORR),
      &              TRLESS,CORR)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       RETURN
@@ -2759,6 +2759,7 @@ C     (-62: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-62)
       CALL PRP_PVC1(EXPVAL,DOATOM,WORK(KMPV),WORK(KQV),
      &              WORK(KIS),WORK(KTEMP),IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -2916,6 +2917,7 @@ C     (-29: accept .SELECT specification)
      &                DOATOM,WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &                WORK(KIBUF),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_SPNSPN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -3570,6 +3572,7 @@ C     (-12: accept .SELECT specification)
      &              DOATOM,WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &              WORK(KIBUF),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_DSO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -6227,6 +6230,7 @@ C     (-29: accept .SELECT specification)
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
      &     DOATOM,WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_SHIELD',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -7215,6 +7219,7 @@ C     (-29: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),DOATOM,
      &              CORR,IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -8621,7 +8626,7 @@ C
 C     (-99: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-99)
       CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
-      allocate(DOATOM(NUCIND))
+      deallocate(DOATOM)
       RETURN  
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8698,7 +8703,7 @@ C     PVC: INTTYP = 62
 C     (-62: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-62)
       CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
-      allocate(DOATOM(NUCIND))
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
