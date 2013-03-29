@@ -629,7 +629,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
-     &            '.PRPCAN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPCAN','.EPOLE ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -709,6 +709,19 @@ C&&&& PRPCAN: Generate canonical occupied property orbitals
                PRPCAN = .TRUE.
                GO TO 100
     6          CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -2634,13 +2647,15 @@ C  /* Deck op1ind */
       SUBROUTINE OP1IND(OP1KEY,IND1OP,IPR1OP,N1OPER,INDXPR,MAX1OP)
 C***********************************************************************
 C
-C     INDXPR points to an operator in XCBPRP. Search through
-C     IPR1OP for elements pointing to this operator. If not found,
-C     extend the list by one element.
+C     INDXPR points to an operator in XCBPRP. 
+C     Search through pointer array IPR1OP for elements pointing 
+C     to this operator. If not found, extend the list by one element.
+C     The program is stopped if the array goes out of the bound MAX1OP.
+C     On output IND1OP will be the index of the operator in the 
+C     pointer array IPR1OP, N1OPER the current number of operators
+C     in the list.
 C
 C     Written by T.Saue June 28 1996
-C     Last revision: July 8 1996
-C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
