@@ -629,7 +629,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
-     &            '.PRPCAN','.EPOLE ','.XXXXXX','.XXXXXX'/
+     &            '.PRPCAN','.EPOLE ','.MPOLE ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -724,6 +724,19 @@ C&&&& EPOLE : Electric multipoles of order L
                NEXPP = NEXPP + NDEG
                GO TO 100
     7          CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L (zero by time reversal symmetry)
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     8          CONTINUE
                GO TO 100
