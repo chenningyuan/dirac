@@ -694,7 +694,8 @@ C
            end do
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &          work(kfree), lfree)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1520,7 +1521,8 @@ C
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &              work(kfree), lfree)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1801,7 +1803,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif
@@ -2413,7 +2415,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
-      SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,WORK,LWORK)
+      SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD)
 C**********************************************************************
 C
 C     PURPOSE:
@@ -2424,14 +2426,17 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION WORK(LWORK),CMO(*),EIG(*),IBEIG(*)
+      DIMENSION CMO(*),EIG(*),IBEIG(*)
       DIMENSION IMOORD(MXREORD,2),IREORD(2)
+
+      real(8), allocatable :: cmo_save(:)
+      real(8), allocatable :: eig_save(:)
+      integer, allocatable :: ibeig_save(:)
+
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-C
-#include "memint.h"
 C
       CALL QENTER('REORD')
 C
@@ -2456,24 +2461,27 @@ C
 C
 C        Save coefficients
 C
-         CALL MEMGET('REAL',KTCMO,NCMOQ(I),WORK,KFREE,LFREE)
-         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,WORK(KTCMO),1)
-         CALL MEMGET('REAL',KTEIG,NORB(I),WORK,KFREE,LFREE)
-         CALL DCOPY(NORB(I),EIG(1+IORB(I)),1,WORK(KTEIG),1)
-         CALL MEMGET('INTE',KTIBE,NORB(I),WORK,KFREE,LFREE)
-         CALL ICOPY(NORB(I),IBEIG(1+IORB(I)),1,WORK(KTIBE),1)
+         allocate(cmo_save(ncmoq(i)))
+         allocate(eig_save(norb(i)))
+         allocate(ibeig_save(norb(i)))
+
+         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,cmo_save,1)
+         CALL DCOPY(NORB(I),EIG(1+IORB(I)),1,eig_save,1)
+         CALL ICOPY(NORB(I),IBEIG(1+IORB(I)),1,ibeig_save,1)
 C
 C        Reorder coefficients
 C
-         CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTCMO),
-     &              EIG(1+IORB(I)),WORK(KTEIG),
-     &              IBEIG(1+IORB(I)),WORK(KTIBE),
+         CALL REOR1(CMO(1+ICMOQ(I)),cmo_save,
+     &              EIG(1+IORB(I)),eig_save,
+     &              IBEIG(1+IORB(I)),ibeig_save,
      &              NFBAS(I,0),NORB(I),NZ,
      &              IMOORD(1,I),IREORD(I),NPSH(I),NESH(I))
 C
 C        Release memory
 C
-         CALL MEMREL('REORD',WORK,KWORK,KWORK,KFREE,LFREE)
+         deallocate(cmo_save)
+         deallocate(eig_save)
+         deallocate(ibeig_save)
 C
          IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: after reordering',-1)

@@ -1,6 +1,7 @@
 
 
 .. _linking_math:
+
 Linking math libraries
 ======================
 

@@ -1059,7 +1059,7 @@ C ::: Then we go through the rest, trying to find each atoms mirror image :::
             IF (IUSED(I) .EQ. 0) THEN
                J = I + 1
  350           CONTINUE
-!radovan: test dft_ao_eval goes out of bounds
+!radovan: test dft_dirac_ao_eval goes out of bounds
 !Array reference out of bounds for array 'atmarr', upper bound of dimension 2 exceeded (3 > 2)
                IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N) .AND.
      &              (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.

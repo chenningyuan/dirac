@@ -309,7 +309,7 @@ C last of this possible contraction
         WRITE(6,*) ' Information from EMTHET_COM '
         WRITE(6,*) '============================='
         WRITE(6,*) ' Output T-amplitudes '
-        CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP+1,1,N_CC_AMP+1)
+        CALL WRTMAT(CC_VEC_FNC,1,N_CC_AMP,1,N_CC_AMP)
         CALL MEMCHK_KRCC(WORK)
       END IF
 *
@@ -352,8 +352,10 @@ C last of this possible contraction
       INTEGER IHEXP(3,2*NRANK)
       INTEGER ID1(4*NGAS), IEX(4*NGAS)
       INTEGER IORD(4),IEXD1234(2*NRANK)
+* Temp debug arrays
+C     DIMENSION HDIFF(LHT1234)
 *
-      NTEST = 000
+      NTEST = 00
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' ======================='
         WRITE(6,*) ' Welcome to HCT1234_REL '
@@ -376,6 +378,10 @@ C last of this possible contraction
           CALL MEMGET('REAL',KDIFF,LHT1234,WORK,KFREE,LFREE)
           CALL COPVEC(HT1234,WORK(KDIFF),LHT1234)
         END IF
+* Remove the next three lines
+C       DO I=1,LHT1234
+C         HDIFF(I) = HT1234(I)
+C       END DO
       END IF
 *
 *. Find all possible contractions of H operator with the NTOP T operators
@@ -402,12 +408,14 @@ C Will now refine ICONN so we can contract to an intermediate with one T
      &                   WORK,KFREE,LFREE)
 *
       IF(NTEST.GE.1000) THEN
-        WRITE(6,*) ' HCT1234 : Output block of CC vector function '
-        CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
-        CALL VECSUM(WORK(KDIFF),WORK(KDIFF),HT1234,-1.0D0,1.0D0,LHT1234)
-        WRITE(6,*) ' HCT1234 : Contribution from this contraction '
-        CALL WRTMAT(WORK(KDIFF),1,LHT1234,1,LHT1234)
-        CALL MEMREL('T DIFF',WORK,KDIFF,KDIFF,KFREE,LFREE)
+         WRITE(6,*) ' HCT1234 : Output block of CC vector function '
+         CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
+* Remove the next five lines
+C       DO I=1,LHT1234
+C         HDIFF(I) = HT1234(I) - HDIFF(I)
+C       END DO
+C        WRITE(6,*) ' HCT1234 : Contribution from this contraction '
+C        CALL WRTMAT(HDIFF,1,LHT1234,1,LHT1234)
       END IF
 *
       RETURN
@@ -887,7 +895,6 @@ C
         CALL MEMCHK_KRCC(WORK)
 *
       END IF
-      NTEST = 0
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
       IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
@@ -3617,7 +3624,53 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 *
       RETURN
       END
+*
 
+      SUBROUTINE I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NHTPM,IHTPM,
+     &                                         NSPOBEX_TP,ISPOBEX_TP,
+     &                                         NHTP,IHTP,
+     &                                         INTEGRALS,ONEE,
+     &                                         T,IMTOH,
+     &                                         IHINDEX,
+     &                                         MX_ST_TSOSO_BLK_MX,
+     &                                         WORK,KFREE,LFREE)
+* This is just to allocate a scratch (so not pretty)
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+*
+      DIMENSION WORK(*)
+*. Specific input
+      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
+      INTEGER IHTPM(NHTPM),IHTP(4*NGAS,NHTP)
+      INTEGER IMTOH(NHTP),IHINDEX(4,NHTP)
+      DIMENSION INTEGRALS(*),ONEE(*),T(*)
+*. Local scratch ! not so pretty
+      CALL MEMGET('INTE',KIOCC_CA,2*MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CB,2*MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AA,2*MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AB,2*MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NHTPM,IHTPM,
+     &                                   NSPOBEX_TP,ISPOBEX_TP,
+     &                                   NHTP,IHTP,
+     &                                   INTEGRALS,ONEE,
+     &                                   T,IMTOH,
+     &                                   IHINDEX,
+     &                                   MX_ST_TSOSO_BLK_MX,
+     &                                   WORK(KIOCC_CA),WORK(KIOCC_CB),
+     &                                   WORK(KIOCC_AA),WORK(KIOCC_AB),
+     &                                   WORK,KFREE,LFREE)
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('IAITA',WORK,KIOCC_CA,KIOCC_CA,KFREE,LFREE)
+*
+      RETURN
+      END
+*
       SUBROUTINE I_ADD_INTEGRALS_TO_AMPLITUDES(NHTPM,IHTPM,
      &                                         NSPOBEX_TP,ISPOBEX_TP,
      &                                         NHTP,IHTP,
@@ -3625,6 +3678,8 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
      &                                         T,IMTOH,
      &                                         IHINDEX,
      &                                         MX_ST_TSOSO_BLK_MX,
+     &                                         IOCC_CA,IOCC_CB,
+     &                                         IOCC_AA,IOCC_AB,
      &                                         WORK,KFREE,LFREE)
 *
 * Subroutine to add intermediates/amplitudes and integrals so only the intermediate
@@ -3652,15 +3707,10 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
       DIMENSION INTEGRALS(*),ONEE(*),T(*)
 *. Local scratch ! not so pretty
 * Times two since we will not loop over more than two electron operators
-C     INTEGER IOCC_CA(2*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_CB(2*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_AA(2*MX_ST_TSOSO_BLK_MX)
-C     INTEGER IOCC_AB(2*MX_ST_TSOSO_BLK_MX)
-* temporary increase for helium
-      INTEGER IOCC_CA(8*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_CB(8*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_AA(8*MX_ST_TSOSO_BLK_MX)
-      INTEGER IOCC_AB(8*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CA(2*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_CB(2*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AA(2*MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AB(2*MX_ST_TSOSO_BLK_MX)
 *. Local scratch
       INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
       INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
@@ -3718,13 +3768,17 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. integrals and amplitudes.
        IHTYPE = IMTOH(ITSS)
 C      print*,'IHTYPE',IHTYPE
-       IF(IHTYPE.EQ.0) CYCLE
+       IF(IHTYPE.EQ.0) STOP 'is this a problem' !CYCLE
 *. Find the sign to bring the Hamiltonian operator to cluster operator
 *. order. Now go from order defined in GET_HX_RELA to cluster operator.
        ISIGN_DE = IPERM_PARITY(IHINDEX(1,IHTYPE),2*N)
 C      print*,'ISIGN_DE from perm parity',ISIGN_DE
 * Not sure if this sign is correct yet!!!
-       IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
+       IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) THEN
+         ISIGN_DE = - ISIGN_DE
+         IF(N.EQ.1) STOP 'also change for 1'
+       END IF
+C      IF(ABS(MUB).EQ.2.OR.ABS(MK).GT.0) ISIGN_DE = - ISIGN_DE
 C      print*,'ISIGN_DE after possible change',ISIGN_DE
 C      IF(ABS(MUB).EQ.2) ISIGN_DE = - ISIGN_DE
 C      IF(MK.GT.0) ISIGN_DE = - ISIGN_DE
@@ -3790,14 +3844,10 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
            WRITE(6,*) ' NEL_CA,NEL_CB,NEL_AA,NEL_AB',
      &                  NEL_CA,NEL_CB,NEL_AA,NEL_AB
           END IF
-C         IF(NEL_CA*NSTR_CA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
-C         IF(NEL_CB*NSTR_CB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
-C         IF(NEL_AA*NSTR_AA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
-C         IF(NEL_AB*NSTR_AB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
-          IF(NEL_CA*NSTR_CA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
-          IF(NEL_CB*NSTR_CB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
-          IF(NEL_AA*NSTR_AA.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
-          IF(NEL_AB*NSTR_AB.GT.8*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
+          IF(NEL_CA*NSTR_CA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CA'
+          IF(NEL_CB*NSTR_CB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM CB'
+          IF(NEL_AA*NSTR_AA.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AA'
+          IF(NEL_AB*NSTR_AB.GT.2*MX_ST_TSOSO_BLK_MX) STOP 'DIM AB'
           ISTRTOT = NSTR_AB * NSTR_AA * NSTR_CB * NSTR_CA
           IF(ISTRTOT.EQ.0) CYCLE
           DO I_AB = 1, NSTR_AB

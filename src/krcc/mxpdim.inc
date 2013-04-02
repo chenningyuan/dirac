@@ -2,17 +2,17 @@
       COMMON /CMXPWRD/ MXPWRD
 *
 * contains all PARAMETERS defining LUCIA
-      parameter (MXTSOB =  40)
+      parameter (MXTSOB =  70)
 *  Max. no. of NR orbitals per type and symmetry (now global)
 *
       PARAMETER (MXPIRR = 20)
-      PARAMETER (MXPOBS = 30)
+      PARAMETER (MXPOBS = 70)
 * Max number of orbitals
       PARAMETER (MXPORB = 200)
 * Max number of open shells
       PARAMETER (MXOPEN = 22)
       PARAMETER (MXPICI = 2)
-      PARAMETER (MXPSTT = 8416)
+      PARAMETER (MXPSTT = 10000)
 *  !! Has to be increased when larger systems are being treated !! (e.g. Tl)
 *
       PARAMETER (MXPCSM = 20)

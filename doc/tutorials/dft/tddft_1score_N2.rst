@@ -196,8 +196,14 @@ to the excitations of :math:`B_{3u}` and :math:`B_{3g}`, respectively.
 
 If nothing further is specified the excitation energies are calculated by a "bottoms-up" approach and so we will
 get valence excitations only, since the core-excitations are much higher in energy. We therefore restrict the
-excitations to the occupied :math:`1s\sigma_g` and :math:`1s\sigma_u` orbitals. We furthermore have limited the virtual
-orbitals to the empty orbitals of the *2p* manifold.
+excitations to the occupied :math:`1s\sigma_g` and :math:`1s\sigma_u` orbitals. 
+It is also possible to limit the virtual orbitals to the empty orbitals of the *2p* manifold::
+
+  .VIRTUA                                                                                            
+  4,5                                                                                                
+  5                                                                                                  
+
+but this is in fact an unnecessary restriction.
 
 We furthermore ask for transition moments to be calculated with respect to the component of the dipole moment operator.
 These will be non-zero only for excitations in irreps :math:`B_{3u}, B_{2u}` and :math:`B_{1u}`.
@@ -207,46 +213,47 @@ analysis may come in handy as reference.
 Looking at the output
 ~~~~~~~~~~~~~~~~~~~~~
 
-After running the calculation, let us now look at the output. We take the dipole-allowed transitions of :math:`B_{2u}` as
+After running the calculation, let us now look at the output. We take the dipole-allowed transitions of :math:`B_{3u}` as
 an example::
 
-  *** Excitations of boson symmetry 3 : B2u
-
+  *** Excitations of boson symmetry 2 : B3u
+  
   --------------------------------------------------------------------------------
-  Excitation no.   1 excitation energy    14.30383945 a.u.    4.11E-15 (converged)
-  Nonrel. sym.:   TzB3u                      389.2273 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-   A - YDIPLEN              B2u  T+         0.00000000D+00 a.u.
+   Excitation no.   1 excitation energy    14.28739014 a.u.    4.06E-07 (converged)
+   Nonrel. sym.:   TzB2u                      388.7797 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+         0.00000000D+00 a.u.
   --------------------------------------------------------------------------------
-  Excitation no.   2 excitation energy    14.33365211 a.u.    4.06E-15 (converged)
-  Nonrel. sym.:   S0B2u                      390.0385 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-  A - YDIPLEN              B2u  T+         0.99699006D-01 a.u.
-
-      -> dipole oscillator strength (length)   :  0.09498330
-      -> dipole oscillator strength (velocity) :  0.00000000
-
-      Total dipole radiation rate (length)   6.27006E+11 s-1
-       - corresponding radiation life time   1.59488E-12 s
+   Excitation no.   2 excitation energy    14.32916125 a.u.    3.86E-07 (converged)
+   Nonrel. sym.:   S0B3u                      389.9163 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+        -0.108039773420 a.u.
+  
+       -> dipole oscillator strength (length)   :  0.11150564
+       -> dipole oscillator strength (velocity) :  0.00000000
+  
+       Total dipole radiation rate (length)   7.35613E+11 s-1
+        - corresponding radiation life time   1.35941E-12 s
   --------------------------------------------------------------------------------
-  Excitation no.   3 excitation energy    14.70874049 a.u.    1.62E-15 (converged)
-  Nonrel. sym.:   TxB1u                      400.2452 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-  A - YDIPLEN              B2u  T+         0.00000000D+00 a.u.
+   Excitation no.   3 excitation energy    14.69518720 a.u.    1.65E-06 (converged)
+   Nonrel. sym.:   TyB1u                      399.8764 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+         0.00000000D+00 a.u.
+  
 
 There is sufficient symmetry in the calculation (symmetry distinct rotation) to allow DIRAC to pinpoint
 the symmetry of the core-ionized state (see the entry `Nonrel. sym.`). The two triplet states have strictly
 zero transition moment (and thus intensity), whereas the :math:`^1\Pi_u` state has a transition moment of 
-0.0997 a.u.
+0.1080 a.u.
 
 Looking further down in the output we find dominant inactive and virtual orbitals. The first excited state :math:`^3\Pi_u`,
-at 389.23 eV, is dominated by the excitation `1(i:E1u) --->      5(v:E1g)`, which, as can be inferred from the Mulliken 
-population analysis, corresponds to :math:`1s\sigma_u \rightarrow 2p\pi_{x;g}`. The second excited state :math:`^1\Pi_u`, 
-at 390.04 eV, is dominated by the excitation `1(i:E1u) --->      4(v:E1g)` (:math:`1s\sigma_u \rightarrow 2p\pi_{y;g}`), 
-whereas the third excited state :math:`^3\Sigma_u`, at 400.25 eV, corresponds to `1(i:E1g) --->      5(v:E1u)` 
+at 388.78 eV, is dominated by the excitation `1(i:E1u) --->      4(v:E1g)`, which, as can be inferred from the Mulliken 
+population analysis, corresponds to :math:`1s\sigma_u \rightarrow 2p\pi_{y;g}`. The second excited state :math:`^1\Pi_u`, 
+at 389.91 eV, corresponds to `1(i:E1u) --->      5(v:E1g)` (:math:`1s\sigma_u \rightarrow 2p\pi_{x;g}`), 
+whereas the third excited state :math:`^3\Sigma_u`, at 399.88 eV, is dominated by `1(i:E1g) --->      5(v:E1u)` 
 (:math:`1s\sigma_g \rightarrow 2p\sigma_u`).
 
 Including spin-orbit
@@ -259,43 +266,49 @@ Spin-orbit is included by simply commenting out the keyword :ref:`.SPINFREE` in 
 
 The output concerning excited states of total symmetry :math:`B_{2u}` in :math:`D_{2h}` now reads::
 
-  *** Excitations of boson symmetry 3 : B2u
+   *** Excitations of boson symmetry 2 : B3u
+  
+   --------------------------------------------------------------------------------
+   Excitation no.   1 excitation energy    14.28738705 a.u.    4.44E-07 (converged)
+   Linear symmetry:  1u                       388.7796 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+        -0.80477959D-03 a.u.
+  
+       -> dipole oscillator strength (length)   :  6.16900972E-06
+       -> dipole oscillator strength (velocity) :  0.00000000E+00
 
-  --------------------------------------------------------------------------------
-  Excitation no.   1 excitation energy    14.30383562 a.u.    3.29E-13 (converged)
-  Linear symmetry:  1u                       389.2272 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-  A - YDIPLEN              B2u  T+         0.10094327D-02 a.u.
-
-     -> dipole oscillator strength (length)   :  9.71663744E-06
-     -> dipole oscillator strength (velocity) :  0.00000000E+00
-
-     Total dipole radiation rate (length)   6.38751E+07 s-1
-      - corresponding radiation life time   1.56555E-08 s
-  --------------------------------------------------------------------------------
-  Excitation no.   2 excitation energy    14.33365398 a.u.    8.75E-13 (converged)
-  Linear symmetry:  1u                       390.0386 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-  A - YDIPLEN              B2u  T+         0.99693836D-01 a.u.
-
-     -> dipole oscillator strength (length)   :  0.09497346
-     -> dipole oscillator strength (velocity) :  0.00000000
-
-     Total dipole radiation rate (length)   6.26941E+11 s-1
-      - corresponding radiation life time   1.59505E-12 s
-  --------------------------------------------------------------------------------
-  Excitation no.   3 excitation energy    14.70873930 a.u.    8.85E-15 (converged)
-  Linear symmetry:  1u                       400.2451 eV
-  *** Transition moments <0|A|n> for this excitation:
-
-  A - YDIPLEN              B2u  T+         0.22872510D-06 a.u.
+       Total dipole radiation rate (length)   4.04606E+07 s-1
+        - corresponding radiation life time   2.47154E-08 s
+   --------------------------------------------------------------------------------
+   Excitation no.   2 excitation energy    14.32916239 a.u.    3.86E-07 (converged)
+   Linear symmetry:  1u                       389.9163 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+         0.108036713021 a.u.
+  
+       -> dipole oscillator strength (length)   :  0.11149933
+       -> dipole oscillator strength (velocity) :  0.00000000
+  
+       Total dipole radiation rate (length)   7.35571E+11 s-1
+        - corresponding radiation life time   1.35949E-12 s
+   --------------------------------------------------------------------------------
+   Excitation no.   3 excitation energy    14.69518602 a.u.    1.74E-06 (converged)
+   Linear symmetry:  1u                       399.8763 eV
+   *** Transition moments <0|A|n> for this excitation:
+  
+   A - XDIPLEN              B3u  T+         0.49111365D-05 a.u.
+  
+       -> dipole oscillator strength (length)   :  2.36291361E-10
+       -> dipole oscillator strength (velocity) :  0.00000000E+00
+  
+       Total dipole radiation rate (length)    1639.5     s-1
+        - corresponding radiation life time   6.09946E-04 s
 
 To understand the effect of spin-orbit coupling we note that in this irrep we pick out the :math:`1_u` of the
 original three :math:`^{2S+1}\Lambda_u` states, thus enabling all three states to mix. In practice the two original
 triplet states steal intensity from the singlet state, such that the transition moment of the latter state is
-reduced from 0.099699 a.u. 0.099694 a.u.. This change is not very spectacular since the nitrogen molecule is composed of
+reduced from 0.1080398 a.u. to 0.108037 a.u.. This change is not very spectacular since the nitrogen molecule is composed of
 light atoms for which relativistic effects are not very strong. We can mimic a more strongly relativistic system by reducing
 the speed of light to e.g. 20 a.u.::
 
@@ -303,7 +316,7 @@ the speed of light to e.g. 20 a.u.::
   .CVALUE                                                                                             
   20.0D0
 
-The transition moment of the singlet :math:`^1\Pi_u` state is then reduced from 0.093876 a.u. to 0.086275 a.u. 
+The transition moment of the singlet :math:`^1\Pi_u` state is then reduced from 0.102809 a.u. to 0.974999 a.u. 
 upon inclusion of spin-orbit coupling.
 
 Simulating the core-excitation spectrum using complex response

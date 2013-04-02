@@ -51,8 +51,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             )
     endif()
     if(ENABLE_BOUNDS_CHECK)
+        # miro: removed -ftrapuv due to problems with floating point execptions
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -ftrapuv"
+            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
             )
     endif()
     if(ENABLE_PROFILING)

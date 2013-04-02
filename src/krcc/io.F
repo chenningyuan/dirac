@@ -56,6 +56,8 @@
       LUSC81 = 51
 *. INDICES FILE FROM SORTING
       LUSC82 = 52
+*. INTEGRALS FROM THE ARDUCCA CODE
+      LU_ARDUCCA = 53
 * =================
 * Internal files
 * =================
@@ -93,6 +95,12 @@
       Open(Unit=LUSC4,File='LUSC4',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC5,File='LUSC5',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC6,File='LUSC6',Status='UNKNOWN',Form='UNFORMATTED')
+*     LUJDIA = 76 !optimization
+*     LUJVEC = 77 !optimization
+*     Open(Unit=LUJDIA,File='LUJDIA',
+*    &     Status='UNKNOWN',Form='UNFORMATTED')
+*     Open(Unit=LUJVEC,File='LUJVEC',
+*    &     Status='UNKNOWN',Form='UNFORMATTED')
 *. Scratch space for subspace handling
       LUSC41 = 79
       Open(Unit=LUSC41,File='LUSC41',Status='UNKNOWN',

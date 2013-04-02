@@ -22,7 +22,7 @@
 module xc_geometric
 
    use interface_ao
-   use ao_eval
+   use dirac_ao_eval
 
    implicit none
 

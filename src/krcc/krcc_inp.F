@@ -32,7 +32,7 @@ C
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
      &            '.GASSHK','.INACTI','.IBATCH','.NO4IDX','.IREADB',
      &            '.CC_EXC','.CCROOT','.MXCIV ','.MXITLR','.CONVEX',
-     &            '.******','.******','.******','.******','.******'/
+     &            '.ONLYTR','.******','.******','.******','.******'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -65,6 +65,7 @@ C
       NO4IDX    = 0 ! Skip 4-index transformation
       I_DO_CC_EXC_E = 0
       MXCIV     = 0
+      IONLYTRANS = 0
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -110,7 +111,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20)
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25)
      &                     , I
                   END IF
   200          CONTINUE
@@ -252,7 +254,8 @@ C&&& Convergence treshold for excited states
                  IKWSET(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& 
+C&&& Only transformation no CC. Will just exit after transformation
+                 IONLYTRANS = 1
                  IKWSET(21) = 1
                GO TO 100
    22          CONTINUE
@@ -423,7 +426,7 @@ C
           LCMBSPC(ICISPC) = 1
           ICMBSPC(1,ICISPC) = ICISPC
         END DO
-        LCSBLK = 6000000
+        LCSBLK = 6400000
 C
 C     Print section
 C     =============

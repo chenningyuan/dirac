@@ -94,7 +94,8 @@
       ONE = 1.0D0
       DOUBLE = 2.0D0 !!! forgot it?
 * Debug
-      ISKIP = 5 ! from which commutator to skip
+      ISKIP = 5 ! from which commutator +1  to skip
+      I_EXCLUDE_M10 = 0
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -117,7 +118,7 @@
       CALL EXP_MT_H_EXP_TC_MEM_KRCC(1,WORK,KFREE,LFREE)
 *
 *. Start by zeroing the CC-vector function
-      CALL SETVEC(CC_VEC,ZERO,N_CC_AMP+1)
+      CALL SETVEC(CC_VEC,ZERO,N_CC_AMP)
 *
 * Start with zero commutators! (If first iteration and no restart this
 * should be the only one done!)
@@ -232,6 +233,7 @@
 *
 * Allocate the M10 intermediate
 *
+      IF(I_EXCLUDE_M10.EQ.0) THEN
       NPART = 1
       NHOLE = 0 
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
@@ -241,6 +243,7 @@
       print*,'to intermediate'
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
+      CALL MEMCHK_KRCC(WORK)
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM10),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
@@ -313,7 +316,7 @@
       IF(ISKIP.GE.2) THEN
       print*,' adding M10 and H10'
       CALL MEMCHK_KRCC(WORK)
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH10,WORK(KNH10),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH10,WORK(KNH10),
      &                                   NINTER10,WORK(KINTM10),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
@@ -349,6 +352,7 @@
       NPART = 1
       NHOLE = 0 
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
+      END IF
 *
 * Fourth through M02
 *
@@ -397,7 +401,7 @@
       IF(ISKIP.GE.3) THEN
 *
       print*,'adding M12 to H12'
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH12,WORK(KNH12),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH12,WORK(KNH12),
      &                                   NINTER12,WORK(KINTM12),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
@@ -454,7 +458,7 @@
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.2) THEN
       print*,' adding M02 and H02'
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH02,WORK(KNH02),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH02,WORK(KNH02),
      &                                   NINTER02,WORK(KINTM02),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
@@ -539,7 +543,7 @@
 * Add amplitudes and integrals 
 *
       print*,' adding M11 and H11'
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
@@ -627,7 +631,7 @@ C
 *
 * Add amplitudes and integrals 
       print*,' adding M11 and H11 Second time'
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH11,WORK(KNH11),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH11,WORK(KNH11),
      &                                   NINTER11,WORK(KINTM11),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),
@@ -772,7 +776,7 @@ C
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.2) THEN
       print*,' adding M01 and H01'
-      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH01,WORK(KNH01),
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH01,WORK(KNH01),
      &                                   NINTER01,WORK(KINTM01),
      &                                   NSPOBEX_TP,WORK(KLSOBEX),
      &                                   WORK(KT_CC),WORK(KFI),

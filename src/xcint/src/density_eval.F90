@@ -22,7 +22,7 @@
 module density_eval
 
    use interface_ao
-   use ao_eval
+   use dirac_ao_eval
 
    implicit none
 
