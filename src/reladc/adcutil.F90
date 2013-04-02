@@ -24,8 +24,8 @@
                              irecl,filecnf,ionizlevel)
 !
 ! purpose: reads in and analyzes long eigenvectors of 
-! single/double ionization calculations depending on
-! the value of ionizlevel.
+! single/double ionization and excitations calculations 
+! depending on the value of ionizlevel.
 ! Since eigenvectors can be *very* long we restrict the
 ! printout to eigenvector components larger than 0.001.
 ! Smaller ones are not considered to be relevant.
@@ -35,7 +35,7 @@
 ! is questionable. Either we have true physical degeneracy or artificial degeneracy
 ! due to overiteration or low symmetry intensity spreading. In all these cases a
 ! Lanczos reiteration will lead to artificial long eigenvectors with high pole strength
-! but these are erroneous! We will therefore introduce a canonical orthogonalization
+! but these are spurious! We will therefore introduce a canonical orthogonalization
 ! procedure for these vectors in the corresponding subspace. Remember: the spaces of
 ! a possible linear dependence are in general very small so we do not produce numerical
 ! overhead.
@@ -55,15 +55,16 @@
 ! local variables
 !
       CHARACTER*10                :: LEVECFN,ANALOUT
-      CHARACTER*44                :: field
+      CHARACTER(len=irecl)        :: field
       CHARACTER*11                :: blankf='           '
       CHARACTER*11                :: ostr='    OCC    '
       CHARACTER*11                :: vstr='    VIR    '
       logical                     :: isthere
-      integer                     :: neigenv,j,ix,ladcx,ispcount,nv,idum
+      integer                     :: neigenv,ix,ladcx,ispcount,nv,idum
       integer, allocatable        :: indarr(:), indarr2(:)
       integer, allocatable        :: irel(:)
-      integer                     :: iallocstat,k,l,koff,loff,lwork,info
+      integer                     :: iallocstat,koff,loff,lwork,info
+      integer                     :: i,j,k,l
       integer                     :: ispoff,nindep,icount
       real*8, allocatable         :: evec(:,:),eval(:),smat(:,:),work(:)
       real*8, allocatable         :: sevl(:),evli(:,:)
@@ -80,6 +81,8 @@
           write(*,*) 'Analyzing single ionizations.'   
         CASE (2)
           write(*,*) 'Analyzing double ionizations.'   
+        CASE (3)
+          write(*,*) 'Analyzing excitation calculations.'   
         CASE DEFAULT
           call quit('** internal error ** ionizlevel selector')
       END SELECT
@@ -91,23 +94,35 @@
       write(*,*) 'Record length of config file:',IRECL
       write(*,*) 'Generic config file  name: ',FILECNF
 !     write(*,*) 'File handles: ',io1,io2,io3
+!
+! clear variable length character
+!
+      DO i=1,len(field)
+        field(i:i)=' '
+      ENDDO
 
 ! constructing eigenvector and analysis output file name
 
       IF(DESREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',DESREP
-        IF(ionizlevel.eq.1) THEN
-          WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
-        ELSE
-          WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
-        ENDIF
+        SELECT CASE (ionizlevel)
+          CASE(1)
+            WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
+          CASE(2)
+            WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
+          CASE(3)
+            WRITE(ANALOUT,'(A8,I2)') 'XEVCANL.',DESREP
+        END SELECT
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',DESREP
-        IF(ionizlevel.eq.1) THEN
-          WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
-        ELSE
-          WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
-        ENDIF
+        SELECT CASE (ionizlevel)
+          CASE(1)
+            WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
+          CASE(2)
+            WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
+          CASE(3)
+            WRITE(ANALOUT,'(A9,I1)') 'XEVCANL.0',DESREP
+        END SELECT
       ENDIF
       write(*,*) 'Fetching eigenvectors from: ',LEVECFN
       write(*,*) 'Writing analysis results to: ',ANALOUT
@@ -292,6 +307,7 @@
               seval*autoev,' eV,  Pole strength: ',polestr
 
         IF(ionizlevel.eq.1) then
+!
           write(io3,'(A8,2X,3A11,A20)') &
             'No.',ostr,ostr,vstr,' Coeff(real)'
           write(io3,'(A)') ' '
@@ -308,7 +324,9 @@
               icount = icount + 1
             endif
           ENDDO
-        ELSE
+!
+        ELSE IF(ionizlevel.eq.2) then
+!
           write(io3,'(A8,2X,4A11,A20)') &
             'No.',ostr,ostr,ostr,vstr,'Coeff(real)'
           write(io3,'(A)') ' '
@@ -321,6 +339,25 @@
               ELSE
                 write(io3,'(I8,2X,A22,2A11,F20.12)') &
                      icount,field,blankf,blankf,evli(ix,K)
+              ENDIF
+              icount = icount + 1
+            endif
+          ENDDO
+!
+        ELSE   ! generate output for excitation eigenvectors
+!
+          write(io3,'(A8,2X,4A14,A20)') &
+            'Cnf.',ostr,vstr,ostr,vstr,'Coeff(real)'
+          write(io3,'(A)') ' '
+          icount = 1
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(dabs(evli(ix,K)).gt.coefthr) then
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A56,F20.12)') ix,field,evli(ix,K)
+              ELSE
+                write(io3,'(I8,2X,A28,2A14,F20.12)') &
+                     ix,field,blankf,blankf,evli(ix,K)
               ENDIF
               icount = icount + 1
             endif
@@ -1041,7 +1078,7 @@
 !
 
       CALL PST('Entering (new format) REAL FULL diagonalizer+')
-      write(*,*) 'Numer of buffers to read:',nbufs
+      write(*,*) 'Number of buffers to read:',nbufs
 
       IF(LADC.gt.5000) THEN
         write(*,*) 'Matrix dimension too large for direct'
@@ -1087,6 +1124,7 @@
           IROW = IOI(K)
           ICOL = IOJ(K)
           S    = BUF(K)
+!         write(*,'(A,2I4,F20.12)') 'Q<--',irow,icol,S
 
           IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
  
@@ -1117,8 +1155,8 @@
            CALL QUIT ('*** Error in FULLDIAR (lapack dsyev) ***')
       ENDIF
 
-      WRITE(*,*) 'Eigenvalues in eV (lowest 10):'
-      DO I=1,min(10,LADC)
+      WRITE(*,*) 'Eigenvalues in eV (lowest 20):'
+      DO I=1,min(20,LADC)
         WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
       ENDDO
 
@@ -1146,8 +1184,6 @@
 
       RETURN
 
- 88   STOP 'Error reading the diagonal (FULLDIAR)'
- 99   STOP 'Unexpected end of diagonal file (FULLDIAR)'
  199  STOP 'Error reading off-diagonal elements (FULLDIAR)'
 
  555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
@@ -1190,7 +1226,7 @@
 !
 
       CALL PST('Entering (new format) FULL complex diagonalizer+')
-      write(*,*) 'Numer of buffers to read:',nbufs
+      write(*,*) 'Number of buffers to read:',nbufs
 
       IF(LADC.gt.5000) THEN
         write(*,*) 'Matrix dimension too large for direct'
@@ -1298,8 +1334,6 @@
 
       RETURN
 
- 88   STOP 'Error reading the diagonal (FULLDIAC)'
- 99   STOP 'Unexpected end of diagonal file (FULLDIAC)'
  199  STOP 'Error reading off-diagonal elements (FULLDIAC)'
 
  555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)

@@ -1089,12 +1089,12 @@ C                         print*,'writing out IXCH',IXCH
 C                             print*,'I_ADD(IRUN),IRUN',I_ADD(IRUN),IRUN
                             end do
                             ELSE
-            write(6,'(A,6X,4I3)') '1 INDEX array: ',(I_ADD(ID),ID=1,4,1)
+C           write(6,'(A,6X,4I3)') '1 INDEX array: ',(I_ADD(ID),ID=1,4,1)
                             I_ADD(1) = INDEX(1)*LABEL(1,IXTP)
                             I_ADD(4) = INDEX(2)*LABEL(2,IXTP)
                             I_ADD(3) = INDEX(3)*LABEL(3,IXTP)
                             I_ADD(2) = INDEX(4)*LABEL(4,IXTP)
-            write(6,'(A,6X,4I3)') '2 INDEX array: ',(I_ADD(ID),ID=1,4,1)
+C           write(6,'(A,6X,4I3)') '2 INDEX array: ',(I_ADD(ID),ID=1,4,1)
                             END IF
 C                           print*,'IRI,NZ',IRI,NZ
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
@@ -1135,7 +1135,7 @@ C                           print*,'IRI,NZ',IRI,NZ
 *
 C                           print*,'IRI,NZ',IRI,NZ
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
-            write(6,'(A,6X,4I3)') '3 INDEX array: ',(INDEX(ID),ID=1,4,1)
+C           write(6,'(A,6X,4I3)') '3 INDEX array: ',(INDEX(ID),ID=1,4,1)
                               call getint_sigden_KRCC(YINT,INDEX(1),
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT,
      &                                  WORK,KFREE,LFREE)
@@ -1231,6 +1231,18 @@ C     CALL MEMCHK_KRCC(WORK)
         END DO
         DO I=1,NSPOBEX_TP
           WRITE(6,*) ' INTEGRAL OFFSET ',IOFFINTTYPE(I),' FOR HTYPE ',I
+        END DO
+      END IF
+      ICHECK = 1
+      IF(ICHECK.EQ.1) THEN
+        open(unit=54,file='INTE',
+     &       status='REPLACE',form='FORMATTED',iostat=ios)
+        if(ios.ne.0) then
+          call abend2('problem with file integrals')
+        end if
+        rewind(54)
+        DO I=1,NALLINT
+        WRITE(54,*) T(I)
         END DO
       END IF
 *

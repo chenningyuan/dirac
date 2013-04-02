@@ -193,25 +193,10 @@ Examples of using various operators
 We give here several concrete examples on how to construct operators for
 various properties.
 
-XAVECTOR
-~~~~~~~~
-
-An example::
-
-  .OPERATOR
-   'B_x'
-   XAVECTOR
-   ZDIPLEN
-   YDIPLEN
-   COMFACTOR
-   -68.517999904721
-
-
 Kinetic part of the Dirac Hamiltonian
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As another example the kinetic part of the Dirac Hamiltonian may be
-specified by::
+The kinetic part of the Dirac Hamiltonian may be specified by::
 
   .OPERATOR
    'Kin energy'
@@ -222,7 +207,41 @@ specified by::
    COMFACTOR
    -68.51799475
 
-where -68.51799475 is -c/2
+where -68.51799475 is :math:`-c/2`. 
+
+The speed of light :math:`c` is an important parameter in relativistic
+theory, but its explicit value in atomic units not necessarily remembered.
+A simpler way to specify the kinetic energy operator is therefore::
+
+
+  .OPERATOR
+   'Kin energy'
+   ALPHADOT
+   XDIPVEL
+   YDIPVEL
+   ZDIPVEL
+   CMULT
+   COMFACTOR
+   -0.5
+
+where the keyword *CMULT* assures multiplication of the common factor -0.5 by :math:`c`.
+This option has the further advantage that *CMULT* follows any user-specified modification 
+of the speed of light, as provided by :ref:`.CVALUE`.
+
+XAVECTOR
+~~~~~~~~
+
+Another example::
+
+  .OPERATOR
+   'B_x'
+   XAVECTOR
+   ZDIPLEN
+   YDIPLEN
+   CMULT
+   COMFACTOR
+   -0.5
+
 
 The program will assume all operators to be Hermitian and will therefore insert
 an imaginary phase *i* if necessary (applies to antisymmetric scalar

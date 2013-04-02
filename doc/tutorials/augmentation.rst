@@ -1,14 +1,14 @@
 Basis sets augmentation
 =======================
 
-DIRAC suite offers possibility to modify employed basis sets easily.
+DIRAC suite offers possibility to easily modify employed basis sets.
 
 The purpose of this tutorial, which is reflected in the test *basis_automatic_augmentation*,  
 is to show nonstandard automatic augmentation of provided standard basis sets, like
-cc-pVXZ, Turbmole and dyall.
+cc-pVXZ, Turbmole and Dyall's.
 
 In the following table we demonstrate influence of the (contracted) basis set extension on the total 
-(nonrelativistic) energy and on the dipole moment, which is calculated as simple SCF wave-function expectation value.
+nonrelativistic energy and on the dipole moment, which is simply calculated through SCF wave-function expectation value.
 
 Two molecules were chosen: HF and HBr. For the former molecule, the pre-cc-pVXZ and Turbomole basis sets are used for both F and H atoms.
 In the latter molecule, the heavy Br atom is described with Dyall's relativistic basis set, while the H atom is provided
@@ -35,7 +35,7 @@ with the nonrelativistic basis set.
 +---------------------+--------------------------------+--------------------+---------------+-------------+
 | d-aug-dyall.v2z     | Br     [17s13p9d3f|17s13p9d3f] | (H [4s1p|2s1p])    | -2572.6425365 | -0.76521484 |
 +---------------------+--------------------------------+--------------------+---------------+-------------+
-  (  H-atom in parenthesis has cc-pVDZ basis sets. )
+(H-atom in parenthesis has cc-pVDZ basis sets.)
 
 Note that the nonrelativistic Hamiltonian with contracted basis sets was used in all these examples.
 Contracted basis sets were set for light elements (F,H), while for Br atom uncontracted scheme with Dyall's basis

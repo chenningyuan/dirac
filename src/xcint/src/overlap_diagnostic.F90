@@ -349,7 +349,7 @@ contains
             end do
          end do
       end if
-!     here you sum up the 1,2 or 4 contributions to buffer and put in iz=1
+!     here you sum up the 1,2 or 4 contributions to buffer, take the square root and put in iz=1
 !     Next you only need to multiply together buffer for s and t
       do s = 1, nr_mo
          do t = s, nr_mo

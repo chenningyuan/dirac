@@ -44,26 +44,26 @@ C  /* Deck opinpu */
 #include "gnrinf.h"
 #endif
       PARAMETER (NTABLE = 68, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
-     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
+     &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD, LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE FIRST
-      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
-     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
-     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
-     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
-     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', !20
-     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', 
-     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ',
-     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
-     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES',
-     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', !40
-     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES',
-     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
-     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
-     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', !60
+      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', !  4
+     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', !  8
+     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', ! 12
+     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ', ! 16
+     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', ! 20
+     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', ! 24
+     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ', ! 28
+     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG', ! 32
+     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES', ! 36
+     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', ! 40
+     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES', ! 44
+     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD', ! 48
+     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE', ! 52
+     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ', ! 56
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', ! 60
      &            '.LINDH ', '.NO SKI', '.GRD IN', '.GRD SC',
      &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.IPRGRD'/
 C
@@ -74,6 +74,7 @@ C
  969        READ(LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GOTO 969
+            CALL UPCASE(WORD)
          END IF
          RETURN
       END IF
@@ -197,6 +198,7 @@ C
          WORD1 = WORD
  100     CONTINUE
          READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF ((PROMPT .EQ. '!') .OR. (PROMPT .EQ. '#')) THEN
             GOTO 100
@@ -217,14 +219,14 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                GOTO 100
             END IF
-            WRITE(LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &                         '" not recognized in OPINPU.'
-            CALL PRTAB(NTABLE,TABLE,WORD1//' INPUT KEYWORDS',LUPRI)
-            CALL QUIT('Illegal keyword in OPINPU.')
+            WRITE(LUPRI,'(/4A/)') ' Keyword "',WORD,
+     &                         '" not recognized for ',WORD1
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            CALL QUIT('Illegal keyword in '//WORD1//' input.')
 C&&&&: PRINT: General print level
  1          READ(LUCMD,*) IPRINT
             GOTO 100
-C&&&&: MAX IT: Maximum number of iterations
+C&&&&: MAX IT: Maximum number of geometry iterations
  2          READ(LUCMD,*) ITRMAX
             GOTO 100
 C&&&&: TRUSTR: Initial trust radius
@@ -250,11 +252,11 @@ C&&&&: ENERGY: Convergence threshold for energy
  8          READ(LUCMD,*) THRERG
             CHGRDT = .TRUE.
             GOTO 100
-C&&&&: GRADIE: Convergence threshold for gradient
+C&&&&: GRADIE: Convergence threshold for molecular gradient
  9          READ(LUCMD,*) GRDTHR
             CHGRDT = .TRUE.
             GOTO 100
-C&&&&: STEP T: Convergence threshold for step
+C&&&&: STEP T: Convergence threshold for geometry step
  10         READ(LUCMD,*) THRSTP
             CHGRDT = .TRUE.
             GOTO 100
@@ -346,10 +348,10 @@ C&&&&: M-BFGS:  Use 1ast order method with "multiple BFGS" update
  35         MULTI  = .TRUE.
             BFGS   = .TRUE.
             GOTO 100
-C&&&&: CARTES:  Use Cartesian coordinates for optimization
+C&&&&: CARTES:  Use Cartesian coordinates for geometry optimization
  36         CARTCO = .TRUE.
             GOTO 100
-C&&&&: REDINT:  Use redundant internal coordinates for optimization
+C&&&&: REDINT:  Use redundant internal coordinates for geometry optimization
  37         REDINT = .TRUE.
             GOTO 100
 C&&&&: INIRED:  Initial Hessian diagonal in internal coordinates
@@ -496,10 +498,10 @@ C&&&& :  IPRGRD: print level for DIRAC mol.grad. evaluation
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
          ELSE
-            WRITE(LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     &           '" not recognized in OPINPU.'
+            WRITE(LUPRI,'(/4A/)')
+     &         ' Prompt "',WORD,'" not recognized for ',WORD1
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-            CALL QUIT('Illegal prompt in OPINPU.')
+            CALL QUIT('Illegal prompt in '//WORD1//' input.')
          END IF
       END IF
  300  CONTINUE
@@ -523,17 +525,15 @@ C
       IF (.NOT. OPTIMI) RETURN
       CALL HEADER('Chosen parameters for OPTIMI:',0)
 C
-C     Check if only redundant internal coordinates should
-C     be determinded.
+C     Check if only redundant internal coordinates should be determinded.
 C
       IF (FINDRE) THEN
          WRITE(LUPRI,'(A)') ' Determination of redundant internal '
      &        // 'will be performed.'
          IF (.NOT. VISUAL) THEN
-            WRITE(LUPRI,'(/A)') ' *** NOTE! ***'
-            WRITE(LUPRI,'(A)') ' No minimization will be done, ' //
-     &           'other keywords will be ignored!!!!!'
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/A/A/)') ' *** NOTE! ***',
+     &         ' No geometry optimization will be done, ' //
+     &         'other keywords will be ignored!!!!!'
          END IF
       END IF
 C
@@ -541,36 +541,36 @@ C     Check for visualization
 C
       IF (VISUAL) THEN
          WRITE(LUPRI,'(A)') ' Visualization has been ' //
-     &        'requested. No minimization will be done.'
-         WRITE(LUPRI,'(A)')
+     &        'requested. No geometry optimization will be done.',
      &        ' VRML-file of geometry will be created.'
          IF (VRBOND) WRITE(LUPRI,'(A)')
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
          IF (VRSYMM) THEN
-            WRITE(LUPRI,'(A)') ' Symmetry elements will be visualized.'
-            WRITE(LUPRI,'(A)')
-     &        ' Please note that no symmetry should be specified' //
-     &        ' in the input file.'
+            WRITE(LUPRI,'(A/A)')
+     &        ' Symmetry elements will be visualized.',
+     &        ' Please note that symmetry should NOT be explicitly' //
+     &        ' specified in the input file.'
          END IF
          IF (VREIGV) THEN
             WRITE(LUPRI,'(A)') ' Eigenvectors can ' //
-     &           'only be visualized during a minimization.'
-            WRITE(LUPRI,'(A)') ' Keyword will be ignored!'
+     &       'only be visualized during an optimization.',
+     &       ' Keyword will be ignored!'
             VREIGV = .FALSE.
          END IF
          IF (VRVIBA) THEN
             WRITE(LUPRI,'(A)') ' Vibrational modes can ' //
-     &           'only be visualized during a minimization.'
-            WRITE(LUPRI,'(A)') ' Keyword will be ignored!'
+     &       'only be visualized during an optimization.',
+     &       ' Keyword will be ignored!'
             VRVIBA = .FALSE.
          END IF
-         WRITE(LUPRI,'(A)') ' Other keywords will be ignored!'
+         WRITE(LUPRI,'(A)')
+     &      ' Any other keywords in this module are ignored!'
          RETURN
       END IF
-C     
-C     The type of minimization is determined, BFGS is default.
+C
+C     The type of optimization is determined, BFGS is default.
 C
       IF (SADDLE) THEN
          WRITE(LUPRI,'(A)')
@@ -686,17 +686,17 @@ C
          END IF
          FSTORD = .TRUE.
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' WARNING! More than one ' //
-     &        'minimization method has been selected.'
-         WRITE(LUPRI,'(A)') ' Aborting.'            
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A)') ' ERROR! More than one ' //
+     &        'optimization method has been selected under '//WORD1
          CALL QUIT
-     &        ('More than one minimization method chosen in OPINPU.')
+     &        ('More than one optimization method chosen for '//WORD1)
       END IF
       IF (HFPROP) THEN
          WRITE(LUPRI,'(A)') ' The Hellmann-Feynman theorem will ' //
      &        'be utilized to calculate derivatives.'
+         WRITE (LUPRI,'(5X,A)') 'This option is currently not working'//
+     &        ' correctly, program will stop'
+         CALL QUIT('Hellmann-Feynman approximation not working')
       END IF
 C
       ITYP = 0
@@ -726,15 +726,13 @@ C
      &           'in Cartesian coordinates (by default).'
          END IF
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' ERROR! More than one ' //
-     &        'coordinate system has been selected for optimization.'
-         WRITE(LUPRI,'(A/)') ' Aborting.'            
+         WRITE(LUPRI,'(/A)') ' ERROR! More than one ' //
+     &        'coordinate system has been selected in '//WORD1
          CALL QUIT
-     &        ('More than one coordinate system chosen under *OPTIMI.')
+     &        ('More than one coordinate system chosen under '//WORD1)
       END IF
       IF (NOAUX) THEN
-            WRITE(LUPRI,'(A)') ' No extra (auxilliary) bonds will ' //
+            WRITE(LUPRI,'(A)') ' No extra (auxiliary) bonds will ' //
      &        'be added.'
       END IF
       IF (NODIHE) THEN
@@ -771,10 +769,10 @@ C           hjaaj nov 2002: let us try if it works now
 C
       IF (HSFILE) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .HESFIL only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .HESFIL only has effect when a 1st order ' //
+     &           'method has been specified => Keyword ignored.'
          ELSE
             WRITE(LUPRI,'(A)')
      &           ' Initial Hessian will be read from file.'
@@ -782,15 +780,15 @@ C
       END IF
       IF (INITHS) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INITHE only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INITHE only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INITHE has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INITHE has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             INITHS = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)')
@@ -799,16 +797,16 @@ C
       END IF
       IF (MODHES) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .MODHES only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .MODHES only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             MODHES = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .MODHES has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .MODHES has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             MODHES = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)') ' The approximate model Hessian'/
@@ -823,16 +821,16 @@ C
       END IF
       IF (CMBMOD) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .CMBMOD only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .CMBMOD only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             CMBMOD = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .CMBMOD has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .CMBMOD has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             CMBMOD = .FALSE.
          ELSE
             WRITE(LUPRI,'(A)') ' The approximate model Hessian'/
@@ -851,18 +849,19 @@ C
       END IF
       IF (INMDHS) THEN
          IF (NEWTON .OR. QUADSD) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INIMOD only has effect when 1st order ' //
-     &           'method has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INIMOD only has effect when 1st order ' //
+     &           'method has been specified => Keyword ignored.'
             INMDHS = .FALSE.
          ELSE IF (HSFILE) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
-     &           ' .INIMOD has no effect when .HESFIL ' //
-     &           'has been specified.'
-            WRITE(LUPRI,'(A)') ' Keyword ignored.'
+     &           'INFO: .INIMOD has no effect when .HESFIL ' //
+     &           'has been specified => Keyword ignored.'
             INMDHS = .FALSE.
          ELSE IF (INITHS) THEN
+            NINFO = NINFO + 1
             WRITE(LUPRI,'(A)')
      &           ' .INIMOD has no effect when .INITHE ' //
      &           'has been specified.'
@@ -966,14 +965,14 @@ C
          END IF
       END IF
 C
-      WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
-      WRITE(LUPRI,'(A,I10)') ' Maximum # of iterations:',ITRMAX
+      WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT,
+     &   ' Maximum # of geometry optimization iterations:',ITRMAX
       IF (MAXREJ .NE. MXREJ) THEN
          WRITE(LUPRI,'(A,I10)') ' Max # of rejected steps:',MAXREJ
       END IF
       IF (VRML) THEN
-         WRITE(LUPRI,'(A)') ' VRML-files of initial and final ' //
-     &        'geometry will be created.'
+         WRITE(LUPRI,'(A)') ' VRML-files for initial and final ' //
+     &        'geometries will be created.'
          IF (VRBOND) WRITE(LUPRI,'(A)')
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VREIGV) WRITE(LUPRI,'(A)')
@@ -1000,7 +999,6 @@ C
          WRITE(LUPRI,'(A,A60)') '      ',SPBSTX
       END IF
       IF (TRSTCH) THEN
-         WRITE(LUPRI,*)
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
      &        ' Restricted step control parameters',
      &        ' ----------------------------------',
@@ -1019,17 +1017,16 @@ C
       END IF
       IF (NOBRKS) THEN
          WRITE(LUPRI,*)
-     &        'Symmetry will not be broken during minimization.'
+     &        'Symmetry will not be broken during optimization.'
          WRITE(LUPRI,*)
       END IF
       IF (THRSYM .NE. MIN(5.0D-3,SQRT(DEFTHE))) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Threshold for symmetry-break set to       : ', THRSYM
          IF ((THRSYM .LT. D0) .OR. (THRSYM .GT. 0.1D0)) THEN
             WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
+            WRITE(LUPRI,'(A,1P,D13.2/)')
      &           ' Threshold reset to:', MIN(5.0D-3,SQRT(DEFTHE))
-            WRITE(LUPRI,*)
             THRSYM = MIN(5.0D-3,SQRT(DEFTHE))
          END IF
       END IF
@@ -1068,10 +1065,10 @@ C
          END IF
          IF (NSPMOD .LT. 0) THEN
             WRITE(LUPRI,*) 'The eigenvector corresponding to the ' //
-     &           'lowest eigenvalue is chosen'
+     &           'lowest non-zero eigenvalue is chosen'
             WRITE(LUPRI,*) 'as reaction mode (default).'
          ELSE
-            WRITE(LUPRI,*) 'Eigenvector #',NSPMOD,
+            WRITE(LUPRI,'(A,I3,A)') 'Eigenvector #',NSPMOD,
      &           ' will be used as reaction mode.'
          END IF
       END IF
@@ -1087,9 +1084,10 @@ C
             WRITE(LUPRI,*)
          END IF
       END IF
+C
       IF (BAKER) THEN
-        WRITE(LUPRI,*)
-     & 'Baker''s convergence criteria [J. Comp. Chem. 14(1993) 1085]'//
+         WRITE(LUPRI,'(/A/)')
+     & ' Baker''s convergence criteria [J. Comp. Chem. 14(1993) 1085]'//
      & ' will be used.'
       ELSE
 CTROND      IF (GRDTHR .NE. DEFTH2) THEN
@@ -1140,7 +1138,7 @@ CTROND      END IF
          END IF
       END IF
       IF (CONOPT) THEN
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A)')
      &        ' Constrained optimization has been requested.'
          NOAUX = .TRUE.
          IF (.NOT. REDINT) THEN
@@ -1158,10 +1156,11 @@ CTROND      END IF
  333        CONTINUE
             IF (.NOT. NOBRKS) THEN
                NOBRKS = .TRUE.
-               WRITE(LUPRI,'(/A/)')
-     &            ' Symmetry will not be broken during '
-     &         // 'a constrained optimization.'
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,*) 'Symmetry will not be broken during '
+     &              // 'a constrained optimization.'
             END IF
+            WRITE(LUPRI,*)
          END IF
       END IF
       IF (REMCRD) THEN
@@ -1200,7 +1199,7 @@ C
          IF (VREIGV) WRITE(LUPRI,'(A)')
      &        ' Eigenvectors will be visualized.'
          IF (VRVIBA) WRITE(LUPRI,'(A)')
-     &        ' Eigenvectors will be visualized.'
+     &        ' Vibrational modes will be visualized.'
       END IF
 C     
 #if defined (PRG_DIRAC)
@@ -1269,6 +1268,7 @@ C  /* Deck optmin */
 #include "gnrinf.h"
 #endif
 #include "infpar.h"
+#include "nuclei.h"
 #include "optinf.h"
 #include "cbiher.h"
       LOGICAL TSTIN
@@ -1304,6 +1304,14 @@ CTROND      CALL GPCLOSE(LUONEL,' ')
       HRINPC = .FALSE.
       WORK(IWOFF+1) = WRKDLM
 C
+      IF (DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
+         IF (NUCDEP .LE. 2) THEN ! do not use internal coordinates for diatomic molecules and atoms
+            DELINT = .FALSE.
+            REDINT = .FALSE.
+            INRDHS = .FALSE.
+            INMDHS = .FALSE.
+         END IF
+      END IF
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          KATARR = IWOFF  + 2
          KMTMP  = KATARR + 8*MXCENT
@@ -1396,12 +1404,12 @@ C  /* Deck runopt */
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "maxorb.h"
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
 #include "inftap.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -1437,6 +1445,8 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
+C
+      CALL QENTER('RUNOPT')
 C
 C     Initialization of variables.
 C
@@ -1490,8 +1500,8 @@ C
          KEVEC  = KATARR + 8*MXCENT
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
-         KWRK2   = KEVC2  + MXCOOR
-         LWRK = LWORK  - (KWRK2 - IWOFF) + 1
+         KWRK2  = KEVC2  + MXCOOR
+         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
          IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
      &        KWRK2,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
@@ -1802,6 +1812,9 @@ C
      &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
      &           WORK(KWRK2),LWRK2)
          END IF
+C
+C     Update information for this iteration
+C
          GEINFO(ITRNMR,1) = ENERGY
          GEINFO(ITRNMR,3) = INDTOT*1.0D0
          CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
@@ -1827,9 +1840,7 @@ C
             CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
             CALL HEADER('New internal coordinates',-1) 
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(//)')
          END IF
          NEWSTP = .FALSE.
          IF ((.NOT. GECONV) .AND. ((.NOT. BRKSYM) .OR. NOBRKS))
@@ -2034,8 +2045,8 @@ C
      &           ' iterations!'
          END IF
          IF (ITRBRK .GE. 0) THEN
-            WRITE(LUPRI,*) 'Please note that symmetry '
-     &           // 'was broken during this minimization.'
+            WRITE(LUPRI,*) 'INFO: Please note that symmetry '
+     &           // 'was broken during this optimization.'
          ELSE IF (NOBRKS .AND. BRKSYM) THEN
             WRITE(LUPRI,*) 'Symmetry was not broken. '
      &           // 'Minimum was reached within the given symmetry.'
@@ -2043,37 +2054,34 @@ C
      &           // 'symmetry will decrease the energy further.'
          END IF
          IF (NEWTON .AND. SADDLE .AND. (INDTOT .NE. 1)) THEN
-            WRITE(LUPRI,*) 'Please note that Hessian '
-     &           // 'index does not correspond'
-            WRITE(LUPRI,*)
-     &           'to a first order saddle point (transition state).'
+            WRITE(LUPRI,'(/A,I3,/A)')
+     &         ' WARNING: Please note that the Hessian index',INDTOT,
+     &         ' does not correspond to a first order saddle point ' //
+     &           '(transition state).'
          END IF
          ENERGY = GEINFO(ITRNMR,1)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,F20.12,A)')
-     &          ' Energy at final geometry is       : ',ENERGY,' a.u.'
+         WRITE(LUPRI,'(/A,F20.12,A)')
+     &        ' Energy at final geometry is       : ',ENERGY,' a.u.'
          ERGDIF = ENERGY - GEINFO (0,1)
          WRITE(LUPRI,'(A,F20.12,A)')
-     &          ' Energy change during minimization : ',ERGDIF,' a.u.'
+     &        ' Energy change during optimization : ',ERGDIF,' a.u.'
          ERGDIF = ERGDIF * XKJMOL
          WRITE(LUPRI,'(A,F20.6,A)')
      &        '                                     ',ERGDIF,' kJ/mol'
-         WRITE(LUPRI,*)
          IF (DOPRE) THEN
-            WRITE(LUPRI,'(A)') ' Preoptimization was performed using'//
+            WRITE(LUPRI,'(/A)') ' Preoptimization was performed using'//
      &           ' the basis set(s):'
             DO 111 I = 1, IPRE-1
-               WRITE(LUPRI,'(A,A60)') '       ',PREBTX(I)
+               WRITE(LUPRI,'(5X,A60)') PREBTX(I)
  111        CONTINUE
-            WRITE(LUPRI,*)
          END IF
          IF (DOSPE) THEN
             ENERGY = GEINFO(ITRNMR+1,1)
-            WRITE(LUPRI,'(A,A60)') ' Using the basis ',SPBSTX
+            WRITE(LUPRI,'(/A,A60)') ' Using the basis ',SPBSTX
             WRITE(LUPRI,'(A,F14.6,A)')
      &          ' single point energy was calculated: ',ENERGY,' a.u.'
-            WRITE(LUPRI,*)
          END IF
+         WRITE(LUPRI,*)
 C
 C     Finished case 2: Exceeded maximum number of iterations.
 C
@@ -2081,19 +2089,20 @@ C
 C     No single point energy has been calculated.
          TMPLOG = DOSPE
          DOSPE = .FALSE.
-         CALL TITLER('Minimization Control Center','<',120)
+         CALL TITLER('Optimization Control Center','<',120)
          CALL PRIINF(GEINFO)
          DOSPE = TMPLOG
          WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Geometry has NOT converged!'
+         WRITE(LUPRI,*) 'WARNING: Geometry has NOT converged!'
          WRITE(LUPRI,*) 'Maximum number of iterations (', ITRMAX,
      &                                        ') has been reached and'
-         WRITE(LUPRI,*) 'minimization halted. Increase number or ',
+         WRITE(LUPRI,*) 'optimization halted. Increase number or ',
      &                                   'restart from last geometry.'
-         IF (DOSPE) WRITE(LUPRI,*) 'No single point energy has been '
-     &                          // 'calculated.'
+         IF (DOSPE) WRITE(LUPRI,*)
+     &                  'No single point energy has been calculated.'
          WRITE(LUPRI,*)
       END IF
+      CALL QEXIT('RUNOPT')
       RETURN
       END
 
@@ -2140,7 +2149,7 @@ C
  20      CONTINUE
  10   CONTINUE
 C
-      CALL TITLER('Minimization Control Center',':',115)
+      CALL TITLER('Optimization Control Center',':',115)
       IF (.NOT. GECONV) THEN
          CALL HEADER('Next geometry (au)',-1)
          CALL PRIGEO(CORDNW)
@@ -2156,7 +2165,7 @@ C
       IF (BRKSYM .AND. GECONV) MARK = '*'
       IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) MARK = '*'
       WRITE(LUPRI,'(A,L1,A1)')
-     &      ' End of minimization            :       ', GECONV, MARK
+     &      ' End of optimization            :       ', GECONV, MARK
       IF (GECONV) WRITE(LUPRI,'(6X,A)') '****  minimization ended  ****'
       WRITE(LUPRI,'(A,F20.12)') 
      &      ' Energy at this geometry is     : ', ENERGY
@@ -2199,11 +2208,9 @@ C
       END IF
       WRITE(LUPRI,'(A,I7//)')' Total Hessian index            : ',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '*) Within given symmetry.'
+         WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '*) End of preoptimization.'
+         WRITE(LUPRI,'(/A)') ' *) End of preoptimization.'
       END IF
       START = 1
       NCRD = NCRTOT
@@ -2238,18 +2245,32 @@ C  /* Deck priinf */
 C
 C     Prints important information at the end of an optimization.
 C
+      use codata
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
+      real(8), allocatable :: xyz_angstrom(:, :)
+
       TMPNRG = 0.0D0
       RED = .FALSE.
-      CALL HEADER('Final geometry',-1)
+
+      CALL HEADER('Final geometry (bohr)',-1)
       CALL PRIGEO(CORD)
+
+      allocate(xyz_angstrom(3, mxcent))
+      xyz_angstrom = cord
+      xyz_angstrom = xyz_angstrom*xtang
+      CALL HEADER('Final geometry (angstrom)',-1)
+      CALL PRIGEO(xyz_angstrom)
+      deallocate(xyz_angstrom)
+
       WRITE(LUPRI,*)
      & 'Iter     Energy     Change    GradNorm  Index   StepLen'
      & // '    TrustRad #Rej'
@@ -5128,8 +5149,10 @@ C
 C     Construct operator.
 C
       CALL DUNIT(PROJOP,NCR)
-      CALL SMPABT(TMAT,NCR,NPR,NCR,NPR,TMAT,NCR,NPR,NCR,NPR,
-     &                                           PROJOP,NCR,NCR)
+      CALL DGEMM('N','T',NCR,NCR,NPR,-1.D0,
+     &           TMAT,NCR,
+     &           TMAT,NCR,1.D0,
+     &           PROJOP,NCR)
       IF (IPRINT .GT. 5) THEN
          IF (IREP .EQ. 0) THEN
             CALL HEADER('Unprojected gradient in PROJGH',-1)
@@ -5144,18 +5167,24 @@ C
 C     Do projection.
 C
       IF (IREP .EQ. 0) THEN
-         CALL MPAB(PROJOP,NCR,NCR,NCR,NCR,EGRAD,NCR,1,NCR,1,
-     &                                                   TMPMAT,NCR,1)
+         CALL DGEMM('N','N',NCR,1,NCR,1.D0,
+     &              PROJOP,NCR,
+     &              EGRAD,NCR,0.D0,
+     &              TMPMAT,NCR)
          CALL DCOPY(NCR,TMPMAT,1,EGRAD,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER('Projected gradient in PROJGH',-1)
             CALL OUTPUT(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
          END IF
       END IF
-      CALL MPAB(PROJOP,NCR,NCR,NCR,NCR,ALLHES,NCR,NCR,NCR,NCR,
-     &                                                 TMPMAT,NCR,NCR)
-      CALL MPAB(TMPMAT,NCR,NCR,NCR,NCR,PROJOP,NCR,NCR,NCR,NCR,
-     &                                                 ALLHES,NCR,NCR)
+      CALL DGEMM('N','N',NCR,NCR,NCR,1.D0,
+     &           PROJOP,NCR,
+     &           ALLHES,NCR,0.D0,
+     &           TMPMAT,NCR)
+      CALL DGEMM('N','N',NCR,NCR,NCR,1.D0,
+     &           TMPMAT,NCR,
+     &           PROJOP,NCR,0.D0,
+     &           ALLHES,NCR)
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Projected Hessian in PROJGH',-1)
          CALL OUTPUT(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
@@ -5325,8 +5354,8 @@ C     Updates the trust radius and checks if step should be rejected.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "maxorb.h"
+#include "priunit.h"
 #include "infinp.h"
 #include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)
@@ -5362,9 +5391,11 @@ C
      &           'Trust radius squarely decreased due to bad ratio.'
             TRSTRA = TRSTDE*TRSTDE*STPNRM
          ELSE
-            WRITE(LUPRI,'(/A/A,F12.6)')
-     &           ' Step rejected because ratio between predicted',
-     &           ' and actual energy change is : ', RATIO
+            WRITE(LUPRI,'(/A,2(/A,F14.8),/A,F14.2)')
+     &           ' Step rejected because ratio between',
+     &           '        actual energy change :', ERGDIF,
+     &           ' and predicted energy change :', ERGPRD,
+     &           '                          is :', RATIO
             REJGEO = .TRUE.
          END IF
       ELSE IF (RATIO .LT. RTENBD) THEN
@@ -5448,7 +5479,10 @@ C
          IF ((ABS(STEP(I)) .GT. TRSTRA) .AND. (.NOT. STPSCL))
      &        STEP(I) = SIGN(TRSTRA,STEP(I))
  30   CONTINUE
+      STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       IF (IPRINT .GE. IPRDBG) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &      'RF-Step length:', STPNRM
          IF (REDINT .OR. DELINT) THEN
             CALL HEADER('RF-Step in internal coordinates',-1) 
          ELSE
@@ -5456,26 +5490,22 @@ C
          END IF
          CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
       END IF
-      STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
 C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
       IF ((STPNRM .GT. TRSTRA) .AND. STPSCL) THEN
          FAC = TRSTRA/STPNRM
-         IF (IPRINT .GE. IPRDBG) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Step too long, scaling step by factor:', FAC
-            WRITE(LUPRI,*)
-         END IF
          DO 32 I = 1, ICRD
             STEP(I) = STEP(I)*FAC
  32      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1) 
             CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
+         STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       END IF
       ICNT = 1
       FAC = 1.0D0
@@ -6266,22 +6296,18 @@ C
          ELSE IF (ENERGY .GT. ERGOLD) THEN
             IF (FAILED .AND. (IFAILD .LE. MAXREJ) .AND.
      &           (ABS(ENERGY-ERGOLD) .LT. 1.0D-5)) THEN
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Trouble determining step, ' //
+               WRITE(LUPRI,'(/A)') 'Trouble determining step, ' //
      &              'accepting small energy increase.'
                IFAILD = IFAILD + 1
                REJGEO = .FALSE.
             ELSE
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*)
+               WRITE(LUPRI,'(/A)')
      &              'Step rejected because energy is increasing.'
                WRITE(LUPRI,'(A,F10.5)')' Updated trust radius', TRSTRA
                REJGEO = .TRUE.
             END IF
          ELSE
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Acceptable step has been found.'
+            WRITE(LUPRI,'(/A)') 'Acceptable step has been found.'
             REJGEO = .FALSE.
             FAILED = .FALSE.
          END IF
@@ -6395,10 +6421,9 @@ C
             GEINFO(ITRNMR,6) = 0.0D0
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &           ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found.'
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)'***** NOTE! *****'
-            WRITE(LUPRI,*)'As an emergency solution, ' //
+            WRITE(LUPRI,'(A)') 'No acceptable step found.'
+            WRITE(LUPRI,'(/A)')'***** NOTE! *****'
+            WRITE(LUPRI,'(A)')'As an emergency solution, ' //
      &           'the number of dihedral angles will be reduced!'
             CALL RREDUN
             TRSTRA = 0.5D0
@@ -6410,10 +6435,9 @@ C
             GEINFO(ITRNMR,6) = 0.0D0
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &           ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found.'
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)'***** NOTE! *****'
-            WRITE(LUPRI,*)'As a last resort, ' //
+            WRITE(LUPRI,'(A)') 'No acceptable step found.'
+            WRITE(LUPRI,'(/A)')'***** NOTE! *****'
+            WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is initialized to unity!'
             EVLINI = 1.0D0
             TRSTRA = 0.5D0
@@ -6425,7 +6449,7 @@ C
             CALL PRIINF(GEINFO)
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &        ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found. Aborting.'
+            WRITE(LUPRI,'(A)') 'No acceptable step found. Aborting.'
             CALL QUIT('*** FNDGEO *** No acceptable step found.')
          END IF
       END IF
@@ -6619,7 +6643,7 @@ C
          I = NCLINE(IATOM)-1
  50   CONTINUE
 C
-C     We run over all atom types and all symmetry independant centres and
+C     We run over all atom types and all symmetry independent centres and
 C     and expand them to all atoms. The molecule input is modified
 C     according to this.
 C
@@ -7026,7 +7050,7 @@ C
          LOGTXT = 'no  '
          IF (MINEND) LOGTXT = 'yes '
          IF (BRKSYM) LOGTXT = 'yes*'
-         WRITE(LUPRI,'(A,1P,A5)') ' End of minimization   ',LOGTXT
+         WRITE(LUPRI,'(A,1P,A5)') ' End of optimization   ',LOGTXT
          IF (BRKSYM) WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       !END IF
       RETURN
@@ -7051,7 +7075,7 @@ C
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       DIMENSION WORK(LWORK)
-      EXHER = .FALSE.
+      EXHER  = .FALSE.
       EXSIR  = .FALSE.
       EXABA  = .FALSE.
       RDINPC = .FALSE.
@@ -7141,6 +7165,7 @@ C
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' ZERGRD: ', ZERGRD
       END IF
 C
 C     ************************
@@ -7346,10 +7371,7 @@ C
       END DO
       CALL GPCLOSE(LUMOL,'KEEP')
       FILENM = 'XXXX_mol.inp'
-      WRITE(FILENM(1:4),'(I4)') (ITRNMR + 1)
-      IF (ITRNMR .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
-      IF (ITRNMR .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
-      IF (ITRNMR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
+      WRITE(FILENM(1:4),'(I4.4)') (ITRNMR + 1)
       CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
       DO 300 IMLINE = 1,NMLINE
          WRITE(LUMOL,'(A)') MLINE(IMLINE)
@@ -7769,31 +7791,19 @@ C
 !     XYZ files are written in Angstroms
 !
       FAC = XTANG
-!
-!     Count the number of atoms
-!
-      NATOM = 0
-      DO ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-               NATOM = NATOM + 1
-            END IF
-         END DO
-      END DO
 
 !     Write the file
 
-      LUXYZ = 540
-      OPEN (LUXYZ,FILE='MOLECULE.XYZ',FORM='FORMATTED')
-      WRITE (LUXYZ,*) NATOM
-      NATOM = 0
-      WRITE (LUXYZ,*) " "
+      LUXYZ = -1
+      CALL GPOPEN(LUXYZ,'MOLECULE.XYZ','UNKNOWN',' ',
+     &            'FORMATTED',IDUMMY,.FALSE.)
+      REWIND (LUXYZ)
+
+      WRITE (LUXYZ,'(I10/)') NUCDEP
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-               NATOM = NATOM + 1
                DO I = 1, 3
                  XYZ(I) =
      &           FAC*PT(IBTAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
@@ -7802,8 +7812,8 @@ C
             END IF
          END DO
       END DO
-      CLOSE (LUXYZ,STATUS='KEEP')
+      CALL GPCLOSE(LUXYZ,'KEEP')
 
       RETURN
       END
-
+! -- end of abaopt.F --
