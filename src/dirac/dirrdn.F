@@ -1,3 +1,4 @@
+
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -2669,7 +2670,7 @@ C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             NJOBS = NJOBS + 1
             GO TO 100
  115     CONTINUE
-C&&&& RELADC: Calculate one-particle electron propagator with ADC
+C&&&& RELADC: Calculate relativistic propagators with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
             NJOBS = NJOBS + 1
@@ -6421,7 +6422,7 @@ C
       PFAC(1)          = D1
       PLABEL(1)        = 'OVERLAP '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
       IPOVRLAP        = INDXPR
 
 C
@@ -6434,7 +6435,7 @@ C
       PFAC(1)          = D1
       PLABEL(1)        = 'MOLFIELD'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
       IPMOLFLD         = INDXPR
 
 C
@@ -6449,7 +6450,7 @@ C
          PFAC(1)          = D1
          PLABEL(1)        = 'FDEVEMB '
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
          IPVEMB0          = INDXPR
       ENDIF
 
@@ -6462,7 +6463,7 @@ CMI   nonrelativistic  kinetic energy integrals ...
       PFAC(1)          = D1
       PLABEL(1)        = 'KINENERG'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
 CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
@@ -6482,7 +6483,7 @@ c
         PLABEL(2)        = 'Y1SOPP  '
         PLABEL(3)        = 'Z1SOPP  '
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
 c      ... use IPSOPP defined in dcbham.h
         IPSOPP           = INDXPR
         END IF
@@ -6498,7 +6499,7 @@ C
       PFAC(1)          = DM2*CVAL*CVAL
       PLABEL(1)        = 'BETAMAT '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
       IPBETAMT         = INDXPR
 C
 C     Kinetic energy integrals
@@ -6514,7 +6515,7 @@ C
       PLABEL(2)        = 'YDIPVEL '
       PLABEL(3)        = 'ZDIPVEL '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
       IPKINERG         = INDXPR
 
       ENDIF
@@ -6532,7 +6533,7 @@ C
          PFAC(1)          = -D1
          PLABEL(1)        = 'ZANGMOM '
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                  INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
          IPANGMOM         = INDXPR
 C
          PNAME            = 'Spin z-momentum'
@@ -6541,7 +6542,7 @@ C
          PFAC(1)          = DHALF
          PLABEL(1)        = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                  INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+     &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
          IPSPNMOM         = INDXPR
       ENDIF
 C

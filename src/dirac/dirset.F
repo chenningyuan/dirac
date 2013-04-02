@@ -1281,7 +1281,7 @@ C
 C     ... Calculate dipole moment integrals (stored on LU1INT)
 C
       IF (NMPOLOP .GT. 1 .AND. .NOT. DIPDONE) THEN
-         CALL DEF_DIPOLE(INDDIP,WORK(KFREE),LFREE,IPRINT)
+         CALL DEF_DIPOLE(INDDIP,IPRINT)
 C
 C        ... Open AOPROPER integral file for ONEGEN
 C            (is closed again inside ONEGEN)

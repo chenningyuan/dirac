@@ -1150,8 +1150,8 @@ C       subgroup notation
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'// 
      &     ' one-electron operators: '
-        if(dooscillst.or.dodipmom_krci)call def_oscill(work,lwork,0)
-        if(dojzexp)                    call def_omegaquant(work,lwork,0)
+        if(dooscillst.or.dodipmom_krci)call def_oscill(0)
+        if(dojzexp)                    call def_omegaquant(0)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0

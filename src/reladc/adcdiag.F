@@ -61,6 +61,7 @@ C---------------Local variables--------------------------------------
 C
 c *** for infofile
       INTEGER IONIZLEVEL
+      INTEGER INTBUF
       INTEGER KREP
       INTEGER RCW
       INTEGER IOLDNEW
@@ -89,28 +90,51 @@ c
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
+!     WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-      WRITE(IW,*) 'Memory check done.'
+!     WRITE(IW,*) 'Memory check done.'
+c
+c default to a predefined buffer length. Will be changed
+c in the future because we need a flexible buffer size,
+c
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
 c  read required information from info file
 c
       READ(INFOHANDLE,'(I1)')    IONIZLEVEL
-      READ(INFOHANDLE,'(I2)')    KREP
-      READ(INFOHANDLE,'(I1)')    RCW
-      READ(INFOHANDLE,'(I1)')    IOLDNEW
-      READ(INFOHANDLE,'(I12)')   LADC
-      READ(INFOHANDLE,'(A6)')    FILEADC
-      READ(INFOHANDLE,'(A6)')    FILEDIA
-      READ(INFOHANDLE,'(A6)')    FILECNF
-      READ(INFOHANDLE,'(A5)')    NMSPEC
-      READ(INFOHANDLE,'(I9)')    IRECL
-      READ(INFOHANDLE,'(I9)')    NITER
-      READ(INFOHANDLE,'(I9)')    NOCC 
-      READ(INFOHANDLE,'(I9)')    NBUFS 
-      READ(INFOHANDLE,'(I9)')    NEIGENV 
-      READ(INFOHANDLE,'(F10.1)') EVLLIM 
+      IF(IONIZLEVEL.eq.3) THEN
+        READ(INFOHANDLE,'(I12)')   INTBUF
+        READ(INFOHANDLE,'(I2)')    KREP
+        READ(INFOHANDLE,'(I1)')    RCW
+        READ(INFOHANDLE,'(I1)')    IOLDNEW
+        READ(INFOHANDLE,'(I12)')   LADC
+        READ(INFOHANDLE,'(A6)')    FILEADC
+        READ(INFOHANDLE,'(A6)')    FILEDIA
+        READ(INFOHANDLE,'(A6)')    FILECNF
+        READ(INFOHANDLE,'(A5)')    NMSPEC
+        READ(INFOHANDLE,'(I9)')    IRECL
+        READ(INFOHANDLE,'(I9)')    NITER
+        READ(INFOHANDLE,'(I9)')    NOCC 
+        READ(INFOHANDLE,'(I9)')    NBUFS 
+        READ(INFOHANDLE,'(I9)')    NEIGENV 
+        READ(INFOHANDLE,'(F10.1)') EVLLIM 
+      ELSE
+        READ(INFOHANDLE,'(I2)')    KREP
+        READ(INFOHANDLE,'(I1)')    RCW
+        READ(INFOHANDLE,'(I1)')    IOLDNEW
+        READ(INFOHANDLE,'(I12)')   LADC
+        READ(INFOHANDLE,'(A6)')    FILEADC
+        READ(INFOHANDLE,'(A6)')    FILEDIA
+        READ(INFOHANDLE,'(A6)')    FILECNF
+        READ(INFOHANDLE,'(A5)')    NMSPEC
+        READ(INFOHANDLE,'(I9)')    IRECL
+        READ(INFOHANDLE,'(I9)')    NITER
+        READ(INFOHANDLE,'(I9)')    NOCC 
+        READ(INFOHANDLE,'(I9)')    NBUFS 
+        READ(INFOHANDLE,'(I9)')    NEIGENV 
+        READ(INFOHANDLE,'(F10.1)') EVLLIM 
+      ENDIF
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
@@ -119,7 +143,6 @@ c
       IF(IOLDNEW.EQ.1) OPEN(INFOHANDLE+2,
      %     FILE=FILEDIA,FORM='UNFORMATTED',STATUS='UNKNOWN')
 
-      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
 c this is the absolute lower bound to which we will return as soon as the
 c diagonalization has been finished. We must not go further down because
@@ -151,7 +174,8 @@ c
       WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
-      WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
+      WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP,3=EXC):',IONIZLEVEL
+      WRITE(IW,*) 'Write buffer length is:           ',INTBUF
       WRITE(IW,*) 'Final states have symmetry:       ',KREP
       WRITE(IW,*) 'ADC matrix is (1=real,2=complex): ',RCW
       WRITE(IW,*) 'ADC matrix format (1=old/2=new):  ',IOLDNEW
@@ -162,7 +186,7 @@ c
       WRITE(IW,*) 'Eigenvalues written to:           ',NMSPEC,'.#IREP'
       WRITE(IW,*) 'Record length of Config file:     ',IRECL
       WRITE(IW,*) 'Number of requ. Lanc iterations:  ',NITER
-      WRITE(IW,*) 'Half band width (1h/2h states):   ',NOCC
+      WRITE(IW,*) 'Half band width (1h/2h/hp states):',NOCC
       WRITE(IW,*) 'Number of chunks in ADC file:     ',NBUFS
       WRITE(IW,*) 'Number of requested eigenvectors: ',NEIGENV
       WRITE(IW,*) 'Printing limit for eigenvalues:   ',EVLLIM
@@ -188,19 +212,28 @@ C
 
       N=2*NP+1
       CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  1 done.' 
       N=(2*NP+1)*LADC*RCW
       CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  2 done.' 
       N=(NP+1)*NITER*RCW
       CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  3 done.' 
       N=LADC*RCW
       CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  4 done.' 
       CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  5 done.' 
       N=INTBUF*RCW
       CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  6 done.' 
       N=INTBUF
       CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  7 done.' 
       CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  8 done.' 
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+      write(*,*) 'allocation  9 done.' 
 c
 c  remember memory pointers before we do the huge incore parts.
 c
@@ -1757,8 +1790,8 @@ c
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -1770,15 +1803,15 @@ c
 
         ELSE
 c
-c  take care of double ionizations
+c  take care of double ionizations and excitations
 c
            idipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)') 
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)') 
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -2106,8 +2139,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
@@ -2127,8 +2160,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
@@ -3091,6 +3124,140 @@ C|____________________________________________________________
 
  381  FORMAT(4(I3,'(',A4,')  '))
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit configuration information for the excited
+C     states in symmetry DESREP.
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER LUN,IRECL,DESREP
+      CHARACTER*6 FILENAME
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*56 FIELD
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna
+      INTEGER RECCOUNT
+      
+C
+C---------------Executable code--------------------------------------
+C
+C open config file
+C
+      IRECL = 56
+      WRITE(IW,*) 'Writing EXC configs to ',FILENAME
+      WRITE(IW,*) 'State symmetry: ',DESREP
+      WRITE(IW,*) 'Record length: ',IRECL
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+C
+C First do the H--->P part. Column counter is the decisive
+C IRREP.
+C
+      BL_CONF = 0
+      BL_IRNA = '    '
+      RECCOUNT = 1
+
+C____________ START WITH H ---> P __________________________
+C|
+C|
+C|
+
+      do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
+        brep = multb(desrep+nrep,jrep,1)
+        do jfun = 1,NO(jrep)
+        do bfun = 1,NV(brep)
+          jabs=IO(jrep) + jfun
+          babs=IO(nrep+1) + IV(brep) + bfun
+
+          WRITE(FIELD,333)
+     &         jabs,REPNA(jrep),
+     &         babs,REPNA(brep),
+     &         BL_CONF,BL_IRNA,
+     &         BL_CONF,BL_IRNA 
+
+          WRITE(LUN,REC=RECCOUNT) FIELD
+          RECCOUNT = RECCOUNT + 1
+
+        enddo
+        enddo
+      enddo
+      if( (reccount-1).ne.MVO(desrep))
+     &   stop 'Inconsistent rec counter in WCONDAT_X!'
+C|
+C|
+C|
+C|__________________________________________________________
+C
+C
+C____________ NOW DO  2H ---> 2P ___________________________
+C|
+C| important: exactly the same order as the column counter in
+C| XSATMAKE! Otherwise config. information will be erroneous
+C|
+C|
+C|
+      DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      DO 10 LREP = 1, NREP
+      KREP = MULTB(LREP,KLREP+NREP,2)
+      IF (KREP.LT.LREP) GOTO 10
+      DO L = 1, NO(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, NO(KREP)
+            DO 20 DREP = 1, NREP
+              CREP = MULTB(DREP,CDREP+NREP,2)
+              IF (CREP.LT.DREP) GOTO 20
+              DO D = 1, NV(DREP)
+                CMIN = 1
+                IF (CREP.EQ.DREP) CMIN = D + 1
+                DO C = CMIN, NV(CREP)
+
+          kabs =IO(krep) + K
+          labs =IO(lrep) + L
+          ccabs=IO(nrep+1) + IV(crep) + C
+          ddabs=IO(nrep+1) + IV(drep) + D
+
+          WRITE(FIELD,333)
+     &         kabs,REPNA(krep),
+     &         ccabs,REPNA(crep),
+     &         labs,REPNA(lrep),
+     &         ddabs,REPNA(drep)
+
+          WRITE(LUN,REC=RECCOUNT) FIELD
+          RECCOUNT = RECCOUNT + 1
+
+                ENDDO
+              ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C|
+C|
+C|
+C|__________________________________________________________
+
+      CLOSE(LUN)
+
+ 333  FORMAT(2(I3,' (',A4,')  ---> ',I3,' (',A4,') '))
+ 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
