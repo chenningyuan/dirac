@@ -1174,6 +1174,10 @@
          reladc_doexci = .true.
       end if
 
+      if (kw_matches(word, '.FANO')) then
+         reladc_dofano = .true.
+      end if
+
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_sipreps, user_req_symmetries)

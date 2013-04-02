@@ -61,4 +61,9 @@ module adc_cfg
   logical, public                  :: reladc_doincore   = .false.
   integer, public                  :: reladc_lancmem    = 100000000
 
+!
+!  fanoadc variables
+!
+  logical, public                  :: reladc_dofano       = .false.
+  
 end module
