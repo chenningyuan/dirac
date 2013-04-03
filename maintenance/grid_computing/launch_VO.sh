@@ -8,7 +8,7 @@
 #######################################################################################################
 
 # check the parameter - VO name
-if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" ]]; then
+if [[ $1 != "voce" && $1 != "compchem" && $1 != "isragrid" && $1 != "osg" && $1 != "sivvp.slovakgrid.sk" ]]; then
  echo -e "\n wrong parameter - VO name : $1 "
  exit 12
 else
@@ -124,7 +124,7 @@ if [[ -n $DO_CMAKE ]]; then
 # http://software.intel.com/en-us/articles/recommended-settings-for-calling-intelr-mkl-routines-from-multi-threaded-applications/
 # set MKL threads
   let nprocsm1=$nprocs-1
-  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS " 
+  export MKL_NUM_THREADS=$nprocsm1; echo -e "MKL threads, MKL_NUM_THREADS=$MKL_NUM_THREADS" 
   cd $BUILD_SERIAL
   echo -e "\n I am in build-directory $PWD \n"
   echo -e "--- Directory $BUILD_SERIAL content ---:"; ls -lt

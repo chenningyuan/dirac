@@ -191,6 +191,7 @@ CMI   ... add sector selectives MAXITxy's
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+
 C
 C     if running MP2-NO module use special input
 C
@@ -536,6 +537,7 @@ c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
+      use relcc_cfg
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -629,7 +631,11 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
+
+! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
+! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
       maxcor = nint((total_mem_new/8.0d0),kind(8))
+
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
@@ -642,7 +648,12 @@ C
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input from file (old namelist) / transfer input (new style) from relcc_cfg
+
+!     sync co-workers and master with variables from new input...
+#ifdef VAR_MPI
+      call relcc_sync_cw()
+#endif
 C
       CALL CCINPT (IN,IW)
 C
@@ -1352,6 +1363,7 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
+!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
 C
@@ -3893,6 +3905,24 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table  -----------------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  inverse multiplication table  ---------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
+
 C
 C     Get rid of offset for boson reps
 C
@@ -3908,6 +3938,23 @@ C
             MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table (no offset) ------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  inverse multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C

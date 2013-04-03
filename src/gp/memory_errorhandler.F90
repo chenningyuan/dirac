@@ -136,6 +136,10 @@
                   case (allocateFailure)
                      call get_memory_info(kbytesAvailable,charArrayLength)
                      kbytesRequested = (sizeLocal*kindLocal)/b2kbfac
+                     ! miro: added...
+                     mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
+                     call allocator_get_meminuse(mbytesInUse)  
+                     mbytesInUse = mbytesInUse/b2mbfac
 
                      InfoMessage  = 'Error! Allocation failed!'
                      write (InfoMessage,'(a,i18,a)')                    &
@@ -205,7 +209,7 @@
                      write (*,*) ErrorMessage
                      write (*,*) InfoMessage
 #ifdef PRG_DIRAC
-                     write (ErrorMessage,'(a,i8)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
+                     write (ErrorMessage,'(a,i18)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
 #endif
                      call quit(ErrorMessage)
                   endif

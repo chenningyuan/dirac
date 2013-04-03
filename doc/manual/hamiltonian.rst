@@ -11,16 +11,16 @@ Within the Born-Oppenheimer approximation the generic form of the electronic Ham
 
 .. math::
 
-    H = \sum_{i}\ h\left(i\right) + \frac{1}{2}\sum_{i\ne j}\ g\left(i,j\right) + V_{NN};
-    \quad V_{NN} = \frac{1}{2}\sum_{A\ne B} \frac{Z_A Z_B}{R_{AB}}
+    H = \sum_{i}\ h\left(i\right) + \frac{1}{2}\sum_{i\ne j}\ g\left(i,j\right) + V_{NN}; \quad V_{NN} = \frac{1}{2}\sum_{A\ne B} \frac{Z_A Z_B}{R_{AB}}
 
-where :math:`V_{NN}` is the repulsion of classical nuclei.
+where :math:`V_{NN}` is the operator of the repulsion of classical nuclei.
 The one-electron hamiltonian :math:`h\left(i\right)` splits into the free-electron Hamiltonian
 :math:`h_0` and the electron-nucleus interaction :math:`V_{eN}`. In the non-relativistic case
 the free-electron Hamiltonian is simply the kinetic energy operator, whereas a rest mass term
 is added in the relativistic case, e.g. for the Dirac (bare-nucleus) Hamiltonian
 
 .. math::
+
     h_D = \beta mc^2 + c\left(\alpha\cdot\mathbf{p}\right) + V_{eN}
 
 In the non-relativistic case the two-electron operator :math:`g\left(i,j\right)` is the
@@ -417,7 +417,9 @@ CAMB3LYP is predefined but can also be specified as::
 Coulomb-attenuated functionals are based on a separation of the two-electron interaction 
 into a long- and short-range part
 
-.. math::
+.. math
+
+::
 
    \frac{1}{r_{12}}=\frac{\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}
    - \frac{1-\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}

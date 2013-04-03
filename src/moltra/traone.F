@@ -73,8 +73,11 @@ C
 C
 !radovan: run the test set with make check
 !         in test bss_energy KIBE(2,1) = 0
+!miro: easy fix ....
+      I_KIBE21=KIBE(2,1)
+      IF (KIBE(2,1).EQ.0) I_KIBE21=1
       CALL MRCONE(FMO,ORBE,WORK(KE(1,1)),WORK(KE(2,1)),
-     &  IBORB,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+     &  IBORB,WORK(KIBE(1,1)),WORK(I_KIBE21),
      &  NSPC,NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
@@ -181,7 +184,8 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-      LOGICAL TOBE, SAVEFLAGS(4), remove_spinfree_terms
+      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL ::  remove_spinfree_terms=.false.
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
