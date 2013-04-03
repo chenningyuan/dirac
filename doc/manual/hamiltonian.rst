@@ -354,13 +354,18 @@ examples.
 
 keyword(PCM)
 
-.. warning:: documentation missing
+Model solvent effects by placing the molecule in a cavity in a dielectric
+continuum. The cavity is shaped on the actual geometry of the solute, the
+full molecular electrostatic potential is used.
+
+.. warning:: Development version only, requires PCMSolver submodule.
 
 
 keyword(SOLVENT)
 
 Model solvent effects by placing the molecule in a spherical cavity in a
-dielectric continuum.
+dielectric continuum. The solute electrostatic potential is represented
+in terms of a truncated multipolar expansion.
 
 
 keyword(FDE)
