@@ -191,6 +191,7 @@ CMI   ... add sector selectives MAXITxy's
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+
 C
 C     if running MP2-NO module use special input
 C
@@ -536,6 +537,7 @@ c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
+      use relcc_cfg
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -646,7 +648,12 @@ C
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input from file (old namelist) / transfer input (new style) from relcc_cfg
+
+!     sync co-workers and master with variables from new input...
+#ifdef VAR_MPI
+      call relcc_sync_cw()
+#endif
 C
       CALL CCINPT (IN,IW)
 C
