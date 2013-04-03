@@ -80,7 +80,7 @@ The following hints may be useful:
 
 .. math::
 
- div(\vec{A}) = 0
+ a  div(\vec{A}) = 0
 
 5. for a constant and homogeneous magnetic field :math:`\bf{B} = curl(\bf{A})`, we may write :math:`\bf{A} = \frac{1}{2}(\bf{B} \times \bf{r})`
 

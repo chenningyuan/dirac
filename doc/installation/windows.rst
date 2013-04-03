@@ -74,20 +74,24 @@ For dowloading/uploading from/to the DIRAC repository you have to have the *PuTT
 active with loaded private key, while the public key has to be placed in the DIRAC git repository user space.
 Pageant can be activated during the Windows startup, for example, 
 launched at the start of user's login on Windows machine: ::
+
   "C:\Program Files\PuTTY\pageant.exe"  C:\Users\<user_name>\.ssh\id_rsa_Windows7.ppk
+
 The "pageant" agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions)
 onto server which are provided with users's public key. 
   
 For communication with the DIRAC repository activate the PuTTy's "plink.exe" executable through the "GIT_SSH" 
 system environmental variable. Typical value is ::
+
   GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
+
 assuming that PuTTy is placed in classic installation space,  "C:\Program Files (x86)". 
 Also, to refresh your private key in your computer's cache, use ::
+
   plink -agent git@repo.ctcc.no.
 
 For comfortable commits with the git version control system you should set up the editor.
-For the popular *Notepad++* editor setting for git follow
-http://stackoverflow.com/questions/10564/how-can-i-set-up-an-editor-to-work-with-git-on-windows: ::
+For the popular *Notepad++* editor setting for git `follow  <http://stackoverflow.com/questions/10564/how-can-i-set-up-an-editor-to-work-with-git-on-windows>`_ :  ::
 
   C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
 
@@ -106,7 +110,9 @@ Finally, instead of "make" type its MinGW/MinGW64 version, what is "mingw32-make
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For specifying one or more parameters for Python scripts (either in the ".diracrc" configuration file, or directly by typing in the command line),
-you must enveloped them into iverted commas, "...". For example: :: 
+you must enveloped them into iverted commas, "...". 
+For example: :: 
+
  --scratch="C:\Users\dv6-2145ec\tmp"
 
 Update your local DIRAC source (must have ssh connection enabled):  ::
@@ -144,6 +150,33 @@ Make the CDash buildup in separate steps:  ::
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
 
+Caveats
+-------
+Windows operating system does not accept certain reserved words for file and folder names, like aux, con ...
+(google after forbidden file and folder names on Windows).
+
+Likewise Windows does not like "*"-characters in file names and due to this is not able to download
+them from the repository.
+For that reason several traditional basis set files have been renamed accordingly, see the following table:
+
+==================       ==================
+Windows new name         Previous file name
+==================       ==================
+3-21++G-star             3-21++G*
+3-21G-star               3-21G*
+6-311+G-star             6-311+G*
+6-311G-star              6-311G*
+6-311++G-star-star       6-311++G**
+6-311G-star-star         6-311G**
+6-31++G-star             6-31++G*
+6-31+G-star              6-31+G*
+6-31G-star               6-31G*
+6-31++G-star-star        6-31++G**
+6-31G-star-star          6-31G** 
+==================       ==================
+
+On non-Windows operating systems (Linux, Unix, Mac) the cmake system renemes these problematic basis set files
+to their original names as they do not cause any harm for their platforms. 
   
 Final remarks
 -------------

@@ -55,9 +55,9 @@ module adc_cfg
   integer, dimension(1:32), public :: reladc_sipeigv    = 0
   integer, dimension(1:32), public :: reladc_dipeigv    = 0
   integer, dimension(1:32), public :: reladc_exceigv    = 0
-  real*8,  public                  :: reladc_sipprnt    = 50.0
-  real*8,  public                  :: reladc_dipprnt    = 50.0
-  real*8,  public                  :: reladc_excprnt    = 50.0
+  real*8,  public                  :: reladc_sipprnt    = 0.0
+  real*8,  public                  :: reladc_dipprnt    = 0.0
+  real*8,  public                  :: reladc_excprnt    = 0.0
   logical, public                  :: reladc_doincore   = .false.
   integer, public                  :: reladc_lancmem    = 100000000
 

@@ -160,7 +160,7 @@ C     **************************
 C     ***** Integral types *****
 C     **************************
 C
-      CALL PR1DIR(WORK(KLAST),LWRK,WORD,INTTYP,NOPTYP,INTREP,
+      CALL PR1DIR(WORD,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,WORK(KATOM),NATOM,NBAST,NELMNT,IPRINT)
 C
@@ -231,7 +231,7 @@ C
       RETURN
       END
 C  /* Deck pr1dir */
-      SUBROUTINE PR1DIR(WORK,LWORK,WORD,INTTYP,NOPTYP,INTREP,
+      SUBROUTINE PR1DIR(WORD,INTTYP,NOPTYP,INTREP,
      &                  ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &                  SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 C
@@ -284,7 +284,7 @@ C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
      &          EFDIR*1
-      DIMENSION WORK(LWORK), INTREP(*), INTADR(*)
+      DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
 #include "symmet.h"
