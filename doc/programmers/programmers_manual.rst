@@ -82,7 +82,8 @@ When allocating memory please consider the following:
  * The memory is not a bottomless pit. Try to be economic.
  * Do not allocate and deallocate inside of a loop that is traversed a billion times.
    Allocate/deallocate outside.
- * If you allocate arrays, clean up after yourself and deallocate data that is not needed anymore.
+ * If you allocate arrays, clean up after yourself and deallocate data that is not needed anymore
+   as soon as possible to keep the peak allocation as low as possible.
 
 
 Why do all routines end with "RETURN" before "END"?
