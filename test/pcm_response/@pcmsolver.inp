@@ -25,7 +25,7 @@ INT PatchLevel 1 False
 SECT Medium 1 True
 TAG F KW 4
 STR SolverType 1 False
-Traditional
+IEFPCM
 DBL ProbeRadius 1 False
 1.0
 STR Solvent 1 True
