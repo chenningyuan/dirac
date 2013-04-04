@@ -32,7 +32,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
 #miro: try to add conditionally the extension in order not to hurt doc compilation
 # older machines might lack it
 try:
-   extensions.add('sphinx.ext.mathjax')
+   extensions.append('sphinx.ext.mathjax')
    print "sphinx.ext.mathjax extension added for proper doc-math rendereding !"
 except:
    print 'The extension sphinx.ext.mathjax was not added => not all math shall be rendered properly.'
