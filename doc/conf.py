@@ -22,12 +22,20 @@ sys.path.append(os.path.abspath('sphinxext'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest']
 
+#miro: try to add conditionally the extension in order not to hurt doc compilation
+# older machines might lack it
+try:
+   extensions.add('sphinx.ext.mathjax')
+   print "sphinx.ext.mathjax extension added for proper doc-math rendereding !"
+except:
+   print 'The extension sphinx.ext.mathjax was not added => not all math shall be rendered properly.'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
