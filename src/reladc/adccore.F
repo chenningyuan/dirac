@@ -649,6 +649,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCSNGL_MAIN(ICALC,CC,KFREE,LFREE,
      &                        MXCORR,NSP,IREPSPI,EPS)
+!
+!---------------Modules------------------------------------------------
+!
+      use adc_cfg
 C
       IMPLICIT INTEGER(A-Z)
 C
@@ -987,7 +991,7 @@ C
       ENDIF
 C
 C  The remaining memory (major part) has to be enough for
-C  a) the VV¦VV integrals (!). indeed this is not good but
+C  a) the VV?VV integrals (!). indeed this is not good but
 C     a complicated access pattern in the sigma calculations
 C     necessitates that.
 C
@@ -1628,23 +1632,7 @@ C
         CLOSE(ITAPADC+4)
         CLOSE(ITAPADC+5)
         CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
-c
-c  Do a full diagonalization of the ADC matrix (for debugging
-c  purposes) with eigenvalues and -vectors written to disk.
-c  This is only allowed for matrices with a dimension smaller than
-c  5000. Otherwise this routine is automatically exited.
-c  This feature is especially useful when it comes to eigenvector
-c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
-c  retrievable in the separate module adcanal.F90 with dynamic
-c  allocation of workspace.
-c
-        IF(DOFULL) THEN
-          IF(CARITH) THEN
-            CALL FULLDIAC(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
-          ELSE
-            CALL FULLDIAR(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
-          ENDIF
-        ENDIF
+
 C
 C  call configuration creator for 1h/2h1p configurations
 C  File handle ITAPADC+2 is available. closed after sub call!
@@ -1660,6 +1648,30 @@ C ---- and diagonalizers can do their work ...            -----
 C ---- For each symmetry diagonalization is done          -----
 C ---- immediately.                                       -----
 C -------------------------------------------------------------
+!
+!  Elke: only do a diagonalization, when requested
+!        this if construct will become obsolete as soon as the
+!        call to the diagonalizer is moved to a separate subroutine
+!
+        IF (reladc_dodiag) THEN
+
+c
+c  Do a full diagonalization of the ADC matrix (for debugging
+c  purposes) with eigenvalues and -vectors written to disk.
+c  This is only allowed for matrices with a dimension smaller than
+c  5000. Otherwise this routine is automatically exited.
+c  This feature is especially useful when it comes to eigenvector
+c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
+c  retrievable in the separate module adcanal.F90 with dynamic
+c  allocation of workspace.
+c
+          IF(DOFULL) THEN
+            IF(CARITH) THEN
+              CALL FULLDIAC(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+            ELSE
+              CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+            ENDIF
+          ENDIF
 c
 c  create general matrix information file MATINFO
 c  and transfer control to the diagonalizer.
@@ -1669,41 +1681,43 @@ C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-
-        WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
-        WRITE(ITAPADC,'(I1)')  RCW                !RCW
-        N=1
-        WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
-        WRITE(ITAPADC,'(I12)') LADC               !LADC
-        WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
-        WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
-        WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
-        WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
-        WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
-        WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
-        WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
-        WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-        WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
-        WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
-     
-        CLOSE(ITAPADC)
+          OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
+  
+          WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
+          WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
+          WRITE(ITAPADC,'(I1)')  RCW                !RCW
+          N=1
+          WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
+          WRITE(ITAPADC,'(I12)') LADC               !LADC
+          WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
+          WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
+          WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
+          WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
+          WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
+          WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
+          WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
+          WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
+          WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
+          WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
+       
+          CLOSE(ITAPADC)
 c
 c  call diagonalizer. No ADC matrix cut for the single ionizations.
 c  can be easily introduced later on.
 c
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
-        CLOSE(ITAPADC,STATUS='DELETE')
+          OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
+          CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
+          CLOSE(ITAPADC,STATUS='DELETE')
 c
-        WRITE(IW,*)
-        WRITE(IW,*) '       ------------------------------'
-        WRITE(IW,*) '       Finished SIP calculation'
-        WRITE(IW,*) '       In symmetry',KREP
-        WRITE(IW,*) '       ------------------------------'
-        WRITE(IW,*)
-        WRITE(IW,*)
+          WRITE(IW,*)
+          WRITE(IW,*) '       ------------------------------'
+          WRITE(IW,*) '       Finished SIP calculation'
+          WRITE(IW,*) '       In symmetry',KREP
+          WRITE(IW,*) '       ------------------------------'
+          WRITE(IW,*)
+          WRITE(IW,*)
+
+        END IF 
 
  900  CONTINUE
 
@@ -5033,7 +5047,7 @@ C
 C
 C  determine additional diagonal and off-diagonal elements
 C  ATT* the CKCOCC routine yields matrix entries in the
-C  <||>¦>,|><|<| convention
+C  <||>?>,|><|<| convention
 C
 
         DO J=1,NVOOT(CREP)
