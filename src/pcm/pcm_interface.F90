@@ -483,6 +483,16 @@ module pcm_interface
 !     call prqmat(fock, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
 !                      nz, ipqtoq(1,0), 6)
 
+      if (pcmmod_dospf) then
+          print *, "FOCK_PCM before elimination of spin-dependent terms."
+          call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                      nz, ipqtoq(1,0), 6)
+  !        call spfao(fmo, fock_pcm, work, lwork)
+          print *, "FOCK_PCM after elimination of spin-dependent terms."
+          call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                      nz, ipqtoq(1,0), 6)
+      end if
+
       deallocate(fock_pcm)
 
    end subroutine

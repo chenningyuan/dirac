@@ -37,12 +37,16 @@ module pcm_write
          write(*, *) '  3: Use total potentials and apparent charges.'
       end if
       
+      if (pcmmod_dospf) then
+         write(*, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
+      end if
+      
       if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-         write(*, *) '  4: Print potentials at tesserae representative points.'
+         write(*, *) '  5: Print potentials at tesserae representative points.'
       else if (pcmmod_print > 10) then
-         write(*, *) '  4: Print potentials and charges at tesserae representative points.'
+         write(*, *) '  5: Print potentials and charges at tesserae representative points.'
       else
-         write(*, *) '  4: Do not print potentials and charges.'
+         write(*, *) '  5: Do not print potentials and charges.'
       end if     
     
 

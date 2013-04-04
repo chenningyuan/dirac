@@ -1369,6 +1369,11 @@
 !         Split potentials and polarization charges in nuclear and electronic
          pcmmod_separate = .true.
       end if
+      
+      if (kw_matches(word, '.DOSPF ')) then
+!        Perform elimination of spin-orbit dependent terms in the PCM operator 
+         pcmmod_dospf = .true.
+      end if
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, pcmmod_print)
