@@ -40,9 +40,49 @@ They are blocked according to NBBAS and IBBAS.
 How should I allocate memory?
 -----------------------------
 
-Large parts of the DIRAC code use MEMGET/MEMREL. Please do not allocate
-memory using MEMGET/MEMREL. Use routines alloc/dealloc.
-We are trying to get rid of MEMGET/MEMREL.
+Large parts of the DIRAC code use MEMGET/MEMREL. Please do not allocate memory
+using MEMGET/MEMREL.  We are trying to get rid of MEMGET/MEMREL.
+
+Memory allocation should be done either using Andre's alloc/dealloc or using
+the native allocate/deallocate routines. Alloc/dealloc are frontends to the
+native allocate/deallocate. The advantage of alloc/dealloc is that the memory
+allocation gets tracked and shows up in the high water mark.  Do not use other
+home-cooked memory allocation schemes unless you have absolutely no other
+choice.
+
+Here is an example for alloc/dealloc::
+
+  use memory_allocator
+
+  real(8), allocatable :: one_dim_array(:)
+  integer, allocatable :: two_dim_array(:, :)
+
+  call alloc(one_dim_array, 1000)
+  call alloc(two_dim_array, 1000, 500)
+
+  ...
+
+  call dealloc(one_dim_array)
+  call dealloc(two_dim_array)
+
+Here is an example for allocate/deallocate::
+
+  real(8), allocatable :: one_dim_array(:)
+  integer, allocatable :: two_dim_array(:, :)
+
+  allocate(one_dim_array(1000))
+  allocate(two_dim_array(1000, 500))
+
+  ...
+
+  deallocate(one_dim_array)
+  deallocate(two_dim_array)
+
+When allocating memory please consider the following:
+ * The memory is not a bottomless pit. Try to be economic.
+ * Do not allocate and deallocate inside of a loop that is traversed a billion times.
+   Allocate/deallocate outside.
+ * If you allocate arrays, clean up after yourself and deallocate data that is not needed anymore.
 
 
 Why do all routines end with "RETURN" before "END"?
