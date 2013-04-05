@@ -1707,7 +1707,6 @@ c  can be easily introduced later on.
 c
           OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
           CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
-          CLOSE(ITAPADC,STATUS='DELETE')
 c
           WRITE(IW,*)
           WRITE(IW,*) '       ------------------------------'
@@ -1717,7 +1716,31 @@ c
           WRITE(IW,*)
           WRITE(IW,*)
 
+        ELSE
+          WRITE(IW,*)
+          WRITE(IW,*) 'ADC matrix will not be diagonalized.'
+          WRITE(IW,*)
+
         END IF 
+!
+!  Call Fano-ADC
+!
+        IF ((reladc_dofano).AND.(KREP==reladc_fano_inrep)) THEN
+
+          WRITE(IW,*)
+          WRITE(IW,*) '       -------------------------------'
+          WRITE(IW,*) '       Entering Fano calculation'
+          WRITE(IW,*) '       In symmetry',reladc_fano_inrep
+          WRITE(IW,*) '       -------------------------------'
+          WRITE(IW,*)
+          WRITE(IW,*)
+
+!          CALL
+        ELSE
+          !Delete ADC matrix
+          CLOSE(ITAPADC,STATUS='DELETE')
+        END IF
+
 
  900  CONTINUE
 
