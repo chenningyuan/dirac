@@ -49,21 +49,25 @@ module adc_cfg
 !
 !  lanczos control variables
 !
-  integer, public                  :: reladc_sipiter    = 500
-  integer, public                  :: reladc_dipiter    = 500
-  integer, public                  :: reladc_exciter    = 500
-  integer, dimension(1:32), public :: reladc_sipeigv    = 0
-  integer, dimension(1:32), public :: reladc_dipeigv    = 0
-  integer, dimension(1:32), public :: reladc_exceigv    = 0
-  real*8,  public                  :: reladc_sipprnt    = 0.0
-  real*8,  public                  :: reladc_dipprnt    = 0.0
-  real*8,  public                  :: reladc_excprnt    = 0.0
-  logical, public                  :: reladc_doincore   = .false.
-  integer, public                  :: reladc_lancmem    = 100000000
+  integer, public                  :: reladc_sipiter      = 500
+  integer, public                  :: reladc_dipiter      = 500
+  integer, public                  :: reladc_exciter      = 500
+  integer, dimension(1:32), public :: reladc_sipeigv      = 0
+  integer, dimension(1:32), public :: reladc_dipeigv      = 0
+  integer, dimension(1:32), public :: reladc_exceigv      = 0
+  real*8,  public                  :: reladc_sipprnt      = 0.0
+  real*8,  public                  :: reladc_dipprnt      = 0.0
+  real*8,  public                  :: reladc_excprnt      = 0.0
+  logical, public                  :: reladc_doincore     = .false.
+  integer, public                  :: reladc_lancmem      = 100000000
 
 !
 !  fanoadc variables
 !
   logical, public                  :: reladc_dofano       = .false.
+  integer, public                  :: reladc_fano_inrep   = 0
+  integer, public                  :: reladc_fano_inabssp = 0
+  integer, public                  :: reladc_fano_nrchannels = 0
+  integer, public, allocatable     :: reladc_fano_channels(:,:)
   
 end module
