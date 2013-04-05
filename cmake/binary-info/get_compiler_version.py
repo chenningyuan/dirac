@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # you can run this script independently on cmake,
-#  examle:  get_compiler_version.py gfortran
+# example: get_compiler_version.py gfortran
 
 import sys
 import os
