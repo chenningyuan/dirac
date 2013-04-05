@@ -270,13 +270,13 @@ contains
       start = verify(line,' ,;') ! finds first non-separator character
 
       j = 1
-      do  while (len_trim(line) > 0 .and. start /= 0) 
+      do  while (len_trim(line) > 0 .and. start /= 0)
          read (line,*,err=1) v(j)
          j = j + 1
          do i = 1, start         ! blank out the part that we already read
             line(i:i) = ' '
          end do
-         start = verify(line,' ,;') 
+         start = verify(line,' ,;')
       end do
 
       return
