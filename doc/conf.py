@@ -29,13 +29,15 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest']
 
-#miro: try to add conditionally the extension in order not to hurt doc compilation
+#miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
+
 try:
-   extensions.append('sphinx.ext.mathjax')
-   print "sphinx.ext.mathjax extension added for proper doc-math rendereding !"
-except:
-   print 'The extension sphinx.ext.mathjax was not added => not all math shall be rendered properly.'
+  import sphinx.ext.mathjax
+  extensions.append('sphinx.ext.mathjax')
+  print "The sphinx.ext.mathjax extension was added for proper doc-math rendereding."
+except ImportError:
+  print 'The sphinx.ext.mathjax extension could not be added => some math shall not be rendered properly.'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
