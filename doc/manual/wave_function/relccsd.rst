@@ -51,20 +51,67 @@ molecular properties.
 .NELEC
 ------
 
-Specify the occupation of the reference determinant (both for CC and
-FSCC calculations). More information can be found here: :ref:`NELEC`.
+Number of active electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
+Since the default values correspond to the information passed on by the MOLTRA code on basis of the Hartree-Fock occupations 
+and chosen range of active orbitals in MOLTRA, **there is usually no need to specify this variable manually**. 
+Notable exception is the treatment of a high-spin open shell state with the single reference CCSD(T) ansatz. 
+In such a case one first needs to determine the number of closed shell electrons in each irrep and 
+then add to these occupations the open shell electrons (see below for an example). 
+
+*Arguments:*
+
+::
+
+    Integer (NELEC(I),I=1,NFSYM*2).
+
+*Default:*
+
+::
+
+     Active electrons in these irreps (written by **MOLTRA).
+
+A simple example is the oxygen molecule in which the 1s electrons are kept frozen. The active space then consists of 12 electrons, 
+of which there are 10 closed shell electrons. The closed shell electrons go in the nonbonding 2s :math:`\sigma_g` and :math:`\sigma_u` 
+orbitals and the bonding 2p :math:`\sigma_g` and :math:`\pi_u` orbitals, while the 2 open shell electrons are distributed over the 
+two antibonding 2p :math:`\pi_u` orbitals. Let us suppose that we want to take the :math:`M_S=1` state as our reference 
+and assign alpha spin to both our open shell electrons. In the double group (:math:`D_{2h}^*`) we do not distinguish between 
+:math:`\sigma` and :math:`\pi`, so we need to add all alpha electrons in gerade orbitals (2s :math:`\sigma_g` + 2p :math:`\sigma_g` 
++ 2p :math:`\pi_g` = 4), beta electrons in gerade orbitals (2s :math:`\sigma_g` + 2p :math:`\sigma_g` = 2), 
+alpha electrons in ungerade orbitals (2s :math:`\sigma_u` + 2p :math:`\pi_u` = 3) 
+and beta electrons in ungerade orbitals (2s :math:`\sigma_u` + 2p :math:`\pi_u` = 3). This gives the following occupation::
+
+  .NELEC
+  4 2 3 3
+
+Note that this determinant does not represent the exact ground state of the oxygen molecule as this triplet is split by a few wave numbers 
+due to spin-spin and (second order) spin-orbit interactions. The lowest state is the :math:`\Omega=0` component that cannot be 
+represented by a single determinant. This state can be calculated using the Fock space coupled cluster method.
 
 .NEL\_F1
 --------
 
-Number of electrons in the gerade irreps of the Abelian symmetry group.
-See also :ref:`NELEC_F1`.
+Number of electrons in the *gerade* irreps of the Abelian symmetry group. See below for more information.
 
 .NEL\_F2
 --------
 
-Number of electrons in the ungerade irreps of the Abelian symmetry
-group. See also :ref:`NELEC_F2`.
+Number of electrons in the *ungerade* irreps of the Abelian symmetry group. 
+
+Coming back to the example given above, the oxygen molecule, we now show how this is done with the keywords given above. 
+We again want to take the :math:`M_S=1` state as our reference. The irreps of :math:`D_{\infty h}^*` are ordered as 
+1/2, -1/2, 3/2, -3/2,.... so we need to consider the :math:`\Omega` value (giving the projection on the molecular axis of both spin 
+and orbital angular momentum) of the occupied oribitals. The :math:`\sigma` -orbitals go in the irreps 1/2 and -1/2 
+while the :math:`\pi` -orbitals span the four irreps (1/2, -1/2, 3/2, -3/2). Putting an alpha electron in a :math:`\sigma` orbital will give 
+an :math:`\Omega` value of 1/2, while putting it in a :math:`\pi` -orbital can either give -1/2 
+(when put in the orbitals with orbital momentum -1) or 3/2 (when put in the +1 orbital). 
+Similarly the beta electrons go in irreps -1/2 (for the :math:`\sigma`), -3/2 and 1/2 (for the :math:`\pi`). 
+This makes the input for our example : ::
+
+  .NEL_F1
+  2 3 1 0
+  .NEL_F2
+  2 2 1 1 
+
 
 .PRINT
 ------

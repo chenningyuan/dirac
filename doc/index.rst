@@ -153,6 +153,7 @@ Developers
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
+  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**
