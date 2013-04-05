@@ -1,5 +1,4 @@
 
-
 How to set good environment variables for the Intel MKL library
 ===============================================================
 
@@ -24,6 +23,27 @@ Allow for 4 threads per core in MKL/BLAS routines::
   export MKL_NUM_THREADS=4
   export MKL_DOMAIN_NUM_THREADS="MKL_BLAS=4"
   export OMP_NUM_THREADS=1
+  export MKL_DYNAMIC="FALSE"
+  export OMP_DYNAMIC="FALSE"
+
+Note that is important to properly balance MPI and MKL threads. 
+If all cores are already taken by the MPI, the the "unwanted" feature of the threaded-MKL  
+is (sometimes) significant slow down of the code's execution run.
+
+As an example of proper splitting of CPUs between MPI and MKL, 
+assume a 16 core node where 8 cores are assigned to MPI and the rest to MKL threads::
+
+  export MKL_NUM_THREADS="2"
+  export MKL_DOMAIN_NUM_THREADS="MKL_BLAS=2"
+  export OMP_NUM_THREADS="1"
+  export MKL_DYNAMIC="FALSE"
+  export OMP_DYNAMIC="FALSE"
+
+If you would like to run a sequential job on the same node it would then read::
+
+  export MKL_NUM_THREADS="16"
+  export MKL_DOMAIN_NUM_THREADS="MKL_BLAS=16"
+  export OMP_NUM_THREADS="1"
   export MKL_DYNAMIC="FALSE"
   export OMP_DYNAMIC="FALSE"
 
