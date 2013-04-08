@@ -145,7 +145,7 @@
      &     WORK,KFREE,LFREE)
 ! First iteration with no restart only do H00
       CALL MEMCHK_KRCC(WORK)
-C     IF(IFORM.EQ.1.AND.ITER.EQ.1) GO TO 22
+      IF(IFORM.EQ.1.AND.ITER.EQ.1) GO TO 22
       END IF
 *
 * Second all single lines
