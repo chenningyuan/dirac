@@ -443,7 +443,7 @@
             ! read occupation
             read(word_array(3), *) f
             ! update occupation vector
-            do j = istart, iend 
+            do j = istart, iend
                visual_cfg_occupation(j, isym) = f
             end do
             ! print confirmation to screen

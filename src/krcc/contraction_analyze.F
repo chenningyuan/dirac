@@ -2405,6 +2405,12 @@ C              END IF
           CALL WRTMAT(T,1,I_ORI_DIM_M,1,I_ORI_DIM_M)
           WRITE(6,*) ' The new EX,DX order '
           CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
+          IF(IMAP.EQ.70) THEN
+          ZERO = 0.0D0
+          CALL SETVEC(OUTT,ZERO,IDIMEXDX)
+          WRITE(6,*) ' Zeroed out the EX,DX order '
+          CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
+          END IF
         END IF
       END IF
 *
@@ -2985,11 +2991,47 @@ C             print*,'---------------------------'
 *
 * To be used with sorting routines
 *
+#include "implicit.inc"
       INTEGER ISET(NSTR_D,NSTR_D)
 * Local scratch
       INTEGER IMARK(NSTR_D*(NSTR_D-1)/2),ISCR(NSTR_D)
 *
       NTEST = 00
+*
+      IZERO = 0
+*
+      DO I = 1, NSTR_D
+        ISET(I,I) = IZERO
+      END DO
+* Fill a triangle
+      IFILL = 0
+C     print*,'NSTR_D',NSTR_D
+      DO I=1,NSTR_D-1
+C       print*,'I',I
+        DO J=I+1,NSTR_D
+C         print*,'J',J
+          IFILL = IFILL + 1
+C         print*,'IFILL',IFILL
+          ISET(I,J) = IFILL
+        END DO
+      END DO
+C       WRITE(6,*) ' The offsets are '
+C       CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
+      IFILL = 0
+      DO I=1,NSTR_D-1
+C       print*,'I',I
+        DO J=I+1,NSTR_D
+C         print*,'J',J
+          IFILL = IFILL + 1
+C         print*,'IFILL',IFILL
+          ISET(J,I) = IFILL
+        END DO
+      END DO
+C       WRITE(6,*) ' The offsets are '
+C       CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
+      RETURN
+* Copy to other half
+      GO TO 22
 *
       NTOT = NSTR_D*(NSTR_D-1)/2
 *
@@ -2997,14 +3039,16 @@ C             print*,'---------------------------'
 *
       IMARK(1) = 1
       DO ISTR = 2,NTOT
-        IMARK(ISTR) = (ISTR-1)* NSTR_E_REMAIN + IMARK(ISTR-1)
+        IMARK(ISTR) = (ISTR-1)* NSTR_E_REMAIN + ISTR !+ IMARK(ISTR-1) !COULD BE BUG
+        print*,'IMARK,ISTR',IMARK(ISTR),ISTR
       END DO 
 *
 * Fill the scratch array
 *
       ISCR(1) = 0
       DO ISTR =2,NSTR_D
-        ISCR(ISTR) = ISCR(ISTR-1) + NSTR_D - ISTR
+        ISCR(ISTR) = ISCR(ISTR-1) + ISTR !+ NSTR_D - ISTR
+        print*,'ISCR,ISTR',ISCR(ISTR),ISTR
       END DO
 *
       DO ISTR = 1,NSTR_D
@@ -3018,10 +3062,12 @@ C             print*,'---------------------------'
         END DO
       END DO
 *
+22    CONTINUE
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' The offsets are '
         CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
       END IF
+      print*,'jjjjjj'
 *
       RETURN
       END
@@ -3048,6 +3094,8 @@ C             print*,'---------------------------'
 * Calculate the length of remaining indices of CA
 *
       NSTR_CAE_REMAIN = NSTR_CAE/NSTR_CAD ! Yes this is an integer!
+C     print*,'NSTR_CAE_REMAIN,NSTR_CAE,NSTR_CAD',
+C    &        NSTR_CAE_REMAIN,NSTR_CAE,NSTR_CAD
 *
       CALL SET_MARK(ISET,NSTR_CAD,NSTR_CAE_REMAIN)
 *
@@ -3069,7 +3117,7 @@ C     print*,'I,J,K,L,M',I,J,K,L,M
 *
       DO ISTR_ABE = 1,NSTR_ABE
 C      print*,'ISTR_ABE',ISTR_ABE
-        IOFF_ABE = (ISTR_ABE-1)*M
+       IOFF_ABE = (ISTR_ABE-1)*M
        DO ISTR_AAE = 1,NSTR_AAE
         IOFF_AAE = (ISTR_AAE-1)*L
 C       print*,'ISTR_AAE',ISTR_AAE
@@ -3078,6 +3126,7 @@ C       print*,'ISTR_AAE',ISTR_AAE
 C        print*,'ISTR_CBE',ISTR_CBE
 * Splitting loop over CA for EX
 C        DO ISTR_CAE = 1,NSTR_CAE
+C Next rwo loops may have to switch for more than CCSD
          DO ISTR_CAE = 1,NSTR_CAD ! Not a typo
 C        print*,'ISTR_CAE',ISTR_CAE
           DO ISTR_CAR = 1,NSTR_CAE_REMAIN
@@ -3088,6 +3137,8 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
             IF(ISET(ISTR_CAE,ISTR_CAD).NE.0) THEN
              IOFF_CA = ISET(ISTR_CAE,ISTR_CAD) + ISTR_CAR - 1 
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
+C     print*,'IOFF_CA,IOFF_CBE,IOFF_AAE,IOFF_ABE,ICOUNT',
+C    &        IOFF_CA,IOFF_CBE,IOFF_AAE,IOFF_ABE,ICOUNT
              IOFF_CA=IOFF_CA+IOFF_CBE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
              IF(ISTR_CAE.GT.ISTR_CAD) THEN
@@ -3097,6 +3148,7 @@ C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
              END IF
              OUTT(ICOUNT) = SIGN*T(IOFF_CA)
             ELSE 
+C            print*,'zero term,ICOUNT',ICOUNT
              ICOUNT = ICOUNT + 1
 ! Next line only for show
              IOFF_CA = 0

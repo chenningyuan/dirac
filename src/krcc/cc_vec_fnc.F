@@ -469,6 +469,8 @@
 *
 * Save vector to disc since it will be needed later
 *
+C     CALL MEMGET('REAL',KTEMP,LEN_M02_VEC_CC,WORK,KFREE,LFREE)
+C     CALL COPVEC(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
       CALL VEC_TO_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
 *
 * And now the contraction
@@ -667,6 +669,29 @@ C
 *
       END IF !ISKIP
       IF(ISKIP.GE.3) THEN
+      IKK = 0
+      IF(IKK.EQ.1) THEN
+      IHM = 1 !Still the Hamiltonian that is contracted from
+      IFHM = 1 !integrals are fetched
+      CALL MEMCHK_KRCC(WORK)
+*
+      print*,'grep for this'
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
+     &     IFHM,WORK(KT_CC), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     WORK(KLIBSOBEX_M01),WORK(KLLSOBEX_M01),NINTER01,
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),WORK(KLIHIND),IHSM,
+     &     NH02,WORK(KNH02),
+     &     NH02TOM01,WORK(KNH02TOM01),WORK(KNH02T01),
+     &     WORK(KCOMBNH02TOM01),WORK(KPERMNH02TOM01),
+     &     WORK(KFACNH02TOM01),WORK(KCOMBFACNH02TOM01),
+     &     WORK(KINTM01),NINTER01,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      CALL MEMCHK_KRCC(WORK)
+      print*,'after H20 -- 10 -- M10 crazy'
+      STOP 'remove above'
+      END IF
 *
 * Allocate the M02 intermediate
 *
@@ -677,6 +702,7 @@ C
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
       CALL VEC_FROM_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
+C     CALL DIFFF(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
 *
 * Multiply by 1/2
 *

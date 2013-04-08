@@ -3393,7 +3393,7 @@ C
       call dealloc( a_BUF3, id="buf3" )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I20," 8-byte words")
 1007  FORMAT (//" Fock space CCSD Energy calculations",
      &        /" Module written by Ephraim Eliav & Luuk Visscher, ",
      &         "July 1999")
