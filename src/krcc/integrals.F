@@ -2111,3 +2111,22 @@ C         END DO
       RETURN
       END
 *
+      SUBROUTINE DIFFF(VEC1,VEC2,NDIM)
+*
+#include "implicit.inc"
+      DIMENSION VEC1(NDIM), VEC2(NDIM)
+*
+      ITOOMUCH = 0
+      AERROR = 1.0E-10
+      DO I=1,NDIM
+        DIFF = VEC1(I)-VEC2(I)
+        print*,'DIFFFF',DIFF,VEC1(I),VEC2(I)
+        IF(ABS(DIFF).GE.AERROR) THEN
+         ITOOMUCH = ITOOMUCH + 1
+        END IF
+      END DO
+      IF(ITOOMUCH.GE.1) THEN
+       print*,'SOMETHING IS WRONG',ITOOMUCH
+       stop 'loll'
+      END IF
+      END 
