@@ -43,7 +43,6 @@ module adc_cfg
   logical, public                  :: reladc_doadcpop   = .false.
   logical, public                  :: reladc_dofull     = .false.
   logical, public                  :: reladc_doxext     = .false.
-  logical, public                  :: reladc_dohpdiag   = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06
   real*8,  public                  :: reladc_adcthr     = 0.0
 !

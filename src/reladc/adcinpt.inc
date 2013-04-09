@@ -4,12 +4,14 @@ C-----For the ADC module
       INTEGER ADCLEVEL,SIPREPS(32),DIPREPS(32),EXCREPS(32)
       COMMON/CCADCR/VCONV,ADCTHR
       REAL*8 VCONV,ADCTHR
+
       COMMON/CCADCL/ DOSIPS, DODIPS, DOEXCI, READQKL, 
-     &               DOCONST, DOADCPOP, DOFULL, DOXEXT,
-     &               DOHPDIAG
-      LOGICAL DOSIPS, DODIPS, DOEXCI, READQKL, 
-     &        DOCONST, DOADCPOP, DOFULL, DOXEXT,
-     &        DOHPDIAG
+     &               DOCONST, DOADCPOP, DOXEXT,
+     &               DOFULL, DOLANC, DODAVI
+
+      LOGICAL        DOSIPS, DODIPS, DOEXCI, READQKL, 
+     &               DOCONST, DOADCPOP, DOXEXT,
+     &               DOFULL, DOLANC, DODAVI
 
 C-----For the LANCZOS diagonalizer 
 

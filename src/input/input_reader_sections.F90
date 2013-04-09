@@ -1209,10 +1209,6 @@
          reladc_doxext = .true.
       end if
 
-      if (kw_matches(word, '.DOHPDI')) then
-         reladc_dohpdiag = .true.
-      end if
-
       if (kw_matches(word, '.VCONV ')) then
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
