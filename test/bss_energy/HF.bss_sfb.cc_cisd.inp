@@ -3,11 +3,6 @@
   LiH
 .WAVE F ! Activate integral and wave functions modules
 **GENERAL
-! Direct evaluation of two-electron integrals
-.DIRECT
-1 1 1
-! SPEED OF LIGHT FOR COMPARISON WITH THE DALTON DOUGLAS-KROLL RESULTS
-!137.0359895D0
 **INTEGRALS
 .PRINT
 1

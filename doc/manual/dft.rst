@@ -165,7 +165,7 @@ use
 
 .. math::
 
- \mathbf{m}=\sum_{i}\{phi_{i}^{\dagger}{\beta}{\mathbf{\Sigma}}{\phi_{i}}}
+ \mathbf{m}=\sum_{i}{\phi_{i}^{\dagger}{\beta}{\mathbf{\Sigma}}{\phi_{i}}}
 
 instead of the default form
 

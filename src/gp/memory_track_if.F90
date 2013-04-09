@@ -71,6 +71,11 @@
             module procedure allocator_get_max_buffsize_i4
          end interface allocator_get_maxbuff
 
+         interface allocator_get_words_inuse
+            module procedure allocator_get_words_inuse_i4
+            module procedure allocator_get_words_inuse_i8
+         end interface allocator_get_words_inuse
+
          interface allocator_get_arraysize
             module procedure allocator_get_arrayindex_size_i4
             module procedure allocator_get_arrayindex_size_i8
@@ -287,12 +292,21 @@
       end subroutine allocator_get_available_mem
 !
 !
-      subroutine allocator_get_words_inuse(mem_in_words)
+      subroutine allocator_get_words_inuse_i8(mem_in_words)
          real(kind=kreal)                    :: mem
-         integer(kind=klongint), intent(out) :: mem_in_words
+         integer(kind=8), intent(out)        :: mem_in_words
 
          call track_getMemoryInuse(mem)
-         mem_in_words = nint(mem/real(kind(mem)),kind(klongint))
-      end subroutine allocator_get_words_inuse
+         mem_in_words = nint(mem/real(kind(mem)),kind(8))
+      end subroutine allocator_get_words_inuse_i8
+!
+!
+      subroutine allocator_get_words_inuse_i4(mem_in_words)
+         real(kind=kreal)                    :: mem
+         integer(kind=4), intent(out)        :: mem_in_words
+
+         call track_getMemoryInuse(mem)
+         mem_in_words = nint(mem/real(kind(mem)),kind(4))
+      end subroutine allocator_get_words_inuse_i4
 !
       end module allocator_track_if
