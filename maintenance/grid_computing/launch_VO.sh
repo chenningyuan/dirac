@@ -263,83 +263,94 @@ fi
 ## check first envirinment variables related to OpenMPI ##
 ##########################################################
  if [[ -n $MPI_OPENMPI_PATH ]]; then
-   echo -e "\n MPI_OPENMPI_PATH=$MPI_OPENMPI_PATH"
+   echo -e "\n Active MPI_OPENMPI_PATH=$MPI_OPENMPI_PATH !"
    ls -lt $MPI_OPENMPI_PATH
+   export PATH=$MPI_OPENMPI_PATH/bin:$PATH
+   export LD_LIBRARY_PATH=$MPI_OPENMPI_PATH/lib:$LD_LIBRARY_PATH
+   echo "Extended variable PATH=$PATH"
+   echo "Extended variable LD_LIBRARY_PATH==$LD_LIBRARY_PATH"
  fi
 
 ### check presence of parallel MPI compilers ###
  MPISWITCH='off'; MPISWITCH_F90='off'; MPISWITCH_CC='off'; MPISWITCH_CXX='off';
  if [[ -n `which mpif90` ]]; then
-    echo -e "\n Is  mpif90 ? \c"; which mpif90
+    echo -e "\n Is  there mpif90 ? \c"; which mpif90
     mpif90 --version
     MPISWITCH_F90='on'
  fi
  if [[ -n `which mpicc` ]]; then
-    echo -e "\n Is  mpicc ? \c";  which mpicc
+    echo -e "\n Is there mpicc ? \c";  which mpicc
     mpicc --version
     MPISWITCH_CC='on'
  fi
  if [[ -n `which mpiCC` ]]; then
-    echo -e "\n Is  mpiCC ? \c";  which mpiCC
+    echo -e "\n Is there mpiCC ? \c";  which mpiCC
     mpiCC --version
     MPISWITCH_CXX='on'
  fi
  if [[ $MPISWITCH_F90 == 'on' && $MPISWITCH_CC == 'on' && $MPISWITCH_CXX == 'on' ]]; then
     if [[ -n `which mpirun` ]]; then
-        echo -e "\n Is  mpirun ? \c";  which mpirun
+        echo -e "\n Is there mpirun ? \c";  which mpirun
+        mpirun --version
         MPISWITCH='on'
     fi
  fi
 
- BUILD_NAME="$THIS_HOSTNAME.gridCE_ownbuild"
+ ######################################
+ #### Assign build name of grid CE ####
+ ######################################
+ BUILD_NAME="$THIS_HOSTNAME.CEownbuild"
  echo "Assigned BUILD NAME=$BUILD_NAME"
 
- if [[ -n $FC  && -n $CC ]]; then
-    echo "buildup with selected FC=$FC and CC=$CC"
+ if [[ -n $FC  && -n $CC  && -n $CXX ]]; then
+    echo "buildup with selected FC=$FC, CC=$CC and CXX=$CXX :"
+    python ./setup --fc=$FC --cc=$CC --cxx=$CXX -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+ elif [[ -n $FC  && -n $CC ]]; then
+    echo "buildup with selected FC=$FC and CC=$CC :"
     python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -n $FC  && -z $CC ]]; then
-    echo "buildup with selected FC=$FC"
+    echo "buildup with selected FC=$FC :"
     python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -z $FC  && -n $CC ]]; then
-    echo "buildup with selected CC=$CC"
+    echo "buildup with selected CC=$CC :"
     python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -z $FC  && -z $CC ]]; then
-    echo "buildup with cmake automatic selection of compilers"
+    echo "buildup with cmake automatic selection of compilers :"
     python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  fi
 
+ unset BUILD_LOCAL
  if [ -d "build" ]; then
-   echo -e "\n own created build directory exists, going to perform make Experimental ..."
+   echo -e "\n own created build directory exists, going to perform make Experimental in steps ..."
    cd build
-   make Experimental
-   #make ExperimentalStart
-   #make ExperimentalConfigure
-   #make ExperimentalBuild
-   #make ExperimentalSubmit
-   
-   # check if dirac.x was generated properly
-   ./dirac.x
-
+   #make Experimental
+   make ExperimentalConfigure
+   make ExperimentalBuild
+   #
+   echo -e "\n Locally prepared executable dirac.x created ?"
+   ls -lt ./dirac.x
+   if [ -f "./dirac.x" ]; then
+      BUILD_LOCAL=build
+   fi
+   #
+   make ExperimentalTest
+   make ExperimentalSubmit
    # return to the main directory
    cd ..
  fi
 
- unset BUILD_LOCAL
- if [ -f "$dirac_file" ]; then
-   echo -e "\n\n --- Launching  runtest - selected tests - of own dirac.x buildup on CE --- \n "; date
-   echo -e "dirac.x file: \c "; ls -lt $dirac_file
+ if [ -f "$BUILD_LOCAL" ]; then
+   echo -e "\n\n --- Launching  runtest - selected tests - of own dirac.x generated on grid CE --- \n "; date
    #python ./runtest --verbose --backup --binary=$dirac_file --tests="$regular_subset"
-   #python ./runtest --verbose --backup --builddir=$dirac_file --quick
-   BUILD_LOCAL=build
+   python ./runtest --verbose --backup --builddir=$PWD/$BUILD_LOCAL --quick
  else
    echo -e "\n own buildup of dirac.x failed, no tests run \n"
  fi 
 
-
 ##############################################################
-#
-# pack selected files to get them back from CE
-#
+#                                                            #
+#      pack selected files to get them back from CE          #
+#                                                            #
 ##############################################################
 echo -e "\n --------------------------------- \n "; 
 # delete old tar-ball first
@@ -354,11 +365,14 @@ echo -e "\n we have to pack (ls -lt) :"
 ls -lt
 echo " "
 #tar cvzf dirac_suite_back.tgz test *
-tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL *.out
-echo -e "\n selected files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
+#tar czf dirac_grid_suite_back.tgz test $BUILD_LOCAL *.out
+tar czf dirac_grid_suite_back.tgz test *.out
+echo -e "\n selected directories/files of the DIRAC suite packed back , ls -lt dirac_grid_suite_back.tgz:";ls -lt dirac_grid_suite_back.tgz
 
+# upload final tarball onto SE so that you can dowload it later
 # upload_to_SE $VO
 
 final_message
 
 exit 0
+

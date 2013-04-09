@@ -1,14 +1,14 @@
-include(FindGit)
 
-if (GIT_FOUND)
-    add_custom_target(
-        git_update
-        COMMAND ${GIT_EXECUTABLE} submodule init
-        COMMAND ${GIT_EXECUTABLE} submodule update
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    )
-else()
-    if(DEVELOPMENT_CODE)
+if(DEVELOPMENT_CODE)
+    include(FindGit)
+    if (GIT_FOUND)
+        add_custom_target(
+            git_update
+            COMMAND ${GIT_EXECUTABLE} submodule init
+            COMMAND ${GIT_EXECUTABLE} submodule update
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        )
+    else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
     endif()
 endif()

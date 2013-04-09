@@ -581,10 +581,10 @@ C
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
       integer :: verbose = 0
-      integer(kind=klongint) :: maxcor
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: mxcorr1
-      integer(kind=klongint) :: mword_limit
+      integer(kind=8)        :: maxcor
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: mxcorr1
+      integer(kind=8)        :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
@@ -1923,9 +1923,9 @@ Caspg, replacing memget
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
       real (kind=kreal)   :: total_mem_new = 0
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
       integer         :: freemem = 0
 C
 C
@@ -2121,11 +2121,11 @@ c
      &                             a_TAU3(:), a_T2T(:)
 c
       real(kind=kreal)    :: total_mem_new   = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0 
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr  
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0 
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr  
       integer         :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -2474,11 +2474,11 @@ C
      &                             a_BUF3(:),a_FVV(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
 C
@@ -2866,11 +2866,11 @@ C
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3035,11 +3035,11 @@ C
      &                                         a_FREQD(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3187,7 +3187,7 @@ c
      &                             a_EIGENVECTORS(:,:)
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
-      integer(kind=klongint) :: mxcorr, mxcorr1
+      integer(kind=8)        :: mxcorr, mxcorr1
 C
 C---------------Executable code--------------------------------------
 C
