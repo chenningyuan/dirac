@@ -21,7 +21,7 @@ Number of excitation energies N calculated in boson symmetry no. SYM.
 This keyword can be repeated if you want excitation energies in more
 than one boson symmetry.
 
-keyword(A OPERATOR)
+keyword(OPERATOR)
 
 Specification of a transition moment operator (see
 :ref:`one_electron_operators` for details). This keyword can be given multiple
