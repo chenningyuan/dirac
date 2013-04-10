@@ -443,7 +443,7 @@
             ! read occupation
             read(word_array(3), *) f
             ! update occupation vector
-            do j = istart, iend 
+            do j = istart, iend
                visual_cfg_occupation(j, isym) = f
             end do
             ! print confirmation to screen
@@ -1213,10 +1213,6 @@
 
       if (kw_matches(word, '.DOXEXT')) then
          reladc_doxext = .true.
-      end if
-
-      if (kw_matches(word, '.DOHPDI')) then
-         reladc_dohpdiag = .true.
       end if
 
       if (kw_matches(word, '.VCONV ')) then

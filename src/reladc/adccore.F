@@ -253,7 +253,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       doconst  = reladc_doconst 
       doadcpop = reladc_doadcpop
       dofull   = reladc_dofull  
-      dohpdiag = reladc_dohpdiag
       doxext   = reladc_doxext  
       vconv    = reladc_vconv   
       adcthr   = reladc_adcthr  
@@ -1702,11 +1701,11 @@ C
        
           CLOSE(ITAPADC)
 c
-c  call diagonalizer. No ADC matrix cut for the single ionizations.
-c  can be easily introduced later on.
+c  call Lanczos diagonalizer. 
 c
-          OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-          CALL DIAGEXE(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
+        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
+        CALL DIAG_LANC(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
+        CLOSE(ITAPADC,STATUS='DELETE')
 c
           WRITE(IW,*)
           WRITE(IW,*) '       ------------------------------'

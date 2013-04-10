@@ -366,7 +366,7 @@ C
 C
       SAVE SET
       DATA SET/.FALSE./
-      DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
+      DATA TABLE /'.PRINT ','.XXXXXX','.ANALYZ','.OPERAT',
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','-------',
@@ -483,17 +483,17 @@ C&&&& PRINT:  Print level
                   READ(LUCMD,*) IPRXPP
                GO TO 100
     2          CONTINUE
-C&&&& A OPERATOR: transition moment operator
-    4          CONTINUE
-C&&&& OPERATOR: = A OPERATOR here
-                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
-                  CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
-     &                        MAXLPP)
                GO TO 100
     3          CONTINUE
 C&&&& ANALYZe: Analyze individual contributions to repsonse functions
                   XPPANA = .TRUE.
+               GO TO 100
+    4          CONTINUE
+C&&&& OPERATOR: operator of transition moment
+                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
+     &                        WORK,LWORK,IPRXPP)
+                  CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
+     &                        MAXLPP)
                GO TO 100
     5          CONTINUE
 C&&&& EXCITAtions - how many roots in symmetry I

@@ -49,8 +49,11 @@ More advanced initialization:
 ::
 
   voms-proxy-init --voms voce -hours 24 -vomslife 24:00 --out ~/voce_cert; export X509_USER_PROXY=~/voce_cert; voms-proxy-info --all
+
   voms-proxy-init --voms sivvp.slovakgrid.sk -hours 24 -vomslife 24:00 --out ~/sivvp.slovakgrid.sk_cert; export X509_USER_PROXY=~/sivvp.slovakgrid.sk_cert; voms-proxy-info --all
-  voms-proxy-init --voms compchem -hours 240 --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
+
+  voms-proxy-init --voms compchem -hours 24 -vomslife 24:00  --out ~/compchem_cert; export X509_USER_PROXY=~/compchem_cert
+
   voms-proxy-init --voms osg  -hours 24 -vomslife 24:00 --out ~/osg_cert; export X509_USER_PROXY=~/osg_cert; voms-proxy-info --all
 
 Create and store a long-term proxy (default 7 days):
@@ -86,18 +89,32 @@ VO Data management
 -------------------
 
 Accesible nodes/storage space:
-
 ::
 
   lcg-infosites -vo compchem se
   lcg-infosites -vo compchem all
 
-What you have in your VO's lfn-space:
+Accesible computing elements:
+::
+  lcg-infosites -vo voce ce
+  lcg-infosites -vo compchem ce
+  lcg-infosites -vo sivvp.slovakgrid.sk ce
 
+What you have in your VO's lfn-space:
 ::
 
   lcg-ls -l  lfn://grid/voce/ilias/
   lcg-ls -l  lfn://grid/compchem/ilias
+  lcg-ls -l  lfn://grid/sivvp.slovakgrid.sk/ilias
+
+Delete selected data from your SE space:
+::
+
+  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite.tgz
+  lcg-del -a lfn://grid/compchem/ilias/dirac_grid_suite.tgz
+  lcg-del -a lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite.tgz
+
+Donwload files from SE into your server's current directory:
  
 Put (upload) file to your VO's data storage space:
 :: 
@@ -107,29 +124,27 @@ Put (upload) file to your VO's data storage space:
   lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite.tgz
   lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite_slim.tgz
 
-  lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/compchem/ilias/dirac_grid_suite.tgz
-  lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz
-
-  lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  dirac.x
-
 And you get answer like:
 ::
   guid:1a4c183f-9335-47f4-af01-b358cc454f78
 
-even better:
-
+and for compchem you have to use the command:
 ::
 
-  lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac.x --vo compchem  ../../build/dirac.x
-  guid:e3b25fad-ad2a-4a01-9b9b-dd2472e86f0c
+  lcg-cr -d se.grid.unipg.it  -l  lfn://grid/compchem/ilias/dirac_grid_suite.tgz --vo compchem  dirac_grid_suite.tgz
 
-Delete selected data from your SE space:
-
+Check ACL (access control list) attributes:
 ::
+ lfc-getacl /grid/sivvp.slovakgrid.sk/ilias
+ lfc-getacl /grid/voce/ilias
+ lfc-getacl /grid/compchem/ilias
 
-  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite.tgz
-  lcg-del -a lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
-  lcg-del -a lfn://grid/compchem/ilias/dirac_grid_suite.tgz
+Set ACL - only the user has all rights (remove them from group and others)
+(see also https://grid.sara.nl/wiki/index.php/Access_Control_Lists):
+::
+ lfc-setacl -m user::rwx,group::,other:: /grid/sivvp.slovakgrid.sk/ilias
+ lfc-setacl -m user::rwx,group::,other:: /grid/voce/ilias
+ lfc-setacl -m user::rwx,group::,other:: /grid/compchem/ilias
 
 Donwload files from SE into your server's current directory:
 
@@ -137,8 +152,6 @@ Donwload files from SE into your server's current directory:
 
  lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite.tgz             file://$PWD/dirac_grid_suite.tgz
  lcg-cp  lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz        file://$PWD/dirac_grid_suite_slim.tgz
- lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite.tgz         file://$PWD/dirac_grid_suite.tgz
- lcg-cp  lfn://grid/compchem/ilias/dirac_grid_suite_slim.tgz    file://$PWD/dirac_grid_suite_slim.tgz
 
 
 -----------------------------------
@@ -152,15 +165,15 @@ Some "gLite" howtos :
 Retrieve the list computing elements that match your job:
 ::
   glite-wms-job-list-match -a submit_voce.jdl
+  glite-wms-job-list-match -a submit_compchem.jdl
+  glite-wms-job-list-match -a submit_sivvp.slovakgrid.sk.jdl
 
 Submit job script: 
-
 ::
 
  glite-wms-job-submit -o <JOB_ID_file> -a submit.jdl
 
 Get job status:
-
 :: 
 
  glite-wms-job-status  -i <JOB_ID_file>
@@ -178,7 +191,8 @@ And execute the following command to retrieve the current output: ::
 Get job files back: ::
  glite-wms-job-output -i <JOB_ID_file>
 
-Ask computing elements on selected attributes:
+Querry computing elements on selected attributes:
+--------------------------------------------------
 
 ::
 

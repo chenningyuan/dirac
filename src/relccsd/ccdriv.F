@@ -191,6 +191,7 @@ CMI   ... add sector selectives MAXITxy's
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+
 C
 C     if running MP2-NO module use special input
 C
@@ -536,6 +537,7 @@ c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
+      use relcc_cfg
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -579,10 +581,10 @@ C
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
       integer :: verbose = 0
-      integer(kind=klongint) :: maxcor
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: mxcorr1
-      integer(kind=klongint) :: mword_limit
+      integer(kind=8)        :: maxcor
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: mxcorr1
+      integer(kind=8)        :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
@@ -646,7 +648,12 @@ C
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input from file (old namelist) / transfer input (new style) from relcc_cfg
+
+!     sync co-workers and master with variables from new input...
+#ifdef VAR_MPI
+      call relcc_sync_cw()
+#endif
 C
       CALL CCINPT (IN,IW)
 C
@@ -1916,9 +1923,9 @@ Caspg, replacing memget
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
       real (kind=kreal)   :: total_mem_new = 0
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
       integer         :: freemem = 0
 C
 C
@@ -2114,11 +2121,11 @@ c
      &                             a_TAU3(:), a_T2T(:)
 c
       real(kind=kreal)    :: total_mem_new   = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0 
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr  
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0 
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr  
       integer         :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -2467,11 +2474,11 @@ C
      &                             a_BUF3(:),a_FVV(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
 C
@@ -2859,11 +2866,11 @@ C
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3028,11 +3035,11 @@ C
      &                                         a_FREQD(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3180,7 +3187,7 @@ c
      &                             a_EIGENVECTORS(:,:)
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
-      integer(kind=klongint) :: mxcorr, mxcorr1
+      integer(kind=8)        :: mxcorr, mxcorr1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3386,7 +3393,7 @@ C
       call dealloc( a_BUF3, id="buf3" )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I20," 8-byte words")
 1007  FORMAT (//" Fock space CCSD Energy calculations",
      &        /" Module written by Ephraim Eliav & Luuk Visscher, ",
      &         "July 1999")
