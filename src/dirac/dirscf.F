@@ -3617,7 +3617,7 @@ C
       DIMENSION IEIGMIN(2)
       logical   symmetry_broken
       integer, save :: icharge       = 0
-      integer       :: total_num_e
+      integer       :: total_num_e, nish_save(2),nash_save(2)
 
 !     radovan: the check below is skipped if fndocc is called from visual
 !              this is to avoid modification of occupation if converged homo-lumo gap
@@ -3648,7 +3648,9 @@ C
       
 !     initialize arrays
       DO I = 1,NFSYM
-         IEIGMIN(I)     = 1+IORB(I) + NPSH(I)
+         nish_save(I)   = NISH(I)
+         nash_save(I)   = NASH(I)
+         IEIGMIN(I)     = IORB(I) + NPSH(I) + 1
          NISH(I)        = 0
          NASH(I)        = 0
          NACSH(I,1)     = 0
@@ -3691,7 +3693,7 @@ C
  190  IF (NAELEC_DHF .gt. 0) THEN
          IEIGSYM          = 0
  200     IEIGSYM          = IEIGSYM + 1
-            IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
+      IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
          J                = IEIGSYM
          DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
@@ -3712,6 +3714,15 @@ C
            call check_for_symmetry_broken_occupations(eig,nish,nash,
      &                             norb,norbt,ieigsym,nfsym,ieigmin,
      &                             total_num_e,symmetry_broken)
+           if (symmetry_broken) then
+           !  symmetry broken compared to aufbau, is it also symmetry broken
+           !  compared to previous SCF iteration ???
+              symmetry_broken = .false.
+              do i = 1,nfsym
+                 if (nish(i) .ne. nish_save(i)) symmetry_broken = .true.
+                 if (nash(i) .ne. nash_save(i)) symmetry_broken = .true.
+              end do
+           end if
          end if
       end if
 !
@@ -3751,6 +3762,12 @@ C***********************************************************************
 !     purpose: detect symmetry-broken solutions when using the
 !     Aufbau principle to set-up an (initial) electronic configuration.
 !
+!     In other words: detect if degenerate orbitals not all have same
+!     occupation.
+!
+!     Redistribute electrons to not break symmetry by using
+!     average-of-configurations (AOC), if needed.
+!
 !     written by s. knecht - jan 2011
 !
 !***********************************************************************
@@ -3770,7 +3787,7 @@ C***********************************************************************
       integer, intent(inout) :: nish(nfsym), nash(nfsym), norb(nfsym)
       integer, intent(inout) :: ieigmin(nfsym)
       logical, intent(inout) :: symmetry_broken
-      integer, intent(in)    :: total_num_e
+      integer, intent(in)    :: ieigsym_last_occ,total_num_e
 
       real(8), allocatable :: eig_deg(:)
       integer, allocatable :: ieig_deg(:)
@@ -3791,7 +3808,8 @@ C***********************************************************************
 
 !     initialize the last Kramers-pair in which electron(s) was (were) put 
       ilast           = ieigmin(ieigsym_last_occ) - 1
-      naelec_dhf_save = naelec_dhf
+
+      naelec_dhf_save = naelec_dhf ! =0 if number of electrons is even, =1 if odd
 
       call alloc(ieig_deg,max_degeneracy,
      &           id='pointer to degenerate orbs')
