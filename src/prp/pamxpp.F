@@ -846,7 +846,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1,DUM,IDUM,IDUM)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -1822,7 +1822,7 @@ C
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
-      NEXC = ISUM(NBSYM,KEXCNV,1)
+      NEXC = ISUM(NBSYM,KEXCNV,1)+1
       allocate(symlab(nbsym))
       allocate(excerg(nexc))
       allocate(indx(nexc))
@@ -1837,7 +1837,7 @@ C
       ENDDO
       EXCERG(1) = 0.0D0
       KEXCNV(1) = KEXCNV(1) + 1
-      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,0.0D0,0.0D0,1,EXCERG,NEXC,
+      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,NEXC,
      &            INDX,IRPS,IND)
       deallocate(symlab)
       deallocate(excerg)
