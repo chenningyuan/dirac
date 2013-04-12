@@ -873,12 +873,9 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_debugger:
             debugger_full_path=str(find_executable(options.dest_debugger))
+            # assign only correctly defined debugger
             if os.path.isfile(debugger_full_path):
                 self.debugger = debugger_full_path
-            else:
-                print 'debugger selected as pam flag: ',options.dest_debugger
-                print 'But no full path assigned: ',debugger_full_path
-                print_error_message('Debugger wrongly assigned.')
 
         if options.dest_vg:
             self.vg_debug = True
@@ -1167,7 +1164,7 @@ Options are also read from ~/.diracrc"""
 
         this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
         if not os.path.isfile(this_dirac_exe):
-            print_std_err_out(this_dirac_exe+' not found!')
+            print_error_message(this_dirac_exe+' not found!')
             sys.exit(13)
         else:
             pass
@@ -1205,10 +1202,11 @@ Options are also read from ~/.diracrc"""
             if self.debug:
                 # first check if debugger is set
                 if self.debugger is None:
-                    sys.exit("Though debugging wanted, no debugger assigned !")
+                    print_error_message("\n Though debugging wanted, no debugger is assigned - check the flag !")
+                    sys.exit(234)
                 if find_executable(self.debugger) is None:
-                    print 'no debugger found in the <diracrc> file !'
-                    sys.exit()
+                    print_error_message('\n no debugger found in the <diracrc> file !')
+                    sys.exit(235)
                 # TODO: adapt it for Windows
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
                     + ' | tee ' + self.output_file_full
