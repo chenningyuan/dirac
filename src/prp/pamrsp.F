@@ -2601,6 +2601,11 @@ C
         ENDIF
       ENDIF
 C
+C     Check for instabilies in reduced Hessian
+C
+      CALL XRSSTAB(REDE,NREDM,NZRED,NPRED,IPRXRS,INERT,
+     &             WORK,KFREE,LFREE)
+C
       IF (FKRMC) THEN
          CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
@@ -2679,10 +2684,6 @@ C
 C
       CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
-C
-C     Check for instabilies in reduced Hessian
-C
-      CALL XRSSTAB(AE,LDA,N,NPVEC,IPRINT,INERT,WORK,KFREE,LFREE)
 C
 C     Memory allocation
 C
@@ -4406,12 +4407,11 @@ C
 !     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
       if(nasht .le. 0)then
         IF(IPRINT.GE.2 .OR. IPAR.GT.0 .OR. INERT(3).ne.0) THEN
-          WRITE(LUPRI,'(3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-          WRITE(LUPRI,'(4(5X,A,I5))')
-     &        '* Number of positive eigenvalues :',INERT(1),
-     &        '* Number of zero     eigenvalues :',INERT(3),
-     &        '* Number of negative eigenvalues :',INERT(2),
-     &        '* Number of +- (ep) trial vectors:',NEPROT
+          WRITE(LUPRI,'(3X,A,4(A,I5))') 
+     &        '* Reduced Hessian: ',
+     &        'Number of positive/zero/negative eigenvalues : (',
+     &        INERT(1),'/',INERT(2),'/',INERT(3),
+     &        ');   +- (ep) trial vectors:',NEPROT
           IF(IPAR.GT.0) WRITE(LUPRI,'(//A,I3/A/A/)')
      &      '*** WARNING - If your reference state is not the'//
      &         ' excited state with index',IPAR,
