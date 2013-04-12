@@ -1818,16 +1818,16 @@ C
      &          WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable   :: excerg(:)
-      integer, allocatable :: indx(:),irsp(:),ind(:)
+      integer, allocatable :: indx(:),irps(:),ind(:)
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
       NEXC = ISUM(NBSYM,KEXCNV,1)+1
-      allocate(symlab(nbsym))
-      allocate(excerg(nexc))
-      allocate(indx(nexc))
-      allocate(irsp(nexc))
-      allocate(ind(nbsym))
+      ALLOCATE(SYMLAB(NBSYM))
+      ALLOCATE(EXCERG(NEXC))
+      ALLOCATE(INDX(NEXC))
+      ALLOCATE(IRPS(NEXC))
+      ALLOCATE(IND(NBSYM))
       IOFF = 2
       DO ISYM = 1,NBSYM
         SYMLAB(ISYM)=REP(ISYM-1)//' '
@@ -1837,12 +1837,12 @@ C
       ENDDO
       EXCERG(1) = 0.0D0
       KEXCNV(1) = KEXCNV(1) + 1
-      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,NEXC,
-     &            INDX,IRPS,IND)
+      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &            NEXC,INDX,IRPS,IND)
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)
-      deallocate(irsp)
+      deallocate(irps)
       deallocate(ind)
 C
       RETURN
