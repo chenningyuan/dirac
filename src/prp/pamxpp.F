@@ -312,7 +312,7 @@ C
      &                OMEGA(1,JSYMOP),WORK(KEVECR),ISSYM(1,JSYMOP),
      &                IORBCL,WORK(KEIG),WORK,KFREE,LFREE)
     
-          CALL XPPOUT(JSYMOP,ATMPPF,OMEGA,RCNV,WORK(KEIG),
+          CALL XPPOUT_OLD(JSYMOP,ATMPPF,OMEGA,RCNV,WORK(KEIG),
      &                ISSYM,WORK,KFREE,LFREE)
  20     CONTINUE
  10   CONTINUE
@@ -1231,8 +1231,8 @@ C
  1000 FORMAT(/A,I2,A,I2,A,F16.10,A,/3X,A2,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+C/* Deck XPPOUT_old */
+      SUBROUTINE XPPOUT_OLD(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1784,3 +1784,67 @@ C.....next the ones with negative metric
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck XPPOUT */
+      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C***********************************************************************
+         use codata
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+      PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbham.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
+#include "symmet.h"
+Chj: dcbxlr includes some general information
+Chj: which should be moved to dcbxrs (?) or another one:
+Chj: MAXRM, MXLOAD
+#include "dcbxrs.h"
+#include "dcbxpr.h"
+C
+      CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2
+      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
+     &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),ISSYM(MAXEXC,NBSYM),
+     &          WORK(*)
+      character (len=4),  allocatable   :: symlab(:)
+      real(8), allocatable   :: excerg(:)
+      integer, allocatable :: indx(:),irsp(:),ind(:)
+      DATA TTYP /'T-','T0','T+'/
+#include "ibtfun.h"
+      CALL HEADER('Linear response excitations; final output ',-1)
+      NEXC = ISUM(NBSYM,KEXCNV,1)
+      allocate(symlab(nbsym))
+      allocate(excerg(nexc))
+      allocate(indx(nexc))
+      allocate(irsp(nexc))
+      allocate(ind(nbsym))
+      IOFF = 2
+      DO ISYM = 1,NBSYM
+        SYMLAB(ISYM)=REP(ISYM-1)//' '
+        MEXC=KEXCNV(ISYM)
+        CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
+        IOFF = IOFF + MEXC
+      ENDDO
+      EXCERG(1) = 0.0D0
+      KEXCNV(1) = KEXCNV(1) + 1
+      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,0.0D0,0.0D0,1,EXCERG,NEXC,
+     &            INDX,IRPS,IND)
+      deallocate(symlab)
+      deallocate(excerg)
+      deallocate(indx)
+      deallocate(irsp)
+      deallocate(ind)
+C
+      RETURN
+      END
+
