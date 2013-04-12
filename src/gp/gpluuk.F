@@ -436,7 +436,7 @@ C     - N_IRPS  : Number of irreps
 C     - N_EV    : Number of eigenvalues in each irrep
 C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset (real part)
-      - ECCIM   : Energy offset (imaginary part, for calculations with CAP)
+C     - ECCIM   : Energy offset (imaginary part, for calculations with CAP)
 C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
 C     - ISIZE   : size of INDX & IRPS arrays (checked inside)
