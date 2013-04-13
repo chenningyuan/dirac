@@ -4,7 +4,7 @@ rem
 rem True DOS written script for the DIRAC buildup !
 rem
 
-cls
+rem cls
 
 rem  http://www.robvanderwoude.com/batchfiles.php
 rem the directory where your DIRAC sits
@@ -60,14 +60,14 @@ rem cmake ..
 rem mingw32-make clean
 rem mingw32-make Experimental
 
-C:\Git\bin\git.exe pull 
+rem C:\Git\bin\git.exe pull 
 rem return to the top of the DIRAC directory
-cd %DIRAC%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-master" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64%
-cmake ..
-mingw32-make clean
-cd %BUILD_I32LP64%
-mingw32-make Nightly
+rem cd %DIRAC%
+rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-master" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64%
+rem cd %BUILD_I32LP64%
+rem cmake ..
+rem mingw32-make clean
+rem mingw32-make Nightly
 
 rem C:\Git\bin\git.exe pull
 rem return to the top of the DIRAC directory
