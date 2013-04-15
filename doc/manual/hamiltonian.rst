@@ -412,9 +412,7 @@ CAMB3LYP is predefined but can also be specified as::
 Coulomb-attenuated functionals are based on a separation of the two-electron interaction 
 into a long- and short-range part
 
-.. math
-
-::
+.. math::
 
    \frac{1}{r_{12}}=\frac{\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}
    - \frac{1-\left[\alpha+\beta\ erf\left(\mu r_{12}\right)\right]}{r_{12}}
@@ -558,10 +556,10 @@ AMFI is the default. This holds also for keywords :ref:`.X2C` and
 :ref:`.X2C4`). In the DIRAC08 distribution version .NOAMFI was the
 default.
 
-.. warning:: missing AMFI contribution (for :ref:`.X2C`,
-             :ref:`.X2C4` and :ref:`.BSS` keywords) may lead to
-             overestimation of spin-orbit effects since these would be represented by
-             one-electron terms only, without two-electron shielding.
+.. warning:: 
+ missing AMFI contribution (for :ref:`.X2C`, :ref:`.X2C4` and :ref:`.BSS` keywords)
+ may lead to overestimation of spin-orbit effects since these would be represented by
+ one-electron terms only, without two-electron shielding.
 
 
 keyword(DO2C4C)
@@ -569,7 +567,7 @@ keyword(DO2C4C)
 After iterations at the two-component level ascend to the
 four-component level.
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 
 keyword(DO4C2C)
@@ -577,12 +575,12 @@ keyword(DO4C2C)
 After iterations at the four-component level do the relativistic
 transformation to the two-component level.
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 
 keyword(USE_DF)
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 After the four-component DC-SCF method do the infinite order transformation
 (either one- or two-step) upon the Fock-Dirac matrix.  Otherwise it is
@@ -593,7 +591,7 @@ Used only with keyword :ref:`.DO4C2C`.
 
 keyword(CONT2C)
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 After four-component DC-SCF continue with two-component iterations.
 
