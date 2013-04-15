@@ -12,6 +12,7 @@ MODULE adc_fano
 
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
+  INTEGER                              :: adcfh    ! file handle for ADC matrix
   INTEGER                              :: fin_max=1000000  !number of final state configs
                                                    !needs to be read in later
                                                
@@ -20,7 +21,7 @@ MODULE adc_fano
 
 CONTAINS
 
-  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,itape2,iw)
+  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,itapadc,iw)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -57,7 +58,7 @@ CONTAINS
     REAL(8)    :: ckks(*), bufhp(*)
     INTEGER    :: ladc              ! length of adc matrix
     INTEGER    :: crep              ! current representation
-    INTEGER    :: itape2            ! file handling number of ADC matrix
+    INTEGER    :: itapadc           ! file handling number of ADC matrix
     INTEGER    :: iw                ! file handling number of output file
 
 !
@@ -75,6 +76,8 @@ CONTAINS
     INTEGER                            :: adcrow, adccol
     INTEGER                            :: inrow, incol
     INTEGER                            :: k, ixx, fincount ! counters
+    LOGICAL                            :: is_in  = .TRUE.
+    LOGICAL                            :: is_coupl = .FALSE.
     LOGICAL                            :: is_fin = .FALSE.
     INTEGER, PARAMETER                 :: jdummy = 0
 
@@ -114,6 +117,8 @@ CONTAINS
     finrow     = 0
     fincount   = 0
 
+    itapfano   = itapadc
+    adcfh      = itapfano + 5
     infh       = itapfano + 6
 
     WRITE(iw,*) 'Elke: Here we go!'
@@ -136,17 +141,10 @@ CONTAINS
 
       DO adcrow = adccol + 1, ladc
         incol = adccol
-        !CALL subroutine
-        is_fin = .TRUE.
-        is_final:IF (is_fin) THEN
-          finrow = finrow + 1
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            fincount = fincount + 1
-            temp_array(fincount,1) = single_col(adcrow)
-            temp_array(fincount,2) = finrow
-            temp_array(fincount,3) = adccol
-          END IF
-        ELSE is_final
+        !CALL determine_block(adcrow,adccol,bigicra,is_in,is_coupl,&
+        !                     is_fin,1)
+        is_in = .TRUE.
+        is_initial:IF (is_in) THEN
           inrow = inrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
             ! Handle the matrix of initial states
@@ -168,14 +166,22 @@ CONTAINS
             adcioj(adcib) = adccol
             IF (adcib == fano_intbuf) THEN
               adcnbufs = adcnbufs + 1
-              WRITE(itape2) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
-                            (adcioi(ixx), ixx=1, fano_intbuf),   &
-                            (adcioj(ixx), ixx=1, fano_intbuf),   &
-                            fano_intbuf, jdummy
+              WRITE(adcfh) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
+                           (adcioi(ixx), ixx=1, fano_intbuf),   &
+                           (adcioj(ixx), ixx=1, fano_intbuf),   &
+                           fano_intbuf, jdummy
               adcib = 0
             END IF
           END IF
-        END IF is_final
+        ELSE is_initial
+          finrow = finrow + 1
+          IF (single_col(adcrow) /= 0.0D0) THEN
+            fincount = fincount + 1
+            temp_array(fincount,1) = single_col(adcrow)
+            temp_array(fincount,2) = finrow
+            temp_array(fincount,3) = adccol
+          END IF
+        END IF is_initial
       END DO
 !
 !  One coulmn has been processed, now the final states are added to
@@ -187,10 +193,10 @@ CONTAINS
         adcioi(adcib) = temp_array(temp_row,2) + inrow
         adcioj(adcib) = temp_array(temp_row,3)
         IF (adcib == fano_intbuf) THEN
-          WRITE(itape2) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
-                        (adcioi(ixx), ixx=1, fano_intbuf),   &
-                        (adcioj(ixx), ixx=1, fano_intbuf),   &
-                        fano_intbuf, jdummy
+          WRITE(adcfh) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
+                       (adcioi(ixx), ixx=1, fano_intbuf),   &
+                       (adcioj(ixx), ixx=1, fano_intbuf),   &
+                       fano_intbuf, jdummy
           adcib = 0
         END IF
       END DO 

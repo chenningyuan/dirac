@@ -1567,7 +1567,7 @@ C  all other elements are finished and can be written out.
 C
 
         IF (reladc_dofano) THEN
-          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC+5,IW)
+          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW)
         ELSE
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
