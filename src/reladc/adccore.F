@@ -652,6 +652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Modules------------------------------------------------
 !
       use adc_cfg
+      use adc_fano
 C
       IMPLICIT INTEGER(A-Z)
 C
@@ -1565,19 +1566,23 @@ C  diagonal is written out in MAKEHPHP
 C  all other elements are finished and can be written out.
 C
 
-        IF(CARITH) THEN
-          CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
-     &             INTBUF,LADC,CC(IOI),CC(IOJ),
-     &             KREP,NBUFS,IBUFPOS,ITAPADC+5)
+        IF (reladc_dofano) THEN
+          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC+5,IW)
         ELSE
-          CALL WRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
-     &          INTBUF,LADC,CC(IOI),CC(IOJ),
-     &          KREP,NBUFS,IBUFPOS,ITAPADC+5)
-        ENDIF
-        CALL MEMCHK('ADC-WRITEHHP',CC,KFRSAV)
+          IF(CARITH) THEN
+            CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
+     &               INTBUF,LADC,CC(IOI),CC(IOJ),
+     &               KREP,NBUFS,IBUFPOS,ITAPADC+5)
+          ELSE
+            CALL WRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
+     &            INTBUF,LADC,CC(IOI),CC(IOJ),
+     &            KREP,NBUFS,IBUFPOS,ITAPADC+5)
+          ENDIF
+          CALL MEMCHK('ADC-WRITEHHP',CC,KFRSAV)
 
-        WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
-        WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
+          WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
+          WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
+        END IF
 C
 C  ...   ************  start 2h-1p/2h-1p block  ********************
 C
