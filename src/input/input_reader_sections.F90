@@ -1240,12 +1240,15 @@
             read(get_file_unit(), '(a)') line
             ! read the absolute spinor numbers of the final states
             read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
-            if (reladc_fano_channels(i,1) > reladc_fano_channels(i,2)) then
+            if (reladc_fano_channels(i,1) < reladc_fano_channels(i,2)) then
               temp = reladc_fano_channels(i,1)
               reladc_fano_channels(i,1) = reladc_fano_channels(i,2)
               reladc_fano_channels(i,2) = temp
             end if 
             print *, (reladc_fano_channels(i,j), j=1,2)
+            if (reladc_fano_channels(i,1) == reladc_fano_channels(i,2)) then
+              call quit ( 'Equal spinors in one channel -> Unphysical choice')
+            end if
          end do
       end if
 
