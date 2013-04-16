@@ -1155,6 +1155,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i, j !counters
       character(100)                   :: line
+      integer                          :: temp
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
 
@@ -1239,6 +1240,11 @@
             read(get_file_unit(), '(a)') line
             ! read the absolute spinor numbers of the final states
             read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
+            if (reladc_fano_channels(i,1) > reladc_fano_channels(i,2)) then
+              temp = reladc_fano_channels(i,1)
+              reladc_fano_channels(i,1) = reladc_fano_channels(i,2)
+              reladc_fano_channels(i,2) = temp
+            end if 
             print *, (reladc_fano_channels(i,j), j=1,2)
          end do
       end if
