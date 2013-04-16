@@ -143,7 +143,7 @@ CONTAINS
         incol = adccol
         !CALL determine_block(adcrow,adccol,bigicra,is_in,is_coupl,&
         !                     is_fin,1)
-        is_in = .TRUE.
+        is_in = .FALSE.
         is_initial:IF (is_in) THEN
           inrow = inrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -159,6 +159,7 @@ CONTAINS
                           (inioj(ixx), ixx=1, fano_intbuf),      &
                           fano_intbuf, jdummy
             END IF
+            !Todo: write out rest of in matrix after all loops
             ! We write out the sorted ADC matrix
             adcib  = adcib + 1
             adcbuf(adcib) = single_col(adcrow)
@@ -184,7 +185,7 @@ CONTAINS
         END IF is_initial
       END DO
 !
-!  One coulmn has been processed, now the final states are added to
+!  One column has been processed, now the final states are added to
 !  the end of the corresponding column
 !
       DO temp_row = 1, fincount
@@ -220,5 +221,112 @@ CONTAINS
     CALL dealloc(temp_array)
 
   END SUBROUTINE fano_write_hhp
+
+!
+!--------------------------------------------------------------------
+!
+!
+  SUBROUTINE make_bigicra(aklrep,bigicra,iw)
+
+!
+!  Purpose: Write a more detailed icra table also containing absolute
+!           spinor numbers for the 2h1p states
+!
+!           A
+!           AREP
+!           K
+!           KREP
+!           L
+!           LREP
+!           AABS
+!           KABS
+!           LABS
+!
+
+    IMPLICIT NONE
+
+!
+!  Common Blocks
+!
+#include "../relccsd/symm.inc"
+
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                        :: aklrep
+    INTEGER, INTENT(INOUT), DIMENSION(9,NVOOT(aklrep)) :: bigicra!allocate outside
+    INTEGER, INTENT(IN)                        :: iw
+
+!
+!  Data dictionary: Local Variables
+!
+    INTEGER    :: off, aoff, koff, loff     !offsets
+    INTEGER    :: krep, lrep, arep          !representations
+    INTEGER    :: k, l, a                   !relative spinor numbers
+    INTEGER    :: kabs, labs, aabs          !absolute spinor numbers
+    INTEGER    :: klrep                     !gamma_k x gamma_l
+    INTEGER    :: kmin
+
+!
+!  Code
+!
+    bigicra = 0
+
+!                                                                          
+!  loop over irrep structure and form energy array & lookup table          
+! 
+    off = 1
+    do_klrep:DO klrep = 1, nrep
+      arep = multb(aklrep,klrep+nrep,2)
+      aoff = iv(arep) + io(nrep+1)
+      !WRITE(iw,*) arep! correct
+      !WRITE(iw,*) 'iv(arep) = ', iv(arep)!correct
+      do_lrep:DO lrep = 1, nrep
+        loff = io(lrep)
+        krep = multb(lrep,klrep+nrep,2)
+        !WRITE(IW,*) 'lrep = ', lrep
+        !WRITE(IW,*) 'krep = ', krep
+        IF (krep < lrep) THEN
+          CYCLE do_lrep
+        END IF
+        koff = io(krep)
+        !WRITE(iw,*) 'koff = ', koff
+        DO l = 1, no(lrep)
+          kmin = 1
+          IF(krep == lrep) THEN
+            kmin = l + 1
+          END IF
+          DO k = kmin, no(krep)
+            DO a = 1, nv(arep)
+              bigicra(1,off) = a
+              bigicra(2,off) = arep
+              bigicra(3,off) = k
+              bigicra(4,off) = krep
+              bigicra(5,off) = l
+              bigicra(6,off) = lrep
+              bigicra(7,off) = aoff + a  !aabs
+              bigicra(8,off) = koff + k  !kabs
+              bigicra(9,off) = loff + l  !labs
+
+              off = off + 1
+            END DO
+          END DO
+        END DO
+      END DO do_lrep
+    END DO do_klrep
+    
+    IF (off-1 /= nvoot(aklrep)) THEN
+      WRITE(IW,*) 
+      WRITE(IW,*) ' *** Expected value of counter:',NVOOT(AKLREP)
+      WRITE(IW,*) ' *** Actual value of counter:  ',OFF-1
+      CALL QUIT('Inconsistency in make_bigicra')
+    END IF
+
+    WRITE(IW,*) 'The big ICRA lookup table'
+    WRITE(IW,123) bigicra
+    123 FORMAT (' ',9I8)
+    WRITE(IW,*)
+
+  END SUBROUTINE make_bigicra
 
 END MODULE adc_fano

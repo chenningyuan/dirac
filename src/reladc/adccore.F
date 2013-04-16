@@ -653,6 +653,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       use adc_cfg
       use adc_fano
+      use memory_allocator
 C
       IMPLICIT INTEGER(A-Z)
 C
@@ -718,6 +719,8 @@ C
 #ifdef SYS_AIX
       integer(8) :: ivmax
 #endif
+
+      INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
 C
 C--------------- description of buffer pointers for the CC array  --------
 C
@@ -1567,6 +1570,9 @@ C  all other elements are finished and can be written out.
 C
 
         IF (reladc_dofano) THEN
+          CALL alloc(bigicra,9,NVOOT(KREP))
+          CALL make_bigicra(KREP,bigicra,IW)
+
           CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW)
         ELSE
           IF(CARITH) THEN
