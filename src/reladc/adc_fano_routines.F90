@@ -1,4 +1,4 @@
-MODULE adc_fano
+MODULE adc_fano_routines
 
 !
 !  Data dictionary: common variables and arrays for the Fano ADC
@@ -21,7 +21,7 @@ MODULE adc_fano
 
 CONTAINS
 
-  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,itapadc,iw)
+  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -58,6 +58,7 @@ CONTAINS
     REAL(8)    :: ckks(*), bufhp(*)
     INTEGER    :: ladc              ! length of adc matrix
     INTEGER    :: crep              ! current representation
+    INTEGER, DIMENSION(9,nvoot(crep)) :: bigicra
     INTEGER    :: itapadc           ! file handling number of ADC matrix
     INTEGER    :: iw                ! file handling number of output file
 
@@ -118,8 +119,8 @@ CONTAINS
     fincount   = 0
 
     itapfano   = itapadc
-    adcfh      = itapfano + 5
-    infh       = itapfano + 6
+    adcfh      = itapfano + 6 !Files need to be opened
+    infh       = itapfano + 7
 
     WRITE(iw,*) 'Elke: Here we go!'
 
@@ -141,9 +142,8 @@ CONTAINS
 
       DO adcrow = adccol + 1, ladc
         incol = adccol
-        !CALL determine_block(adcrow,adccol,bigicra,is_in,is_coupl,&
-        !                     is_fin,1)
-        is_in = .FALSE.
+        CALL determine_block(adcrow,adccol,bigicra,crep,is_in,&
+                             is_coupl,is_fin,1)
         is_initial:IF (is_in) THEN
           inrow = inrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -152,6 +152,7 @@ CONTAINS
             inbuf(inib) = single_col(adcrow)
             inioi(inib) = inrow
             inioj(inib) = adccol
+            !WRITE(iw,*) 'in number  : ', inbuf(inib)
             IF (inib == fano_intbuf) THEN
               innbufs = innbufs + 1
               WRITE(infh) (-inbuf(ixx), ixx=1, fano_intbuf),     &
@@ -181,6 +182,7 @@ CONTAINS
             temp_array(fincount,1) = single_col(adcrow)
             temp_array(fincount,2) = finrow
             temp_array(fincount,3) = adccol
+            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
           END IF
         END IF is_initial
       END DO
@@ -210,6 +212,18 @@ CONTAINS
       off3 = off3 + najl
 
     END DO one_column
+
+!
+!  write the rest of the buffer
+!
+    IF (inib > 0) THEN
+      innbufs = innbufs + 1
+      WRITE(infh) (-inbuf(ixx), ixx=1, fano_intbuf),  &
+                  (inioi(ixx), ixx= 1, fano_intbuf),  &
+                  (inioj(ixx), ixx= 1, fano_intbuf),  &
+                  inib, jdummy
+      inib = 0
+    END IF
 
 !
 !  deallocate local arrays
@@ -322,11 +336,95 @@ CONTAINS
       CALL QUIT('Inconsistency in make_bigicra')
     END IF
 
-    WRITE(IW,*) 'The big ICRA lookup table'
-    WRITE(IW,123) bigicra
-    123 FORMAT (' ',9I8)
-    WRITE(IW,*)
+!    WRITE(IW,*) 'The big ICRA lookup table'
+!    WRITE(IW,123) bigicra
+!    123 FORMAT (' ',9I8)
+!    WRITE(IW,*)
 
   END SUBROUTINE make_bigicra
 
-END MODULE adc_fano
+!
+!--------------------------------------------------------------------
+!
+  SUBROUTINE determine_block(row,col,bigicra,krep,is_in,  &
+                             is_coupl,is_fin,block)
+!
+!  Purpose: to determine whether an matrix element belongs to an initial
+!           or final state configuration. Hereby sort the 1h/2h1p and
+!           the 2h1p,2h1p space
+!           "block" is telling the program which part of the matrix is
+!           currently being built.
+!
+    use adc_cfg
+
+    IMPLICIT NONE
+
+!
+!  Common Blocks
+!
+#include "../relccsd/symm.inc"
+
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                           :: row, col
+    INTEGER, INTENT(IN)                           :: krep
+    INTEGER, INTENT(IN), DIMENSION(9,nvoot(krep)) :: bigicra
+    LOGICAL, INTENT(OUT)                          :: is_in, is_coupl, is_fin
+    INTEGER                                       :: block ! 1=1h/2h1p, 2=2h1p/2h1p
+
+!
+!  Data dictionary: Local Variables
+!
+    INTEGER  :: aabs, kabs, labs
+    INTEGER  :: asabs, ksabs, lsabs
+    INTEGER  :: inline
+    INTEGER  :: first, second
+
+!
+!  Code
+!
+    aabs   = bigicra(7,row)
+    kabs   = bigicra(8,row)
+    labs   = bigicra(9,row)
+
+    asabs  = bigicra(7,col)
+    ksabs  = bigicra(8,col)
+    lsabs  = bigicra(9,col)
+
+!
+!  We now know the configuration of our current matrix element :-)
+!  Now we need to decide what to do with this knowledge
+!
+    SELECT CASE (block)
+      CASE (1) ! We are dealing with the h/2h1p block
+        each_channel:DO inline = 1, reladc_fano_nrchannels
+          first  = reladc_fano_channels(inline,1)
+          second = reladc_fano_channels(inline,2)
+          IF (first == kabs) THEN
+            IF (second == labs) THEN
+              is_in = .FALSE. !We hit a final state configuration
+            ELSE
+              is_in = .TRUE.
+            END IF
+          ELSE
+            is_in = .TRUE.
+          END IF
+
+          IF (is_in .EQV. .FALSE.) THEN
+            EXIT each_channel
+          END IF
+        END DO each_channel
+
+      CASE (2) ! We are dealing with the 2h1p/2h1p block
+      CASE DEFAULT ! Programmer has introduced a bug, since users can't
+                   ! change this variable
+        CALL QUIT ('block in determine_block can only be 1 or 2')
+    END SELECT
+
+
+
+  END SUBROUTINE determine_block
+    
+
+END MODULE adc_fano_routines

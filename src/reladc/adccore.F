@@ -652,7 +652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Modules------------------------------------------------
 !
       use adc_cfg
-      use adc_fano
+      use adc_fano_routines
       use memory_allocator
 C
       IMPLICIT INTEGER(A-Z)
@@ -1573,7 +1573,8 @@ C
           CALL alloc(bigicra,9,NVOOT(KREP))
           CALL make_bigicra(KREP,bigicra,IW)
 
-          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW)
+          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,bigicra,
+     &                        ITAPADC,IW)
         ELSE
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
