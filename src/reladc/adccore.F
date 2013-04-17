@@ -652,7 +652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Modules------------------------------------------------
 !
       use adc_cfg
-      use adc_fano_routines
+      use adc_fano
       use memory_allocator
 C
       IMPLICIT INTEGER(A-Z)
@@ -720,7 +720,7 @@ C
       integer(8) :: ivmax
 #endif
 
-      INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
+      !INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
 C
 C--------------- description of buffer pointers for the CC array  --------
 C
@@ -1570,11 +1570,7 @@ C  all other elements are finished and can be written out.
 C
 
         IF (reladc_dofano) THEN
-          CALL alloc(bigicra,9,NVOOT(KREP))
-          CALL make_bigicra(KREP,bigicra,IW)
-
-          CALL fano_write_hhp(CC(CKKS),CC(BUFY1),LADC,KREP,bigicra,
-     &                        ITAPADC,IW)
+          CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW)
         ELSE
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),

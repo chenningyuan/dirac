@@ -342,10 +342,10 @@ CONTAINS
       CALL QUIT('Inconsistency in make_bigicra')
     END IF
 
-!    WRITE(IW,*) 'The big ICRA lookup table'
-!    WRITE(IW,123) bigicra
-!    123 FORMAT (' ',9I8)
-!    WRITE(IW,*)
+    WRITE(IW,*) 'The big ICRA lookup table'
+    WRITE(IW,123) bigicra
+    123 FORMAT (' ',9I8)
+    WRITE(IW,*)
 
   END SUBROUTINE make_bigicra
 
