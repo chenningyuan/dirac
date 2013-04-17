@@ -142,8 +142,12 @@ CONTAINS
 
       DO adcrow = adccol + 1, ladc
         incol = adccol
-        CALL determine_block(adcrow,adccol,bigicra,crep,is_in,&
-                             is_coupl,is_fin,1)
+        IF (adcrow-nok > 0) THEN
+          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
+                               is_coupl,is_fin,1)
+        ELSE
+          is_in = .TRUE.
+        END IF
         is_initial:IF (is_in) THEN
           inrow = inrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -152,6 +156,7 @@ CONTAINS
             inbuf(inib) = single_col(adcrow)
             inioi(inib) = inrow
             inioj(inib) = adccol
+            !WRITE(iw,*) 'adcrow     : ', adcrow
             !WRITE(iw,*) 'in number  : ', inbuf(inib)
             IF (inib == fano_intbuf) THEN
               innbufs = innbufs + 1
@@ -182,6 +187,7 @@ CONTAINS
             temp_array(fincount,1) = single_col(adcrow)
             temp_array(fincount,2) = finrow
             temp_array(fincount,3) = adccol
+            !WRITE(iw,*) 'adcrow     : ', adcrow
             !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
           END IF
         END IF is_initial
