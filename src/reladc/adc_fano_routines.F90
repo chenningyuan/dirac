@@ -352,6 +352,121 @@ CONTAINS
 !
 !--------------------------------------------------------------------
 !
+  INTEGER FUNCTION det_nr_configs(array,start,length,bigicra,krep,  &
+                                  logvar)
+!
+!  Purpose: to determine whether an matrix element belongs to an initial
+!           or final state configuration. Hereby sort the 1h/2h1p and
+!           the 2h1p,2h1p space
+!           "block" is telling the program which part of the matrix is
+!           currently being built.
+!
+    use adc_cfg
+
+    IMPLICIT NONE
+
+!
+!  Common Blocks
+!
+#include "../relccsd/symm.inc"
+
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                           :: start, length
+    REAL(8), INTENT(IN), DIMENSION(length)        :: array
+    INTEGER, INTENT(IN)                           :: krep
+    INTEGER, INTENT(IN), DIMENSION(9,nvoot(krep)) :: bigicra
+    INTEGER                                       :: logvar! 1=is_in, 2=is_fin?
+
+!
+!  Data dictionary: Local Variables
+!
+    LOGICAL  :: is_in, is_coupl, is_fin
+    INTEGER  :: aabs, kabs, labs
+    INTEGER  :: asabs, ksabs, lsabs
+    INTEGER  :: row
+    INTEGER  :: inline
+    INTEGER  :: first, second
+    INTEGER  :: counter
+
+!
+!  Code
+!
+     counter = 0
+     
+!
+!  We now know the configuration of our current matrix element :-)
+!  Now we need to decide what to do with this knowledge
+!
+    SELECT CASE (logvar)
+      CASE (1) ! We want to now how many initial state configs we have
+        DO row = start, length
+          aabs   = bigicra(7,row)
+          kabs   = bigicra(8,row)
+          labs   = bigicra(9,row)
+          each_channel1:DO inline = 1, reladc_fano_nrchannels
+            first  = reladc_fano_channels(inline,1)
+            second = reladc_fano_channels(inline,2)
+            IF (first == kabs) THEN
+              IF (second == labs) THEN
+                is_in = .FALSE. !We hit a final state configuration
+              ELSE
+                is_in = .TRUE.
+              END IF
+            ELSE
+              is_in = .TRUE.
+            END IF
+
+            IF (is_in .EQV. .FALSE.) THEN
+              EXIT each_channel1
+            END IF
+          END DO each_channel1
+          IF (is_in .EQV. .TRUE.) THEN
+            counter = counter + 1
+          END IF
+        END DO
+      CASE (2) 
+        DO row = start, length
+          aabs   = bigicra(7,row)
+          kabs   = bigicra(8,row)
+          labs   = bigicra(9,row)
+          each_channel2:DO inline = 1, reladc_fano_nrchannels
+            first  = reladc_fano_channels(inline,1)
+            second = reladc_fano_channels(inline,2)
+            IF (first == kabs) THEN
+              IF (second == labs) THEN
+                is_fin = .TRUE. !We hit a final state configuration
+              ELSE
+                is_fin = .FALSE.
+              END IF
+            ELSE
+              is_fin = .FALSE.
+            END IF
+
+            IF (is_fin .EQV. .TRUE.) THEN
+              EXIT each_channel2
+            END IF
+          END DO each_channel2
+          IF (is_fin .EQV. .TRUE.) THEN
+            counter = counter + 1
+          END IF
+        END DO
+      CASE DEFAULT ! Programmer has introduced a bug, since users can't
+                   ! change this variable
+        CALL QUIT ('state can only be initial or final state')
+    END SELECT
+
+    det_nr_configs = counter
+
+
+
+  END FUNCTION det_nr_configs
+    
+
+!
+!--------------------------------------------------------------------
+!
   SUBROUTINE determine_block(row,col,bigicra,krep,is_in,  &
                              is_coupl,is_fin,block)
 !
