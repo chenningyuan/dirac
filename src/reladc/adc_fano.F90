@@ -36,6 +36,8 @@ CONTAINS
 !  Data dictionary: Local Variables (and to be shared with subroutines
 !
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
+    INTEGER                               :: nr_in, nr_fin
+    INTEGER                               :: nok, najl
 
 !
 !  Code
@@ -50,6 +52,15 @@ CONTAINS
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep))
     CALL make_bigicra(krep,bigicra,iw)
+
+    nok  = NO(krep)
+!    najl = NOOVT(krep)
+    
+    nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1)
+    nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2)
+    fin_max = nr_fin
+    WRITE(iw,*) 'Number of initial state configurations: ', nr_in
+    WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
 
     ! Create sorted h/2h1p block
     CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &

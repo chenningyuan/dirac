@@ -13,8 +13,7 @@ MODULE adc_fano_routines
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
   INTEGER                              :: adcfh    ! file handle for ADC matrix
-  INTEGER                              :: fin_max=1000000  !number of final state configs
-                                                   !needs to be read in later
+  INTEGER                              :: fin_max  !number of final state configs
                                                
   
   
@@ -342,24 +341,24 @@ CONTAINS
       CALL QUIT('Inconsistency in make_bigicra')
     END IF
 
-    WRITE(IW,*) 'The big ICRA lookup table'
+    WRITE(IW,*)
+    WRITE(IW,*) 'Construct the big ICRA lookup table'
     WRITE(IW,123) bigicra
     123 FORMAT (' ',9I8)
     WRITE(IW,*)
 
   END SUBROUTINE make_bigicra
 
+
+
+
 !
 !--------------------------------------------------------------------
 !
-  INTEGER FUNCTION det_nr_configs(array,start,length,bigicra,krep,  &
+  INTEGER FUNCTION det_nr_configs(start,length,bigicra,krep,  &
                                   logvar)
 !
-!  Purpose: to determine whether an matrix element belongs to an initial
-!           or final state configuration. Hereby sort the 1h/2h1p and
-!           the 2h1p,2h1p space
-!           "block" is telling the program which part of the matrix is
-!           currently being built.
+!  Purpose: Count the number of initial or final state configurations
 !
     use adc_cfg
 
@@ -374,10 +373,9 @@ CONTAINS
 !  Data dictionary: Calling Variables
 !
     INTEGER, INTENT(IN)                           :: start, length
-    REAL(8), INTENT(IN), DIMENSION(length)        :: array
     INTEGER, INTENT(IN)                           :: krep
     INTEGER, INTENT(IN), DIMENSION(9,nvoot(krep)) :: bigicra
-    INTEGER                                       :: logvar! 1=is_in, 2=is_fin?
+    INTEGER                                       :: logvar! 1=is_in, 2=is_fin
 
 !
 !  Data dictionary: Local Variables
@@ -393,14 +391,12 @@ CONTAINS
 !
 !  Code
 !
-     counter = 0
+
+    counter = 0
      
-!
-!  We now know the configuration of our current matrix element :-)
-!  Now we need to decide what to do with this knowledge
-!
     SELECT CASE (logvar)
       CASE (1) ! We want to now how many initial state configs we have
+        counter = start - 1
         DO row = start, length
           aabs   = bigicra(7,row)
           kabs   = bigicra(8,row)
