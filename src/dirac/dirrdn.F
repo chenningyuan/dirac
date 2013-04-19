@@ -4528,7 +4528,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-      USE FDE_MOD, ONLY: FDEINI, FDEINP
+      use fde_mod, only: fde_input_init,fde_dirac_input
       use dft_cfg
       use xc_derv
       use interface_functional_read
@@ -5293,9 +5293,9 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
 
 
       if (dirac_cfg_fde) then
-         call fdeini(lupri,'DIRAC.OUT')
-      end if
-
+         call fde_input_init(lupri,'DIRAC.OUT')
+      end if 
+      
 
 CMI   ... needed for output
       GAUNT_SAVE = GAUNT
@@ -6261,7 +6261,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
         GO TO 200
 !     .FDE, frozen density embedding
     5 CONTINUE
-      call fdeinp(word, .true.)
+      call fde_dirac_input(word, .true.)
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF

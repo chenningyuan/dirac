@@ -111,7 +111,6 @@ C***********************************************************************
        use dft_cfg
        use xcint_main
        use fde_mod
-       use fde_integrate
        use num_grid_gen
        use num_grid_cfg
 #ifdef PCM_MODULE
@@ -278,16 +277,15 @@ C          Hermitian operator
               call genden(fao, cmo, 1, iprint)
            endif
 
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
-     &                       fde_nz                 = nz,
-     &                       fde_dmat_0             = fao, 
-     &                       fde_nr_dmat            = 0,
-     &                       fde_nr_fmat            = 1,
-     &                       fde_fmat               = fmo,
-     &                       fde_do_potential       = .true.)
+!         call fde_set_nz(nz)
+          call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
+!         call integrate_fde(fde_mat_dim            = ntbas(0),
+!    &                       fde_nz                 = nz,
+!    &                       fde_dmat_0             = fao, 
+!    &                       fde_nr_dmat            = 0,
+!    &                       fde_nr_fmat            = 1,
+!    &                       fde_fmat               = fmo,
+!    &                       fde_do_potential       = .true.)
 
          write (*,*) 'FDE Fock matrix contributions (re)calculated'
         else if (itmp%im_vemb) then

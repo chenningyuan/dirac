@@ -598,8 +598,9 @@ C
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_dirac_set_nz(nz)
+!          call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
 
            tdfde =  second() - tdfde
         endif
@@ -1466,8 +1467,9 @@ C
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_dirac_set_nz(nz)
+!          call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
            tdfde = second() - tdfde
         endif
 #endif

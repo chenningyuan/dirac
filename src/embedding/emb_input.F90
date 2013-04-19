@@ -1,3 +1,5 @@
+#define MOD_UNRELEASED
+
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -19,25 +21,28 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module fde_inputDirac
+module fde_input
 
    use fde_types
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-   use fde_eval_dirac
+   use fde_evaluators
    
    private
 
-   public fdeini
-   public fdeinp
+   public fde_input_init
+   public fde_input_validate_and_postprocess
+   public fde_input_show_setup
+
+   public skip_all_imports
    
    logical, save :: skip_all_imports = .false.
 
    contains
 
 !   ----------------------------------------------------------------------------
-      subroutine fdeini(log_unit,log_name)
+      subroutine fde_input_init(log_unit,log_name)
 !   ----------------------------------------------------------------------------
          integer          :: log_unit
          character(len=*) :: log_name
@@ -50,135 +55,28 @@ module fde_inputDirac
          ftmp%logfile%name = log_name
          call fde_set_files_info(ftmp)
          
-         call dirac_data_interface
-      end subroutine fdeini
+         call fde_qccode_data_interface
+      end subroutine fde_input_init
 
+      
+!   ----------------------------------------------------------------------------
+      subroutine fde_input_validate_and_postprocess
+!   ----------------------------------------------------------------------------
+         type(fde_export)  :: etmp
+         type(fde_import)  :: itmp
+         type(fde_files)   :: ftmp
+         integer :: pl
 
-!   ----------------------------------------------------------------------------
-      subroutine fdeinp(word,echo_input)
-!   ----------------------------------------------------------------------------
-         use dirac_cfg
-#include "implicit.h"
-#include "priunit.h" 
-#include "dcbgen.h"
-      PARAMETER (NTABLE = 8)
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, line*80
- 
-      logical :: Echo_Input,newdef
-      integer :: pl
-      integer :: lunit
-      type(fde_files)  :: ftmp
-      type(fde_export) :: etmp
-      type(fde_import) :: itmp
-      character(len=80):: nadd_fun
-!
       call fde_get_files_info(ftmp)
       call fde_get_export_info(etmp)
       call fde_get_import_info(itmp)
-      
-      lunit = ftmp%logfile%unit
-      
-      ICHANG = 0
-      IF (WORD(1:4).eq.'*FDE') THEN
-        WORD1 = WORD
-        DO
-          READ (LUCMD, '(A7)') WORD
-          SELECT CASE (WORD(1:1))
-          CASE('!','#')
-            CYCLE
-          CASE('.')
-            ICHANG = ICHANG + 1
-            SELECT CASE(WORD(1:7))
-            CASE ('.OPTION')
-              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
-              CYCLE
 
-            CASE ('.EMBPOT')
-               read(lucmd,'(A60)') ftmp%embpot%name
-               itmp%im_vemb        = .true.
-               itmp%im_update_vemb = .false.
-               
-            CASE ('.PRINT')
-              read(lucmd,*) pl
-              call fde_set_print_level(pl)
-
-#ifdef MOD_UNRELEASED
-            CASE ('.FRDENS')
-               read(lucmd,'(A60)') ftmp%frozen%name
-               itmp%im_frozen   = .true.
-
-            CASE ('.UPDATE')
-               itmp%im_update_vemb = .true.
-
-            CASE ('.SKIPK')
-               call fde_set_skip_nadd_ke(.true.)
-            CASE ('.SKIPX')
-               call fde_set_skip_nadd_xc(.true.)
-
-! read kinetic energy functional for non-additive term
-            CASE ('.NAXCF')
-               read(lucmd,'(A80)') nadd_fun
-               call fde_set_nadd_xcf(nadd_fun)
-
-! read kinetic energy functional for non-additive term
-            CASE ('.NAKEF')
-               read(lucmd,*) nadd_fun
-               call fde_set_nadd_kef(nadd_fun)
-
-! flags for response read kinetic energy functional for non-additive term
-            CASE ('.RSP')
-               itmp%im_frozen = .true.
-               dirac_cfg_fde_response = .true.
-
-            CASE ('.RSPLDA')
-               itmp%im_frozen = .true.
-               call fde_set_nadd_all_alda
-               dirac_cfg_fde_response = .true.
-
-            CASE ('.LEVEL')
-               read(lucmd,*) etmp%ex_level 
-
-            CASE ('.GRIDOU')
-               read(lucmd,*) ftmp%export%name
-               etmp%do_grid_out = .true.
-! doprp is part of dcbgen.h
-               doprp = .true.
-
-            CASE ('.EXONLY')
-               read(lucmd,*) ftmp%export%name
-               etmp%do_grid_out = .true.
-! doprp is part of dcbgen.h
-               skip_all_imports = .true.
-
-#endif /* MOD_UNRELEASED */ 
-
-            CASE DEFAULT
-              WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &
-                 '" not recognized in FDEINP.'
-              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
-              CALL QUIT('Illegal keyword in FDEINP.')
-            END SELECT
-
-          CASE('*')
-            EXIT
-
-          CASE DEFAULT
-            WRITE (lunit,'(/,3A,/)') ' Prompt "',WORD, &
-               '" not recognized in FDEINP.'
-            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
-            CALL QUIT('Illegal prompt in FDEINP.')
-
-          END SELECT
-        END DO
-      END IF
-      
-#ifdef MOD_UNRELEASED
       if (.not.skip_all_imports) then
 
       if (itmp%im_vemb) then
          if (itmp%im_update_vemb) then
             write (lunit,*) '.UPDATE and .EMBPOT cannot be used together!'
-            call quit('conflicting keywords selected')
+            call fde_quit('conflicting keywords selected')
          endif
       else
          itmp%im_update_vemb = .true.
@@ -201,19 +99,17 @@ module fde_inputDirac
 
       endif ! .not.skip_all_imports
 
-#endif /* MOD_UNRELEASED */
-
-! saving information on 
-      call fde_set_files_info(ftmp)
-      call fde_set_export_info(etmp)
-      call fde_set_import_info(itmp)
-
-
+#ifndef PRG_DIRAC
+! in dirac this is redundant, since we go for reading
+! the static potential right at the construction of
+! its matrix representation and subsequent saving into aoproper;
+! but for other codes it is nevertheless interesting to do it
+!
       if (itmp%im_vemb) then
          call fde_import_static      
       endif
+#endif
 
-#ifdef MOD_UNRELEASED
       if (itmp%im_frozen) then
          call fde_import_frozen
          call fde_initialize_nadd_functionals         
@@ -222,28 +118,16 @@ module fde_inputDirac
       if (etmp%do_grid_out) then
          call fde_import_gridout
       endif
-#endif
       
-!     options are echoed
-         if (Echo_Input) then
+! saving information on 
+      call fde_set_files_info(ftmp)
+      call fde_set_export_info(etmp)
+      call fde_set_import_info(itmp)
 
-           write (lunit,*) ' '
-           CALL PRSYMB(lunit,'=',75,0)
-           write (lunit,*) ' '
-
-           write (lunit,'(1X,A)') &
-              ' Frozen Density Embedding (FDE) Calculation setup'  
-
-           call fde_show_setup 
-
-           CALL PRSYMB(lunit,'=',75,0)
-           write (lunit,*) ' '
-         endif 
-
-      END SUBROUTINE
+     end subroutine  
 
 
-      subroutine fde_show_setup
+      subroutine fde_input_show_setup
          integer :: unit
          character(len=60) :: string
          type(fde_export)  :: etmp
@@ -259,13 +143,10 @@ module fde_inputDirac
 
          unit = ftmp%logfile%unit
          
-         CALL PRSYMB(unit,'-',48,2)
          write(unit,*)
          write(unit,'(A,I5)')  ' * Print level                  : ',pl
 
-#ifdef MOD_UNRELEASED
          if (itmp%im_frozen) call fde_print_nadd_functionals(unit)
-#endif
 
          if (itmp%im_vemb) then
             string = ftmp%embpot%name
@@ -279,10 +160,6 @@ module fde_inputDirac
             'PCCP 10 (2008) 5353-5362.'
             write(unit,*)
 
-#ifndef MOD_UNRELEASED
-         else
-            call quit('inconsistent FDE input!')
-#else
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
             write(unit,'(A)') ' ' 
@@ -311,9 +188,8 @@ module fde_inputDirac
                   etmp%ex_level = 'DHF'
                   
             end select
-#endif /* MOD_UNRELEASED */
          endif
                   
-      end subroutine fde_show_setup
+      end subroutine fde_input_show_setup
 
-end module fde_inputDirac
+end module fde_input
