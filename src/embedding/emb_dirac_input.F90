@@ -122,12 +122,14 @@ module fde_input_dirac
 
             CASE ('.GRIDOU')
                read(lucmd,*) ftmp%export%name
+               dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                doprp = .true.
 
             CASE ('.EXONLY')
                read(lucmd,*) ftmp%export%name
+               dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                skip_all_imports = .true.

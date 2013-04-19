@@ -140,7 +140,6 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
-      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -266,7 +265,7 @@ C
 C JHS 17 apr 2008
 C
 #ifdef MOD_UNRELEASED
-      if (dirac_cfg_fde) then
+      if (dirac_cfg_fde_export) then
 #ifdef MOD_XML
          CALL TITLER('Output FDE data to XML file','*',118)
          call fde_export_to_file(wf)
