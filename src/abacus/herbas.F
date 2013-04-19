@@ -89,6 +89,13 @@ C*     NRMORB - Normalizing a matrix with contraction        *
 C*              coefficients                                 *
 C*************************************************************
 C
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#else
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+#endif
       CHARACTER BASTMP*80, BASSAV*80
       CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
@@ -103,14 +110,6 @@ C     gives the number of functions in the small component for that type.
       LOGICAL SPLIT,TEST
       integer :: icount = 0
 #endif /* PRG_DIRAC */
-#ifdef USE_MPI_MOD_F90
-      use mpi
-#else
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
-#endif
-
 C
       CALL QENTER('BASLIB')
 C
