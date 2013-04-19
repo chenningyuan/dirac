@@ -4726,6 +4726,19 @@ C
 C     Written by T. Saue July 4 2006
 C
 C  MI July 6,2006: Requires DFCOEF with written MO's
+!
+!     sknecht: attempt to change level shift for closed-shell cases: i do not understand 
+!              the old implementation below but apparently it is ok. 
+!              my "intuitive solution" via shift_virtuals that is according
+!              to the paper cited below is wrong. 
+!              the diagonal elements of the Fock matrix in MO basis do NOT
+!              seem to roughly correspond to the orbital energies even when damping/diis/differential density matrix 
+!              options are turned off... can anyone explain it to me what is wrong with my idea/approach? 
+!              the way i intend to do it is exactly the same as it is done+working 
+!              in Turbomole (my reference check) and ReSpect (where i implemented it)
+!              for further information check: 
+!              V. R. Saunders and I. H. Hillier, 
+!              A “Level–Shifting” method for converging closed shell Hartree–Fock wave functions, IJQC, 7, p699-705 (1973).
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4760,7 +4773,19 @@ C
           ISTART = ISTART + NACSHMF(I,IOPEN)
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
-        IF(DLSHIF.NE.D0) THEN
+        IF(DLSHIF.GT.D0) THEN
+
+!         CALL HEADER(
+!    &   'shift virt:Ferm.symm.blocked MO matrix to be diagonalized',-1)
+!         WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+!    &    '*** Fermion corep ',I,'/',NFSYM
+!        CALL PRQMAT(FMO(1+I2TMOT(I)),
+!    &    NTMO(I),NTMO(I),NTMO(I),NTMO(I),
+!    &    NZ,IPQTOQ(1,0),LUPRI)
+
+!         call shift_virtuals(fmo(I2TMOT(I)+1),nz,ntmo(i),
+!    &                        istart,dlshif)
+
           CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
@@ -4771,6 +4796,29 @@ C
       CALL QEXIT('LEVSHI')
       RETURN
       END
+
+      subroutine shift_virtuals(fock,nz,lrc,offset,shift)
+      implicit none
+      !input/output  
+      real(8), intent(inout) :: fock(lrc,lrc,nz)
+      real(8), intent(in)    :: shift
+      integer, intent(in)    :: nz
+      integer, intent(in)    :: lrc
+      integer, intent(in)    :: offset
+
+      ! local variables
+      integer                :: i, j
+      
+      print *, 'total dimension: lrc + offset',lrc, offset
+      do i = 1, nz
+        do j = offset, lrc
+          print *, 'fock before lshift: j,i ',j,i,fock(j,j,i)
+          fock(j,j,i) = fock(j,j,i) + shift
+          print *, 'fock after lshift:  j,i ',j,i,fock(j,j,i)
+        end do
+      end do
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE UNDOLEVSHI(EIG)
 C***********************************************************************
