@@ -62,6 +62,14 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, 
      &                   Q, QEFF, ISET, DSM, BASREF)
+#ifdef USE_MPI_MOD_F90
+       use mpi
+#else
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
@@ -103,14 +111,6 @@ C     gives the number of functions in the small component for that type.
       LOGICAL SPLIT,TEST
       integer :: icount = 0
 #endif /* PRG_DIRAC */
-#ifdef USE_MPI_MOD_F90
-      use mpi
-#else
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
-#endif
-
 C
       CALL QENTER('BASLIB')
 C
