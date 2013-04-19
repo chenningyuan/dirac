@@ -62,6 +62,14 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, 
      &                   Q, QEFF, ISET, DSM, BASREF)
+#ifdef USE_MPI_MOD_F90
+       use mpi
+#else
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
@@ -89,13 +97,6 @@ C*     NRMORB - Normalizing a matrix with contraction        *
 C*              coefficients                                 *
 C*************************************************************
 C
-#ifdef USE_MPI_MOD_F90
-      use mpi
-#else
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
-#endif
       CHARACTER BASTMP*80, BASSAV*80
       CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
