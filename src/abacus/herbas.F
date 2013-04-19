@@ -64,13 +64,13 @@ C
      &                   Q, QEFF, ISET, DSM, BASREF)
 #ifdef USE_MPI_MOD_F90
        use mpi
-#else
+#endif
+#include "implicit.h"
 #ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
 #endif
-
-#include "implicit.h"
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
