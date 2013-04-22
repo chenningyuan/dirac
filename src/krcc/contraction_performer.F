@@ -88,7 +88,7 @@ C    &           IHOP,IHM)
 *. Output CC vector function
       DIMENSION CC_VEC_FNC(*)
 *
-      NTEST = 000
+      NTEST = 00
       IF(NTEST.GE.1000) THEN
         WRITE(6,*) ' Information from EMTHET_COM '
         WRITE(6,*) ' ============================='
@@ -133,6 +133,12 @@ C format.
             WRITE(6,*) ' Info for Hamiltonian op number ',IHOP
             WRITE(6,*) ' Absolute address for op ', IHOP
             CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
+          END IF
+          IF(IREMOVE.EQ.1) THEN
+            print*,'removing HAM for H12'
+       IF(IHOP.GE.29) THEN
+C        CYCLE
+       END IF
           END IF
         ELSE IF(IHM.EQ.2) THEN
 * For the intermediate operators
@@ -3798,6 +3804,12 @@ C      CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHTYPE),1)
        NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
 *. Number of operators with alpha spin
        NALPHA = NEL_CA + NEL_AA
+C      IF(N.EQ.2.AND.NALPHA.EQ.2) THEN
+C        IF(NEL_CA.NE.2.AND.NEL_CB.NE.2) THEN
+C          ISIGN_DE = - ISIGN_DE
+C          SIGN_DE = DFLOAT(ISIGN_DE) 
+C        END IF
+C      END IF
 *
        DO ISM_C = 1, NSMST
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
