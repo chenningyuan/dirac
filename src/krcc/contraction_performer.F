@@ -134,12 +134,6 @@ C format.
             WRITE(6,*) ' Absolute address for op ', IHOP
             CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
           END IF
-          IF(IREMOVE.EQ.1) THEN
-            print*,'removing HAM for H12'
-       IF(IHOP.GE.29) THEN
-C        CYCLE
-       END IF
-          END IF
         ELSE IF(IHM.EQ.2) THEN
 * For the intermediate operators
           IHOP = IH

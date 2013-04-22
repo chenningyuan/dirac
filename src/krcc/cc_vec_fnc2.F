@@ -779,7 +779,7 @@ C     CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,1)
       print*,'doing contractions with the Ham H12'
       IHM = 1 !Still the Hamiltonian that is contracted from
       IFHM = 1 !integrals are fetched
-      IREMOVE = 1
+      IREMOVE = 1 !ADD IREMOVE TO CRUN IF YOU WANT TO USE IT
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM02),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
