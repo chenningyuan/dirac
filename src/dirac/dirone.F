@@ -39,7 +39,6 @@ C*****************************************************************************
 ! checking
        use fde_types
        use fde_mod
-!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -112,7 +111,7 @@ C          ... zero SS integrals
          END IF
         call fde_get_import_info(itmp)
         if (itmp%im_vemb) then
-            CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
+            CALL fde_calculate_emb_pot_mat(COMB,IPRONE)
          endif
 C
 C     Contribution from beta-matrix

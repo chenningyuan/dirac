@@ -446,7 +446,7 @@
             ! read occupation
             read(word_array(3), *) f
             ! update occupation vector
-            do j = istart, iend 
+            do j = istart, iend
                visual_cfg_occupation(j, isym) = f
             end do
             ! print confirmation to screen
@@ -1156,6 +1156,8 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
+      integer                          :: i, j !counters
+      character(100)                   :: line
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
 
@@ -1175,6 +1177,10 @@
 
       if (kw_matches(word, '.DOEXCI')) then
          reladc_doexci = .true.
+      end if
+
+      if (kw_matches(word, '.FANO  ')) then
+         reladc_dofano = .true.
       end if
 
       if (kw_matches(word, '.SIPREP')) then
@@ -1212,16 +1218,39 @@
          reladc_doxext = .true.
       end if
 
-      if (kw_matches(word, '.DOHPDI')) then
-         reladc_dohpdiag = .true.
-      end if
-
       if (kw_matches(word, '.VCONV ')) then
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
 
       if (kw_matches(word, '.ADCTHR')) then
          read(get_file_unit(),'(f18.6)') reladc_adcthr
+      end if
+
+      if (kw_matches(word, '.FANOIN')) then
+         call kw_read(word, reladc_fano_inrep)
+         call kw_read(word, reladc_fano_inabssp) ! use absolute spinor numbers
+      end if
+
+      if (kw_matches(word, '.FANOCHNL')) then
+         ! read number of channels
+         call kw_read(word, reladc_fano_nrchannels)
+         allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         print *, ''
+         print *, 'Absolute spinor numbers of Fano final states: '
+         do i = 1, reladc_fano_nrchannels
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            ! read the absolute spinor numbers of the final states
+            read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
+            print *, (reladc_fano_channels(i,j), j=1,2)
+         end do
+      end if
+
+      if (kw_matches(word, '.FANOONLY')) then
+         reladc_dosips     = .true.
+         reladc_sipreps    = 0
+         reladc_sipreps(1) = reladc_fano_inrep
+         reladc_dodiag     = .false.
       end if
 
       call check_whether_kw_found(word, kw_section)
