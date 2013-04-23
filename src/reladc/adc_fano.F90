@@ -56,8 +56,8 @@ CONTAINS
     nok  = NO(krep)
 !    najl = NOOVT(krep)
     
-    nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1)
-    nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2)
+    nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
+    nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
     fin_max = nr_fin
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
