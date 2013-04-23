@@ -6,7 +6,11 @@
 #export PATH=/home/ilias/bin:/home/ilias/bin/openmpi_i32lp64_static/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
 
-source ~/.bashrc
+export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
+#source ~/.bashrc
+module load ctcp pgi/64
+module load acml
+
 
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/software/dirac/working_trunk
