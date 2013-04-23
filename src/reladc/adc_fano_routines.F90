@@ -158,11 +158,8 @@ CONTAINS
             !WRITE(iw,*) 'adcrow     : ', adcrow
             !WRITE(iw,*) 'in number  : ', inbuf(inib)
             IF (inib == fano_intbuf) THEN
-              innbufs = innbufs + 1
-              WRITE(infh) (-inbuf(ixx), ixx=1, fano_intbuf),     &
-                          (inioi(ixx), ixx=1, fano_intbuf),      &
-                          (inioj(ixx), ixx=1, fano_intbuf),      &
-                          fano_intbuf, jdummy
+              CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
+                                  innbufs,inib,infh)
             END IF
             !Todo: write out rest of in matrix after all loops
             ! We write out the sorted ADC matrix
@@ -171,12 +168,8 @@ CONTAINS
             adcioi(adcib) = inrow
             adcioj(adcib) = adccol
             IF (adcib == fano_intbuf) THEN
-              adcnbufs = adcnbufs + 1
-              WRITE(adcfh) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
-                           (adcioi(ixx), ixx=1, fano_intbuf),   &
-                           (adcioj(ixx), ixx=1, fano_intbuf),   &
-                           fano_intbuf, jdummy
-              adcib = 0
+              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
+                                  adcnbufs,adcib,adcfh)
             END IF
           END IF
         ELSE is_initial
@@ -201,11 +194,8 @@ CONTAINS
         adcioi(adcib) = temp_array(temp_row,2) + inrow
         adcioj(adcib) = temp_array(temp_row,3)
         IF (adcib == fano_intbuf) THEN
-          WRITE(adcfh) (-adcbuf(ixx), ixx=1, fano_intbuf),  &
-                       (adcioi(ixx), ixx=1, fano_intbuf),   &
-                       (adcioj(ixx), ixx=1, fano_intbuf),   &
-                       fano_intbuf, jdummy
-          adcib = 0
+          CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                adcib,adcfh)
         END IF
       END DO 
 
@@ -222,12 +212,8 @@ CONTAINS
 !  write the rest of the buffer
 !
     IF (inib > 0) THEN
-      innbufs = innbufs + 1
-      WRITE(infh) (-inbuf(ixx), ixx=1, fano_intbuf),  &
-                  (inioi(ixx), ixx= 1, fano_intbuf),  &
-                  (inioj(ixx), ixx= 1, fano_intbuf),  &
-                  inib, jdummy
-      inib = 0
+      CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,  &
+                               innbufs,inib,infh)
     END IF
 
 !
@@ -356,7 +342,7 @@ CONTAINS
 !--------------------------------------------------------------------
 !
   INTEGER FUNCTION det_nr_configs(start,length,bigicra,krep,  &
-                                  logvar)
+                                  logvar,iw)
 !
 !  Purpose: Count the number of initial or final state configurations
 !
@@ -376,6 +362,7 @@ CONTAINS
     INTEGER, INTENT(IN)                           :: krep
     INTEGER, INTENT(IN), DIMENSION(9,nvoot(krep)) :: bigicra
     INTEGER                                       :: logvar! 1=is_in, 2=is_fin
+    INTEGER, INTENT(IN)                           :: iw
 
 !
 !  Data dictionary: Local Variables
@@ -446,6 +433,10 @@ CONTAINS
           END DO each_channel2
           IF (is_fin .EQV. .TRUE.) THEN
             counter = counter + 1
+            !WRITE(iw,*) counter !debug
+            !WRITE(iw,*) 'aabs = ', aabs
+            !WRITE(iw,*) 'kabs = ', kabs
+            !WRITE(iw,*) 'labs = ', labs
           END IF
         END DO
       CASE DEFAULT ! Programmer has introduced a bug, since users can't
@@ -542,6 +533,83 @@ CONTAINS
 
 
   END SUBROUTINE determine_block
+
+
+!
+!---------------------------------------------------------------------
+!
+  SUBROUTINE rwrite_to_disk(buf,ioi,ioj,intbuf,nbufs,ib,fh)
+!
+!  Purpose:  to write the three arrays buf, ioi, ioj of length intbuf
+!            to disk
+!
+    IMPLICIT NONE
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                     :: intbuf, fh
+    INTEGER, INTENT(INOUT)                  :: nbufs, ib
+    REAL(8), DIMENSION(intbuf), INTENT(IN)  :: buf
+    INTEGER, DIMENSION(intbuf), INTENT(IN)  :: ioi, ioj
+!
+!  Data dictionary: Local Variables
+!
+    INTEGER :: ixx
+    INTEGER :: jdummy
+
+!
+!  Code
+!
+
+    jdummy = 0
+
+    nbufs = nbufs + 1
+
+    WRITE(fh) (-buf(ixx), ixx = 1, intbuf),    &
+              (ioi(ixx), ixx = 1, intbuf),     &
+              (ioj(ixx), ixx = 1, intbuf),     &
+              intbuf, jdummy
+    ib = 0
+
+  END SUBROUTINE rwrite_to_disk
+
+
+!
+!--------------------------------------------------------------------
+!
+  SUBROUTINE rwrite_rest_to_disk(buf,ioi,ioj,intbuf,nbufs,ib,fh)
+!
+!  Purpose:  write the rest of the matrix to disk
+!
+    IMPLICIT NONE
+!
+!  Data dictionary: Calling variables
+!
+    INTEGER, INTENT(IN)                     :: intbuf, fh
+    INTEGER, INTENT(INOUT)                  :: nbufs, ib
+    REAL(8), DIMENSION(intbuf), INTENT(IN)  :: buf
+    INTEGER, DIMENSION(intbuf), INTENT(IN)  :: ioi, ioj
+!
+!  Data dictionary: Local Variables
+!
+    INTEGER :: ixx
+    INTEGER :: jdummy
+
+!
+!  Code
+!
+
+    jdummy = 0
+
+    nbufs = nbufs + 1
+
+    WRITE(fh) (-buf(ixx), ixx = 1, intbuf),   &
+              (ioi(ixx), ixx = 1, intbuf),    &
+              (ioj(ixx), ixx = 1, intbuf),    &
+              ib, jdummy
+    ib = 0
+
+  END SUBROUTINE rwrite_rest_to_disk
     
 
 END MODULE adc_fano_routines
