@@ -7,7 +7,6 @@
 #export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
 
 export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
-#source ~/.bashrc
 module load ctcp pgi/64
 module load acml
 
