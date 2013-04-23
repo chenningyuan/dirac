@@ -2029,7 +2029,7 @@ C
         INDEX_LOC(IL) = INDEX(IL)
       end do
 *
-      NTESTL = 0
+      NTESTL = 000
       NTEST = max(NTESTL,IPRNT/100)
 *
       if (IRI.eq.1) then
@@ -2248,7 +2248,24 @@ C***********************************************************************
       WRITE(6,*) '  Compound index dimension: ',NNASHX
       WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
       WRITE(6,*) '1-el. integral array in GETIND_NTS:'
-      CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+!     CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+      if(iri == 1)then
+        write(6,'(a/)') ' real part of 1e-integrals'
+      else
+        write(6,'(a/)') ' imaginary part of 1e-integrals'
+      end if
+      write(6,*) ' indices         elements       '
+      write(6,*) '--------------------------------'
+      do i = 1, nasht * 2
+        do j = 1, nasht * 2
+          ii = i
+          jj = j
+          if(i > nasht) ii = -ii
+          if(j > nasht) jj = -jj
+          write(6,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,DMFC(((IRI-1)*n2ashx2)+(j-1)*nasht*2 + i)
+        end do  
+      end do  
 #endif
 !#undef LUCI_DEBUG
 !
@@ -2304,7 +2321,7 @@ C***********************************************************************
       write(6,*) '1-electron integral.'
       write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
 #endif
-!#undef LUCI_DEBUG
+#undef LUCI_DEBUG
       end
 ***********************************************************************
 

@@ -18,7 +18,8 @@ Setting up DIRAC
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`MPI <installation/int64/mpi>` |
-  :doc:`Math libraries <installation/int64/math>`
+  :doc:`Math libraries <installation/int64/math>` |
+  :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
@@ -153,6 +154,7 @@ Developers
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
+  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**

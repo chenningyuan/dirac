@@ -111,7 +111,6 @@ C***********************************************************************
        use dft_cfg
        use xcint_main
        use fde_mod
-       use fde_integrate
        use num_grid_gen
        use num_grid_cfg
 #ifdef PCM_MODULE
@@ -137,7 +136,7 @@ C
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
-
+      real(8), allocatable :: xc_matrix(:, :, :)
 
 C
 #include "ibtfun.h"
@@ -251,15 +250,19 @@ C          Hermitian operator
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
+           allocate(xc_matrix(ntbas(0), ntbas(0), nz))
+           xc_matrix = 0.0d0
            call integrate_xc(xc_mat_dim               = ntbas(0),
      &                        xc_nz                    = nz,
      &                        xc_dmat_0                = fao,
      &                        xc_nr_dmat               = 0,
      &                        xc_nr_fmat               = 1,
-     &                        xc_fmat                  = fmo,
+     &                        xc_fmat                  = xc_matrix,
      &                        xc_do_potential          = .true.,
      &                        xc_do_overlap_diagnostic = 
      &                           dft_cfg_overlap_diagnostic)
+           call daxpy(n2bbasxq, 1.0d0, xc_matrix, 1, fmo, 1)
+           deallocate(xc_matrix)
         end if
 
 #ifdef MOD_UNRELEASED
@@ -278,16 +281,15 @@ C          Hermitian operator
               call genden(fao, cmo, 1, iprint)
            endif
 
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
-     &                       fde_nz                 = nz,
-     &                       fde_dmat_0             = fao, 
-     &                       fde_nr_dmat            = 0,
-     &                       fde_nr_fmat            = 1,
-     &                       fde_fmat               = fmo,
-     &                       fde_do_potential       = .true.)
+!         call fde_set_nz(nz)
+          call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
+!         call integrate_fde(fde_mat_dim            = ntbas(0),
+!    &                       fde_nz                 = nz,
+!    &                       fde_dmat_0             = fao, 
+!    &                       fde_nr_dmat            = 0,
+!    &                       fde_nr_fmat            = 1,
+!    &                       fde_fmat               = fmo,
+!    &                       fde_do_potential       = .true.)
 
          write (*,*) 'FDE Fock matrix contributions (re)calculated'
         else if (itmp%im_vemb) then

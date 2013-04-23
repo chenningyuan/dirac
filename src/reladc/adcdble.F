@@ -459,7 +459,7 @@ c
 c  call Lanczos diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW,DOINCORE)
+        CALL DIAG_LANC(CC,KFRSAV2,LFREE,ITAPADC,IW,DOINCORE)
         CLOSE(ITAPADC,STATUS='DELETE')
 c
 c  we do Mulliken-type ADC population analysis after diagonalization

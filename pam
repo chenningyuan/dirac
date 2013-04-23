@@ -319,13 +319,13 @@ class pam_enviroment:
                 src_message="...dest exists"
             else:
                 src_message="...dest does not exist !"
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,\
-               'Copying of files - shutil.copy(src, dest) - failed, error exit !'
-                print >> stream,' src full path:', src
-                print >> stream,'dest full path:', dest
-                print >> stream,'  input dir      :', self.input_directory
-                stream.flush()
+
+            print >> sys.stderr,\
+           'Copying of files - shutil.copy(src, dest) - failed, error exit !'
+            print >> sys.stderr,' src full path:', src
+            print >> sys.stderr,'dest full path:', dest
+            print >> sys.stderr,'  input dir      :', self.input_directory
+            sys.stderr.flush()
             sys.exit(13)
 
     def copy_with_replacement(self, src, dst):
@@ -873,12 +873,9 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_debugger:
             debugger_full_path=str(find_executable(options.dest_debugger))
+            # assign only correctly defined debugger
             if os.path.isfile(debugger_full_path):
                 self.debugger = debugger_full_path
-            else:
-                print 'debugger selected as pam flag: ',options.dest_debugger
-                print 'But no full path assigned: ',debugger_full_path
-                print_error_message('Debugger wrongly assigned.')
 
         if options.dest_vg:
             self.vg_debug = True
@@ -951,10 +948,8 @@ Options are also read from ~/.diracrc"""
         elif os.path.isfile(self.input_molecule):
             self.input_file_molecule = self.input_molecule
         else:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,'\npam: Proper molecule input file does not exist !'
-                print >> stream,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
-                print >> stream,'  input dir      :', self.input_directory
+            print >> sys.stderr, '\npam: DIRAC molecule file %s not found' % self.input_molecule
+            print >> sys.stderr, '     input directory: %s' % self.input_directory
             sys.exit(4)
 
         if os.path.isfile(self.input_dirac + '.inp'):
@@ -962,10 +957,8 @@ Options are also read from ~/.diracrc"""
         elif os.path.isfile(self.input_dirac):
             self.input_file_dirac = self.input_dirac
         else:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,'\npam: Proper dirac input file does not exist !'
-                print >> stream,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
-                print >> stream,'  input dir      :', self.input_directory
+            print >> sys.stderr, '\npam: DIRAC input file %s not found' % self.input_dirac
+            print >> sys.stderr, '     input directory: %s' % self.input_directory
             sys.exit(5)
 
     def set_output_name(self):
@@ -1015,14 +1008,12 @@ Options are also read from ~/.diracrc"""
                 self.copy_file(full_file_name, file_name_scratch,message=True)
             else:
                 if self.expert_mode:
-                    for stream in [sys.stdout,sys.stderr]:
-                        print >> stream,'happens in input directory:',self.input_directory
-                        print  >> stream,'  Warning: file "', file_name_local, \
+                    print >> sys.stderr,'happens in input directory:',self.input_directory
+                    print >> sys.stderr,'  Warning: file "', file_name_local, \
                         '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
-                    for stream in [sys.stdout,sys.stderr]:
-                        print >> stream,'happens in input directory:',self.input_directory
-                        print >> stream,'Error exit: file "', file_name_local, \
+                    print >> sys.stderr,'happens in input directory:',self.input_directory
+                    print >> sys.stderr,'Error exit: file "', file_name_local, \
                         '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(11)
 
@@ -1147,11 +1138,10 @@ Options are also read from ~/.diracrc"""
             # make sure DIRWRK is integer
             os.putenv('DIRWRK', dirwrk_amount)
         except:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,\
-                'error in DIRWRK variable passing !'
-                print >> stream,'variable value :',dirwrk_amount
-                sys.exit(17)
+            print >> sys.stderr,\
+            'error in DIRWRK variable passing !'
+            print >> sys.stderr,'variable value :',dirwrk_amount
+            sys.exit(17)
 
         os.putenv('DIRMAX', str(int(self.max_memory_dynamic * 1000000)))
 
@@ -1174,7 +1164,7 @@ Options are also read from ~/.diracrc"""
 
         this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
         if not os.path.isfile(this_dirac_exe):
-            print_std_err_out(this_dirac_exe+' not found!')
+            print_error_message(this_dirac_exe+' not found!')
             sys.exit(13)
         else:
             pass
@@ -1212,10 +1202,11 @@ Options are also read from ~/.diracrc"""
             if self.debug:
                 # first check if debugger is set
                 if self.debugger is None:
-                    sys.exit("Though debugging wanted, no debugger assigned !")
+                    print_error_message("\n Though debugging wanted, no debugger is assigned - check the flag !")
+                    sys.exit(234)
                 if find_executable(self.debugger) is None:
-                    print 'no debugger found in the <diracrc> file !'
-                    sys.exit()
+                    print_error_message('\n no debugger found in the <diracrc> file !')
+                    sys.exit(235)
                 # TODO: adapt it for Windows
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
                     + ' | tee ' + self.output_file_full
@@ -1635,11 +1626,10 @@ Options are also read from ~/.diracrc"""
             sys.exit(29)
 
         if self.parallel_run and self.mpirun==None:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream, '\n No MPI launcher found for the parallel run !'
-                print >> stream, ' Check the PATH variable: ',os.environ['PATH']
-                stream.flush()
-                sys.exit(20)
+            print >> sys.stderr, '\n No MPI launcher found for the parallel run !'
+            print >> sys.stderr, ' Check the PATH variable: ',os.environ['PATH']
+            sys.stderr.flush()
+            sys.exit(20)
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
             print_error_message('\npam: Parallel run set with local disks but without machinefile!')
@@ -1748,9 +1738,8 @@ def process_time_string(time_string):
     try:
         return process_time_string_core(time_string)
     except:
-        for stream in [sys.stdout,sys.stderr]:
-            print >> stream,'error, wrong entering time string:',time_string
-            print >> stream,'proper examples: 1h2m30s  2m40s 1m40s  1h20s 3h ...'
+        print >> sys.stderr,'error, wrong entering time string:',time_string
+        print >> sys.stderr,'proper examples: 1h2m30s  2m40s 1m40s  1h20s 3h ...'
         sys.exit(13)
 
 def get_username():

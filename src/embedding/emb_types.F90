@@ -1,43 +1,20 @@
+#define MOD_UNRELEASED
+
 
 
 module fde_types
 
    public
 
-   type fde_export
-      character(len=4) :: ex_level
-      character(len=3) :: ex_format
-      logical          :: ex_n
-      logical          :: ex_gn
-      logical          :: ex_coulomb
-      logical          :: do_grid_out
-   end type
-   
-   type fde_import
-      character(len=4) :: im_level
-      character(len=3) :: im_format
-      logical          :: im_n
-      logical          :: im_gn
-      logical          :: im_coulomb
-      logical          :: im_vemb
-      logical          :: im_frozen
-      logical          :: im_update_vemb
-   end type
-
-   type fde_file
-      character(len=60) :: name
-      integer           :: unit
-   end type
-   
-   type fde_files
-      type(fde_file) :: embpot
-      type(fde_file) :: frozen
-      type(fde_file) :: export
-      type(fde_file) :: test
-      type(fde_file) :: logfile
+   type fde_grid
+      integer :: id
+      integer :: npoints
+      real(kind=8), pointer :: r(:,:)
+      real(kind=8), pointer :: w(:) 
    end type
 
    type grid_function 
+      integer :: id
       integer :: npoints
       integer :: nspin
       real(kind=8), pointer :: n(:)
@@ -46,6 +23,10 @@ module fde_types
       real(kind=8), pointer :: nucpot(:)
       real(kind=8), pointer :: hn(:,:)
    end type
+
+   public new_fde_grid
+   public del_fde_grid
+   public set_fde_grid_size
 
    public new_grid_function
    public del_grid_function
@@ -94,4 +75,23 @@ module fde_types
          gf%nspin = nspin
       end subroutine set_grid_function_nspin
       
-end module fde_types
+
+     subroutine new_fde_grid(g,size)
+       type(fde_grid) :: g
+       integer :: size
+
+       g%npoints = size
+       allocate(g%r(3,size))
+       allocate(g%w(size))
+     end subroutine new_fde_grid
+
+
+     subroutine del_fde_grid(g)
+        type(fde_grid) :: g
+
+        g%npoints = 0
+        deallocate(g%r)
+        deallocate(g%w)
+     end subroutine del_fde_grid
+
+end

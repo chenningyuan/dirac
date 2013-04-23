@@ -31,7 +31,7 @@ C      ****  Diagonalization Routines for the RELADC package  ****
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -90,7 +90,7 @@ c
 C
 C---------------Executable code--------------------------------------
 C
-!     WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
+!     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
 !     WRITE(IW,*) 'Memory check done.'
@@ -2863,6 +2863,83 @@ c
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIAG_DAVI(infohandle,iw)
+
+      use adc_cfg   !make input variables accessible here
+
+      IMPLICIT NONE
+
+      INTEGER                      :: infohandle,iw
+!
+!---------------Description--------------------------------------------
+!
+! entry point for Davidson diagonalisator
+!
+!
+! *** variables for Matrix descriptor file
+      INTEGER         :: ionizlevel,intbuf,desrep,rcw
+      INTEGER         :: ioldnew,ladc,irecl,niter,nocc,nbufs,neigenv
+      CHARACTER*6     :: fileadc,filedia,filecnf
+      CHARACTER*5     :: nmspec 
+      REAL*8          :: evllim
+! *** end definition variables for Matrix descriptor file
+!
+!---------------Local variables----------------------------------------
+!
+      INTEGER         :: nroots
+!
+!---------------Executable code----------------------------------------
+!
+      READ(infohandle,'(I1)')       ionizlevel
+      READ(infohandle,'(I12)')      intbuf
+      READ(infohandle,'(I2)')       desrep
+      READ(infohandle,'(I1)')       rcw
+      READ(infohandle,'(I1)')       ioldnew
+      READ(infohandle,'(I12)')      ladc
+      READ(infohandle,'(A6)')       fileadc
+      READ(infohandle,'(A6)')       filedia
+      READ(infohandle,'(A6)')       filecnf
+      READ(infohandle,'(A5)')       nmspec
+      READ(infohandle,'(I9)')       irecl
+      READ(infohandle,'(I9)')       niter
+      READ(infohandle,'(I9)')       nocc 
+      READ(infohandle,'(I9)')       nbufs 
+      READ(infohandle,'(I9)')       neigenv 
+      READ(infohandle,'(F10.1)')    evllim 
+!
+!  perform some consistency checks
+!
+      IF(ioldnew.ne.2) Then
+        Stop 'Improper matrix format for Davidson'
+      ENDIF
+!
+!  some of the matrix information is not needed since it
+!  was especially tailored for Lanczos. Here we have to
+!  override some variables because they acquire a different
+!  meaning in a Davidson run.
+!
+!     nroots = reladc_davroots
+!
+!  write out final parameters
+!
+      WRITE(iw,*)
+      WRITE(iw,*) 'ADC matrix is (1=SIP,2=DIP,3=EXC):',ionizlevel
+      WRITE(iw,*) 'Write buffer length is:           ',intbuf
+      WRITE(iw,*) 'Final states have symmetry:       ',desrep
+      WRITE(iw,*) 'ADC matrix is (1=real,2=complex): ',rcw
+      WRITE(iw,*) 'ADC matrix dimension (# of rows): ',ladc
+      WRITE(iw,*) 'Packed matrix stored in:          ',fileadc
+      WRITE(iw,*) 'Configuration data stored in:     ',filecnf
+      WRITE(iw,*) 'Eigenvalues written to:           ',nmspec,'.#irep'
+      WRITE(iw,*) 'Record length of Config file:     ',irecl
+      WRITE(iw,*) '# of requested Dav. iterations:   ',niter
+      WRITE(iw,*) 'Size of main space:               ',nocc
+      WRITE(iw,*) 'Number of chunks in ADC file:     ',nbufs
+      WRITE(iw,*) 'Number of Davidson roots:         ',nroots
+      
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
@@ -2928,8 +3005,8 @@ c ** write absolute spinor numbers
         DO k=1,no(DESREP)
           koff=io(DESREP)+k
           WRITE(FIELD44,381) 
-     &            k,repna(DESREP),
-     &            koff,bl_abs,
+     &            koff,repna(DESREP),
+     &            bl_conf,bl_irna,
      &            bl_conf,bl_irna,
      &            bl_conf,bl_irna 
           WRITE(LUN,REC=lcount) FIELD44
