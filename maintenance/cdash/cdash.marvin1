@@ -9,6 +9,7 @@
 export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
 module load ctcp pgi/64
 module load acml
+export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:$LD_LIBRARY_PATH
 
 
 # the directory where your DIRAC sits #
