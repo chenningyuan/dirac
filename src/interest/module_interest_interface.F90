@@ -58,6 +58,7 @@ MODULE MODULE_INTEREST_INTERFACE
   public process_nuclear_attraction_integrals_4comp
 
   public process_two_electron_integrals_4comp_slaves
+  public process_two_electron_integrals_2comp_slaves
 
   private
 
@@ -607,8 +608,6 @@ CONTAINS
 !> note: on input,  G and P must be in the cartesian GTOs 
   SUBROUTINE process_two_electron_integrals_2comp( Gmat, Pmat, intflg, hfxfac ) 
 
-    use module_interest_eri
-
     !> input
     !> fixme: the case when nz!=4, since we always assume nz=4
     integer, intent(in) :: intflg
@@ -621,20 +620,8 @@ CONTAINS
     real(8), intent(out) :: Gmat(nrow,nrow,4) 
 
     !> local
-    logical :: doK
-    real(8) :: fijkl, fll
-    integer :: li, ni, oi   
-    integer :: lj, nj, oj   
-    integer :: lk, nk, ok   
-    integer :: ll, nl, ol   
-    integer :: nint, lmax
-    integer :: i, j, k, l, ibas
-    real(8) :: gout(441*441)    !todo
-    integer :: nij, nkl, ij
-    real(8) :: ei, ci, xi, yi, zi 
-    real(8) :: ej, cj, xj, yj, zj 
-    real(8) :: ek, ck, xk, yk, zk 
-    real(8) :: el, cl, xl, yl, zl 
+    real(8) :: fll
+    integer :: i, j, ier
 
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
@@ -646,9 +633,6 @@ CONTAINS
       case( 1 );
       case default; stop "The desired class of ERI integrals is not implemented in InteRest :-( => stop"
     end select
-
-    !> init for DFT
-    doK = ( hfxfac /= 0.0d0 )
 
     !> data forward alignment 
     fll = 0.5d0
@@ -667,6 +651,97 @@ CONTAINS
       enddo
     enddo
 
+#ifdef VAR_MPI
+    !> send the AO-density matrix
+    call dirac_parctl( 10 ) 
+    call mpi_bcast( hfxfac,    1,           mpi_real8,          0, mpi_comm_world, ier )
+    call mpi_bcast( dP,        4*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
+#endif
+
+    !> call core InteRest routine (sequential part)
+    call process_two_electron_integrals_2comp_1x( dG, dP, hfxfac )
+
+#ifdef VAR_MPI
+    !> collect the final two-electron Fock matrix
+    call mpi_reduce( mpi_in_place, dG, 4*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+#endif
+
+    !> data backward alignment 
+    do j=1,nrow
+      do i=1,nrow
+        !> quaternion(0) 
+        Gmat(i,j,1) = Gmat(i,j,1) + dreal(dG(1,1,i,j))
+        !> quaternion(i) 
+        Gmat(i,j,2) = Gmat(i,j,2) + dimag(dG(1,1,i,j))
+        !> quaternion(j) 
+        Gmat(i,j,3) = Gmat(i,j,3) + dreal(dG(1,2,i,j))
+        !> quaternion(k) 
+        Gmat(i,j,4) = Gmat(i,j,4) + dimag(dG(1,2,i,j))
+      enddo
+    enddo
+
+    deallocate( dP )
+    deallocate( dG )
+
+  END SUBROUTINE
+
+! ------------------------------------------------------------------------------------
+  SUBROUTINE process_two_electron_integrals_2comp_1x( dG, dP, hfxfac ) 
+
+    use module_interest_eri
+
+    !> input
+    real(8), intent(in) :: hfxfac
+    complex(8), intent(in) :: dP(2,2,nrow,nrow)  
+
+    !> output
+    complex(8), intent(out) :: dG(2,2,nrow,nrow)
+
+    !> local
+    logical :: doK
+    real(8) :: fijkl, fll
+    integer :: li, ni, oi   
+    integer :: lj, nj, oj   
+    integer :: lk, nk, ok   
+    integer :: ll, nl, ol   
+    integer :: nint, lmax
+    integer :: i, j, k, l, ibas
+    real(8) :: gout(441*441)    !todo
+    integer :: nij, nkl, ij
+    real(8) :: ei, ci, xi, yi, zi 
+    real(8) :: ej, cj, xj, yj, zj 
+    real(8) :: ek, ck, xk, yk, zk 
+    real(8) :: el, cl, xl, yl, zl 
+    integer :: ierr, mytask
+    integer :: myrank=0
+#ifdef VAR_MPI
+    integer, allocatable :: eri_task_list(:) 
+    integer              :: cpu, nr_cpus 
+#endif
+
+    !> init for DFT
+    doK = ( hfxfac /= 0.0d0 )
+
+#ifdef VAR_MPI
+    ij = 0
+    call MPI_comm_rank( MPI_comm_world, myrank, ierr)
+    call MPI_comm_size( MPI_comm_world, nr_cpus,ierr)
+    !> creating a simple MPI eri task list
+    allocate( eri_task_list(nr_shells*nr_shells), stat=ierr)
+    if( ierr.ne.0 )stop ' Error in allocation: eri_task_list(:)'
+    ij =1
+    cpu=1
+    mytask=0
+    do i=1,nr_shells
+      do j=1,nr_shells
+        if( cpu > nr_cpus )cpu=1
+        eri_task_list(ij)=cpu-1
+        ij =ij +1
+        cpu=cpu+1
+      enddo
+    enddo
+#endif
+    ij = 0
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -687,6 +762,11 @@ CONTAINS
            yj = atom( gto(j)%origin )%coordinate_y
            zj = atom( gto(j)%origin )%coordinate_z
            cj =       gto(j)%coefficient(1)
+
+#ifdef VAR_MPI
+          mytask=mytask+1
+          if( myrank /= eri_task_list(mytask) )cycle
+#endif
        
  kloop:    do k=1,nr_shells
              lk =       gto(k)%lvalue
@@ -720,25 +800,10 @@ CONTAINS
            enddo kloop
          enddo jloop
        enddo iloop
+#ifdef VAR_MPI
+       deallocate( eri_task_list )
+#endif
     !> end
-
-    !> data backward alignment 
-    do j=1,nrow
-      do i=1,nrow
-        !> quaternion(0) 
-        Gmat(i,j,1) = Gmat(i,j,1) + dreal(dG(1,1,i,j))
-        !> quaternion(i) 
-        Gmat(i,j,2) = Gmat(i,j,2) + dimag(dG(1,1,i,j))
-        !> quaternion(j) 
-        Gmat(i,j,3) = Gmat(i,j,3) + dreal(dG(1,2,i,j))
-        !> quaternion(k) 
-        Gmat(i,j,4) = Gmat(i,j,4) + dimag(dG(1,2,i,j))
-      enddo
-    enddo
-
-    deallocate( dP )
-    deallocate( dG )
-
 
     CONTAINS
 
@@ -970,7 +1035,35 @@ CONTAINS
 
   END SUBROUTINE
 
+  SUBROUTINE process_two_electron_integrals_2comp_slaves( ) 
 
+    !> slave local
+    integer :: ier, i
+    real(8) :: hfxfac
+    
+    complex(8), allocatable :: dP(:,:,:,:)
+    complex(8), allocatable :: dG(:,:,:,:)
+
+
+#ifdef VAR_MPI
+    allocate( dP(2,2,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
+    allocate( dG(2,2,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
+
+    !> receive the AO-density matrix
+    call mpi_bcast( hfxfac,    1,           mpi_real8,          0, mpi_comm_world, ier )
+    call mpi_bcast( dP,        4*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
+
+    !> call core InteRest routine (sequential part)
+    call process_two_electron_integrals_2comp_1x( dG, dP, hfxfac )
+
+    !> send the two-electron Fock matrix of a particular slave upwards to the master
+    call mpi_reduce( dG, mpi_in_place, 4*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+
+    deallocate( dP )
+    deallocate( dG )
+#endif
+
+  END SUBROUTINE
 
 ! ------------------------------------------------------------------------------------
 !>
