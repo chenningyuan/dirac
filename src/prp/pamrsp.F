@@ -4383,6 +4383,10 @@ C
 C     Check for instability by looking for negative eigenvalues of
 C     the reduced Hessian.
 C
+C               INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
+C               INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
+C               INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
+C
 C     In the general relativistic case the ground state corresponds to
 C     a saddle opint and so one should subtract the number of e-p
 C     rotations given by NEPROT
@@ -4410,7 +4414,7 @@ C
           WRITE(LUPRI,'(3X,A,4(A,I5))') 
      &        '* Reduced Hessian: ',
      &        'Number of positive/zero/negative eigenvalues : (',
-     &        INERT(1),'/',INERT(2),'/',INERT(3),
+     &        INERT(1),'/',INERT(3),'/',INERT(2),
      &        ');   +- (ep) trial vectors:',NEPROT
           IF(IPAR.GT.0) WRITE(LUPRI,'(//A,I3/A/A/)')
      &      '*** WARNING - If your reference state is not the'//

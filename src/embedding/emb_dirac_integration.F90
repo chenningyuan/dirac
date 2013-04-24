@@ -1,30 +1,29 @@
-module fde_integrate
+#define MOD_UNRELEASED
 
+module fde_dirac_matrices_integration
+
+!embed modules
    use fde_types
-
-#ifdef MOD_UNRELEASED
-
    use fde_cfg
    use fde_io
    use fde_data
    use fde_nadd_derv
+   use fde_xcfun_interface
+   use fde_max_block_length
 
+! dirac-specific modules
    use interface_ao
    use interface_mo
    use interface_file_io
-
    use dft_cfg
-   use emb_xcfun_interface
    use interface_grid
    use dirac_ao_eval
    use density_eval
-   use xc_max_block_length
 
    implicit none
 
-   public integrate_fde
-   public calc_fde_interaction_energy
-   public fde_get_nr_electrons_integrated
+   public fde_dirac_emb_matrices_via_integration
+   public fde_dirac_emb_pot_energy
 
    private
 
@@ -128,9 +127,15 @@ module fde_integrate
 
 contains
 
+    function fde_dirac_emb_pot_energy()
+       real(8) :: fde_dirac_emb_pot_energy 
+       fde_dirac_emb_pot_energy = fde_mat_energy
+    end function
+
 
 !   ----------------------------------------------------------------------------
-    subroutine integrate_fde(fde_mat_dim,               &
+    subroutine fde_dirac_emb_matrices_via_integration(  &
+                             fde_mat_dim,               &
                              fde_nz,                    &
                              fde_dmat_0,                &
                              fde_nr_dmat,               &
@@ -283,10 +288,10 @@ endif
 !     but this is anyway an exotic option
       if (response_order_mo > 1) then
          if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
-            call my_quit('qr and partial alda is not implemented')
+            call fde_quit('qr and partial alda is not implemented')
          end if
          if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
-            call my_quit('qr and partial alda is not implemented')
+            call fde_quit('qr and partial alda is not implemented')
          end if
       end if
 
@@ -567,16 +572,16 @@ endif
 
                w(1) = rw(ipoint)
 
-               fde_active_n(ipoint)    = n_0(1)
-               fde_active_gn(1,ipoint) = gn_0_pointwise(1)
-               fde_active_gn(2,ipoint) = gn_0_pointwise(2)
-               fde_active_gn(3,ipoint) = gn_0_pointwise(3)
+               gf_active%n(ipoint)    = n_0(1)
+               gf_active%gn(1,ipoint) = gn_0_pointwise(1)
+               gf_active%gn(2,ipoint) = gn_0_pointwise(2)
+               gf_active%gn(3,ipoint) = gn_0_pointwise(3)
 
-               if ( fde_frozen_n(ipoint) > 0.0d0 ) then
-                  n_0_t(1) = fde_active_n(ipoint)    + fde_frozen_n(ipoint)
-                  z0tt(1)  = fde_active_gn(1,ipoint) + fde_frozen_gn(1,ipoint)
-                  z0tt(2)  = fde_active_gn(2,ipoint) + fde_frozen_gn(2,ipoint)
-                  z0tt(3)  = fde_active_gn(3,ipoint) + fde_frozen_gn(3,ipoint)
+               if ( gf_frozen%n(ipoint) > 0.0d0 ) then
+                  n_0_t(1) = gf_active%n(ipoint)    + gf_frozen%n(ipoint)
+                  z0tt(1)  = gf_active%gn(1,ipoint) + gf_frozen%gn(1,ipoint)
+                  z0tt(2)  = gf_active%gn(2,ipoint) + gf_frozen%gn(2,ipoint)
+                  z0tt(3)  = gf_active%gn(3,ipoint) + gf_frozen%gn(3,ipoint)
 
                   gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
@@ -622,7 +627,7 @@ endif
 !         outside of the integration loop  
 !           fde_energy = fde_energy + derv(1, d0000000)
 
-           u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*fde_frozen_elpot(ipoint) 
+           u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint) 
 
            if (use_gga) then
 !           this factor has nothing to do
@@ -792,7 +797,7 @@ endif
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
-               'FDE "energy":               = ', &
+               'excess subsystem energy:               = ', &
                fde_mat_energy
       end if
 
@@ -827,7 +832,7 @@ endif
          nr_points_used  = 0
          
          start_batch = 1
-         nr_points_batch = fde_grid_np
+         nr_points_batch = fde_grid_im%npoints
 
 !        loop over batches
          do
@@ -839,8 +844,13 @@ endif
             allocate(rw(nr_points_batch))
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
-            call get_fde_grid_coord(start_batch,nr_points_batch,rx,ry, rz)
-            call get_fde_grid_weight(start_batch,nr_points_batch,rw)
+            rx(start_batch:nr_points_batch) = fde_grid_im%r(1,start_batch:nr_points_batch)
+            ry(start_batch:nr_points_batch) = fde_grid_im%r(2,start_batch:nr_points_batch)
+            rz(start_batch:nr_points_batch) = fde_grid_im%r(3,start_batch:nr_points_batch)
+            rw(start_batch:nr_points_batch) = fde_grid_im%w(start_batch:nr_points_batch)
+     
+!           call get_fde_grid_coord(start_batch,nr_points_batch,rx,ry, rz)
+!           call get_fde_grid_weight(start_batch,nr_points_batch,rw)
                  
             ibatch = ibatch + 1
             nr_points_total = nr_points_total + nr_points_batch
@@ -1080,50 +1090,4 @@ endif
 
   end subroutine
 
-
-      subroutine calc_fde_interaction_energy(energy,gf_a,gf_b)
-         type(grid_function), intent(in) :: gf_a
-         type(grid_function), intent(in) :: gf_b
-         real(kind=8),       intent(out) :: energy
-
-         type(grid_function) :: gf_tot
-         real(kind=8), allocatable :: derv_a(:,:)
-         real(kind=8), allocatable :: derv_b(:,:)
-         real(kind=8), allocatable :: derv_tot(:,:)
-         real(kind=8) :: vca, vcb, w
-         integer :: i
-
-         energy = 0.0d0
-
-         call new_grid_function(gf_tot,gf_a%npoints)
-
-         gf_tot%n       = gf_a%n  + gf_b%n
-         gf_tot%gn      = gf_a%gn + gf_b%gn
-
-         call fde_new_derv_result_partial(gf_a%npoints,derv_a)
-         call fde_new_derv_result_partial(gf_b%npoints,derv_b)
-         call fde_new_derv_result_partial(gf_tot%npoints,derv_tot)
-
-         call calc_xcke_energy_density(gf_a,  derv_a)
-         call calc_xcke_energy_density(gf_b,  derv_b)
-         call calc_xcke_energy_density(gf_tot,derv_tot)
-
-
-         do i = 1, gf_a%npoints
-            vca = gf_a%elpot(i)
-            vcb = gf_b%elpot(i)
-            w   = fde_grid(4,i)
-            energy = energy                                          &
-                   + w*(vcb + derv_tot(i,0) - derv_a(i,0))*gf_a%n(i) &
-                   + w*(vca + derv_tot(i,0) - derv_b(i,0))*gf_b%n(i)
-         enddo
-
-         call fde_del_derv_result_partial(derv_a)
-         call fde_del_derv_result_partial(derv_b)
-         call fde_del_derv_result_partial(derv_tot)
-
-      end subroutine calc_fde_interaction_energy
-
-#endif /* MOD_UNRELEASED */
-
-end module
+end module fde_dirac_matrices_integration

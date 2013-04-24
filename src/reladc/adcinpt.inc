@@ -26,6 +26,5 @@ C-----For the LANCZOS diagonalizer
       COMMON/LANCZL/DOINCORE
       LOGICAL DOINCORE
 
-C -- if no LANC diagonalization is chosen these values
-C -- are filled with zeros and are never accessed anyway
+C-----For the DAVIDSON diagonalizer data are obtained from the module directly
 

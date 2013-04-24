@@ -167,8 +167,13 @@ C       computed
 C       We now write the sum, the actual summation is done in the 
 C       ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
+        if (dirac_cfg_fde) then
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +      'Total energy (active subsystem)          :   ',DHFERG
+        else
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
+        endif
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap
