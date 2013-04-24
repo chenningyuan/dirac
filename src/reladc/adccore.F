@@ -5077,7 +5077,7 @@ C
 C
 C  determine additional diagonal and off-diagonal elements
 C  ATT* the CKCOCC routine yields matrix entries in the
-C  <||>?>,|><|<| convention
+C  <||>|>,|><|<| convention
 C
 
         DO J=1,NVOOT(CREP)

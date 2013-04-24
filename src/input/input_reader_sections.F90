@@ -1212,6 +1212,14 @@
          reladc_dofull = .true.
       end if
 
+      if (kw_matches(word, '.DOLANC')) then
+         reladc_dolanc = .true.
+      end if
+
+      if (kw_matches(word, '.DODAVI')) then
+         reladc_dodavi = .true.
+      end if
+
       if (kw_matches(word, '.DOXEXT')) then
          reladc_doxext = .true.
       end if
@@ -1327,6 +1335,22 @@
 
       if (kw_matches(word, '.LANCMEM')) then
          read(get_file_unit(),'(i12)') reladc_lancmem
+      end if
+
+      if (kw_matches(word, '.DVROOTS')) then
+         read(get_file_unit(),'(i12)') reladc_davroots
+      end if
+
+      if (kw_matches(word, '.DVMAXSP')) then
+         read(get_file_unit(),'(i12)') reladc_davmaxsp
+      end if
+
+      if (kw_matches(word, '.DVMAXIT')) then
+         read(get_file_unit(),'(i12)') reladc_davmaxit
+      end if
+
+      if (kw_matches(word, '.DVCONV')) then
+         read(get_file_unit(),'(f18.6)') reladc_davconv
       end if
 
       call check_whether_kw_found(word, kw_section)

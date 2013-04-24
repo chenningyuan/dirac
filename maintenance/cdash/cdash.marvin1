@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# ------------------------ #
+# enviroment variables ... #
+# ------------------------ #
+#export PATH=/home/ilias/bin:/home/ilias/bin/openmpi_i32lp64_static/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
+
+export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
+module load ctcp pgi/64
+module load acml
+# add dynamic libraries 
+export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:$LD_LIBRARY_PATH
+
+/bin/echo -e  "\n PATH=$PATH"
+/bin/echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+
+# the directory where your DIRAC sits #
+DIRAC=/home/ilias/Work/software/dirac/working_trunk
+
+# go to the local DIRAC directory
+cd $DIRAC
+
+BUILD_PGI=build_PGI_i32lp64_acml_dyn
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
+export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
+# configure step
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=off  -D BUILDNAME="PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF --force $BUILD_PGI
+cd $BUILD_PGI
+make ExperimentalUpdate
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalSubmit
+
+BUILD_PGI_I8=build_PGI_ilp64_acml_dyn
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI_I8
+export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
+# configure step
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=on  -D BUILDNAME="PGI_acml_i8" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF --force $BUILD_PGI_I8
+cd $BUILD_PGI_I8
+make ExperimentalUpdate
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalSubmit
+
+exit 0

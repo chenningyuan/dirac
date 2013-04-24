@@ -146,6 +146,11 @@ if(ENABLE_PCMMOD)
         )
 endif()
 
+#miro: to enable proper linking for pgCC we need the libstdc++ library
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    set(LIBS stdc++ ${LIBS})
+endif()
+
 file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
