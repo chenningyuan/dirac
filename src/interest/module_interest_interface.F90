@@ -112,10 +112,6 @@ MODULE MODULE_INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
-  !> mpi
-     integer, save, allocatable :: task_list_mpi(:)
-  !> end
-
 CONTAINS
 
 
@@ -234,7 +230,6 @@ CONTAINS
 
 #ifdef VAR_MPI
     !> local MPI related variables
-    integer :: cpu, nr_cpus 
     integer :: i, j, ij, ier, nr_atoms
     integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
     integer                        :: blocklen(9), typex(9)
@@ -288,22 +283,6 @@ CONTAINS
        call mpi_bcast(nrow,               1,mpi_integer,0,mpi_comm_world,ier)
        call mpi_bcast(ncol,               1,mpi_integer,0,mpi_comm_world,ier)
        call mpi_bcast(screening_threshold,1,mpi_real8,  0,mpi_comm_world,ier)
-    !> end
-
-    !> creating a simple eri task list
-       allocate( task_list_mpi(nr_shells*(nr_shells+1)/2), stat=ier )
-       if( ier.ne.0 )stop ' Error in allocation: task_list_mpi(:)'
-       call mpi_comm_size(mpi_comm_world,nr_cpus,ier)
-       ij =1
-       cpu=1
-       do i=1,nr_shells
-         do j=1,i
-           if( cpu > nr_cpus )cpu=1
-           task_list_mpi(ij)=cpu-1  
-           ij =ij +1
-           cpu=cpu+1
-         enddo
-       enddo
     !> end
 #endif
 
@@ -1022,17 +1001,36 @@ CONTAINS
     real(8) :: ej, cj, xj, yj, zj 
     real(8) :: ek, ck, xk, yk, zk 
     real(8) :: el, cl, xl, yl, zl 
-    integer :: ierr
+    integer :: ierr, mytask
     integer :: myrank=0
-
+#ifdef VAR_MPI
+    integer, allocatable :: eri_task_list(:) 
+    integer              :: cpu, nr_cpus 
+#endif
 
     !> init for DFT
     doK = ( hfxfac /= 0.0d0 )
 
 #ifdef VAR_MPI
     ij = 0
-    call mpi_comm_rank(mpi_comm_world,myrank,ierr)
+    call MPI_comm_rank( MPI_comm_world, myrank, ierr)
+    call MPI_comm_size( MPI_comm_world, nr_cpus,ierr)
+    !> creating a simple MPI eri task list
+    allocate( eri_task_list(nr_shells*nr_shells), stat=ierr)
+    if( ierr.ne.0 )stop ' Error in allocation: eri_task_list(:)'
+    ij =1
+    cpu=1
+    mytask=0
+    do i=1,nr_shells
+      do j=1,nr_shells
+        if( cpu > nr_cpus )cpu=1
+        eri_task_list(ij)=cpu-1
+        ij =ij +1
+        cpu=cpu+1
+      enddo
+    enddo
 #endif
+    ij = 0
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -1055,8 +1053,8 @@ CONTAINS
            cj =       gto(j)%coefficient(1)
 
 #ifdef VAR_MPI
-          ij=ij+1
-          if( myrank /= task_list_mpi(ij) )cycle
+          mytask=mytask+1
+          if( myrank /= eri_task_list(mytask) )cycle
 #endif
 
        
@@ -1112,6 +1110,9 @@ CONTAINS
            enddo kloop
          enddo jloop
        enddo iloop
+#ifdef VAR_MPI
+       deallocate( eri_task_list )
+#endif
     !> end
 
     CONTAINS
@@ -1560,12 +1561,16 @@ CONTAINS
     complex(8), allocatable :: dGi (:,:,:) 
     complex(8), allocatable :: dGj (:,:,:) 
 
-    integer              :: ierr 
+    integer              :: ierr, mytask
     integer              :: myrank=0
     real(8)              :: Fc(3),Fx(3)
     real(8), allocatable :: gmax(:,:,:)
     real(8), allocatable :: pmax(:,:,:,:)
     character(len=4)     :: eri_class_local
+#ifdef VAR_MPI
+    integer, allocatable :: eri_task_list(:) 
+    integer              :: cpu, nr_cpus 
+#endif
 
     
     a2  = constant%alpha /2.0d0
@@ -1587,9 +1592,24 @@ CONTAINS
     call max_shell_pair_contributions( dP, nrow, gmax, pmax, nr_shells )
 
 #ifdef VAR_MPI
-    ij = 0
-    call mpi_comm_rank(mpi_comm_world,myrank,ierr)
+    call MPI_comm_rank( MPI_comm_world, myrank, ierr)
+    call MPI_comm_size( MPI_comm_world, nr_cpus,ierr)
+    !> creating a simple MPI eri task list
+    allocate( eri_task_list(nr_shells*(nr_shells+1)/2), stat=ierr)
+    if( ierr.ne.0 )stop ' Error in allocation: eri_task_list(:)'
+    ij =1
+    cpu=1
+    mytask=0
+    do i=1,nr_shells
+      do j=1,i
+        if( cpu > nr_cpus )cpu=1
+        eri_task_list(ij)=cpu-1
+        ij =ij +1
+        cpu=cpu+1
+      enddo
+    enddo
 #endif
+    ij = 0
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -1614,8 +1634,8 @@ CONTAINS
            cj =       gto(j)%coefficient(1)
 
 #ifdef VAR_MPI
-          ij=ij+1
-          if( myrank /= task_list_mpi(ij) )cycle
+          mytask=mytask+1
+          if( myrank /= eri_task_list(mytask) )cycle
 #endif
 
                      fij = 1.0d0 
@@ -1758,6 +1778,10 @@ CONTAINS
   
     deallocate( gmax )
     deallocate( pmax )
+ 
+#ifdef VAR_MPI
+    deallocate( eri_task_list )
+#endif
 
     CONTAINS
   
