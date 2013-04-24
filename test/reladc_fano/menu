@@ -1,4 +1,4 @@
 quick
 
-fano.inp ne_d2h.mol --mw=64 --aw=130
+fano.inp ne_d2h.mol --mw=64 --aw=130 #--debug --debugger=/opt/local/bin/valgrind
 
