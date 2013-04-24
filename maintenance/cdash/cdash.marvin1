@@ -31,8 +31,10 @@ make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
+make VERBOSE=1 dirac.x
 
 BUILD_PGI_I8=build_PGI_ilp64_acml_dyn
+cd $DIRAC
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI_I8
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
