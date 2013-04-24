@@ -13,6 +13,7 @@ CONTAINS
 !  Author:  Elke Fasshauer
 
     use adc_cfg
+    use adc_fano_real_routines
     use adc_fano_routines
     use memory_allocator
 
@@ -26,8 +27,9 @@ CONTAINS
 !
 !  Data dictionary: Calling Variables
 !
-    REAL(8), INTENT(IN)   :: ckks(*), bufhp(*)
     INTEGER, INTENT(IN)   :: krep
+    REAL(8), INTENT(IN), DIMENSION(no(krep)*no(krep))       :: ckks
+    REAL(8), INTENT(IN), DIMENSION(nvoot(krep)*nvoot(krep)) :: bufhp
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
