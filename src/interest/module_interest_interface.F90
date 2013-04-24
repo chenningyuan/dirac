@@ -913,7 +913,8 @@ CONTAINS
 #endif
 
     !> call core InteRest routine (sequential part)
-    call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
 
 #ifdef VAR_MPI
     !> collect the final two-electron Fock matrix
@@ -978,7 +979,8 @@ CONTAINS
     call mpi_bcast( dP,        16*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
 
     !> call core InteRest routine (sequential part)
-    call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
 
     !> send the two-electron Fock matrix of a particular slave upwards to the master
     call mpi_reduce( dG, mpi_in_place, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
@@ -1020,10 +1022,17 @@ CONTAINS
     real(8) :: ej, cj, xj, yj, zj 
     real(8) :: ek, ck, xk, yk, zk 
     real(8) :: el, cl, xl, yl, zl 
+    integer :: ierr
+    integer :: myrank=0
 
 
     !> init for DFT
     doK = ( hfxfac /= 0.0d0 )
+
+#ifdef VAR_MPI
+    ij = 0
+    call mpi_comm_rank(mpi_comm_world,myrank,ierr)
+#endif
 
  iloop:do i=1,nr_shells
          li =       gto(i)%lvalue
@@ -1044,6 +1053,12 @@ CONTAINS
            yj = atom( gto(j)%origin )%coordinate_y
            zj = atom( gto(j)%origin )%coordinate_z
            cj =       gto(j)%coefficient(1)
+
+#ifdef VAR_MPI
+          ij=ij+1
+          if( myrank /= task_list_mpi(ij) )cycle
+#endif
+
        
  kloop:    do k=1,nr_shells
              lk =       gto(k)%lvalue
