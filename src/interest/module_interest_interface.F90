@@ -248,20 +248,8 @@ CONTAINS
 #ifdef VAR_MPI
     !> broadcast constants 
        !> define the local absolute address of each element within a derived data type
-       call mpi_get_address(constant%alpha, disp(1),ier)
-       call mpi_get_address(constant%alpha2,disp(2),ier)
-       !> define the basic data type of each element within a derived data type
-       typex(1:2) = mpi_real8
-       !> define the length of each element within a derived data type
-       blocklen(1:2) = 1
-       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       disp(2) = disp(2) - disp(1) 
-       disp(1) = disp(1) - disp(1) 
-       !> create a MPI derived data type structure
-       call mpi_type_create_struct(2,blocklen,disp,typex,newtype,ier)
-       call mpi_type_commit(newtype,ier)
-       call mpi_bcast(constant,1,newtype,0,mpi_comm_world,ier)
-       call mpi_type_free(newtype,ier)
+       call mpi_bcast(constant%alpha, 1, mpi_real8,0,mpi_comm_world,ier)
+       call mpi_bcast(constant%alpha2,1, mpi_real8,0,mpi_comm_world,ier)
     !> end
 
     !> broadcast atom 
@@ -269,54 +257,30 @@ CONTAINS
        call mpi_bcast(nr_atoms,1,mpi_integer,0,mpi_comm_world,ier)
        if( .not. allocated(atom) ) allocate( atom(nr_atoms), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
        !> define the local absolute address of each element within a derived data type
-       call mpi_get_address(atom(1)%charge,      disp(1),ier)
-       call mpi_get_address(atom(1)%coordinate_x,disp(2),ier)
-       call mpi_get_address(atom(1)%coordinate_y,disp(3),ier)
-       call mpi_get_address(atom(1)%coordinate_z,disp(4),ier)
-       call mpi_get_address(atom(1)%gnu_exponent,disp(5),ier)
-       !> define the basic data type of each element within a derived data type
-       typex(1:5) = mpi_real8
-       !> define the length of each element within a derived data type
-       blocklen(1:5) = 1
-       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       do i=5,1,-1
-         disp(i) = disp(i) - disp(1) 
-       enddo
-       !> create a MPI derived data type structure
-       call mpi_type_create_struct(5,blocklen,disp,typex,newtype,ier)
-       call mpi_type_commit(newtype,ier)
-       call mpi_bcast(atom,nr_atoms,newtype,0,mpi_comm_world,ier)
-       call mpi_type_free(newtype,ier)
+       do i=1,nr_atoms
+        call MPI_bcast( atom(i)%charge,       1, MPI_real8, 0, MPI_comm_world, ier)
+        call MPI_bcast( atom(i)%coordinate_x, 1, MPI_real8, 0, MPI_comm_world, ier)
+        call MPI_bcast( atom(i)%coordinate_y, 1, MPI_real8, 0, MPI_comm_world, ier)
+        call MPI_bcast( atom(i)%coordinate_z, 1, MPI_real8, 0, MPI_comm_world, ier)
+        call MPI_bcast( atom(i)%gnu_exponent, 1, MPI_real8, 0, MPI_comm_world, ier)
+       end do
     !> end
 
     !> broadcast gto 
        if( allocated(gto) ) nr_shells = size(gto)
        call mpi_bcast(nr_shells,1,mpi_integer,0,mpi_comm_world,ier)
        if( .not. allocated(gto) ) allocate( gto(nr_shells), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
-       !> define the local absolute address of each element within a derived data type
-       call mpi_get_address(gto(1)%index,         disp(1), ier)
-       call mpi_get_address(gto(1)%offset,        disp(2), ier)
-       call mpi_get_address(gto(1)%worker,        disp(3), ier)
-       call mpi_get_address(gto(1)%lvalue,        disp(4), ier)
-       call mpi_get_address(gto(1)%origin,        disp(5), ier)
-       call mpi_get_address(gto(1)%sdegen,        disp(6), ier)
-       call mpi_get_address(gto(1)%cdegen,        disp(7), ier)
-       call mpi_get_address(gto(1)%exponent(1),   disp(8), ier)
-       call mpi_get_address(gto(1)%coefficient(1),disp(9),ier)
-       !> define the basic data type of each element within a derived data type
-       typex(8:9) = mpi_real8
-       typex(1:7) = mpi_integer
-       !> define the length of each element within a derived data type
-       blocklen(1:9) = 1
-       !> redefine the absolute addresses to a relative address displacement (wrt to the address of the first element)
-       do i=9,1,-1
-         disp(i) = disp(i) - disp(1) 
-       enddo
-       !> create a MPI derived data type structure
-       call mpi_type_create_struct(9,blocklen,disp,typex,newtype,ier)
-       call mpi_type_commit(newtype,ier)
-       call mpi_bcast(gto,nr_shells,newtype,0,mpi_comm_world,ier)
-       call mpi_type_free(newtype,ier)
+       do i=1,nr_shells
+        call MPI_bcast( gto(i)%index,          1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%offset,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%worker,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%lvalue,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%origin,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%sdegen,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%cdegen,         1, MPI_integer, 0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%exponent(1),    1, MPI_real8,   0, MPI_comm_world, ier)
+        call MPI_bcast( gto(i)%coefficient(1), 1, MPI_real8,   0, MPI_comm_world, ier)
+       end do
     !> end
 
     !> final broadcasting (global module variables)
