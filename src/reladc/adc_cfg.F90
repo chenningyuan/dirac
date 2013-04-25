@@ -80,6 +80,6 @@ module adc_cfg
   integer, public                  :: reladc_fano_inrep   = 0
   integer, public                  :: reladc_fano_inabssp = 0
   integer, public                  :: reladc_fano_nrchannels = 0
-  integer, public, allocatable     :: reladc_fano_channels(:,:)
+  integer, public, allocatable, dimension(:,:)     :: reladc_fano_channels
   
 end module
