@@ -3735,7 +3735,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           endif
           write(listout,'(A3,I3,A3,I5,6X,F10.7,6X,F10.7)') '   ',
      &           k,'   ',locdim,lambda(k),qmn
-          if(notconverged(k).eq..false.) then
+          if(notconverged(k).eqv..false.) then
             listout(47:48) =  ' *'
           else
             listout(47:48) =  ' o'
@@ -3810,7 +3810,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! If it can not be maintained we have to exit in order to
 ! avoid intruder states.
 !
-          If(orthoviolflag.eq..true.) EXIT   !leave this do loop
+          If(orthoviolflag.eqv..true.) EXIT   !leave this do loop
 
 
 !*****************************  end loop over the roots
@@ -3826,13 +3826,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           notallconv=notallconv.or.notconverged(k)
         enddo
 
-        if(notallconv.eq..false.) then
+        if(notallconv.eqv..false.) then
           write(*,*) 'All vectors converged. Leaving',
      &               ' microiteration loop.'
           exit
         endif
 
-        If(orthoviolflag.eq..true.) exit
+        If(orthoviolflag.eqv..true.) exit
       
         locdim = locdim + nroots
 !       write(*,*) 'New local dimension:',locdim
@@ -3863,20 +3863,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  we have to check convergence again to distinguish between next
 !  macroiteration or end of davidson
 !
-      if(notallconv.eq..false.) exit
+      if(notallconv.eqv..false.) exit
 
-      If(orthoviolflag.eq..true.) exit
+      If(orthoviolflag.eqv..true.) exit
 
       ENDDO   !idavit loop
 
       write(*,*) 'Leaving Davidson macro iteration loop.'
 
-      If(orthoviolflag.eq..true.) then
+      If(orthoviolflag.eqv..true.) then
         write(*,*) 'Orthogonality of new vectors can not'
         write(*,*) 'be maintained any longer. Exiting...'
       Endif
 
-      if(notallconv.eq..false.) then
+      if(notallconv.eqv..false.) then
         write(*,*) 'All vectors converged to desired threshold'
       else
         write(*,*) '**WARNING: Not all vectors converged to desired'
