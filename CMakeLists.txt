@@ -136,6 +136,7 @@ if(ENABLE_PCMMOD)
         solver
         green
         cavity
+	utils
         metal
         pedra
         pwl
