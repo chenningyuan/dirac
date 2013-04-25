@@ -1570,7 +1570,16 @@ C  all other elements are finished and can be written out.
 C
 
         IF (reladc_dofano) THEN
-          CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW)
+
+! create K_akl array and lookup tables.
+          CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+          IF (ADCLEVEL.EQ. 1) THEN
+            CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
+     &                   CC(EAJL),RDUMMY,RDUMMY)
+          ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+            CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
+     &                   CC(EAJL),CC(BUF01),CC(BUF9A))
+          END IF
         ELSE
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),

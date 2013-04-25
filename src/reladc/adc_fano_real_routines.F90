@@ -243,6 +243,50 @@ CONTAINS
 
 
 
+!
+!---------------------------------------------------------------------
+!
+  SUBROUTINE fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
+                           itape1,itape2)
+
+!
+!  Purpose: Create all elements of the ADC Sat Block and write them to the
+!           different Fano matrices
+!
+
+    use adc_cfg
+    use adc_fano_routines
+
+    IMPLICIT NONE
+
+!
+!  Common Blocks
+!
+#include "../relccsd/symm.inc"
+
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                              :: krep
+    REAL(8),INTENT(IN),DIMENSION(no(krep)*no(krep))  :: ckks
+    REAL(8),INTENT(IN)                               :: eajl(*)
+    REAL(8),INTENT(IN)                               :: oooo(*), vovo(*)
+    INTEGER,INTENT(IN),DIMENSION(9,nvoot(krep))      :: bigicra
+    INTEGER, INTENT(IN)                              :: ladc
+    INTEGER, INTENT(IN)                              :: itape1, itape2
+    
+
+!
+!  Data dictionary: Local Variables
+!
+ 
+!
+!  Code
+!
+
+
+
+  END SUBROUTINE fano_makehphp
 
 
 !

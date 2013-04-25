@@ -2,7 +2,8 @@ MODULE adc_fano
 
 CONTAINS
 
-  SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw)
+  SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
+                     eajl,oooo,vovo)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -33,6 +34,9 @@ CONTAINS
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
+    REAL(8), INTENT(IN)   :: eajl(*)
+    REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
+    
 
 !
 !  Data dictionary: Local Variables (and to be shared with subroutines
