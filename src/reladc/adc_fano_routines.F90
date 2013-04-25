@@ -155,7 +155,7 @@ CONTAINS
     SELECT CASE (logvar)
       CASE (1) ! We want to now how many initial state configs we have
         counter = start - 1
-        DO row = start, length
+        DO row = 1, (length - start + 1)
           aabs   = bigicra(7,row)
           kabs   = bigicra(8,row)
           labs   = bigicra(9,row)
