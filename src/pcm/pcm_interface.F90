@@ -439,6 +439,7 @@ module pcm_interface
 ! This subroutine is completely general, it is used also
 ! in the generation of the linear response terms.
 #include "dcbbas.h"
+#include "dcborb.h"
 #include "dgroup.h"
 
 ! Passed variables
@@ -449,6 +450,7 @@ module pcm_interface
 
 ! Local variables
       real(8), allocatable :: fock_pcm(:, :, :)
+      real(8), allocatable :: fock_pcm_MO(:, :, :)
       real(8)              :: average
       integer              :: i, j
       logical              :: get_matrix = .true.
@@ -484,13 +486,19 @@ module pcm_interface
 !                      nz, ipqtoq(1,0), 6)
 
       if (pcmmod_dospf) then
+          allocate(fock_pcm_MO(norb(1), norb(1), nz))
+          fock_pcm_MO = 0.0d0
           print *, "FOCK_PCM before elimination of spin-dependent terms."
           call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                       nz, ipqtoq(1,0), 6)
-  !        call spfao(fmo, fock_pcm, work, lwork)
+          call spfao(fock_pcm_MO, fock_pcm, work, lwork)
           print *, "FOCK_PCM after elimination of spin-dependent terms."
           call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                       nz, ipqtoq(1,0), 6)
+          print *, "FOCK_PCM_MO after elimination of spin-dependent terms."
+          call prqmat(fock_pcm, norb(1), norb(1), norb(1), norb(1), &
+                      nz, ipqtoq(1,0), 6)
+          deallocate(fock_pcm_MO)
       end if
 
       deallocate(fock_pcm)
