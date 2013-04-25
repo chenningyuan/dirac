@@ -302,9 +302,77 @@ CONTAINS
         CALL QUIT ('block in determine_block can only be 1 or 2')
     END SELECT
 
-
-
   END SUBROUTINE determine_block
 
+!
+!----------------------------------------------------------------------
+!
+  SUBROUTINE make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+!
+!  Purpose: Create an array, that holds the positions of final state
+!           configurations within the 2h1p part
+!
+    use adc_cfg
+
+    IMPLICIT NONE
+
+!
+!  Common Blocks
+!
+#include "../relccsd/symm.inc"
+
+!
+!  Data dictionary: Calling Variables
+!
+    INTEGER, INTENT(IN)                           :: krep
+    INTEGER, INTENT(IN), DIMENSION(9,nvoot(krep)) :: bigicra
+    INTEGER, INTENT(IN)                           :: fin_max
+    INTEGER, INTENT(INOUT), DIMENSION(fin_max)    :: finalpos
+    INTEGER, INTENT(IN)                           :: iw
+
+!
+!  Data dictionary: Local Variables
+!
+    INTEGER   :: row, inline
+    INTEGER   :: aabs, kabs, labs
+    INTEGER   :: first, second
+    INTEGER   :: counter
+    LOGICAL   :: is_fin
+
+!
+!  Code
+!
+    WRITE(iw,*) 'Enter make_finalpos'
+
+    counter = 0
+
+    DO row = 1, nvoot(krep)
+      aabs   = bigicra(7,row)
+      kabs   = bigicra(8,row)
+      labs   = bigicra(9,row)
+      each_channel:DO inline = 1, reladc_fano_nrchannels
+        first  = reladc_fano_channels(inline,1)
+        second = reladc_fano_channels(inline,2)
+        IF (first == kabs) THEN
+          IF (second == labs) THEN
+            is_fin            = .TRUE. !We hit a final state configuration
+            counter           = counter + 1
+            finalpos(counter) = row
+            !WRITE(iw,*) 'position = ', row
+          ELSE
+            is_fin = .FALSE.
+          END IF
+        ELSE
+          is_fin = .FALSE.
+        END IF
+
+        IF (is_fin .EQV. .TRUE.) THEN
+          EXIT each_channel
+        END IF
+      END DO each_channel
+      
+    END DO
+
+  END SUBROUTINE make_finalpos
 
 END MODULE adc_fano_routines

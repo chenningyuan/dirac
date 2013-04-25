@@ -40,6 +40,7 @@ CONTAINS
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
     INTEGER                               :: nr_in, nr_fin
     INTEGER                               :: nok, najl
+    INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
 
 !
 !  Code
@@ -52,7 +53,7 @@ CONTAINS
     WRITE(iw,*) 
 
     ! Create lookup table bigicra
-    CALL alloc(bigicra,9,NVOOT(krep))
+    CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
     CALL make_bigicra(krep,bigicra,iw)
 
     nok  = NO(krep)
@@ -68,6 +69,12 @@ CONTAINS
     CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw)
 
+    ! Create an array of final state positions in the 2h1p part
+    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
+    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+    
+
+    CALL dealloc(finalpos)
     CALL dealloc(bigicra)
 
   END SUBROUTINE fanoadc
