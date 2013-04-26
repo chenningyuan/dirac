@@ -76,12 +76,17 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} "
+            "${CMAKE_Fortran_FLAGS} -i8"
             )
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} "
+            )
+    endif()
+    if(ENABLE_PROFILING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -pg"
             )
     endif()
     if(ENABLE_CODE_COVERAGE)
