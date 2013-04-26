@@ -35,6 +35,7 @@ make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
 
+cd $DIRAC
 unset MATH_ROOT
 BUILD_PGI1=build_PGI_ilp64_ownmath_dyn
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI1
