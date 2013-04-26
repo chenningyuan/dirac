@@ -286,13 +286,14 @@ CONTAINS
     REAL(8)                                :: temp
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
+    INTEGER                                :: irep
     INTEGER,ALLOCATABLE,DIMENSION(:,:,:)   :: oolt
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: diag
     INTEGER                                :: fincount
     INTEGER                                :: finrow, fincol
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
     INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
-    INTEGER                                :: irow, jcol, k
+    INTEGER                                :: irow, jcol, i, j, k
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
 
@@ -334,15 +335,34 @@ CONTAINS
     ! add final state diagonal
     ! todo: write several diagonal files from temp_fin, tempe and total
     tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
-    !DO k = 1, najl
-    !  WRITE(iw,*) 'k       = ', k
-    !  WRITE(iw,*) 'eajl    = ', eajl(k)
-    !  WRITE(iw,*) 'tempe   = ', tempe(k)
-    !END DO
+    diag(nok+1:ladc)           = tempe(1:najl)
 
     CALL dealloc(temp_fin)
     CALL dealloc(tempe)
 
+    WRITE(iw,*) 'Diagonal is written to temporary array'
+
+    offdiag:IF(reladc_adclevel >= 2) THEN
+!      CALL GETOOOO(oooo) ! does not work here, write into adccore
+!      CALL GETVOVO(vovo)
+
+      ! construct oolt lookup table for KCOCC
+      ALLOCATE(oolt(nok,nok,nrep))
+      oolt = 0
+      DO irep = 1, nrep
+        ioff = 1
+        DO j = 1, no(irep)
+          DO i = j + 1, no(irep)
+            oolt(i,j,irep) = ioff
+            ioff = ioff + 1
+          END DO
+        END DO
+      END DO
+
+      DEALLOCATE(oolt)
+    END IF offdiag
+
+    CALL dealloc(diag)
 
   END SUBROUTINE fano_makehphp
 
