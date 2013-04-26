@@ -35,6 +35,18 @@ make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
 
+unset MATH_ROOT
+BUILD_PGI1=build_PGI_ilp64_ownmath_dyn
+./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI1
+# configure step
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=on -D BUILDNAME="PGI_ownmath_i8" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF --force $BUILD_PGI1
+cd $BUILD_PGI1
+make ExperimentalUpdate
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalSubmit
+
+
 BUILD_PGI_I8=build_PGI_ilp64_acml_dyn
 cd $DIRAC
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI_I8
