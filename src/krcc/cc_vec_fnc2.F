@@ -703,6 +703,7 @@ C
       IFHM = 1 !integrals are fetched
       CALL MEMCHK_KRCC(WORK)
 *
+      IDONOT = 1
       print*,'grep for this'
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM01),IONE,IHM,
      &     IFHM,WORK(KT_CC), 
@@ -716,6 +717,7 @@ C
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      IDONOT = 0
       CALL MEMCHK_KRCC(WORK)
       print*,'after H20 -- 10 -- M10 crazy'
       CALL SCALVE(WORK(KM01),HALF,LEN_M01_VEC_CC)
