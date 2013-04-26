@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     eajl,oooo,vovo)
+                     icra,eajl,oooo,vovo)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -34,6 +34,7 @@ CONTAINS
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
+    REAL(8), INTENT(IN), DIMENSION(6,nvoot(krep))           :: icra
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     
@@ -77,6 +78,9 @@ CONTAINS
     CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
     CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
     
+    ! Create the sorted 2h1p/2h1p block
+    CALL fano_makehphp(ckks,eajl,oooo,vovo,icra,ladc,krep,  &
+                       finalpos,66,67,iw)
 
     CALL dealloc(finalpos)
     CALL dealloc(bigicra)

@@ -246,8 +246,8 @@ CONTAINS
 !
 !---------------------------------------------------------------------
 !
-  SUBROUTINE fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-                           itape1,itape2)
+  SUBROUTINE fano_makehphp(ckks,eajl,oooo,vovo,icra,ladc,krep,  &
+                           finalpos,itape1,itape2,iw)
 
 !
 !  Purpose: Create all elements of the ADC Sat Block and write them to the
@@ -256,6 +256,7 @@ CONTAINS
 
     use adc_cfg
     use adc_fano_routines
+    use memory_allocator
 
     IMPLICIT NONE
 
@@ -267,23 +268,80 @@ CONTAINS
 !
 !  Data dictionary: Calling Variables
 !
-    INTEGER, INTENT(IN)                              :: krep
+    INTEGER,INTENT(IN)                               :: krep
     REAL(8),INTENT(IN),DIMENSION(no(krep)*no(krep))  :: ckks
     REAL(8),INTENT(IN)                               :: eajl(*)
     REAL(8),INTENT(IN)                               :: oooo(*), vovo(*)
-    INTEGER,INTENT(IN),DIMENSION(9,nvoot(krep))      :: bigicra
-    INTEGER, INTENT(IN)                              :: ladc
-    INTEGER, INTENT(IN)                              :: itape1, itape2
+    REAL(8),INTENT(IN),DIMENSION(6,nvoot(krep))      :: icra
+    INTEGER,INTENT(IN)                               :: ladc
+    INTEGER,INTENT(IN),DIMENSION(fin_max)            :: finalpos
+    INTEGER,INTENT(IN)                               :: itape1, itape2
+    INTEGER,INTENT(IN)                               :: iw
     
 
 !
 !  Data dictionary: Local Variables
 !
- 
+    INTEGER                                :: nok, najl
+    REAL(8)                                :: temp
+    REAL(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
+    REAL(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
+    INTEGER,ALLOCATABLE,DIMENSION(:,:,:)   :: oolt
+    REAL(8),ALLOCATABLE,DIMENSION(:)       :: diag
+    INTEGER                                :: fincount
+    INTEGER                                :: finrow, fincol
+    REAL(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
+    INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
+    INTEGER                                :: irow, jcol, k
+    INTEGER                                :: counter
+    INTEGER                                :: off1, ioff 
+
 !
 !  Code
 !
+    WRITE(iw,*) 'FanoADC: Entering ADC Satellite block'
+    nok  = no(krep) ! = mxno
+    najl = nvoot(krep)
 
+    CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
+
+    ! Fill in the diagonal of the h/h block
+    off1 = 1
+    DO k = 1, nok
+      diag(k) = ckks(off1 + k - 1)
+      off1 = off1 + nok
+    END DO
+    
+    tempe = 0
+    counter = 0
+    CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
+    CALL alloc(temp_fin, fin_max)
+    ! add the 2h1p diag sorted elements
+    diag_2h1p:DO k = 1, najl
+      DO fincount = 1, fin_max
+        temp = finalpos(fincount)
+        IF (temp == k) THEN
+          temp_fin(fincount) = eajl(k)
+          CYCLE diag_2h1p
+        END IF  
+      END DO
+      counter = counter + 1
+      tempe(counter) = eajl(k)
+      !WRITE(iw,*) 'counter = ', counter
+      !WRITE(iw,*) 'k       = ', k
+    END DO diag_2h1p
+
+    ! add final state diagonal
+    ! todo: write several diagonal files from temp_fin, tempe and total
+    tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
+    DO k = 1, najl
+      WRITE(iw,*) 'k       = ', k
+      WRITE(iw,*) 'eajl    = ', eajl(k)
+      WRITE(iw,*) 'tempe   = ', tempe(k)
+    END DO
+
+    CALL dealloc(temp_fin)
+    CALL dealloc(tempe)
 
 
   END SUBROUTINE fano_makehphp
