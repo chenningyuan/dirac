@@ -13,7 +13,7 @@ export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
 module load ctcp pgi/64
 module load acml
 # add dynamic libraries 
-export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:/data/programs/ctcp/pgi/linux86-64/12.5/lib:$LD_LIBRARY_PATH
 
 /bin/echo -e  "\n PATH=$PATH"
 /bin/echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
