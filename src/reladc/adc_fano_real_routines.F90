@@ -272,7 +272,7 @@ CONTAINS
     REAL(8),INTENT(IN),DIMENSION(no(krep)*no(krep))  :: ckks
     REAL(8),INTENT(IN)                               :: eajl(*)
     REAL(8),INTENT(IN)                               :: oooo(*), vovo(*)
-    REAL(8),INTENT(IN),DIMENSION(6,nvoot(krep))      :: icra
+    INTEGER,INTENT(IN),DIMENSION(6,nvoot(krep))      :: icra
     INTEGER,INTENT(IN)                               :: ladc
     INTEGER,INTENT(IN),DIMENSION(fin_max)            :: finalpos
     INTEGER,INTENT(IN)                               :: itape1, itape2
@@ -334,11 +334,11 @@ CONTAINS
     ! add final state diagonal
     ! todo: write several diagonal files from temp_fin, tempe and total
     tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
-    DO k = 1, najl
-      WRITE(iw,*) 'k       = ', k
-      WRITE(iw,*) 'eajl    = ', eajl(k)
-      WRITE(iw,*) 'tempe   = ', tempe(k)
-    END DO
+    !DO k = 1, najl
+    !  WRITE(iw,*) 'k       = ', k
+    !  WRITE(iw,*) 'eajl    = ', eajl(k)
+    !  WRITE(iw,*) 'tempe   = ', tempe(k)
+    !END DO
 
     CALL dealloc(temp_fin)
     CALL dealloc(tempe)

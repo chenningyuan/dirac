@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     icra,eajl,oooo,vovo)
+                     ricra,eajl,oooo,vovo)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -34,7 +34,7 @@ CONTAINS
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
-    REAL(8), INTENT(IN), DIMENSION(6,nvoot(krep))           :: icra
+    REAL(8), INTENT(IN), DIMENSION(6,nvoot(krep))           :: ricra !real
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     
@@ -42,6 +42,7 @@ CONTAINS
 !
 !  Data dictionary: Local Variables (and to be shared with subroutines
 !
+    INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: icra
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
     INTEGER                               :: nr_in, nr_fin
     INTEGER                               :: nok, najl
@@ -60,6 +61,9 @@ CONTAINS
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
     CALL make_bigicra(krep,bigicra,iw)
+    CALL alloc(icra,6,nvoot(krep), id='FanoADC: icra - integer')
+    CALL real_to_int(ricra,icra,6,nvoot(krep))
+
 
     nok  = NO(krep)
 !    najl = NOOVT(krep)
@@ -83,6 +87,7 @@ CONTAINS
                        finalpos,66,67,iw)
 
     CALL dealloc(finalpos)
+    CALL dealloc(icra)
     CALL dealloc(bigicra)
 
   END SUBROUTINE fanoadc

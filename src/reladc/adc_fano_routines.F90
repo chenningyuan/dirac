@@ -375,4 +375,35 @@ CONTAINS
 
   END SUBROUTINE make_finalpos
 
+
+!
+!-----------------------------------------------------------------------
+!
+  SUBROUTINE real_to_int(rarray,iarray,nrows,ncols)
+
+    IMPLICIT NONE
+
+!
+!  Calling Variables
+!
+    INTEGER, INTENT(IN)                         :: nrows, ncols
+    REAL(8), INTENT(IN), DIMENSION(nrows,ncols) :: rarray
+    INTEGER, INTENT(OUT), DIMENSION(nrows,ncols):: iarray
+
+!
+!  Local Variables
+!
+    INTEGER  :: irow, jcol
+
+!
+!  Code
+!
+
+   FORALL (irow=1:nrows, jcol=1:ncols)
+     iarray(irow,jcol) = INT(rarray(irow,jcol))
+   END FORALL
+
+
+  END SUBROUTINE real_to_int
+
 END MODULE adc_fano_routines
