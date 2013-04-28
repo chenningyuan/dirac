@@ -33,6 +33,7 @@ option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"   
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
+option(ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects"    OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
