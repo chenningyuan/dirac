@@ -26,7 +26,6 @@ macro(add_external _project)
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-        PREFIX ${PROJECT_SOURCE_DIR}/external
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
