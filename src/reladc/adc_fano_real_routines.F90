@@ -4,14 +4,19 @@ MODULE adc_fano_real_routines
 !  Data dictionary: common variables and arrays for the Fano ADC
 !  
   INTEGER, PARAMETER                   :: fano_intbuf = 2 * 1024 * 1024 !as in ADC
+
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: adcbuf   !alloc in fano_write_hhp
                                                    !dealloc in fano_make_hphp
-  REAL(8), ALLOCATABLE, DIMENSION(:)   :: inbuf
   INTEGER, ALLOCATABLE, DIMENSION(:)   :: adcioi, adcioj !"
-  INTEGER, ALLOCATABLE, DIMENSION(:)   :: inioi, inioj !"
   INTEGER                              :: adcnbufs !number of buffers for ADC matrix
-  INTEGER                              :: innbufs
   INTEGER                              :: adcib    !book keeping number for adcbuf
+  INTEGER                              :: adccol, adcrow
+
+  REAL(8), ALLOCATABLE, DIMENSION(:)   :: inbuf
+  INTEGER, ALLOCATABLE, DIMENSION(:)   :: inioi, inioj !"
+  INTEGER                              :: innbufs
+  INTEGER                              :: inib
+  INTEGER                              :: incol, inrow
 
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
@@ -75,8 +80,6 @@ CONTAINS
     REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
     INTEGER                            :: temp_row     !row of temp_array
     INTEGER                            :: finrow       !row of final states
-    INTEGER                            :: adcrow, adccol
-    INTEGER                            :: inrow, incol
     INTEGER                            :: k, ixx, fincount ! counters
     LOGICAL                            :: is_in  = .TRUE.
     LOGICAL                            :: is_coupl = .FALSE.
@@ -283,6 +286,7 @@ CONTAINS
     INTEGER                                :: irow, jcol, i, j, k
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
+    REAL                                   :: s
 
 !
 !  Code
@@ -346,8 +350,77 @@ CONTAINS
         END DO
       END DO
 
-      DEALLOCATE(oolt)
     END IF offdiag
+
+!
+!  loop over the original structure of the ADC matrix and write the matrix
+!  elements into different buffers
+!
+    fincol = 1
+
+    colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
+      temp = finalpos(fincol)
+      ! is the column a column of the final states?
+      IF (temp == jcol) THEN
+        fincol = fincol + 1
+        CYCLE colloop
+      END IF
+       
+      ! determine the column of the initial and total matrix
+      adccol = adccol + 1
+      incol  = incol  + 1
+
+      finrow = 1
+      adcrow = 0
+      inrow  = 0
+
+      rowloop:DO irow = jcol, najl
+        temp = finalpos(finrow)
+        IF (temp == irow) THEN
+          finrow = finrow + 1
+          !WRITE(iw,*) 'position to skip: ', irow
+          CYCLE rowloop
+        END IF
+
+        ! determine the row of the initial and total matrix
+        adcrow = adcrow + 1
+        inrow  = inrow  + 1
+
+! KCOCC
+        s = 1.0
+        !s = fano_kcocc(irow,jcol,oooo,vovo,icra,oolt,no(krep))
+
+        isdiag:IF (irow == jcol) THEN
+          diag(adcrow) = diag(adcrow) + s
+          diag(inrow)  = diag(inrow) + s
+        ELSE isdiag
+          IF (s /= 0.0D0) THEN
+            inib = inib + 1
+            inbuf(inib) = s
+            inioi(inib) = inrow
+            inioj(inib) = incol
+            IF (inib == fano_intbuf) THEN
+              CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
+                                  innbufs,inib,infh)
+            END IF
+            ! now total adc-matrix
+            adcib = adcib + 1
+            adcbuf(adcib) = s
+            adcioi(adcib) = adcrow
+            adcioj(adcib) = adccol
+            IF (adcib == fano_intbuf) THEN
+              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                  adcnbufs,adcib,adcfh)
+            END IF
+          END IF
+        END IF isdiag
+
+      END DO rowloop
+
+    END DO colloop
+
+
+    DEALLOCATE(oolt)    
 
     CALL dealloc(diag)
 
