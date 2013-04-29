@@ -17,28 +17,32 @@ echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
-BUILD=build_opteron_mpi_ifort_gcc_ilp64
+BUILD=build_ompi_ifort_ilp64
+BUILD_STATIC=build_ifort_ilp64_static
 # go to the local DIRAC directory
 cd $DIRAC
 
-#svn --force up
-#svn up
-#git pull origin master
-#git pull --rebase
-#git pull 
-
-./pamadm -a --hsfsdyn --hscc --auto
-
 # configure step
 #./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90  --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --math="-L/opt/intel/mkl/10.0.3.020/lib/em64t -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build-dir=$BUILD 
-
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_MAGNETIZ_FIX=ON --force $BUILD 
-
+./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64=on -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD
+#
 cd $BUILD
 make ExperimentalUpdate
-cmake ..
-make clean
-make Experimental
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalTest
+make ExperimentalSubmit
+
+#####
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+./setup --fc=ifort  --cc=gcc  --cxx=g++ -D BUILDNAME="opteron_ifort_ilp64_serial_STATIC" --int64=on -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD_STATIC
+#
+cd $BUILD_STATIC
+make ExperimentalUpdate
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalTest
+make ExperimentalSubmit
 
 exit 0

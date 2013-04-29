@@ -10,7 +10,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran/lib'
 export MATH_ROOT=/usr/lib64/atlas
 
 TMP_DIR=/home/bast/trash/scratch-nightly-compile
-SCRATCH_DIR=/home/bast/trash/scratch-nightly-run
 mkdir -p $TMP_DIR
 
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
@@ -29,10 +28,10 @@ make release
 tar xvzf DIRAC-*-Source.tar.gz
 cd DIRAC-*-Source
 
-./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc18_gfortran-4.7.2_mpi" -D RUNTEST_NR_PROC=2
+./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc18_gfortran-4.7.2_mpi" -D RUNTEST_NR_PROC=4
 cd build
 make Nightly
 
-rm -rf $TMP_DIR $SCRATCH_DIR
+rm -rf $TMP_DIR
 
 exit 0
