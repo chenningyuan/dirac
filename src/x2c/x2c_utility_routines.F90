@@ -682,7 +682,7 @@ contains
      character(*), intent(in)      :: title
 !**********************************************************************
 !
-         call header(title,-1)
+         call header2(title,-1,prntunit)
          if(.not.present(lrlc_equal))then
            call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
                        ipq_off,prntunit)
