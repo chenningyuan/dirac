@@ -1414,6 +1414,8 @@ C     NOINT_FILE = .TRUE.
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           if (NTEST.ge.1) 
      &      write(LUINGR,'(A)') 'INTEGRAL FILE'
+            call dump_integral_info(f1,f2,IRI,nasht/2,NASHT,nz,
+     &                              irilp,ipqtoq(1,0),luingr)
         end if
 
  
@@ -1928,10 +1930,10 @@ C FIXME !! Uncommented sign here!!
      &                              'INTEGRALs: YINT,YXINT,YINT-YXINT',
      &                                          YINT,YXINT,YINT-YXINT
 *                               write integral to file (for debugging):
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
                                 if (IXCH.eq.0) then
                                   write(LUINGR,'(I4,4X,4I3,1F18.14)') 
      &                                  ICOUNT_I8,INDEX(1),
@@ -2001,6 +2003,50 @@ C
 *
 #undef LUCI_DEBUG
       end
+***********************************************************************
+      subroutine dump_integral_info(h1,h2ac,iri,nashth,nasht,nz,
+     &                              irilp,ipqtoq,luwrt)
+
+!     dump all 1e/2e integrals on file INTEGRALS in nice format
+
+      implicit none
+!     input
+      real(8), intent(in)    :: h1((2*nasht)**2 * irilp)
+      real(8), intent(in)    :: h2ac(nashth,nashth,
+     &                              (nashth*(nashth+1))/2,nz,*)
+      integer, intent(in)    :: iri, irilp,nashth, nasht, nz, luwrt
+      integer, intent(in)    :: ipqtoq(4,0:7)
+
+!     scratch
+      integer                :: i, j , ii, jj
+
+      write(luwrt,'(/A)')' print of unsorted integrals from MOLTRA'
+      write(luwrt,'(A/)')' ---------------------------------------'
+
+      ! 1e-integrals
+      write(luwrt,'(a/)') ' list of 1e-integrals'
+      write(luwrt,'(a)' ) ' indices         elements       '
+      write(luwrt,'(a)' ) '--------------------------------'
+      do i = 1, nasht
+        do j = 1, nasht
+          ii = i
+          jj = j
+          if(i > nashth) ii = -(i-nashth)
+          if(j > nashth) jj = -(j-nashth)
+          write(luwrt,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,h1(((iri-1)*((nasht)**2))+(j-1)*nasht + i)
+        end do  
+      end do 
+
+      ! 2e-integrals
+      write(luwrt,'(/A)')' list of 2e-integrals in (NZ,3) format'
+      call prdnz3(h2ac(1,1,1,1,1),nashth,(nashth*(nashth+1))/2,nz,
+     &            ipqtoq(1,0),luwrt)
+
+      write(luwrt,'(/A)')' start of sorted integrals for KRCI'
+      write(luwrt,'(A/)')' ----------------------------------'
+
+      end 
 ***********************************************************************
 
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,NASHT,NNASHX,H2AC,IPRNT)

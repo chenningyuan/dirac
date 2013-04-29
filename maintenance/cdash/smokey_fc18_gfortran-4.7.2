@@ -3,7 +3,6 @@
 export MATH_ROOT=/usr/lib64/atlas
 
 TMP_DIR=/home/bast/trash/scratch-nightly-compile
-SCRATCH_DIR=/home/bast/trash/scratch-nightly-run
 mkdir -p $TMP_DIR
 
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
@@ -26,6 +25,6 @@ cd DIRAC-*-Source
 cd build
 make Nightly
 
-rm -rf $TMP_DIR $SCRATCH_DIR
+rm -rf $TMP_DIR
 
 exit 0
