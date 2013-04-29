@@ -6,13 +6,17 @@ MODULE adc_fano_real_routines
   INTEGER, PARAMETER                   :: fano_intbuf = 2 * 1024 * 1024 !as in ADC
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: adcbuf   !alloc in fano_write_hhp
                                                    !dealloc in fano_make_hphp
+  REAL(8), ALLOCATABLE, DIMENSION(:)   :: inbuf
   INTEGER, ALLOCATABLE, DIMENSION(:)   :: adcioi, adcioj !"
+  INTEGER, ALLOCATABLE, DIMENSION(:)   :: inioi, inioj !"
   INTEGER                              :: adcnbufs !number of buffers for ADC matrix
+  INTEGER                              :: innbufs
   INTEGER                              :: adcib    !book keeping number for adcbuf
 
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
   INTEGER                              :: adcfh    ! file handle for ADC matrix
+  INTEGER                              :: infh
   INTEGER                              :: fin_max  !number of final state configs
                                                
   
@@ -67,14 +71,10 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-    REAL(8),ALLOCATABLE,DIMENSION(:)   :: inbuf        !buffer for initial states
-    INTEGER,ALLOCATABLE,DIMENSION(:)   :: inioi, inioj !indices of initials state matrix
-    INTEGER                            :: innbufs
     INTEGER                            :: inib
     REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
     INTEGER                            :: temp_row     !row of temp_array
     INTEGER                            :: finrow       !row of final states
-    INTEGER                            :: infh         !file handling number in matrix
     INTEGER                            :: adcrow, adccol
     INTEGER                            :: inrow, incol
     INTEGER                            :: k, ixx, fincount ! counters
@@ -218,25 +218,12 @@ CONTAINS
 
     END DO one_column
 
-!
-!  write the rest of the buffer
-!
-!    IF (inib > 0) THEN
-!      CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,  &
-!                               innbufs,inib,infh)
-!    END IF
 
 !
 !  deallocate local arrays
 !
     CALL dealloc(single_col)
-    CALL dealloc(inbuf)
-    CALL dealloc(inioi)
-    CALL dealloc(inioj)
     CALL dealloc(temp_array)
-    CALL dealloc(adcbuf) !dealloc later
-    CALL dealloc(adcioi) !dealloc later
-    CALL dealloc(adcioj) !dealloc later
 
   END SUBROUTINE fano_write_hhp
 
@@ -343,8 +330,8 @@ CONTAINS
     WRITE(iw,*) 'Diagonal is written to temporary array'
 
     offdiag:IF(reladc_adclevel >= 2) THEN
-!      CALL GETOOOO(oooo) ! does not work here, write into adccore
-!      CALL GETVOVO(vovo)
+      CALL GETOOOO(oooo)
+      CALL GETVOVO(vovo)
 
       ! construct oolt lookup table for KCOCC
       ALLOCATE(oolt(nok,nok,nrep))
@@ -363,6 +350,13 @@ CONTAINS
     END IF offdiag
 
     CALL dealloc(diag)
+
+    CALL dealloc(adcbuf)
+    CALL dealloc(adcioi)
+    CALL dealloc(adcioj)
+    CALL dealloc(inbuf)
+    CALL dealloc(inioi)
+    CALL dealloc(inioj)
 
   END SUBROUTINE fano_makehphp
 
