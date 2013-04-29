@@ -1577,10 +1577,8 @@ C
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
      &                   CC(ICRA),CC(EAJL),RDUMMY,RDUMMY)
           ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-!            CALL GETOOOO(CC(BUF01))
-!            CALL GETVOVO(CC(BUF9A))
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(ICRA),CC(EAJL),CC(BUF01),CC(BUF9A))
+     &                   CC(ICRA),CC(EAJL),CC(BUFO1),CC(BUF9A))
           END IF
         ELSE
           IF(CARITH) THEN
