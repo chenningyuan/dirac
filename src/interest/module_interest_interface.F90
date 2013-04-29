@@ -59,6 +59,7 @@ MODULE MODULE_INTEREST_INTERFACE
 
   public process_two_electron_integrals_4comp_slaves
   public process_two_electron_integrals_2comp_slaves
+  public transfer_gto_info
 
   private
 
@@ -2935,6 +2936,21 @@ CONTAINS
     enddo
     deallocate( B )
         
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+  SUBROUTINE transfer_gto_info(cart2lval)
+
+    !> input/ouput
+    integer, intent(out) :: cart2lval(*) 
+
+    !> local
+    integer :: i, j
+
+    do i=1,size(gto)
+      j = gto(i)%cdegen
+      cart2lval((1+gto(i)%offset):(j+gto(i)%offset))                                         = gto(i)%lvalue
+    enddo
+
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE

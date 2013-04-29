@@ -105,8 +105,6 @@ contains
                                                )
 #endif
 
-      call butobs_no_work(fmat(1,1,1,1),nz)
-
 !     Symmetrize FMAT matrix
 !     ======================
 !     IH = 0   Non-symmetric
@@ -117,7 +115,6 @@ contains
       do iz = 1,nz
         iq = ipqtoq(iz,irep)
         ih = ihqmat(iq,1)
-!       print *, 'symmetry of fmat',ih
         if(ih == 1)then
           call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,1))
         else if(ih == 2)then
@@ -216,6 +213,43 @@ contains
   end subroutine pure_so_2e
 !----------------------------------------------------------------------
 
+  subroutine lval_so_2e(                            &
+                        Gmat,                       & 
+                        cart2lval,                  & 
+                        nrow,                       &
+                        ncol,                       &
+                        nz                          &
+                       )
+!----------------------------------------------------------------------
+!
+!    purpose: retain only two-electron spin-orbit elements in imaginary parts between elements of the same lvalue
+!
+!----------------------------------------------------------------------
+     real(8), intent(inout)   :: Gmat(nrow,ncol,4)
+     integer, intent(in)      :: cart2lval(nrow)
+     integer, intent(in)      :: nrow
+     integer, intent(in)      :: ncol
+     integer, intent(in)      :: nz
+!----------------------------------------------------------------------
+     integer                  :: i, j, iz
+!----------------------------------------------------------------------
+
+!      take out offdiagonal l-value parts
+     do iz = 2, nz
+       do j=1,nrow
+         do i=1,ncol
+           !> lz(i) /= lz(j)
+           if(cart2lval(i) /= cart2lval(j))then
+             Gmat(i     ,j     ,iz) = 0.0d0
+             Gmat(j     ,i     ,iz) = 0.0d0
+           end if
+         enddo
+       enddo
+     enddo
+
+  end subroutine lval_so_2e
+!----------------------------------------------------------------------
+
   subroutine get_normalized_2e_soc(                      &
                                    fmat,                 &
                                    pct_mat,              &
@@ -249,9 +283,23 @@ contains
      integer, intent(in)                :: aoo_bs_to_fs(0:7,2)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
+     integer, allocatable               :: lvalue_array(:)
 !----------------------------------------------------------------------
 
 !     normalize (picture-change transform) 2e-SO-fock matrix
+#ifdef DEBUG_SOC
+      open(99,file='soc-contributions',status='replace',form='formatted',  &
+      access='sequential',action="readwrite",position='rewind')
+
+      call print_x2cmat(fmat,                   &
+                        nr_ao_total_aoo,        &
+                        nr_ao_total_aoo,        &
+                        nr_quat,                &
+                        aoo_cb_pq_to_uq(1,0),   &
+                        'aoosoc - 2e-SOC-unnrm',&
+                        99                      &
+                       )
+#endif
 
       dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
       call perform_pct_saao_bas(fmat,                         &
@@ -277,6 +325,24 @@ contains
                       nr_quat                     &
                       )
 
+!     get lvalues for cartesian functions
+      allocate(lvalue_array(nr_ao_large_aoo))
+      lvalue_array(1:nr_ao_large_aoo) = 0.0d0
+      call transfer_gto_info(                     &
+                             lvalue_array         &
+                          )
+
+!     check for l-values in 2e-SO matrix
+      call lval_so_2e(                            &
+                      fmat,                       & 
+                      lvalue_array,               & 
+                      nr_ao_large_aoo,            &
+                      nr_ao_large_aoo,            &
+                      nr_quat                     &
+                      )
+
+      deallocate(lvalue_array)
+
 !     debug print
       if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
@@ -290,9 +356,6 @@ contains
       end if
 
 #ifdef DEBUG_SOC
-      open(99,file='soc-contributions',status='replace',form='formatted',  &
-      access='sequential',action="readwrite",position='rewind')
-
       call print_x2cmat(fmat,                   &
                         nr_ao_large_aoo,        &
                         nr_ao_large_aoo,        &
