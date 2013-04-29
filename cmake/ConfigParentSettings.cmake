@@ -1,3 +1,6 @@
+# this is to configure definitions and include directories
+# set by a parent program including this project as external project
+
 if(NOT "${PARENT_DEFINITIONS}" STREQUAL "")
     foreach (_definition ${PARENT_DEFINITIONS})
         add_definitions(${_definition})

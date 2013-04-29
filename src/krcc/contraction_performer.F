@@ -134,6 +134,9 @@ C format.
             WRITE(6,*) ' Absolute address for op ', IHOP
             CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
           END IF
+          IF(IDONOT.EQ.1) THEN
+            IF(IHOP.GE.88) CYCLE
+          END IF
         ELSE IF(IHM.EQ.2) THEN
 * For the intermediate operators
           IHOP = IH
@@ -3721,7 +3724,7 @@ C    &        NSPOBEX_TP,NHTPM,NHTP,NGAS,MX_ST_TSOSO_BLK_MX,MXPNGAS
       DO I=1,4
         IJKL_ORIG(I) = 2000
       END DO
-      NTEST = 000
+      NTEST = 00
 *
 * ===========================================================
       ISM = 1

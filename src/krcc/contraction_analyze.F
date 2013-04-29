@@ -2996,7 +2996,7 @@ C             print*,'---------------------------'
 * Local scratch
       INTEGER IMARK(NSTR_D*(NSTR_D-1)/2),ISCR(NSTR_D)
 *
-      NTEST = 00
+      NTEST = 100
 *
       IZERO = 0
 *
@@ -3006,17 +3006,19 @@ C             print*,'---------------------------'
 * Fill a triangle
       IFILL = 0
 C     print*,'NSTR_D',NSTR_D
-      DO I=1,NSTR_D-1
+      DO I=2,NSTR_D
 C       print*,'I',I
-        DO J=I+1,NSTR_D
+        DO J=1,I-1
 C         print*,'J',J
           IFILL = IFILL + 1
 C         print*,'IFILL',IFILL
+          ISET(J,I) = IFILL
           ISET(I,J) = IFILL
         END DO
       END DO
 C       WRITE(6,*) ' The offsets are '
 C       CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
+      RETURN
       IFILL = 0
       DO I=1,NSTR_D-1
 C       print*,'I',I
