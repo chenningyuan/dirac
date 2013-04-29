@@ -1,3 +1,4 @@
+#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -287,6 +288,22 @@ contains
                           6                       &
                          )
       end if
+
+#ifdef DEBUG_SOC
+      open(99,file='soc-contributions',status='replace',form='formatted',  &
+      access='sequential',action="readwrite",position='rewind')
+
+      call print_x2cmat(fmat,                   &
+                        nr_ao_large_aoo,        &
+                        nr_ao_large_aoo,        &
+                        nr_quat,                &
+                        aoo_cb_pq_to_uq(1,0),   &
+                        'aoosoc - 2e-SOC',      &
+                        99                      &
+                       )
+      close(99,status='keep')
+#endif
+
   
 
   end subroutine get_normalized_2e_soc

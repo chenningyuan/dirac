@@ -1,3 +1,4 @@
+#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -408,6 +409,18 @@ contains
          end do           
        end if          
 
+!      debug print
+       if(print_lvl > 2)then
+         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
+       end if
+
+#ifdef DEBUG_SOC
+       open(99,file='soc-contributions',status='replace',form='formatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',99)
+       close(99,status='keep')
+#endif
 
 !      -------------------------------------------------------------------------------
 !      step 3. read h1_2c_saao_cartesian_gaussian from file and add AMFI contributions 
@@ -421,9 +434,9 @@ contains
 
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
          call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
        end if
+
 
 !      add amfi contributions to h1_2c
        call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,scr1_mat,1)
@@ -633,6 +646,14 @@ contains
        if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',6)
        end if
+
+#ifdef DEBUG_SOC
+       open(99,file='soc-contributions',status='replace',form='formatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',99)
+       close(99,status='keep')
+#endif
 
        deallocate(aooso_info)
 
