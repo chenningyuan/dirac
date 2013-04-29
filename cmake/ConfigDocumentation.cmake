@@ -1,5 +1,4 @@
 find_package(Sphinx QUIET)
-
 if(SPHINX_FOUND)
     add_custom_target(
         html
@@ -15,8 +14,7 @@ else()
         )
 endif()
 
-set(Doxygen_FIND_QUIETLY TRUE)
-include(FindDoxygen)
+find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
