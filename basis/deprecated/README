@@ -1,10 +1,7 @@
-The files in this directory correspond to earlier version of
-the Dyall double and triple-zeta basis sets. They are kept for
-convenience, in case you have used them and want to rerun
-calculations.
+The files in this directory correspond to earlier version of the Dyall double
+and triple-zeta basis sets. They are kept for convenience, in case you have
+used them and want to rerun calculations.
 
-However, they are out of date (in particularly for the p-block
-elements, for which Dyall has published updates) and SHOULD 
-NOT be used anymore.  The proper Dyall basis set files reside 
-in the basis/ directory. 
-
+However, they are out of date (in particularly for the p-block elements, for
+which Dyall has published updates) and SHOULD NOT be used anymore. The proper
+Dyall basis set files reside in the basis/ directory.
