@@ -11,17 +11,19 @@ MODULE adc_fano_real_routines
   INTEGER                              :: adcnbufs !number of buffers for ADC matrix
   INTEGER                              :: adcib    !book keeping number for adcbuf
   INTEGER                              :: adccol, adcrow
+  INTEGER                              :: adcfh    ! file handle for ADC matrix
+  INTEGER                              :: adcdiagfh
 
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: inbuf
   INTEGER, ALLOCATABLE, DIMENSION(:)   :: inioi, inioj !"
   INTEGER                              :: innbufs
   INTEGER                              :: inib
   INTEGER                              :: incol, inrow
+  INTEGER                              :: infh
+  INTEGER                              :: indiagfh
 
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
-  INTEGER                              :: adcfh    ! file handle for ADC matrix
-  INTEGER                              :: infh
   INTEGER                              :: fin_max  !number of final state configs
                                                
   
@@ -283,7 +285,9 @@ CONTAINS
     INTEGER                                :: finrow, fincol
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
     INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
+    INTEGER                                :: finfh, finib,finnbufs, findiagfh
     INTEGER                                :: irow, jcol, i, j, k
+    INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
     REAL                                   :: s
@@ -352,6 +356,8 @@ CONTAINS
 
     END IF offdiag
 
+    WRITE(iw,*) 'OOLT constructed'
+
 !
 !  loop over the original structure of the ADC matrix and write the matrix
 !  elements into different buffers
@@ -371,8 +377,8 @@ CONTAINS
       incol  = incol  + 1
 
       finrow = 1
-      adcrow = 0
-      inrow  = 0
+      adcrow = adccol - 1
+      inrow  = incol  - 1
 
       rowloop:DO irow = jcol, najl
         temp = finalpos(finrow)
@@ -386,19 +392,21 @@ CONTAINS
         adcrow = adcrow + 1
         inrow  = inrow  + 1
 
-! KCOCC
+! KC!OCC
         s = 1.0
-        !s = fano_kcocc(irow,jcol,oooo,vovo,icra,oolt,no(krep))
+    !    !s = fano_kcocc(irow,jcol,oooo,vovo,icra,oolt,no(krep))
 
         isdiag:IF (irow == jcol) THEN
           diag(adcrow) = diag(adcrow) + s
-          diag(inrow)  = diag(inrow) + s
+          !diag(inrow)  = diag(inrow) + s
         ELSE isdiag
           IF (s /= 0.0D0) THEN
             inib = inib + 1
             inbuf(inib) = s
             inioi(inib) = inrow
             inioj(inib) = incol
+            !WRITE(iw,*) 'incol = ', incol
+            !WRITE(iw,*) 'inrow = ', inrow
             IF (inib == fano_intbuf) THEN
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
@@ -408,6 +416,8 @@ CONTAINS
             adcbuf(adcib) = s
             adcioi(adcib) = adcrow
             adcioj(adcib) = adccol
+            !WRITE(iw,*) 'adccol = ', adccol
+            !WRITE(iw,*) 'adcrow = ', adcrow
             IF (adcib == fano_intbuf) THEN
               CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                   adcnbufs,adcib,adcfh)
@@ -419,17 +429,87 @@ CONTAINS
 
     END DO colloop
 
+    CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
+                             inib,infh)
 
-    DEALLOCATE(oolt)    
-
-    CALL dealloc(diag)
-
-    CALL dealloc(adcbuf)
-    CALL dealloc(adcioi)
-    CALL dealloc(adcioj)
     CALL dealloc(inbuf)
     CALL dealloc(inioi)
     CALL dealloc(inioj)
+    
+
+    ! take care of the block of final states
+    fincol = 0
+    finib = 0
+    finnbufs = 0
+    finfh = itapfano + 8
+    CALL alloc(finbuf, fano_intbuf)
+    CALL alloc(finioi, fano_intbuf)
+    CALL alloc(finioj, fano_intbuf)
+    DO finalcol = 1, fin_max
+      adccol = adccol + 1
+      fincol = fincol + 1
+      jcol   = finalpos(finalcol)
+      adcrow = adccol
+      finrow = fincol
+      DO finalrow = finalcol, fin_max - 1
+        adcrow = adcrow + 1
+        finrow = finrow + 1
+        irow   = finalpos(finalrow)
+
+! s != 
+        isfindiag:IF (adcrow == adccol) THEN
+          diag(adcrow) = diag(adcrow) + s
+        ELSE isfindiag
+          IF (s /= 0.0D0) THEN
+            adcib = adcib + 1
+            adcbuf(adcib) = s
+            adcioi(adcib) = adcrow
+            adcioj(adcib) = adccol
+            !WRITE(iw,*) 'adccol = ', adccol
+            !WRITE(iw,*) 'adcrow = ', adcrow
+            IF (adcib == fano_intbuf) THEN
+              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                  adcnbufs,adcib,adcfh)
+            END IF
+            finib = finib + 1
+            finbuf(finib) = s
+            finioi(finib) = finrow
+            finioj(finib) = fincol
+            !WRITE(iw,*) 'fincol = ', fincol
+            !WRITE(iw,*) 'finrow = ', finrow
+            IF (finib == fano_intbuf) THEN
+              CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
+                                  finnbufs,finib,finfh)
+            END IF
+          END IF
+        END IF isfindiag
+      END DO
+    END DO
+
+    DEALLOCATE(oolt)    
+
+    CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
+                             adcib,adcfh)
+    CALL dealloc(adcbuf)
+    CALL dealloc(adcioi)
+    CALL dealloc(adcioj)
+
+    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+                             finib,finfh)
+    CALL dealloc(finbuf)
+    CALL dealloc(finioi)
+    CALL dealloc(finioj)
+
+    ! write the diagonal to separate files
+    adcdiagfh = itapfano + 9
+    indiagfh  = itapfano + 10
+    findiagfh = itapfano + 11
+    CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs)
+    CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,adcnbufs)
+    CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
+
+    CALL dealloc(diag)
+
 
   END SUBROUTINE fano_makehphp
 
@@ -509,6 +589,35 @@ CONTAINS
     ib = 0
 
   END SUBROUTINE rwrite_rest_to_disk
+
+!
+!---------------------------------------------------------------------
+!
+  SUBROUTINE rwrite_diag(diag,ladc,first,last,fh,nbufs)
+!
+!  Purpose: to write the diagonal elements to disk
+!
+    IMPLICIT NONE
+!
+!  Data dictionary: Calling variables
+!
+    INTEGER, INTENT(IN)                 :: ladc
+    INTEGER, INTENT(IN)                 :: first, last
+    INTEGER, INTENT(IN)                 :: fh
+    INTEGER, INTENT(IN)                 :: nbufs
+    REAL(8), INTENT(IN), DIMENSION(ladc):: diag
+!
+!  Data dictionary: Local variables
+!
+    INTEGER :: ixx
+!
+!  Code
+!
+
+    WRITE(fh) (-diag(ixx), ixx= first, last), nbufs
+
+
+  END SUBROUTINE rwrite_diag
     
 
 
