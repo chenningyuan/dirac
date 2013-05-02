@@ -1575,10 +1575,10 @@ C
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
           IF (ADCLEVEL.EQ. 1) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(ICRA),CC(EAJL),RDUMMY,RDUMMY)
+     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO)
           ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(ICRA),CC(EAJL),CC(BUFO1),CC(BUF9A))
+     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO)
           END IF
         ELSE
           IF(CARITH) THEN
@@ -4886,6 +4886,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 S,KCOCC
       INTEGER JDUMMY
+      INTEGER zeros
 C
 C---------------Executable Code --------------------------------------
 C
@@ -4931,13 +4932,18 @@ C
             DO I=J+1,NO(IREP)
               OOLT(I,J,IREP)=IOFF
               IOFF=IOFF+1
+!              WRITE(iw,'(1X,4(A7,I4))') 'OOLT = ',ioff-1,'IREP = ',IREP,
+!     &                                  'j = ', j, 'i = ', i
             ENDDO
           ENDDO
         ENDDO
+
+!        WRITE(iw,*) 'size of oolt = ', SIZE(oolt)
 C
 C  loop over matrix entries and write to buffer immediately
 C
 
+        !zeros = 0
         DO J=1,NVOOT(CREP)
           DO I=J,NVOOT(CREP)
   
@@ -4945,6 +4951,10 @@ C
             ICOL=NOK+J
 
             S=KCOCC(I,J,OOOO,VOVO,ICRA,OOLT,MXNO)
+            !write(iw,'(1X,A4,ES15.4)') 's = ', S
+            !IF (S.EQ. 0.0D0) THEN
+            !  zeros = zeros + 1
+            !END IF
 C
 C  store matrix element either in the array for diagonal elements
 C  or in the write buffer  but then as the negative value ! all diagonal
@@ -4971,6 +4981,8 @@ C
 
           ENDDO
         ENDDO
+
+        !WRITE(iw,*) 'Number of zeros = ', zeros
 
       ENDIF
 C
