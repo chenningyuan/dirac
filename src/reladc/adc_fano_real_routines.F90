@@ -7,6 +7,7 @@ MODULE adc_fano_real_routines
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
   INTEGER                              :: fin_max  !number of final state configs
+  INTEGER                              :: ierror = 0
   
 !  Variables for the big, sorted ADC matrix
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: adcbuf   !alloc in fano_write_hhp
@@ -26,6 +27,13 @@ MODULE adc_fano_real_routines
   INTEGER                              :: incol, inrow
   INTEGER                              :: infh
   INTEGER                              :: indiagfh
+
+!  File names
+  CHARACTER(6), PARAMETER              :: fn_indiag  = 'INDIAG'
+  CHARACTER(5), PARAMETER              :: fn_inmat   = 'INMAT'
+  CHARACTER(7), PARAMETER              :: fn_adcdiag = 'ADCDIAG'
+  CHARACTER(6), PARAMETER              :: fn_adcmat  = 'ADCMAT'
+  CHARACTER(6), PARAMETER              :: fn_finmat  = 'FINMAT'
 
                                                
   
@@ -128,10 +136,16 @@ CONTAINS
     fincount   = 0
 
     itapfano   = itapadc
-    adcfh      = itapfano + 6 !Files need to be opened
-    infh       = itapfano + 7
+    adcfh      = itapfano + 7 !Files need to be opened
+    infh       = itapfano + 9
 
     WRITE(iw,*) 'Elke: Here we go!'
+
+!
+!  open the matrix files of the non-diagonal part of INMAT and ADCMAT
+!
+    OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
 
 !                                                                       
 !  write out h/h and h/2h1p buffers                                     
@@ -232,6 +246,7 @@ CONTAINS
     CALL dealloc(single_col)
     CALL dealloc(temp_array)
 
+
   END SUBROUTINE fano_write_hhp
 
 
@@ -303,8 +318,16 @@ CONTAINS
     nok  = no(krep) ! /= mxno
     najl = nvoot(krep)
 
-    !WRITE(iw,*) 'nok = ', nok
-    !WRITE(iw,*) 'mxno = ', mxno
+!
+! Open all files used only in this routine
+!
+!    OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+!         ACTION='WRITE',iostat=ierror)
+!    OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+!         ACTION='WRITE',iostat=ierror)
+!    OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+!         ACTION='WRITE',iostat=ierror)
+
 
     CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
 
@@ -480,7 +503,7 @@ CONTAINS
     fincol = 0
     finib = 0
     finnbufs = 0
-    finfh = itapfano + 8
+    finfh = itapfano + 10
     zeros = 0
     CALL alloc(finbuf, fano_intbuf)
     CALL alloc(finioi, fano_intbuf)
@@ -500,6 +523,10 @@ CONTAINS
         !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
         isfindiag:IF (adcrow == adccol) THEN
           diag(adcrow) = diag(adcrow) + s
+          finib = finib + 1
+          finbuf(finib) = diag(adcrow)
+          finioi(finib) = finrow
+          finioj(finib) = fincol
         ELSE isfindiag
           IF (s /= 0.0D0) THEN
             adcib = adcib + 1
@@ -518,12 +545,13 @@ CONTAINS
             finioj(finib) = fincol
             !WRITE(iw,*) 'fincol = ', fincol
             !WRITE(iw,*) 'finrow = ', finrow
-            IF (finib == fano_intbuf) THEN
-              CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
-                                  finnbufs,finib,finfh)
-            END IF
           END IF
         END IF isfindiag
+
+        IF (finib == fano_intbuf) THEN
+          CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
+                              finnbufs,finib,finfh)
+        END IF
       END DO
     END DO
 
@@ -542,14 +570,21 @@ CONTAINS
     CALL dealloc(finioj)
 
     ! write the diagonal to separate files
-    adcdiagfh = itapfano + 9
-    indiagfh  = itapfano + 10
-    findiagfh = itapfano + 11
+    adcdiagfh = itapfano + 6
+    indiagfh  = itapfano + 8
+    !findiagfh = itapfano + 11
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,adcnbufs)
-    CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
+    !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
 
     CALL dealloc(diag)
+
+!
+!  close all files used only in this routine
+!
+!    CLOSE(adcdiagfh)
+!    CLOSE(indiagfh)
+!    CLOSE(finfh)
 
 
   END SUBROUTINE fano_makehphp

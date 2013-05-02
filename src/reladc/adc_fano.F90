@@ -73,6 +73,13 @@ CONTAINS
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
 
+    ! open the matrix files of the sorted ADC matrix and the matrix of the
+    ! initial states
+    OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
+         ACTION='WRITE',iostat=ierror)
+
     ! Create sorted h/2h1p block
     CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw)
@@ -88,6 +95,10 @@ CONTAINS
     CALL dealloc(finalpos)
     CALL dealloc(icra)
     CALL dealloc(bigicra)
+
+    !close matrix files
+    CLOSE(adcfh)
+    CLOSE(infh)
 
   END SUBROUTINE fanoadc
 
