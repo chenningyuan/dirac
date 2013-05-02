@@ -4,7 +4,11 @@ MODULE adc_fano_real_routines
 !  Data dictionary: common variables and arrays for the Fano ADC
 !  
   INTEGER, PARAMETER                   :: fano_intbuf = 2 * 1024 * 1024 !as in ADC
-
+  INTEGER                              :: itapfano !same as itapadc, written in a module
+                                                   !file handle basis
+  INTEGER                              :: fin_max  !number of final state configs
+  
+!  Variables for the big, sorted ADC matrix
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: adcbuf   !alloc in fano_write_hhp
                                                    !dealloc in fano_make_hphp
   INTEGER, ALLOCATABLE, DIMENSION(:)   :: adcioi, adcioj !"
@@ -14,6 +18,7 @@ MODULE adc_fano_real_routines
   INTEGER                              :: adcfh    ! file handle for ADC matrix
   INTEGER                              :: adcdiagfh
 
+!  Variables for the intial state matrix
   REAL(8), ALLOCATABLE, DIMENSION(:)   :: inbuf
   INTEGER, ALLOCATABLE, DIMENSION(:)   :: inioi, inioj !"
   INTEGER                              :: innbufs
@@ -22,9 +27,6 @@ MODULE adc_fano_real_routines
   INTEGER                              :: infh
   INTEGER                              :: indiagfh
 
-  INTEGER                              :: itapfano !same as itapadc, written in a module
-                                                   !file handle basis
-  INTEGER                              :: fin_max  !number of final state configs
                                                
   
   
@@ -373,6 +375,8 @@ CONTAINS
 
     colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
       temp = finalpos(fincol)
+      !WRITE(iw,*) 'jcol = ', jcol
+      !WRITE(iw,*) 'adccol1 = ', adccol
       ! is the column a column of the final states?
       IF (temp == jcol) THEN
         fincol = fincol + 1
@@ -383,21 +387,25 @@ CONTAINS
       adccol = adccol + 1
       incol  = incol  + 1
 
+      !WRITE(iw,*) 'adccol = ', adccol
+      !WRITE(iw,*) 'jcol = ', jcol
+
       finrow = 1
       adcrow = adccol - 1
-      inrow  = incol  - 1
+      inrow  = incol - 1
 
       rowloop:DO irow = jcol, najl
-        temp = finalpos(finrow)
-        IF (temp == irow) THEN
-          finrow = finrow + 1
-          !WRITE(iw,*) 'position to skip: ', irow
+        IF (ANY(finalpos == irow)) THEN
           CYCLE rowloop
         END IF
 
         ! determine the row of the initial and total matrix
         adcrow = adcrow + 1
         inrow  = inrow  + 1
+
+        !WRITE(iw,*) 'adccol = ', adccol
+        !WRITE(iw,*) 'adcrow = ', adcrow
+        !WRITE(iw,*) 'irow = ', irow
 
         s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
         !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
@@ -407,7 +415,6 @@ CONTAINS
 
         isdiag:IF (irow == jcol) THEN
           diag(adcrow) = diag(adcrow) + s
-          !diag(inrow)  = diag(inrow) + s
         ELSE isdiag
           IF (s /= 0.0D0) THEN
             inib = inib + 1
@@ -435,10 +442,31 @@ CONTAINS
         END IF isdiag
 
       END DO rowloop
+! construct coupling part between initial and final states
+      DO fincount = 1, fin_max
+        irow = finalpos(fincount)
+        adcrow = adcrow + 1
+        !WRITE(iw,*) 'adccol = ', adccol
+        !WRITE(iw,*) 'adcrow = ', adcrow
+
+        s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+        IF (s /= 0.0D0) THEN
+          adcib = adcib + 1
+          adcbuf(adcib) = s
+          adcioi(adcib) = adcrow
+          adcioj(adcib) = adccol
+          IF (adcib == fano_intbuf) THEN
+            CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                adcnbufs,adcib,adcfh)
+          END IF
+        ELSE
+          zeros = zeros + 1
+        END IF
+      END DO
 
     END DO colloop
 
-    !WRITE(iw,*) 'Number of zeros = ', zeros
+    WRITE(iw,*) 'Number of zeros = ', zeros
 
     CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                              inib,infh)

@@ -4943,7 +4943,7 @@ C
 C  loop over matrix entries and write to buffer immediately
 C
 
-        !zeros = 0
+        zeros = 0
         DO J=1,NVOOT(CREP)
           DO I=J,NVOOT(CREP)
   
@@ -4952,9 +4952,9 @@ C
 
             S=KCOCC(I,J,OOOO,VOVO,ICRA,OOLT,MXNO)
             !write(iw,'(1X,A4,ES15.4)') 's = ', S
-            !IF (S.EQ. 0.0D0) THEN
-            !  zeros = zeros + 1
-            !END IF
+            IF (S.EQ. 0.0D0) THEN
+              zeros = zeros + 1
+            END IF
 C
 C  store matrix element either in the array for diagonal elements
 C  or in the write buffer  but then as the negative value ! all diagonal
@@ -4982,7 +4982,7 @@ C
           ENDDO
         ENDDO
 
-        !WRITE(iw,*) 'Number of zeros = ', zeros
+        WRITE(iw,*) 'Number of zeros = ', zeros
 
       ENDIF
 C
