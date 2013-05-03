@@ -578,8 +578,8 @@ CONTAINS
     CALL dealloc(adcioi)
     CALL dealloc(adcioj)
 
-!    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
-!                             finib,finfh)
+    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+                             finib,finfh)
     CALL dealloc(finbuf)
     CALL dealloc(finioi)
     CALL dealloc(finioj)
