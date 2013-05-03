@@ -141,11 +141,13 @@ CONTAINS
 
     WRITE(iw,*) 'Elke: Here we go!'
 
-!
-!  open the matrix files of the non-diagonal part of INMAT and ADCMAT
-!
+    ! open the matrix files of the sorted ADC matrix and the matrix of the
+    ! initial states
     OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
+    OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
+         ACTION='WRITE',iostat=ierror)
+
 
 !                                                                       
 !  write out h/h and h/2h1p buffers                                     
@@ -321,13 +323,18 @@ CONTAINS
 !
 ! Open all files used only in this routine
 !
-!    OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
-!    OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
-!    OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
+    adcdiagfh = itapfano + 6
+    indiagfh  = itapfano + 8
+    finfh     = itapfano + 10
 
+    OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+
+    WRITE(iw,*) 'Nach den OPEN statements'
 
     CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
 
@@ -338,10 +345,10 @@ CONTAINS
       off1 = off1 + nok
     END DO
     
-    tempe = 0
-    counter = 0
     CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
     CALL alloc(temp_fin, fin_max)
+    tempe = 0
+    counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
       DO fincount = 1, fin_max
@@ -356,6 +363,8 @@ CONTAINS
       !WRITE(iw,*) 'counter = ', counter
       !WRITE(iw,*) 'k       = ', k
     END DO diag_2h1p
+
+    WRITE(iw,*) 'Diagonal sorted.'
 
     ! add final state diagonal
     ! todo: write several diagonal files from temp_fin, tempe and total
@@ -490,9 +499,11 @@ CONTAINS
     END DO colloop
 
     WRITE(iw,*) 'Number of zeros = ', zeros
+    !WRITE(iw,*) 'inib = ', inib
 
     CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                              inib,infh)
+    !WRITE(iw,*) 'inib = ', inib
 
     CALL dealloc(inbuf)
     CALL dealloc(inioi)
@@ -503,8 +514,6 @@ CONTAINS
     fincol = 0
     finib = 0
     finnbufs = 0
-    finfh = itapfano + 10
-    zeros = 0
     CALL alloc(finbuf, fano_intbuf)
     CALL alloc(finioi, fano_intbuf)
     CALL alloc(finioj, fano_intbuf)
@@ -551,28 +560,31 @@ CONTAINS
         IF (finib == fano_intbuf) THEN
           CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
                               finnbufs,finib,finfh)
+          WRITE(iw,*) 'finib = ', finib
         END IF
       END DO
     END DO
+
+!    WRITE(iw,*) 'ADCib = ', adcib
+!    WRITE(iw,*) 'Finib = ', finib
 
     DEALLOCATE(oolt)    
 
     CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
                              adcib,adcfh)
+!    WRITE(iw,*) 'ADCib = ', adcib
+
     CALL dealloc(adcbuf)
     CALL dealloc(adcioi)
     CALL dealloc(adcioj)
 
-    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
-                             finib,finfh)
+!    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+!                             finib,finfh)
     CALL dealloc(finbuf)
     CALL dealloc(finioi)
     CALL dealloc(finioj)
 
     ! write the diagonal to separate files
-    adcdiagfh = itapfano + 6
-    indiagfh  = itapfano + 8
-    !findiagfh = itapfano + 11
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,adcnbufs)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
@@ -582,9 +594,12 @@ CONTAINS
 !
 !  close all files used only in this routine
 !
-!    CLOSE(adcdiagfh)
-!    CLOSE(indiagfh)
-!    CLOSE(finfh)
+    CLOSE(adcdiagfh)
+    CLOSE(indiagfh)
+    CLOSE(finfh)
+    CLOSE(adcfh)
+    CLOSE(infh)
+
 
 
   END SUBROUTINE fano_makehphp
