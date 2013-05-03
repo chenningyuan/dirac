@@ -586,7 +586,7 @@ CONTAINS
 
     ! write the diagonal to separate files
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs)
-    CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,adcnbufs)
+    CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
 
     CALL dealloc(diag)
