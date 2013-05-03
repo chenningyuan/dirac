@@ -28,6 +28,11 @@ MODULE adc_fano_real_routines
   INTEGER                              :: infh
   INTEGER                              :: indiagfh
 
+!  Variables for the final state matrix
+  INTEGER                              :: finnbufs
+  INTEGER                              :: finfh, findiagfh
+
+
 !  File names
   CHARACTER(6), PARAMETER              :: fn_indiag  = 'INDIAG'
   CHARACTER(5), PARAMETER              :: fn_inmat   = 'INMAT'
@@ -136,6 +141,8 @@ CONTAINS
     fincount   = 0
 
     itapfano   = itapadc
+!  remember: at this moment, itapadc+4 and itapadc+5
+!            are open due to adc_sngl_main
     adcfh      = itapfano + 7 !Files need to be opened
     infh       = itapfano + 9
 
@@ -258,7 +265,7 @@ CONTAINS
 !---------------------------------------------------------------------
 !
   SUBROUTINE fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-                           finalpos,itape1,itape2,iw,mxno)
+                           finalpos,iw,mxno)
 
 !
 !  Purpose: Create all elements of the ADC Sat Block and write them to the
@@ -286,7 +293,6 @@ CONTAINS
     INTEGER,INTENT(IN),DIMENSION(9,nvoot(krep))      :: bigicra
     INTEGER,INTENT(IN)                               :: ladc
     INTEGER,INTENT(IN),DIMENSION(fin_max)            :: finalpos
-    INTEGER,INTENT(IN)                               :: itape1, itape2
     INTEGER,INTENT(IN)                               :: iw
     INTEGER,INTENT(IN)                               :: mxno
     
@@ -305,7 +311,7 @@ CONTAINS
     INTEGER                                :: finrow, fincol
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
     INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
-    INTEGER                                :: finfh, finib,finnbufs, findiagfh
+    INTEGER                                :: finib
     INTEGER                                :: irow, jcol, i, j, k
     INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter

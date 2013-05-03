@@ -83,7 +83,7 @@ CONTAINS
     
     ! Create the sorted 2h1p/2h1p block
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-                       finalpos,66,67,iw,mxno)
+                       finalpos,iw,mxno)
 
     CALL dealloc(finalpos)
     CALL dealloc(icra)
