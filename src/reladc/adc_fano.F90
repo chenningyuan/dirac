@@ -89,6 +89,23 @@ CONTAINS
     CALL dealloc(icra)
     CALL dealloc(bigicra)
 
+    WRITE(iw,*)
+    WRITE(iw,*) 'Diagonal elements of the sorted ADC matrix written to        : ', &
+                 fn_adcdiag
+    WRITE(iw,*) 'Non-diagonal elements of the sorted ADC matrix written to    : ', &
+                 fn_adcmat
+    WRITE(iw,*) 'Diagonal elements of initial state matrix written to         : ', &
+                 fn_indiag
+    WRITE(iw,*) 'Non-diagonal elements of initial state matrix written to     : ', &
+                 fn_inmat
+    WRITE(iw,*) 'Diag. and non-diag. elements of final state matrix written to: ', &
+                 fn_finmat
+    WRITE(iw,*)
+
+    
+
+    WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
+    CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
 
   END SUBROUTINE fanoadc
 

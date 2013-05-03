@@ -563,6 +563,8 @@ CONTAINS
           END IF
         END IF isfindiag
 
+!        WRITE(iw,*) 'Fin entry = ', finbuf(finib)
+
         IF (finib == fano_intbuf) THEN
           CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
                               finnbufs,finib,finfh)
