@@ -111,6 +111,7 @@ contains
      integer                :: norb1_f       
      integer                :: nbas1_f
      integer                :: ndim_ao 
+     integer                :: mz
      character (len=12)     :: flabel
      integer, allocatable   :: boson_info(:)
 !**********************************************************************
@@ -145,15 +146,17 @@ contains
 !              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !      ------------------------------------------------------------------------------
 
-#ifdef x2c_spinfree_test_debug
+       mz = nz
+!#ifdef x2c_spinfree_test_debug
        if(spinfree)then
          allocate(boson_info(norb_dim(1)+norb_dim(2)))
          call get_boson_irrep_info(boson_info,  &
                                    nfsym,       &
                                    norb_dim,    &
                                    print_lvl)
+         mz = 1
        end if
-#endif
+!#endif
 
 !      initialize matrix offsets
        ioff_osh1      = 1
@@ -191,6 +194,7 @@ contains
                                    nbas1_f,                           &
                                    norb1_f,                           &
                                    nz,                                &
+                                   mz,                                &
                                    nzt,                               &
                                    ipq_off_in,                        &
                                    spinfree,                          &
@@ -211,9 +215,9 @@ contains
 
        end do
 
-#ifdef x2c_spinfree_test_debug
+!#ifdef x2c_spinfree_test_debug
        if(spinfree) deallocate(boson_info)
-#endif
+!#endif
 
   end subroutine x2c_get_h1_mat_base
 

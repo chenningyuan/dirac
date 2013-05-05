@@ -341,7 +341,8 @@ contains
                                            ndim_i,                 &
                                            ndim_ii,                &
                                            ndim_iii,               &
-                                           nz_12,                  &
+                                           nz_1,                   &
+                                           nz_2,                   &
                                            nz_3,                   &
                                            ipq_off_in,             &
                                            transform_direction,    &
@@ -359,7 +360,8 @@ contains
      integer, intent(in)           :: ndim_i 
      integer, intent(in)           :: ndim_ii
      integer, intent(in)           :: ndim_iii
-     integer, intent(in)           :: nz_12
+     integer, intent(in)           :: nz_1
+     integer, intent(in)           :: nz_2
      integer, intent(in)           :: nz_3
      integer, intent(in)           :: ipq_off_in(4,0:7)
      integer, intent(in)           :: print_lvl
@@ -378,12 +380,12 @@ contains
                      scrmat1,                    &
                      ndim_iii,                   &
                      ndim_iii,                   &
-                     nz_12,                      &
+                     nz_1,                       &
                      ipq_off_in(1,0),            &
                      scrmat2,                    &
                      ndim_ii,                    &
                      ndim_ii,                    &
-                     nz_12,                      &
+                     nz_2,                       &
                      ipq_off_in(1,0),            &
                      scrmat3,                    &
                      ndim_i,                     &

@@ -104,6 +104,7 @@ contains
 !**********************************************************************
 !
 
+#ifdef spinfree_after_approach
        if(spinfree)then
          allocate(boson_info(norb_dim(1)+norb_dim(2)))
          call get_boson_irrep_info(boson_info,  &
@@ -111,6 +112,7 @@ contains
                                    norb_dim,    &
                                    print_lvl)
        end if
+#endif
 
 !      initialize pointers for matrices and vectors
        ioff_osh1 = 1
@@ -210,6 +212,7 @@ contains
                                            ipq_off(1,0),       &
                                            print_lvl)
             
+#ifdef spinfree_after_approach
            if(spinfree)then
              call make_spinfree_h1_onmo(                               &
                                         xmat(ioff_esh1),               & 
@@ -223,6 +226,7 @@ contains
                                         print_lvl                      &
                                        )
            end if
+#endif
 
 !          debug print
            if(print_lvl > 1)then
@@ -241,7 +245,9 @@ contains
 
        end do
 
+#ifdef spinfree_after_approach
        if(spinfree) deallocate(boson_info)
+#endif
 
   end subroutine get_h1_2c_onmo_bas
 

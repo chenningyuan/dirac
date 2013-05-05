@@ -42,10 +42,10 @@ module x2c_def_h1_4c
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
-#ifdef x2c_spinfree_before_4c_to_2c
+!#ifdef x2c_spinfree_before_4c_to_2c
       make_spinfree_h1_onmo,          &
       get_boson_irrep_info,           &
-#endif
+!#endif
       read_4cfock_operator_x2c,       &
       get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
@@ -121,6 +121,7 @@ contains
      integer                :: norb1_f       
      integer                :: nbas1_f
      integer                :: ndim_ao
+     integer                :: mz
      real(8)                :: mydummy(2)
      character (len=12)     :: flabel
      logical                :: skip_step1 = .false.
@@ -162,15 +163,17 @@ contains
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
-#ifdef x2c_spinfree_before_4c_to_2c
+      mz = nz
+!#ifdef x2c_spinfree_before_4c_to_2c
       if(spinfree)then
         allocate(boson_info(norb_dim(1)+norb_dim(2)))
         call get_boson_irrep_info(boson_info,  &
                                   nfsym,       &
                                   norb_dim,    &
                                   print_lvl)
+        mz = 1
       end if
-#endif
+!#endif
 
 !     initialize matrix offsets
       ioff_osh1      = 1
@@ -191,6 +194,9 @@ contains
           ndim_ao        = naosh_ls
         end if
 
+!       call print_x2cmat( tra_mat_4cAOMO(ioff_ao_o_sh1),nbas1_f,norb1_f,nz,ipq_off_in,'blubb sf aomo',6)
+!       call print_x2cmat( h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,ndim_ao,nz,ipq_off_in,'blubb sf h1aoba',6)
+
         if( norb_dim(i) > 0 )then
 
           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
@@ -200,6 +206,7 @@ contains
                                   nbas1_f,                           &
                                   norb1_f,                           &
                                   nz,                                &
+                                  mz,                                &
                                   nzt,                               &
                                   ipq_off_in,                        &
                                   spinfree,                          &
@@ -207,6 +214,7 @@ contains
                                   print_lvl)
 
         end if
+!       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
 !       update offsets for matrices
         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
@@ -216,9 +224,9 @@ contains
 
       end do
 
-#ifdef x2c_spinfree_before_4c_to_2c
+!#ifdef x2c_spinfree_before_4c_to_2c
       if(spinfree) deallocate(boson_info)
-#endif
+!#endif
 
   end subroutine x2c_get_h1_defining_mat
 
@@ -451,6 +459,7 @@ contains
                                                  norb1_f,                   &
                                                  nz,                        &
                                                  nz,                        &
+                                                 nz,                        &
                                                  ipq_off_in,                &
                                                  'MOAO',                    &
                                                  'S',                       &
@@ -511,6 +520,7 @@ contains
                                                norb1_f,                        &
                                                nbas1_f,                        &
                                                nz,                             &
+                                               nz,                             &
                                                nzt,                            &
                                                ipq_off_in,                     &
                                                'MOAO',                         &
@@ -557,7 +567,8 @@ contains
                                 naosh_ls,               &
                                 nbas1_f,                &
                                 norb1_f,                &
-                                nz,                     &
+                                nz1,                    &
+                                nz2,                    &
                                 nzt,                    &
                                 ipq_off_in,             &
                                 spinfree,               &
@@ -577,7 +588,8 @@ contains
      integer, intent(in)    :: nbas1_f
      integer, intent(in)    :: norb1_f
      integer, intent(in)    :: naosh_ls
-     integer, intent(in)    :: nz
+     integer, intent(in)    :: nz1
+     integer, intent(in)    :: nz2
      integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: print_lvl
@@ -592,14 +604,15 @@ contains
                                           nbas1_f,               &
                                           norb1_f,               &
                                           naosh_ls,              &
-                                          nz,                    &
+                                          nz1,                   &
+                                          nz2,                   &
                                           nzt,                   &
                                           ipq_off_in,            &
                                           'AOMO',                &
                                           'S',                   &
                                           print_lvl) 
 
-#ifdef x2c_spinfree_before_4c_to_2c
+!#ifdef x2c_spinfree_before_4c_to_2c
 !       test the spinfree-before scheme by Miro and HJAAJ
         if(spinfree)then
           call make_spinfree_h1_onmo(                            &
@@ -610,11 +623,11 @@ contains
                                      norb1_f,                    & 
                                      boson_info,                 &
                                      boson_info,                 &
-                                     nz,                         &
+                                     nz1,                        &
                                      print_lvl                   &
                                     )
         end if
-#endif
+!#endif
 
   end subroutine get_h1_4c_on_basis
 !**********************************************************************
