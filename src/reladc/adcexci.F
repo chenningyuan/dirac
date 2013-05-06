@@ -3,6 +3,8 @@
 !      *****************************************************
 !      ****        D H F - A D C (2x)  M O D U L E      ****
 !      ****           POLARIZATION PROPAGATOR           ****
+!      ****                   for                       ****
+!      ****           ELECTRONIC EXCITATIONS            ****
 !      *****************************************************
 !
 !                       AUTHOR: M.Pernpointner
@@ -10,6 +12,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCEXC_MAIN (IW,IOBASE,EPS)
       use adc_cfg
+      use adc_mat
  
       IMPLICIT INTEGER(A-Z)
 
@@ -282,28 +285,26 @@
 !
         IF(reladc_dolanc) THEN
 !
-!** write specific config file for Lanczos
+!** setup matrix descriptor for Lanczos
 !
           neigenv = reladc_exceigv(IRPLOOP)
-          OPEN(iobase,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-          WRITE(iobase,'(I1)')  IONIZLEVEL        !IONIZLEVEL
-          WRITE(iobase,'(I12)') INTBUF            !Buffer length
-          WRITE(iobase,'(I2)')  DESREP            !KREP
-          WRITE(iobase,'(I1)')  RCW               !RCW
-          N=2
-          WRITE(iobase,'(I1)')  N                 !IOLDNEW
-          WRITE(iobase,'(I12)') LADC              !LADC
-          WRITE(iobase,'(A6)')  NAMEMATFIL        !FILEADC
-          WRITE(iobase,'(A6)')  '      '          !FILEDIA
-          WRITE(iobase,'(A6)')  NAMECNFFIL        !FILECNF
-          WRITE(iobase,'(A5)')  NMSPECF           !Name of SPEC
-          WRITE(iobase,'(I9)')  IRECL             !IRECL of config
-          WRITE(iobase,'(I9)')  reladc_exciter    !NITER
-          WRITE(iobase,'(I9)')  MVO(DESREP)       !hp main block size
-          WRITE(iobase,'(I9)')  NBUFS             !NBUFS
-          WRITE(iobase,'(I9)')  neigenv           !NEIGENV
-          WRITE(iobase,'(F10.1)') reladc_excprnt  !EVLLIM
-          CLOSE(iobase)
+
+          reladc_md_iobase   = iobase
+          reladc_md_ionizl   = IONIZLEVEL
+          reladc_md_ioldnew  = 2
+          reladc_md_intbuf   = INTBUF
+          reladc_md_desrep   = DESREP
+          reladc_md_rcw      = RCW
+          reladc_md_lnzitr   = reladc_exciter
+          reladc_md_matdim   = LADC
+          reladc_md_irecl    = IRECL
+          reladc_md_nmain    = MVO(DESREP)
+          reladc_md_nbufs    = NBUFS
+          reladc_md_neigenv  = neigenv
+          reladc_md_fileadc  = NAMEMATFIL
+          reladc_md_filediag = '      '
+          reladc_md_filecnf  = NAMECNFFIL
+          reladc_md_nmspec   = NMSPECF
 
           allocate(CC(reladc_lancmem),stat=ialloc)
           if(ialloc.ne.0) stop 'Memory allocation problem.'
@@ -320,9 +321,7 @@
 !
 !  open matinfo file and perform Lanczos
 !
-          OPEN(IOBASE,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-          CALL DIAG_LANC(CC,KFREE,LFREE,IOBASE,IW,reladc_doincore)
-          CLOSE(IOBASE,STATUS='DELETE')
+          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
 ! free all memory needed for diagonalization
 !
@@ -334,26 +333,27 @@
 !
         IF(reladc_dodavi) THEN
 !
-!** write specific config file for Davidson
+!  write current matrix specification into descriptor block
+!  only the values **** needed for Davidson **** are written.
+!  In the descriptor file a few more variables are contained.
 !
-          OPEN(iobase,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-          WRITE(iobase,'(I12)') INTBUF              !Buffer length
-          WRITE(iobase,'(I2)')  DESREP              !KREP
-          WRITE(iobase,'(I1)')  RCW                 !RCW
-          WRITE(iobase,'(I12)') LADC                !LADC
-          WRITE(iobase,'(A6)')  NAMEMATFIL          !FILEADC
-          WRITE(iobase,'(A6)')  NAMECNFFIL          !FILECNF
-          WRITE(iobase,'(A5)')  NMSPECF             !Name of SPEC
-          WRITE(iobase,'(I9)')  IRECL               !IRECL of config
-          WRITE(iobase,'(I9)')  MVO(DESREP)         !hp main block size
-          WRITE(iobase,'(I9)')  NBUFS               !NBUFS
-          WRITE(iobase,'(I9)')  reladc_davroots     !# of requested states in this symm.
-          WRITE(iobase,'(I9)')  reladc_davmaxsp     !Maxspace in this symm.
-          WRITE(iobase,'(I9)')  reladc_davmaxit     !Max. allowed Dav. macro iterations
-          WRITE(iobase,'(E10.5)') reladc_davconv    !Convergence in the Davidson eigenvalues
-          CLOSE(iobase)
+          reladc_md_iobase    = iobase
+          reladc_md_intbuf    = intbuf
+          reladc_md_desrep    = desrep
+          reladc_md_rcw       = rcw
+          reladc_md_matdim    = ladc
+          reladc_md_irecl     = irecl
+          reladc_md_nmain     = mvo(desrep)
+          reladc_md_nbufs     = nbufs
+          reladc_md_davroots  = reladc_davroots
+          reladc_md_maxdavsp  = reladc_davmaxsp
+          reladc_md_maxdavit  = reladc_davmaxit
+          reladc_md_convthr   = reladc_davconv
+          reladc_md_fileadc   = NAMEMATFIL
+          reladc_md_filecnf   = NAMECNFFIL
+          reladc_md_nmspec    = NMSPECF 
 
-          CALL DIAG_DAVI(IOBASE,INFOFN,IW)
+          CALL DIAG_DAVI(IW)
         ENDIF
 !
 !  delete adc matrix file
@@ -1195,16 +1195,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         brep = multb(desrep+nrep,jrep,1)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
-!debug
-!       brep = multb(jrep,desrep+nrep,2)  wrong !!!
-!       leads to offset errors further down.
-!  
-!         desrepkr = multb(desrep+nrep,1+nrep,2)
-!         if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) STOP 'WAAAHH'
-!         write(*,*) 'transferring Kramers partner'
-!
-!debug end
-!
+
           CALL XCOLMAKE(desrep,lencouplbl,bufcol,
      &                  jrep,brep,jfun,bfun,
      &                  mxno,mxnv,nrep,

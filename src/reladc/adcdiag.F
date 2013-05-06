@@ -632,7 +632,9 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+
+      use adc_mat      !obtain matrix parameters via descriptor file
 
       IMPLICIT INTEGER (A-Z)
 
@@ -645,10 +647,8 @@ C
 C---------------Description--------------------------------------------
 C
 C  This routine executes diagonalizer on any matrix (SIP/DIP) coming
-C  from the previous ADC code. All information comes from file MATINFO
-C  which is opened in the upper routine via infohandle.
 C  
-C  Infohandle is the file handle associated with the MATINFO file.
+C  Infohandle is the base file handle.
 C  the subsequent handles INFOHANDLE+1, +2 ... are available and
 C  can be used. The allocation is as follows:
 c
@@ -694,48 +694,34 @@ C
 !     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-!     WRITE(IW,*) 'Memory check done.'
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
 c
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
-c  read required information from info file
+c  transfer required parameters from matrix descriptor module
+c  to actual modules.
 c
-      READ(INFOHANDLE,'(I1)')    IONIZLEVEL
+      IONIZLEVEL = reladc_md_ionizl
       IF(IONIZLEVEL.eq.3) THEN
-        READ(INFOHANDLE,'(I12)')   INTBUF
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
-      ELSE
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
+        INTBUF = reladc_md_intbuf
       ENDIF
+      INFOHANDLE   =  reladc_md_iobase
+      KREP         =  reladc_md_desrep
+      RCW          =  reladc_md_rcw
+      IOLDNEW      =  reladc_md_ioldnew
+      LADC         =  reladc_md_matdim
+      FILEADC      =  reladc_md_fileadc
+      FILEDIA      =  reladc_md_filediag
+      FILECNF      =  reladc_md_filecnf
+      NMSPEC       =  reladc_md_nmspec
+      IRECL        =  reladc_md_irecl
+      NITER        =  reladc_md_lnzitr
+      NOCC         =  reladc_md_nmain
+      NBUFS        =  reladc_md_nbufs    
+      NEIGENV      =  reladc_md_neigenv
+      EVLLIM       =  20.0d0
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
@@ -3464,15 +3450,16 @@ c
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_DAVI(iobase,infofile,iw)
+      SUBROUTINE DIAG_DAVI(iw)
 
       use adc_cfg   !make input variables accessible here
 !                   !abandons the old adc_input common block.
+      use adc_mat   !contains matrix descriptor for the matrix
+                    !in the actual run. Abandons INFOFILE.
 
       IMPLICIT NONE
 
-      INTEGER                      :: iobase,iw
-      CHARACTER*7                  :: infofile
+      INTEGER                      :: iw
 !
 !---------------Description--------------------------------------------
 !
@@ -3480,6 +3467,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !
 ! *** variables for Matrix descriptor file
+      INTEGER         :: iobase
       INTEGER         :: intbuf,desrep,rcw
       INTEGER         :: ladc,irecl,nmain,nbufs
       CHARACTER*6     :: fileadc,filecnf
@@ -3516,24 +3504,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code----------------------------------------
 !
-      Call PST('Entering (real) Davidson diagonalizer+')
 
-      OPEN(iobase,FILE=infofile,FORM='FORMATTED',STATUS='OLD')
-      READ(iobase,'(I12)')      intbuf
-      READ(iobase,'(I2)')       desrep
-      READ(iobase,'(I1)')       rcw
-      READ(iobase,'(I12)')      ladc
-      READ(iobase,'(A6)')       fileadc
-      READ(iobase,'(A6)')       filecnf
-      READ(iobase,'(A5)')       nmspec
-      READ(iobase,'(I9)')       irecl
-      READ(iobase,'(I9)')       nmain
-      READ(iobase,'(I9)')       nbufs 
-      READ(iobase,'(I9)')       nroots
-      READ(iobase,'(I9)')       maxdavsp
-      READ(iobase,'(I9)')       maxdavit
-      READ(iobase,'(E10.5)')    convthr
-      CLOSE(iobase,status='DELETE')
+      Call PST('Entering (real) Davidson diagonalizer+')
+!
+!  fill current descriptor variables with transferred values
+!
+      iobase   =  reladc_md_iobase      !file handle for matrix handling
+      intbuf   =  reladc_md_intbuf      !buffer length in matrix
+      desrep   =  reladc_md_desrep      !current symmetry
+      rcw      =  reladc_md_rcw         !real/complex matrix
+      ladc     =  reladc_md_matdim      !matrix dimension
+      fileadc  =  reladc_md_fileadc     !file name of ADC matrix
+      filecnf  =  reladc_md_filecnf     !file name of configuration file
+      nmspec   =  reladc_md_nmspec      !file name of spectral output file
+      irecl    =  reladc_md_irecl       !record length of configuration data
+      nmain    =  reladc_md_nmain       !size of ADC matrix main block 
+      nbufs    =  reladc_md_nbufs       !number of buffers of len "intbuf"
+      nroots   =  reladc_md_davroots    !number of requested Davidson roots
+      maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
+      maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
+      convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
 !
 !  write out matrix  and Davidson parameters
 !
@@ -3627,7 +3617,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Do i=1,nroots
         Read(iobase) (bold(j,i),j=1,nsiz)
       Enddo
-      Close(iobase)
+      Close(iobase,status='delete')
 !|
 !|  end reading initial vectors and diagonal.
 !|___________________________________________________________
@@ -3640,7 +3630,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       orthoviolflag = .false.
 
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      Call XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag) 
+      Call XMATINI_R(iobase,intbuf,nbufs,ladc,adiag) 
 !__________________________________________________________
 !|
 !|
@@ -3689,7 +3679,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         Do i=j,locdim
           aij(i,j) = dot_product(bold(:,i),bnew(:,j))
           aij(j,i) = aij(i,j)   !symmetrize
-!         write(*,*) 'ööö',i,j,aij(i,j)
         Enddo
         Enddo
         CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
@@ -4019,7 +4008,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag)
+      SUBROUTINE XMATINI_R(iobase,intbuf,nbufs,ladc,adiag)
 C
       IMPLICIT NONE
 !
@@ -4071,7 +4060,7 @@ c  .. read elements
 
       RETURN
 
- 889  CALL QUIT('Matrix read error in XFTCHDIA_R')
+ 889  CALL QUIT('Matrix read error in XMATINI_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
