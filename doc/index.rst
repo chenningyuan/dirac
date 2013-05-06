@@ -43,7 +43,8 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>` |
+  :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
