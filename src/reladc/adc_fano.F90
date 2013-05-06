@@ -15,6 +15,7 @@ CONTAINS
 
     use adc_cfg
     use adc_fano_real_routines
+    use adc_fano_diag
     use adc_fano_routines
     use memory_allocator
 
@@ -41,13 +42,15 @@ CONTAINS
     
 
 !
-!  Data dictionary: Local Variables (and to be shared with subroutines
+!  Data dictionary: Local Variables (and to be shared with subroutines)
 !
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: icra
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
     INTEGER                               :: nr_in, nr_fin
     INTEGER                               :: nok, najl
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
+    INTEGER                               :: recl_condat_s
+    CHARACTER(8)                          :: fn_conf='FANOCONF'
 
 !
 !  Code
@@ -90,7 +93,6 @@ CONTAINS
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
                        finalpos,iw,mxno)
 
-    CALL dealloc(finalpos)
     CALL dealloc(icra)
     CALL dealloc(bigicra)
 
@@ -111,6 +113,12 @@ CONTAINS
 
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
+
+    ! Create the file holding the configurations of the 1h and 2h1p configurations
+    CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
+                        finalpos,fin_max,iw)
+
+    CALL dealloc(finalpos)
 
   END SUBROUTINE fanoadc
 

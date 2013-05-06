@@ -2,23 +2,25 @@ MODULE adc_fano_diag
 
 CONTAINS
 
-  SUBROUTINE fano_wcondat_s(LUN,FILENAME,IRECL,DESREP,LENADCM, &
+  SUBROUTINE fano_wcondat_s(LUN,FILENAME,IRECL,DESREP,lenmat, &
                             finalpos,fin_max,iw)
 
     IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
 !
-!     Writes explicit irep names and spinor numbers for the various
-!     final state configurations belonging to symmetry DESREP.
-!     Avoiding too complicated things we fix IRECL in this routine
-!     no matter which value is transferred to this routine. Therefore
-!     IRECL is an OUTPUT parameter.
+!   Writes explicit irep names and spinor numbers for the various
+!   final state configurations belonging to symmetry DESREP.
+!   Avoiding too complicated things we fix IRECL in this routine
+!   no matter which value is transferred to this routine. Therefore
+!   IRECL is an OUTPUT parameter.
+!   Configurations of the final states are kicked out, they won't
+!   won't be used in FanoADC.
 !
 !---------------Calling variables--------------------------------------
 !
     CHARACTER(8), INTENT(IN)                 :: FILENAME
-    INTEGER, INTENT(IN)                     :: LUN,DESREP,LENADCM
+    INTEGER, INTENT(IN)                     :: LUN,DESREP,lenmat
     INTEGER, INTENT(OUT)                    :: irecl
     INTEGER, INTENT(IN)                     :: fin_max
     INTEGER, INTENT(IN), DIMENSION(fin_max) :: finalpos
@@ -31,7 +33,7 @@ CONTAINS
 !---------------Local variables--------------------------------------
 !                                                                 
     INTEGER       :: lcount                                              
-    INTEGER       :: satcount
+    INTEGER       :: satcount, fincount
     CHARACTER*44  :: FIELD44                                        
     INTEGER       :: bl_conf                                             
     CHARACTER*4   :: bl_irna,bl_abs                                  
@@ -63,7 +65,8 @@ CONTAINS
     OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,    &
    &     STATUS='UNKNOWN')                                      
     LCOUNT = 1                                                  
-    satcount = 1
+    satcount = 0
+    !fincount = 1
                                                                 
 !_________________________ SIPS ______________________________    
 !|                                                                
@@ -101,8 +104,13 @@ CONTAINS
             IF(KREP.EQ.LREP) KMIN = L + 1                        
             DO K=KMIN,NO(KREP)                                   
               KOFF=IO(KREP)+K                                    
-              DO A=1,NV(AREP)                                    
+              aloop:DO A=1,NV(AREP)                                    
                 AOFF=IO(NREP+1)+IV(AREP)+A                       
+                satcount = satcount + 1
+                IF (ANY(finalpos == satcount)) THEN
+                  CYCLE aloop
+                END IF
+!                WRITE(iw,*) 'satcount = ', satcount
 !                 WRITE(FIELD44,381)                               
 !    &              K,REPNA(KREP),                                 
 !    &              L,REPNA(LREP),                                 
@@ -115,7 +123,7 @@ CONTAINS
    &              BL_CONF,BL_IRNA                                
                 WRITE(LUN,REC=lcount) FIELD44                    
                 LCOUNT=LCOUNT+1                                  
-              ENDDO                                              
+              END DO aloop                                             
             ENDDO                                                
           ENDDO                                                  
         END DO lloop
@@ -128,8 +136,8 @@ CONTAINS
 ! ** correct configuration counter                                
                                                                   
       LCOUNT = LCOUNT - 1                                       
-      IF(LCOUNT.NE.LENADCM) THEN                                
-        WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM            
+      IF(LCOUNT.NE.lenmat) THEN                                
+        WRITE(IW,*) 'LCOUNT,lenmat:',LCOUNT,lenmat            
         CALL QUIT('Error in fano_wcondat_s for single ionizations')  
       ENDIF                                                     
 !|                                                                
