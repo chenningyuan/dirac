@@ -35,8 +35,8 @@ MODULE adc_fano_real_routines
 
 !  File names
   CHARACTER(6), PARAMETER              :: fn_indiag  = 'INDIAG'
-  CHARACTER(5), PARAMETER              :: fn_inmat   = 'INMAT'
-  CHARACTER(7), PARAMETER              :: fn_adcdiag = 'ADCDIAG'
+  CHARACTER(5), PARAMETER              :: fn_inmat   = 'IN_MAT'
+  CHARACTER(7), PARAMETER              :: fn_adcdiag = 'ADCDIA'
   CHARACTER(6), PARAMETER              :: fn_adcmat  = 'ADCMAT'
   CHARACTER(6), PARAMETER              :: fn_finmat  = 'FINMAT'
 

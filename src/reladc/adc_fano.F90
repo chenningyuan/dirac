@@ -50,7 +50,7 @@ CONTAINS
     INTEGER                               :: nok, najl
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
-    CHARACTER(8)                          :: fn_conf='FANOCONF'
+    CHARACTER(8)                          :: fn_conf='FANCNF'
 
 !
 !  Code
