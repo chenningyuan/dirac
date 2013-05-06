@@ -1576,12 +1576,12 @@ C
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
           IF (ADCLEVEL.EQ. 1) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
+     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO,CC,KFREE,LFREE
      &                   )
           ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
-     &                   )
+     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO,
+     &                   CC,KFREE,LFREE)
           END IF
         ELSE
           IF(CARITH) THEN

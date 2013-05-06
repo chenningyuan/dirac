@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     eajl,oooo,vovo,mxno)
+                     eajl,oooo,vovo,mxno,cc,kfree,lfree)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -39,6 +39,8 @@ CONTAINS
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     INTEGER, INTENT(IN)   :: mxno
+    REAL(8)               :: cc(*)
+    INTEGER               :: kfree, lfree
     
 
 !
@@ -119,7 +121,7 @@ CONTAINS
 
     ! Write all characteristics of the matrix to be diagonalised
     ! to adc_mat. We are using the lanczos diagonaliser.
-    reladc_md_iobase   = itapfano+1
+    reladc_md_iobase   = itapfano
     reladc_md_ionizl   = 1
     reladc_md_ioldnew  = 1 !old, diagonal is written to extra file
     reladc_md_intbuf   = fano_intbuf
@@ -135,7 +137,13 @@ CONTAINS
     reladc_md_filediag = fn_indiag
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
-    
+
+    WRITE(iw,*) 'intbuf = ', reladc_md_intbuf
+    !WRITE(iw,*) 'recl   = ', reladc_md_irecl
+    !WRITE(iw,*) 'nbufs  = ', reladc_md_nbufs
+    !WRITE(iw,*) 'inmat  = ', reladc_md_fileadc
+
+    !CALL DIAG_LANC(cc,kfree,lfree,iw,.false.)
 
   END SUBROUTINE fanoadc
 
