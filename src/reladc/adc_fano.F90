@@ -59,6 +59,10 @@ CONTAINS
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
 
+    IF (nr_lanc_leigv == 0) THEN
+      CALL quit('FanoADC requires long eigenvectors')
+    END IF
+
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
     CALL make_bigicra(krep,bigicra,iw)
