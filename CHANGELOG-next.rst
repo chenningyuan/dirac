@@ -7,4 +7,5 @@
   ignored .SELECT.
 - Extended addressing of DSO integrals up to 333 atom centers.
 - Compilation fix for 64bit integer Intel MKL.
-- Buildup adapted for Portland group compilers.
+- DIRAC compiles using Portland group compilers.
+- Introduced block for any structure optimization runs using the xyz format.

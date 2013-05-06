@@ -3464,15 +3464,16 @@ c
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_DAVI(iobase,infofile,iw)
+      SUBROUTINE DIAG_DAVI(iw)
 
       use adc_cfg   !make input variables accessible here
 !                   !abandons the old adc_input common block.
+      use adc_mat   !contains matrix descriptor for the matrix
+                    !in the actual run. Abandons INFOFILE.
 
       IMPLICIT NONE
 
-      INTEGER                      :: iobase,iw
-      CHARACTER*7                  :: infofile
+      INTEGER                      :: iw
 !
 !---------------Description--------------------------------------------
 !
@@ -3480,6 +3481,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !
 ! *** variables for Matrix descriptor file
+      INTEGER         :: iobase
       INTEGER         :: intbuf,desrep,rcw
       INTEGER         :: ladc,irecl,nmain,nbufs
       CHARACTER*6     :: fileadc,filecnf
@@ -3516,24 +3518,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code----------------------------------------
 !
-      Call PST('Entering (real) Davidson diagonalizer+')
 
-      OPEN(iobase,FILE=infofile,FORM='FORMATTED',STATUS='OLD')
-      READ(iobase,'(I12)')      intbuf
-      READ(iobase,'(I2)')       desrep
-      READ(iobase,'(I1)')       rcw
-      READ(iobase,'(I12)')      ladc
-      READ(iobase,'(A6)')       fileadc
-      READ(iobase,'(A6)')       filecnf
-      READ(iobase,'(A5)')       nmspec
-      READ(iobase,'(I9)')       irecl
-      READ(iobase,'(I9)')       nmain
-      READ(iobase,'(I9)')       nbufs 
-      READ(iobase,'(I9)')       nroots
-      READ(iobase,'(I9)')       maxdavsp
-      READ(iobase,'(I9)')       maxdavit
-      READ(iobase,'(E10.5)')    convthr
-      CLOSE(iobase,status='DELETE')
+      Call PST('Entering (real) Davidson diagonalizer+')
+!
+!  fill current descriptor variables with transferred values
+!
+      iobase   =  reladc_md_iobase      !file handle for matrix handling
+      intbuf   =  reladc_md_intbuf      !buffer length in matrix
+      desrep   =  reladc_md_desrep      !current symmetry
+      rcw      =  reladc_md_rcw         !real/complex matrix
+      ladc     =  reladc_md_matdim      !matrix dimension
+      fileadc  =  reladc_md_fileadc     !file name of ADC matrix
+      filecnf  =  reladc_md_filecnf     !file name of configuration file
+      nmspec   =  reladc_md_nmspec      !file name of spectral output file
+      irecl    =  reladc_md_irecl       !record length of configuration data
+      nmain    =  reladc_md_nmain       !size of ADC matrix main block 
+      nbufs    =  reladc_md_nbufs       !number of buffers of len "intbuf"
+      nroots   =  reladc_md_davroots    !number of requested Davidson roots
+      maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
+      maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
+      convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
 !
 !  write out matrix  and Davidson parameters
 !
@@ -3627,7 +3631,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Do i=1,nroots
         Read(iobase) (bold(j,i),j=1,nsiz)
       Enddo
-      Close(iobase)
+      Close(iobase,status='delete')
 !|
 !|  end reading initial vectors and diagonal.
 !|___________________________________________________________
@@ -3640,7 +3644,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       orthoviolflag = .false.
 
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      Call XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag) 
+      Call XMATINI_R(iobase,intbuf,nbufs,ladc,adiag) 
 !__________________________________________________________
 !|
 !|
@@ -4018,7 +4022,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag)
+      SUBROUTINE XMATINI_R(iobase,intbuf,nbufs,ladc,adiag)
 C
       IMPLICIT NONE
 !
@@ -4070,7 +4074,7 @@ c  .. read elements
 
       RETURN
 
- 889  CALL QUIT('Matrix read error in XFTCHDIA_R')
+ 889  CALL QUIT('Matrix read error in XMATINI_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

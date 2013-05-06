@@ -453,7 +453,6 @@ class pam_enviroment:
                     break
             except Exception:
                 pass
-        self.pam_args = fullargs
         if self.diracrc_args: # save info about the diracrc file
             self.diracrc_file = path
         return fullargs
@@ -776,6 +775,8 @@ Options are also read from ~/.diracrc"""
         fullargs = self.get_rc_arguments()
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
+
+        self.pam_args = fullargs
 
         if len(sys.argv) == 1: #   user has given no arguments: print help and exit
             print parser.format_help().strip()
