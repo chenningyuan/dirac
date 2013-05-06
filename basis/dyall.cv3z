@@ -1,29 +1,3 @@
-$ 
-$ Elements Supported
-$ K  Ca Rb Sr Cs Ba Fr Ra 
-$ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
-$ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg 
-$ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
-$ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
-$ Rf Db Sg Bh Hs Mt Ds Rg Cn Uut Fl Uup Lv Uus Uuo
-$ 
-$  REFERENCE
-$ 
-$ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638.
-$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2002) 108:335;
-$        revision K.G. Dyall, Theor. Chem. Acc. (2006) 115:441.
-$    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483.
-$    5d: K.G. Dyall, Theor. Chem. Acc. (2004) 112:403;
-$        revision  K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97.
-$    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher, Theor. Chem. Acc. (2010)
-$        127:369.
-$    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
-$    6d: K.G. Dyall, Theor. Chem. Acc. (2011) 129:603.
-$    7p: K.G. Dyall, Theor. Chem. Acc. (2012) 131:1172.
-$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$
-$ 
-$ 
 $ K 
 a 19
 $ s functions
@@ -63,14 +37,14 @@ $ p functions
     1.60447892E+01
     7.57563158E+00
     3.63397107E+00
-    1.70472324E+00
-    8.13385690E-01
-    3.86671250E-01
-    1.82230261E-01
+    1.70328640E+00
+    8.09872309E-01
+    3.82073162E-01
+    1.77422040E-01
     9.13683690E-02
-    6.54824912E-02
-    2.68806483E-02
-    1.15189621E-02
+    5.18690952E-02
+    2.25843551E-02
+    1.02275849E-02
 $ d functions
     6    0    0
     2.59819840E+01
