@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     eajl,oooo,vovo,mxno)
+                     eajl,oooo,vovo,mxno,nr_lanc_leigv)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -37,6 +37,7 @@ CONTAINS
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     INTEGER, INTENT(IN)   :: mxno
+    INTEGER, INTENT(IN)   :: nr_lanc_leigv !number of requested long eigenvectors
     
 
 !
