@@ -652,6 +652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Modules------------------------------------------------
 !
       use adc_cfg
+      use adc_mat
 C
       IMPLICIT INTEGER(A-Z)
 C
@@ -1680,32 +1681,46 @@ C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-          OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-  
-          WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-          WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
-          WRITE(ITAPADC,'(I1)')  RCW                !RCW
-          N=1
-          WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
-          WRITE(ITAPADC,'(I12)') LADC               !LADC
-          WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
-          WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
-          WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
-          WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
-          WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
-          WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
-          WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
-          WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-          WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
-          WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
-       
-          CLOSE(ITAPADC)
+c     ...... old data written to infofile
+c
+c         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
+c         WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
+c         WRITE(ITAPADC,'(I1)')  RCW                !RCW
+c         N=1
+c         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
+c         WRITE(ITAPADC,'(I12)') LADC               !LADC
+c         WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
+c         WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
+c         WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
+c         WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
+c         WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
+c         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
+c         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
+c         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
+c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
+c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
+
+
+          reladc_md_iobase   = ITAPADC
+          reladc_md_ionizl   = IONIZLEVEL
+          reladc_md_ioldnew  = 1
+          reladc_md_intbuf   = INTBUF
+          reladc_md_desrep   = KREP
+          reladc_md_rcw      = RCW
+          reladc_md_lnzitr   = SIPITER
+          reladc_md_matdim   = LADC
+          reladc_md_irecl    = IRECL
+          reladc_md_nmain    = NO(KREP)
+          reladc_md_nbufs    = NBUFS
+          reladc_md_neigenv  = SIPEIGV(IRPLOOP)
+          reladc_md_fileadc  = FILEN5
+          reladc_md_filediag = FILEN4 
+          reladc_md_filecnf  = FILEN2
+          reladc_md_nmspec   = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAG_LANC(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
-        CLOSE(ITAPADC,STATUS='DELETE')
+        CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
 c
           WRITE(IW,*)
           WRITE(IW,*) '       ------------------------------'

@@ -285,28 +285,26 @@
 !
         IF(reladc_dolanc) THEN
 !
-!** write specific config file for Lanczos
+!** setup matrix descriptor for Lanczos
 !
           neigenv = reladc_exceigv(IRPLOOP)
-          OPEN(iobase,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-          WRITE(iobase,'(I1)')  IONIZLEVEL        !IONIZLEVEL
-          WRITE(iobase,'(I12)') INTBUF            !Buffer length
-          WRITE(iobase,'(I2)')  DESREP            !KREP
-          WRITE(iobase,'(I1)')  RCW               !RCW
-          N=2
-          WRITE(iobase,'(I1)')  N                 !IOLDNEW
-          WRITE(iobase,'(I12)') LADC              !LADC
-          WRITE(iobase,'(A6)')  NAMEMATFIL        !FILEADC
-          WRITE(iobase,'(A6)')  '      '          !FILEDIA
-          WRITE(iobase,'(A6)')  NAMECNFFIL        !FILECNF
-          WRITE(iobase,'(A5)')  NMSPECF           !Name of SPEC
-          WRITE(iobase,'(I9)')  IRECL             !IRECL of config
-          WRITE(iobase,'(I9)')  reladc_exciter    !NITER
-          WRITE(iobase,'(I9)')  MVO(DESREP)       !hp main block size
-          WRITE(iobase,'(I9)')  NBUFS             !NBUFS
-          WRITE(iobase,'(I9)')  neigenv           !NEIGENV
-          WRITE(iobase,'(F10.1)') reladc_excprnt  !EVLLIM
-          CLOSE(iobase)
+
+          reladc_md_iobase   = iobase
+          reladc_md_ionizl   = IONIZLEVEL
+          reladc_md_ioldnew  = 2
+          reladc_md_intbuf   = INTBUF
+          reladc_md_desrep   = DESREP
+          reladc_md_rcw      = RCW
+          reladc_md_lnzitr   = reladc_exciter
+          reladc_md_matdim   = LADC
+          reladc_md_irecl    = IRECL
+          reladc_md_nmain    = MVO(DESREP)
+          reladc_md_nbufs    = NBUFS
+          reladc_md_neigenv  = neigenv
+          reladc_md_fileadc  = NAMEMATFIL
+          reladc_md_filediag = '      '
+          reladc_md_filecnf  = NAMECNFFIL
+          reladc_md_nmspec   = NMSPECF
 
           allocate(CC(reladc_lancmem),stat=ialloc)
           if(ialloc.ne.0) stop 'Memory allocation problem.'
@@ -323,9 +321,7 @@
 !
 !  open matinfo file and perform Lanczos
 !
-          OPEN(IOBASE,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-          CALL DIAG_LANC(CC,KFREE,LFREE,IOBASE,IW,reladc_doincore)
-          CLOSE(IOBASE,STATUS='DELETE')
+          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
 ! free all memory needed for diagonalization
 !
