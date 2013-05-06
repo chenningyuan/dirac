@@ -47,6 +47,7 @@ module adc_mat
   integer, public                  ::  reladc_md_maxdavit = 0   !maximum number of Dav. iterations
   real*8,  public                  ::  reladc_md_convthr  = 0.0 !convergence of Davidson eigenvectors
   character*6, public              ::  reladc_md_fileadc  = ''  !file name of ADC matrix
+  character*6, public              ::  reladc_md_filediag = ''  !file name of diagonal of matrix, ioldnew=1
   character*6, public              ::  reladc_md_filecnf  = ''  !file name of configuration file
   character*5, public              ::  reladc_md_nmspec   = ''  !file name of spectral output file
 
