@@ -1468,22 +1468,6 @@ c
      & /" ***"/" ***"/" *** IRREP",I6,3X,"(",A4,")"/
      & " ***"/" ***"/" ******************************************"//)
 C
-C  Write the ADC files into the corresponding files. 
-C
-c       IF(KREP.GT.9) THEN
-c         WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP     ! diag elem.
-c         WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP     ! Packed ADC mat
-c       ELSE
-c         WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP    ! diag elem.
-c         WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP    ! Packed ADC mat
-c       ENDIF
-
-        WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
-        WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
-
-        OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-        OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
-C
 C  set start number of written buffers and initial buffer pointer
 C
         NBUFS=0
@@ -1581,6 +1565,24 @@ C
      &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO)
           END IF
         ELSE
+C
+C    Write the ADC files into the corresponding files. 
+C  
+c         IF(KREP.GT.9) THEN
+c           WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP     ! diag elem.
+c           WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP     ! Packed ADC mat
+c         ELSE
+c           WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP    ! diag elem.
+c           WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP    ! Packed ADC mat
+c         ENDIF
+
+          WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
+          WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
+
+          OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
+          OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
      &               INTBUF,LADC,CC(IOI),CC(IOJ),
