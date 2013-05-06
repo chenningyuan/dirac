@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     eajl,oooo,vovo,mxno,nr_lanc_leigv)
+                     eajl,oooo,vovo,mxno)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -14,6 +14,7 @@ CONTAINS
 !  Author:  Elke Fasshauer
 
     use adc_cfg
+    use adc_mat
     use adc_fano_real_routines
     use adc_fano_diag
     use adc_fano_routines
@@ -38,7 +39,6 @@ CONTAINS
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     INTEGER, INTENT(IN)   :: mxno
-    INTEGER, INTENT(IN)   :: nr_lanc_leigv !number of requested long eigenvectors
     
 
 !
@@ -62,9 +62,6 @@ CONTAINS
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
 
-    IF (nr_lanc_leigv == 0) THEN
-      CALL quit('FanoADC requires long eigenvectors')
-    END IF
 
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
@@ -119,6 +116,26 @@ CONTAINS
                         finalpos,fin_max,iw)
 
     CALL dealloc(finalpos)
+
+    ! Write all characteristics of the matrix to be diagonalised
+    ! to adc_mat. We are using the lanczos diagonaliser.
+    reladc_md_iobase   = itapfano+1
+    reladc_md_ionizl   = 1
+    reladc_md_ioldnew  = 1 !old, diagonal is written to extra file
+    reladc_md_intbuf   = fano_intbuf
+    reladc_md_desrep   = krep
+    reladc_md_rcw      = 1 !is real, for complex 2
+    reladc_md_lnzitr   = reladc_sipiter
+    reladc_md_matdim   = ladc-fin_max
+    reladc_md_irecl    = recl_condat_s
+    reladc_md_nmain    = nok
+    reladc_md_nbufs    = innbufs
+    reladc_md_neigenv  = reladc_fano_eigv
+    reladc_md_fileadc  = fn_inmat
+    reladc_md_filediag = fn_indiag
+    reladc_md_filecnf  = fn_conf
+    reladc_md_nmspec   = 'FSPEC'
+    
 
   END SUBROUTINE fanoadc
 
