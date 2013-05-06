@@ -3,6 +3,8 @@
 !      *****************************************************
 !      ****        D H F - A D C (2x)  M O D U L E      ****
 !      ****           POLARIZATION PROPAGATOR           ****
+!      ****                   for                       ****
+!      ****           ELECTRONIC EXCITATIONS            ****
 !      *****************************************************
 !
 !                       AUTHOR: M.Pernpointner
@@ -1197,16 +1199,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         brep = multb(desrep+nrep,jrep,1)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
-!debug
-!       brep = multb(jrep,desrep+nrep,2)  wrong !!!
-!       leads to offset errors further down.
-!  
-!         desrepkr = multb(desrep+nrep,1+nrep,2)
-!         if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) STOP 'WAAAHH'
-!         write(*,*) 'transferring Kramers partner'
-!
-!debug end
-!
+
           CALL XCOLMAKE(desrep,lencouplbl,bufcol,
      &                  jrep,brep,jfun,bfun,
      &                  mxno,mxnv,nrep,

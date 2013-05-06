@@ -32,6 +32,7 @@ module adc_mat
 
   integer, public                  ::  reladc_md_iobase   = 0   !file handle for matrix handling
   integer, public                  ::  reladc_md_ionizl   = 0   !level od ionization for this matrix
+  integer, public                  ::  reladc_md_ioldnew  = 0   !indicator for separate diag file
   integer, public                  ::  reladc_md_intbuf   = 0   !buffer length in matrix
   integer, public                  ::  reladc_md_desrep   = 0   !current symmetry
   integer, public                  ::  reladc_md_rcw      = 0   !real/complex matrix

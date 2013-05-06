@@ -3644,7 +3644,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       orthoviolflag = .false.
 
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      Call XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag) 
+      Call XMATINI_R(iobase,intbuf,nbufs,ladc,adiag) 
 !__________________________________________________________
 !|
 !|
@@ -4022,7 +4022,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag)
+      SUBROUTINE XMATINI_R(iobase,intbuf,nbufs,ladc,adiag)
 C
       IMPLICIT NONE
 !
@@ -4074,7 +4074,7 @@ c  .. read elements
 
       RETURN
 
- 889  CALL QUIT('Matrix read error in XFTCHDIA_R')
+ 889  CALL QUIT('Matrix read error in XMATINI_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
