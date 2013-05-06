@@ -3689,7 +3689,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         Do i=j,locdim
           aij(i,j) = dot_product(bold(:,i),bnew(:,j))
           aij(j,i) = aij(i,j)   !symmetrize
-!         write(*,*) 'ööö',i,j,aij(i,j)
         Enddo
         Enddo
         CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
