@@ -14,7 +14,9 @@ CONTAINS
 !  Author:  Elke Fasshauer
 
     use adc_cfg
+    use adc_mat
     use adc_fano_real_routines
+    use adc_fano_diag
     use adc_fano_routines
     use memory_allocator
 
@@ -40,13 +42,15 @@ CONTAINS
     
 
 !
-!  Data dictionary: Local Variables (and to be shared with subroutines
+!  Data dictionary: Local Variables (and to be shared with subroutines)
 !
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: icra
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
     INTEGER                               :: nr_in, nr_fin
     INTEGER                               :: nok, najl
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
+    INTEGER                               :: recl_condat_s
+    CHARACTER(8)                          :: fn_conf='FANCNF'
 
 !
 !  Code
@@ -57,6 +61,7 @@ CONTAINS
     WRITE(iw,*) '*       written by Elke Fasshauer           *'
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
+
 
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
@@ -83,12 +88,54 @@ CONTAINS
     
     ! Create the sorted 2h1p/2h1p block
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-                       finalpos,66,67,iw,mxno)
+                       finalpos,iw,mxno)
 
-    CALL dealloc(finalpos)
     CALL dealloc(icra)
     CALL dealloc(bigicra)
 
+    WRITE(iw,*)
+    WRITE(iw,*) 'Diagonal elements of the sorted ADC matrix written to        : ', &
+                 fn_adcdiag
+    WRITE(iw,*) 'Non-diagonal elements of the sorted ADC matrix written to    : ', &
+                 fn_adcmat
+    WRITE(iw,*) 'Diagonal elements of initial state matrix written to         : ', &
+                 fn_indiag
+    WRITE(iw,*) 'Non-diagonal elements of initial state matrix written to     : ', &
+                 fn_inmat
+    WRITE(iw,*) 'Diag. and non-diag. elements of final state matrix written to: ', &
+                 fn_finmat
+    WRITE(iw,*)
+
+    
+
+    WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
+    CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
+
+    ! Create the file holding the configurations of the 1h and 2h1p configurations
+    CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
+                        finalpos,fin_max,iw)
+
+    CALL dealloc(finalpos)
+
+    ! Write all characteristics of the matrix to be diagonalised
+    ! to adc_mat. We are using the lanczos diagonaliser.
+    reladc_md_iobase   = itapfano+1
+    reladc_md_ionizl   = 1
+    reladc_md_ioldnew  = 1 !old, diagonal is written to extra file
+    reladc_md_intbuf   = fano_intbuf
+    reladc_md_desrep   = krep
+    reladc_md_rcw      = 1 !is real, for complex 2
+    reladc_md_lnzitr   = reladc_sipiter
+    reladc_md_matdim   = ladc-fin_max
+    reladc_md_irecl    = recl_condat_s
+    reladc_md_nmain    = nok
+    reladc_md_nbufs    = innbufs
+    reladc_md_neigenv  = reladc_fano_eigv
+    reladc_md_fileadc  = fn_inmat
+    reladc_md_filediag = fn_indiag
+    reladc_md_filecnf  = fn_conf
+    reladc_md_nmspec   = 'FSPEC'
+    
 
   END SUBROUTINE fanoadc
 
