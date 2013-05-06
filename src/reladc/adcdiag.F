@@ -635,6 +635,7 @@
       SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
 
       use adc_mat      !obtain matrix parameters via descriptor file
+      use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
@@ -721,7 +722,13 @@ c
       NOCC         =  reladc_md_nmain
       NBUFS        =  reladc_md_nbufs    
       NEIGENV      =  reladc_md_neigenv
-      EVLLIM       =  20.0d0
+      IF (IONIZLEVEL.eq.1) THEN
+        EVLLIM     =  reladc_sipprnt
+      ELSE IF (IONIZLEVEL.eq.2) THEN
+        EVLLIM     =  reladc_dipprnt
+      ELSE IF (IONIZLEVEL.eq.3) THEN
+        EVLLIM     =  reladc_excprnt
+      END IF
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
