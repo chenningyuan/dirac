@@ -3,7 +3,7 @@ MODULE adc_fano
 CONTAINS
 
   SUBROUTINE fanoadc(ckks,bufhp,ladc,krep,itapadc,iw,  &
-                     eajl,oooo,vovo,mxno,cc,kfree,lfree)
+                     eajl,oooo,vovo,mxno)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
 !           This is the controlling module. All routines are to be found
@@ -39,8 +39,6 @@ CONTAINS
     REAL(8), INTENT(IN)   :: eajl(*)
     REAL(8), INTENT(IN)   :: oooo(*), vovo(*)
     INTEGER, INTENT(IN)   :: mxno
-    REAL(8)               :: cc(*)
-    INTEGER               :: kfree, lfree
 
 !
 !  Data dictionary: Local Variables (and to be shared with subroutines)
@@ -52,6 +50,10 @@ CONTAINS
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
     CHARACTER(8)                          :: fn_conf='FANCNF'
+    REAL(8), ALLOCATABLE, DIMENSION(:)    :: buflanc
+    INTEGER                               :: kfree, lfree, kfreebase
+!    INTEGER                               :: ierror = 0
+    INTEGER                               :: idpt
 
 !
 !  Interfaces
@@ -152,8 +154,20 @@ CONTAINS
     !WRITE(iw,*) 'recl   = ', reladc_md_irecl
     !WRITE(iw,*) 'nbufs  = ', reladc_md_nbufs
     !WRITE(iw,*) 'inmat  = ', reladc_md_fileadc
+    
+    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep,iw)
 
-!    CALL DIAG_LANC(cc,kfree,lfree,iw,.false.)
+    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
+    
+    kfree     = 1
+    lfree     = reladc_lancmem
+    kfreebase = 1
+
+    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
+     &                KFREE,LFREE,.true.)
+    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
+
+!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
 
   END SUBROUTINE fanoadc
 

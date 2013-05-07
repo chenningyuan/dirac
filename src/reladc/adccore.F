@@ -1557,7 +1557,6 @@ C
           NX=NO(KREP)*NVOOT(KREP)
           CALL XSCAL(NX,-A1,CC(BUFY1),1)
           IF(CARITH) CALL CONJUGA (NX,CC(BUFY1),1)
-
           CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
         ELSE
           CALL QUIT('Illegal ADCLEVEL value for coupling block calc.')
@@ -1573,16 +1572,20 @@ C
         IF (reladc_dofano) THEN
 
 ! create K_akl array and lookup tables.
+!          CALL MEMOPT('REAL',BUFLANC,reladc_lancmem,CC,KFREE,LFREE,
+!     &                .true.)
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+          CALL MEMCHK('Testing Fano diagonalization',CC,KFRSAV)
           IF (ADCLEVEL.EQ. 1) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO,CC,KFREE,LFREE
+     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
      &                   )
           ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO,
-     &                   CC,KFREE,LFREE)
+     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+     &                   )
           END IF
+          CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
         ELSE
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
