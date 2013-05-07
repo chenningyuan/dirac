@@ -91,8 +91,6 @@ C
       CALL QENTER('PRPINP')
 #include "memint.h"
 C
-      NJOBS = 0
-C
 C     Initialize /CBIPRP/
 C     ===================
 C
@@ -134,28 +132,23 @@ C
       MGRAD        = .FALSE.
       ESRGTENS     = .FALSE.
       ESRANISO     = .FALSE.
-      NPRPWF       = 1
-      PRPWF(1)     = 'DHF'
+      NPRP_WF      = 0
       BXLAO        = .FALSE.
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
       EFFDEN       = .FALSE.
       EFFDE2       = .FALSE.
 
-
-CMI Activate the  picture change transformations
-C   of four-component property matrixes 
+CMI Activate picture change transformations
+C   of four-component property matrices 
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
 !     set compulsory default values for X2C module.
       NOPCT = .FALSE.
-      IF(X2C.or.(BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.
-     &   IBSS.GE.109)))THEN
+      IF (X2C .or.
+     &   (BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109))) THEN
         DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
-        NOPCT = .FALSE.
-        WRITE(LUPRI,'(/3X,A/)')
-     &'PRPINP: Picture change transformation of properties activated !'
       ELSE
         DOPCT = .FALSE.
       ENDIF
@@ -316,15 +309,14 @@ C&&&& EFN: Electric field at nuclei
             GOTO 100
   121    CONTINUE
 C&&&& WAVE FUNCTIONS - define which wave functions we should use
-            READ(LUCMD,*) NPRPWF
-            IF (NPRPWF .LT. 1 .OR. NPRPWF .GT. MXPRPWF) THEN
-               WRITE(LUPRI,'(1X,2A,I10)')
-     &              '*** ERROR in PRPINP *** ',
-     &              'Illegal value for NPRPWF: ',NPRPWF
+            READ(LUCMD,*) NPRP_WF
+            IF (NPRP_WF .LT. 1 .OR. NPRP_WF .GT. MXPRP_WF) THEN
+               WRITE(LUPRI,'(/A,I10)') ' *** ERROR in PRPINP *** '
+     &            //'Illegal value for .NPRPWF : ',NPRP_WF
                CALL QUIT('*** ERROR in PRPINP ***')
             END IF
-            DO I = 1, NPRPWF
-               READ(LUCMD,'(1X,A4)') PRPWF(I)
+            DO I = 1, NPRP_WF
+               READ(LUCMD,'(1X,A4)') PRP_WF(I)
             END DO
             GOTO 100
  122     CONTINUE
@@ -430,7 +422,7 @@ C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+         WRITE (LUPRI,'(/3A/)') ' ERROR: Prompt "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in PRPINP.')
       END IF
@@ -440,12 +432,12 @@ C     Print section
 C     =============
 C
       CALL TITLER('Property module','*',129)
-      WRITE(LUPRI,'(1X,A,I3)') '* Print level:',IPRPRP
-      WRITE(LUPRI,'(2A)')   ' * Input label:',WRDSRC
-      WRITE(LUPRI,'(1X,A)')
-     &     '* Properties calculated for the following wave functions: '
-      DO I = 1, NPRPWF
-         WRITE(LUPRI,'(I6,2A)') I,': ',PRPWF(I)
+      WRITE(LUPRI,'(A,I4)') ' * Print level:',IPRPRP
+      WRITE(LUPRI,'(2A)')   ' * Input label: ',WRDSRC
+      WRITE(LUPRI,'(A)')
+     &     ' * Properties calculated for the following wave functions:'
+      DO I = 1, NPRP_WF
+         WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
 
 CMI ...for magnetic susceptibility, NMR shielding constants and rotational
@@ -461,20 +453,22 @@ CMI   g_tensors operator centers might be changed
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
 
+      IF (X2C .OR. BSS) THEN
       IF (DOPCT) THEN
-       IF (.NOT.NOPCT) THEN
-         WRITE(LUPRI,'(2X,A)') 
-     & '...perform the picture change transformation of the'//
-     & ' four-comp. property operators'
-       ELSE
-         WRITE(LUPRI,'(2X,A)') 
-     & '...do NOT perform the picture change transformation of the'//
-     & ' four-comp. property operators - take only LL block(s)'
-       ENDIF
+        IF (.NOT.NOPCT) THEN
+          WRITE(LUPRI,'(A)') 
+     & ' * Perform 4c->2c picture change transformation of'//
+     & ' the four-component property operators'
+        ELSE
+          WRITE(LUPRI,'(A)') 
+     & ' * Do NOT perform 4c->2c picture change transformation of'//
+     & ' the four-comp. property operators - take only LL block(s)'
+        ENDIF
       ELSE
-        WRITE (LUPRI,'(1X,A)')
-     &  '* do NOT perform the picture change transformation of the'//
-     &  ' four-component property operators'
+        WRITE (LUPRI,'(A)')
+     & ' * Do NOT perform 4c->2c picture change transformation of'//
+     & ' the four-component property operators'
+      ENDIF
       ENDIF
 C
 C     Process input for various program sections
@@ -493,41 +487,41 @@ C
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
-         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
-         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in PRPINP.')
+         WRITE (LUPRI,'(/3A/)') ' Directory "',WORD,'" is not valid'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' directory keywords',LUPRI)
+         CALL QUIT('Illegal directory keyword in PRPINP.')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
-     *                        ' out of order.'
+         WRITE (LUPRI,'(/3A/)')
+     &      ' Prompt in keyword "',WORD,'" illegal or out of order'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in PRPINP, error in prompt.')
       END IF
     2 CONTINUE
-        CALL EXPINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL EXPINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     3 CONTINUE
-        CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     4 CONTINUE
-        CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     5 CONTINUE
-        CALL GRDINP(WORD,.FALSE.)
-        GO TO 200
+         CALL GRDINP(WORD,.FALSE.)
+         GO TO 200
 
 !     *NMR
     6 CONTINUE
 CMI ... changed for LAO-based magnetic properties
-        CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
 
     7 CONTINUE
 #ifdef MOD_ESR
-        CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
+         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
 #else
-        CALL QUIT('*ESR    not included in this version')
+         CALL QUIT('*ESR    not included in this version')
 #endif
-        GO TO 200
+         GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
          GO TO 200
@@ -580,7 +574,7 @@ C .... check the change of the gauge origin ....
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-       WRITE (LUPRI,'(1X,A,3F18.10)')
+         WRITE (LUPRI,'(1X,A,3F18.10)')
      &     '* Operator center:', (ORIGIN(I),I=1,3),
      &     '* Gauge origin   :', (GAGORG(I),I=1,3),
      &     '* Dipole origin  :', (DIPORG(I),I=1,3)
@@ -664,7 +658,6 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2869,7 +2862,6 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

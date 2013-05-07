@@ -686,22 +686,22 @@ C
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
 C
-      NJOBS = 0
       NOSFCRASH=.FALSE.
 c     no xml output unless .XMLOUT
       LUXML = -1
 C
 C     Read menu file
 C     ==============
-C     **** Find Dirac input *****
 C
+C     **** Locate **DIRAC input
       IF (.NOT.FIND_KEYWORD('**DIRAC'))
-     &   CALL QUIT('no Dirac input found')
+     &   CALL QUIT('No **DIRAC input found')
       WORD1 = '**DIRAC'
 C
 C     Process job input for COMMON  /CBIPAM/
 C     ======================================
 C
+      NJOBS = 0
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
       PROMPT = WORD(1:1)
@@ -799,15 +799,10 @@ C     Print section
 C     ==============
 C
   180 CONTINUE
-      DO I = 50,1,-1
-      IF(TITLE(I:I).NE.' ') GOTO 181
-      ENDDO
-  181 CONTINUE
-      IN = (272-I)/2
+      IN = LNBLNK(TITLE)
+      IN = (272-IN)/2
       CALL TITLER(TITLE(1:I),'*',IN)
-      IF(NJOBS.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
-      ENDIF
+      IF(NJOBS.GT.0) WRITE(LUPRI,'(A)') ' Jobs in this run:'
       IF(DOHRM) THEN
         WRITE(LUPRI,'(3X,A)') '* Only run one-electron integrals'
         GOTO 666
@@ -818,21 +813,27 @@ C
       IF(DOTRA)   WRITE(LUPRI,'(3X,A)') '* Transformation to '//
      &    'Molecular Spinor basis'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only'
-      IF(OPTIMI)  WRITE(LUPRI,'(3X,A)') '* Geometry optimization',
-     &    '  IMPORTANT'//
-     &    ': *WAVE F must be present for reading of wavefunction.'
+      IF(OPTIMI)  THEN
+                  WRITE(LUPRI,'(3X,A)') '* Geometry optimization'
+         IF (.NOT. DOPSI) THEN
+            WRITE(LUPRI,'(3X,A)')
+     &      '  FATAL ERROR: '//
+     &      '*WAVE F must be present for reading of wavefunction.'
+            CALL QUIT('*WAVE F needed to do geometry optimization')
+         END IF
+      END IF
 
 C     LV: This option is badly out of place, has nothing to do with jobs !
       IF (NOSFCRASH) THEN
-        WRITE(LUPRI,'(3X,A)')
-     &  '* If crash, do NOT end with segmentation fault.'//
-     &  'Necessary for getting profiling file, gmon.out.'
+         WRITE(LUPRI,'(3X,A)')
+     &   '* If crash, do NOT end with segmentation fault.'//
+     &   'Necessary for getting profiling file, gmon.out.'
 !radovan: commented out the following message about this default situation
 !         this is strange for users to see under jobs
 !     ELSE
-!       WRITE(LUPRI,'(3X,A)')
-!    &  '* If crash, end with a forced segmentation fault.'//
-!    &  ' Useful for debugging.'
+!        WRITE(LUPRI,'(3X,A)')
+!    &   '* If crash, end with a forced segmentation fault.'//
+!    &   ' Useful for debugging.'
       END IF
 C
  666  CONTINUE
@@ -2026,7 +2027,7 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
 C
       IF (NOPEN.GT.0.AND.ZORA) THEN
           WRITE(LUPRI,'(A)')
-     &       'SCFINP: Open shell ZORA is not implemented yet, sorry.. '
+     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
           CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
       ENDIF
 C
@@ -2454,7 +2455,7 @@ C
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  '/
 C
-      NJOBS = 0
+      N_WF = 0
 C
 C     Initialize /CBLPSI/
 C     ===================
@@ -2520,29 +2521,26 @@ C
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
-               CALL PRTAB(NDIR,TABDIR, WORD1//' input keywords',LUPRI)
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               GO TO 100
+             CALL PRTAB(NDIR,TABDIR, WORD1//' directory keywords',LUPRI)
+             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+             GO TO 100
             END IF
-            WRITE (LUPRI,'(/,3A,/)')
-     *         ' Keyword ',WORD,' not recognized in PSIINP.'
+            WRITE (LUPRI,'(/3A/)')
+     &         ' Keyword "',WORD,'" not recognized in PSIINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
 
 !        .DHF kept for backwards compatibility
   101    continue
-         print *, 'WARNING: .DHF is deprecated, please use .SCF instead'
-         dirac_cfg_scf_calculation = .true.
-         if (.not. dirac_cfg_dft_calculation) then
-            dirac_cfg_hf_calculation = .true.
-         end if
-         njobs = njobs + 1
-         go to 100
+            WRITE(LUPRI,*)
+     &   'WARNING: .DHF is deprecated, please use .SCF instead'
+            go to 122
 
 C&&&& MP2: Perform second-order Moller-Plesset calculation
   102    CONTINUE
             DOMP2 = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'MP2'
             GO TO 100
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
@@ -2550,7 +2548,8 @@ C&&&& LUCITA: Perform spinfree CI calculation
             call test_lucita_wrk_space_offset(work,lwork)
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LUCITA'
             GO TO 100
   104    CONTINUE
 C&&& REORDER: Reorder MO orbitals (only on restart on coefficients)
@@ -2590,23 +2589,27 @@ C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOCCM = .TRUE.
             dirac_cfg_relcc = .true.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'RELCCSD'
             GO TO 100
   107    CONTINUE
 C&&&& DIRRCI: Perform CISD or COSCI
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOCIM = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'DIRRCI'
             GO TO 100
   108    CONTINUE
 C&&&& MVO: Calculate modified virtual orbitals
             DOMVO = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'MVO'
             GO TO 100
   109    CONTINUE
 C&&&& RESOLVE: Resolve open-shell states
             DORES = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'RESOLVE'
             GO TO 100
   110    CONTINUE
 C&&&& ORBROT: Rotate orbitals prior to SCF calculations
@@ -2618,76 +2621,84 @@ C&&&& ORBROT: Rotate orbitals prior to SCF calculations
   111    CONTINUE
 C&&&& LUCIAREL: Call LUCIAREL
             DOLUCIAR = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LUCIAREL'
             GO TO 100
   112    CONTINUE
 C&&&& KRMCSCF: KR-MCSCF
             DOKRMC = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'KR-MCSCF'
             GO TO 100
- 113     CONTINUE
+  113    CONTINUE
 C&&&& PHCOEF: Phase adjustment of coefficients
             L2ORBM = .TRUE.
             PHCOEF = .TRUE.
             GO TO 100
- 114     CONTINUE
+  114    CONTINUE
 C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             DOMP2NO = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'MP2 NO'
             GO TO 100
- 115     CONTINUE
+  115    CONTINUE
 C&&&& RELADC: Calculate relativistic propagators with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'RELADC'
             GO TO 100
- 116     CONTINUE
 C&&&& KR CI :  perform (large-scale) KR-CI calculation
+  116    CONTINUE
             DOKRCI  = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'KR-CI'
             GO TO 100
- 117     CONTINUE
 C&&&& KR CC : perform (large-scale) KR-CC calculation
+  117    CONTINUE
             DOKRCC  = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'KR-CC'
             GO TO 100
- 118     CONTINUE
 C&&& COSCI: Do a COSCI calculation
+  118    CONTINUE
             DOCOSCI = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'COSCI'
             GO TO 100
- 119     CONTINUE
 C&&& GASCIP: Do a GASCIP calculation (new code)
+  119    CONTINUE
             DOGASCIP = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'GASCIP'
             GO TO 100
- 120     CONTINUE
 C&&& HSFS : Do High Sect FSCC calculations (new code)
+  120    CONTINUE
             DOHSFS = .TRUE.
-            write(LUPRI,*) 'DO HSFS run !'
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'HS-FSCC'
             GO TO 100
-
 C&&&& ARDUCC: Perform MRCC calculation
- 121     CONTINUE
+  121    CONTINUE
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOARDUC = .TRUE.
-            NJOBS = NJOBS + 1
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'AR-DU-CCA'
             GO TO 100
-
-!        .SCF
-  122    continue
-         dirac_cfg_scf_calculation = .true.
-         if (.not. dirac_cfg_dft_calculation) then
-            dirac_cfg_hf_calculation = .true.
-         end if
-         njobs = njobs + 1
-         go to 100
-C&&&& KR CI :  perform (large-scale) KR-CI calculation
-  123    continue
-         DOKRCI  = .TRUE.
-         NJOBS   = NJOBS + 1
-         go to 100
-
+C&&&& SCF
+  122    CONTINUE
+            N_WF = N_WF + 1
+            dirac_cfg_scf_calculation = .true.
+            if (.not. dirac_cfg_dft_calculation) then
+               dirac_cfg_hf_calculation = .true.
+               DIRAC_WF(N_WF) = 'HF'
+            else
+               DIRAC_WF(N_WF) = 'DFT'
+            end if
+            go to 100
+C&&&& KRCI :  alternative spelling of KR CI
+  123    CONTINUE
+            GO TO 116
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2702,19 +2713,22 @@ C     Print section
 C     =============
 C
       CALL TITLER('Wave function module','*',126)
-      IF (NJOBS.GT.0) THEN
-        WRITE(LUPRI,'(A)') ' Jobs in this run (in execution order):'
+      IF (N_WF.GT.0) THEN
+         WRITE(LUPRI,'(A)')
+     &      ' Wave function types requested (in input order):'
+         DO I_WF = 1, N_WF
+            WRITE(LUPRI,'(5X,A)') DIRAC_WF(I_WF)
+         END DO
+
+         WRITE(LUPRI,'(/A)')
+     &      ' Wave function jobs in execution order (expanded):'
+
       ENDIF
 
-      if (dirac_cfg_hf_calculation) then
-         WRITE(LUPRI,'(A)') ' * Hartree-Fock calculation'
-      end if
-
-      if (dirac_cfg_dft_calculation) then
-         WRITE(LUPRI,'(A)') ' * Density functional '//
-     &    'calculation (Kohn-Sham method)'
-      end if
-
+      if (dirac_cfg_hf_calculation)  WRITE(LUPRI,'(A)')
+     &   ' * Hartree-Fock calculation'
+      if (dirac_cfg_dft_calculation) WRITE(LUPRI,'(A)')
+     &   ' * Density functional calculation (Kohn-Sham method)'
 
       IF(DORES)    WRITE(LUPRI,'(A)')
      &   ' * Followed by resolution of open-shell states'
@@ -2750,13 +2764,13 @@ C     Orbital manipulations
 C
       IF (ROTORB) THEN
          WRITE(LUPRI,'(A)')
-     &      ' * Jacobi rotations between pairs of orbitals '
+     &      ' * Jacobi rotations between pairs of orbitals'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(A2,A1,3X,A72)') FREP(I),':',VECROT(I)
          ENDDO
       ENDIF
       IF (LMOORD) THEN
-         WRITE(LUPRI,'(A)') ' * Reorder start orbitals '
+         WRITE(LUPRI,'(A)') ' * Reorder start orbitals'
          WRITE(LUPRI,'(3X,A)') '- new ordering of start orbitals...'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
@@ -3627,17 +3641,17 @@ C&&&& MULPOP: Perform Mulliken population analysis
 C&&&& PROJECTION: Perform projection of current solution onto another solution
   102    CONTINUE
             DOPRJ = .TRUE.
-            NJOBS = NJOBS +1
+            NJOBS = NJOBS + 1
             GO TO 100
   103    CONTINUE
 C&&&& PRIVEC: Print vectors
             DOVEC = .TRUE.
-            NJOBS = NJOBS +1
+            NJOBS = NJOBS + 1
             GO TO 100
   104    CONTINUE
 C&&&& RHO1: Punch density along the lines between centers
             DO1RHO = .TRUE.
-            NJOBS = NJOBS +1
+            NJOBS = NJOBS + 1
             GO TO 100
   105    CONTINUE
 C&&&& DENSITY: Write density to unformatted file (Gaussian cube format)
@@ -3646,7 +3660,7 @@ C&&&& DENSITY: Write density to unformatted file (Gaussian cube format)
   106    CONTINUE
 C&&&& RHO1: Punch Becke integration weights along the lines between atomic centers
             DO1WT = .TRUE.
-            NJOBS = NJOBS +1
+            NJOBS = NJOBS + 1
             GO TO 100
   107    CONTINUE
 C&&&& LOCALIZE : Molecular orbital localization
@@ -3677,22 +3691,20 @@ C     Print section
 C     =============
 C
       CALL TITLER('Analysis module','*',129)
-      IF(NJOBS.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
-      ENDIF
+      IF(NJOBS.GT.0) WRITE(LUPRI,'(A)') ' Jobs in this run:'
       IF(DOVEC) WRITE(LUPRI,'(1X,A)') '* Write vectors'
       IF(DOPOP) WRITE(LUPRI,'(1X,A)')
-     &     '* Mulliken population analysis'
+     &    '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
-     &     '* Projection onto another solution '
+     &    '* Projection onto another solution'
       IF(DO3RHO) WRITE(LUPRI,'(1X,A)')
      &    '* Write out density for visualization (Gaussian cube format)'
       IF(DO1RHO) WRITE(LUPRI,'(1X,A)')
-     &     '* Punch density along lines between nuclear centers'
+     &    '* Punch density along lines between nuclear centers'
       IF(DO1WT) WRITE(LUPRI,'(1X,A)')
-     &     '* Punch Becke weights along lines between nuclear centers'
+     &    '* Punch Becke weights along lines between nuclear centers'
       IF(DOLOC) WRITE(LUPRI,'(1X,A)')
-     S     '* Molecular orbital localization'
+     S    '* Molecular orbital localization'
 C
 C
 C     Process input for various program sections
@@ -4996,7 +5008,7 @@ C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
                WRITE(LUPRI,'(2X,A)')
-     &         'HAMINP: Error in reading .BSS/IBSS '
+     &         'HAMINP: Error in reading .BSS/IBSS'
                WRITE(LUPRI,*) 'IBSS=',IBSS
                CALL QUIT(
      &         'HAMINP: Error in reading of .BSS/IBSS')
@@ -5572,14 +5584,14 @@ C
      & '    "Implementation of an infinite-order two-component '//
      & 'relativistic Hamiltonian ',
      & '    by a simple one-step transformation." ',
-     & '    J. Chem. Phys., 126 (2007) 064102. '
+     & '    J. Chem. Phys., 126 (2007) 064102.'
           if(x2c)then
           WRITE(LUPRI,'(a)')
-     & '   additional reference for the new X2C module: '
+     & '   additional reference for the new X2C module:'
           WRITE(LUPRI,'(a)')
      & '    S. Knecht and T. Saue:'
           WRITE(LUPRI,'(a/)')
-     & '    manuscript in preparation, Strasbourg 2010. '
+     & '    manuscript in preparation, Strasbourg 2010.'
           end if
         ELSE
 C         .... two-step method of Barysz
@@ -5657,7 +5669,7 @@ C       ... take care of AMFI contribution
      &     ' (see output from EXTR_BSS_INFO below)'
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
-     &     '     N.B: Gaunt key is on '
+     &     '     N.B: Gaunt key is on'
           ENDIF
 
 CMI       ... take care of AMFI CSC test transformation, if specified through the entering IBSS number
@@ -5705,7 +5717,7 @@ CMI ...  CAP processing
       IF (CAP) THEN
         WRITE(LUPRI,'(1X,A)')
      &  '* Activated calculation of the Complex'//
-     &  ' Absorption Potential (CAP) integrals '
+     &  ' Absorption Potential (CAP) integrals'
       ENDIF
 #endif
 
@@ -5756,11 +5768,11 @@ C aspg, 20070909
             IF (LSCALE_DFT_GAUNT) THEN
                WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
      &              'scaled as HF exchange according to the selected'
-               WRITE (LUPRI,*) ' DFT functional. '
+               WRITE (LUPRI,*) ' DFT functional.'
             ELSE
                WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
      &              'included to 100% independently of the selected'
-               WRITE (LUPRI,*) ' DFT functional. '
+               WRITE (LUPRI,*) ' DFT functional.'
             ENDIF
          ENDIF
 
@@ -6063,7 +6075,7 @@ C
              WRITE(LUPRI,'(6X,A,A3,A,A3,10(1X,A3))')
      &       '2. Reduce symmetry: ',GROUP,' --> ',
      &       GROUPS(IGROUP),' :{',
-     &       (SYMOP(KSOP(J-1)),J=1,NELM),'} '
+     &       (SYMOP(KSOP(J-1)),J=1,NELM),'}'
           ENDIF
 
 ! Operator must be symmetric under time reversal only for Kramers restricted
