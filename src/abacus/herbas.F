@@ -62,7 +62,15 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, 
      &                   Q, QEFF, ISET, DSM, BASREF)
+#ifdef USE_MPI_MOD_F90
+       use mpi
+#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
+#endif
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
@@ -123,14 +131,20 @@ C      except for 2c NR calculations
       TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
       TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
       IF(TEST.AND.(.NOT.UNCONT)) THEN
+#ifdef VAR_MPI
+!     print only from one process
+      if (mytid == 0) then
+#endif
         WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
      &   '*** WARNING (BASLIB) : Decontracting basis set',
      &   ' - nuclear charge: ',INTQ,
      &   ' - basis file    : ',BASNAM,
      &   'Reason: DIRAC cannot yet create proper small component basis',
      &   '        for contracted large component basis when Z > 36'
+#ifdef VAR_MPI
+      end if
+#endif
       ENDIF
-
 
       ! for windows we keep "-star" basis set files and not "*" files
       ! now we will translate a possible "*" basis set input

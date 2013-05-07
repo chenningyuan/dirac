@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# (c) Ulf Ekstrom
+
 import sys, re, os
 
 class FriendlyFile:

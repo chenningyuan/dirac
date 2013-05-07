@@ -1,3 +1,6 @@
+#define MOD_UNRELEASED
+
+
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -19,43 +22,22 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module fde_inputDirac
+module fde_input_dirac
 
    use fde_types
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-   use fde_eval_dirac
+   use fde_input
    
    private
 
-   public fdeini
-   public fdeinp
+   public fde_dirac_input
    
-   logical, save :: skip_all_imports = .false.
-
    contains
 
 !   ----------------------------------------------------------------------------
-      subroutine fdeini(log_unit,log_name)
-!   ----------------------------------------------------------------------------
-         integer          :: log_unit
-         character(len=*) :: log_name
-         type(fde_files)  :: ftmp
-
-         call fde_initialize_cfg
-         
-         call fde_get_files_info(ftmp)
-         ftmp%logfile%unit = log_unit
-         ftmp%logfile%name = log_name
-         call fde_set_files_info(ftmp)
-         
-         call dirac_data_interface
-      end subroutine fdeini
-
-
-!   ----------------------------------------------------------------------------
-      subroutine fdeinp(word,echo_input)
+      subroutine fde_dirac_input(word,echo_input)
 !   ----------------------------------------------------------------------------
          use dirac_cfg
 #include "implicit.h"
@@ -140,12 +122,14 @@ module fde_inputDirac
 
             CASE ('.GRIDOU')
                read(lucmd,*) ftmp%export%name
+               dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                doprp = .true.
 
             CASE ('.EXONLY')
                read(lucmd,*) ftmp%export%name
+               dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                skip_all_imports = .true.
@@ -171,59 +155,15 @@ module fde_inputDirac
           END SELECT
         END DO
       END IF
-      
-#ifdef MOD_UNRELEASED
-      if (.not.skip_all_imports) then
 
-      if (itmp%im_vemb) then
-         if (itmp%im_update_vemb) then
-            write (lunit,*) '.UPDATE and .EMBPOT cannot be used together!'
-            call quit('conflicting keywords selected')
-         endif
-      else
-         itmp%im_update_vemb = .true.
-         itmp%im_frozen      = .true.
-      endif
- 
-! we should arrive here if the update of the embedding potential during the
-! scf is asked for, or if fde response        
-      if (itmp%im_frozen) then
-         itmp%im_n        = .true.
-         itmp%im_gn       = .true.
-         itmp%im_coulomb  = .true.
-      endif
-
-      if (etmp%do_grid_out) then
-         etmp%ex_n        = .true.
-         etmp%ex_coulomb  = .true.
-         etmp%ex_gn       = .true.
-      endif
-
-      endif ! .not.skip_all_imports
-
-#endif /* MOD_UNRELEASED */
-
-! saving information on 
+! saving information read 
       call fde_set_files_info(ftmp)
       call fde_set_export_info(etmp)
       call fde_set_import_info(itmp)
-
-
-      if (itmp%im_vemb) then
-         call fde_import_static      
-      endif
-
-#ifdef MOD_UNRELEASED
-      if (itmp%im_frozen) then
-         call fde_import_frozen
-         call fde_initialize_nadd_functionals         
-      endif
-
-      if (etmp%do_grid_out) then
-         call fde_import_gridout
-      endif
-#endif
       
+! now these will be validated, and changed if needed
+      call fde_input_validate_and_postprocess
+
 !     options are echoed
          if (Echo_Input) then
 
@@ -234,7 +174,7 @@ module fde_inputDirac
            write (lunit,'(1X,A)') &
               ' Frozen Density Embedding (FDE) Calculation setup'  
 
-           call fde_show_setup 
+           call fde_input_show_setup 
 
            CALL PRSYMB(lunit,'=',75,0)
            write (lunit,*) ' '
@@ -242,78 +182,4 @@ module fde_inputDirac
 
       END SUBROUTINE
 
-
-      subroutine fde_show_setup
-         integer :: unit
-         character(len=60) :: string
-         type(fde_export)  :: etmp
-         type(fde_import)  :: itmp
-         type(fde_files)   :: ftmp
-         integer :: pl
-
-         call fde_get_print_level(pl)
-
-         call fde_get_files_info(ftmp)
-         call fde_get_export_info(etmp)
-         call fde_get_import_info(itmp)
-
-         unit = ftmp%logfile%unit
-         
-         CALL PRSYMB(unit,'-',48,2)
-         write(unit,*)
-         write(unit,'(A,I5)')  ' * Print level                  : ',pl
-
-#ifdef MOD_UNRELEASED
-         if (itmp%im_frozen) call fde_print_nadd_functionals(unit)
-#endif
-
-         if (itmp%im_vemb) then
-            string = ftmp%embpot%name
-            
-            write(unit,'(A,A60)')  ' * FDE Potential read from file : ',string
-            write(unit,*)
-            write(unit,'(3X,2A,/3X,2A)') &
-            'Enviroment effects included via the ',          &
-            'fixed potential method described in:',          &
-            'A.S.P. Gomes, C. R. Jacob and L. Visscher, ', &
-            'PCCP 10 (2008) 5353-5362.'
-            write(unit,*)
-
-#ifndef MOD_UNRELEASED
-         else
-            call quit('inconsistent FDE input!')
-#else
-         else
-            write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
-            write(unit,'(A)') ' ' 
-            call fde_test_frozen_density
-         endif
-
-         if (itmp%im_frozen) then
-            string = ftmp%frozen%name
-            write(unit,'(A,A60)') &
-                ' * Density (and gradient) from frozen subsystems read from file: ',string
-         endif
-
-         if (etmp%do_grid_out) then
-            string = ftmp%export%name
-            write(unit,'(2A)') &
-            ' * FDE Gridfile with updated density written to:',string
-
-            select case(etmp%ex_level)
-               case('DHF','MP2')
-                  write(unit,*)                               &
-                  'Outputted density will be taken from: ',trim(etmp%ex_level)
-                  
-               case default
-                  write(unit,*) 'Input for outputted density not a &
-     &  x  valid calculation, HF will be used instead. Given:',trim(etmp%ex_level)
-                  etmp%ex_level = 'DHF'
-                  
-            end select
-#endif /* MOD_UNRELEASED */
-         endif
-                  
-      end subroutine fde_show_setup
-
-end module fde_inputDirac
+end module fde_input_dirac

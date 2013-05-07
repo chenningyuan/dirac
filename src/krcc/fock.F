@@ -343,6 +343,7 @@ C         ^ NGASOCC
         end do
 C       ^ IGAS
 C
+       NTEST =00
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
          DO I = 1, ISIDE

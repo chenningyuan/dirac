@@ -411,6 +411,10 @@
         use codata
 #include "infpar.h"
 #include "cbirea.h"
+
+! using OPTIMI
+#include "dcbgen.h"
+
 !     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
 !               Reads also Charges, nuclear exponents and the units of the XYZ file.
 !     Stores it in the the basis list.
@@ -473,6 +477,16 @@
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
+
+              ! sanity check: stop all .OPTIMIZATION runs with xyz
+              ! format, it works sometimes but fails with symmetry
+              if (optimi) then
+                  print *, 'ERROR: .OPTIMIZE not supported with xyz'
+                  print *, '       use mol format instead'
+                  call quit('.OPTIMIZE not supported with xyz format')
+              end if
+
+              print *, 'raboof optimi', OPTIMI
 
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               IF (section(2)=='*SYMMETRY'.AND.                          &

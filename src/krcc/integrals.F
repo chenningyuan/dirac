@@ -739,6 +739,7 @@ C       CALL MEMCHK_KRCC(WORK)
       IF(IMPORT_ARDUCCA.EQ.1) THEN
         WRITE(6,*) ' INTEGRALS TAKEN FROM ARDUCCA'
       END IF
+C       CALL MEMCHK_KRCC(WORK)
 *
 * Loop over real/imaginary part
       ICOUNT = 1
@@ -2102,6 +2103,8 @@ C         END DO
         WRITE(6,*)
         WRITE(6,*) ' Initial set of integrals '
         WRITE(6,*) ' ======================== '
+        WRITE(6,*)
+        WRITE(6,*) ' Number of integrals read ',NINT
         WRITE(6,*)
         DO I=1,NINT
           WRITE(6,*) T(I)

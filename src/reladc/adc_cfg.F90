@@ -41,11 +41,16 @@ module adc_cfg
   logical, public                  :: reladc_readqkl    = .false.
   logical, public                  :: reladc_doconst    = .true.
   logical, public                  :: reladc_doadcpop   = .false.
-  logical, public                  :: reladc_dofull     = .false.
   logical, public                  :: reladc_doxext     = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06
   real*8,  public                  :: reladc_adcthr     = 0.0
   logical, public                  :: reladc_dodiag     = .true.
+!
+!  selection of diagonalizer
+!
+  logical, public                  :: reladc_dolanc     = .false.
+  logical, public                  :: reladc_dofull     = .false.
+  logical, public                  :: reladc_dodavi     = .false.
 !
 !  lanczos control variables
 !
@@ -55,12 +60,18 @@ module adc_cfg
   integer, dimension(1:32), public :: reladc_sipeigv      = 0
   integer, dimension(1:32), public :: reladc_dipeigv      = 0
   integer, dimension(1:32), public :: reladc_exceigv      = 0
-  real*8,  public                  :: reladc_sipprnt      = 0.0
-  real*8,  public                  :: reladc_dipprnt      = 0.0
-  real*8,  public                  :: reladc_excprnt      = 0.0
+  real*8,  public                  :: reladc_sipprnt      = 20.0
+  real*8,  public                  :: reladc_dipprnt      = 20.0
+  real*8,  public                  :: reladc_excprnt      = 20.0
   logical, public                  :: reladc_doincore     = .false.
   integer, public                  :: reladc_lancmem      = 100000000
-
+!
+!  davidson control variables
+!
+  integer, public                  :: reladc_davroots   = 5
+  integer, public                  :: reladc_davmaxsp   = 50
+  integer, public                  :: reladc_davmaxit   = 5
+  real*8,  public                  :: reladc_davconv    = 1.0E-05
 !
 !  fanoadc variables
 !

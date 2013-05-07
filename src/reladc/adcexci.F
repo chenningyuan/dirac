@@ -3,12 +3,16 @@
 !      *****************************************************
 !      ****        D H F - A D C (2x)  M O D U L E      ****
 !      ****           POLARIZATION PROPAGATOR           ****
+!      ****                   for                       ****
+!      ****           ELECTRONIC EXCITATIONS            ****
 !      *****************************************************
 !
 !                       AUTHOR: M.Pernpointner
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCEXC_MAIN (IW,IOBASE,EPS)
+      use adc_cfg
+      use adc_mat
  
       IMPLICIT INTEGER(A-Z)
 
@@ -18,7 +22,6 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"
@@ -38,7 +41,7 @@
       integer                 :: IONIZLEVEL, IRECL, INTBUF
       integer                 :: irploop,i,j,k,l,m,n
       integer                 :: n1,n2
-      integer                 :: desrep,lencouplbl
+      integer                 :: desrep,lencouplbl,neigenv
       integer                 :: icount,ndim,ialloc
       integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
@@ -89,56 +92,60 @@
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
-      IF(DOXEXT) THEN
+      IF(reladc_doxext) THEN
         WRITE(IW,*) 'Doing extended ADC-2'
       ELSE
         WRITE(IW,*) 'Doing strict ADC-2'
       ENDIF
-      IF(DOFULL) THEN
-        WRITE(IW,*) 'Full diagonalizer additionally requested.'
-        WRITE(IW,*) 'Remark: Only executed up to a Matrix dimension'
-        WRITE(IW,*) '     ****  of 5000    ****'
-        WRITE(IW,*) 'and is for debugging purposes only.'
-      ELSE
-        WRITE(IW,*) 'Only Lanzcos diagonalizer will be called.'
+
+      IF(reladc_dofull) THEN
+        WRITE(IW,*) 'Full diagonalizer requested.'
+        WRITE(IW,*) 'Only executed for dim < 5000!'
       ENDIF
-      IF(ADCTHR.gt.0.0d0) THEN
-        WRITE(IW,*) 'A threshold of',ADCTHR,' will be applied to'
+      
+      If(reladc_dolanc) Then
+        WRITE(IW,*) 'Lanzcos diagonalizer will be called.'
+        If(reladc_lancmem.eq.0) THEN
+          reladc_lancmem=50000000
+        Endif
+        WRITE(IW,*) 'Lancmem set to ',reladc_lancmem,' real words.'
+      Endif
+
+      If(reladc_dodavi) Then
+        WRITE(IW,*) 'Davidson diagonalizer will be called.'
+      Endif
+
+      IF(reladc_adcthr.gt.0.0d0) THEN
+        WRITE(IW,*) 'A threshold of',reladc_adcthr,' will be applied to'
         WRITE(IW,*) 'the PP ADC matrix.'
-      ENDIF
-      IF(LANCMEM.eq.0) THEN
-        WRITE(IW,*) 'Lancmem not set!'
-        WRITE(IW,*) 'Defaulting to 50 Megawords.'
-        LANCMEM=50000000
-      ELSE
-        WRITE(IW,*) 'Lancmem set to ',LANCMEM,' real words.'
       ENDIF
 !
 ! determine symmetries to be calculated
 !
       n = 0
       do i = 1,nrep
-        n = n + excreps(i)
+        n = n + reladc_excreps(i)
       enddo
       if(n.eq.0) then
         write(iw,*) 'Program checks symmetries automatically'
         do i=1,nrep
-          excreps(i) = i
+          reladc_excreps(i) = i
         enddo
       else
         write(iw,*) 'User has made the following symmetry choices:'
         write(iw,*)
         icount=1
         do i=1,nrep
-          if(excreps(i).ne.0) then
-            write(iw,*) '   No: ',icount,'  symmetry: ',excreps(i)
+          if(reladc_excreps(i).ne.0) then
+            write(iw,*) '   No: ',icount,
+     &                  '  symmetry: ',reladc_excreps(i)
             icount = icount + 1
           endif
         enddo
       endif
       write(iw,*)
 
-      INTBUF = 1024*1024     !we work with a 1 Megaword buffer.
+      INTBUF = 5*1024*1024     !we work with a 5 Megaword buffer.
 ! |
 ! |
 ! |
@@ -186,7 +193,6 @@
 ! |
 ! |_____________  E_N_D__BUILD HP-HP BLOCK  _________________________
 !
-      CALL PST('Appending COUPLING & SAT blocks+')
 
 !  ____________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
 ! |
@@ -194,22 +200,20 @@
 ! |
 ! |
       NAMEMATFIL='ADCXPM'
-      DODAVI = .true.
-      DOLANC = .false.
 
       DO IRPLOOP = 1,NREP
 
         open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='unknown')
 
-        IF(excreps(IRPLOOP).EQ.0) CYCLE
-        IF(excreps(IRPLOOP).GT.NREP) THEN
-           WRITE(IW,*) 'Chosen Symmetry',excreps(IRPLOOP),
+        IF(reladc_excreps(IRPLOOP).EQ.0) CYCLE
+        IF(reladc_excreps(IRPLOOP).GT.NREP) THEN
+           WRITE(IW,*) 'Chosen Symmetry',reladc_excreps(IRPLOOP),
      &     ' does not exist and is skipped!'
            CYCLE
         ENDIF
 
-        DESREP = excreps(IRPLOOP)
+        DESREP = reladc_excreps(IRPLOOP)
         IF(MVO(DESREP).EQ.0) THEN
           WRITE(iw,*) 'No final states in symmetry',desrep,repna(desrep)
           CYCLE
@@ -218,18 +222,18 @@
         WRITE(IW,*)
         WRITE(IW,*)
         WRITE(IW,'(A)') '********************************************'
-        WRITE(IW,'(A,I4,X,A4)') 'Found excited states in symmetry:',
+        WRITE(IW,'(A,I4,X,A4)') 'Starting calculations in symmetry:',
      &         desrep,repna(desrep)
-        WRITE(IW,'(A,I4)') 'Requested long EVCs in this symmetry:',
-     &         exceigv(irploop)
         WRITE(IW,'(A)') '********************************************'
         WRITE(IW,*)
         WRITE(IW,*)
+!       CALL PST('Computing COUPLING & SAT blocks+')
         IF(CARITH) THEN
           stop 'Complex arithm. for excitations not yet available.'
         ELSE
           CALL BUILD_X_COUSAT_R(DAIBJ,EPS,DESREP,LENCOUPLBL,
-     &                          INTBUF,NBUFS,DOXEXT,ADCTHR,iobase)
+     &                          INTBUF,NBUFS,reladc_doxext,
+     &                          reladc_adcthr,iobase)
         ENDIF
 
         CLOSE(iobase)
@@ -243,39 +247,18 @@
 ! file handle is reusable after call!
 !
         NAMECNFFIL='ADCXCF'
-        WRITE(IW,*)
-        WRITE(IW,*) 'Creating configuration information'
-        WRITE(IW,*) 'For symmetry ',desrep
-        WRITE(IW,*)
+!       WRITE(IW,*)
+!       WRITE(IW,*) 'Creating configuration information'
+!       WRITE(IW,*) 'For symmetry ',desrep
+!       WRITE(IW,*)
         CALL WCONDAT_X(iobase,namecnffil,irecl,desrep)
-        WRITE(IW,*) 'Record length from WCONDAT_X:',IRECL
+!       WRITE(IW,*) 'Record length from WCONDAT_X:',IRECL
 !
 !  write matrix control file and call corresponding diagonalizer
 !
         IONIZLEVEL = 3
         LADC = LENCOUPLBL + MVO(DESREP)
 
-        OPEN(iobase,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-
-        WRITE(iobase,'(I1)')  IONIZLEVEL        !IONIZLEVEL
-        WRITE(iobase,'(I12)') INTBUF            !Buffer length
-        WRITE(iobase,'(I2)')  DESREP            !KREP
-        WRITE(iobase,'(I1)')  RCW               !RCW
-        N=2
-        WRITE(iobase,'(I1)')  N                 !IOLDNEW
-        WRITE(iobase,'(I12)') LADC              !LADC
-        WRITE(iobase,'(A6)')  NAMEMATFIL        !FILEADC
-        WRITE(iobase,'(A6)')  '      '          !FILEDIA
-        WRITE(iobase,'(A6)')  NAMECNFFIL        !FILECNF
-        WRITE(iobase,'(A5)')  NMSPECF           !Name of SPEC
-        WRITE(iobase,'(I9)')  IRECL             !IRECL of config
-        WRITE(iobase,'(I9)')  EXCITER           !NITER
-        WRITE(iobase,'(I9)')  MVO(DESREP)       !hp main block size
-        WRITE(iobase,'(I9)')  NBUFS             !NBUFS
-        WRITE(iobase,'(I9)')  EXCEIGV(IRPLOOP)   !NEIGENV
-        WRITE(iobase,'(F10.1)') EXCPRNT         !EVLLIM
-
-        CLOSE(iobase)
 !
 !  call full diagonalizer for new matrix format if requested.
 !
@@ -283,7 +266,7 @@
 !| Call full diagonalizer, if activated |
 !|______________________________________|
 
-        IF(DOFULL) THEN
+        IF(reladc_dofull) THEN
           IF(CARITH) THEN
             CALL FULLDIAC2(IOBASE, NAMEMATFIL, INTBUF, NBUFS,
      &                     LADC, DESREP)
@@ -300,24 +283,45 @@
 !  array in order to make it functional.
 !  Later, this will be abandoned completely.
 !
-        IF(DOLANC) THEN
-          allocate(CC(lancmem),stat=ialloc)
+        IF(reladc_dolanc) THEN
+!
+!** setup matrix descriptor for Lanczos
+!
+          neigenv = reladc_exceigv(IRPLOOP)
+
+          reladc_md_iobase   = iobase
+          reladc_md_ionizl   = IONIZLEVEL
+          reladc_md_ioldnew  = 2
+          reladc_md_intbuf   = INTBUF
+          reladc_md_desrep   = DESREP
+          reladc_md_rcw      = RCW
+          reladc_md_lnzitr   = reladc_exciter
+          reladc_md_matdim   = LADC
+          reladc_md_irecl    = IRECL
+          reladc_md_nmain    = MVO(DESREP)
+          reladc_md_nbufs    = NBUFS
+          reladc_md_neigenv  = neigenv
+          reladc_md_fileadc  = NAMEMATFIL
+          reladc_md_filediag = '      '
+          reladc_md_filecnf  = NAMECNFFIL
+          reladc_md_nmspec   = NMSPECF
+
+          allocate(CC(reladc_lancmem),stat=ialloc)
           if(ialloc.ne.0) stop 'Memory allocation problem.'
 
-          KFREE = 1; LFREE = LANCMEM; KFREEBASE = 1
+          KFREE = 1; LFREE = reladc_lancmem; KFREEBASE = 1
 !
 ! do one "allocation" and "deallocation" in order to 
 ! initialize mempkg routines.
 ! ask for LANCMEM-10 in order to allow space for tags.
 !
-          CALL MEMOPT('REAL',IDPT,LANCMEM-10,CC,KFREE,LFREE,.true.)
+          CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,CC,
+     &                KFREE,LFREE,.true.)
           CALL MEMREL('IDPT',CC,KFREEBASE,KFREEBASE,KFREE,LFREE)
 !
 !  open matinfo file and perform Lanczos
 !
-          OPEN(IOBASE,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-          CALL DIAG_LANC(CC,KFREE,LFREE,IOBASE,IW,DOINCORE)
-          CLOSE(IOBASE,STATUS='DELETE')
+          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
 ! free all memory needed for diagonalization
 !
@@ -327,10 +331,29 @@
 !| Call Davidson diag.     if activated |
 !|______________________________________|
 !
-        IF(DODAVI) THEN
-          OPEN(IOBASE,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-          CALL DIAG_DAVI(IOBASE,IW)
-          CLOSE(IOBASE,STATUS='DELETE')
+        IF(reladc_dodavi) THEN
+!
+!  write current matrix specification into descriptor block
+!  only the values **** needed for Davidson **** are written.
+!  In the descriptor file a few more variables are contained.
+!
+          reladc_md_iobase    = iobase
+          reladc_md_intbuf    = intbuf
+          reladc_md_desrep    = desrep
+          reladc_md_rcw       = rcw
+          reladc_md_matdim    = ladc
+          reladc_md_irecl     = irecl
+          reladc_md_nmain     = mvo(desrep)
+          reladc_md_nbufs     = nbufs
+          reladc_md_davroots  = reladc_davroots
+          reladc_md_maxdavsp  = reladc_davmaxsp
+          reladc_md_maxdavit  = reladc_davmaxit
+          reladc_md_convthr   = reladc_davconv
+          reladc_md_fileadc   = NAMEMATFIL
+          reladc_md_filecnf   = NAMECNFFIL
+          reladc_md_nmspec    = NMSPECF 
+
+          CALL DIAG_DAVI(IW)
         ENDIF
 !
 !  delete adc matrix file
@@ -814,6 +837,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       real*8, allocatable         :: evl(:),work(:)
       integer                     :: lwork,info
       real*8,parameter            :: AUTOEV = 27.2113957D0
+      real*8                      :: x2
       character*26,allocatable    :: cfield(:)
       character*11                :: davstartname
       character*8                 :: dsroot='DAVSTART'
@@ -832,7 +856,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code--------------------------------------
 !
-      write(*,*) 'Generating Davidson start vectors ...'
+      write(*,*) 'Generating Davidson start vectors.'
 
 !  MUTAB handling check
 !  we do it in the **COLUMN** index pair because we
@@ -865,7 +889,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             babs=IO(nrep+1) + IV(brep) + bfun
             icount = icount + 1
             write(cfield(icount),777) jabs,repna(jrep),babs,repna(brep)
-            write(*,*) cfield(icount)
+!           write(*,*) cfield(icount)
           enddo
           enddo
         enddo
@@ -889,7 +913,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ioff = JVOVO(desrep)   ! calculate total offset in corresponding irrep
         nsiz = MVO(desrep)
         if(nsiz.eq.0) then
-          write(*,*) 'no states in symmetry',desrep,repna(desrep)
+          write(*,*) 'No states in symmetry',desrep,repna(desrep)
           cycle
         endif
 !
@@ -915,14 +939,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         resh_array(1)=nsiz; resh_array(2)=nsiz
         xmat(1:nsiz*nsiz) = daibj(ioff+1:ioff + nsiz*nsiz)
         amat = reshape(xmat,resh_array)
-
-        write(*,*) 'Asymmetry of the constructed HP/HP matrix:',
-     &             qmasymr(amat,nsiz)
+!
+!  check asymmetry of obtained HPHP matrix
+!
+        x2 = dabs(qmasymr(amat,nsiz))
+        if(x2.gt.1.0E-10) then
+          write(*,*) 'Warning: Asymmetry of HP/HP matrix',
+     &         ' in symmetry',desrep,' amounts to',x2
+        endif
 !
 !  amat array has ph/ph structure and is transferred to LAPACK
 !
-        write(*,*) 'Diagonalizing HP/HP in symmetry:',desrep
-        write(*,*) 'Size of amat:',size(amat)
+!       write(*,*) 'Diagonalizing HP/HP in symmetry:',desrep
+!       write(*,*) 'Size of amat:',size(amat)
 !
 !  specific allocations and settings for entering LAPACK routine
 !
@@ -1150,9 +1179,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(ialloc.ne.0) STOP 'alloc error #3 in BUILD_X_COUSAT_R'
       ALLOCATE(BUFCOLEX(NMVOD + lencouplbl),stat=ialloc)
       if(ialloc.ne.0) STOP 'alloc error #4 in BUILD_X_COUSAT_R'
-      WRITE(IW,*) 'Block length of main block:',NMVOD
-      WRITE(IW,*) 'Block length of coupling block:',lencouplbl
-      WRITE(IW,*) 'Matrix dimension:',lencouplbl + NMVOD
+!     WRITE(IW,*) 'Block length of main block:',NMVOD
+!     WRITE(IW,*) 'Block length of coupling block:',lencouplbl
+!     WRITE(IW,*) 'Matrix dimension:',lencouplbl + NMVOD
 !
 !  according to the SRT16 convention, 
 !  the columns also have DESREP symmetry. 
@@ -1166,16 +1195,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         brep = multb(desrep+nrep,jrep,1)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
-!debug
-!       brep = multb(jrep,desrep+nrep,2)  wrong !!!
-!       leads to offset errors further down.
-!  
-!         desrepkr = multb(desrep+nrep,1+nrep,2)
-!         if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) STOP 'WAAAHH'
-!         write(*,*) 'transferring Kramers partner'
-!
-!debug end
-!
+
           CALL XCOLMAKE(desrep,lencouplbl,bufcol,
      &                  jrep,brep,jfun,bfun,
      &                  mxno,mxnv,nrep,
@@ -1200,12 +1220,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       IF((mjcol-1).ne.mvo(desrep))
      &  stop 'error 3 in build_x_cousat_r!'
-
-!     write(*,*) '----------------'
-!     write(*,*) '---- Main and coupling block written.'
-!     write(*,*) '---- Appending SAT block...'
-!     write(*,*) '----------------'
-
 !________________________________________________________
 !|
 !|
@@ -1237,10 +1251,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         CALL XCOLFLSH(IOCH,IBFP,NBUFS,INTBUF,WBUFR,WBUFI,WBUFJ)
       ENDIF
 
-      write(*,*) '------------------------'
-      write(*,*) '---- SAT block finished.'
+      write(*,*) '--------------------------------------------'
+      write(*,*) '---- Coupling and Satellite blocks finished.'
       write(*,*) '---- Number of buffers:',NBUFS
-      write(*,*) '------------------------'
+      write(*,*) '--------------------------------------------'
 
       deallocate(bufcol)
       deallocate(vvlt)
