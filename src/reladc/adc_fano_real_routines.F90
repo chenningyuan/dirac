@@ -3,7 +3,7 @@ MODULE adc_fano_real_routines
 !
 !  Data dictionary: common variables and arrays for the Fano ADC
 !  
-  INTEGER, PARAMETER                   :: fano_intbuf = 2 * 1024 * 1024 !as in ADC
+  INTEGER, PARAMETER                   :: fano_intbuf = 5 * 1024 * 1024 !as in ADC
   INTEGER                              :: itapfano !same as itapadc, written in a module
                                                    !file handle basis
   INTEGER                              :: fin_max  !number of final state configs
@@ -340,7 +340,6 @@ CONTAINS
     OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
 
-    WRITE(iw,*) 'Nach den OPEN statements'
 
     CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
 
@@ -400,202 +399,230 @@ CONTAINS
         END DO
       END DO
 
-    END IF offdiag
+      WRITE(iw,*) 'OOLT constructed'
 
-    WRITE(iw,*) 'OOLT constructed'
+!  
+!    loop over the original structure of the ADC matrix and write the matrix
+!    elements into different buffers
+!  
+      fincol = 1
+      zeros = 0
 
-!
-!  loop over the original structure of the ADC matrix and write the matrix
-!  elements into different buffers
-!
-    fincol = 1
-    zeros = 0
+      colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
+        temp = finalpos(fincol)
+        !WRITE(iw,*) 'jcol = ', jcol
+        !WRITE(iw,*) 'adccol1 = ', adccol
+        ! is the column a column of the final states?
+        IF (temp == jcol) THEN
+          fincol = fincol + 1
+          CYCLE colloop
+        END IF
+         
+        ! determine the column of the initial and total matrix
+        adccol = adccol + 1
+        incol  = incol  + 1
 
-    colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-      temp = finalpos(fincol)
-      !WRITE(iw,*) 'jcol = ', jcol
-      !WRITE(iw,*) 'adccol1 = ', adccol
-      ! is the column a column of the final states?
-      IF (temp == jcol) THEN
+        !WRITE(iw,*) 'adccol = ', adccol
+        !WRITE(iw,*) 'jcol = ', jcol
+
+        finrow = 1
+        adcrow = adccol - 1
+        inrow  = incol - 1
+
+        rowloop:DO irow = jcol, najl
+          IF (ANY(finalpos == irow)) THEN
+            CYCLE rowloop
+          END IF
+
+          ! determine the row of the initial and total matrix
+          adcrow = adcrow + 1
+          inrow  = inrow  + 1
+
+          !WRITE(iw,*) 'incol = ', incol
+          !WRITE(iw,*) 'inrow = ', inrow
+          !WRITE(iw,*) 'irow = ', irow
+
+          s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+          !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
+          IF (s == 0.0D0) THEN
+            zeros = zeros + 1
+          END IF
+
+          isdiag:IF (irow == jcol) THEN
+            diag(adcrow) = diag(adcrow) + s
+          ELSE isdiag
+            IF (s /= 0.0D0) THEN
+              inib = inib + 1
+              inbuf(inib) = s
+              inioi(inib) = inrow
+              inioj(inib) = incol
+              !WRITE(iw,*) 'incol = ', incol
+              !WRITE(iw,*) 'inrow = ', inrow
+              IF (inib == fano_intbuf) THEN
+                CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
+                                    innbufs,inib,infh)
+              END IF
+              ! now total adc-matrix
+              adcib = adcib + 1
+              adcbuf(adcib) = s
+              adcioi(adcib) = adcrow
+              adcioj(adcib) = adccol
+              !WRITE(iw,*) 'adccol = ', adccol
+              !WRITE(iw,*) 'adcrow = ', adcrow
+              IF (adcib == fano_intbuf) THEN
+                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                    adcnbufs,adcib,adcfh)
+              END IF
+            END IF
+          END IF isdiag
+
+        END DO rowloop
+!   construct coupling part between initial and final states
+        DO fincount = 1, fin_max
+          irow = finalpos(fincount)
+          adcrow = adcrow + 1
+          !WRITE(iw,*) 'adccol = ', adccol
+          !WRITE(iw,*) 'adcrow = ', adcrow
+
+          s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+          IF (s /= 0.0D0) THEN
+            adcib = adcib + 1
+            adcbuf(adcib) = s
+            adcioi(adcib) = adcrow
+            adcioj(adcib) = adccol
+            IF (adcib == fano_intbuf) THEN
+              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                  adcnbufs,adcib,adcfh)
+            END IF
+          ELSE
+            zeros = zeros + 1
+          END IF
+        END DO
+
+      END DO colloop
+
+      WRITE(iw,*) 'Number of zeros = ', zeros
+      !WRITE(iw,*) 'inib = ', inib
+
+      CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
+                               inib,infh)
+      !WRITE(iw,*) 'inib = ', inib
+
+      CALL dealloc(inbuf)
+      CALL dealloc(inioi)
+      CALL dealloc(inioj)
+      
+
+      ! take care of the block of final states
+      fincol = 0
+      finib = 0
+      finnbufs = 0
+      CALL alloc(finbuf, fano_intbuf)
+      CALL alloc(finioi, fano_intbuf)
+      CALL alloc(finioj, fano_intbuf)
+      DO finalcol = 1, fin_max
+        adccol = adccol + 1
         fincol = fincol + 1
-        CYCLE colloop
-      END IF
-       
-      ! determine the column of the initial and total matrix
-      adccol = adccol + 1
-      incol  = incol  + 1
+        jcol   = finalpos(finalcol)
+        adcrow = adccol - 1
+        finrow = fincol - 1
+        DO finalrow = finalcol, fin_max
+          adcrow = adcrow + 1
+          finrow = finrow + 1
+          irow   = finalpos(finalrow)
 
-      !WRITE(iw,*) 'adccol = ', adccol
-      !WRITE(iw,*) 'jcol = ', jcol
-
-      finrow = 1
-      adcrow = adccol - 1
-      inrow  = incol - 1
-
-      rowloop:DO irow = jcol, najl
-        IF (ANY(finalpos == irow)) THEN
-          CYCLE rowloop
-        END IF
-
-        ! determine the row of the initial and total matrix
-        adcrow = adcrow + 1
-        inrow  = inrow  + 1
-
-        !WRITE(iw,*) 'adccol = ', adccol
-        !WRITE(iw,*) 'adcrow = ', adcrow
-        !WRITE(iw,*) 'irow = ', irow
-
-        s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
-        !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
-        IF (s == 0.0D0) THEN
-          zeros = zeros + 1
-        END IF
-
-        isdiag:IF (irow == jcol) THEN
-          diag(adcrow) = diag(adcrow) + s
-        ELSE isdiag
-          IF (s /= 0.0D0) THEN
-            inib = inib + 1
-            inbuf(inib) = s
-            inioi(inib) = inrow
-            inioj(inib) = incol
-            !WRITE(iw,*) 'incol = ', incol
-            !WRITE(iw,*) 'inrow = ', inrow
-            IF (inib == fano_intbuf) THEN
-              CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
-                                  innbufs,inib,infh)
-            END IF
-            ! now total adc-matrix
-            adcib = adcib + 1
-            adcbuf(adcib) = s
-            adcioi(adcib) = adcrow
-            adcioj(adcib) = adccol
-            !WRITE(iw,*) 'adccol = ', adccol
-            !WRITE(iw,*) 'adcrow = ', adcrow
-            IF (adcib == fano_intbuf) THEN
-              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-                                  adcnbufs,adcib,adcfh)
-            END IF
-          END IF
-        END IF isdiag
-
-      END DO rowloop
-! construct coupling part between initial and final states
-      DO fincount = 1, fin_max
-        irow = finalpos(fincount)
-        adcrow = adcrow + 1
-        !WRITE(iw,*) 'adccol = ', adccol
-        !WRITE(iw,*) 'adcrow = ', adcrow
-
-        s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
-        IF (s /= 0.0D0) THEN
-          adcib = adcib + 1
-          adcbuf(adcib) = s
-          adcioi(adcib) = adcrow
-          adcioj(adcib) = adccol
-          IF (adcib == fano_intbuf) THEN
-            CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-                                adcnbufs,adcib,adcfh)
-          END IF
-        ELSE
-          zeros = zeros + 1
-        END IF
-      END DO
-
-    END DO colloop
-
-    WRITE(iw,*) 'Number of zeros = ', zeros
-    !WRITE(iw,*) 'inib = ', inib
-
-    CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
-                             inib,infh)
-    !WRITE(iw,*) 'inib = ', inib
-
-    CALL dealloc(inbuf)
-    CALL dealloc(inioi)
-    CALL dealloc(inioj)
-    
-
-    ! take care of the block of final states
-    fincol = 0
-    finib = 0
-    finnbufs = 0
-    CALL alloc(finbuf, fano_intbuf)
-    CALL alloc(finioi, fano_intbuf)
-    CALL alloc(finioj, fano_intbuf)
-    DO finalcol = 1, fin_max
-      adccol = adccol + 1
-      fincol = fincol + 1
-      jcol   = finalpos(finalcol)
-      adcrow = adccol - 1
-      finrow = fincol - 1
-      DO finalrow = finalcol, fin_max
-        adcrow = adcrow + 1
-        finrow = finrow + 1
-        irow   = finalpos(finalrow)
-
-        s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
-        !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
-        isfindiag:IF (adcrow == adccol) THEN
-          diag(adcrow) = diag(adcrow) + s
-          finib = finib + 1
-          finbuf(finib) = diag(adcrow)
-          finioi(finib) = finrow
-          finioj(finib) = fincol
-        ELSE isfindiag
-          IF (s /= 0.0D0) THEN
-            adcib = adcib + 1
-            adcbuf(adcib) = s
-            adcioi(adcib) = adcrow
-            adcioj(adcib) = adccol
-            !WRITE(iw,*) 'adccol = ', adccol
-            !WRITE(iw,*) 'adcrow = ', adcrow
-            IF (adcib == fano_intbuf) THEN
-              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-                                  adcnbufs,adcib,adcfh)
-            END IF
+          s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+          !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
+          isfindiag:IF (adcrow == adccol) THEN
+            diag(adcrow) = diag(adcrow) + s
             finib = finib + 1
-            finbuf(finib) = s
+            finbuf(finib) = diag(adcrow)
             finioi(finib) = finrow
             finioj(finib) = fincol
-            !WRITE(iw,*) 'fincol = ', fincol
-            !WRITE(iw,*) 'finrow = ', finrow
+          ELSE isfindiag
+            IF (s /= 0.0D0) THEN
+              adcib = adcib + 1
+              adcbuf(adcib) = s
+              adcioi(adcib) = adcrow
+              adcioj(adcib) = adccol
+              !WRITE(iw,*) 'adccol = ', adccol
+              !WRITE(iw,*) 'adcrow = ', adcrow
+              IF (adcib == fano_intbuf) THEN
+                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                    adcnbufs,adcib,adcfh)
+              END IF
+              finib = finib + 1
+              finbuf(finib) = s
+              finioi(finib) = finrow
+              finioj(finib) = fincol
+              !WRITE(iw,*) 'fincol = ', fincol
+              !WRITE(iw,*) 'finrow = ', finrow
+            END IF
+          END IF isfindiag
+
+!          WRITE(iw,*) 'Fin entry = ', finbuf(finib)
+
+          IF (finib == fano_intbuf) THEN
+            CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
+                                finnbufs,finib,finfh)
+            WRITE(iw,*) 'finib = ', finib
           END IF
-        END IF isfindiag
+        END DO
+      END DO
 
-!        WRITE(iw,*) 'Fin entry = ', finbuf(finib)
+!      WRITE(iw,*) 'ADCib = ', adcib
+!      WRITE(iw,*) 'Finib = ', finib
 
+      DEALLOCATE(oolt)    
+
+      CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
+                               adcib,adcfh)
+!      WRITE(iw,*) 'ADCib = ', adcib
+
+      CALL dealloc(adcbuf)
+      CALL dealloc(adcioi)
+      CALL dealloc(adcioj)
+
+      CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+                               finib,finfh)
+
+    ELSE offdiag
+      ! deallocate all no longer used arrays
+      CALL dealloc(inbuf)
+      CALL dealloc(inioi)
+      CALL dealloc(inioj)
+      CALL dealloc(adcbuf)
+      CALL dealloc(adcioi)
+      CALL dealloc(adcioj)
+      ! allocate final buffers
+      CALL alloc(finbuf, fano_intbuf)
+      CALL alloc(finioi, fano_intbuf)
+      CALL alloc(finioj, fano_intbuf)
+      WRITE(iw,*) 'finib = ', finib
+      WRITE(iw,*) 'end   = ', ladc-fin_max+1
+      WRITE(iw,*) 'ladc  = ', ladc
+      DO fincount = ladc-fin_max+1,ladc
+        finib = finib + 1
+        finbuf(finib) = diag(fincount)
+        finioi(finib) = finib
+        finioj(finib) = finib
         IF (finib == fano_intbuf) THEN
           CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
                               finnbufs,finib,finfh)
-          WRITE(iw,*) 'finib = ', finib
         END IF
       END DO
-    END DO
+      CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+                               finib,finfh)
+    END IF offdiag
 
-!    WRITE(iw,*) 'ADCib = ', adcib
-!    WRITE(iw,*) 'Finib = ', finib
-
-    DEALLOCATE(oolt)    
-
-    CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
-                             adcib,adcfh)
-!    WRITE(iw,*) 'ADCib = ', adcib
-
-    CALL dealloc(adcbuf)
-    CALL dealloc(adcioi)
-    CALL dealloc(adcioj)
-
-    CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
-                             finib,finfh)
     CALL dealloc(finbuf)
     CALL dealloc(finioi)
     CALL dealloc(finioj)
 
     ! write the diagonal to separate files
-    CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs)
-    CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs)
-    !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs)
+    CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
+    CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
+    !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)
 
     CALL dealloc(diag)
 
@@ -692,7 +719,7 @@ CONTAINS
 !
 !---------------------------------------------------------------------
 !
-  SUBROUTINE rwrite_diag(diag,ladc,first,last,fh,nbufs)
+  SUBROUTINE rwrite_diag(diag,ladc,first,last,fh,nbufs,iw)
 !
 !  Purpose: to write the diagonal elements to disk
 !
@@ -705,6 +732,7 @@ CONTAINS
     INTEGER, INTENT(IN)                 :: fh
     INTEGER, INTENT(IN)                 :: nbufs
     REAL(8), INTENT(IN), DIMENSION(ladc):: diag
+    INTEGER, INTENT(IN)                 :: iw
 !
 !  Data dictionary: Local variables
 !
@@ -713,6 +741,8 @@ CONTAINS
 !  Code
 !
 
+    !WRITE(iw,*) 'first = ', first
+    !WRITE(iw,*) 'last  = ', last
     WRITE(fh) (-diag(ixx), ixx= first, last), nbufs
 
 
