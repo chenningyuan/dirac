@@ -632,7 +632,10 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+
+      use adc_mat      !obtain matrix parameters via descriptor file
+      use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
@@ -645,10 +648,8 @@ C
 C---------------Description--------------------------------------------
 C
 C  This routine executes diagonalizer on any matrix (SIP/DIP) coming
-C  from the previous ADC code. All information comes from file MATINFO
-C  which is opened in the upper routine via infohandle.
 C  
-C  Infohandle is the file handle associated with the MATINFO file.
+C  Infohandle is the base file handle.
 C  the subsequent handles INFOHANDLE+1, +2 ... are available and
 C  can be used. The allocation is as follows:
 c
@@ -694,48 +695,40 @@ C
 !     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-!     WRITE(IW,*) 'Memory check done.'
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
 c
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
-c  read required information from info file
+c  transfer required parameters from matrix descriptor module
+c  to actual modules.
 c
-      READ(INFOHANDLE,'(I1)')    IONIZLEVEL
+      IONIZLEVEL = reladc_md_ionizl
       IF(IONIZLEVEL.eq.3) THEN
-        READ(INFOHANDLE,'(I12)')   INTBUF
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
-      ELSE
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
+        INTBUF = reladc_md_intbuf
       ENDIF
+      INFOHANDLE   =  reladc_md_iobase
+      KREP         =  reladc_md_desrep
+      RCW          =  reladc_md_rcw
+      IOLDNEW      =  reladc_md_ioldnew
+      LADC         =  reladc_md_matdim
+      FILEADC      =  reladc_md_fileadc
+      FILEDIA      =  reladc_md_filediag
+      FILECNF      =  reladc_md_filecnf
+      NMSPEC       =  reladc_md_nmspec
+      IRECL        =  reladc_md_irecl
+      NITER        =  reladc_md_lnzitr
+      NOCC         =  reladc_md_nmain
+      NBUFS        =  reladc_md_nbufs    
+      NEIGENV      =  reladc_md_neigenv
+      IF (IONIZLEVEL.eq.1) THEN
+        EVLLIM     =  reladc_sipprnt
+      ELSE IF (IONIZLEVEL.eq.2) THEN
+        EVLLIM     =  reladc_dipprnt
+      ELSE IF (IONIZLEVEL.eq.3) THEN
+        EVLLIM     =  reladc_excprnt
+      END IF
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
