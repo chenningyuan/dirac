@@ -9,3 +9,4 @@
 - Compilation fix for 64bit integer Intel MKL.
 - DIRAC compiles using Portland group compilers.
 - Introduced block for any structure optimization runs using the xyz format.
+- Removed --force option from setup script.
