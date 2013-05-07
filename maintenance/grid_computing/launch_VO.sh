@@ -67,13 +67,18 @@ echo -e "own ctest in PATH ? \c"; which ctest; ctest --version
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
 
 #
-# Perform pamadm steps to equip build directories with proper cmake sources
+# Perform pamadm steps in order to equip buildXYZ directories with proper cmake sources
 #
+echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD"
 python ./pamadm -a --builddir=$PWD/$BUILD
+
+echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD_SERIAL"
 python ./pamadm -a --builddir=$PWD/$BUILD_SERIAL
+
+echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD_GNU_SERIAL"
 python ./pamadm -a --builddir=$PWD/$BUILD_GNU_SERIAL
 
-echo -e "\n\n Job started at : \c"; date
+echo -e "\n\n === Job started at : \c"; date
 
 echo -e "\n --- Launching simple parallel pam test  --- \n "; 
 python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --outcmo --mpi=$nprocs --dirac=$BUILD/dirac.x
@@ -265,26 +270,31 @@ fi
  if [[ -n $MPI_OPENMPI_PATH ]]; then
    echo -e "\n Active MPI_OPENMPI_PATH=$MPI_OPENMPI_PATH !"
    ls -lt $MPI_OPENMPI_PATH
-   export PATH=$MPI_OPENMPI_PATH/bin:$PATH
-   export LD_LIBRARY_PATH=$MPI_OPENMPI_PATH/lib:$LD_LIBRARY_PATH
+   #export PATH=$MPI_OPENMPI_PATH/bin:$PATH
+   #export LD_LIBRARY_PATH=$MPI_OPENMPI_PATH/lib:$LD_LIBRARY_PATH
+   # lets try
+   module load openmpi
    echo "Extended variable PATH=$PATH"
-   echo "Extended variable LD_LIBRARY_PATH==$LD_LIBRARY_PATH"
+   echo "Extended variable LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
  fi
 
 ### check presence of parallel MPI compilers ###
  MPISWITCH='off'; MPISWITCH_F90='off'; MPISWITCH_CC='off'; MPISWITCH_CXX='off';
  if [[ -n `which mpif90` ]]; then
-    echo -e "\n Is  there mpif90 ? \c"; which mpif90
+    echo -e "\n Is there mpif90 ? \c"; which mpif90
+    mpif90 --showme
     mpif90 --version
     MPISWITCH_F90='on'
  fi
  if [[ -n `which mpicc` ]]; then
     echo -e "\n Is there mpicc ? \c";  which mpicc
+    mpicc --showme
     mpicc --version
     MPISWITCH_CC='on'
  fi
  if [[ -n `which mpiCC` ]]; then
     echo -e "\n Is there mpiCC ? \c";  which mpiCC
+    mpiCC --showme
     mpiCC --version
     MPISWITCH_CXX='on'
  fi
@@ -372,6 +382,9 @@ echo -e "\n selected directories/files of the DIRAC suite packed back , ls -lt d
 # upload final tarball onto SE so that you can dowload it later
 # upload_to_SE $VO
 
+#############################################
+#### flush out some good-bye message ... ####
+#############################################
 final_message
 
 exit 0

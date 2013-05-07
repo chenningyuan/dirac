@@ -19,10 +19,12 @@ The eigenvector have a paired structure
    \left(\lambda_{+;m}=+\left|\omega_m\right|, X_{+;m} = \right)
 
 .. math::
+
   \left(\begin{matrix} a & b \\
     c & d \end{matrix}\right)
 
 .. math::
+
   a & = (x + y)^2 \\
     & = x^2 + 2xy + y^2
 

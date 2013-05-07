@@ -89,11 +89,16 @@ VO Data management
 -------------------
 
 Accesible nodes/storage space:
-
 ::
 
   lcg-infosites -vo compchem se
   lcg-infosites -vo compchem all
+
+Accesible computing elements:
+::
+  lcg-infosites -vo voce ce
+  lcg-infosites -vo compchem ce
+  lcg-infosites -vo sivvp.slovakgrid.sk ce
 
 What you have in your VO's lfn-space:
 ::

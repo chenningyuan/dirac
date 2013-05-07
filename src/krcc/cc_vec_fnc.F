@@ -473,6 +473,7 @@ C     CALL MEMGET('REAL',KTEMP,LEN_M02_VEC_CC,WORK,KFREE,LFREE)
 C     CALL COPVEC(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
       CALL VEC_TO_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
 *
+*
 * And now the contraction
 *
       IHM = 2
@@ -690,8 +691,9 @@ C
      &     WORK,KFREE,LFREE)
       CALL MEMCHK_KRCC(WORK)
       print*,'after H20 -- 10 -- M10 crazy'
-      STOP 'remove above'
-      END IF
+      CALL SCALVE(WORK(KM01),HALF,LEN_M01_VEC_CC)
+C     STOP 'remove above'
+      ELSE
 *
 * Allocate the M02 intermediate
 *
@@ -702,6 +704,32 @@ C
 * H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
 *
       CALL VEC_FROM_DISC(WORK(KM02),LEN_M02_VEC_CC,1,LBLK,LUSC5)
+      print*,'remove below and keep above'
+C     IHM = 1 !Still the Hamiltonian that is contracted from
+C     IFHM = 1 !integrals are fetched
+*
+C     CALL EMTHET_COM_KRCC(CC_AMP,ITSM,WORK(KM02),IONE,IHM,
+C    &     IFHM,WORK(KT_CC), 
+C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+C    &     WORK(KLIBSOBEX_M02),WORK(KLLSOBEX_M02),NINTER02,
+C    &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),WORK(KLIHIND),IHSM,
+C    &     NH22,WORK(KNH22),
+C    &     NH22TOM02,WORK(KNH22TOM02),WORK(KNH22T02),
+C    &     WORK(KCOMBNH22TOM02),WORK(KPERMNH22TOM02),
+C    &     WORK(KFACNH22TOM02),WORK(KCOMBFACNH22TOM02),
+C    &     WORK(KINTM02),NINTER02,
+C    &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+C    &     WORK,KFREE,LFREE)
+*
+C     print*,' adding M02 and H02'
+C     CALL I_ADD_INTEGRALS_TO_AMPLITUDES_MASTER(NH02,WORK(KNH02),
+C    &                                   NINTER02,WORK(KINTM02),
+C    &                                   NSPOBEX_TP,WORK(KLSOBEX),
+C    &                                   WORK(KT_CC),WORK(KFI),
+C    &                                   WORK(KM02),WORK(KM02TOH02),
+C    &                                   WORK(KLIHIND),
+C    &                                   MX_ST_TSOSO_BLK_MX,
+C    &                                   WORK,KFREE,LFREE)
 C     CALL DIFFF(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
 *
 * Multiply by 1/2
@@ -724,6 +752,8 @@ C     CALL DIFFF(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
      &     WORK(KINTM01),NINTER01,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+C     CALL SCALVE(WORK(KM01),HALF,LEN_M01_VEC_CC)
+C     stop 'enough'
 *
 * Deallocate the M02 intermediate 
 *
@@ -731,6 +761,9 @@ C     CALL DIFFF(WORK(KM02),WORK(KTEMP),LEN_M02_VEC_CC)
       NHOLE = 2
       CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC,NPART,NHOLE,0)
 *
+      END IF
+C     CALL WRTMAT(WORK(KM01),1,LEN_M01_VEC_CC,1,LEN_M01_VEC_CC)
+C     STOP 'AND SEE'
       END IF !ISKIP
       CALL MEMCHK_KRCC(WORK)
       IF(ISKIP.GE.3) THEN

@@ -1,3 +1,5 @@
+#define MOD_UNRELEASED
+
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -19,131 +21,122 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module FDE_exportPotentials
-
-   use memory_allocator
-   use fde_types
-
-#ifdef MOD_UNRELEASED 
+module fde_export_data
 
    use fde_cfg
+   use fde_types
+#ifdef MOD_UNRELEASED 
    use fde_data
    use fde_io
    use xml_parser
    use xml_file
-   use fde_eval_dirac
+   use fde_evaluators
    
+   public fde_export_to_file
+
    private
    
-   public fde_export_write_data_to_file
-   public fde_export_write_data_to_memory
-
    contains
 
-
 !   ----------------------------------------------------------------------------
-      subroutine fde_export_write_data_to_memory(level)
+      subroutine fde_export_to_file(level)
 !   ----------------------------------------------------------------------------
-         character(len=3) :: level
-         real(kind=8), allocatable :: dmat(:)
-
-         call fde_old_density_matrix_generator(dmat)
-         call fde_calculate_active_elpot(dmat,fde_export_grid,gf_export%elpot,gf_export%nucpot)
-         call dealloc(dmat)
-      end subroutine fde_export_write_data_to_memory
-
-
-!   ----------------------------------------------------------------------------
-      subroutine fde_export_write_data_to_file(level)
-!   ----------------------------------------------------------------------------
-         character(len=3) :: level
+         character(len=4) :: level
          character(len=4) :: export_format
          type(fde_export) :: etmp
 
          call fde_get_export_info(etmp)
          
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
-! aspg: the one below has to be reactivated, now with the old
-!       setup for calculating the density matrix its not neded
-!           call fde_prepare_export(etmp)
-            call fde_prepare_export(etmp%ex_level)
+            write (*,*) 'Preparing FDE data for export'
+            call fde_prepare_export(level,fde_grid_ex,gf_export)
          
             call fde_get_export_info(etmp) 
-            if (etmp%ex_format.eq.'XML') call fde_export_data_as_xml
+            if (etmp%ex_format.eq.'XML') then
+               call fde_export_data_as_xml(fde_grid_ex,gf_export)
+            else
+               call fde_quit('unrecognized export format')
+            endif
+         else
+               write (*,*) 'inconsistent level of theory in fde_export'
+               write (*,*) 'skipping'
          endif
-      end subroutine fde_export_write_data_to_file
+      end subroutine fde_export_to_file
 
 
 !   ----------------------------------------------------------------------------
-!     subroutine fde_prepare_export(export_control)
-      subroutine fde_prepare_export(level)
+      subroutine fde_prepare_export(level,grid,gf)
 !   ----------------------------------------------------------------------------
-!       type(fde_export) :: export_control
-        character(len=3) :: level
-        real(kind=8), allocatable :: dmat(:)
-        integer :: mat_dim
+         type(grid_function), intent(inout) :: gf
+         type(fde_grid), intent(in)         :: grid
+         character(len=4)                   :: level
 
-        CALL TITLER('Preparing FDE data for export','*',118)
-!! calculate vc, density and gradient
-!         call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
-!         call fde_get_active_density(dmat, mat_dim, .true.)
-!
-! not so nice solution: while i don't get around to writing the ones above,
-! just reuse the old code in the routine below
-         call fde_old_density_matrix_generator(dmat)
-         call fde_calculate_active_elpot(dmat,fde_export_grid,gf_export%elpot,gf_export%nucpot)
-         call dealloc(dmat)
+        call fde_calculate_elpot(level,grid,gf)
+        call fde_get_density(level,grid,gf)
 
       end subroutine fde_prepare_export
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_export_data_as_xml
+      subroutine fde_export_data_as_xml(grid,gf)
 !   ----------------------------------------------------------------------------
-         integer :: export_unit, log_unit
-         character(len=60)  :: export_name, log_name
-         character(len=132) :: csizept1
-         character(len=132) :: csizept2
-         character(len=132) :: csizegrdrho1
-!not handling hessian now
-!        character(len=132) :: csizehesrho1
-         type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:)                   ! the grid
-         real(kind=8), pointer :: np(:), gnp(:,:), hes(:,:) ! density, its gradient and hessian
-         real(kind=8), pointer :: vcp(:), vnp(:)            ! electrostatic (hartree+nuclear), nuclear potentials
+         type(grid_function), intent(in) :: gf
+         type(fde_grid), intent(in)      :: grid 
+
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
+         type(xml_tag),pointer :: tag
 
-         if (allocated(fde_export_grid)) then                
-            gp  => fde_export_grid
+         integer :: export_unit, log_unit
+         character(len=60)  :: export_name, log_name
+
+         character(len=132) :: csizept1
+         character(len=132) :: csizept2
+         character(len=132) :: csizegrdrho1
+
+         real(kind=8), pointer :: gp(:,:)                   ! the grid
+         real(kind=8), pointer :: np(:), gnp(:,:), hes(:,:) ! density, its gradient and hessian
+         real(kind=8), pointer :: vcp(:), vnp(:)            ! electrostatic (hartree+nuclear), nuclear potentials
+
+
+         if (associated(grid%r)) then                
+
+            allocate(gp(4,grid%npoints))
+
+            do i = 1, grid%npoints
+               gp(1,i) = grid%r(1,i)
+               gp(2,i) = grid%r(2,i)
+               gp(3,i) = grid%r(3,i)
+               gp(4,i) = grid%w(i)
+            enddo
          else
-            call quit('grid not available in fde export')
+            call fde_quit('grid not available in fde export')
          endif
 
-         if (associated(gf_export%n)) then
-            np  => gf_export%n
+         if (associated(gf%n)) then
+            np  => gf%n
          else
-            call quit('density not available in fde export')
+            call fde_quit('density not available in fde export')
          endif
          
-         if (associated(gf_export%gn)) then
-            gnp => gf_export%gn
+         if (associated(gf%gn)) then
+            gnp => gf%gn
          else
-            call quit('density gradient not available in fde export')
+            call fde_quit('density gradient not available in fde export')
          endif   
 
-         if (associated(gf_export%hn)) then
-            hes => gf_export%hn
+         if (associated(gf%hn)) then
+            hes => gf%hn
          else
-            call quit('density gradient not available in fde export')
+            call fde_quit('density gradient not available in fde export')
          endif   
          
-         if (associated(gf_export%elpot)) then
-            vcp => gf_export%elpot
-            vnp => gf_export%nucpot
+         if (associated(gf%elpot)) then
+            vcp => gf%elpot
+            vnp => gf%nucpot
          else
-            call quit('potential not available in fde export')
+            call fde_quit('potential not available in fde export')
          endif
          
          call fde_get_files_info(ftmp)
@@ -156,8 +149,7 @@ module FDE_exportPotentials
          log_name    = ftmp%logfile%name
          
 
-         CALL TITLER('Output FDE data to XML file','*',118)
-         WRITE(log_unit,*) 'Writing data to xml_file:', trim(export_name)
+         WRITE(log_unit,*) 'Output FDE data to XML file:',trim(export_name)
 
          call fde_test_export
 
@@ -222,11 +214,9 @@ module FDE_exportPotentials
            write(log_unit,*) 'closing xml file'
          tag=>xml_close(export_name)
 
-!aspg come back to this later         CALL TIME()
-          call dealloc(fde_export_grid)
-
+         deallocate(gp)
       end subroutine fde_export_data_as_xml
 
 #endif /* MOD_UNRELEASED */
 
-end module FDE_exportPotentials
+end module fde_export_data 

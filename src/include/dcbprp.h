@@ -1,6 +1,6 @@
-
+! File: include/dcbprp.h
 !
-!
+! Purpose: control information for property module (in .../src/prp/ )
 !*****************************************************************************
 ! *** Property module ***
 !  DOEXP - do expectation values
@@ -10,7 +10,7 @@
 !          (by the polarization propagator method)
 !  DOXQR - do quadratic response
 !  DOTPA - do two-photon absortion calculation
-!  DOEXCPRP - do excited state properties calculation
+!  DOEXCPRP  - do excited state properties calculation
 !  EXCPRPTYP - type of excited state property calculation
 !  DOVER - do verdet calculations (via DOXQR)
 !  MGRAD - calculate molecular gradient
@@ -29,16 +29,10 @@
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
      &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP
-
-      INTEGER MXPRPWF,EXCPRPTYP
-      PARAMETER (MXPRPWF = 4)
-
-      CHARACTER*4 PRPWF(MXPRPWF)
-
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,DOVDW, &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
-     &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
+     &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP,              &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &
      &                BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP
@@ -46,7 +40,7 @@
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
      &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRPWF,   &
-     &        IPROTG(2,3),IPMSUSC(2,3),IMAGOUT,                         &
+     &        IPROTG(2,3),IPMSUSC(2,3),IMAGOUT, EXCPRPTYP,              &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IP_PVC_SHIELD(MXCOOR+3),                                  &
@@ -54,7 +48,7 @@
      &        IP_BLAO(2,3)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
-     &                         IPROTG,IPMSUSC,IMAGOUT,                  &
+     &                         IPROTG,IPMSUSC,IMAGOUT, EXCPRPTYP,       &
      &                IPCON21,IPCON22,IPCON23,                          &
      &                IPLONDON,IPCON,IPRNST,                            &
      &                IP_PVC_SHIELD,                                    &
@@ -64,6 +58,10 @@
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND
 
+      INTEGER MXPRPWF
+      PARAMETER (MXPRPWF = 4)
+      CHARACTER*4 PRPWF(MXPRPWF)
       COMMON /CBCPRP/ PRPWF
 
 #include <cbiher.h>
+! end of dcbprp.h

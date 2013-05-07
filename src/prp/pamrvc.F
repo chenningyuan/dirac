@@ -3983,8 +3983,9 @@ C***********************************************************************
         use dirac_cfg
         use dft_cfg
         use xcint_main
+!       use fde_mod, only: fde_set_isymop, fde_set_ihrmop,fde_calculate_emb_linrsp_mat 
         use fde_mod
-        use fde_integrate
+        use fde_dirac_matrices_integration
         use num_grid_gen
 #ifdef PCM_MODULE
         use pcm_interface
@@ -4116,7 +4117,15 @@ C
 !          call fde_set_nz(nz)
 !          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
-          call integrate_fde(fde_mat_dim            = ntbas(0),
+          call fde_dirac_set_isymop(isymop)
+          call fde_dirac_set_ihrmop(ihrmop)
+!         call fde_calculate_emb_linrsp_mat(ntbas(0),
+!    &                                      work(kbuf),
+!    &                                      ndmat,
+!    &                                      fmo,
+!    &                                      fao)
+          call fde_dirac_emb_matrices_via_integration(       
+     &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
      &                       fde_dmat_0             = work(kbuf),
      &                       fde_nr_dmat            = ndmat,
