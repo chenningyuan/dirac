@@ -99,7 +99,7 @@ CONTAINS
     ! Create an array of final state positions in the 2h1p part
     CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
     CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
-    
+
     ! Create the sorted 2h1p/2h1p block
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
                        finalpos,iw,mxno)
@@ -150,12 +150,9 @@ CONTAINS
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
 
-    !WRITE(iw,*) 'intbuf = ', reladc_md_intbuf
-    !WRITE(iw,*) 'recl   = ', reladc_md_irecl
-    !WRITE(iw,*) 'nbufs  = ', reladc_md_nbufs
-    !WRITE(iw,*) 'inmat  = ', reladc_md_fileadc
     
     CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep,iw)
+    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep,iw)
 
     CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
     
