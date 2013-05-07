@@ -575,6 +575,7 @@ CONTAINS
 
       DEALLOCATE(oolt)    
 
+      WRITE(iw,*) 'Writing final state contributions for level>1'
       CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
                                adcib,adcfh)
 !      WRITE(iw,*) 'ADCib = ', adcib
@@ -598,9 +599,10 @@ CONTAINS
       CALL alloc(finbuf, fano_intbuf)
       CALL alloc(finioi, fano_intbuf)
       CALL alloc(finioj, fano_intbuf)
-      WRITE(iw,*) 'finib = ', finib
-      WRITE(iw,*) 'end   = ', ladc-fin_max+1
-      WRITE(iw,*) 'ladc  = ', ladc
+      finib = 0
+      !WRITE(iw,*) 'finib = ', finib
+      !WRITE(iw,*) 'end   = ', ladc-fin_max+1
+      !WRITE(iw,*) 'ladc  = ', ladc
       DO fincount = ladc-fin_max+1,ladc
         finib = finib + 1
         finbuf(finib) = diag(fincount)

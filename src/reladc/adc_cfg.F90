@@ -64,7 +64,7 @@ module adc_cfg
   real*8,  public                  :: reladc_dipprnt      = 20.0
   real*8,  public                  :: reladc_excprnt      = 20.0
   logical, public                  :: reladc_doincore     = .false.
-  integer, public                  :: reladc_lancmem      = 10000000
+  integer, public                  :: reladc_lancmem      = 50000000
 !
 !  davidson control variables
 !

@@ -29,11 +29,13 @@
 !      ****  Diagonalization Routines for the RELADC package  ****
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+      SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP,iw)
+      !SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
       CHARACTER(len=6)              :: FILEN4, FILEN5
+      INTEGER                       :: iw
 !
 !---------------Description--------------------------------------------
 !
@@ -75,6 +77,13 @@
       LUN_OFF=IOUNIT+1
       LUN_OUT=IOUNIT+2
 
+      !WRITE(iw,*) 'filehandle = ', iounit
+      !WRITE(iw,*) 'fn diag    = ', FILEN4
+      !WRITE(iw,*) 'fn matrix  = ', FILEN5
+      !WRITE(iw,*) 'ladc       = ', ladc
+
+
+
 
 
       IF(KREP.GT.9) THEN
@@ -97,6 +106,8 @@
 !|
 !|
 !|
+      WRITE(iw,*) 'FILEN4 = ', FILEN4
+      WRITE(iw,*) 'FILEN5 = ', FILEN5
       OPEN(LUN_DIA,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
 
@@ -2857,6 +2868,8 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       CALL DSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
+
+      WRITE(iw,*) 'info = ', info
 
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in DSBEV')
