@@ -11,6 +11,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,
      &                         MXCORR,NSP,IREPSPI,EPS)
+      use adc_mat
 C
 C---------------Description-----------------------------------------------
 C
@@ -422,29 +423,26 @@ c
         CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
         CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
 C
-C  write general matrix control file and perform Lanczos diagonalization
-C  for each symmetry immediately.
+C  set matrix descriptor and perform Lanczos diagonalization
 C
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
+        reladc_md_iobase   = ITAPADC
+        reladc_md_ionizl   = IONIZLEVEL
+        reladc_md_ioldnew  = 2
+        reladc_md_intbuf   = INTBUF
+        reladc_md_desrep   = DESREP
+        reladc_md_rcw      = RCW
+        reladc_md_lnzitr   = DIPITER
+        reladc_md_matdim   = LADC
+        reladc_md_irecl    = IRECL
+        reladc_md_nmain    = NOOT(DESREP)
+        reladc_md_nbufs    = NBUFS
+        reladc_md_neigenv  = DIPEIGV(DESREP)
+        reladc_md_fileadc  = NAME2
+        reladc_md_filediag = '      '
+        reladc_md_filecnf  = NAME3
+        reladc_md_nmspec   = NMSPECF
 
-        WRITE(ITAPADC,'(I1)')  IONIZLEVEL        !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  DESREP            !KREP
-        WRITE(ITAPADC,'(I1)')  RCW               !RCW
-        N=2
-        WRITE(ITAPADC,'(I1)')  N                 !IOLDNEW
-        WRITE(ITAPADC,'(I12)') LADC              !LADC
-        WRITE(ITAPADC,'(A6)')  NAME2             !FILEADC
-        WRITE(ITAPADC,'(A6)')  '      '          !FILEDIA
-        WRITE(ITAPADC,'(A6)')  NAME3             !FILECNF
-        WRITE(ITAPADC,'(A5)')  NMSPECF           !Name of SPEC
-        WRITE(ITAPADC,'(I9)')  IRECL             !IRECL of config
-        WRITE(ITAPADC,'(I9)')  DIPITER           !NITER
-        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)      !2h space size
-        WRITE(ITAPADC,'(I9)')  NBUFS             !NBUFS
-        WRITE(ITAPADC,'(I9)')  DIPEIGV(DESREP)   !NEIGENV
-        WRITE(ITAPADC,'(F10.1)') DIPPRNT         !EVLLIM
-
-        CLOSE(ITAPADC)
+        DIPPRNT = 30.0d0
 c
 c  call full diagonalizer for new matrix format if requested.
 c
@@ -458,9 +456,7 @@ c
 c
 c  call Lanczos diagonalizer.
 c
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAG_LANC(CC,KFRSAV2,LFREE,ITAPADC,IW,DOINCORE)
-        CLOSE(ITAPADC,STATUS='DELETE')
+        CALL DIAG_LANC(CC,KFRSAV2,LFREE,IW,DOINCORE)
 c
 c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
