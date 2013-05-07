@@ -154,7 +154,7 @@ C
 
       if (doxml) then
          call xml_end('output')
-         call xml_end('task') ! started om dirrdn.F
+         call xml_end('run') ! started om dirrdn.F
       endif
       CALL QEXIT('DIRCTL')
       END
