@@ -41,7 +41,6 @@ CONTAINS
     INTEGER, INTENT(IN)   :: mxno
     REAL(8)               :: cc(*)
     INTEGER               :: kfree, lfree
-    
 
 !
 !  Data dictionary: Local Variables (and to be shared with subroutines)
@@ -53,6 +52,17 @@ CONTAINS
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
     CHARACTER(8)                          :: fn_conf='FANCNF'
+
+!
+!  Interfaces
+!
+    INTERFACE
+      SUBROUTINE diag_lanc(cc,kfree,lfree,iw,doincore)
+        REAL(8), DIMENSION(*)  :: cc
+        INTEGER                :: kfree, lfree, iw
+        LOGICAL                :: doincore
+      END SUBROUTINE diag_lanc
+    END INTERFACE
 
 !
 !  Code
@@ -138,12 +148,12 @@ CONTAINS
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
 
-    WRITE(iw,*) 'intbuf = ', reladc_md_intbuf
+    !WRITE(iw,*) 'intbuf = ', reladc_md_intbuf
     !WRITE(iw,*) 'recl   = ', reladc_md_irecl
     !WRITE(iw,*) 'nbufs  = ', reladc_md_nbufs
     !WRITE(iw,*) 'inmat  = ', reladc_md_fileadc
 
-    !CALL DIAG_LANC(cc,kfree,lfree,iw,.false.)
+!    CALL DIAG_LANC(cc,kfree,lfree,iw,.false.)
 
   END SUBROUTINE fanoadc
 
