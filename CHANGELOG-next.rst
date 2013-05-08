@@ -13,3 +13,5 @@
 - Pople basis sets containing "*" have been renamed to "-star" file names. However you do
   not need to change your input files. DIRAC will understand "*" characters in Pople basis sets
   and internally translate them.
+- Bugfix for permanent dipole moment calculations with KRCI. Missing nuclear contribution term 
+  have been added and the correct sign for the dipole integrals (length gauge) has been introduced.
