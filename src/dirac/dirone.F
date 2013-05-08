@@ -4242,7 +4242,7 @@ c   ... find max number of occupied shells
 c
       Z = D0
       DO I = 1,NUCIND
-         Z = MAX(Z,CHARGE(I))
+         IF (.not.NOORBT(I)) Z = MAX(Z,CHARGE(I)) ! skip point charges
       ENDDO
 
       CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
@@ -4274,13 +4274,18 @@ c        ... we will not go beyond f-orbitals
 c
          ZTEST = D0
          DO I = 1,NUCIND
-c      ... Get charges and exponents for the electrons in this group
-           CALL BNCOR1(GNU,ZEFF,N,CHARGE(I),L,I,WORK(KESHEL),
-     &          NUCIND,.FALSE.)
-           ZTEST = MAX(ZTEST,ZEFF)
-           WORK(KXGEXP-1+I) =  GNU
-           WORK(KCHRG -1+I) = -ZEFF
-         ENDDO
+            IF (NOORBT(I) .OR. CHARGE(I).EQ.0.0D0) THEN ! skip point charges and floating orbitals
+               WORK(KXGEXP-1+I) = 0.0D0
+               WORK(KCHRG -1+I) = 0.0D0
+            ELSE
+c           ... Get charges and exponents for the electrons in this group
+               CALL BNCOR1(GNU,ZEFF,N,CHARGE(I),L,I,WORK(KESHEL),
+     &              NUCIND,.FALSE.)
+               ZTEST = MAX(ZTEST,ZEFF)
+               WORK(KXGEXP-1+I) =  GNU
+               WORK(KCHRG -1+I) = -ZEFF
+            END IF
+         ENDDO ! I = 1,NUCIND
 c
          IF(IPRINT .GE. 1) THEN
             IF (N .LE. 1) THEN
@@ -4471,7 +4476,7 @@ C    <-- Actinides; (6d block and 7p block)
       CALL QENTER('BNCOR1')
 c
       IF (NINT(Z) .GT. 118) THEN
-         WRITE(LUPRI,'(1X,2(A/))') 'FATAL : The bare nucleus '//
+         WRITE(LUPRI,'(2(A/))') ' FATAL : The bare nucleus '//
      &   'correction is only implemented for elemtents 1-118',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
      &   'in *SCF'
@@ -4481,27 +4486,28 @@ c
       ZEFF = D0
       GNU  = D0
 
+C     ... If this is a ghost-atom (f.ex for Counter-Poise 
+C         correction) we return (charge is zero in BNCORR)
+      IF (Z .EQ. D0) GOTO 9000
+
       IF (MAXSHELL) THEN
-c    ... just find maximum number of shells we need to run over 
-c        and return number in L-variable (used in BNCORR)
+C    ... just find maximum number of shells we need to run over 
+C        and return number in L-variable (used in BNCORR)
          NST = NOCC((NINT(Z)-1)*4 + 1)
          L = NST/2
          IF(MOD(NST,2).NE.0) L = L + 1
-         GOTO 10
+         GOTO 9000
       ENDIF
 C
-c     ... If this is a ghost-atom (f.ex for Counter-Poise 
-c         correction) we return (charge is zero in BNCORR)
-      IF (Z .EQ. D0) GOTO 10
       IF (N.EQ.0) THEN
 c     ...Always make 1 electron semi-delocalized
          ZEFF = D1
          GNU  = 0.4D0
          SHELE(INUC,1) = SHELE(INUC,1) + D1
-         GOTO 10
+         GOTO 9000
       ENDIF
 c     ... If Hydrogen we are done
-      IF (Z.EQ.D1) GOTO 10
+      IF (Z.EQ.D1) GOTO 9000
 c     ... special case for the (2-1) 1s electron
       IF (N.EQ.1) THEN
          ZEFF = D1
@@ -4578,7 +4584,7 @@ c
       IF (L.EQ.2) ZEFF = ND
       IF (L.EQ.3) ZEFF = NF
       SHELE(INUC,N) = SHELE(INUC,N) + ZEFF
-      IF (ZEFF.EQ.D0) GO TO 10
+      IF (ZEFF.EQ.D0) GO TO 9000
 C
 C     ... Finally use Slater's rules to estimate screening 
 C         (and orbital exponent)
@@ -4608,7 +4614,7 @@ c     ... Convert STO to GTO using 1 Gaussian (STO1G)
 C     ... Make sure we dont get more delocalized than the first 
 C         1s electron.
 C     GNU = MAX(GNU,0.50D0)
-   10 CONTINUE
+ 9000 CONTINUE
       CALL QEXIT ('BNCOR1')
       RETURN
       END
@@ -4629,7 +4635,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D2=2.0D0)
+      PARAMETER(D0 = 0.0D0, D2 = 2.0D0)
 C
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -4639,17 +4645,15 @@ C
 C
       CALL QENTER('EONECAP')
 C
-      ECORR  = D0
-C
-C        Factor D2 comes from Time-Reversal Symmetry.
-C
       IF(INTV1C.EQ.3.OR.(INTV1C.EQ.2.AND.ICTLV1C(2).EQ.0)) THEN
          IF (NOPEN .GE. 1) THEN
             CALL QUIT('EONECAP not implemented for open shell '//
      &                'for this ONECAP model yet.')
          END IF
       END IF
+C
       ECORR = D2*DDOT(N2BBASX,DMAT,1,FMAT,1)
+              ! Factor D2 comes from Time-Reversal Symmetry.
 C
       CALL HEADER('Output from EONECAP',-1)
       FMT = MXFORM(ABS(ECORR),20)
