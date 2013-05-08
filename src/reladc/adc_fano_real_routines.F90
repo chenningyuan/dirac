@@ -93,7 +93,6 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-    INTEGER                            :: inib
     REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
     INTEGER                            :: temp_row     !row of temp_array
     INTEGER                            :: finrow       !row of final states
@@ -197,6 +196,7 @@ CONTAINS
             inbuf(inib) = single_col(adcrow)
             inioi(inib) = inrow
             inioj(inib) = adccol
+!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib)
             IF (inib == fano_intbuf) THEN
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
@@ -248,6 +248,10 @@ CONTAINS
 
     END DO one_column
 
+!    DO ixx=1, fano_intbuf
+!      WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
+!                                     -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
+!    END DO
 
 !
 !  deallocate local arrays
@@ -317,7 +321,7 @@ CONTAINS
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
     REAL                                   :: s
-    INTEGER                                :: zeros
+    INTEGER                                :: zeros, ixx
 
 !
 !  Code
@@ -426,6 +430,7 @@ CONTAINS
         incol  = incol  + 1
 
         !WRITE(iw,*) 'adccol = ', adccol
+        !WRITE(iw,*) ' incol = ',  incol
         !WRITE(iw,*) 'jcol = ', jcol
 
         finrow = 1
@@ -503,11 +508,14 @@ CONTAINS
       END DO colloop
 
       WRITE(iw,*) 'Number of zeros = ', zeros
-      !WRITE(iw,*) 'inib = ', inib
+
+      !DO ixx=1, fano_intbuf
+      !  WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
+      !                                 -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
+      !END DO
 
       CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                                inib,infh)
-      !WRITE(iw,*) 'inib = ', inib
 
       CALL dealloc(inbuf)
       CALL dealloc(inioi)
@@ -623,6 +631,7 @@ CONTAINS
 
     ! write the diagonal to separate files
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
+    WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc-fin_max)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)
 
@@ -701,10 +710,16 @@ CONTAINS
 !
     INTEGER :: ixx
     INTEGER :: jdummy
+    INTEGER :: iw=6
 
 !
 !  Code
 !
+!    IF (fh == itapfano+9) THEN
+!      DO ixx=1, intbuf
+!        WRITE(iw,'(1X,ES14.5,I4,I4)') -buf(ixx),ioi(ixx),ioj(ixx)
+!      END DO
+!    END IF
 
     jdummy = 0
 
