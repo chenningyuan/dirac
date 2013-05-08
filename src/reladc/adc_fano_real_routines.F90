@@ -36,7 +36,7 @@ MODULE adc_fano_real_routines
 !  File names
   CHARACTER(6), PARAMETER              :: fn_indiag  = 'INDIAG'
   CHARACTER(6), PARAMETER              :: fn_inmat   = 'IN_MAT'
-  CHARACTER(6), PARAMETER              :: fn_adcdiag = 'ADCDIA'
+  CHARACTER(6), PARAMETER              :: fn_adcdiag = 'FADCDG'
   CHARACTER(6), PARAMETER              :: fn_adcmat  = 'ADCMAT'
   CHARACTER(6), PARAMETER              :: fn_finmat  = 'FINMAT'
 
@@ -152,8 +152,10 @@ CONTAINS
     ! initial states
     OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
+    !WRITE(iw,*) 'adcmat = ', ierror
     OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
          ACTION='WRITE',iostat=ierror)
+    !WRITE(iw,*) 'inmat = ', ierror
 
 
 !                                                                       
@@ -175,28 +177,26 @@ CONTAINS
       off2   = off2 + nok
       CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc
+      DO adcrow = adccol + 1, ladc - fin_max
         incol = adccol
+        inrow = adcrow
         IF (adcrow-nok > 0) THEN
           !WRITE(iw,*) 'adcrow = ', adcrow
           !WRITE(iw,*) 'nok    = ', nok
           !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
           CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
                                is_coupl,is_fin,1)
-        !  dummy = det_nr_configs(1,nvoot(crep),bigicra,crep,1,iw)
         ELSE
           is_in = .TRUE.
         END IF
         is_initial:IF (is_in) THEN
-          inrow = inrow + 1
+          !inrow = inrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
             ! Handle the matrix of initial states
             inib   = inib + 1
             inbuf(inib) = single_col(adcrow)
             inioi(inib) = inrow
             inioj(inib) = adccol
-            !WRITE(iw,*) 'adcrow     : ', adcrow
-            !WRITE(iw,*) 'in number  : ', inbuf(inib)
             IF (inib == fano_intbuf) THEN
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
@@ -335,10 +335,13 @@ CONTAINS
 
     OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
+    !WRITE(iw,*) 'adcdiag = ', ierror
     OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
+    !WRITE(iw,*) 'indiag = ', ierror
     OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
+    !WRITE(iw,*) 'finmat = ', ierror
 
 
     CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
@@ -438,8 +441,8 @@ CONTAINS
           adcrow = adcrow + 1
           inrow  = inrow  + 1
 
-          !WRITE(iw,*) 'incol = ', incol
-          !WRITE(iw,*) 'inrow = ', inrow
+          !WRITE(iw,*) 'adccol = ', adccol
+          !WRITE(iw,*) 'adcrow = ', adcrow
           !WRITE(iw,*) 'irow = ', irow
 
           s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
@@ -467,8 +470,6 @@ CONTAINS
               adcbuf(adcib) = s
               adcioi(adcib) = adcrow
               adcioj(adcib) = adccol
-              !WRITE(iw,*) 'adccol = ', adccol
-              !WRITE(iw,*) 'adcrow = ', adcrow
               IF (adcib == fano_intbuf) THEN
                 CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                     adcnbufs,adcib,adcfh)
@@ -481,8 +482,8 @@ CONTAINS
         DO fincount = 1, fin_max
           irow = finalpos(fincount)
           adcrow = adcrow + 1
-          !WRITE(iw,*) 'adccol = ', adccol
-          !WRITE(iw,*) 'adcrow = ', adcrow
+          !WRITE(iw,*) 'adccolcpl = ', adccol
+          !WRITE(iw,*) 'adcrowcpl = ', adcrow
 
           s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
           IF (s /= 0.0D0) THEN
@@ -545,8 +546,8 @@ CONTAINS
               adcbuf(adcib) = s
               adcioi(adcib) = adcrow
               adcioj(adcib) = adccol
-              !WRITE(iw,*) 'adccol = ', adccol
-              !WRITE(iw,*) 'adcrow = ', adcrow
+              !WRITE(iw,*) 'adccolsat = ', adccol
+              !WRITE(iw,*) 'adcrowsat = ', adcrow
               IF (adcib == fano_intbuf) THEN
                 CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                     adcnbufs,adcib,adcfh)
@@ -565,7 +566,6 @@ CONTAINS
           IF (finib == fano_intbuf) THEN
             CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
                                 finnbufs,finib,finfh)
-            WRITE(iw,*) 'finib = ', finib
           END IF
         END DO
       END DO

@@ -1153,7 +1153,7 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-      integer                          :: i, j !counters
+      integer                          :: i, j, k !counters
       character(100)                   :: line
       integer                          :: temp
       integer                          :: user_req_symmetries
@@ -1241,6 +1241,7 @@
          ! read number of channels
          call kw_read(word, reladc_fano_nrchannels)
          allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         reladc_fano_channels = 0
          print *, ''
          print *, 'Absolute spinor numbers of Fano final states: '
          do i = 1, reladc_fano_nrchannels
@@ -1260,7 +1261,7 @@
          end do
       end if
 
-      if (kw_matches(word, 'FANOEIGV')) then
+      if (kw_matches(word, '.FANOEIGV')) then
          call kw_read(word, reladc_fano_eigv)
       end if
 
