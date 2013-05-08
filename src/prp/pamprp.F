@@ -4272,9 +4272,9 @@ C
 C     define operator type, factor, name and label
 C
       NPCOMP = 1
-      PFAC(1)  = D1
-      PFAC(2)  = D1
-      PFAC(3)  = D1
+      PFAC(1)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(2)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(3)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
 C     three components of dipole length integrals
       PNAME(1)  = 'X dipole length'
       PNAME(2)  = 'Y dipole length'
