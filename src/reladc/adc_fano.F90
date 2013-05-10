@@ -128,6 +128,7 @@ CONTAINS
     ! Create the file holding the configurations of the 1h and 2h1p configurations
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
                         finalpos,fin_max,iw)
+    !CALL WCONDAT_S(itapfano+6,fn_conf,recl_condat_s,krep,ladc)
 
     CALL dealloc(finalpos)
 
@@ -152,7 +153,7 @@ CONTAINS
 
     
     CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep,iw)
-    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep,iw)
+!    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep,iw)
 
     CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
     
@@ -164,7 +165,7 @@ CONTAINS
      &                KFREE,LFREE,.true.)
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
-!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
 
   END SUBROUTINE fanoadc
 
