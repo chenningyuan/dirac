@@ -597,6 +597,10 @@ CONTAINS
 
     ELSE offdiag
       ! deallocate all no longer used arrays
+      CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
+                               inib,infh)
+      CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
+                               adcib,adcfh)
       CALL dealloc(inbuf)
       CALL dealloc(inioi)
       CALL dealloc(inioj)
@@ -623,6 +627,7 @@ CONTAINS
       END DO
       CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
                                finib,finfh)
+
     END IF offdiag
 
     CALL dealloc(finbuf)
@@ -631,7 +636,7 @@ CONTAINS
 
     ! write the diagonal to separate files
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
-    !WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc-fin_max)
+    WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc-fin_max)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)
 
