@@ -2915,14 +2915,17 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
 !           todo: put in an interface routine to be called inside x2c_driver
             if(mdirac)then
-              NZT = 1
-              DO IFRP = 1,NFSYM
-                NESH(IFRP)  = NFORB(IFRP,1)
-                NPSH(IFRP)  = NFORB(IFRP,2) ! check!!!
-                NORB(IFRP)  = NESH(IFRP)    * 2
-                NTMO(IFRP)  = NORB(IFRP)
-              END DO
+              NZT         = 1
+              NPSH(IFRP)  = NFORB(IFRP,2) ! check!!!
+            else
+              NZT         = NZ
+              NPSH(IFRP)  = NFORB(IFRP,1) ! check!!!
             end if
+            DO IFRP = 1,NFSYM
+              NESH(IFRP)  = NFORB(IFRP,1)
+              NORB(IFRP)  = NESH(IFRP)    +  NPSH(IFRP)
+              NTMO(IFRP)  = NORB(IFRP)
+            END DO
 
 #ifdef MOD_AOOSOC
 !           initialize atomic oo-order 2e-SOC module
@@ -3444,7 +3447,6 @@ C       =============================================================
           NPSH(IFRP)  = NFORB(IFRP,2)
           NORB(IFRP)  = NESH(IFRP)    + NPSH(IFRP)
           NTMO(IFRP)  = NORB(IFRP)
-          lMAT        = NFBAS(ifrp,0)*NORB(ifrp)*NZ
           call resort_mdirac_vmat(tmat(imat),vmat(imat),
      &                            nfbas(ifrp,0),norb(ifrp),
      &                            ifrp,nborb,nz)
