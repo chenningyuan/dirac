@@ -85,7 +85,7 @@ CONTAINS
 
     nok  = NO(krep)
 !    najl = NOOVT(krep)
-    
+
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
     fin_max = nr_fin
@@ -134,7 +134,7 @@ CONTAINS
 
     ! Write all characteristics of the matrix to be diagonalised
     ! to adc_mat. We are using the lanczos diagonaliser.
-    reladc_md_iobase   = itapfano
+    reladc_md_iobase   = itapfano+6
     reladc_md_ionizl   = 1
     reladc_md_ioldnew  = 1 !old, diagonal is written to extra file
     reladc_md_intbuf   = fano_intbuf
@@ -142,12 +142,16 @@ CONTAINS
     reladc_md_rcw      = 1 !is real, for complex 2
     reladc_md_lnzitr   = reladc_sipiter
     reladc_md_matdim   = ladc-fin_max
+    !reladc_md_matdim   = ladc
     reladc_md_irecl    = recl_condat_s
     reladc_md_nmain    = nok
     reladc_md_nbufs    = innbufs
+    !reladc_md_nbufs    = adcnbufs
     reladc_md_neigenv  = reladc_fano_eigv
     reladc_md_fileadc  = fn_inmat
+    !reladc_md_fileadc  = fn_adcmat
     reladc_md_filediag = fn_indiag
+    !reladc_md_filediag = fn_adcdiag
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
 
