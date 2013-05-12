@@ -1,14 +1,14 @@
-include(FindGit)
 
-if (GIT_FOUND)
-    add_custom_target(
-        git_update
-        COMMAND ${GIT_EXECUTABLE} submodule init
-        COMMAND ${GIT_EXECUTABLE} submodule update
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    )
-else()
-    if(DEVELOPMENT_CODE)
+if(DEVELOPMENT_CODE)
+    include(FindGit)
+    if (GIT_FOUND)
+        add_custom_target(
+            git_update
+            COMMAND ${GIT_EXECUTABLE} submodule init
+            COMMAND ${GIT_EXECUTABLE} submodule update
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        )
+    else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
     endif()
 endif()
@@ -26,7 +26,6 @@ macro(add_external _project)
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-        PREFIX ${PROJECT_SOURCE_DIR}/external
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
@@ -42,11 +41,13 @@ macro(add_external _project)
         add_dependencies(${_project} git_update)
     endif()
 
-  # # remove stamps for external builds so that they are rebuilt every time
-  # add_custom_command(
-  #     TARGET ${_project}
-  #     PRE_BUILD
-  #     COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-  #     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  #     )
+    if(ALWAYS_RESET_EXTERNAL_BUILDS)
+        # remove stamps for external builds so that they are rebuilt every time
+        add_custom_command(
+            TARGET ${_project}
+            PRE_BUILD
+            COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+            )
+    endif()
 endmacro()

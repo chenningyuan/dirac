@@ -27,7 +27,7 @@ for line in process.stdout.readlines():
     if process_line:
         #print 'line=',line
         size = int(line.split()[2], 16) # get in the size in hex number
-        name = line.split()[7]  # extract the name 
+        name = line.split()[7]  # extract the name
         type = line.split()[-5] # extract type, necessary to identify variable
         l.append([size, name, type])
 

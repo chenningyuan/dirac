@@ -746,7 +746,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_startvec */
       SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,ISTATE,
-     &                           THRPCI,CIPROG,IPRINT,WORK,KFREE,LFREE)
+     &                           THRPCI,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate CI start vectors from GASCIP by diagonalizing the
@@ -769,7 +769,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      CHARACTER CIPROG*8
       INTEGER*8 IDET(2,*)
       DIMENSION WORK(*), CREF(NDET,NZ_in_CI), CMO(*)
 C
@@ -842,7 +841,7 @@ C
 C
       IF (IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GASCIP_STARTVEC) CI start vector'
-         CALL RPRCI(CREF,NDET,NZ,CIPROG, THRPCI,LUPRI)
+         CALL RPRCI(CREF,NDET,NZ,'GASCIP', THRPCI,LUPRI)
       END IF
 C
       CALL MEMREL('GASCIP_STARTVEC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2048,8 +2047,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
       SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
-     &                         ECIXX,CVECS,NDET,IDET,CMO,
-     &                         ISTATE,CIPROG,IPRINT,
+     &                         ECI_OUT,CVECS,NDET,IDET,CMO,
+     &                         ISTATE,ICONV_TOT,IPRINT,
      &                         WORK,LWORK)
 C***********************************************************************
 C
@@ -2063,7 +2062,7 @@ C        CMO     - MO coeff.
 C
 C     Output:
 C        CVECS   - CI vectors
-C        ECI     - CI energies
+C        ECI_OUT - CI energies
 C
 C
 C     Written by J. Thyssen - Jan 3 2001
@@ -2081,14 +2080,16 @@ C
 #include "dcbopt.h"
 #include "dgroup.h"
 C
-      CHARACTER CIPROG*8
       INTEGER*8 IDET(2,*)
-      DIMENSION ECIXX(*), CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
+      DIMENSION ECI_OUT(*), CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
+C
+C     Local variales:
+C
       PARAMETER ( MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
       DIMENSION DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
       INTEGER   J_HDIAG(MAX_ROOTS + 1), ICONV(MAX_ROOTS)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-      real*8 eci(MAX_ROOTS)
+      real*8    ECI(MAX_ROOTS)
 C
 #include "memint.h"
 C
@@ -2756,7 +2757,9 @@ C
 C
       GOTO 100  ! iterations loop
 C
- 200  CONTINUE
+C ==========================================================================
+C
+  200 CONTINUE
 C
 C     Print timings
 C
@@ -2786,18 +2789,16 @@ C
          ELSE IF (ICONV_TOT .EQ. -2) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum number of micro iterations,',
-     &           MAX_CI_IT, ', is reached.'
-            CALL QUIT('maximum number of micro iterations is reached')
+     &           MAX_CI_IT, ', is reached, CI aborted.'
          ELSE IF (ICONV_TOT .EQ. -3) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum reduced space dimension of',
-     &           MAX_HRED, ' reached.'
-            CALL QUIT('maximum reduced space dimension reached')
+     &           MAX_HRED, ' reached, CI aborted.'
          ELSE
             WRITE(LUPRI,'(//A,I4/A)') ' (GASCIP_RCISTD) '//
-     &        'WARNING: micro iterations aborted while not converged.',
+     &        'INFO: micro iterations not converged.',
      &        ' ICONV_TOT value :',ICONV_TOT
-            CALL QUIT('micro iterations aborted while not converged')
+            ! CALL QUIT('micro iterations aborted while not converged')
          END IF
       END IF
 C
@@ -2854,7 +2855,7 @@ C
      &                     WORK(KFREE),LFREE)
 
          IF ( IPRINT .GE. 15 ) CALL RPRCI(CVECS(1,I_ROOT),
-     &      NDET,NZ_in_CI,OPT_CIPROGRAM, THRPCI,LUPRI)
+     &      NDET,NZ_in_CI,'GASCIP', THRPCI,LUPRI)
 
       END DO
 C
@@ -2871,13 +2872,13 @@ C
 C
 !
 !     return the final eigenvalues to the incoming array (needed in the calling routine)
-      call dcopy(N_ROOTS,eci,1,ecixx,1)
+      call dcopy(N_ROOTS,eci,1,eci_out,1)
 
       CALL FLSHFO(LUPRI)
 
+      call memchk('esr_resolve end RCISTD',work,1)
       CALL QEXIT('GASCIP_RCISTD')
 C
-      call memchk('esr_resolve end RCISTD',work,1)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

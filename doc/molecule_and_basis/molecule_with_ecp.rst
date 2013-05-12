@@ -21,18 +21,21 @@ Originally, the spin-orbit term is included in the RECP (SOREP) as following [Le
 The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) [Ermler1981]_
 
 .. math::
+
   U^{AREP} = U_{L}^{AREP}(r) + \sum_{l=0}^{L-1}\sum_{m=-l}^{l}
               [U_{l}^{AREP}(r)- U_{L}^{AREP}(r)]|lm\rangle \langle lm|
 
 where
 
 .. math::
+
   U_{l}^{AREP} = \frac{1}{2l+1}[l\cdot U_{l,l-1/2}^{SOREP}(r) 
                                 + (l+1)\cdot U_{l,l+1/2}^{SOREP}(r)]
 
 The spin-orbit potential (:math:`U^{SO}`) is defined as,
 
 .. math::
+
   U^{SO} = s \cdot \sum_{l=1}^{L} \frac{2}{2l+1}\Delta U_{l}^{SOREP}(r)
            \sum_{m=-l}^{l} \sum_{m^{\prime}=-l}^{l}|lm\rangle 
            \langle lm|l|lm^{\prime}\rangle \langle lm^{\prime}|
@@ -40,6 +43,7 @@ The spin-orbit potential (:math:`U^{SO}`) is defined as,
 with
 
 .. math::
+
   \Delta U_{l}^{SOREP(r)} = U_{l,l+1/2}^{SOREP(r)} - U_{l,l-1/2}^{SOREP(r)}
 
 
@@ -172,6 +176,7 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 1.AREP blocks: Three parameters in each line in AREP blocks are :math:`n_{li}`, :math:`\alpha_{li}`, and :math:`C_{li}` respectively in the following equation.
 
 .. math::
+
    U_{l} = \sum_{l}C_{li}r^{n_{li}-2}e^{-\alpha_{li}r^{2}}
 
 2.SO blocks: Three parameters in each line in SO blocks are same as in AREP blocks.
@@ -179,11 +184,10 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as [Park2012]_,
 
 .. math::
+
    U_{l}^{SO,DIRAC} = \frac{2}{2l+1}\Delta U_{l}^{SOREP}
 
 For example, factors (2/2l+1) are already multiplied in SO parameters in `[Stuttgart RECP webpage] <http://www.theochem.uni-stuttgart.de/pseudopotentials/clickpse.en.html>`_.
 One can use it directly without the modification.
 There are two kinds of SO factors in `[RECPs of Christiansen and coworkers] <http://people.clarkson.edu/~pchristi/reps.html>`_. 
 SO factor in DIRAC is same as the ones defined for Columbus program.
-
-

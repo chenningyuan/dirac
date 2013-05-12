@@ -210,7 +210,6 @@ C         print*,'VEC(I),SCR(I),I after',VEC(I),SCR(I),I
       IF(IREW.EQ.1) THEN
         CALL REWINO(LU)
       END IF
-      print*,'LENGTH,LBLK',LENGTH,LBLK
       CALL ITODS_KRCC(LENGTH,LBLK,LU)
       CALL TODSC_KRCC(VEC,LENGTH,LBLK,LU)
       IONEM = -1

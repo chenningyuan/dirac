@@ -2001,6 +2001,18 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 * H21 -- 20 -- M01
 * H12 -- 11 -- M01
 * M01 + H01 -- 01 -- T
+
+* Below is new by Lasse 2013. Check to see if it is right!
+
+* H21 -- 10 -- M11 (multiply by 1/2 on additional array(At the moment))
+* H22 -- 11 -- M11 (reuse the above M11, add to above)
+* M11 + H11 -- R10 -- M01
+* H02 + M02 -- 01 -- M01 (reuse the above M02 + H02, multiply by 1/2)
+* H22 -- R21 -- M01
+* H21 -- R20 -- M01
+* H12 -- R11 -- M01
+* M01 -- 01 -- T
+
 * I guess that is all we need then!
 *
 *      

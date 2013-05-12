@@ -34,23 +34,51 @@ module adc_cfg
   integer, public                  :: reladc_adclevel   = 3
   logical, public                  :: reladc_dosips     = .false.
   logical, public                  :: reladc_dodips     = .false.
+  logical, public                  :: reladc_doexci     = .false.
   integer, dimension(1:32), public :: reladc_sipreps    = 0  
   integer, dimension(1:32), public :: reladc_dipreps    = 0  
+  integer, dimension(1:32), public :: reladc_excreps    = 0  
   logical, public                  :: reladc_readqkl    = .false.
   logical, public                  :: reladc_doconst    = .true.
   logical, public                  :: reladc_doadcpop   = .false.
-  logical, public                  :: reladc_dofull     = .false.
+  logical, public                  :: reladc_doxext     = .false.
   real*8,  public                  :: reladc_vconv      = 1.0E-06
   real*8,  public                  :: reladc_adcthr     = 0.0
+  logical, public                  :: reladc_dodiag     = .true.
+!
+!  selection of diagonalizer
+!
+  logical, public                  :: reladc_dolanc     = .false.
+  logical, public                  :: reladc_dofull     = .false.
+  logical, public                  :: reladc_dodavi     = .false.
 !
 !  lanczos control variables
 !
-  integer, public                  :: reladc_sipiter    = 500
-  integer, public                  :: reladc_dipiter    = 500
-  integer, dimension(1:32), public :: reladc_sipeigv    = 0
-  integer, dimension(1:32), public :: reladc_dipeigv    = 0
-  real*8,  public                  :: reladc_sipprnt    = 50.0
-  real*8,  public                  :: reladc_dipprnt    = 50.0
-  logical, public                  :: reladc_doincore   = .false.
-
+  integer, public                  :: reladc_sipiter      = 500
+  integer, public                  :: reladc_dipiter      = 500
+  integer, public                  :: reladc_exciter      = 500
+  integer, dimension(1:32), public :: reladc_sipeigv      = 0
+  integer, dimension(1:32), public :: reladc_dipeigv      = 0
+  integer, dimension(1:32), public :: reladc_exceigv      = 0
+  real*8,  public                  :: reladc_sipprnt      = 20.0
+  real*8,  public                  :: reladc_dipprnt      = 20.0
+  real*8,  public                  :: reladc_excprnt      = 20.0
+  logical, public                  :: reladc_doincore     = .false.
+  integer, public                  :: reladc_lancmem      = 100000000
+!
+!  davidson control variables
+!
+  integer, public                  :: reladc_davroots   = 5
+  integer, public                  :: reladc_davmaxsp   = 50
+  integer, public                  :: reladc_davmaxit   = 5
+  real*8,  public                  :: reladc_davconv    = 1.0E-05
+!
+!  fanoadc variables
+!
+  logical, public                  :: reladc_dofano       = .false.
+  integer, public                  :: reladc_fano_inrep   = 0
+  integer, public                  :: reladc_fano_inabssp = 0
+  integer, public                  :: reladc_fano_nrchannels = 0
+  integer, public, allocatable     :: reladc_fano_channels(:,:)
+  
 end module

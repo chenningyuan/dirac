@@ -191,6 +191,7 @@ CMI   ... add sector selectives MAXITxy's
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+
 C
 C     if running MP2-NO module use special input
 C
@@ -536,6 +537,8 @@ c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
+      use relcc_cfg
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -579,10 +582,10 @@ C
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
       integer :: verbose = 0
-      integer(kind=klongint) :: maxcor
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: mxcorr1
-      integer(kind=klongint) :: mword_limit
+      integer(kind=8)        :: maxcor
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: mxcorr1
+      integer(kind=8)        :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
@@ -629,7 +632,11 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
+
+! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
+! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
       maxcor = nint((total_mem_new/8.0d0),kind(8))
+
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
@@ -642,7 +649,12 @@ C
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input from file (old namelist) / transfer input (new style) from relcc_cfg
+
+!     sync co-workers and master with variables from new input...
+#ifdef VAR_MPI
+      call relcc_sync_cw()
+#endif
 C
       CALL CCINPT (IN,IW)
 C
@@ -694,6 +706,19 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+C
+C     Write output in xml format
+C
+      if (doxml) then
+         call xml_begin('task','type="RELCCSD"')
+         call xml_begin('input')
+         call xml_quantity('Number of spinors',NSP)
+         call xml_quantity('Number of correlated electrons',NELECT)
+         call xml_quantity('Number of virtual spinors',NSP-NELECT)
+         call xml_end('input')
+         call xml_begin('output')
+      endif
+
 C
       if ( maxcor .gt. 0) then
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
@@ -846,6 +871,11 @@ C     Print I/O statistics
 C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
+C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
 C
 C     Let us synchronize all processes! 
 C
@@ -1352,6 +1382,7 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
+!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
 C
@@ -1911,9 +1942,9 @@ Caspg, replacing memget
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
       real (kind=kreal)   :: total_mem_new = 0
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
       integer         :: freemem = 0
 C
 C
@@ -2052,6 +2083,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2109,11 +2141,11 @@ c
      &                             a_TAU3(:), a_T2T(:)
 c
       real(kind=kreal)    :: total_mem_new   = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0 
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr  
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0 
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr  
       integer         :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -2205,6 +2237,11 @@ C
 C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+
+C     Report Hartree-Fock SCF energy that is used (added to correlation energy)
+      if (doxml) then
+          call xml_quantity('SCF energy',ESCF,'Hartree')
+      end if
 C
 C  Solve relativistic MP2 equations
 C
@@ -2222,6 +2259,9 @@ C
          IMSTAT(4) = 3
          CALL CCDUMP
    10    CONTINUE
+         if (doxml) then
+            call xml_quantity('MP2 energy',ESCF+EMP2,'Hartree')
+         end if
       ENDIF
 C
 C  Solve relativistic CCSD equations
@@ -2274,6 +2314,10 @@ C
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+
+         if (doxml) then
+            call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
+         end if
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -2352,6 +2396,12 @@ C
      &                a_BUF1,a_BUF2,a_BUF3,a_TAU3,
      &                a_VVVO,a_VVOO,a_VOOO)
          CALL XTIME(5,2,'CCSD(T) evaluation            ')
+
+         if (doxml) then
+       call xml_quantity('CCSD+T energy',ESCF+ECCSD+ET1,'Hartree')
+       call xml_quantity('CCSD(T) energy',ESCF+ECCSD+ET1+ET2,'Hartree')
+       call xml_quantity('CCSD-T energy',ESCF+ECCSD+ET1+ET3,'Hartree')
+         end if
 C
 C     This is a restart point : update status.
 C
@@ -2462,11 +2512,11 @@ C
      &                             a_BUF3(:),a_FVV(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
 C
@@ -2854,11 +2904,11 @@ C
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3023,11 +3073,11 @@ C
      &                                         a_FREQD(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3175,7 +3225,7 @@ c
      &                             a_EIGENVECTORS(:,:)
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
-      integer(kind=klongint) :: mxcorr, mxcorr1
+      integer(kind=8)        :: mxcorr, mxcorr1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3381,7 +3431,7 @@ C
       call dealloc( a_BUF3, id="buf3" )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I20," 8-byte words")
 1007  FORMAT (//" Fock space CCSD Energy calculations",
      &        /" Module written by Ephraim Eliav & Luuk Visscher, ",
      &         "July 1999")
@@ -3893,6 +3943,24 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table  -----------------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  inverse multiplication table  ---------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
+
 C
 C     Get rid of offset for boson reps
 C
@@ -3908,6 +3976,23 @@ C
             MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table (no offset) ------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  inverse multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C

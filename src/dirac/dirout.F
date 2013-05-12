@@ -167,8 +167,13 @@ C       computed
 C       We now write the sum, the actual summation is done in the 
 C       ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
+        if (dirac_cfg_fde) then
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +      'Total energy (active subsystem)          :   ',DHFERG
+        else
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
+        endif
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap
@@ -406,6 +411,7 @@ C***********************************************************************
 C
 C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
 C     to quaternionic
+C     KNFBAS = NFBAS(IFRP,0)
 C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
@@ -417,38 +423,26 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
+      PARAMETER(DM1 = -1.0D0)
 C
-#include "dcblab.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-C
-C     KNFBAS = NFBAS(IFRP,0)
-C
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
-      DIMENSION III(2)
-#include "dcbibt.h"
 C
       IF(NVEC.EQ.0) RETURN
-C.....III is the totally symmetric irrep for the large components
-      III(1) = 0
-C.....III is the symmety of XYZ for the small components
-      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       NDIM  = NFBAS(IFRP,0)
       NTOT  = NVEC*NDIM
       NTOTZ = NTOT*NZ
       IF(NZ.NE.4) CALL DZERO(CBUF,NTOT*4)
       NBRP = 4/NZ
       DO IC = 1,2
+        IP     = MOD(IFRP+IC,2) + 1
         DO ISYM = 1,NBRP
-          IP    = MOD(IFRP+IC,2) + 1
           IBRP = JFSYM(ISYM,IP) - 1
           IOFF = IBBAS(IBRP,IC) - IBAS(IFRP)
-          IBRQ  = IBTXOR(IBRP,III(IC))
           DO IZ = 1,NZ
-            IQ = IPQTOQ(IZ,IBRQ)
-            IQ = IQMAP(IQ)
+            IQ = IQFROMPQ(ISYM,IFRP,IC,IZ)
             DO I = 1,NBBAS(IBRP,IC)
               CALL DCOPY(NVEC,CMO (I+IOFF,1,IZ),NFBAS(IFRP,0),
      &                        CBUF(I+IOFF,1,IQ),NFBAS(IFRP,0))

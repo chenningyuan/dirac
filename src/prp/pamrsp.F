@@ -2601,6 +2601,11 @@ C
         ENDIF
       ENDIF
 C
+C     Check for instabilies in reduced Hessian
+C
+      CALL XRSSTAB(REDE,NREDM,NZRED,NPRED,IPRXRS,INERT,
+     &             WORK,KFREE,LFREE)
+C
       IF (FKRMC) THEN
          CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
@@ -2679,10 +2684,6 @@ C
 C
       CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
-C
-C     Check for instabilies in reduced Hessian
-C
-      CALL XRSSTAB(AE,LDA,N,NPVEC,IPRINT,INERT,WORK,KFREE,LFREE)
 C
 C     Memory allocation
 C
@@ -3748,6 +3749,7 @@ C         trial vectors of this kind is generated
           IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
             NMDIM = NFREQ*NSTAT*NDAMP
             CALL IZERO(IVEC,NMDIM)
+            IFREQ = 0 ! MI : initialize to avoind runtime failure..
             DO IP = 1,NFREQ*NDAMP,NDAMP
               IFREQ = IFREQ + 1
               IM = IP + NFREQ*NDAMP
@@ -4381,6 +4383,10 @@ C
 C     Check for instability by looking for negative eigenvalues of
 C     the reduced Hessian.
 C
+C               INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
+C               INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
+C               INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
+C
 C     In the general relativistic case the ground state corresponds to
 C     a saddle opint and so one should subtract the number of e-p
 C     rotations given by NEPROT
@@ -4405,12 +4411,11 @@ C
 !     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
       if(nasht .le. 0)then
         IF(IPRINT.GE.2 .OR. IPAR.GT.0 .OR. INERT(3).ne.0) THEN
-          WRITE(LUPRI,'(3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-          WRITE(LUPRI,'(4(5X,A,I5))')
-     &        '* Number of positive eigenvalues :',INERT(1),
-     &        '* Number of zero     eigenvalues :',INERT(3),
-     &        '* Number of negative eigenvalues :',INERT(2),
-     &        '* Number of +- (ep) trial vectors:',NEPROT
+          WRITE(LUPRI,'(3X,A,4(A,I5))') 
+     &        '* Reduced Hessian: ',
+     &        'Number of positive/zero/negative eigenvalues : (',
+     &        INERT(1),'/',INERT(3),'/',INERT(2),
+     &        ');   +- (ep) trial vectors:',NEPROT
           IF(IPAR.GT.0) WRITE(LUPRI,'(//A,I3/A/A/)')
      &      '*** WARNING - If your reference state is not the'//
      &         ' excited state with index',IPAR,

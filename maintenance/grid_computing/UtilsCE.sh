@@ -186,17 +186,20 @@ echo -e "-----------------------------------------------------------\n"
 return 0
 }
 
+#
+# unpack and check the freshly downloaded DIRAC tarball
+#
 function unpack_DIRAC()
-{ # unpack and check the freshly downloaded DIRAC tarball
-echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar : \c "
+{ 
+echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar program  : \c "
 which tar;  tar --version
 echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz || { echo "some problems with tarball unpacking, exit !"; exit 113; }
+tar xfz dirac_grid_suite.tgz || { echo "some problems with tarball unpacking, error exit !"; exit 113; }
 echo -e "\n unpacking done; see the content of $PWD :"; ls -lt 
 echo -e "\n content of buildXYZ directories: "; ls -lt build*
 # created diracrc file with pam defaults:
 cp maintenance/grid_computing/diracrc_grid  ~/.diracrc
-echo -e "\n\n  ~/.diracrc created, containing: "; cat diracrc
+echo -e "\n\n  ~/.diracrc created, containing: "; cat ~/.diracrc
 return 0
 }
 

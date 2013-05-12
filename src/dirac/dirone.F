@@ -39,7 +39,6 @@ C*****************************************************************************
 ! checking
        use fde_types
        use fde_mod
-!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -111,7 +110,7 @@ C          ... zero SS integrals
          END IF
         call fde_get_import_info(itmp)
         if (itmp%im_vemb) then
-            CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
+            CALL fde_calculate_emb_pot_mat(COMB,IPRONE)
          endif
 C
 C     Contribution from beta-matrix
@@ -4832,7 +4831,6 @@ C
       DIMENSION P(4)
 C
 CTROND
-      WRITE(6,*) 'TEST, IPRINT = ', IPRINT
       IF(IPRINT.GE.7) THEN
          CALL HEADER('PRJORT: MO transformation matrix on input',-1)
          CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)

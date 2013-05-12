@@ -16,12 +16,21 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/pamadm)
         set(PAMADM_FLAGS "-a")
     endif()
 
-    execute_process(
-        COMMAND python pamadm ${PAMADM_FLAGS} --builddir=${PROJECT_BINARY_DIR}
-        TIMEOUT 1
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_QUIET
-    )
+    if("${PAMADM_FLAGS}" MATCHES "builddir")
+        execute_process(
+            COMMAND python pamadm ${PAMADM_FLAGS}
+            TIMEOUT 1
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_QUIET
+        )
+    else()
+        execute_process(
+            COMMAND python pamadm ${PAMADM_FLAGS} --builddir=${PROJECT_BINARY_DIR}
+            TIMEOUT 1
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_QUIET
+        )
+    endif()
 
     # tweak null device for Windows
     if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

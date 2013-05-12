@@ -445,7 +445,7 @@ C
       WRITE(LUPRI,'(1X,A)')
      &     '* Properties calculated for the following wave functions: '
       DO I = 1, NPRPWF
-         WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
+         WRITE(LUPRI,'(I6,2A)') I,': ',PRPWF(I)
       END DO
 
 CMI ...for magnetic susceptibility, NMR shielding constants and rotational
@@ -629,7 +629,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
-     &            '.PRPCAN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPCAN','.EPOLE ','.MPOLE ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -709,8 +709,34 @@ C&&&& PRPCAN: Generate canonical occupied property orbitals
                PRPCAN = .TRUE.
                GO TO 100
     6          CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     7          CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L (zero by time reversal symmetry)
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -1192,7 +1218,7 @@ CHJMAERKE: implement interpretation of class keyword
          ENDIF
 CMI      ... assign remaining parameters in dedicated subroutine
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
 
          IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
@@ -1270,7 +1296,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
 C*********************************************************************** 
 C
 C  Given a 4-component operator this routine returns an index
@@ -1287,7 +1313,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      DIMENSION PFAC(NPCOMP)
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1341,8 +1367,7 @@ C========================================================================
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C=========================================================================
-      CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
-     &            WORK,LWORK,IPRINT)
+      CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
 C
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
@@ -1358,8 +1383,7 @@ C       ... i.e. FOCKMAT
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpradd */
-      SUBROUTINE XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
-     &                  WORK,LWORK,IPRINT)
+      SUBROUTINE XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
 C***********************************************************************
 C
 C  Add property to list of properties in COMMON block XCBPRP
@@ -1378,7 +1402,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      DIMENSION PFAC(NPCOMP)
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1560,7 +1584,7 @@ C         Check property label
 CMI     ... (IPTYP.NE.0) operator has more components
         DO 600 J = 1,NPCOMP
           FACPRP(J,NPRPS)  = PFAC(J)
-          INDX = INDXPL(PLABEL(J),PCOMB,WORK,LWORK,IPRINT)
+          INDX = INDXPL(PLABEL(J),PCOMB,IPRINT)
           IF (INDX .LE. 0) THEN
             INDXPR = -1
             WRITE (LUPRI,'(3A)')
@@ -1578,7 +1602,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck indxpl */
-      INTEGER FUNCTION INDXPL(PLABEL,PCOMB,WORK,LWORK,IPRINT)
+      INTEGER FUNCTION INDXPL(PLABEL,PCOMB,IPRINT)
 C***********************************************************************
 C
 C     9-Mar-1995 hjaaj
@@ -1655,8 +1679,7 @@ C
       CLSCMB(NPRPCLS) = PCOMB
       CLSCAL(NPRPCLS) = .TRUE.
       IORDCL(NPRPCLS) = IORDER
-      CALL XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
-     &                WORK,LWORK,IPRINT)
+      CALL XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,IPRINT)
       INDXPL = INDX
  9999 CONTINUE
       CALL QEXIT('INDXPL')
@@ -1778,7 +1801,7 @@ C
 C
 C     Diamagnetic spin-orbit integrals
 C
-      ELSE IF(LABINT(1:3).EQ.'DSO') THEN
+      ELSE IF(LABINT(1:2).EQ.'DS') THEN
         CLASLB = 'DSO    '
 C
 C     Half-derivative overlap integrals
@@ -2040,8 +2063,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpldef */
-      SUBROUTINE XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
-     &                  WORK,LWORK,IPRINT)
+      SUBROUTINE XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,IPRINT)
 C***********************************************************************
 C
 C     Define property label: symmetries etc..
@@ -2052,6 +2074,7 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2060,11 +2083,16 @@ C
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-      CHARACTER PLABEL*8,CLASLB*7,PCOMB*4,LABINT(15*MXCENT)*8
-      DIMENSION WORK(LWORK)
+#include "dcbprl.h"
+#include "cbiher.h"
+      CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
+      LOGICAL ANTI, TRASPH, SOLVNT, SQUARE, LABERR
+      integer, allocatable :: INTREP(:)
+      integer, allocatable :: INTADR(:)
+      logical, allocatable :: DOATOM(:)
+      character (len=8), allocatable :: LABINT(:)
 C
       CALL QENTER('XPLDEF')
-#include "memint.h"
 C
       MAXTYP = 15*MXCENT
       IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
@@ -2072,49 +2100,11 @@ C
       ELSE
          NINTAD = MAXTYP
       END IF
-C     Memory allocation
-      CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINTAD,NINTAD,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM ,NUCIND,WORK,KFREE,LFREE)
-C
-      CALL XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,WORK(KINTRP),
-     &            WORK(KINTAD),LABINT,INDX,WORK(KATOM),
-     &            WORK(KFREE),LFREE,IPRINT)
-C
-      CALL QEXIT('XPLDEF')      
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck xplde1 */
-      SUBROUTINE XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,INTREP,INTADR,
-     &           LABINT,INDX,DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define property label: symmetries etc..
-C
-C    Entering: PLABEL
-C
-C
-C     Written by T.Saue May 14 1996
-C     Last revision: May 14 1996 - tsaue
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "dcbprl.h"
-#include "cbiher.h"
-#include "nuclei.h"
-C#include "maxorb.h"
-C#include "symmet.h"
-
-      LOGICAL ANTI, TRASPH, SOLVNT, SQUARE,LABERR,
-     &        DOATOM(*)
-      CHARACTER PLABEL*8,CLASLB*7,LABINT*8,PCOMB*4
-      DIMENSION INTREP(*),INTADR(*),LABINT(*),WORK(LWORK)
-      CALL QENTER('XPLDE1')
-C
+C.....Memory allocation
+      call alloc(INTREP,MAXTYP,id='INTREP in XPLDEF')
+      call alloc(INTADR,NINTAD,id='INTADR in XPLDEF')
+      allocate(DOATOM(NUCIND))
+      allocate(LABINT(MAXTYP))
 C
 C     Get information on this class of integrals
 C
@@ -2159,11 +2149,7 @@ C
         CALL SETATM(DOATOM,NATOM,-99)
         CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
-        ! call abacus part
-        DO I = 1,NUCIND
-          DOATOM(I) = .TRUE.
-        ENDDO
-
+        CALL LSET(NUCIND,.TRUE.,DOATOM)
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
           WRITE(LUPRI,*)
@@ -2181,7 +2167,7 @@ C
         ENDIF
 
        ! ... call abacus routine...
-        CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
+        CALL PR1DIR(CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 
@@ -2253,9 +2239,12 @@ C
         WRITE(LUPRI,'(19X,A8)') (LABINT(I),I=2,NOPTYP)
         CALL QUIT('XPLDE1:  error - operator label not found')
       ENDIF
-
-C
-      CALL QEXIT('XPLDE1')
+C.....Deallocate memory
+      call dealloc(INTREP)
+      call dealloc(INTADR)
+      deallocate(DOATOM)
+      deallocate(LABINT)
+      CALL QEXIT('XPLDEF')      
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2671,13 +2660,15 @@ C  /* Deck op1ind */
       SUBROUTINE OP1IND(OP1KEY,IND1OP,IPR1OP,N1OPER,INDXPR,MAX1OP)
 C***********************************************************************
 C
-C     INDXPR points to an operator in XCBPRP. Search through
-C     IPR1OP for elements pointing to this operator. If not found,
-C     extend the list by one element.
+C     INDXPR points to an operator in XCBPRP. 
+C     Search through pointer array IPR1OP for elements pointing 
+C     to this operator. If not found, extend the list by one element.
+C     The program is stopped if the array goes out of the bound MAX1OP.
+C     On output IND1OP will be the index of the operator in the 
+C     pointer array IPR1OP, N1OPER the current number of operators
+C     in the list.
 C
 C     Written by T.Saue June 28 1996
-C     Last revision: July 8 1996
-C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

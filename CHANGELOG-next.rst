@@ -1,14 +1,17 @@
 
 
-12.6
+12.7
 ----
 
-- Add basis_ecp to "make install" target.
-- Make it possible to compile without XCFun.
-- Enable creation of static executables with older linkers.
-- Add --replace option to the pam script.
-- introduce keyword .THRECI in KR-CI input to allow the user to change the default CI energy convergence criterion,
-  present default::
-
-  .THRECI
-  1.0d-10
+- DSO integrals can be limited by the .SELECT keyword. Previously DSO integral code
+  ignored .SELECT.
+- Extended addressing of DSO integrals up to 333 atom centers.
+- Compilation fix for 64bit integer Intel MKL.
+- DIRAC compiles using Portland group compilers.
+- Introduced block for any structure optimization runs using the xyz format.
+- Removed --force option from setup script.
+- Pople basis sets containing "*" have been renamed to "-star" file names. However you do
+  not need to change your input files. DIRAC will understand "*" characters in Pople basis sets
+  and internally translate them.
+- Bugfix for permanent dipole moment calculations with KRCI. Missing nuclear contribution term 
+  have been added and the correct sign for the dipole integrals (length gauge) has been introduced.
