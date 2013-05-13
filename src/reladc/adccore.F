@@ -4932,6 +4932,9 @@ C
 C  ... and the elements K_akl
 C  (this is the only contribution in case of ADC-2 strict)
 C
+      WRITE(iw,*) 'EAJL'
+      WRITE(iw,'(1X,ES14.5)') (eajl(ixx), ixx=1,najl)
+
       CALL XCOPY(NAJL,EAJL,1,DIAG(NOK+1),1)
 C
 C  enter additional code for off-diagonal matrix elements in ADC(2)X and
@@ -6305,7 +6308,7 @@ C
 C
 C  loop over irrep structure and form energy array & lookup table
 C
-      WRITE(iw,'(1X,3A14)') 'epsa', 'epsk', 'epsl'
+      !WRITE(iw,'(1X,3A14)') 'epsa', 'epsk', 'epsl'
       OFF=1
       DO 60 KLREP=1,NREP
         AREP=MULTB(AKLREP,KLREP+NREP,2)
@@ -6331,7 +6334,7 @@ C
                ICRA(4,OFF)=KREP
                ICRA(5,OFF)=L
                ICRA(6,OFF)=LREP
-               WRITE(iw,'(1X,3ES14.5)') epsa, epsk, epsl
+               !WRITE(iw,'(1X,3ES14.5)') epsa, epsk, epsl
                OFF=OFF+1
              ENDDO
            ENDDO
