@@ -1812,27 +1812,120 @@ C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
-      real(8), allocatable              :: excerg(:)
+      real(8), allocatable              :: excerg(:),excbuf(:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
+      integer, allocatable              :: n_ev(:)
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
+C.....Find total number of excitations
       NEXC = ISUM(NBSYM,KEXCNV,1)+1
-      allocate(SYMLAB(NBSYM))
       allocate(EXCERG(NEXC))
       allocate(INDX(NEXC))
       allocate(IRPS(NEXC))
-      allocate(IND(NBSYM))
-      IOFF = 2
-      DO ISYM = 1,NBSYM
-        SYMLAB(ISYM)=REP(ISYM-1)//' '
-        MEXC=KEXCNV(ISYM)
-        CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
-        IOFF = IOFF + MEXC
-      ENDDO
-      EXCERG(1) = 0.0D0
-      KEXCNV(1) = KEXCNV(1) + 1
-      CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
-     &            NEXC,INDX,IRPS,IND)
+C
+C.....Linear symmetry
+C     ===============
+      IF(LINEAR) THEN
+        MAXJ = 0
+        DO ISYM = 1,NBSYM
+          MEXC=KEXCNV(ISYM)
+          DO IEXC = 1,MEXC
+            MAXJ = MAX(ABS(ISSYM(IEXC,ISYM)),MAXJ)
+          ENDDO
+        ENDDO
+        MAXJ = MAXJ/2
+        N_IRPS = (MAXJ+2)*NFSYM
+        allocate(SYMLAB(N_IRPS))
+        allocate(N_EV(N_IRPS))
+        allocate(IND(N_IRPS))
+        CALL ICOPY(N_IRPS,0,0,N_EV,1)
+        IF(NFSYM.EQ.1) THEN
+          SYMLAB(1) = ' 0+ ' ! totally symmetric 
+          SYMLAB(2) = ' 0- ' ! has the symmetry of R_z
+          IOFF = 2
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,2X)') I
+          ENDDO
+        ELSEIF(NFSYM.EQ.2) THEN
+          SYMLAB(1) = ' 0g+' ! totally symmetric 
+          SYMLAB(2) = ' 0g-' ! has the symmetry of R_z
+          IOFF = 2
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,A,X)') I,'g'
+          ENDDO
+          IOFF = MAXJ + 2
+          SYMLAB(1+IOFF) = ' 0u+' ! has the symmetry of z
+          SYMLAB(2+IOFF) = ' 0u-' ! has the symmetry of xyz
+          IOFF = MAXJ + 4
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,A,X)') I,'u'
+          ENDDO
+        ENDIF
+C.......distribute excitation energies on linear symmetries
+        allocate(EXCBUF(NEXC))
+C.......we include the ground state
+        EXCERG(1) = 0.0D0        
+        N_EV(1)   = 1
+        IRPS(1)   = 1
+        ICNT = 1
+C
+        IOFF = 2
+        IREPP = 0
+        DO IFRP = 1,NFSYM
+          NBF = NBSYM/NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            IREP = ISYM-1
+            MEXC=KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
+            DO IEXC = 1,MEXC
+              ICNT = ICNT + 1
+              JVAL = ABS(ISSYM(IEXC,ISYM))/2
+              IF(JVAL.EQ.0) THEN
+C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symmetry
+                ILAB = (IFRP-1)*(MAXJ+2)
+                IF(IREP.EQ.IREPP) THEN
+                  ILAB = ILAB + 1
+                ELSE
+                  ILAB = ILAB + 2
+                ENDIF
+              ELSE
+                ILAB = (IFRP-1)*(MAXJ+2)+JVAL+2
+              ENDIF
+              N_EV(ILAB) = N_EV(ILAB) + 1
+              IRPS(ICNT)  = ILAB
+            ENDDO
+            IOFF = IOFF + MEXC
+          ENDDO
+          IREPP = ISYMAX(3,1)
+        ENDDO
+        CALL INDEXI(NEXC,IRPS,INDX)
+        DO I = 1,NEXC
+          II = INDX(I)
+          EXCERG(I) = EXCBUF(II)
+        ENDDO
+        CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        deallocate(excbuf)
+        deallocate(symlab)
+        deallocate(ind)
+        deallocate(n_ev)
+      ENDIF
+C.....Default case
+        allocate(SYMLAB(NBSYM))
+        allocate(IND(NBSYM))
+        IOFF = 2
+        DO ISYM = 1,NBSYM
+          SYMLAB(ISYM)=REP(ISYM-1)//' '
+          MEXC=KEXCNV(ISYM)
+          CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
+          IOFF = IOFF + MEXC
+        ENDDO
+        EXCERG(1) = 0.0D0
+        KEXCNV(1) = KEXCNV(1) + 1
+        CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        KEXCNV(1) = KEXCNV(1) - 1
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)
