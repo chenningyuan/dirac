@@ -4979,7 +4979,7 @@ C
             ICOL=NOK+J
 
             S=KCOCC(I,J,OOOO,VOVO,ICRA,OOLT,MXNO)
-            write(iw,'(1X,A4,ES15.4)') 's = ', S
+            !write(iw,'(1X,A4,ES15.4)') 's = ', S
             IF (S.EQ. 0.0D0) THEN
               zeros = zeros + 1
             END IF
@@ -5246,6 +5246,13 @@ C
       KREP  = ICRA(4,IROW)
       L     = ICRA(5,IROW)
       LREP  = ICRA(6,IROW)
+
+      WRITE(6,*) 'irow = ', irow, 'jcol = ', jcol
+      WRITE(6,*) 'arep = ', arep, 'krep = ', krep, 'lrep = ', lrep
+      WRITE(6,*) 'a = ', a, 'k = ', k, 'l = ', l
+      WRITE(6,*) 'asrep = ', asrep, 'ksrep = ', ksrep, 'lsrep = ', lsrep
+      WRITE(6,*) 'as = ', as, 'ks = ', ks, 'ls = ', ls
+
 
       S=0.0D0
 
