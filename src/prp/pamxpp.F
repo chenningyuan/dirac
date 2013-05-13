@@ -1894,6 +1894,7 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
               ENDIF
               N_EV(ILAB) = N_EV(ILAB) + 1
               IRPS(ICNT)  = ILAB
+              ISSYM(IEXC,ISYM) = ILAB
             ENDDO
             IOFF = IOFF + MEXC
           ENDDO
@@ -1945,6 +1946,7 @@ C.......we include the ground state
             ENDIF
             N_EV(ILAB) = N_EV(ILAB) + 1
             IRPS(ICNT)  = ILAB
+            ISSYM(IEXC,ISYM) = ILAB
           ENDDO
           IOFF = IOFF + MEXC
         ENDDO
