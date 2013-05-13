@@ -4932,8 +4932,8 @@ C
 C  ... and the elements K_akl
 C  (this is the only contribution in case of ADC-2 strict)
 C
-      WRITE(iw,*) 'EAJL'
-      WRITE(iw,'(1X,ES14.5)') (eajl(ixx), ixx=1,najl)
+      !WRITE(iw,*) 'EAJL'
+      !WRITE(iw,'(1X,ES14.5)') (eajl(ixx), ixx=1,najl)
 
       CALL XCOPY(NAJL,EAJL,1,DIAG(NOK+1),1)
 C
@@ -4979,7 +4979,7 @@ C
             ICOL=NOK+J
 
             S=KCOCC(I,J,OOOO,VOVO,ICRA,OOLT,MXNO)
-            !write(iw,'(1X,A4,ES15.4)') 's = ', S
+            write(iw,'(1X,A4,ES15.4)') 's = ', S
             IF (S.EQ. 0.0D0) THEN
               zeros = zeros + 1
             END IF
