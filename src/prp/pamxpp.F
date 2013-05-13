@@ -1799,35 +1799,29 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 C
-      PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
 #include "symmet.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: MAXRM, MXLOAD
+C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
-     &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),ISSYM(MAXEXC,NBSYM),
-     &          WORK(*)
+     &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
-      real(8), allocatable   :: excerg(:)
-      integer, allocatable :: indx(:),irps(:),ind(:)
-      DATA TTYP /'T-','T0','T+'/
+      real(8), allocatable              :: excerg(:)
+      integer, allocatable              :: indx(:),irps(:),ind(:)
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
       NEXC = ISUM(NBSYM,KEXCNV,1)+1
-      ALLOCATE(SYMLAB(NBSYM))
-      ALLOCATE(EXCERG(NEXC))
-      ALLOCATE(INDX(NEXC))
-      ALLOCATE(IRPS(NEXC))
-      ALLOCATE(IND(NBSYM))
+      allocate(SYMLAB(NBSYM))
+      allocate(EXCERG(NEXC))
+      allocate(INDX(NEXC))
+      allocate(IRPS(NEXC))
+      allocate(IND(NBSYM))
       IOFF = 2
       DO ISYM = 1,NBSYM
         SYMLAB(ISYM)=REP(ISYM-1)//' '
