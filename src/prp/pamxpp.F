@@ -1864,7 +1864,7 @@ C     ===============
 C.......distribute excitation energies on linear symmetries
         allocate(EXCBUF(NEXC))
 C.......we include the ground state
-        EXCERG(1) = 0.0D0        
+        EXCBUF(1) = 0.0D0        
         N_EV(1)   = 1
         IRPS(1)   = 1
         ICNT = 1
@@ -1904,13 +1904,60 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
           II = INDX(I)
           EXCERG(I) = EXCBUF(II)
         ENDDO
+        deallocate(excbuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
-        deallocate(excbuf)
-        deallocate(symlab)
-        deallocate(ind)
         deallocate(n_ev)
-      ENDIF
+      ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+        N_IRPS = 2*NBSYM
+        allocate(SYMLAB(N_IRPS))
+        allocate(N_EV(N_IRPS))
+        allocate(IND(N_IRPS))
+        CALL ICOPY(N_IRPS,0,0,N_EV,1)
+        IOFF = 1
+        DO IREP = 0,MAXREP
+          SYMLAB(IREP+IOFF)='S'//REP(IREP)     
+        ENDDO
+        IOFF = IOFF + NBSYM
+        DO IREP = 0,MAXREP
+          SYMLAB(IREP+IOFF)='T'//REP(IREP)     
+        ENDDO
+C.......distribute excitation energies on spinfree symmetries
+        allocate(EXCBUF(NEXC))
+C.......we include the ground state
+        EXCBUF(1) = 0.0D0        
+        N_EV(1)   = 1
+        IRPS(1)   = 1
+        ICNT = 1
+        IOFF = 2
+        DO ISYM = 1,NBSYM
+          IREP = ISYM - 1
+          MEXC = KEXCNV(ISYM)
+          CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
+          DO IEXC = 1,MEXC
+            ICNT = ICNT + 1
+            ISPACE = ISSYM(IEXC,ISYM) 
+            ISPIN  = IBTXOR(ISPACE,IREP)
+            IF(ISPIN.EQ.0) THEN
+              ILAB = ISPACE + 1
+            ELSE
+              ILAB = ISPACE + NBSYM + 1
+            ENDIF
+            N_EV(ILAB) = N_EV(ILAB) + 1
+            IRPS(ICNT)  = ILAB
+          ENDDO
+          IOFF = IOFF + MEXC
+        ENDDO
+        CALL INDEXI(NEXC,IRPS,INDX)
+        DO I = 1,NEXC
+          II = INDX(I)
+          EXCERG(I) = EXCBUF(II)
+        ENDDO
+        deallocate(excbuf)
+        CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        deallocate(n_ev)
+      ELSE
 C.....Default case
         allocate(SYMLAB(NBSYM))
         allocate(IND(NBSYM))
@@ -1926,6 +1973,7 @@ C.....Default case
         CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
         KEXCNV(1) = KEXCNV(1) - 1
+      ENDIF
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)
