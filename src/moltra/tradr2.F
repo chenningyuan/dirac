@@ -1,4 +1,4 @@
-dirac_copyright_start
+!dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
 !
