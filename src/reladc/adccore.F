@@ -721,7 +721,6 @@ C
       integer(8) :: ivmax
 #endif
 
-      !INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
 C
 C--------------- description of buffer pointers for the CC array  --------
 C
@@ -4915,6 +4914,12 @@ C
       JDUMMY = 0
       NOK=NO(CREP)
       NAJL=NVOOT(CREP)
+
+!      WRITE(IW,*)
+!      WRITE(IW,*) 'View the ICRA lookup table'
+!      WRITE(IW,123) ((icra(iyy,ixx), iyy=1,6), ixx=1,najl)
+! 123  FORMAT (1X,6I8)                                       
+!      WRITE(IW,*)   
 C
 C  fill in the diagonal of the h/h block ...
 C
@@ -6300,6 +6305,7 @@ C
 C
 C  loop over irrep structure and form energy array & lookup table
 C
+      WRITE(iw,'(1X,3A14)') 'epsa', 'epsk', 'epsl'
       OFF=1
       DO 60 KLREP=1,NREP
         AREP=MULTB(AKLREP,KLREP+NREP,2)
@@ -6325,6 +6331,7 @@ C
                ICRA(4,OFF)=KREP
                ICRA(5,OFF)=L
                ICRA(6,OFF)=LREP
+               WRITE(iw,'(1X,3ES14.5)') epsa, epsk, epsl
                OFF=OFF+1
              ENDDO
            ENDDO
