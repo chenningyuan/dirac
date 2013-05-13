@@ -86,6 +86,9 @@ CONTAINS
     nok  = NO(krep)
 !    najl = NOOVT(krep)
 
+    WRITE(iw,*) 'ckks'
+    WRITE(iw,'(1X,ES14.5)') (ckks(idpt), idpt=1,nok)
+
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
     fin_max = nr_fin

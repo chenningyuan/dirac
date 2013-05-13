@@ -5020,6 +5020,8 @@ C
 C  write out !negative! diagonal in specific file
 C  and the number of records in the off-diagonal file.
 C
+      WRITE(iw,*) 'ADC diag' !Elke
+      WRITE(iw,'(1X,ES14.5)') (diag(ixx),ixx=1,ladc)
       WRITE(ITAPE1) (-DIAG(IXX),IXX=1,LADC),NBUFS
       WRITE(IW,1000) INTBUF,NBUFS
 C

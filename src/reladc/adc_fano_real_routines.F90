@@ -636,7 +636,7 @@ CONTAINS
 
     ! write the diagonal to separate files
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
-    WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc-fin_max)
+    WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)
 
