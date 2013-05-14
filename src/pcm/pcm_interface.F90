@@ -342,7 +342,7 @@ module pcm_interface
         call get_surface_function(nr_points, potentials, potName)
 
 ! Write to file MEP and ASC
-        call pcm_write_file(nr_points, potentials, charges)
+        call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
  
         deallocate(nuc_pot)
         deallocate(nuc_pol_chg)
