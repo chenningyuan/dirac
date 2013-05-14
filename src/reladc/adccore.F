@@ -193,6 +193,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
+      real(8), allocatable, dimension(:) :: oooo
 
       call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
@@ -607,6 +608,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(*,*) 'We give the FULL memory to the ADC modules.'
 
       LFREE = MAXCOR
+
+! Elke
+      CALL alloc(oooo,ioooott(nrep+1))
+      CALL GETOOOO(oooo)
+      WRITE(iw,*) 'OOOO'
+      WRITE(iw,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
+      CALL dealloc(oooo)
+
 
       IF(DOSIPS) THEN
         CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
