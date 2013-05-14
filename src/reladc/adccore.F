@@ -193,7 +193,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
-      real(8), allocatable, dimension(:) :: oooo
+      real(8), allocatable :: oooo(:)
 
       call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
