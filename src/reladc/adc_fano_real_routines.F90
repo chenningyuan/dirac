@@ -135,7 +135,7 @@ CONTAINS
     adcioj     = 0
     temp_array = 0
 
-    inrow      = 0
+    inrow      = 1
     finrow     = 0
     fincount   = 0
 
@@ -176,9 +176,9 @@ CONTAINS
       off2   = off2 + nok
       CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc - fin_max
+      DO adcrow = adccol + 1, ladc
         incol = adccol
-        inrow = adcrow
+        !inrow = adcrow
         IF (adcrow-nok > 0) THEN
           !WRITE(iw,*) 'adcrow = ', adcrow
           !WRITE(iw,*) 'nok    = ', nok
@@ -189,7 +189,8 @@ CONTAINS
           is_in = .TRUE.
         END IF
         is_initial:IF (is_in) THEN
-          !inrow = inrow + 1
+          inrow = inrow + 1
+          !WRITE(iw,*) 'inrow = ', inrow
           IF (single_col(adcrow) /= 0.0D0) THEN
             ! Handle the matrix of initial states
             inib   = inib + 1
@@ -213,6 +214,8 @@ CONTAINS
             END IF
           END IF
         ELSE is_initial
+          !WRITE(iw,*) 'inrow = ', inrow
+          !WRITE(iw,*) 'adcrow     : ', adcrow
           finrow = finrow + 1
           IF (single_col(adcrow) /= 0.0D0) THEN
             fincount = fincount + 1
@@ -239,7 +242,7 @@ CONTAINS
         END IF
       END DO 
 
-      inrow = 0
+      inrow = adccol + 1
       finrow = 0
       fincount = 0
 
