@@ -174,6 +174,8 @@ CONTAINS
 
     CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
 
+    CALL dealloc(buflanc)
+
   END SUBROUTINE fanoadc
 
 END MODULE adc_fano
