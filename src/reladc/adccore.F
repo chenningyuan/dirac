@@ -5247,10 +5247,11 @@ C
       L     = ICRA(5,IROW)
       LREP  = ICRA(6,IROW)
 
-      WRITE(6,*) 'OOOO'
-      WRITE(6,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
-      WRITE(6,*) 'VOVO'
-      WRITE(6,'(1X,ES14.5)') (vovo(ixx), ixx=1,ivovo(nrep+1))
+      !WRITE(6,*) 'nr oooo = ', ioooott(nrep+1)
+      !WRITE(6,*) 'OOOO'
+      !WRITE(6,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
+      !WRITE(6,*) 'VOVO'
+      !WRITE(6,'(1X,ES14.5)') (vovo(ixx), ixx=1,ivovo(nrep+1))
 
 
       S=0.0D0
