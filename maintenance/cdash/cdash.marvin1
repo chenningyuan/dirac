@@ -26,7 +26,7 @@ cd $DIRAC
 
 BUILD_PGI=build_PGI_i32lp64_acml_dyn
 if [[ -d "$BUILD_PGI" ]]; then
-  echo "deleting previous build directory $BUILD_PGI"
+  echo "deleting previous build directory $BUILD_PGI."
   /bin/rm -rf $BUILD_PGI
 fi
 #
@@ -36,7 +36,6 @@ export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 ./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=off  -D BUILDNAME="PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI
 cd $BUILD_PGI
 make ExperimentalUpdate
-cmake ..
 make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
@@ -45,7 +44,7 @@ cd $DIRAC
 unset MATH_ROOT
 BUILD_PGI1=build_PGI_ilp64_ownmath_dyn
 if [[ -d "$BUILD_PGI1" ]]; then
-  echo "deleting previous build directory $BUILD_PGI1"
+  echo "deleting previous build directory $BUILD_PGI1."
   /bin/rm -rf $BUILD_PGI1
 fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI1
@@ -53,7 +52,6 @@ fi
 ./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=on -D BUILDNAME="PGI_ownmath_i8" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI1
 cd $BUILD_PGI1
 make ExperimentalUpdate
-cmake ..
 make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
@@ -71,7 +69,6 @@ export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 ./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64=on  -D BUILDNAME="PGI_acml_i8" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI_I8
 cd $BUILD_PGI_I8
 make ExperimentalUpdate
-cmake ..
 make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalSubmit
