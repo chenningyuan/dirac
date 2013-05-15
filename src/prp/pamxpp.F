@@ -1809,12 +1809,15 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
+      PARAMETER(TTOL=1.0D-8)
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable              :: excerg(:),excbuf(:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
       integer, allocatable              :: n_ev(:)
+      CHARACTER TTYP(-1:1)*2
+      DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
 C.....Find total number of excitations
@@ -1822,6 +1825,10 @@ C.....Find total number of excitations
       allocate(EXCERG(NEXC))
       allocate(INDX(NEXC))
       allocate(IRPS(NEXC))
+      NBF = NBSYM/NFSYM
+C
+C     E X C I T A T I O N    E N E R G I E S
+C     ======================================
 C
 C.....Linear symmetry
 C     ===============
@@ -1872,10 +1879,9 @@ C
         IOFF = 2
         IREPP = 0
         DO IFRP = 1,NFSYM
-          NBF = NBSYM/NFSYM
           DO IBF = 1,NBF
             ISYM = JFSYM(IBF,IFRP)
-            IREP = ISYM-1
+            IREP = ISYM - 1
             MEXC=KEXCNV(ISYM)
             CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
             DO IEXC = 1,MEXC
@@ -1909,6 +1915,9 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
         deallocate(n_ev)
+C
+C     Spinfree case with high enough symmetry to distinguish singlets and triplets
+C     ============================================================================
       ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
         N_IRPS = 2*NBSYM
         allocate(SYMLAB(N_IRPS))
@@ -1931,24 +1940,27 @@ C.......we include the ground state
         IRPS(1)   = 1
         ICNT = 1
         IOFF = 2
-        DO ISYM = 1,NBSYM
-          IREP = ISYM - 1
-          MEXC = KEXCNV(ISYM)
-          CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
-          DO IEXC = 1,MEXC
-            ICNT = ICNT + 1
-            ISPACE = ISSYM(IEXC,ISYM) 
-            ISPIN  = IBTXOR(ISPACE,IREP)
-            IF(ISPIN.EQ.0) THEN
-              ILAB = ISPACE + 1
-            ELSE
-              ILAB = ISPACE + NBSYM + 1
-            ENDIF
-            N_EV(ILAB) = N_EV(ILAB) + 1
-            IRPS(ICNT)  = ILAB
-            ISSYM(IEXC,ISYM) = ILAB
+        Do IFRP = 1,NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            IREP = ISYM - 1
+            MEXC = KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
+            DO IEXC = 1,MEXC
+              ICNT = ICNT + 1
+              ISPACE = ISSYM(IEXC,ISYM) 
+              ISPIN  = IBTXOR(ISPACE,IREP)
+              IF(ISPIN.EQ.0) THEN
+                ILAB = ISPACE + 1
+              ELSE
+                ILAB = ISPACE + NBSYM + 1
+              ENDIF
+              N_EV(ILAB) = N_EV(ILAB) + 1
+              IRPS(ICNT)  = ILAB
+              ISSYM(IEXC,ISYM) = ILAB
+            ENDDO
+            IOFF = IOFF + MEXC
           ENDDO
-          IOFF = IOFF + MEXC
         ENDDO
         CALL INDEXI(NEXC,IRPS,INDX)
         DO I = 1,NEXC
@@ -1961,21 +1973,71 @@ C.......we include the ground state
         deallocate(n_ev)
       ELSE
 C.....Default case
-        allocate(SYMLAB(NBSYM))
+        IFOO = NBSYM
+        allocate(SYMLAB(IFOO))
         allocate(IND(NBSYM))
         IOFF = 2
-        DO ISYM = 1,NBSYM
-          SYMLAB(ISYM)=REP(ISYM-1)//' '
-          MEXC=KEXCNV(ISYM)
-          CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
-          IOFF = IOFF + MEXC
+        DO IFRP = 1,NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            SYMLAB(ISYM)=REP(ISYM-1)//' '
+            MEXC=KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
+            IOFF = IOFF + MEXC
+          ENDDO
         ENDDO
         EXCERG(1) = 0.0D0
         KEXCNV(1) = KEXCNV(1) + 1
         CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
         KEXCNV(1) = KEXCNV(1) - 1
+C.......Make an extra empty symmetry label to use below
+        MEXC= MAXEXC*NBSYM
+        SYMLAB(IFOO) = '    '
+        CALL ICOPY(MEXC,IFOO,0,ISSYM,1)
       ENDIF
+C
+C     T R A N S I T I O N   M O M E N T S
+C     ===================================
+C
+      IF (NPPAPT .EQ. 0) GOTO 10
+      DO IFRP = 1,NFSYM
+        DO IBF = 1,NBF
+          ISYM = JFSYM(IBF,IFRP)
+          NEXC = KEXCNV(ISYM)
+          IF(NEXC.EQ.0) CYCLE
+          IREP = ISYM-1
+          NOPA   = NPPAP(ISYM) ! number of transition moment operators in this symmetry
+          JOPA   = JPPAP(ISYM) ! offset to complete list of transition moment operators
+          DO IOPA = 1,NOPA
+            INDAP  = LPPAPS(JOPA+IOPA)
+            INDPRA = LPPAPU(INDAP)
+            IREPA  = IPRPSYM(INDPRA)-1
+            ITIMA  = IPRPTIM(INDPRA)
+            NTMOM = 0
+            WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
+     &      '*** Transition moments of operator ',
+     &      PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA)
+            WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+            WRITE(LUPRI,'(3X,A,5X,A,10X,A)') 'eigenvalue (au)',
+     &        '<0|A|n>','Higher symmetry (if detected)'
+            DO IEXC = 1,NEXC
+            IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
+              NTMOM=NTMOM+1
+              ILAB = ISSYM(IEXC,ISYM)
+              WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+     &          OMEGA(IEXC,ISYM), ATMPPF(IEXC,INDAP,ISYM,1), 
+     &          SYMLAB(ILAB)
+            ENDIF
+            ENDDO
+            IF(NTMOM.EQ.0) THEN
+              WRITE(LUPRI,'(A,E9.4)')
+     &           '* No values above threshold : ',TTOL
+            ENDIF
+          ENDDO          
+        ENDDO
+      ENDDO    
+ 10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)
