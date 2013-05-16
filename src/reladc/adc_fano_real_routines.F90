@@ -83,7 +83,7 @@ CONTAINS
 !
     INTEGER, INTENT(IN)    :: crep              ! current representation
     REAL(8), INTENT(IN), DIMENSION(no(crep)*no(crep))       :: ckks
-    REAL(8), INTENT(IN), DIMENSION(nvoot(crep)*nvoot(crep)) :: bufhp
+    REAL(8), INTENT(IN), DIMENSION(no(crep)*nvoot(crep)) :: bufhp
     INTEGER, INTENT(IN)    :: ladc              ! length of adc matrix
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
     INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
@@ -126,11 +126,11 @@ CONTAINS
 ! ---------------------------------
 
 !  clear output buffers
-    single_col = 0
-    inbuf      = 0
+    single_col = 0.0D0
+    inbuf      = 0.0D0
     inioi      = 0
     inioj      = 0
-    adcbuf     = 0
+    adcbuf     = 0.0D0
     adcioi     = 0
     adcioj     = 0
     temp_array = 0
@@ -251,7 +251,7 @@ CONTAINS
 
     END DO one_column
 
-!    DO ixx=1, fano_intbuf
+!    DO ixx=1, najl + nok
 !      WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
 !                                     -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
 !    END DO
@@ -639,7 +639,7 @@ CONTAINS
 
     ! write the diagonal to separate files
     CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
-    WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc)
+    !WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)
 

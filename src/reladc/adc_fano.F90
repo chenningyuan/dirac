@@ -32,7 +32,7 @@ CONTAINS
 !
     INTEGER, INTENT(IN)   :: krep
     REAL(8), INTENT(IN), DIMENSION(no(krep)*no(krep))       :: ckks
-    REAL(8), INTENT(IN), DIMENSION(nvoot(krep)*nvoot(krep)) :: bufhp
+    REAL(8), INTENT(IN), DIMENSION(no(krep)*nvoot(krep)) :: bufhp
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
@@ -54,6 +54,7 @@ CONTAINS
     INTEGER                               :: kfree, lfree, kfreebase
 !    INTEGER                               :: ierror = 0
     INTEGER                               :: idpt
+    INTEGER                               :: ixx
 
 !
 !  Interfaces
@@ -82,12 +83,8 @@ CONTAINS
     CALL make_bigicra(krep,bigicra,iw)
     CALL alloc(icra,6,nvoot(krep), id='FanoADC: icra - integer')
 
-
     nok  = NO(krep)
-!    najl = NOOVT(krep)
-
-    WRITE(iw,*) 'ckks'
-    WRITE(iw,'(1X,ES14.5)') (ckks(idpt), idpt=1,nok)
+    najl = NOOVT(krep)
 
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
