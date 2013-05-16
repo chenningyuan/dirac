@@ -1,4 +1,3 @@
-
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -897,7 +896,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (NTABLE = 65)
-      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D0,
+      PARAMETER (RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0, D2=2.0D0,
      &           DTHRS=1.0D-13, DP5 = 0.50D0)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTFLG_CHANGE
@@ -928,7 +927,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.ATOMST','.SCFPOP','.OPENFA','xxxxxxx','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -1066,9 +1065,10 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       DIISTH    = DUMMY
       CNVINT(1) = DUMMY
       CNVINT(2) = DUMMY
-      PRJTHR  = 1.0D-10
-      DOLEVEL  = .FALSE.
-      DLSHIF = D0
+      PRJTHR    = 1.0D-10
+      DOLEVEL   = .FALSE.
+      DLSHIF    = D0
+      OPEN_FAC  = D1
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
@@ -1115,7 +1115,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52), I
+     &                     51,52,53), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1458,7 +1458,7 @@ C&&& AUTOCC: Automatic DHF occupation
                GO TO 100
    22          CONTINUE
 C&&&& OWNBASis: Use local basis for projection
-               PROOWN = .TRUE.
+                  PROOWN = .TRUE.
                GO TO 100
    23          CONTINUE
 C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
@@ -1466,22 +1466,22 @@ C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
-                    READ(LUCMD,*) DIISTH
+                  READ(LUCMD,*) DIISTH
                GO TO 100
    25          CONTINUE
 C&&& DAMPFC: Change default damping factor
-                    READ(LUCMD,*) DAMPFC
+                  READ(LUCMD,*) DAMPFC
                GO TO 100
    26          CONTINUE
 C&&& OVLSEL: Activate overlap selection
 C            (default is dynamic overlap selection, see below)
-                    OVLSEL = .TRUE.
-                    DYNSEL = .TRUE.
+                  OVLSEL = .TRUE.
+                  DYNSEL = .TRUE.
                GO TO 100
    27          CONTINUE
 C&&& NODYNSEL: No Dynamic overlap selection
 C            (new overlap selection matrix formed in each iteration)
-                    DYNSEL = .FALSE.
+                  DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
                GO TO 100
@@ -1556,27 +1556,24 @@ C            NSUBBL = # of subblocks for MJ sym.
                GO TO 100
  42            CONTINUE
 C&&& AOC: Average-of-Configuration
-               AOC = .TRUE.
+                  AOC = .TRUE.
                GOTO 100
  43            CONTINUE
 C&&& FOCC: Fractional Occupation
-               AOC = .FALSE.
+                  AOC = .FALSE.
                GOTO 100
  44            CONTINUE
 C&&& LSHIFT: Level shift
-               READ(LUCMD,*) DLSHIF
-               DOLEVEL = .TRUE.
+                  READ(LUCMD,*) DLSHIF
+                  DOLEVEL = .TRUE.
                GOTO 100
  45            CONTINUE
-CMI&&& Specify the maximum number of preliminary BSS-SCF iterations
-               IF (DO2C4C) THEN
-                READ(LUCMD,*) MAXITR2
-               ENDIF
+C&&& Specify the maximum number of preliminary BSS-SCF iterations
+                  READ(LUCMD,*) MAXITR2
                GOTO 100
  46            CONTINUE
 CMI&&& Specify the ERGCNV2
 C&&& ERGCNV2: Convergence on energy difference in preliminary BSS-SCF
-               IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
                   CALL UPCASE(LINE)
                   READ(LINE,*,END=403,ERR=403) SCFCNV2(1),SCFCNV2(2)
@@ -1587,12 +1584,10 @@ C&&& ERGCNV2: Convergence on energy difference in preliminary BSS-SCF
                   EVCCNV2 = .FALSE.
                   ERGCNV2 = .TRUE.
                   FCKCNV2 = .FALSE.
-               ENDIF
                GOTO 100
  47            CONTINUE
 CMI&& Specify the EVCCNV2
 C&&& EVCCNV: Convergence on approximate gradient (error vector)
-               IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
                   CALL UPCASE(LINE)
                   READ(LINE,*,END=503,ERR=503) SCFCNV2(1),SCFCNV2(2)
@@ -1603,12 +1598,10 @@ C&&& EVCCNV: Convergence on approximate gradient (error vector)
                   EVCCNV2 = .TRUE.
                   ERGCNV2 = .FALSE.
                   FCKCNV2 = .FALSE.
-               ENDIF
                GOTO 100
  48            CONTINUE
 CMI&& Specify the FCKCNV2
 C&&& FCKCNV2: Convergence on total Fock matrix
-               IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
                   CALL UPCASE(LINE)
                   READ(LINE,*,END=603,ERR=603) SCFCNV2(1),SCFCNV2(2)
@@ -1619,7 +1612,6 @@ C&&& FCKCNV2: Convergence on total Fock matrix
                   EVCCNV2 = .FALSE.
                   ERGCNV2 = .FALSE.
                   FCKCNV2 = .TRUE.
-               ENDIF
                GOTO 100
  49            CONTINUE
 C&&&  .MOFREEZE
@@ -1642,12 +1634,12 @@ C&&&  .MOFREEZE
                GOTO 100
  50            CONTINUE
 C&&& OLEVEL: Open-shell level shifts
-                 IF(NOPEN.EQ.0) THEN
-                   CALL QUIT('OLEVEL: No open shells defined !')
-                 ELSE
-                   READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
-                   DOLEVEL = .TRUE.
-                 ENDIF
+                  IF(NOPEN.EQ.0) THEN
+                    CALL QUIT(' .OLEVEL: No open shells defined !')
+                  ELSE
+                    READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
+                    DOLEVEL = .TRUE.
+                  ENDIF
                GOTO 100
  51            CONTINUE
 C&&& ATOMST: Atomic start
@@ -1665,9 +1657,11 @@ C&&& ATOMST: Atomic start
                GOTO 100
  52            CONTINUE
 C&&& SCFPOP: population analysis in each SCF iteration
-               SCFPOP = .TRUE.
+                  SCFPOP = .TRUE.
                GOTO 100
  53            CONTINUE
+C&&& OPENFA: extra factor on active-active correction block to open shell Fock matrix
+                  READ(LUCMD,*) OPEN_FAC
                GOTO 100
  54            CONTINUE
                GOTO 100
@@ -1800,7 +1794,7 @@ C
                DF(IOPEN)     = D0
                DALPHA(IOPEN) = D0
             ELSE
-               DM        = D2*(real(NACSH(1,IOPEN)+NACSH(2,IOPEN),8))
+               DM        = 2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
                DN        = DM*DF(IOPEN)
                DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1))
                IF (ABS(DA(IOPEN)).LE.DTHRS) DA(IOPEN) = d0
@@ -1944,11 +1938,11 @@ C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
          CALL RMOLCHR(ICHRG)
          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 2) THEN
+         IF (ABS(KCHARG) .GT. 10) THEN
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
-     &      'abs(molecular charge) .gt. 2'
+     &      ' abs(molecular charge) .gt. 10'
          END IF
       END IF
       IF(BNCRON) THEN
@@ -2032,7 +2026,7 @@ C
       ENDIF
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
-      WRITE(LUPRI,'(A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
+      WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
       IF     (TRIFCK) THEN
         WRITE(LUPRI,'(A)')
      +     ' * Trial two-electron Fock matrix read from file DF2FCK'
@@ -2073,7 +2067,11 @@ C
       ELSE
         CALL QUIT('ERROR, initial trial SCF function not defined!')
       ENDIF
-      WRITE(LUPRI,'(A)') ' ***** SCF CONVERGENCE CRITERIA *****'
+      IF (OPEN_FAC .NE. D1) WRITE (LUPRI,'(A,F12.6)')
+     &   ' * Scaling of active-active block correction to '//
+     &   'open shell Fock operator', OPEN_FAC
+
+      WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
         WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
      &    ' * Convergence on total energy.',
@@ -2267,11 +2265,11 @@ CMI =====================================================================
         CALL QUIT('SCFINP: wrong value of INI2C (not 1/2/3/4)!')
        ENDIF
 
-      WRITE(LUPRI,'(A,I4)')
-     &' * Maximum number of preliminary BSS-SCF iterations  : ',
+       WRITE(LUPRI,'(A,I4)')
+     & ' * Maximum number of preliminary BSS-SCF iterations  : ',
      &  MAXITR2
 
-      WRITE(LUPRI,'(A)')
+       WRITE(LUPRI,'(A)')
      & ' ***** CONVERGENCE CRITERIA ON PRELIMINARY BSS-SCF *****'
       IF(ERGCNV2) THEN
         WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
@@ -3601,8 +3599,8 @@ C         if reading input from a terminal
          GO TO 900
       END IF
   910 CONTINUE
-         WRITE(LUPRI,'(A)') 'End of file on LUCMD,'//
-     &                      ' no analysis input found'
+         WRITE(LUPRI,'(/2A)')
+     &      'INFO: .ANALYZE ignored because no analysis input ',WRDSRC
          CALL QEXIT('ANWINP')
          RETURN
   920 CONTINUE
@@ -3859,7 +3857,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ANWINP.'
+     *            '" not recognized in POPINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in POPINP.')
     1          CONTINUE
@@ -3901,9 +3899,9 @@ C&&&& NETPOP: Mulliken Net populations
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in ANWINP.'
+     *            '" not recognized in POPINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in ANWINP.')
+               CALL QUIT('Illegal prompt in POPINP.')
             END IF
       END IF
   300 CONTINUE
@@ -4365,11 +4363,11 @@ C
       WRITE(LUPRI,'(1X,A)') 'VECINP: Vector print'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ILABDF.EQ.1) THEN
-        WRITE(LUPRI,'(1X,A)') '* Coefficients written in AO-basis'
+        WRITE(LUPRI,'(A)') ' * Coefficients written in AO-basis'
       ELSE
-        WRITE(LUPRI,'(1X,A)') '* Coefficients written in SO-basis'
+        WRITE(LUPRI,'(A)') ' * Coefficients written in SO-basis'
       ENDIF
-      WRITE(LUPRI,'(1X,A)') '* Vector print:'
+      WRITE(LUPRI,'(A)')   ' * Vector print:'
       NTOT = 0
       DO I = 1,NFSYM
         NVEC = 0
@@ -8438,3 +8436,4 @@ C
         end do
 
       end function
+!  -- end of dirac/dirrdn.F --
