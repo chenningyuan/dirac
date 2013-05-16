@@ -76,6 +76,7 @@ module adc_cfg
 !  fanoadc variables
 !
   logical, public                  :: reladc_dofano       = .false.
+  logical, public                  :: reladc_fanoonly     = .false.
   integer, public                  :: reladc_fano_inrep   = 0
   integer, public                  :: reladc_fano_inabssp = 0
   integer, public                  :: reladc_fano_nrchannels = 0

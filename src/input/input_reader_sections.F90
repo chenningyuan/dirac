@@ -1270,6 +1270,7 @@
          reladc_sipreps    = 0
          reladc_sipreps(1) = reladc_fano_inrep
          reladc_dodiag     = .false.
+         reladc_fanoonly   = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

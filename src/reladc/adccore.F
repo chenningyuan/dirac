@@ -1478,6 +1478,9 @@ C  diagonal is written out in MAKEHPHP
 C  all other elements are finished and can be written out.
 C
 
+!
+! This is the big Fano-IF-clause introduced by Elke
+!
         IF (reladc_dofano) THEN
 
 ! create K_akl array and lookup tables.
