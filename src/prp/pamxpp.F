@@ -320,7 +320,7 @@ C
 C
 C     Final print section
 C
-      CALL XPPOUT(0,ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
+      CALL XPPOUT(ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -577,7 +577,6 @@ C&&&& INTENS: ask for oscillator strengths to order k in the wave vector
                    CALL QUIT('XPPINT: Not implemented yet !')
                  ENDIF
 C................Electric multipoles
-                 IOFF = 1
                  DO IORDER = 1,IEMAX
                    NDEG=(IORDER+2)*(IORDER+1)/2
                    IF((NPPAPT+NDEG).GT.MAXLPP) THEN
@@ -588,9 +587,8 @@ C................Electric multipoles
      &           'Increase MAXEXP to ',(NPPAPT+NDEG)
                    ENDIF
                    CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-                   CALL ICOPY(NDEG,LPPAPU(NPPAPT+1),1,IEPOL(IOFF),1)
+                   IEPOFF(IORDER)=NPPAPT
                    NPPAPT = NPPAPT + NDEG
-                   IOFF   = IOFF   + NDEG
                  ENDDO
 C..................Magnetic multipoles
                  IOFF = 1
@@ -604,7 +602,7 @@ C..................Magnetic multipoles
      &           'Increase MAXEXP to ',(NPPAPT+NDEG)
                    ENDIF
                    CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-                   CALL ICOPY(NDEG,LPPAPU(NPPAPT+1),1,IMPOL(IOFF),1)
+                   IMPOFF(IORDER)=NPPAPT
                    NPPAPT = NPPAPT + NDEG
                    IOFF   = IOFF   + NDEG
                  ENDDO
@@ -1830,7 +1828,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+      SUBROUTINE XPPOUT(ATMPPF,OMEGA,RCNV,EIG,ISSYM,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2086,32 +2084,34 @@ C     O S C I L L A T O R    S T R E N G T H S
 C     ========================================
 C
       IF(KVAL_OSC.LT.0) GOTO 10
-C.....Zeroth order in wave vector
+C.....Zeroth order in the wave vector
       IF(KVAL_OSC.GE.0) THEN
         IEVAL = 1
         NDEG=(IEVAL+2)*(IEVAL+1)/2
+        IOFF  = IEPOFF(IEVAL)
         DO IDEG = 1,NDEG
-          INDOP = IEPOL(IDEG)
-          ISYM  = IPRPSYM(INDOP)
-          IREP  = ISYM - 1
-          ITIM  = IPRPTIM(INDOP)
+          INDAP  = IOFF+IDEG
+          INDPRA = LPPAPU(IOFF+IDEG)
+          ISYM   = IPRPSYM(INDPRA)
+          IREP   = ISYM - 1
+          ITIM   = IPRPTIM(INDPRA)
           WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
      &    '*** Oscillator strengths of operator ',
-     &    PRPNAM(INDOP),REP(IREP),TTYP(ITIM)
+     &    PRPNAM(INDPRA),REP(IREP),TTYP(ITIM)
           WRITE(LUPRI,'(80A1)') ('=',I=1,80)
-            WRITE(LUPRI,'(3X,A,8X,A,13X,A)') 'eigenvalue (au)',
+            WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
      &        'f','Higher symmetry (if detected)'
           NTMOM = 0
           NEXC = KEXCNV(ISYM)
           DO IEXC = 1,NEXC
-          IF(ABS(ATMPPF(IEXC,INDOP,ISYM,1)).GT.TTOL) THEN
-            NTMOM=NTMOM+1
-            ILAB = ISSYM(IEXC,ISYM)
-            XMOM = ATMPPF(IEXC,INDOP,ISYM,1)
-            OSCIL = D2*XMOM*XMOM*OMEGA(IEXC,ISYM)
-            WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+            IF(ABS(XMOM).GT.TTOL) THEN
+              NTMOM=NTMOM+1
+              ILAB = ISSYM(IEXC,ISYM)
+              OSCIL = D2*XMOM*XMOM*OMEGA(IEXC,ISYM)
+              WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
      &        OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
-          ENDIF
+            ENDIF
           ENDDO
           IF(NTMOM.EQ.0) THEN
             WRITE(LUPRI,'(A,E9.4)')
