@@ -610,11 +610,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       LFREE = MAXCOR
 
 ! Elke
-      CALL alloc(oooo,ioooott(nrep+1))
-      CALL GETOOOO(oooo)
-      WRITE(iw,*) 'OOOO'
-      WRITE(iw,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
-      CALL dealloc(oooo)
+!      CALL alloc(oooo,ioooott(nrep+1))
+!      CALL GETOOOO(oooo)
+!      WRITE(iw,*) 'OOOO'
+!      WRITE(iw,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
+!      CALL dealloc(oooo)
 
 
       IF(DOSIPS) THEN
@@ -1585,11 +1585,11 @@ C
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
           CALL MEMCHK('Testing Fano diagonalization',CC,KFRSAV)
           IF (ADCLEVEL.EQ. 1) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
+            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
      &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
      &                   )
           ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY),LADC,KREP,ITAPADC,IW,
+            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
      &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
      &                   )
           END IF
@@ -4924,11 +4924,6 @@ C
       NOK=NO(CREP)
       NAJL=NVOOT(CREP)
 
-!      WRITE(IW,*)
-!      WRITE(IW,*) 'View the ICRA lookup table'
-!      WRITE(IW,123) ((icra(iyy,ixx), iyy=1,6), ixx=1,najl)
-! 123  FORMAT (1X,6I8)                                       
-!      WRITE(IW,*)   
 C
 C  fill in the diagonal of the h/h block ...
 C
@@ -4941,9 +4936,6 @@ C
 C  ... and the elements K_akl
 C  (this is the only contribution in case of ADC-2 strict)
 C
-      !WRITE(iw,*) 'EAJL'
-      !WRITE(iw,'(1X,ES14.5)') (eajl(ixx), ixx=1,najl)
-
       CALL XCOPY(NAJL,EAJL,1,DIAG(NOK+1),1)
 C
 C  enter additional code for off-diagonal matrix elements in ADC(2)X and
@@ -5037,8 +5029,8 @@ C
 C  write out !negative! diagonal in specific file
 C  and the number of records in the off-diagonal file.
 C
-      WRITE(iw,*) 'ADC diag' !Elke
-      WRITE(iw,'(1X,ES14.5)') (diag(ixx),ixx=1,ladc)
+!      WRITE(iw,*) 'ADC diag' !Elke
+!      WRITE(iw,'(1X,ES14.5)') (diag(ixx),ixx=1,ladc)
       WRITE(ITAPE1) (-DIAG(IXX),IXX=1,LADC),NBUFS
       WRITE(IW,1000) INTBUF,NBUFS
 C
@@ -5255,12 +5247,6 @@ C
       KREP  = ICRA(4,IROW)
       L     = ICRA(5,IROW)
       LREP  = ICRA(6,IROW)
-
-      !WRITE(6,*) 'nr oooo = ', ioooott(nrep+1)
-      !WRITE(6,*) 'OOOO'
-      !WRITE(6,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
-      !WRITE(6,*) 'VOVO'
-      !WRITE(6,'(1X,ES14.5)') (vovo(ixx), ixx=1,ivovo(nrep+1))
 
 
       S=0.0D0
@@ -6681,6 +6667,7 @@ C
         CALL XCOPY(NOK,CKKS(OFF1),1,COL(OFF2),1)
         OFF2 = OFF2 + NOK
         CALL XCOPY(NAJL,BUFHP(OFF3),1,COL(OFF2),1)
+
 C
 C  one column is ready. we write out =>> its negative <<= and
 C  only THE LOWER TRIANGLE !! 
