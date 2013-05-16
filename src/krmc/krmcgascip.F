@@ -250,24 +250,24 @@ C     Use GASCIP:
 C
       CALL GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
 C
-      IF ( IPRINT .GE. 3 ) THEN
+      IF ( IPRINT .GE. 1 ) THEN
          WRITE(LUPRI,'(/A)')
      &       ' (GASCIP_GENDET) Output from generation of determinants:'
-         IF (UCIBOS) WRITE(LUPRI,'(15X,A)')
+         IF (UCIBOS) WRITE(LUPRI,'(10X,A)')
      &    'Using boson spinor symmetry (exact or approximate) in the CI'
          IF (IRRP .LE. 0) THEN
-            WRITE(LUPRI,'(15X,A)')
+            WRITE(LUPRI,'(10X,A)')
      &        'Generating determinants of all symmetries'
          ELSE IF (UCIBOS) THEN
-            WRITE(LUPRI,'(15X,3A,I4,A,I3)')
+            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
      &        'Generating dets. with spatial symmetry ', REP(IRP-1),
      &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
          ELSE
-            WRITE(LUPRI,'(15X,3A,I4,A,I3)')
+            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
      &        'Generating dets. with symmetry ', REPNA(IRRP),
      &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
          END IF
-         WRITE(LUPRI,'(15X,A,I10)')
+         WRITE(LUPRI,'(10X,A,I10)')
      &        'Max no. of determinants',MAXDET
       END IF
 C
@@ -471,7 +471,7 @@ C
  9103 FORMAT(3X,56('-') / 5X,'all',T23,3I10)
 C
 C
-      IF (IPRINT .GE. 20 .OR. NDET .LE. 50) THEN
+      IF (IPRINT .GE. 20 .OR. (IPRINT .GE. 3 .AND. NDET .LE. 50) ) THEN
          WRITE(LUPRI,9001)
          DO MK2 = MINMK2, MAXMK2
             IF (NMK2(MK2,3) .GT. 0) THEN
@@ -500,7 +500,7 @@ C
                   END IF
                END DO
                WRITE(LUPRI,9002) I+IMK2(MK2,3),(NA(J),J=1,NASHT)
-               WRITE(LUPRI,9003)             (NB(J),J=1,NASHT)
+               WRITE(LUPRI,9003)               (NB(J),J=1,NASHT)
             END DO
          END DO
          WRITE(LUPRI,9006)
@@ -777,8 +777,9 @@ C
       KFRSAV = KFREE
       N2DET = NDET*NDET
 C
-      CALL MEMGET('REAL',KEIGVL,NDET,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVC,N2DET*NZ_in_CI,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGVAL',KEIGVL,NDET,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGVEC',KEIGVC,N2DET*NZ_in_CI,
+     &   WORK,KFREE,LFREE)
 C
 C
 C     Do full CI
@@ -792,6 +793,11 @@ C
 C     The CI vector is stored in columns; the lowest eigenstate is in
 c     the first column.
 C
+      IF (ISTATE .LE. 0 .OR. ISTATE .GT. NDET) THEN
+         WRITE (LUPRI,*) 'ERROR: ISTATE .LE. 0 .OR. ISTATE .GT. NDET'
+         WRITE (LUPRI,*) 'ERROR: ISTATE , NDET =',ISTATE,NDET
+         CALL QUIT('Non-valid reference state specification')
+      END IF
       IOFF = KEIGVC - 1 + (ISTATE-1) * NDET
       IF ( NZ .EQ. 1 ) THEN
          DO I = 1,NDET
@@ -882,6 +888,7 @@ C
       INTEGER*8 IDET(2,*)
 C
       CALL QENTER('GASCIP_FULLCI')
+      CALL GETTIM(CPU0,WALL0)
 C
       KFRSAV = KFREE
       N2DET = NDET * NDET
@@ -895,10 +902,10 @@ C     a.k.a. FCAC.
 C
 !     write(lupri,*) 'NASHT, NZ_in_CI,N2ASHXQ,N2ORBXQ',
 !    &     NASHT, NZ_in_CI,N2ASHXQ,N2ORBXQ
-      CALL MEMGET('REAL',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
+      CALL MEMGET2('REAL','FCACM',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
      &     WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',  KFC,N2ORBXQ,WORK,KFREE,LFREE)
 C
 C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
@@ -917,15 +924,16 @@ C
 C     Read two-electron integrals:
 C     ----------------------------
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4*NZ_in_CI, WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MUUUU',KMUUUU,(2*NASHT)**4*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
 C
       LH2AC = NASHT*NASHT*NNASHX*NZ*3
-      CALL MEMGET('REAL',KH2AC,LH2AC,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,LH2AC,WORK,KFREE,LFREE)
 C
 C     read integrals from 4IND*: out --> work(kh2ac)
 C     ==============================================
 
-      call memget('INTE',kibeig,norbt,work,kfree,lfree)
+      call memget2('INTE','IBEIG',kibeig,norbt,work,kfree,lfree)
 
       if(spinfr.or.levyle)then
         call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
@@ -949,14 +957,18 @@ C     remove potential "garbage" from imaginary part...
 C
 C     Allocate memory for matrices:
 C
-      CALL MEMGET('REAL',KHR,N2DETQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HMAT',KHR,N2DETQ,WORK,KFREE,LFREE)
       KHI = KHR + N2DET
 C
 C     Construct Hamiltonian:
 C     ----------------------
 C
+      CALL GETTIM(CPU1,WALL1)
       CALL GASCIP_MAKEH(.TRUE.,1,NDET,IDET,WORK(KHR),WORK(KHI),
-     &                 WORK(KFCACM),WORK(KMUUUU))
+     &                  WORK(KFCACM),WORK(KMUUUU))
+      CALL GETTIM(CPU2,WALL2)
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &   "CPU and WALL times for making CI matrix:",CPU2-CPU1,WALL2-WALL1
 C
 C
 C     Diagonalize Hamiltonian:
@@ -1003,15 +1015,17 @@ C
       END DO
 C
       IF ( IPRINT .GE. 3 ) THEN
-         IF ( IPRINT .GE. 5 ) THEN
+         IF ( IPRINT .ge. 5 .OR. nDET.le.100) THEN
             WRITE(LUPRI,'(/A)') ' (GASCIP_FULLCI) CI eigenvalues:'
             n_eig = nDET
          ELSE
-            n_eig = min(nDET, 100)
-            WRITE(LUPRI,'(/A,I7,A)') ' (GASCIP_FULLCI) First',
-     &         n_eig,' CI eigenvalues:'
+            n_eig = nDET
+            WRITE(LUPRI,'(/A,I7,A,I7)') ' (GASCIP_FULLCI) First',
+     &         n_eig,' CI eigenvalues out of',nDET
          END IF
-         CALL OUTPUT(EIGVAL,1,1,1,n_eig,1,NDET,-1,LUPRI)
+         WRITE(LUPRI,'(5(I10,A,F13.6))') (I, ' :', EIGVAL(I), I=1,n_eig)
+         EIGVAL_AVERAGE = DSUM(NDET,EIGVAL,1) / DBLE(NDET)
+         WRITE(LUPRI,'(/A,F20.8)') ' CI average energy:',EIGVAL_AVERAGE
        IF ( IPRINT .GE. 20 .OR. NDET .LE. 12) THEN
          n_eig = min(nDET, IPRINT)
          WRITE(LUPRI,'(/A)')
@@ -1029,6 +1043,9 @@ C
 C
       CALL MEMREL('GASCIP_FULLCI',WORK,1,KFRSAV,KFREE,LFREE)
 C
+      CALL GETTIM(CPU2,WALL2)
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &   "CPU and WALL times for full CI:",CPU2-CPU0,WALL2-WALL0
       CALL FLSHFO(LUPRI)
       CALL QEXIT('GASCIP_FULLCI')
 C
@@ -1678,10 +1695,12 @@ C
 C
 
 
-       CALL MEMGET('REAL',KSVECPRP ,NZ_in_CI*NDET*N_CIVEC,
-     &                                            WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KBVECPRP ,NZ_in_CI*NDET,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KPMUUUU  ,0            ,WORK,KFREE,LFREE) ! no 2-electron part
+       CALL MEMGET2('REAL','SVECPRP',KSVECPRP ,NZ_in_CI*NDET*N_CIVEC,
+     &      WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','BVECPRP',KBVECPRP ,NZ_in_CI*NDET,
+     &      WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','MUUUU',  KPMUUUU  ,0,
+     &      WORK,KFREE,LFREE) ! no 2-electron part
        KBVECPRP_I = KBVECPRP + NDET
 #ifdef GASCIP_DEBUG
        WRITE(LUPRI,*) 'NZ_in_CI, IHRM_P1 check, NDET'
@@ -1844,11 +1863,11 @@ C     DETERMINANTS ARE EQUAL
 C     ======================
 C
          HR = 0.0D0
-         HI = 0.0D0
+         IF (DOIMAG) HI = 0.0D0
          DO 30 II = 1, NAELEC
             I = IOCCI(II)
             HR = HR + HCORE(I,I,1)
-            IF (DOIMAG) HI = HCORE(I,I,2)
+            IF (DOIMAG) HI = HI + HCORE(I,I,2)
            IF (DO2EL) THEN
             DO 20 JJ = II + 1, NAELEC
                J = IOCCI(JJ)
@@ -1898,7 +1917,7 @@ C
             ! IPHASE = (-1)**IPHASE
             IF (IAND(IPHASE,1) .EQ. 1) THEN ! IPHASE odd or even?
                HR = -HR
-               HI = -HI
+               IF (DOIMAG) HI = -HI
             END IF
          END IF
 C
@@ -1929,7 +1948,7 @@ C---------------------
             ! IPHASE = (-1)**IPHASE
             IF (IAND(IPHASE,1) .EQ. 1) THEN ! IPHASE odd or even?
                HR = -HR
-               HI = -HI
+               IF (DOIMAG) HI = -HI
             END IF
          END IF
  
@@ -2129,10 +2148,10 @@ C
 C     The core Hamiltonian is the active-active part of FC,
 C     a.k.a. FCAC.
 C
-      CALL MEMGET('REAL',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCACM',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
+      CALL MEMGET('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL','FC',  KFC,N2ORBXQ,WORK,KFREE,LFREE)
 C
 C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
@@ -2155,13 +2174,15 @@ C
 C     Read two-electron integrals:
 C     ----------------------------
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MUUUU',KMUUUU,(2*NASHT)**4 * 2,
+     &     WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &     WORK,KFREE,LFREE)
 C
 C     read integrals from 4IND*: out --> work(kh2ac)
 C     ==============================================
 
-      call memget('INTE',kibeig,norbt,work,kfree,lfree)
+      call memget2('INTE','IBEIG',kibeig,norbt,work,kfree,lfree)
 
       call izero(work(kibeig),norbt)
       if(spinfr.or.levyle)then
@@ -2192,7 +2213,7 @@ C     *** Find start trial vectors ***
 C     ********************************
 C
 C
-      CALL MEMGET('REAL',KHDIAG,NDET,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HDIAG',KHDIAG,NDET,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal of CI matrix:
 C     --------------------------------
@@ -2251,9 +2272,9 @@ C
 
 C
       LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
-      CALL MEMGET('REAL',KHRED,LHRED,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVC,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ERED',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VRED',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
       KHREDI = KHRED + MAX_HRED*MAX_HRED
       KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
@@ -2261,8 +2282,10 @@ C
 C     Assume we can have all sigma and trial vectors in memory.
 C     This could get a little expensive for large CI's.
 C
-      CALL MEMGET('REAL',KBCVEC,MAX_HRED * NDETQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCVEC,MAX_HRED * NDETQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BCVEC',KBCVEC,MAX_HRED * NDETQ,
+     &     WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCVEC',KSCVEC,MAX_HRED * NDETQ,
+     &     WORK,KFREE,LFREE)
 C
 C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
 C
@@ -2489,7 +2512,7 @@ C
          ELSE
             IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
             MATZ = 1
-            CALL MEMGET('REAL',KHREDCP,LHRED,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','HREDCP',KHREDCP,LHRED,WORK,KFREE,LFREE)
             CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
             CALL QDIAG(2,N_CRED,WORK(KHREDCP),MAX_HRED,MAX_HRED,
      &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
@@ -2810,7 +2833,7 @@ C
       WRITE(LUPRI,'(/A,F20.8)')
      &     ' (GASCIP_RCISTD) Core energy        = ',ECORE
       WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
-     &     '                Active energies    = ',ECIA(1:N_ROOTS)
+     &     '                 Active energies    = ',ECIA(1:N_ROOTS)
       WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &     ' (GASCIP_RCISTD) Final CI energies  = ',ECI(1:N_ROOTS)
 C
@@ -3061,7 +3084,7 @@ C
 C
       IF ( MOD(NAELEC,2) .NE. 0) RETURN
 C
-      CALL MEMGET('INTE',KRLIST,NDET,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','RLIST',KRLIST,NDET,WORK,KFREE,LFREE)
       CALL IREAKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NDET)
       CALL GASCIP_CHKKR1(BVEC,NDET,WORK(KRLIST))
       CALL MEMREL('GASCIP_CHKKR',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -4454,8 +4477,9 @@ C
 #include "dcbgascip.h"
 #include "dcbkrmc.h"
 C
-      CALL QENTER('GASCIP_COPY')
 C
+      return ! we try ...
+      CALL QENTER('GASCIP_COPY')
       CALL QUIT('GASCIP_COPY called, see comments subroutine')
 C     hjaaj: NO, NO, NO! NKMRC variables are only for
 C            MCSCF optimization and nothing else.

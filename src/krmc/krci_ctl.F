@@ -19,6 +19,11 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! FILE : krmc/krci_ctl.F
+!
+! Specific routines for .KRCI calculations
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_INP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
@@ -26,25 +31,17 @@ C
 C     CI optimization control input section.
 C
 C     Written by S. Knecht and Hans Joergen Aa. Jensen
-C     Last revision: 08.08.2008
 C
 C                    'old statements':
 C
-C                    Added CI keyword CIROOT. Timo Fleig
-C                    05.01.2005
+C                    Added CI keyword CIROOT. Timo Fleig    05.01.2005
 C                    Added CI keyword ANALYZ. Timo Fleig
-C                    Added CI keyword PARINT. Stefan Knecht
-C                    29.06.2007
-C                    Added CI keyword MEMFAC. Stefan Knecht
-C                    04.07.2007
-C                    Added CI keyword RDFOCK. Stefan Knecht
-C                    October 2007
+C                    Added CI keyword PARINT. Stefan Knecht 29.06.2007
+C                    Added CI keyword MEMFAC. Stefan Knecht 04.07.2007
+C                    Added CI keyword RDFOCK. Stefan Knecht October 2007
 C                    Added CI keyword WRTFCK. Stefan Knecht
-C                    October 2007
-C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
-C                    20.11.2007
+C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht 20.11.2007
 C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
-C                    20.11.2007
 C                    
 C     Major revision by S. Knecht: Aug 2008
 C
@@ -90,7 +87,7 @@ C
       DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
-     &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
+     &            '.PRINT ','.MAKE C','.NATOCC','xxxxxxx','.INTFLG',
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
@@ -174,7 +171,7 @@ C
       DKRCI_CNVINT(1) = DUMMY
       DKRCI_CNVINT(2) = DUMMY
       DKRCI_THRPCI = 1.0D-3
-      DKRCI_THRGCI = 1.0d-8
+      DKRCI_THRECI = 1.0d-8
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -240,7 +237,7 @@ C
 C     Process input for *KRCICALC
 C     ===========================
 C
-      NEWDEF = (WORD .EQ. '*KRCICA')
+      NEWDEF = (WORD .EQ. '*KRCICA' .OR. WORD .EQ. '*KRCI  ')
       ICHANG = 0
       IF (NEWDEF) THEN
 
@@ -444,8 +441,7 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
                END IF
                GO TO 100
    10          CONTINUE
-C&&& .NOOCCN: calculate natural orbitals occupation numbers with
-C             LUCIAREL
+C&&& .NOOCCN: calculate natural orbitals occupation numbers
                   NATOLCR_KRCI = .TRUE.
                GO TO 100
    11          CONTINUE
@@ -524,17 +520,15 @@ C&&& PRINT : General print level in KRCI-module
                GO TO 100
    17          CONTINUE
 C&&& .MAKE COFFEE:
-               WRITE(LUPRI,'(2A)')
+               WRITE(LUPRI,'(A)')
      &             ' *** Nice try: Ask your local coffee machine ***',
      &             ' *** how to prepare coffee...'
                GO TO 100
    18          CONTINUE
-C&&& CNVINT: Convergence thresholds for adding SL- and SS-integrals
-                  READ(LUCMD,*) DKRCI_CNVINT(1),DKRCI_CNVINT(2)
-               GO TO 100
+C&&& .NATOCC: synonym for .NOOCCN
+               GO TO 10
    19          CONTINUE
-C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
-                  READ(LUCMD,*) IKRCI_ITRINT(1),IKRCI_ITRINT(2)
+C&&& xxxxxx:
                GO TO 100
    20          CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
@@ -626,9 +620,9 @@ C                          using j_z = l_z + s_z
                   DOPROP_KRCI  = .TRUE.
                   DOJZEXP = .TRUE.
                GO TO 100
-!     THRECI:  energy convergence threshold
+C&&&  THRECI:  CI energy convergence threshold
    34          CONTINUE
-               read(lucmd,*) DKRCI_THRGCI
+               read(lucmd,*) DKRCI_THRECI
                GO TO 100
    35          CONTINUE
 C&&&  CHECKP:  write intermediate check point file that is readable by 
@@ -782,7 +776,7 @@ C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbit
 C
       IF (.NOT. NEWDEF) GOTO 400
 C
-!     warnings for options not implemented (yet)
+!     Warnings for options not implemented (yet)
 !     ------------------------------------------
       if(lvnew)then
         write(lupri,'(/,a,/,a/)') 
@@ -791,7 +785,7 @@ C
      & ' *** WARNING *** - Please use the LVCORR approximation.'
       end if
 C
-C     consistency checks
+C     Consistency checks
 C     ------------------
 C
 C     ... integral flags
@@ -804,8 +798,6 @@ C     ... integral flags
         ISSINT = 0
       ENDIF
       IKRCI_INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
-      IF(DKRCI_CNVINT(1).LT.DUMMY) IKRCI_ITRINT(1) = 1
-      IF(DKRCI_CNVINT(2).LT.DUMMY) IKRCI_ITRINT(2) = 1
 C
 C     ... calculating omega values only in linear symmetry
       if(doprop_krci.and.dojzexp)then
@@ -940,7 +932,7 @@ C
 C     set default
       IKRCI_SYMMETRY = NKRCI_MAX_SYM
       WRITE(LUPRI,'(A)')
-     & ' * optimization of wave function(s) in the following '//
+     & ' * Convergence of CI function(s) in the following '//
      &     'symmetries:'
       DO 202 IKRCI_SYMMETRY = 1, NKRCI_MAX_SYM
          IF( NKRCI_CIROOTS(IKRCI_SYMMETRY) .le. 0 ) GOTO 202
@@ -1027,27 +1019,10 @@ C
 C
       WRITE(LUPRI,'(/A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
-      IF(LBIT(IKRCI_INTDEF,1)) THEN
-        WRITE(LUPRI,'(A)') '   LL-integrals.'
-      ENDIF
-      IF(LBIT(IKRCI_INTDEF,2)) THEN
-        IF(DKRCI_CNVINT(1).LT.DUMMY) THEN
-          WRITE(LUPRI,'(A,E8.1)')
-     &    '   SL-integrals  below KR-CI convergence ',DKRCI_CNVINT(1)
-        ELSE
-          WRITE(LUPRI,'(A,I4)')
-     &    '   SL-integrals from iteration ',IKRCI_ITRINT(1)
-        ENDIF
-      ENDIF
-      IF(LBIT(IKRCI_INTDEF,3)) THEN
-        IF(DKRCI_CNVINT(2).LT.DUMMY) THEN
-          WRITE(LUPRI,'(A,E8.1)')
-     &    '   SS-integrals below KR-CI convergence ',DKRCI_CNVINT(2)
-        ELSE
-          WRITE(LUPRI,'(A,I4)')
-     &    '   SS-integrals from iteration ',IKRCI_ITRINT(2)
-        ENDIF
-      ENDIF
+      IF(LBIT(IKRCI_INTDEF,1)) WRITE(LUPRI,'(A)') '   LL-integrals.'
+      IF(LBIT(IKRCI_INTDEF,2)) WRITE(LUPRI,'(A)') '   SL-integrals.'
+      IF(LBIT(IKRCI_INTDEF,3)) WRITE(LUPRI,'(A)') '   SS-integrals.'
+      IF(LBIT(IKRCI_INTDEF,4)) WRITE(LUPRI,'(A)') '   GT-integrals.'
       WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRCI
 C
 C     Print section
@@ -1058,16 +1033,14 @@ C
      &   ' Control parameters for KR-CI optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      write(lupri,'(a,1e18.12)')  
-     &     ' * Energy convergence threshold: ',
-     &     DKRCI_THRGCI
+      WRITE(LUPRI,'(A,1P,D10.2)')  
+     &     ' * Energy convergence threshold: ', DKRCI_THRECI
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',
      &     MAXCIT_KRCI
       ELSE
-         WRITE(LUPRI,'(A)')
-     &     ' * Full CI '
+         WRITE(LUPRI,'(A)') ' * Full CI '
       END IF
 C
       IF (IRESTRK_KRCI.EQ.1) THEN
@@ -1198,14 +1171,14 @@ C
         do 303 ikrci_symmetry = 1, max_nkrci_max_sym
           if(nkrci_selom(ikrci_symmetry) .gt. 0)then
             if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
-              call quit(' *** error in KRCI_INP: 
-     &                    CI root selection for inactive symmetry. ***')
+              call quit(' *** error in KRCI_INP: ' //
+     &                  ' CI root selection for inactive symmetry. ***')
             end if
             if(nkrci_ciroots(ikrci_symmetry) .lt. 
      &         NOMEGASEL_statenr)then
-              call quit(' *** error in KRCI_INP: 
-     &                    CI root selection for state > # of roots in'//
-     &                  ' in this symmetry. ***')
+              call quit(' *** error in KRCI_INP: '//
+     &                  ' CI root selection for state > # of roots in'//
+     &                  ' this symmetry. ***')
             end if
             write(lupri,'(/a,a5,a,i4,a)') 
      &      ' *** symmetry:',xrepeig(ikrci_symmetry),
@@ -1346,8 +1319,9 @@ C       *** Initialize configurational and orbital      ***
 C       *** parameters.                                 ***
 C       ***************************************************
 C
-        CALL RSETWOP(WORK,KFREE,LFREE)
+        CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
+        IF (NZCONF .LE. 0) GO TO 100
 C
 C       ***************************************************
 C       *** Memory allocation *****************************
@@ -1390,7 +1364,7 @@ C                             (ungerade number of electrons)
          END DO
 C        set run flag
          RUNXPROP = .TRUE.
-         CALL RSETWOP(WORK,KFREE,LFREE)
+         CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
          CALL KRCI_PROP(WORK(KCMO),WORK(KFREE),LFREE)
       END IF
 C
@@ -1402,8 +1376,7 @@ C
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='KEEP')
 C
 C     Save orbitals on file KRMCSCF if it does not exist.
-C     Other DIRAC modules may expect to find it, e.g., 
-C     MULLPOP.
+C     Other DIRAC modules may expect to find it, e.g., MULLPOP.
 C
       LUNI = -1
       INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
@@ -1421,13 +1394,6 @@ C
         CALL WRTKRMC(LUNI,'NEWORB  ',WORK(KCMO),NCMOTQ)
         CLOSE(LUNI,STATUS='KEEP')
       END IF
-C     INQUIRE(FILE ='KRMCSCF',EXIST=EX)
-C     IF( .NOT. EX ) THEN
-C       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','KRCI  ')
-C       CALL NEWLAB('*KRCI   ',LUKRMC,LUPRI)
-C       CALL WRTKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-C       CLOSE(LUKRMC,STATUS='KEEP')
-C     END IF
 C
 C
 C     ***************************************************
@@ -1490,16 +1456,15 @@ C
          IOPT_IHRMOP(I) = 1
       END DO
       JTRLVL = 0
-      ITMAC  = 0
       DO4INDEX = ( MCTYPE .GE. JMCMIN )
 C     ... MCTYPE .lt. JMCMIN is SCF
       EMCOLD = D0
       WFCONV = .FALSE.
 C
-      CALL DZERO(GNORM,5)
-C
 C     Integrals for KR-CI calculation.
 C
+      CALL DZERO(GNORM,5)
+      ITMAC  = 1
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 C
@@ -1519,16 +1484,15 @@ C
       write(LUPRI,*) '(1) iopt_itrint=',iopt_itrint
       write(LUPRI,*) '(1) opt_inttyp=',opt_inttyp
 #endif
-C     Do not write orbitals to file KRMCSCF in ROPTST.
-C     KRMCSCF may not be opened.
-      IWRT = 0
 C
 C     Read start orbitals and get CI vectors:
 C
+C     Do not write orbitals to file KRMCSCF in ROPTST.
+C     KRMCSCF may not be opened.
+      IWRT = 0
+
       CALL ROPTST(IOPTST,IWRT,CMO,CREF,IBEIG,IPROPT,WORK,KFREE,LFREE)
-C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
-C
-C     only 4-index integral transformation done
+C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C
       IF (KTRLVL.eq.5) GOTO 3000
 C

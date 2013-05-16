@@ -2477,11 +2477,7 @@ CSK      IGSOCCX(I          ) = NGSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGSP(2,I)
       END DO
 C     Energy convergence threshold
-      IF (NZ.EQ.1) THEN
-        THRES_E =          threci
-      ELSE
-        THRES_E = 0.5*sqrt(threci)
-      END IF
+      THRES_E =          threci
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
      &    call interface_mpi_BCAST(thres_e,1,MASTER,
@@ -3151,13 +3147,13 @@ C     DIAPAR.1
 *
 *. Number of iterations
       WRITE(LUPRI,'(A,I2)')
-     &  '        Allowed number of iterations    ',MAXIT
+     &   '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
       WRITE(LUPRI,'(A,I2)')
-     &  '        Allowed Dimension of CI subspace ',MXCIV_CI
+     &   '        Allowed Dimension of CI subspace ',MXCIV_CI
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &  '        Convergence threshold for energy ',THRES_E
+     &   '        Convergence threshold for energy ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE

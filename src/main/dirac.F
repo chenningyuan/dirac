@@ -865,7 +865,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
-      THRECI         = MAX(DKRCI_THRGCI, OPT_THRGRD)
+      THRECI         = MAX(DKRCI_THRECI, OPT_THRGRD**2)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
@@ -991,7 +991,7 @@ C
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0d-03
       OPT_THRGRD     = 1.D99
-      THRECI         = DKRCI_THRGCI
+      THRECI         = DKRCI_THRECI
 C
 C     Set common block DCLOPT
 C

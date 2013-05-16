@@ -273,22 +273,35 @@ C        save occupancies for later use
             IF (NOCCI .EQ. 0) THEN
                WRITE(LUPRI,9001) I
             ELSE
+               NISHI = NISH(I)
+               NASHI = NASH(I)
                IOCCI = IOCC(I)
+               IOCCA = IOCCI + NISHI
                OCCSUM = DSUM(NOCCI,OCCNO(IOCCI+1),1)
-               WRITE(LUPRI,9002) I, (OCCNO(IOCCI+J),J=1,NOCCI)
-               WRITE(LUPRI,9003) OCCSUM
+               IF (NASHI .GT. 0) THEN
+                  WRITE(LUPRI,9002) I, (OCCNO(IOCCA+J),J=1,NASHI)
+                  OCCSUMA = DSUM(NASHI,OCCNO(IOCCA+1),1)
+               ELSE
+                  OCCSUMA = 0.0D0
+               END IF
 
-               CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),NOCCI,NOCCI,0,-1)
-               WRITE(LUPRI,9004) I, (OCCNO(IOCCI+J),J=1,NOCCI)
+               WRITE(LUPRI,9003) OCCSUM-OCCSUMA,OCCSUMA,OCCSUM
+
+               IF (NASHI .GT. 0) THEN
+                  CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),
+     &               NOCCI,NOCCI,0,-1)
+                  WRITE(LUPRI,9004) I, (OCCNO(IOCCA+J),J=1,NASHI)
+               END IF
             END IF
          END DO
       END IF
 C
- 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
- 9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
- 9003 FORMAT(/'   Sum =',T15,F14.9)
- 9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9))
+ 9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
+ 9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
+     &      //,(5F14.9))
+ 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
+     &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM

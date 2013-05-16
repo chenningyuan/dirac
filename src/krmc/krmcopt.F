@@ -159,7 +159,7 @@ C     ***************************************************
 C
 C
       CALL SETDCBIDX()
-      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
 C
 #if defined (VAR_MPI2)
@@ -602,13 +602,13 @@ C
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
          IF (IPROPT .GE. 1) THEN
-              IF( OPT_CIPROGRAM .EQ. 'LUCIAREL' )THEN
-                IDENSLR_STATE = 1
-                NATOLCR       = .TRUE.
-              END IF
+              IDENSLR_STATE = 1
+              NATOLCR       = .TRUE.
               IPRNO = 3*IPROPT
-              CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+              CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,
+     &             WORK,KFREE,LFREE)
+              CALL MEMGET2('REAL','UNO  ',KUNO  ,N2ASHXQ,
+     &             WORK,KFREE,LFREE)
 
 C             erase old occupation numbers
               CALL DZERO(WORK(KOCCNO),NORBT)
@@ -1860,7 +1860,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsetwop */
-      SUBROUTINE RSETWOP(WORK,KFREE,LFREE)
+      SUBROUTINE RSETWOP(WFTYP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -1896,6 +1896,8 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxash.h"
 C
+      CHARACTER WFTYP*(*)
+C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1905,6 +1907,7 @@ C
 C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
+
 C
       CALL QENTER('RSETWOP')
 C
@@ -1948,6 +1951,9 @@ C     *** Configurational parameters ********************
 C     ***************************************************
 C
       CALL RSETCI(OPT_CIPROGRAM,WORK,KFREE,LFREE)
+      IF (NZCONF .LE. 0) THEN
+         GO TO 9000
+      END IF
 C
 C     ***************************************************
 C     *** Orbital parameters ****************************
@@ -1956,11 +1962,11 @@ C
       CALL IZERO(NOROT,NORBT)
 C
       NDSHT = 0
-      NVSHT  = 0
+      NVSHT = 0
 C
       WRITE(LUPRI,'(/A)') ' (RSETWOP) Orbital classes:'
       DO I = 1,NFSYM
-         WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
+         IF (NFSYM.GT.1) WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
          IF (NISH(I).GT.0) THEN
             WRITE(OPT_INDSTR(1,I),'(I4,A2,I4)')
      &         1,'..',NISH(I)
@@ -2089,19 +2095,23 @@ C
          END DO
       END DO
       IF (IPROPT .ge. 4 .AND. NDSHT .gt. 0) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(RSETWOP) V and IDXV2G'
+         WRITE(LUPRI,'(/A)')
+     &        ' (RSETWOP) V and IDXV2G'
          DO I = 1, NVSHT
            WRITE(LUPRI,'(8X,I6,I11)') I, IDXV2G(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(RSETWOP) D and IDXD2G'
+         WRITE(LUPRI,'(/A)')
+     &        ' (RSETWOP) D and IDXD2G'
          DO I = 1, NDSHT
            WRITE(LUPRI,'(8X,I6,I11)') I, IDXD2G(I)
          END DO
       END IF
 C
       CALL FLSHFO(LUPRI)
+C
+
+      IF (WFTYP(1:5) .NE. 'KR-CI') THEN     ! no orbital rotation vectors for CI
+         
 C
 C     Always totally symmetric rotations (=> JOPSY = 1)
 C
@@ -2131,6 +2141,8 @@ C
      &                    IREDJOB,1)
 C
       END IF
+
+      END IF ! (WFTYP(1:5) .NE. 'KR-CI')
 C
 C     Define LZXOPE to integer length of work(KZXOPE)
 C     Define LZXOPP to integer length of work(KZXOPP)
@@ -2157,7 +2169,7 @@ C     write information to LUKRMC
 C
       CALL RSET_KRMC(WORK)
 C
-      CALL FLSHFO(LUPRI)
+ 9000 CALL FLSHFO(LUPRI)
       CALL QEXIT('RSETWOP')
       RETURN
       END
@@ -2431,7 +2443,7 @@ C
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
 C
          ELSE IF ( USE_CIPROGRAM .EQ. 'KRCC' ) THEN
-            WRITE(6,*) 'IT is ok'
+            WRITE(LUPRI,*) 'KRCC: IT is ok'
             NZCONF = 1
             LZCONF = 0
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
@@ -2465,8 +2477,7 @@ C
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
       IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
-         WRITE(LUPRI,'(/A)') ' Error: no determinants !'
-         CALL QUIT('Error: no determinants !')
+         WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C
 C
@@ -2870,6 +2881,8 @@ C
 C     Generate start vectors
 C
 C     Input:
+C        ISTART
+C        IWRT
 C
 C     Output: None
 C
@@ -2948,12 +2961,12 @@ C
      &        ' (ROPTST)  Control parameter   (ISTART) =',ISTART,
      &        '           Orbital start guess (IROST)  =',IROST,
      &        '           Config. start guess (IRCIST) =',IRCIST,
-     &        '           Write CMO & CREF (IWRT)      =',IWRT
+     &        '           Write CMO & CREF    (IWRT)   =',IWRT
       END IF
 C
 C     For KRMCSCF, LUKRM5 will be KRMCOLD from an old MCSCF calculation,
 C         if available.
-C     For KRCI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
+C     For KR-CI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
 C         from an old MCSCF calculation, if either is available.
 C     (Aug 08, SK+HJAaJ)
 C
@@ -2987,7 +3000,7 @@ C
      &                   KRM5_NAME(1:LKRM5_NAME)
                END IF
 C
-               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+               IF ( MOPT_MXMACRO .EQ. -1 ) THEN
                  WRITE(LUPRI,'(/A)')
      &                ' (ROPTST)  Starting CI calculation' //
      &                ' from MC/CI natural orbitals! '
@@ -3150,7 +3163,8 @@ C
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I2)') ' Coefficients ( after GS), irrep ',I
+            WRITE(LUPRI,'(A,I3)')
+     &         ' Coefficients (after Gram-Schmidt), irrep',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -3499,7 +3513,6 @@ C     Output: CREF - CI vector
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3532,9 +3545,9 @@ C
 C     Diagonalize the full CI matrix now.
 C     This is of course only possible for sufficiently small CI's.
 C
-      IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 1000) THEN
-         WRITE(LUPRI,'(//2A)')
-     &      ' Are you mad? Full CI with ',NZCONF,' determinants?',
+      IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 100000) THEN
+         WRITE(LUPRI,'(//A,I9,A/A)')
+     &      ' Are you mad? Full CI with',NZCONF,' determinants?',
      &      ' Using MAXCIT = 3 instead!'
          MAXCIT = 3
       END IF
@@ -3547,8 +3560,8 @@ C           MAXCIT Davidson CI iterations.
 C
             CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            RTHRCI = OPT_THRGRD
-            CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
+            THRGCI = 0.1D0 * SQRT(THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         IOPT_ISTATE,ICONV_TOT,
      &                         IPROPT,WORK(KFREE),LFREE)
@@ -3600,7 +3613,8 @@ C
          END IF
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
-         WRITE(6,*) 'NEED TO PASS CHECK'
+         IF (IPROPT.GT.5)
+     &      WRITE(LUPRI,*) 'KRCC: Skipping CI, will do CC ;-)'
       ELSE
          WRITE(LUPRI,'(//3A)')
      &        '*** ERROR in RCIST ***' //
@@ -3615,21 +3629,17 @@ C     General allocation for NO generation
 C
       IDENSLR_STATE = 0
       IPRNO = 3*IPROPT
-      IF( (OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR) .OR.
-     &     OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
-        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
-      END IF
+      IF( NATOLCR ) THEN
+        CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','UNO',  KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
 C
-      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
-C
-         WRITE(LUPRI,'(//A/A/A)')
+        WRITE(LUPRI,'(//A/A/A)')
      &'  *************************************************************',
      &'  ************* Natural orbital occupation numbers ************',
      &'  *************************************************************'
 C
 C
-         DO ICNON = 1, NCIROOT
+        DO ICNON = 1, NCIROOT
 C
 C         erase old occupation numbers
           CALL DZERO(WORK(KOCCNO),NORBT)
@@ -3654,10 +3664,6 @@ C        do NOT set back for KR-CI - we might do more than one symmetry
 C
          IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
-      ELSE IF( OPT_CIPROGRAM .EQ. 'GASCIP' )THEN
-C
-         CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
       END IF
 C
 1000  CONTINUE
@@ -3891,7 +3897,7 @@ C
 C
 C
 C
-      NREDM = 3 * (MOPT_MXMICRO+2)
+      NREDM  = 3 * (MOPT_MXMICRO+2)
       NEXSIM = 1
       CALL MEMGET('REAL',KIBTYP,2*NREDM     ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KIBCVC,NREDM       ,WORK,KFREE,LFREE)
