@@ -865,6 +865,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
+      THRECI         = MAX(DKRCI_THRGCI, OPT_THRGRD)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
@@ -986,10 +987,10 @@ C     Set common block DCROPT
 C
       OPT_CNVINT(1)  = DKRCI_CNVINT(1)
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
-      OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0d-03
+      OPT_THRGRD     = 1.D99
       THRECI         = DKRCI_THRGCI
 C
 C     Set common block DCLOPT
@@ -1399,7 +1400,7 @@ C
       END
 #ifdef MOD_KRCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck tkrciorb */
+C  /* Deck tkrccorb */
       SUBROUTINE TKRCCORB
 C***********************************************************************
 C
