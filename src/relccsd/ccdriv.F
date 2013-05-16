@@ -538,6 +538,7 @@ c
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
       use relcc_cfg
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -706,6 +707,19 @@ C
          NELECT = NELECT + NELEC(I)
       ENDDO
 C
+C     Write output in xml format
+C
+      if (doxml) then
+         call xml_begin('task','type="RELCCSD"')
+         call xml_begin('input')
+         call xml_quantity('Number of spinors',NSP)
+         call xml_quantity('Number of correlated electrons',NELECT)
+         call xml_quantity('Number of virtual spinors',NSP-NELECT)
+         call xml_end('input')
+         call xml_begin('output')
+      endif
+
+C
       if ( maxcor .gt. 0) then
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
@@ -857,6 +871,11 @@ C     Print I/O statistics
 C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
+C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
 C
 C     Let us synchronize all processes! 
 C
@@ -2064,6 +2083,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2217,6 +2237,11 @@ C
 C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+
+C     Report Hartree-Fock SCF energy that is used (added to correlation energy)
+      if (doxml) then
+          call xml_quantity('SCF energy',ESCF,'Hartree')
+      end if
 C
 C  Solve relativistic MP2 equations
 C
@@ -2234,6 +2259,9 @@ C
          IMSTAT(4) = 3
          CALL CCDUMP
    10    CONTINUE
+         if (doxml) then
+            call xml_quantity('MP2 energy',ESCF+EMP2,'Hartree')
+         end if
       ENDIF
 C
 C  Solve relativistic CCSD equations
@@ -2286,6 +2314,10 @@ C
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+
+         if (doxml) then
+            call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
+         end if
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -2364,6 +2396,12 @@ C
      &                a_BUF1,a_BUF2,a_BUF3,a_TAU3,
      &                a_VVVO,a_VVOO,a_VOOO)
          CALL XTIME(5,2,'CCSD(T) evaluation            ')
+
+         if (doxml) then
+       call xml_quantity('CCSD+T energy',ESCF+ECCSD+ET1,'Hartree')
+       call xml_quantity('CCSD(T) energy',ESCF+ECCSD+ET1+ET2,'Hartree')
+       call xml_quantity('CCSD-T energy',ESCF+ECCSD+ET1+ET3,'Hartree')
+         end if
 C
 C     This is a restart point : update status.
 C

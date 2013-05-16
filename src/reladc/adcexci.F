@@ -31,8 +31,6 @@
 ! file names for the Lanczos
       CHARACTER*6                            :: NAMEMATFIL
       CHARACTER*6                            :: NAMECNFFIL
-      CHARACTER*7                            :: INFOFN
-      PARAMETER(INFOFN='MATINFO')
       CHARACTER*5                            :: NMSPECF
       PARAMETER(NMSPECF='XSPEC')
 
@@ -98,23 +96,6 @@
         WRITE(IW,*) 'Doing strict ADC-2'
       ENDIF
 
-      IF(reladc_dofull) THEN
-        WRITE(IW,*) 'Full diagonalizer requested.'
-        WRITE(IW,*) 'Only executed for dim < 5000!'
-      ENDIF
-      
-      If(reladc_dolanc) Then
-        WRITE(IW,*) 'Lanzcos diagonalizer will be called.'
-        If(reladc_lancmem.eq.0) THEN
-          reladc_lancmem=50000000
-        Endif
-        WRITE(IW,*) 'Lancmem set to ',reladc_lancmem,' real words.'
-      Endif
-
-      If(reladc_dodavi) Then
-        WRITE(IW,*) 'Davidson diagonalizer will be called.'
-      Endif
-
       IF(reladc_adcthr.gt.0.0d0) THEN
         WRITE(IW,*) 'A threshold of',reladc_adcthr,' will be applied to'
         WRITE(IW,*) 'the PP ADC matrix.'
@@ -144,6 +125,18 @@
         enddo
       endif
       write(iw,*)
+
+      write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
+      n=0
+      do i=1,32
+        n=n+reladc_exceigv(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None.'
+      else
+        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=1,16)
+        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=17,32)
+      endif
 
       INTBUF = 5*1024*1024     !we work with a 5 Megaword buffer.
 ! |
@@ -319,11 +312,11 @@
      &                KFREE,LFREE,.true.)
           CALL MEMREL('IDPT',CC,KFREEBASE,KFREEBASE,KFREE,LFREE)
 !
-!  open matinfo file and perform Lanczos
+!  perform Lanczos
 !
           CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
-! free all memory needed for diagonalization
+! free all memory that was used for diagonalization
 !
           deallocate(CC)
         ENDIF
