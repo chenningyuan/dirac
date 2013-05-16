@@ -369,7 +369,7 @@ C
       DATA TABLE /'.PRINT ','.XXXXXX','.ANALYZ','.OPERAT',
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
-     &            '.EPOLE ','.MPOLE ','.INTFLG','-------',
+     &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
@@ -413,6 +413,7 @@ C
       ITRIPP(1)  = 1
       ITRIPP(2)  = 1
       NPPAPT     = 0
+      KVAL_OSC   = -1
       CALL IZERO(NPPAP,8)
       MAXEXC     = 0
       CALL IZERO(KEXCNV,8)
@@ -564,6 +565,49 @@ C&&&& INTFLG: specify what two-electron integrals to include
                   INTXPP = ILLINT + 2*ISLINT + 4*ISSINT
                GOTO 100
  16            CONTINUE
+C&&&& INTENS: ask for oscillator strengths to order k in the wave vector
+                 READ(LUCMD,*) KVAL_OSC
+                 IF(KVAL_OSC.EQ.0) THEN
+                   IEMAX = 1
+                   IMMAX = 0
+                   IMMAX = 0
+                 ELSE
+                   WRITE(6,*) 
+     &   '* User asked for oscillator strengths to order :',KVAL_OSC
+                   CALL QUIT('XPPINT: Not implemented yet !')
+                 ENDIF
+C................Electric multipoles
+                 IOFF = 1
+                 DO IORDER = 1,IEMAX
+                   NDEG=(IORDER+2)*(IORDER+1)/2
+                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+                   ENDIF
+                   CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+                   CALL ICOPY(NDEG,LPPAPU(NPPAPT+1),1,IEPOL(IOFF),1)
+                   NPPAPT = NPPAPT + NDEG
+                   IOFF   = IOFF   + NDEG
+                 ENDDO
+C..................Magnetic multipoles
+                 IOFF = 1
+                 DO IORDER = 1,IMMAX
+                   NDEG=3*(IORDER+1)*IORDER/2
+                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+                   ENDIF
+                   CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+                   CALL ICOPY(NDEG,LPPAPU(NPPAPT+1),1,IMPOL(IOFF),1)
+                   NPPAPT = NPPAPT + NDEG
+                   IOFF   = IOFF   + NDEG
+                 ENDDO
                GOTO 100
  17            CONTINUE
 C&&&& OCCUP: String of inactive orbitals in XPP module
@@ -1809,7 +1853,7 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      PARAMETER(TTOL=1.0D-8)
+      PARAMETER(TTOL=1.0D-8,D2=2.0D0)
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
@@ -2037,6 +2081,44 @@ C
           ENDDO          
         ENDDO
       ENDDO    
+C
+C     O S C I L L A T O R    S T R E N G T H S
+C     ========================================
+C
+      IF(KVAL_OSC.LT.0) GOTO 10
+C.....Zeroth order in wave vector
+      IF(KVAL_OSC.GE.0) THEN
+        IEVAL = 1
+        NDEG=(IEVAL+2)*(IEVAL+1)/2
+        DO IDEG = 1,NDEG
+          INDOP = IEPOL(IDEG)
+          ISYM  = IPRPSYM(INDOP)
+          IREP  = ISYM - 1
+          ITIM  = IPRPTIM(INDOP)
+          WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
+     &    '*** Oscillator strengths of operator ',
+     &    PRPNAM(INDOP),REP(IREP),TTYP(ITIM)
+          WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+            WRITE(LUPRI,'(3X,A,8X,A,13X,A)') 'eigenvalue (au)',
+     &        'f','Higher symmetry (if detected)'
+          NTMOM = 0
+          NEXC = KEXCNV(ISYM)
+          DO IEXC = 1,NEXC
+          IF(ABS(ATMPPF(IEXC,INDOP,ISYM,1)).GT.TTOL) THEN
+            NTMOM=NTMOM+1
+            ILAB = ISSYM(IEXC,ISYM)
+            XMOM = ATMPPF(IEXC,INDOP,ISYM,1)
+            OSCIL = D2*XMOM*XMOM*OMEGA(IEXC,ISYM)
+            WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+     &        OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
+          ENDIF
+          ENDDO
+          IF(NTMOM.EQ.0) THEN
+            WRITE(LUPRI,'(A,E9.4)')
+     &         '* No values above threshold : ',TTOL
+          ENDIF
+        ENDDO
+      ENDIF
  10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)
