@@ -1851,7 +1851,7 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      PARAMETER(TTOL=1.0D-8,D2=2.0D0)
+      PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0))
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
@@ -2085,38 +2085,52 @@ C     ========================================
 C
       IF(KVAL_OSC.LT.0) GOTO 10
 C.....Zeroth order in the wave vector
+C     ------------------------------
       IF(KVAL_OSC.GE.0) THEN
         IEVAL = 1
         NDEG=(IEVAL+2)*(IEVAL+1)/2
         IOFF  = IEPOFF(IEVAL)
-        DO IDEG = 1,NDEG
-          INDAP  = IOFF+IDEG
-          INDPRA = LPPAPU(IOFF+IDEG)
-          ISYM   = IPRPSYM(INDPRA)
-          IREP   = ISYM - 1
-          ITIM   = IPRPTIM(INDPRA)
-          WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
-     &    '*** Oscillator strengths of operator ',
-     &    PRPNAM(INDPRA),REP(IREP),TTYP(ITIM)
-          WRITE(LUPRI,'(80A1)') ('=',I=1,80)
-            WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
+C.......All crossterms
+        DO IDEGA = 1,NDEG
+          INDAP   = IOFF+IDEGA
+          INDPRA  = LPPAPU(IOFF+IDEGA)
+          ISYM    = IPRPSYM(INDPRA)
+          IREP    = ISYM - 1
+          ITIMA   = IPRPTIM(INDPRA)
+          DO IDEGB = 1,IDEGA
+            INDBP   = IOFF+IDEGB
+            INDPRB  = LPPAPU(IOFF+IDEGB)
+            ISYM2   = IPRPSYM(INDPRB)
+            ITIMB   = IPRPTIM(INDPRB)
+            IF(ISYM2.EQ.ISYM) THEN
+              WRITE(LUPRI,'(/A,2(3X,A16,2X,A3,2X,A2))')
+     &        '*** Oscillator strengths of operators ',
+     &        PRPNAM(INDPRA),REP(IREP),TTYP(ITIMA),
+     &        PRPNAM(INDPRB),REP(IREP),TTYP(ITIMB)
+              WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+              WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
      &        'f','Higher symmetry (if detected)'
-          NTMOM = 0
-          NEXC = KEXCNV(ISYM)
-          DO IEXC = 1,NEXC
-            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
-            IF(ABS(XMOM).GT.TTOL) THEN
-              NTMOM=NTMOM+1
-              ILAB = ISSYM(IEXC,ISYM)
-              OSCIL = D2*XMOM*XMOM*OMEGA(IEXC,ISYM)
-              WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
-     &        OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
+              NTMOM = 0
+              NEXC = KEXCNV(ISYM)
+              DO IEXC = 1,NEXC
+                AMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+                IF(ABS(AMOM).GT.TTOL) THEN
+                  BMOM = ATMPPF(IEXC,INDBP,ISYM,1)
+                  IF(ABS(BMOM).GT.TTOL) THEN
+                    NTMOM=NTMOM+1
+                    ILAB = ISSYM(IEXC,ISYM)
+                    OSCIL = D2*AMOM*BMOM*OMEGA(IEXC,ISYM)
+                    WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+     &              OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
+                  ENDIF
+                ENDIF
+              ENDDO
+              IF(NTMOM.EQ.0) THEN
+                WRITE(LUPRI,'(A,E9.4)')
+     &            '* No values above threshold : ',TTOL
+              ENDIF
             ENDIF
           ENDDO
-          IF(NTMOM.EQ.0) THEN
-            WRITE(LUPRI,'(A,E9.4)')
-     &         '* No values above threshold : ',TTOL
-          ENDIF
         ENDDO
       ENDIF
  10   CONTINUE
