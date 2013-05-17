@@ -628,7 +628,7 @@ C
       IF (DO_SCFPOP) THEN
 !       calculate net atomic charge
         DO I = 1, NPOPLAB
-           PGTOT(I,1) = ICHRG(I) - PGTOT(I,1)
+           PGTOT(I,1) = CHRGNUC(I) - PGTOT(I,1)
         END DO
         CALL WR_MULCHRG(PGTOT(1,1),POPLAB,NPOPLAB)
       ELSE
@@ -1943,14 +1943,14 @@ C- combine all large and small component types for each center
 C- omit point charges
         NPOPLAB = 0
         DO I = 1, NPLAB(0)
-          ICENT = JGET(IATTR(I,ILABDF))
-          IDEG  = KGET(IATTR(I,ILABDF))
-          ICENT_DEP = NUCPRE(ICENT) + IDEG
-          ICHRG(ICENT_DEP) = NINT(CHARGE(ICENT))
-          IPOPLAB(I) = ICENT_DEP
+          ICENT      = JGET(IATTR(I,ILABDF))
+          IDEG       = KGET(IATTR(I,ILABDF))
+          ICENT_DEP  = NUCPRE(ICENT) + IDEG
+          IPOPLAB(I)         = ICENT_DEP
+          CHRGNUC(ICENT_DEP) = CHARGE(ICENT)
+          POPLAB(ICENT_DEP)  = '    '//NAMDEP(ICENT_DEP)
           IF (.NOT. NOORBT(ICENT)) THEN   ! omit point charges
-            NPOPLAB = NPOPLAB + 1
-            POPLAB(NPOPLAB)  = '    '//NAMDEP(ICENT_DEP)
+            NPOPLAB = MAX(NPOPLAB, ICENT_DEP)
           END IF
         END DO
         GO TO 8000
@@ -1961,7 +1961,6 @@ C- combine all large and small component types for each center
           IDEG  = KGET(IATTR(I,ILABDF))
           ICENT_DEP = NUCPRE(ICENT) + IDEG
           IPOPLAB(I) = ICENT_DEP
-          ICHRG(ICENT_DEP) = NINT(CHARGE(ICENT))
         END DO
         NPOPLAB = NUCDEP
         DO I = 1,NPOPLAB
