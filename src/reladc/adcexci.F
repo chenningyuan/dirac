@@ -517,10 +517,10 @@
       enddo
       if(carith) call conjuga(ic4,dij,1)
 !
-!  ----------------------------
-!  Calculate    TERM C(2)C    |
-!  result in buf3.            |
-!  ----------------------------
+!  ----------------------------------------
+!  Calculate TERM C(2)C (two contribs)    |
+!  result in buf3                         |
+!  ----------------------------------------
 !
 !  sort v_ac,ik    -->  v_ai,ck    (buf3)
 !  sort V*_bc,jk   -->  V*_bj,ck   (buf4)
@@ -532,23 +532,34 @@
      &              mvo,j2vovo,jjvo,jjvo,sb_vvoott,buf4)
       if(carith) call conjuga(ic1,sb_vvoott,1)
 !
+! here CNTRCT is appropriate because both arrays have exactly
+! the same structure and comply to BKC
+!
+      CALL CNTRCT('N','T',MVO,MVO,MVO,A1,buf3,buf4,A0,buf5,NREP)
+!
 !  here again special contraction, with 'T' in XGEMM
 !  we end up as v_ai,ck * V*_bj,ck  -->  ai,bj intermediate (buf5)
 !  having BKC:  <| |>,|><|.  
 !
-      ioff1 = 1
-      ioff3 = 1
-      do irep = 1, nrep
-         jrep = multb(irep+nrep,1+nrep,2)
-         m = mvo(irep)
-         n = mvo(irep)
-         k = mvo(jrep)
-         ioff2 = j2vovo(jrep) * rcw + 1
-         call xgemm ('N','T',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
-     &               a0,buf5(ioff3),m)
-         ioff1 = ioff1 + m * k * rcw
-         ioff3 = ioff3 + m * n * rcw
-      enddo
+!     ioff1 = 1
+!     ioff3 = 1
+!     do irep = 1, nrep
+!        jrep = multb(irep+nrep,1+nrep,2)
+!        m = mvo(irep)
+!        n = mvo(irep)
+!        k = mvo(jrep)
+!        ioff2 = j2vovo(jrep) * rcw + 1
+!debug
+!        call xgemm ('N','T',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
+!    &               a0,buf5(ioff3),m)
+!        call xgemm ('N','N',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),k,
+!    &               a0,buf5(ioff3),m)
+!        call xgemm ('N','T',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
+!    &               a0,buf5(ioff3),m)
+!debug end
+!        ioff1 = ioff1 + m * k * rcw
+!        ioff3 = ioff3 + m * n * rcw
+!     enddo
 !
 !  We have to backsort in order to arrive at
 !  Y(1)_aj,bi order with <|<||>|>  BKC.
@@ -561,9 +572,7 @@
       call srt16 (nrep,multb,lfa,ltr,nv,no,nv,no,mvo,jvovo,jjvo,jjvo,
      &            buf3,buf5)
 !
-!  We have to symmetrize according to A_aj,bi = Y(1)_aj,bi + Y(2)*_bi,aj
-!  Hereby we again interpret the Y(1)_aj,bi array as a two-dimensional matrix
-!  of NVO(i) * NVO(i) submatrices contiguously stored (VOVO storage scheme!)
+!  symmetrize array (this accounts for the second term)
 !
       do krep=1,nrep
         ioff=ivovo(krep)*rcw + 1
@@ -585,23 +594,27 @@
 !  which is the negative VOVO ints  |
 !  ----------------------------------
 !
+!  debug
       call getvovo(ciajb)
       call xnegate(dimciajb,ciajb,ciajb)
+!  debug end
 !
-!  add -0.5 *  A_aj,bi array to it (VOVO storage)
-!  this is the C(2C) contribution
+!  add -0.5 *  buf3  to it (VOVO storage)
+!  this is the C(2C) contribution (both terms in the equations)
 !
-      call xaxpy  (ic6,-ap5,buf3,1,ciajb,1)
+       call xaxpy  (ic6,-ap5,buf3,1,ciajb,1)
 !
 !  'weave' into this array the C(0), the C(2A) and C(2B) contributions
 !  hereby C(0) is added, the C(2A) and C(2B) contributions are formed from
 !  the Bab and Dij!
 !
+!  debug
       if(carith) then
         call bweaverc(ciajb,eps,bab,dij,ic6,ic2,ic4)
       else
         call bweaverr(ciajb,eps,bab,dij,ic6,ic2,ic4)
       endif
+!  debug end
 !
 !  the ciajb array now contains the full hp/hp block in generic VOVO
 !  storage convention.
@@ -962,7 +975,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 
 !       write(*,*)
-!       write(*,*) 'Eigenvalues of states in symm.',desrep,repna(desrep)
+!       write(*,*) 'Main block eigenvalues ',desrep,repna(desrep)
 !       write(*,*)
 !       do i=1,nsiz
 !         write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
