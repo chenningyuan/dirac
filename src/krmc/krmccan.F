@@ -1435,6 +1435,11 @@ C
          CALL DZERO(WORK(KRPRPMO),N2ORBXQ)
          CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),CMO,
      &               DUMMY,ICMOQ,NORB,WORK,KFREE,LFREE,IPROPT)
+
+         if(filelab(3:8) == 'dipole')then
+!          scale with proper prefactor for dipole (length) integrals (see factor -1.0d0 in src/prp/pamprp.F - def_dipole)
+           call dscal(NZ*NORBT**2,-1.0d0,WORK(KRPRPMO),1)
+         end if
 C
 C        print full property matrix
 C
@@ -1542,6 +1547,8 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
+#include "mxcent.h"
+#include "dipole.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
@@ -1761,7 +1768,7 @@ C     =======================================================
       if(dodipmom_krci)then
 C
 C       print title
-        write(lupri,'(/28x,a/28x,a/28x,a)') 
+        write(lupri,'(/4x,a/4x,a/4x,a)') 
      & ' ********************************************************',
      & ' ********* permanent electric  dipole moment(s) *********',
      & ' ********************************************************'
@@ -1778,17 +1785,23 @@ C       determine index for (x,y,z)
         IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
         XREAL = 0.0D0
         XCOMP = 0.0D0
+
+C       Nuclear contribution to dipole moment
+C       ========================================
+C
+        call dipnuc(0,.false.)
+
 !
 !       -------------------
 !       print dipole moment
 !       -------------------
-        write(lupri,'(/a/a)')
-     & '            < state |x,y,z| state>  '//
-     & '               dipole moment [a.u.] (x, y, z)     Norm [a.u.]'//
-     & '  Norm [Debye]',
-     & '  __________________       _________________'//
-     & '    ________________________________________________________'//
-     & '_______'
+!       write(lupri,'(/a/a)')
+!    & '            < state |x,y,z| state>  '//
+!    & '               dipole moment [a.u.] (x, y, z)     Norm [a.u.]'//
+!    & '  Norm [Debye]',
+!    & '  __________________       _________________'//
+!    & '    ________________________________________________________'//
+!    & '_______'
         do 202 ivec = 1, nprop_roots_krci
 
           jvec  = ivec
@@ -1799,7 +1812,10 @@ C       determine index for (x,y,z)
             if(mz.eq.2)
      &      xcomp         = xpropmat(inist,jflst,ind_dip(iprp),2)
             xreal         = xpropmat(inist,jflst,ind_dip(iprp),1)
-            xmom          = dcmplx(xreal,xcomp)
+            xmom          = xreal
+            if(mz.eq.2)then
+              xmom          = dcmplx(xreal,xcomp)
+            end if
             oscl(iprp)    = xmom
             osclabs(iprp) = abs(xmom)
           end do
@@ -1812,17 +1828,43 @@ C       determine index for (x,y,z)
             call dzero(oscl,3)
           end if
 
-       write(lupri,'(a,i3,a,a4,a,i3,a,a4,a,3f12.8,2x,1f12.8,2x 1f12.8)')
-     &  '   * state',inist,'(',xrepeig(isymst_in),')         * state',
-     &      jflst,'(',xrepeig(isymst_fl),')   ',
-     &      oscl(1),oscl(2),oscl(3),
-     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2)),
-     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2))*debye
+
+!      write(lupri,'(a,i3,a,a4,a,i3,a,a4,a,3f12.8,1f14.8,1f14.8/)')
+!    &  '   * state',inist,'(',xrepeig(isymst_in),')         * state',
+!    &      jflst,'(',xrepeig(isymst_fl),')   ',
+!    &      oscl(1),oscl(2),oscl(3),
+!    &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2)),
+!    &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2))*debye
+
+       write(lupri,'(/a,i3,a,a4,a/)')
+     &  '     * dipole moment for electronic state: ',
+     &           inist,' (',xrepeig(isymst_in),')'
+
+      CALL PRSYMB(LUPRI,'-',76,5)
+      WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'Electronic  ','Nuclear     ','Total       '
+      WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'contribution','contribution','contribution'
+      CALL PRSYMB(LUPRI,'-',76,5)
+      IOFF = ICHAR('w')
+      ! print in debye
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &                   (DEBYE*DIPMN(I)),' Debye',
+     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',76,5)
+      ! print in a.u.
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &                   (DIPMN(I)),' a.u. ',
+     &        (oscl(I)+DIPMN(I)),' a.u.'
+      ENDDO
+
+
  202    continue
-        write(lupri,'(a)')
-     & '  __________________________________________'//
-     & '    ________________________________________________________'//
-     & '_______'
 
       end if
 !
