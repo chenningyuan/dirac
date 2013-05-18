@@ -496,7 +496,7 @@ module pcm_interface
           call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                       nz, ipqtoq(1,0), 6)
           print *, "FOCK_PCM_MO after elimination of spin-dependent terms."
-          call prqmat(fock_pcm, norb(1), norb(1), norb(1), norb(1), &
+          call prqmat(fock_pcm_mo, norb(1), norb(1), norb(1), norb(1), &
                       nz, ipqtoq(1,0), 6)
           deallocate(fock_pcm_MO)
       end if
