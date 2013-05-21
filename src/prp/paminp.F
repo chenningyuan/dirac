@@ -132,7 +132,8 @@ C
       MGRAD        = .FALSE.
       ESRGTENS     = .FALSE.
       ESRANISO     = .FALSE.
-      NPRP_WF      = 0
+      NPRP_WF      = 1
+      PRP_WF(1)    = 'DHF '
       BXLAO        = .FALSE.
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
@@ -309,10 +310,16 @@ C&&&& EFN: Electric field at nuclei
             GOTO 100
   121    CONTINUE
 C&&&& WAVE FUNCTIONS - define which wave functions we should use
+            IF (NPRP_WF .GT. 0) THEN
+               WRITE(LUPRI,'(//2A/A/,(10X,A4))')
+     &         ' WARNING, list of wave functions for properties '//
+     &         'reset under ',WRDSRC,' Old list which is discarded:',
+     &         (PRP_WF(I), I=1, NPRP_WF)
+            END IF
             READ(LUCMD,*) NPRP_WF
             IF (NPRP_WF .LT. 1 .OR. NPRP_WF .GT. MXPRP_WF) THEN
-               WRITE(LUPRI,'(/A,I10)') ' *** ERROR in PRPINP *** '
-     &            //'Illegal value for .NPRPWF : ',NPRP_WF
+               WRITE(LUPRI,'(/3A,I10)') ' *** ERROR for ',WRDSRC,
+     &            ' *** Illegal value for .WAVE FU : ',NPRP_WF
                CALL QUIT('*** ERROR in PRPINP ***')
             END IF
             DO I = 1, NPRP_WF

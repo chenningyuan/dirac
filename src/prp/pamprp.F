@@ -227,7 +227,7 @@ C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
       IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
-         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT')
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF' .AND. WF .NE. 'DFT')
      &      CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &         'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)

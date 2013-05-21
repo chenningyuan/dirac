@@ -768,22 +768,19 @@ C&&& .NOSFCR: no Segm.fault crash when quit for creating profiling output,gmon.o
  111     CONTINUE
 C&&&& OPTIMIZE: Geometry optimization
             OPTIMI = .TRUE.
+            DOPSI  = .TRUE. ! no geometry optimization without a wave function
             GOTO 100
  112     CONTINUE
-C&&&& MINIMIZE: Geometry optimization
-Ctsaue: retained for backwards compatibility
-            OPTIMI = .TRUE.
-            GOTO 100
+C&&&& MINIMIZE: Geometry optimization (tsaue: retained for backwards compatibility)
+            GO TO 111
  113     CONTINUE
-C     XMLOUT: Write output in xml format to separate file
+C&&& XMLOUT  : Write output in xml format to separate file
          call xml_open_file('dirac.xml')
          GOTO 100
 
 !       xxxxxx keyword
  114     continue
          goto 100
-
-
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -798,29 +795,21 @@ C     Print section
 C     ==============
 C
   180 CONTINUE
-      IN = LNBLNK(TITLE)
-      IN = (272-IN)/2
+      I  = LNBLNK(TITLE)
+      IN = (272-I)/2
       CALL TITLER(TITLE(1:I),'*',IN)
       IF(NJOBS.GT.0) WRITE(LUPRI,'(A)') ' Jobs in this run:'
       IF(DOHRM) THEN
         WRITE(LUPRI,'(3X,A)') '* Only run one-electron integrals'
         GOTO 666
       ENDIF
+      IF(OPTIMI)  WRITE(LUPRI,'(3X,A)') '* Geometry optimization'
       IF(DOPSI)   WRITE(LUPRI,'(3X,A)') '* Wave function'
       IF(DOANA)   WRITE(LUPRI,'(3X,A)') '* Analysis'
       IF(DOPRP)   WRITE(LUPRI,'(3X,A)') '* Properties'
       IF(DOTRA)   WRITE(LUPRI,'(3X,A)') '* Transformation to '//
      &    'Molecular Spinor basis'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only'
-      IF(OPTIMI)  THEN
-                  WRITE(LUPRI,'(3X,A)') '* Geometry optimization'
-         IF (.NOT. DOPSI) THEN
-            WRITE(LUPRI,'(3X,A)')
-     &      '  FATAL ERROR: '//
-     &      '*WAVE F must be present for reading of wavefunction.'
-            CALL QUIT('*WAVE F needed to do geometry optimization')
-         END IF
-      END IF
 
 C     LV: This option is badly out of place, has nothing to do with jobs !
       IF (NOSFCRASH) THEN
@@ -2427,7 +2416,7 @@ C***********************************************************************
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER (D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 18, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -2496,9 +2485,11 @@ C         if reading input from a terminal
          GO TO 900
       END IF
   910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no wave function input found')
+         CALL QUIT(
+     &   'End of file on DIRAC.INP, no **WAVE function input found')
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no wave function input found')
+         CALL QUIT(
+     &   'Error reading DIRAC.INP, no **WAVE function input found')
   930 CONTINUE
       WORD1 = WORD
 C
