@@ -520,6 +520,7 @@ C
 C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
+      use moltra_labeling
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -624,6 +625,8 @@ C
       ENDDO
 C
       KFRSAV = KFREE
+
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 C
 C     Print section
 C     =============

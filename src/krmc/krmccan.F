@@ -1689,7 +1689,10 @@ C             length gauge
               IF( MZ .eq. 2 )
      &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-              XMOM          = DCMPLX(XREAL,XCOMP)
+              XMOM          = XREAL
+              if(mz.eq.2)then
+                xmom        = dcmplx(xreal,xcomp)
+              end if
               OSCL(IPRP)    = XMOM
               OSCLABS(IPRP) = ABS(XMOM)
             END DO
