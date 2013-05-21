@@ -919,7 +919,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (THROUT = 1.0D-99)
+      PARAMETER (THROUT = 1.0D-10)
 C
 #include "dcborb.h"
 #include "dgroup.h"
