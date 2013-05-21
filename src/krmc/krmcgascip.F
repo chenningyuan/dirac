@@ -2181,6 +2181,9 @@ C
 C     Transform integrals to Molfdir format:
 C
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+
+      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
 C

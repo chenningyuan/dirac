@@ -169,7 +169,8 @@ C
        END IF
 CSK    NTEST = 0
 C
-      ECORE = ECORE_KRMC
+!     already done one routine up
+!     ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
       IF(NTEST > 25) 
      &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET
