@@ -641,7 +641,6 @@
 
       REAL*8  CC(*)
       INTEGER KFREE,LFREE
-      INTEGER INFOHANDLE
       INTEGER IW
       LOGICAL DOINCORE
 C
@@ -662,6 +661,7 @@ C
 C---------------Local variables--------------------------------------
 C
 c *** for infofile
+      INTEGER INFOHANDLE
       INTEGER IONIZLEVEL
       INTEGER INTBUF
       INTEGER KREP
@@ -3692,10 +3692,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         If(INFO.NE.0) Then
           Call Quit('Error in DSYEV (diag_davi routine)')
         Endif
-!       Do i=1,locdim
-!         write(*,*) 'raw:',i,lambda(i)
-!         write(*,*) 'raw evc:',aij(:,i)
-!       Enddo
 !
 !  STEP B + C.  Form residual vector q_m for each eigenvalue k
 !
@@ -3751,9 +3747,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               xi(j)=qm(j)/a1
             endif
           Enddo
-!         Do j=1,20
-!           write(*,*) 'xi:',j,xi(j)
-!         Enddo
+!         write(*,*) '   @Norm of preconditioner xi:',
+!    &           sqrt(dot_product(xi(:),xi(:)))
 !
 !  STEP E. form  vector d_(M+1) for the kth eigenvalue
 !  orthogonalize to *all* previous b_i directions from xi
@@ -3765,7 +3760,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             dmp1(:) = dmp1(:) - a1*bold(:,i)
           Enddo
           a1 = sqrt(dot_product(dmp1,dmp1))
-!         write(*,*) '@Norm of preconditioner:',a1
+!         write(*,*) '   @Norm of preconditioner d(M+1):',a1
 !
 !  STEP F. form  vector b_(M+1): b_(M+1)=d_(M+1)/||d_(M+1)||
 !  this vector has to be included in the array of old vectors!
@@ -3776,7 +3771,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           bold(:,locdim+k)=dmp1(:)
           xi = bold(:,locdim+k)
           a2 = sqrt(dot_product(xi,xi))
-!         write(*,*) '@Norm of new vector:',a2
 !
 !  intermediate ortho check of new b vector.
 !
