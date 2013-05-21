@@ -1296,6 +1296,10 @@ C
       else
         E_lvcorr_mc = 0.0d0
       end if
+
+!
+!     set convergence threshold for GASCIP CI calculations
+      opt_thrgrd = DKRCI_THRGCI
 C
 C     ***************************************************
 C     *** Loop over symmetries for CI roots *************
