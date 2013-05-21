@@ -1238,6 +1238,8 @@
 
       if (kw_matches(word, '.FANOIN')) then
          call kw_read(word, reladc_fano_inrep)
+         no_sipreps = no_sipreps + 1
+         reladc_sipreps(no_sipreps) = reladc_fano_inrep
          call kw_read(word, reladc_fano_inabssp) ! use absolute spinor numbers
       end if
 
