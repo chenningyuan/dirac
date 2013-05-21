@@ -69,7 +69,7 @@ include(Sources) # this has to come before ConfigCompilerFlags
 include(ConfigCompilerFlags)
 include(ConfigDocumentation)
 include(ConfigExternal)
-include(ConfigGPUMath)
+include(ConfigGPU)
 include(ConfigMath)
 include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)

@@ -1157,9 +1157,12 @@
       character(100)                   :: line
       integer                          :: temp
       integer                          :: user_req_symmetries
+      integer                          :: no_sipreps
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
+
+      no_sipreps = 0
 
       if (kw_matches(word, '.ADCLEV')) then
          read(get_file_unit(),'(i5)') reladc_adclevel
@@ -1183,7 +1186,8 @@
 
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
-         call kw_read(word, reladc_sipreps, user_req_symmetries)
+         !call kw_read(word, reladc_sipreps, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, no_sipreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.DIPREP')) then
