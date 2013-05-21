@@ -16,8 +16,10 @@ source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 
 # My own OpenMPI Intel
-export PATH=/home/milias/bin/openmpi/bin:$PATH
-export LD_LIBRARY_PATH=/home/milias/bin/openmpi/lib:$LD_LIBRARY_PATH
+#export PATH=/home/milias/bin/openmpi/bin:$PATH
+#export LD_LIBRARY_PATH=/home/milias/bin/openmpi/lib:$LD_LIBRARY_PATH
+export PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/bin:$PATH
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/lib:$LD_LIBRARY_PATH
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
@@ -76,7 +78,7 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 make ExperimentalUpdate
 make Experimental 
@@ -92,7 +94,7 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 make ExperimentalUpdate
 make Experimental 
@@ -108,7 +110,7 @@ if [[ -d "$BUILD_STATIC" ]]; then
   /bin/rm -rf $BUILD_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_STATIC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=$NPROCS -D DART_TESTING_TIMEOUT=99999 $BUILD_STATIC
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=$NPROCS -D DART_TESTING_TIMEOUT=99999 $BUILD_STATIC
 cd $BUILD_STATIC
 make ExperimentalUpdate
 make Experimental 
@@ -116,3 +118,4 @@ make Experimental
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
 exit 0
+
