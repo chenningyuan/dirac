@@ -382,12 +382,10 @@ C
         IF( .NOT. SKIP_MP2DEN ) THEN
 C
            CALL MEMGET('REAL',KCMO_NAT ,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KCMO_TRA ,N2BBASXQ,WORK,KFREE,LFREE)
-C          CALL MEMGET('REAL',KCMO_TRA ,NCMOTQ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCMO_TRA ,NCMOTQ,WORK,KFREE,LFREE)
 C          ... initialize
            CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
-           CALL DZERO(WORK(KCMO_TRA),N2BBASXQ)
-C          CALL DZERO(WORK(KCMO_TRA),NCMOTQ)
+           CALL DZERO(WORK(KCMO_TRA),NCMOTQ)
 C          ... MP2 NO coefficients
            CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
 C          ... MO coefficients
@@ -1057,12 +1055,12 @@ C
 C
 C        CMO(new) = CMO(old) * CMO_NAT
 C
-         NBASI = NFBAS(IFRP,0)
-         NORBI = NORB(IFRP)
+         NBASI    = NFBAS(IFRP,0)
+         NORBI    = NORB(IFRP)
+         NESHI    = NESH(IFRP)
 C
          ICMO_ESH = ICMOQ(IFRP) + NBASI*NPSH(IFRP)
-C        ICMO_ESH = ICMOQ(IFRP)
-         IOFF1 = IORB(IFRP) + NPSH(IFRP) + 1
+         IOFF1    = IORB(IFRP)  + NPSH(IFRP) + 1
 C         
 csk      WRITE(LUPRI,*) ' IOFF2, IOFF1, ICMO_ESH', 
 csk  &                    IOFF2, IOFF1, ICMO_ESH
@@ -1070,13 +1068,14 @@ csk      WRITE(LUPRI,*) ' IORB(IFRP), NPSH(IFRP), NORBI',
 csk  &                    IORB(IFRP), NPSH(IFRP), NORBI
 C        WRITE(LUPRI,*) ' diagonalizing offset:1+ICMO_ESH',1+ICMO_ESH
 C
-         CALL QGEMM(NBASI,NORBI,NORBI,D1,
+!                    m      n     k
+         CALL QGEMM(NBASI,NESHI,NESHI,D1,
      &        'N','N',IPQTOQ(1,0),
-     &        WORK(KCMO+ICMO_ESH),NBASI,NORBI,NZ,
+     &        WORK(KCMO+ICMO_ESH),NBASI,NORBI,NZ, ! m x k
      &        'N','N',IPQTOQ(1,0),
-     &        CMO_NAT(IOFF1,IOFF2,1),NORBT,NESHT,NZ,
+     &        CMO_NAT(IOFF1,IOFF2,1),NORBT,NESHT,NZ, ! k x n
      &        D0,IPQTOQ(1,0),
-     &        CMO(1+ICMO_ESH),NBASI,NORBI,NZ)
+     &        CMO(1+ICMO_ESH),NBASI,NORBI,NZ)        ! m x n
 C
          IOFF2 = IOFF2 + NESH(IFRP)
 C
