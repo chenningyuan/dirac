@@ -616,7 +616,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG,WORK,KFREE,LFREE)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -640,8 +640,9 @@ C***********************************************************************
 #include "dcbmp2no.h"
 #include "infpar.h"
 C
-      DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
+      DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
 C
 C---------------Local variables--------------------------------------
 C
@@ -649,17 +650,15 @@ C
 C
       CALL QENTER('MP2_NATORB')
 C
-      KFRSAV=KFREE
-C
 C     memory allocation
 C     -----------------
-      CALL MEMGET('REAL',KCMO_NAT,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCC_NAT,NESHT,WORK,KFREE,LFREE)
+      allocate(CMO_NAT(NORBT*NESHT*NZ))
+      allocate(OCC_NAT(NESHT))
 C
 C     initialize
 C
-      CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
-      CALL DZERO(WORK(KOCC_NAT),NESHT)
+      CALL DZERO(CMO_NAT,NORBT*NESHT*NZ)
+      CALL DZERO(OCC_NAT,NESHT)
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -667,8 +666,7 @@ C     ---------------------------------------
 C
 C     calculate NO occ. num. 
 C     ----------------------
-      CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
-     &                    WORK,KFREE,LFREE,NOPRNT)
+      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
 C
 C     save nat. orb. occ. num. and transform. matrix to file 
 C     ------------------------------------------------------
@@ -684,22 +682,22 @@ C
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
-        CALL WRTKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NOOCC',WORK(KOCC_NAT),NESHT)
+        CALL WRTKRMC(LUKRMC,'MP2NATOB',CMO_NAT,NORBT*NESHT*NZ)
+        CALL WRTKRMC(LUKRMC,'MP2NOOCC',OCC_NAT,NESHT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
 C
 C     memory deallocation
 C     -------------------
-      CALL MEMREL('MP2_NATORB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      deallocate(OCC_NAT)
+      deallocate(CMO_NAT)
 C
       CALL QEXIT('MP2_NATORB')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,WORK,KFREE,
-     &                          LFREE,NOPRNT)
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
 C***********************************************************************
 C
 C     diagonalize second order density matrix DMO
@@ -721,7 +719,8 @@ C***********************************************************************
 #include "dcbgen.h"
 C
       DIMENSION OCC_NAT(*), CMO_NAT(NORBT,NESHT,NZ)
-      DIMENSION DMO(NORBT,NORBT,*), WORK(*)
+      DIMENSION DMO(NORBT,NORBT,*)
+      real(8), allocatable :: scratch(:)
 C
       IF ( NOPRNT .ge. 5 )THEN
          CALL HEADER(
@@ -730,7 +729,7 @@ C
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-C
+
       IOFF2 = 1
 C
       DO IFSYM = 1, NFSYM  
@@ -738,14 +737,16 @@ C
         IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
 C
         IF(DOJACO) THEN
+           lfree = ((NESH(IFSYM)*(NESH(IFSYM)+1))/2)+2*NESH(IFSYM)+16
+           allocate(scratch(lfree))
            CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
      &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF1,IOFF2,1),
-     &                 WORK(KFREE),LFREE)
+     &                 scratch,LFREE)
+           deallocate(scratch)
         ELSE
-           CALL QDIAG(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
+           CALL QDIAG90(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
      &                OCC_NAT(IOFF2),1,
-     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),
-     &                WORK(KFREE),LFREE,IERR)
+     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),IERR)
 CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
 CSK        CALL HEADER(
 CSK  &     'MP2_NATORB_GEN: Eigenvalues unsorted:',-1)
@@ -845,10 +846,8 @@ C
       DO IFSYM = 1, NFSYM  
         IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
 C
+!       WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
 C       zero 'wrong' offdiagonal terms for frozen orbs
-C
-CSK        WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
-C
         IF( .NOT. NOZG )THEN
           DO IZ = 1, NZ
             CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
