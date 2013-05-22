@@ -1667,6 +1667,100 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE fcidump_driver(CMO,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C     Generate FCI dump file
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION WORK(*), CMO(*)
+C
+      CALL QENTER('fcidump_driver')
+      CALL GETTIM(CPU0,WALL0)
+C
+      KFRSAV = KFREE
+C
+C     Calculate core Hamiltonian:
+C     ---------------------------
+C
+C     The core Hamiltonian is the active-active part of FC,
+C     a.k.a. FCAC.
+C
+      CALL MEMGET2('REAL','FCACM',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',  KFC,N2ORBXQ,WORK,KFREE,LFREE)
+C
+C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
+C
+      CALL rGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+C
+C     Get active-active part of FCmo:
+C
+      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
+C
+C     Transform quaternion FCACmo to molfdir type FCAC.
+C
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
+C
+      CALL MEMREL('fcidump_driver after rGETFC',WORK,1,KFCAC,
+     &            KFREE,LFREE)
+C
+C     Read two-electron integrals:
+C     ----------------------------
+C
+      CALL MEMGET2('REAL','MUUUU',KMUUUU,(2*NASHT)**4*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
+C
+      LH2AC = NASHT*NASHT*NNASHX*NZ*3
+      CALL MEMGET2('REAL','H2AC',KH2AC,LH2AC,WORK,KFREE,LFREE)
+C
+C     read integrals from 4IND*: out --> work(kh2ac)
+C     ==============================================
+
+      call memget2('INTE','IBEIG',kibeig,norbt,work,kfree,lfree)
+
+      if(spinfr.or.levyle)then
+        call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+      else if(linear)then
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+      else
+        call izero(work(kibeig),norbt)
+      end if
+
+      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &            .true.,.true.,work(kfree),lfree)
+C
+C     Transform integrals to Molfdir format:
+C
+C     remove potential "garbage" from imaginary part...
+      IF (NZ_in_CI .gt. 1)
+     &   CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
+
+      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+
+      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+C
+      CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL GETTIM(CPU2,WALL2)
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &   "CPU and WALL times for generating the FCIDUMP file:",
+     &    CPU2-CPU0,WALL2-WALL0
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('fcidump_driver')
+C
+      END
 C=======================================================================
 C     end of file krci_ctl.F
 C=======================================================================

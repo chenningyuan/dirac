@@ -240,13 +240,6 @@ C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER IBTAB(0:255)
 
-
-!     write FCI dump file for DMRG calculations
-      if(fcidump)then
-        NDET = 1
-        return
-      end if
-
 #ifdef GASCIP_DEBUG
       iprint = max(20,iprint_in)
 #else
@@ -962,9 +955,6 @@ C     remove potential "garbage" from imaginary part...
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
 
-      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
-      if(fcidump) goto 999
-
       CALL MEMREL('GASCIP_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
 C     Allocate memory for matrices:
@@ -980,7 +970,7 @@ C
      &                  WORK(KFCACM),WORK(KMUUUU))
       CALL GETTIM(CPU2,WALL2)
       WRITE (LUPRI,'(/A,2F20.2)')
-     &   "CPU and WALL times for making CI matrix:",CPU2-CPU1,WALL2-WALL1
+     &  "CPU and WALL times for making CI matrix:",CPU2-CPU1,WALL2-WALL1
 C
 C
 C     Diagonalize Hamiltonian:
@@ -1053,7 +1043,7 @@ C
        END IF
       END IF
 C
-999   CALL MEMREL('GASCIP_FULLCI',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('GASCIP_FULLCI',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
       WRITE (LUPRI,'(/A,2F20.2)')

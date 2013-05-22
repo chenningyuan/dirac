@@ -2390,8 +2390,15 @@ C        A non-trivial number of CI rotations.
 C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
-         if(fcidump .and. USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+         if(fcidump .and. USE_CIPROGRAM .NE. 'GASCIP' ) THEN
            call quit('fcidump option only for GASCIP available')
+         end if
+
+         if(fcidump)then
+           NZCONF = 1
+           LZCONF = 0
+           CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
+           GOTO 999
          end if
 C
          IF ( USE_CIPROGRAM .EQ. 'GASCIP' ) THEN
@@ -2467,7 +2474,7 @@ C
 C
       END IF
 C
-      MZ = MIN(NZ,2)
+ 999  MZ = MIN(NZ,2)
       NZCONFQ = MZ*NZCONF
 C
       CALL GETTIM(CPU2,WLL2)
@@ -3548,6 +3555,12 @@ C
 C     Diagonalize the full CI matrix now.
 C     This is of course only possible for sufficiently small CI's.
 C
+!     fcidump: generate FCIDUMP file and return
+      if(fcidump)then
+        call fcidump_driver(CMO,WORK,KFREE,LFREE,IPROPT)
+        goto 1000
+      end if
+
       IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 100000) THEN
          WRITE(LUPRI,'(//A,I9,A/A)')
      &      ' Are you mad? Full CI with',NZCONF,' determinants?',
