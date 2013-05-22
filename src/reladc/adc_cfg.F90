@@ -36,6 +36,7 @@ module adc_cfg
   logical, public                  :: reladc_dodips       = .false.
   logical, public                  :: reladc_doexci       = .false.
   integer, dimension(1:32), public :: reladc_sipreps      = 0  
+  integer, public                  :: reladc_no_sipreps   = 0
   integer, dimension(1:32), public :: reladc_dipreps      = 0  
   integer, dimension(1:32), public :: reladc_excreps      = 0  
   logical, public                  :: reladc_readqkl      = .false.
