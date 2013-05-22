@@ -717,6 +717,7 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "../moltra/dcbtr3.h"
 C
       DIMENSION OCC_NAT(*), CMO_NAT(NORBT,NESHT,NZ)
       DIMENSION DMO(NORBT,NORBT,*)
@@ -734,9 +735,10 @@ C
 C
       DO IFSYM = 1, NFSYM  
 C
-        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1 + NDMOQC(2,IFSYM,1)
 C
         IF(DOJACO) THEN
+           call quit('jaco routine not active for MP2-NOs')
            lfree = ((NESH(IFSYM)*(NESH(IFSYM)+1))/2)+2*NESH(IFSYM)+16
            allocate(scratch(lfree))
            CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
@@ -744,9 +746,15 @@ C
      &                 scratch,LFREE)
            deallocate(scratch)
         ELSE
-           CALL QDIAG90(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
-     &                OCC_NAT(IOFF2),1,
-     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),IERR)
+           do i = 1, NDMOQC(2,IFSYM,1)
+             OCC_NAT(IOFF2+i-1) = 2.0d0
+             CMO_NAT(IOFF1-NDMOQC(2,IFSYM,1)+i-1,IOFF2+i-1,1) = 1.0d0
+           end do
+           CALL QDIAG90(NZ,NESH(IFSYM)-NDMOQC(2,IFSYM,1),
+     &                  DMO(IOFF1,IOFF1,1),NORBT,NORBT,
+     &                  OCC_NAT(IOFF2+NDMOQC(2,IFSYM,1)),1,
+     &                  CMO_NAT(IOFF1,IOFF2+NDMOQC(2,IFSYM,1),1),
+     &                  NORBT,NESH(IFSYM),IERR)
 CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
 CSK        CALL HEADER(
 CSK  &     'MP2_NATORB_GEN: Eigenvalues unsorted:',-1)
@@ -755,9 +763,12 @@ CSK  &     (J,OCC_NAT(IOFF2-1+J),J=1,NESH(IFSYM))
 C          reorder eigenvalues and eigenvectors: descending order ==>
 C          IORDER = - 1
            IORDER = - 1
-           CALL QORDER3(NESH(IFSYM),OCC_NAT(IOFF2),
-     &                  CMO_NAT(IOFF1,IOFF2,1),
-     &                  NORBT,NESH(IFSYM),NESH(IFSYM),NZ,IORDER)
+           CALL QORDER3(NESH(IFSYM)-NDMOQC(2,IFSYM,1),
+     &                  OCC_NAT(IOFF2+NDMOQC(2,IFSYM,1)),
+     &                  CMO_NAT(IOFF1,
+     &                          IOFF2+NDMOQC(2,IFSYM,1),1),
+     &                  NORBT,NESH(IFSYM),
+     &                        NESH(IFSYM),NZ,IORDER)
         ENDIF
         IOFF2 = IOFF2 + NESH(IFSYM)
       END DO
@@ -846,7 +857,7 @@ C
       DO IFSYM = 1, NFSYM  
         IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
 C
-!       WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
+!       WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1), nozg
 C       zero 'wrong' offdiagonal terms for frozen orbs
         IF( .NOT. NOZG )THEN
           DO IZ = 1, NZ
@@ -855,6 +866,7 @@ C       zero 'wrong' offdiagonal terms for frozen orbs
         END IF
 C
         IOCC_A = 0
+!       print *, 'NOCC(IFSYM)',NOCC(IFSYM)
         DO I = 1, NOCC(IFSYM)
            DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
      &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
