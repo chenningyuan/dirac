@@ -381,13 +381,13 @@ C
 C
         IF( .NOT. SKIP_MP2DEN ) THEN
 C
-           CALL MEMGET('REAL',KCMO_NAT ,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCMO_NAT ,NASHT*NASHT*NZ,WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KCMO_TRA ,NCMOTQ,WORK,KFREE,LFREE)
 C          ... initialize
-           CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
+           CALL DZERO(WORK(KCMO_NAT),NASHT*NASHT*NZ)
            CALL DZERO(WORK(KCMO_TRA),NCMOTQ)
 C          ... MP2 NO coefficients
-           CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
+           CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NASHT*NASHT*NZ)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
@@ -837,6 +837,17 @@ C
          NIVIR(IFRP) = NORB(IFRP) - NOCC(IFRP) - NPSH(IFRP) -NAVIR(IFRP)
          NIVIRT = NIVIRT + NIVIR(IFRP)
       ENDDO
+
+!     set nash...
+      nasht = 0
+      do ifrp = 1, nfsym
+        NASH(IFRP)  = NAOCC(IFRP) + NAVIR(IFRP)
+        IASH(IFRP)  = NASHT
+        N2ASH(IFRP) = NASH(IFRP)  * NASH(IFRP)
+        I2ASHT(IFRP)= N2ASHT      * NZ
+        N2ASHT      = N2ASHT      + N2ASH(IFRP)
+        NASHT       = NASHT       + NASH(IFRP)
+      end do
 C####################################################
 C
 C     Print section
@@ -1025,7 +1036,7 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), CMO_NAT(NORBT,NESHT,NZ)
+      DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)
       DIMENSION WORK(*)
 #include "memint.h"
 C
@@ -1049,37 +1060,44 @@ CSK   IPRMP2NO = 5
          ENDDO
       END IF
 C
-      IOFF2 = 1
+      do i = 1, nfsym
 C
-      DO IFRP = 1, NFSYM
+         if(nash(i) == 0) cycle
+
+         if(IPRMP2NO >= 5 )then
+           WRITE(LUPRI,'(/1X,A,I3)')
+     &     '(mp2-no) Before transformation: '//
+     &     'MO coefficients, symmetry ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         end if
 C
-C        CMO(new) = CMO(old) * CMO_NAT
+C        Transform active orbitals:
 C
-         NBASI    = NFBAS(IFRP,0)
-         NORBI    = NORB(IFRP)
-         NESHI    = NESH(IFRP)
+C        CMO(NO) = CMO * UNO
 C
-         ICMO_ESH = ICMOQ(IFRP) + NBASI*NPSH(IFRP)
-         IOFF1    = IORB(IFRP)  + NPSH(IFRP) + 1
-C         
-csk      WRITE(LUPRI,*) ' IOFF2, IOFF1, ICMO_ESH', 
-csk  &                    IOFF2, IOFF1, ICMO_ESH
-csk      WRITE(LUPRI,*) ' IORB(IFRP), NPSH(IFRP), NORBI', 
-csk  &                    IORB(IFRP), NPSH(IFRP), NORBI
-C        WRITE(LUPRI,*) ' diagonalizing offset:1+ICMO_ESH',1+ICMO_ESH
-C
-!                    m      n     k
-         CALL QGEMM(NBASI,NESHI,NESHI,D1,
+         NBASI = NFBAS(I,0)
+         NASHI = NASH(I)
+         NORBI = NORB(I)
+         JUNO  = 1 + IASH(I)
+         ICMOA = 1 + ICMOQ(I) + (NPSH(I)+NIOCC(I)) * NBASI
+         CALL QGEMM(NBASI,NASHI,NASHI,1.0d0,
      &        'N','N',IPQTOQ(1,0),
-     &        WORK(KCMO+ICMO_ESH),NBASI,NORBI,NZ, ! m x k
+     &        WORK(KCMO+ICMOA-1),NBASI,NORBI,NZ,
      &        'N','N',IPQTOQ(1,0),
-     &        CMO_NAT(IOFF1,IOFF2,1),NORBT,NESHT,NZ, ! k x n
-     &        D0,IPQTOQ(1,0),
-     &        CMO(1+ICMO_ESH),NBASI,NORBI,NZ)        ! m x n
+     &        CMO_NAT(JUNO,JUNO,1),NASHT,NASHT,NZ,
+     &        0.0d0,IPQTOQ(1,0),
+     &        CMO(ICMOA),NBASI,NORBI,NZ)
 C
-         IOFF2 = IOFF2 + NESH(IFRP)
-C
-      END DO
+         if(IPRMP2NO >= 5 )then
+            WRITE(LUPRI,'(/1X,A,I3)')
+     &           '(mp2-no) After transformation: '//
+     &           'MO coefficients, symmetry ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         end if
+
+      end do
 C
       IF( IPRMP2NO .ge. 5 ) THEN 
          CALL HEADER('final MP2 natural orbitals:',-1)
