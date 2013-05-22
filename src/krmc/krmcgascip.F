@@ -237,7 +237,7 @@ C
       INTEGER*8 IASTR(*),  IBSTR(*)
       LOGICAL GASCIP_GASOK, GASCIP_SYMOK, UCIBOS
 C
-      INTEGER*8 MSKGAS(MXMCGAS), L
+      INTEGER*8 MSKGAS(MXGAS), L
       INTEGER IBTAB(0:255)
 
 #ifdef GASCIP_DEBUG
@@ -345,9 +345,9 @@ C
      &           (NGSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           NGSP(1,I),'/',NGSP(2,I),')'
+     &           NGASSP(1,I),'/',NGASSP(2,I),')'
          END DO
-         IF (NGSP(2,NGAS_DC) .NE. NAELEC) THEN
+         IF (NGASSP(2,NGAS_DC) .NE. NAELEC) THEN
             CALL QUIT('*** ERROR in GASCIP_GENDET *** ' //
      &      'Inconsistency between GAS specification and NAELEC')
          END IF
@@ -560,7 +560,7 @@ C
          WRITE (LUPRI,'(10X,B64/10X,B64)') IGA,IGB
 #endif
          NG = NA + NB
-         IF ( NG .LT. NGSP(1,IGAS) .OR. NG .GT. NGSP(2,IGAS)) THEN
+         IF ( NG .LT. NGASSP(1,IGAS) .OR. NG .GT. NGASSP(2,IGAS)) THEN
             GASCIP_GASOK = .FALSE.
             RETURN
          END IF
@@ -3180,7 +3180,7 @@ C
 C
 C     Calculate accumulated minimum and maximum number of
 C     A electrons in each gas space. Total IEL A electrons.
-C     NGSP(1:2,i) give accumulated minimum and maximum number of
+C     NGASSP(1:2,i) give accumulated minimum and maximum number of
 C     all electrons in gas space i.
 C
 #ifdef GASCIP_DEBUG
@@ -3192,20 +3192,20 @@ C
          NGTOT  = NGTOT + NGSHT(I)
          nGASTOT(I) = NGTOT
 C
-         MAX_A_EL = MIN(       IEL, NGSP(2,I), NGTOT)
-         MAX_B_EL = MIN(NAELEC-IEL, NGSP(2,I), NGTOT)
+         MAX_A_EL = MIN(       IEL, NGASSP(2,I), NGTOT)
+         MAX_B_EL = MIN(NAELEC-IEL, NGASSP(2,I), NGTOT)
          ! max A/B electrons is min of
          !   total number of A/B electrons and
          !   max total acccumulated number of electrons for this GAS space and
          !   total number of available A/B orbitals
-         MIN_A_EL = MAX(NGSP(1,I) - MAX_B_EL,0)
+         MIN_A_EL = MAX(NGASSP(1,I) - MAX_B_EL,0)
          ! min A electrons is max of
          !   min total accumulated number of electrons minus max B electrons and
          !   zero
 
 #ifdef GASCIP_DEBUG
          write (lupri,*) 'GAS space, constraints, NGTOT',
-     &      I,NGSP(1,I),NGSP(2,I),NGTOT
+     &      I,NGASSP(1,I),NGASSP(2,I),NGTOT
          write (lupri,*) 'min_a_el,max_a_el,max_b_el',
      &                    min_a_el,max_a_el,max_b_el
 #endif
@@ -3224,8 +3224,8 @@ C
          nGASSpc(2,I) = MAX_A_EL
 #ifdef GASCIP_DEBUG
          write(lupri,*)
-     &       'gascip_genstr: gas, ngsht, ngsp(1:2), nGASSpc(1:2) : ',
-     &      I,ngsht(I),ngsp(1,i),ngsp(2,i),nGASSpc(1,I),nGASSpc(2,I)
+     &       'gascip_genstr: gas, ngsht, nGASsp(1:2), nGASSpc(1:2) : ',
+     &      I,ngsht(I),ngassp(1,i),ngassp(2,i),nGASSpc(1,I),nGASSpc(2,I)
 #endif
       END DO
 C
@@ -4200,7 +4200,7 @@ C
                   END IF
                   READ(LUCMD,*) IGASCIP_NGAS
                   IF (IGASCIP_NGAS .LT. 1 .OR.
-     &                IGASCIP_NGAS .GT. MXMCGAS) THEN
+     &                IGASCIP_NGAS .GT. MXGAS) THEN
                      CALL QUIT('*** ERROR in GASCIP_INP *** ' //
      &                         'illegal value of IGASCIP_NGAS')
                   END IF
@@ -4217,10 +4217,10 @@ C&&&  GASSPC: GAS space constraints
                      CALL QUIT('*** ERROR in GASCIP_INP ***')
                   END IF
                   DO I = 1, IGASCIP_NGAS
-                     READ(LUCMD,*) (IGASCIP_NGSP(J,I),J=1,2)
+                     READ(LUCMD,*) (IGASCIP_NGASSP(J,I),J=1,2)
                   END DO
                   IF (IGASCIP_NAELEC.LT.0) IGASCIP_NAELEC =
-     &               IGASCIP_NGSP(2,IGASCIP_NGAS)
+     &               IGASCIP_NGASSP(2,IGASCIP_NGAS)
                GO TO 100
 !
     4          CONTINUE
@@ -4246,8 +4246,8 @@ C&&&  CASSCF -- this defines a CAS space
                READ(LUCMD,*) IGASCIP_NAELEC
                READ(LUCMD,*) (IGASCIP_NASH(I),I=1,NFSYM)
                IGASCIP_NGAS = 1
-               IGASCIP_NGSP(1,IGASCIP_NGAS) = IGASCIP_NAELEC
-               IGASCIP_NGSP(2,IGASCIP_NGAS) = IGASCIP_NAELEC
+               IGASCIP_NGASSP(1,IGASCIP_NGAS) = IGASCIP_NAELEC
+               IGASCIP_NGASSP(2,IGASCIP_NGAS) = IGASCIP_NAELEC
     8          CONTINUE
 C&&&  SYMMETRY: symmetry of the wave function
                IF (IGASCIP_REP .GT. 0) THEN
@@ -4356,9 +4356,9 @@ C
      &           (IGASCIP_NGSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
-     &           IGASCIP_NGSP(1,I),'/',IGASCIP_NGSP(2,I),')'
+     &           IGASCIP_NGASSP(1,I),'/',IGASCIP_NGASSP(2,I),')'
          END DO
-         IF (IGASCIP_NGSP(2,IGASCIP_NGAS) .NE. IGASCIP_NAELEC)
+         IF (IGASCIP_NGASSP(2,IGASCIP_NGAS) .NE. IGASCIP_NAELEC)
      &        CALL QUIT('*** ERROR in GASCIP_INP *** ' //
      &        'Inconsistency between .GASSP and .CASSCF')
       END IF
@@ -4471,7 +4471,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 C
 #include "dgroup.h"
 #include "dcbgascip.h"
@@ -4499,7 +4499,7 @@ C
       NKRMC_MINMK2 = IGASCIP_MINMK2
 !radovan: IGASCIP_MAXMK2 is not initialized
       NKRMC_MAXMK2 = IGASCIP_MAXMK2
-ccc   CALL IZERO(NKRMC_GSHT,MXMCGAS)
+ccc   CALL IZERO(NKRMC_GSHT,MXGAS)
       DO I = 1,NFSYM
          NKRMCISH(I) = IGASCIP_NISH(I)
          NKRMCASH(I) = IGASCIP_NASH(I)
@@ -4512,8 +4512,8 @@ ccc      NOCC(I) = IGASCIP_NISH(I) + IGASCIP_NASH(I)
       NKRMCAELEC = IGASCIP_NAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NKRMCGAS
-         NKRMCGSP(1,J) = IGASCIP_NGSP(1,J)
-         NKRMCGSP(2,J) = IGASCIP_NGSP(2,J)
+         NKRMCGSP(1,J) = IGASCIP_NGASSP(1,J)
+         NKRMCGSP(2,J) = IGASCIP_NGASSP(2,J)
       END DO
 C
 !radovan: IPRGASCIP is not initialized

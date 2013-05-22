@@ -536,7 +536,7 @@ C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
          THR_CVEC = 1.0D-3
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NACSH(I,J)
@@ -549,8 +549,8 @@ C
          XELEC = D0
          DO J = 1, NGAS_DC
             XELEC = XELEC + D2*DF(J)*NGSHT(J)
-            NGSP(1,J) = NINT(XELEC)
-            NGSP(2,J) = NINT(XELEC)
+            NGASSP(1,J) = NINT(XELEC)
+            NGASSP(2,J) = NINT(XELEC)
          END DO
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
 C        ... do a full CI in the active space
@@ -560,7 +560,7 @@ C        ... do a full CI in the active space
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
 
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NASH(I)
@@ -570,8 +570,8 @@ C        ... set CI program in charge
 C
 C        initialize min and max accumlated no. of electrons in each gas space
 C
-         NGSP(1,1) = NAELEC
-         NGSP(2,1) = NAELEC
+         NGASSP(1,1) = NAELEC
+         NGASSP(2,1) = NAELEC
       ELSE IF (CISELECT .EQ. 'ESRCI') THEN
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 
@@ -601,12 +601,12 @@ C
 C
 C        initialize min and max accumulated no. of electrons in each gas space
 C
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          NGAS_DC = 0
          IF (NCESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
-            NGSP(2,NGAS_DC) = 2*NCESRT
+            NGASSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
+            NGASSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NCESR(I)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
@@ -623,10 +623,10 @@ Cxx      XELEC = D2*NCESRT
          DO J = 1, NOPEN
             NGAS_DC = NGAS_DC + 1
 Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
-Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
-            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
-            NGSP(2,NGAS_DC) = NAELEC
+Cxx         NGASSP(1,NGAS_DC) = NINT(XELEC)
+Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
+            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
+            NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSH(I,NGAS_DC) = NASH(I)
@@ -635,14 +635,14 @@ Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
          END DO
          IF (NVESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = NAELEC
-            NGSP(2,NGAS_DC) = NAELEC
+            NGASSP(1,NGAS_DC) = NAELEC
+            NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NVESR(I)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          ELSE
-            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
+            NGASSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals
@@ -813,7 +813,7 @@ C
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
       MAXMK2 = NKRMC_MAXMK2
-      CALL IZERO(NGSHT,MXMCGAS)
+      CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
@@ -830,8 +830,8 @@ c         NPSH(I) = NKRMCPSH(I)
       NAELEC = NKRMCAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRMCGSP(1,J)
-         NGSP(2,J) = NKRMCGSP(2,J)
+         NGASSP(1,J) = NKRMCGSP(1,J)
+         NGASSP(2,J) = NKRMCGSP(2,J)
       END DO
 C
 C     Calculated derived variables in /DCBORB/
@@ -942,8 +942,7 @@ C
       MINMK2 = NKRCI_MINMK2
       MAXMK2 = NKRCI_MAXMK2
 
-C     ... do not change MXMCGAS to MXCIGAS; not necessary...
-      CALL IZERO(NGSHT,MXMCGAS)
+      CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRCIISH(I)
          NASH(I) = NKRCIASH(I)
@@ -958,8 +957,8 @@ C     ... do not change MXMCGAS to MXCIGAS; not necessary...
       NAELEC = NKRCIAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRCIGSP(1,J)
-         NGSP(2,J) = NKRCIGSP(2,J)
+         NGASSP(1,J) = NKRCIGSP(1,J)
+         NGASSP(2,J) = NKRCIGSP(2,J)
       END DO
 C
 C
@@ -1424,8 +1423,8 @@ C#include "dcbkrci.h"
 #include "dcbgascip.h"
 #include "dcbibt.h"
 C Scratch
-      INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXMCGAS)
-      INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXMCGAS)
+      INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXGAS)
+      INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXGAS)
 C
       CALL QENTER('TKRCCORB')
 C
@@ -1441,8 +1440,7 @@ C since there are some variables with the same name we will call a routine for t
       MK2DEL = NKRCC_MK2DEL
       MINMK2 = NKRCC_MINMK2
       MAXMK2 = NKRCC_MAXMK2
-C     ... do not change MXMCGAS to MXCIGAS; not necessary...
-      CALL IZERO(NGSHT,MXMCGAS)
+      CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
          NASH(I) = NKRCCASH(I)
@@ -1457,8 +1455,8 @@ C     ... do not change MXMCGAS to MXCIGAS; not necessary...
       NAELEC = NKRCCAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRCCGSP(1,J)
-         NGSP(2,J) = NKRCCGSP(2,J)
+         NGASSP(1,J) = NKRCCGSP(1,J)
+         NGASSP(2,J) = NKRCCGSP(2,J)
       END DO
 C
 C

@@ -2121,13 +2121,13 @@ C
       character (len= 4)    :: mynum_str
  
 !     check consistency of # of GA spaces in KR-CI/KR-MC
-      if(MXPNGAS .ne. MXMCGAS)then
+      if(MXPNGAS .ne. MXGAS)then
         write(lupri,'(/a,i3,a,i3)') 
      &  ' *** programming error: maximum # of '//
      &  'GA spaces in KR-CI (set in luciarel/mxpdim.inc)'// 
-     &  ' and KR-MC (set in mxmcgas.h)'//
+     &  ' and KR-MC (set in mxgas.h)'//
      &  ' must match. you have (KR-CI):',
-     &  MXPNGAS,' vs. (KR-MC):', MXMCGAS
+     &  MXPNGAS,' vs. (KR-MC):', MXGAS
       end if
 
 !     introduce CI program
@@ -2433,12 +2433,12 @@ C     GAS shells and constraints.
      &                 global_communicator)
 #endif
       NGAS = NGAS_DC
-      IF( MXPNGAS .ne. MXMCGAS) THEN
+      IF( MXPNGAS .ne. MXGAS) THEN
         WRITE(LUPRI,*) '*** ERROR on common blocks *** ' //
-     &  'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC):',
-     &                 MXPNGAS,MXMCGAS
+     &  'MXPNGAS (LUCIAREL) .ne. MXGAS (DIRAC):',
+     &                 MXPNGAS,MXGAS
         CALL QUIT('*** ERROR on common blocks *** ' //
-     &  'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC)')
+     &  'MXPNGAS (LUCIAREL) .ne. MXGAS (DIRAC)')
       END IF
 #if defined (VAR_MPI)
 C     ... just in case these variable have not 
@@ -2467,14 +2467,14 @@ C     been initialized on the outside.
             
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(NGSP,2*MXPNGAS,MASTER,
+     &   call interface_mpi_BCAST(NGASSP,2*MXPNGAS,MASTER,
      &                  global_communicator)
 #endif
       DO I = 1, NGAS
-         CALL ADD_TO_GSS(IGSOCCX,I,NGSP(1,I),2)
-         CALL ADD_TO_GSS(IGSOCCX,I+MXPNGAS,NGSP(2,I),2)
-CSK      IGSOCCX(I          ) = NGSP(1,I)
-CSK      IGSOCCX(I + MXPNGAS) = NGSP(2,I)
+         CALL ADD_TO_GSS(IGSOCCX,I,NGASSP(1,I),2)
+         CALL ADD_TO_GSS(IGSOCCX,I+MXPNGAS,NGASSP(2,I),2)
+CSK      IGSOCCX(I          ) = NGASSP(1,I)
+CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
 C     Energy convergence threshold
       THRES_E =          threci

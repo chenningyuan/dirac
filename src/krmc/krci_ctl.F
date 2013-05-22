@@ -183,7 +183,7 @@ C
          NKRCIPSH(I) = 0
          NKRCIFRO(I) = 0
          IKRCI_SVRONO(i)  = 0
-         DO J = 1, MXMCGAS
+         DO J = 1, MXGAS
             NKRCIGSH(I,J) = 0
             NKRCIGSP(I,J) = 0
          END DO
@@ -559,7 +559,7 @@ C&&& GASSH: GAS setup
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRCIGAS
-                  IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+                  IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
                      CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                         'illegal value of NKRCIGAS')
                   END IF
@@ -694,7 +694,7 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRCIGAS
-               IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+               IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                     'illegal value of NKRCIGAS')
                END IF

@@ -19,7 +19,7 @@
      &                 save_reordered_nos_krci
 
       INTEGER NKRCIISH(2), NKRCIASH(2), NKRCISSH(2),                    &
-     &        NKRCIGSH(2, MXMCGAS), NKRCIGSP(2, MXMCGAS), NKRCIESH(2),  &
+     &        NKRCIGSH(2, MXGAS), NKRCIGSP(2, MXGAS), NKRCIESH(2),      &
      &        NKRCIPSH(2), NKRCIFRO(2), NKRCIAELEC, NKRCIGAS,           &
      &        NKRCI_MK2REF, NKRCI_MK2DEL, NKRCI_MINMK2, NKRCI_MAXMK2,   &
      &        IKRCI_SVRONO(2)

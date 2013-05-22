@@ -602,7 +602,7 @@ end module
       DIMENSION NOROT(*)
 !
       DIMENSION IGAS(MAXASH)
-      LOGICAL GASCAS(MXMCGAS), dryrun
+      LOGICAL GASCAS(MXGAS), dryrun
 !
 !
 !     iprint = 20
@@ -646,9 +646,9 @@ end module
 !
 !        Minimum number of electrons in this GAS space:
 !
-         MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I))
+         MINCAS = 2*NGST - (NGASSP(2,I) - NGASSP(1,I))
          IF (I.EQ.NGAS_DC.AND.NGAS_DC.GT.1) THEN
-           MINCAS = NAELEC - NGSP(2,I-1)
+           MINCAS = NAELEC - NGASSP(2,I-1)
          ELSE IF (I.EQ.NGAS_DC.AND.NGAS_DC.EQ.1) then
            MINCAS = NAELEC
          END IF
@@ -663,8 +663,8 @@ end module
 !        if the maximum number of holes in this GAS space is larger
 !        than MAXCAS:
 !
-         IF ( (NGSP(1,I) .LE. MINCAS .AND.                              &
-         (NGSP(2,I) - NGSP(1,I)) .GE. MAXCAS) .OR.                      &
+         IF ( (NGASSP(1,I) .LE. MINCAS .AND.                            &
+         (NGASSP(2,I) - NGASSP(1,I)) .GE. MAXCAS) .OR.                  &
          I .EQ. NGAS_DC ) THEN
             GASCAS(I) = .TRUE.
          ELSE

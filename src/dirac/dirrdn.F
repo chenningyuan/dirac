@@ -6884,7 +6884,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 #include "dcbkrmc.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"

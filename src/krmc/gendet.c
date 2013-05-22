@@ -97,10 +97,10 @@ cgendet ( integer *pnElec, integer *pnAsht,
 
   /*
    *
-   *  INTEGER*4 IEL, NASHT, NSTR, NGAS, NGSP(1:2), MAXSTR
-   *  INTEGER*8 ISTR(1:MAXSTR), MSKGAS(1:NGAS)
+   *  INTEGER   IEL, NASHT, NSTR, NGAS_DC, nGASTOT, nGASSpc(1:2), MAXSTR
+   *  INTEGER*8 JSTR(1:MAXSTR), MSKGAS(1:NGAS)
    *  CALL CGENDET(IEL,NASHT,NSTR,JSTR,
-   * &             NGAS,NGASTOT,MSKGAS,NGSPC,MAXSTR)
+   * &             NGAS_DC,nGASTOT,MSKGAS,nGASSpc,MAXSTR)
    *
    */
 
