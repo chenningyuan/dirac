@@ -240,6 +240,13 @@ C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER IBTAB(0:255)
 
+
+!     write FCI dump file for DMRG calculations
+      if(fcidump)then
+        NDET = 1
+        return
+      end if
+
 #ifdef GASCIP_DEBUG
       iprint = max(20,iprint_in)
 #else
@@ -879,6 +886,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -953,6 +961,10 @@ C     remove potential "garbage" from imaginary part...
      &   CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+
+      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+      if(fcidump) goto 999
+
       CALL MEMREL('GASCIP_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
 C     Allocate memory for matrices:
@@ -1041,7 +1053,7 @@ C
        END IF
       END IF
 C
-      CALL MEMREL('GASCIP_FULLCI',WORK,1,KFRSAV,KFREE,LFREE)
+999   CALL MEMREL('GASCIP_FULLCI',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
       WRITE (LUPRI,'(/A,2F20.2)')
@@ -2202,8 +2214,6 @@ C
 C     Transform integrals to Molfdir format:
 C
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
-
-      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
 
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C

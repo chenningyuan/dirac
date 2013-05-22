@@ -708,6 +708,7 @@ C
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
       no1pdens_save  = .true.
       save_reordered_nos = .false.
+      fcidump            = .false.
 C
 C     Set common block DCCOPT
 C
@@ -1049,6 +1050,7 @@ C
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = CHCKPT_KRCI
       CPBLCK_FILE = CUSE_PBLFL_KRCI
+      fcidump     = fcidump_krci
 C
       CALL QEXIT('TKRCIORB')
       END
@@ -1528,6 +1530,7 @@ C at the moment no fock type orbitlas
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
       no1pdens_save  = .true.
+      fcidump     = .false.
 C
       CALL QEXIT('TKRCCORB')
       END

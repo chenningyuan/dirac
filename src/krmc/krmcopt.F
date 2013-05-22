@@ -2390,6 +2390,9 @@ C        A non-trivial number of CI rotations.
 C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
+         if(fcidump .and. USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+           call quit('fcidump option only for GASCIP available')
+         end if
 C
          IF ( USE_CIPROGRAM .EQ. 'GASCIP' ) THEN
 C

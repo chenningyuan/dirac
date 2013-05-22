@@ -87,7 +87,7 @@ C
       DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
-     &            '.PRINT ','.MAKE C','.NATOCC','xxxxxxx','.INTFLG',
+     &            '.PRINT ','.FCIDUM','.NATOCC','xxxxxxx','.INTFLG',
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
@@ -140,6 +140,7 @@ C
       STATE_SELECT_KRCI = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       save_reordered_nos_krci = .false.
+      fcidump_krci      = .false.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -519,10 +520,8 @@ C&&& PRINT : General print level in KRCI-module
                   READ(LUCMD,*) IPRKRCI
                GO TO 100
    17          CONTINUE
-C&&& .MAKE COFFEE:
-               WRITE(LUPRI,'(A)')
-     &             ' *** Nice try: Ask your local coffee machine ***',
-     &             ' *** how to prepare coffee...'
+C&&& .FCIDUMP
+                  fcidump_krci = .true.
                GO TO 100
    18          CONTINUE
 C&&& .NATOCC: synonym for .NOOCCN
