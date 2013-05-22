@@ -133,6 +133,7 @@ if(ENABLE_PCMMOD)
 
     set(LIBS
         stdc++
+	interface
         solver
         green
         cavity
