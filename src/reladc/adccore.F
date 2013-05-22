@@ -1388,11 +1388,6 @@ c         WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP    ! diag elem.
 c         WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP    ! Packed ADC mat
 c       ENDIF
 
-        WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
-        WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
-
-        OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-        OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
 C
 C  set start number of written buffers and initial buffer pointer
 C
@@ -1481,13 +1476,15 @@ C
 !
 ! This is the big Fano-IF-clause introduced by Elke
 !
-        IF (reladc_dofano) THEN
+        IF (reladc_dofano.AND.krep.EQ.reladc_fano_inrep) THEN
+          WRITE(iw,*)
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '* You selected (also) a Fano run     *'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '**************************************'
 
-! create K_akl array and lookup tables.
-!          CALL MEMOPT('REAL',BUFLANC,reladc_lancmem,CC,KFREE,LFREE,
-!     &                .true.)
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
-          CALL MEMCHK('Testing Fano diagonalization',CC,KFRSAV)
           IF (ADCLEVEL.EQ. 1) THEN
             CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
      &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
@@ -1498,7 +1495,26 @@ C
      &                   )
           END IF
           CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
-        ELSE
+        END IF
+!
+! Do normal ADC calculation
+!
+        IF (reladc_fanoonly.eqv..false.) THEN
+          WRITE(iw,*)
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '* Start of normal ADC run            *'
+          WRITE(iw,*) '* in symmetry: ', krep, '*'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*)
+          WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
+          WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
+  
+          OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
+          OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
           IF(CARITH) THEN
             CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
      &               INTBUF,LADC,CC(IOI),CC(IOJ),
@@ -1512,7 +1528,7 @@ C
 
           WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
           WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
-        END IF
+!        END IF
 C
 C  ...   ************  start 2h-1p/2h-1p block  ********************
 C
@@ -1667,22 +1683,8 @@ c
 
         END IF 
 !
-!  Call Fano-ADC
+! Not only Fano requested
 !
-        IF ((reladc_dofano).AND.(KREP==reladc_fano_inrep)) THEN
-
-          WRITE(IW,*)
-          WRITE(IW,*) '       -------------------------------'
-          WRITE(IW,*) '       Entering Fano calculation'
-          WRITE(IW,*) '       In symmetry',reladc_fano_inrep
-          WRITE(IW,*) '       -------------------------------'
-          WRITE(IW,*)
-          WRITE(IW,*)
-
-!          CALL
-        ELSE
-          !Delete ADC matrix
-          CLOSE(ITAPADC,STATUS='DELETE')
         END IF
 
 
