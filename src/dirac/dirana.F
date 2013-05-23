@@ -340,7 +340,7 @@ C          ... read from file
            CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/MP2NOOCC on file KRMCOLD'
+     &           ' label NEWNATOB/NEWNATOC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
@@ -405,10 +405,7 @@ C        long run, occupancies should also be stored on DFCOEF. FIXME!
 C
 C     Get labels for population analysis
 C
-      IPRPOP_SAVE = IPRPOP
-      IPRPOP = 2
       CALL GETPLB(IPRPOP)
-      IPRPOP = IPRPOP_SAVE
 C
 C     Memory allocation
       NNLAB = (NPOPLAB*(NPOPLAB+1))/2
