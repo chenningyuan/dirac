@@ -340,7 +340,7 @@ C          ... read from file
            CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/MP2NOOCC on file KRMCOLD'
+     &           ' label NEWNATOB/NEWNATOC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
