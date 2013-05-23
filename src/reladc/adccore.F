@@ -1541,48 +1541,48 @@ c  ATT: the computed ones have complex conjugate BKC due to
 c  the Schirmer,Trofimov formula. Therefore all calculated
 c  entries will be CC is the routine, if complex case!
 c
-        IF(ADCLEVEL.EQ.1) THEN
-          IF(CARITH) THEN
-            CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),CDUMMY,
-     &                    CDUMMY,CC(IOI),CC(IOJ),CC(ICRA),IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                    ITAPADC+4,ITAPADC+5)
+          IF(ADCLEVEL.EQ.1) THEN
+            IF(CARITH) THEN
+              CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
+     &                      CDUMMY,CDUMMY,CC(IOI),CC(IOJ),CC(ICRA),
+     &                      IDUMMY,LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
+     &                      ADCLEVEL,ITAPADC+4,ITAPADC+5)
+            ELSE
+              CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),RDUMMY,
+     &                      RDUMMY,CC(IOI),CC(IOJ),CC(ICRA),IDUMMY,LADC,
+     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                      ITAPADC+4,ITAPADC+5)
+            ENDIF
+          ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
+            IF(CARITH) THEN
+              CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
+     &                    CC(BUFO1),CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),
+     &                    CC(OOLT),LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
+     &                    ADCLEVEL,ITAPADC+4,ITAPADC+5)
+            ELSE
+              CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
+     &                    CC(BUFO1),CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),
+     &                    CC(OOLT),LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
+     &                    ADCLEVEL,ITAPADC+4,ITAPADC+5)
+            ENDIF
           ELSE
-            CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),RDUMMY,
-     &                    RDUMMY,CC(IOI),CC(IOJ),CC(ICRA),IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                    ITAPADC+4,ITAPADC+5)
+            CALL QUIT('Illegal ADCLEVEL value in the C_aij,akl block')
           ENDIF
-        ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
-          IF(CARITH) THEN
-         CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),CC(BUFO1),
-     &                  CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),CC(OOLT),
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ELSE
-           CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),CC(BUFO1),
-     &                  CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),CC(OOLT),
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ENDIF
-        ELSE
-          CALL QUIT('Illegal ADCLEVEL value in the C_aij,akl block')
-        ENDIF
 C
 C  ... close files in this symmetry and enter diagonalizer
 C
-        CLOSE(ITAPADC+4)
-        CLOSE(ITAPADC+5)
-        CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
+          CLOSE(ITAPADC+4)
+          CLOSE(ITAPADC+5)
+          CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
 
 C
 C  call configuration creator for 1h/2h1p configurations
 C  File handle ITAPADC+2 is available. closed after sub call!
 C
-        WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
-        WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
-        CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
-        WRITE(IW,*) 'Record length determined by WCONDAT_S:     ',IRECL
+          WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
+          WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
+          CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
+          WRITE(IW,*) 'Record length determined by WCONDAT_S:    ',IRECL
 C
 C -------------------------------------------------------------
 C ---- from here ADC matrix construction has terminated   -----
@@ -1595,7 +1595,7 @@ C -------------------------------------------------------------
 !        this if construct will become obsolete as soon as the
 !        call to the diagonalizer is moved to a separate subroutine
 !
-        IF (reladc_dodiag) THEN
+          IF (reladc_dodiag) THEN
 
 c
 c  Do a full diagonalization of the ADC matrix (for debugging
@@ -1607,13 +1607,13 @@ c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
 c  retrievable in the separate module adcanal.F90 with dynamic
 c  allocation of workspace.
 c
-          IF(DOFULL) THEN
-            IF(CARITH) THEN
-              CALL FULLDIAC(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
-            ELSE
-              CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+            IF(DOFULL) THEN
+              IF(CARITH) THEN
+                CALL FULLDIAC(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+              ELSE
+                CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+              ENDIF
             ENDIF
-          ENDIF
 C
 C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
@@ -1639,41 +1639,41 @@ c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in t
 c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
 
 
-          reladc_md_iobase   = ITAPADC
-          reladc_md_ionizl   = IONIZLEVEL
-          reladc_md_ioldnew  = 1
-          reladc_md_intbuf   = INTBUF
-          reladc_md_desrep   = KREP
-          reladc_md_rcw      = RCW
-          reladc_md_lnzitr   = SIPITER
-          reladc_md_matdim   = LADC
-          reladc_md_irecl    = IRECL
-          reladc_md_nmain    = NO(KREP)
-          reladc_md_nbufs    = NBUFS
-          reladc_md_neigenv  = SIPEIGV(IRPLOOP)
-          reladc_md_fileadc  = FILEN5
-          reladc_md_filediag = FILEN4 
-          reladc_md_filecnf  = FILEN2
-          reladc_md_nmspec   = NMSPECF
+            reladc_md_iobase   = ITAPADC
+            reladc_md_ionizl   = IONIZLEVEL
+            reladc_md_ioldnew  = 1
+            reladc_md_intbuf   = INTBUF
+            reladc_md_desrep   = KREP
+            reladc_md_rcw      = RCW
+            reladc_md_lnzitr   = SIPITER
+            reladc_md_matdim   = LADC
+            reladc_md_irecl    = IRECL
+            reladc_md_nmain    = NO(KREP)
+            reladc_md_nbufs    = NBUFS
+            reladc_md_neigenv  = SIPEIGV(IRPLOOP)
+            reladc_md_fileadc  = FILEN5
+            reladc_md_filediag = FILEN4 
+            reladc_md_filecnf  = FILEN2
+            reladc_md_nmspec   = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
-          CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+            CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
 c
-          WRITE(IW,*)
-          WRITE(IW,*) '       ------------------------------'
-          WRITE(IW,*) '       Finished SIP calculation'
-          WRITE(IW,*) '       In symmetry',KREP
-          WRITE(IW,*) '       ------------------------------'
-          WRITE(IW,*)
-          WRITE(IW,*)
+            WRITE(IW,*)
+            WRITE(IW,*) '       ------------------------------'
+            WRITE(IW,*) '       Finished SIP calculation'
+            WRITE(IW,*) '       In symmetry',KREP
+            WRITE(IW,*) '       ------------------------------'
+            WRITE(IW,*)
+            WRITE(IW,*)
 
-        ELSE
-          WRITE(IW,*)
-          WRITE(IW,*) 'ADC matrix will not be diagonalized.'
-          WRITE(IW,*)
+          ELSE
+            WRITE(IW,*)
+            WRITE(IW,*) 'ADC matrix will not be diagonalized.'
+            WRITE(IW,*)
 
-        END IF 
+          END IF 
 !
 ! Not only Fano requested
 !

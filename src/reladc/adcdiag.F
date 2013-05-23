@@ -29,8 +29,7 @@
 !      ****  Diagonalization Routines for the RELADC package  ****
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP,iw)
-      !SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+      SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
@@ -77,12 +76,6 @@
       LUN_OFF=IOUNIT+1
       LUN_OUT=IOUNIT+2
 
-      !WRITE(iw,*) 'filehandle = ', iounit
-      !WRITE(iw,*) 'fn diag    = ', FILEN4
-      !WRITE(iw,*) 'fn matrix  = ', FILEN5
-      !WRITE(iw,*) 'ladc       = ', ladc
-
-
 
 
 
@@ -106,8 +99,6 @@
 !|
 !|
 !|
-      WRITE(iw,*) 'FILEN4 = ', FILEN4
-      WRITE(iw,*) 'FILEN5 = ', FILEN5
       OPEN(LUN_DIA,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
 
