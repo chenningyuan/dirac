@@ -4866,8 +4866,6 @@ C
   100    CONTINUE
       END IF
 
-
-
 !     print also coordinates in xyz format for easy copy-paste-ability
       if (ipread > 0) then
          call header('Cartesian coordinates xyz format (angstrom)', 1)
@@ -4895,11 +4893,6 @@ C
             end if
          end do
       end if
-
-
-
-
-
 
 C
 C     ********************************
@@ -4939,12 +4932,12 @@ C
   600                CONTINUE
                      IF (IPREAD .GT. 0) THEN
                      IF (NB .EQ. 1) THEN
-                        WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,I2)') ISCOOR,
+                        WRITE (LUPRI,'(I4,3X,A,2X,A,I5)') ISCOOR,
      &                     NAMEX(3*IATOM)(1:4), CHRXYZ(-ICOOR), NBASE(1)
                      ELSE
-                        WRITE (LUPRI,'(1X,I3,3X,A,2X,A,3X,A,I2,'
-     &                   //CHRNOS(NB-1)//'(2X,A,1X,I2),A,I1)')
-     &                   ISCOOR,NAMEX(3*IATOM)(1:4),CHRXYZ(-ICOOR),' [',
+                        WRITE (LUPRI,'(I4,3X,A,2X,A,3X,A,I3,'
+     &                   //CHRNOS(NB-1)//'(2X,A,I3),A,I1)')
+     &                   ISCOOR,NAMEX(3*IATOM)(1:4),CHRXYZ(-ICOOR),'[',
      &                   NBASE(1),(CHRSGN(NSIGN(I)),NBASE(I),I=2,NB),
      &                   ' ]/',NB
                      END IF

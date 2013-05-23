@@ -149,7 +149,7 @@ C
 C     Output section
 C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+     &            LFREE,IPRSCF)
 
 CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
@@ -262,7 +262,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
      &        WORK(KFREE),LFREE)
 
          CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+     &            LFREE,IPRSCF)
         ELSE
          DHFCONV(1)=.TRUE.
         ENDIF
@@ -308,7 +308,7 @@ CMI ... consider TRMO4C2C ...???
 C         ... need to reset them...
           DHFCONV(1)=.FALSE.
           DHFCONV(2)=.FALSE.
-          DHFEXIT=.FALSE.
+          DHFEXIT   =.FALSE.
 
 CMI    ...remove some files from the previous 4c-SCF cycle ...
           INQUIRE(FILE='DFDIIS',EXIST=EX)
@@ -329,7 +329,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
      &          WORK(KFREE),LFREE)
 
           CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &              LFREE,IPRINT)
+     &              LFREE,IPRSCF)
 
           CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
@@ -428,7 +428,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
-      CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
+      CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
@@ -1041,7 +1041,7 @@ C
 C     Level shift
 C     ===========
 C
-      IF(DOLEV) CALL LEVSHI(FMO,FAO)
+      IF (DOLEV) CALL LEVSHI(FMO,FAO)
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -2377,7 +2377,7 @@ C
            IF (NISHT .GT. 0) THEN
               E1PART = E1PART + D2*DSUM(NISH(IFRP),
      &                         EIG(IORB(IFRP)+NPSH(IFRP)+1),1)
-              IF (IPRSCF.GE.15) THEN
+              IF (IPRSCF.GE.5) THEN
                write(lupri,*) 'ONEERG: eigenvalues:',
      &          (EIG(IORB(IFRP)+NPSH(IFRP)+i),i=1,NISH(IFRP))
                write(lupri,*) '2*sum: ',D2*DSUM(NISH(IFRP),

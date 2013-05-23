@@ -267,22 +267,22 @@ C
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
 C     Switch on evaluation of property output if necessary
-      IF (SPFR.AND.DOMP2G) 
-     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
+         IF (SPFR) 
+     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
-          IPRPWF = 0
-          DO I = 1, NPRPWF
-             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
           END DO
-          IF (IPRPWF.EQ.0) THEN
-             IF (NPRPWF .GE. MXPRPWF) THEN
-                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
              ELSE
-                NPRPWF = NPRPWF + 1
-                IPRPWF = NPRPWF
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
              END IF
-             PRPWF(IPRPWF) = 'MP2 '
+             PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
       MXDIMGR = MAXDIM
@@ -293,7 +293,7 @@ C     Input for the linear response calculation.
 C
       NAOPER = 1
       NBOPER = 1
-      NFREQ = 1
+      NFREQ  = 1
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
@@ -311,8 +311,8 @@ C
     7 CALL QUIT('Error exit while reading namelist CCSOPR')
     8 CONTINUE
       MXDIMRP = MAXDIM
-      MXITRP = MAXIT
-      NTOLRP = NTOL
+      MXITRP  = MAXIT
+      NTOLRP  = NTOL
 C
 C     Input for the excitation energy calculation.
 C
@@ -538,6 +538,7 @@ c
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
       use relcc_cfg
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -706,6 +707,19 @@ C
          NELECT = NELECT + NELEC(I)
       ENDDO
 C
+C     Write output in xml format
+C
+      if (doxml) then
+         call xml_begin('task','type="RELCCSD"')
+         call xml_begin('input')
+         call xml_quantity('Number of spinors',NSP)
+         call xml_quantity('Number of correlated electrons',NELECT)
+         call xml_quantity('Number of virtual spinors',NSP-NELECT)
+         call xml_end('input')
+         call xml_begin('output')
+      endif
+
+C
       if ( maxcor .gt. 0) then
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
@@ -857,6 +871,11 @@ C     Print I/O statistics
 C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
+C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
 C
 C     Let us synchronize all processes! 
 C
@@ -2064,6 +2083,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2217,6 +2237,11 @@ C
 C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+
+C     Report Hartree-Fock SCF energy that is used (added to correlation energy)
+      if (doxml) then
+          call xml_quantity('SCF energy',ESCF,'Hartree')
+      end if
 C
 C  Solve relativistic MP2 equations
 C
@@ -2234,6 +2259,9 @@ C
          IMSTAT(4) = 3
          CALL CCDUMP
    10    CONTINUE
+         if (doxml) then
+            call xml_quantity('MP2 energy',ESCF+EMP2,'Hartree')
+         end if
       ENDIF
 C
 C  Solve relativistic CCSD equations
@@ -2286,6 +2314,10 @@ C
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+
+         if (doxml) then
+            call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
+         end if
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -2364,6 +2396,12 @@ C
      &                a_BUF1,a_BUF2,a_BUF3,a_TAU3,
      &                a_VVVO,a_VVOO,a_VOOO)
          CALL XTIME(5,2,'CCSD(T) evaluation            ')
+
+         if (doxml) then
+       call xml_quantity('CCSD+T energy',ESCF+ECCSD+ET1,'Hartree')
+       call xml_quantity('CCSD(T) energy',ESCF+ECCSD+ET1+ET2,'Hartree')
+       call xml_quantity('CCSD-T energy',ESCF+ECCSD+ET1+ET3,'Hartree')
+         end if
 C
 C     This is a restart point : update status.
 C
@@ -2756,10 +2794,9 @@ C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
           IPRINT_NO = 1
-          KFREE1=1
-          LFREE1=NBUF3*RCW
+          call dealloc(a_BUF3, id="buf3") 
 C
-          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
+          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
 C
 C        Release the slaves (in case of parallel runs)
@@ -2772,7 +2809,7 @@ C
          ENDDO
 #endif
  431  CONTINUE
-         call dealloc(a_BUF3, id="buf3")
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       ENDIF
 C
       call dealloc( a_FOO, id="foo")
