@@ -491,13 +491,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       LFREE = MAXCOR
 
-! Elke
-!      CALL alloc(oooo,ioooott(nrep+1))
-!      CALL GETOOOO(oooo)
-!      WRITE(iw,*) 'OOOO'
-!      WRITE(iw,'(1X,ES14.5)') (oooo(ixx), ixx=1,ioooott(nrep+1))
-!      CALL dealloc(oooo)
-
 
       IF(DOSIPS) THEN
         CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
@@ -1528,7 +1521,6 @@ C
 
           WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
           WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
-!        END IF
 C
 C  ...   ************  start 2h-1p/2h-1p block  ********************
 C
@@ -1541,7 +1533,7 @@ C
 C
 C  create K_akl array and lookup tables.
 C
-        CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+          CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
 c
 c  compute the off-diagonal entries if required
 c  BKC: C_aij,a'i'j' = |><|<|,<||>|>

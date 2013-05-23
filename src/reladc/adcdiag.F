@@ -715,8 +715,8 @@ c
 c  transfer required parameters from matrix descriptor module
 c  to actual modules.
 c
-      IONIZLEVEL = reladc_md_ionizl
-      INTBUF = reladc_md_intbuf
+      IONIZLEVEL   =  reladc_md_ionizl
+      INTBUF       =  reladc_md_intbuf
       INFOHANDLE   =  reladc_md_iobase
       KREP         =  reladc_md_desrep
       RCW          =  reladc_md_rcw
