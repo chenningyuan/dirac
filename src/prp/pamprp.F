@@ -37,7 +37,7 @@ C***********************************************************************
 #include "mxcent.h"
 C
 C Used in common blocks:
-C dcbprp.h: NPRPWF, PRPWF(*)
+C dcbprp.h: NPRP_WF, PRP_WF(*)
 C
 #include "dcbprp.h"
 C
@@ -65,10 +65,10 @@ C
      &     3X,'Additional contributions from:',/,
      &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
-      DO I = 1, NPRPWF
-         WF = PRPWF(I)
+      DO I = 1, NPRP_WF
+         WF = PRP_WF(I)
 C
-         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
+         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
@@ -156,7 +156,7 @@ C*****  M O L E C U L A R    G R A D I E N T ***************************
 C***********************************************************************
 C
       IF (MGRAD) THEN
-         IF (WF .NE. 'DHF') THEN
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF') THEN
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Molecular gradient not implemented for ' // WF )
          END IF
@@ -197,7 +197,7 @@ C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
       IF (DOXPP) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
@@ -210,7 +210,7 @@ C*****  L I N E A R   R E S P O N S E  *********************************
 C***********************************************************************
 C
       IF(DOXLR) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
@@ -227,9 +227,9 @@ C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
       IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
-         IF (WF. NE. 'DHF') 
-     &        CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
-     &        'Quadratic response not implemented for ' // WF )
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF' .AND. WF .NE. 'DFT')
+     &      CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
+     &         'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)

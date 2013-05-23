@@ -33,7 +33,7 @@ C
 C ********************************************************************
 C
 C     The remaining common block variables are set in the
-C     *GASCIP input module and used when DOGASCIP is true.
+C     *GASCIP input module and only used when DOGASCIP is true.
 C
 C     /DC_GASCIP_ORB/
 C     
@@ -42,5 +42,5 @@ C
      &     IGASCIP_NASHT,IGASCIP_REP,IGASCIP_STATE,GASCIP_UCIBOS,
      &     IGASCIP_NGAS,IGASCIP_NAELEC,
      &     IGASCIP_MK2REF,IGASCIP_MK2DEL,IGASCIP_MINMK2, IGASCIP_MAXMK2,
-     &     IGASCIP_NGSH(2,MAXASH_GASCIP),IGASCIP_NGSP(2,MAXASH_GASCIP)
+     &     IGASCIP_NGSH(2,MAXASH_GASCIP),IGASCIP_NGASSP(2,MAXASH_GASCIP)
 C --- end of dcbgascip.h ---
