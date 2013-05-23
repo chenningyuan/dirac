@@ -542,9 +542,6 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
-C     skip integral transformation if MDCINT/MRCONEE are present
-C     ----------------------------------------------------------
-      IF( SKIP_ITRAFO ) GOTO 20
 C
 C     set default values
 C
@@ -906,6 +903,10 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+C     skip integral transformation if MDCINT/MRCONEE are present
+C     ----------------------------------------------------------
+      IF( SKIP_ITRAFO ) GOTO 20
+
       IF (.NOT.NO2IND)
      &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
 C
