@@ -58,9 +58,14 @@ echo -e "through the 'free -t -m' command (values in MB): "; free -m -t
 #####################
 # check space on CE #
 #####################
-echo -e "\n--- Server's filesystem (df): "; df -h .
+echo -e "\n--- Server's current dir filesystem (df -h .): "; df -h .
 echo -e "--- My current directory :  $PWD "
-echo -e "--- Occupied space by me (du) : \c"; du -h -s
+echo -e "--- Occupied current space by me (du -hs .) : \c"; du -hs .
+
+echo -e "\n--- Server's tmp, scratch filesystems (df -hl /tmp /scratch): "; df -hl /tmp /scratch
+echo -e "\n--- Server's tmp filesystem (df -h /tmp/.): "; df -h /tmp/.
+echo -e "\n--- Server's whole filesystem (df -h): "; df -h
+
 echo -e "\n\n ****  server environment:  set command  ****"; set 
 echo -e "\n\n Is there cmake ? which cmake="; which cmake
 echo -e "Is python present ? \c"; which python; python -V
@@ -86,12 +91,15 @@ voms-proxy-info --all
 #
 if [[ -n $CE_ID ]]; then
 # get info about CE #
-  echo -e "\n querrying attribute on this CE=$CE_ID:"
-  echo -e "querry attributes, like  PlatformArch, TotalCPUs, Memory, ClockSpeed, MaxCPUTime...."
-  lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime
+  local attribs="UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster"
+  echo -e "\n Going to querry attribute on this CE=$CE_ID:"
+  echo -e "attributes of interest are: $attribs"
+  #lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime
+  lcg-info --list-ce --query "CE=$CE_ID" --attrs $attribs
   CE_BDII=${CE_ID/:*/:2170}
-  echo -e "\n Now do faster querrying of attributes using CE_BDII=$CE_BDII"
-  lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster
+  echo -e "\n Now faster querrying of attributes using CE_BDII=$CE_BDII"
+  #lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster
+  lcg-info --list-ce --bdii "$CE_BDII" --query "CE=$CE_ID" --attrs $attribs
 else
   echo -e "\n No querrying of attributes as the CE_ID variable is not defined !"
   echo -e " This means that we are not on a CE ! \n"
@@ -102,10 +110,12 @@ return 0
 function download_from_SE()
 { # download file from SE to the current CE local directory, parameter - name of VO
 local VO=$1
+local DownlFile="dirac_grid_suite.tgz"
 #local getcmd="lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
 # remove verbose mode to eliminate stderr streams which are occuring 
-local getcmd="lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
-echo -e "\n Going to download from SE, 1st attempt, $getcmd "
+#local getcmd="lcg-cp -v lfn://grid/$VO/ilias/dirac_grid_suite.tgz file://$PWD/dirac_grid_suite.tgz"
+local getcmd="lcg-cp -v lfn://grid/$VO/ilias/$DownlFile file://$PWD/$DownlFile"
+echo -e "\n Going to download file $DownlFile from SE, 1st attempt, $getcmd "
 $getcmd
 RETVAL=$?
 # this does not work..each time it's repeating download..
@@ -115,8 +125,8 @@ echo -e "FYI: downloading ended with code $RETVAL"
 # this command works ... don't forget ";" and spaces between "{","}" and commands
 #$getcmd || { echo "once again"; { $getcm || { echo -e "Download failed second time ! Exit !!! "; exit 41; } } }
 #
-echo -e "\nDownloaded file attributes (ls -lt dirac_grid_suite.tgz) :"
-ls -lt dirac_grid_suite.tgz || { echo -e "\n\nNo dowloaded file found in CE current directory,exit !"; exit 32; }
+echo -e "\nDownloaded file attributes (ls -lt $DownlFile) :"
+ls -lt $DownlFile || { echo -e "\n\nNo dowloaded file found in CE's current directory, exit 32 !"; exit 32; }
 echo -e " -------------------------------------------------------------------------------------\n"
 return 0
 }
