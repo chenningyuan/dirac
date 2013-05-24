@@ -1857,7 +1857,7 @@ C
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable              :: excerg(:),excbuf(:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
-      integer, allocatable              :: n_ev(:)
+      integer, allocatable              :: n_ev(:),ieerg(:,:)
       CHARACTER TTYP(-1:1)*2
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
@@ -1867,6 +1867,7 @@ C.....Find total number of excitations
       allocate(EXCERG(NEXC))
       allocate(INDX(NEXC))
       allocate(IRPS(NEXC))
+      allocate(ieerg(2,NEXC))
       NBF = NBSYM/NFSYM
 C
 C     E X C I T A T I O N    E N E R G I E S
@@ -2018,13 +2019,17 @@ C.....Default case
         IFOO = NBSYM
         allocate(SYMLAB(IFOO))
         allocate(IND(NBSYM))
-        IOFF = 2
+        IOFF = 1
         DO IFRP = 1,NFSYM
           DO IBF = 1,NBF
             ISYM = JFSYM(IBF,IFRP)
             SYMLAB(ISYM)=REP(ISYM-1)//' '
             MEXC=KEXCNV(ISYM)
-            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF),1)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
+            DO IEXC = 1,MEXC
+              IEERG(1,IOFF+IEXC) = IEXC
+              IEERG(2,IOFF+IEXC) = ISYM
+            ENDDO
             IOFF = IOFF + MEXC
           ENDDO
         ENDDO
@@ -2032,6 +2037,15 @@ C.....Default case
         KEXCNV(1) = KEXCNV(1) + 1
         CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
+CTROND
+        WRITE(6,*) 'TEST'
+        DO JEXC = 2,NEXC
+          II = INDX(JEXC)
+          IEXC = IEERG(1,II)
+          ISYM = IEERG(2,II)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
+        ENDDO
+CTROND
         KEXCNV(1) = KEXCNV(1) - 1
 C.......Make an extra empty symmetry label to use below
         MEXC= MAXEXC*NBSYM
@@ -2139,6 +2153,7 @@ C.......All crossterms
       deallocate(indx)
       deallocate(irps)
       deallocate(ind)
+      deallocate(ieerg)
 C
       RETURN
       END
