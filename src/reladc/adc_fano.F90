@@ -49,7 +49,7 @@ CONTAINS
     INTEGER                               :: nok, najl
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
-    CHARACTER(8)                          :: fn_conf='FANCNF'
+    CHARACTER(6)                          :: fn_conf='FANCNF'
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: buflanc
     INTEGER                               :: kfree, lfree, kfreebase
 !    INTEGER                               :: ierror = 0

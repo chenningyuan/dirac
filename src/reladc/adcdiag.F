@@ -34,7 +34,6 @@
 
       INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
       CHARACTER(len=6)              :: FILEN4, FILEN5
-      INTEGER                       :: iw
 !
 !---------------Description--------------------------------------------
 !
