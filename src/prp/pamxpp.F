@@ -1857,7 +1857,7 @@ C
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable              :: excerg(:),excbuf(:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
-      integer, allocatable              :: n_ev(:),ieerg(:,:)
+      integer, allocatable              :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
@@ -1913,21 +1913,26 @@ C     ===============
         ENDIF
 C.......distribute excitation energies on linear symmetries
         allocate(EXCBUF(NEXC))
+        allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
+        IEBUF(1,1) = 1
+        IEBUF(2,1) = 1
         N_EV(1)   = 1
         IRPS(1)   = 1
         ICNT = 1
 C
-        IOFF = 2
+        IOFF = 1
         IREPP = 0
         DO IFRP = 1,NFSYM
           DO IBF = 1,NBF
             ISYM = JFSYM(IBF,IFRP)
             IREP = ISYM - 1
             MEXC=KEXCNV(ISYM)
-            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF+1),1)
             DO IEXC = 1,MEXC
+              IEBUF(1,IOFF+IEXC) = IEXC
+              IEBUF(2,IOFF+IEXC) = ISYM
               ICNT = ICNT + 1
               JVAL = ABS(ISSYM(IEXC,ISYM))/2
               IF(JVAL.EQ.0) THEN
@@ -1953,10 +1958,22 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
         DO I = 1,NEXC
           II = INDX(I)
           EXCERG(I) = EXCBUF(II)
+          IEERG(1,I) = IEBUF(1,II)
+          IEERG(2,I) = IEBUF(2,II)
         ENDDO
         deallocate(excbuf)
+        deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
+CTROND
+        WRITE(6,*) 'TEST'
+        DO JEXC = 2,NEXC
+          II = INDX(JEXC)
+          IEXC = IEERG(1,II)
+          ISYM = IEERG(2,II)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
+        ENDDO
+CTROND
         deallocate(n_ev)
 C
 C     Spinfree case with high enough symmetry to distinguish singlets and triplets
@@ -1969,27 +1986,32 @@ C     ==========================================================================
         CALL ICOPY(N_IRPS,0,0,N_EV,1)
         IOFF = 1
         DO IREP = 0,MAXREP
-          SYMLAB(IREP+IOFF)='S'//REP(IREP)     
+          SYMLAB(IREP+IOFF)='1'//REP(IREP)     
         ENDDO
         IOFF = IOFF + NBSYM
         DO IREP = 0,MAXREP
-          SYMLAB(IREP+IOFF)='T'//REP(IREP)     
+          SYMLAB(IREP+IOFF)='3'//REP(IREP)     
         ENDDO
 C.......distribute excitation energies on spinfree symmetries
         allocate(EXCBUF(NEXC))
+        allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
+        IEBUF(1,1) = 1
+        IEBUF(1,1) = 1
         N_EV(1)   = 1
         IRPS(1)   = 1
         ICNT = 1
-        IOFF = 2
+        IOFF = 1
         Do IFRP = 1,NFSYM
           DO IBF = 1,NBF
             ISYM = JFSYM(IBF,IFRP)
             IREP = ISYM - 1
             MEXC = KEXCNV(ISYM)
-            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF),1)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF+1),1)
             DO IEXC = 1,MEXC
+              IEBUF(1,IOFF+IEXC) = IEXC
+              IEBUF(2,IOFF+IEXC) = ISYM
               ICNT = ICNT + 1
               ISPACE = ISSYM(IEXC,ISYM) 
               ISPIN  = IBTXOR(ISPACE,IREP)
@@ -2008,11 +2030,23 @@ C.......we include the ground state
         CALL INDEXI(NEXC,IRPS,INDX)
         DO I = 1,NEXC
           II = INDX(I)
-          EXCERG(I) = EXCBUF(II)
+          EXCERG(I)  = EXCBUF(II)
+          IEERG(1,I) = IEBUF(1,II)
+          IEERG(2,I) = IEBUF(2,II)
         ENDDO
         deallocate(excbuf)
+        deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
+CTROND
+        WRITE(6,*) 'TEST'
+        DO JEXC = 2,NEXC
+          II = INDX(JEXC)
+          IEXC = IEERG(1,II)
+          ISYM = IEERG(2,II)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
+        ENDDO
+CTROND
         deallocate(n_ev)
       ELSE
 C.....Default case
