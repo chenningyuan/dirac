@@ -236,8 +236,6 @@ C         Calculate property matrices for nuclear displacements
 C           Calculate the integrals  
             CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
      &                  DOINT,OMITVNUC,IPRHAM)
-!                                      iprint is not defined - stefan april 2011
-!    &                  DOINT,OMITVNUC,IPRINT)
           ENDDO
           GNUEXP(K) = EXPPLC
 C         Create total property matrix with correct prefactor
@@ -306,6 +304,8 @@ C     Generate new gaussian parameters with dR=0.005R
       GEXPEFFDE2(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)
 C     Prefactor = 3 / (48*Z*Pi*R*dR)
       PREFACTOR = 12.5D0 / (RADIUS * RADIUS * CHARGE(NUCLEUS) * PI)
+!     write(lupri,*) 'gnuexp, radius, pi, prefac, new exp',
+!    & GNUEXP(NUCLEUS), radius, pi, prefactor,GEXPEFFDE2(1:4) 
       RETURN
       END 
 
