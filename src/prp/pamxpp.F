@@ -1855,7 +1855,7 @@ C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
-      real(8), allocatable              :: excerg(:),excbuf(:)
+      real(8), allocatable              :: excerg(:),excbuf(:),fval(:,:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
       integer, allocatable              :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2
@@ -1957,7 +1957,7 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
         CALL INDEXI(NEXC,IRPS,INDX)
         DO I = 1,NEXC
           II = INDX(I)
-          EXCERG(I) = EXCBUF(II)
+          EXCERG(I)  = EXCBUF(II)
           IEERG(1,I) = IEBUF(1,II)
           IEERG(2,I) = IEBUF(2,II)
         ENDDO
@@ -1971,7 +1971,8 @@ CTROND
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
           ISYM = IEERG(2,II)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
+          ILAB = ISSYM(IEXC,ISYM)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ILAB)
         ENDDO
 CTROND
         deallocate(n_ev)
@@ -2044,7 +2045,8 @@ CTROND
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
           ISYM = IEERG(2,II)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
+          ILAB = ISSYM(IEXC,ISYM)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ILAB)
         ENDDO
 CTROND
         deallocate(n_ev)
@@ -2094,8 +2096,8 @@ C
       DO IFRP = 1,NFSYM
         DO IBF = 1,NBF
           ISYM = JFSYM(IBF,IFRP)
-          NEXC = KEXCNV(ISYM)
-          IF(NEXC.EQ.0) CYCLE
+          MEXC = KEXCNV(ISYM)
+          IF(MEXC.EQ.0) CYCLE
           IREP = ISYM-1
           NOPA   = NPPAP(ISYM) ! number of transition moment operators in this symmetry
           JOPA   = JPPAP(ISYM) ! offset to complete list of transition moment operators
@@ -2111,7 +2113,7 @@ C
             WRITE(LUPRI,'(80A1)') ('=',I=1,80)
             WRITE(LUPRI,'(3X,A,5X,A,10X,A)') 'eigenvalue (au)',
      &        '<0|A|n>','Higher symmetry (if detected)'
-            DO IEXC = 1,NEXC
+            DO IEXC = 1,MEXC
             IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
               NTMOM=NTMOM+1
               ILAB = ISSYM(IEXC,ISYM)
@@ -2159,8 +2161,8 @@ C.......All crossterms
               WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
      &        'f','Higher symmetry (if detected)'
               NTMOM = 0
-              NEXC = KEXCNV(ISYM)
-              DO IEXC = 1,NEXC
+              MEXC = KEXCNV(ISYM)
+              DO IEXC = 1,MEXC
                 AMOM = ATMPPF(IEXC,INDAP,ISYM,1)
                 IF(ABS(AMOM).GT.TTOL) THEN
                   BMOM = ATMPPF(IEXC,INDBP,ISYM,1)
@@ -2180,6 +2182,36 @@ C.......All crossterms
             ENDIF
           ENDDO
         ENDDO
+C.......Isotropic contribution
+        allocate(fval(MAXEXC,NBSYM))
+        NDIM= MAXEXC*NBSYM
+        CALL DCOPY(NDIM,0.0D0,0,FVAL,1)
+        IOFF  = IEPOFF(IEVAL)
+        DO IDEGA = 1,NDEG
+          INDAP   = IOFF+IDEGA
+          INDPRA  = LPPAPU(IOFF+IDEGA)
+          ISYM    = IPRPSYM(INDPRA)
+          IREP    = ISYM - 1
+          ITIMA   = IPRPTIM(INDPRA)
+          MEXC=KEXCNV(ISYM)
+          DO IEXC = 1,MEXC
+            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+            FVAL(IEXC,ISYM) = FVAL(IEXC,ISYM) 
+     &                      + XMOM*XMOM*OMEGA(IEXC,ISYM)
+          ENDDO
+        ENDDO
+        CALL DSCAL(NDIM,D2R3,FVAL,1)
+        WRITE(6,'(/A/)') '* ISOTROPIC OSCILLATOR STRENGTHS'
+        DO JEXC = 2,NEXC
+          II = INDX(JEXC)
+          IEXC = IEERG(1,II)
+          ISYM = IEERG(2,II)
+          ILAB = ISSYM(IEXC,ISYM)
+          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),FVAL(IEXC,ISYM),SYMLAB(ILAB)
+        ENDDO
+        TOT = DSUM(NDIM,FVAL,1)
+        WRITE(6,*) 'Sum of oscillator strenghts: ',TOT
+        deallocate(fval)
       ENDIF
  10   CONTINUE
       deallocate(symlab)
