@@ -61,7 +61,7 @@ C***********************************************************************
       real(8), allocatable :: WORK(:)
       character(100)       :: line
       integer, parameter   :: file_unit = 137
-      logical              :: file_exists, file_exists2
+      logical              :: inp_exists, mol_exists, xyz_exists
       logical              :: input_found
 
 C
@@ -73,8 +73,8 @@ C
       CALL PAMINI()
 
 !     print contents of input file to output
-      inquire(file = 'DIRAC.INP', exist = file_exists)
-      if (file_exists) then
+      inquire(file = 'DIRAC.INP', exist = inp_exists)
+      if (inp_exists) then
          open(file_unit,
      &        file   = 'DIRAC.INP',
      &        status = 'unknown',
@@ -94,8 +94,8 @@ C
       close(file_unit, status = 'keep')
 
 !     print contents of molecule file to output
-      inquire(file = 'MOLECULE.MOL', exist = file_exists)
-      if (file_exists) then
+      inquire(file = 'MOLECULE.MOL', exist = mol_exists)
+      if (mol_exists) then
          open(file_unit,
      &        file   = 'MOLECULE.MOL',
      &        status = 'unknown',
@@ -103,8 +103,8 @@ C
      &        access = 'sequential')
          rewind(file_unit)
       else
-         inquire(file = 'MOLECULE.XYZ', exist = file_exists2)
-         if (file_exists2) then
+         inquire(file = 'MOLECULE.XYZ', exist = xyz_exists)
+         if (xyz_exists) then
             open(file_unit,
      &           file   = 'MOLECULE.XYZ',
      &           status = 'unknown',
@@ -163,7 +163,11 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('program')
          call xml_begin('input')
          call xml_embed_formatted('DIRAC.INP','dirac-input')
-         call xml_embed_formatted('MOLECULE.MOL','dirac-molecule')
+         if (mol_exists) then
+            call xml_embed_formatted('MOLECULE.MOL','dirac-molecule')
+         else
+            call xml_embed_formatted('MOLECULE.XYZ','dirac-xyz')
+         end if
          call xml_end('input')
          call xml_begin('output') ! closed in dirac.F
       endif
