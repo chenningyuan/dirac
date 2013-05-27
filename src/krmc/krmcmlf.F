@@ -1627,3 +1627,133 @@ C
       RETURN
       END
 #endif
+!***********************************************************************
+
+      subroutine write_fcidump_file(vmuuuu,hcore,ecore)
+!***********************************************************************
+!
+!     
+!     
+!     purpose: write one- and two-electron integrals for a given active
+!              space to disk
+!
+!     written by S. Knecht
+!
+!     based on the respectively routine written for Dalton by 
+!     Katharina Boguslawski and Pawel Tecmer
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+C
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbkrci.h"
+C
+      DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
+      DIMENSION  hcore(2*NASHT,2*NASHT,*)
+      real(8), intent(in) :: ecore
+      DIMENSION  KR(-300:300)
+      integer :: LUFCID = -1
+      character(len=30) :: form1
+      character(len=30) :: form2
+      character(len=30) :: form3
+#include "ibtfun.h"
+
+!     define printing format
+      form1="(e24.14, 4X, I6, I6, I6, I6)"
+      form2="(A11,I3,A7,I2,A5,I2,A1)"
+      form3="(e24.14, 4X, I6, I6, I6, I6)"
+
+!     FCIDUMP info
+!     write(lupri,*) 
+!     write(lupri,*)" FCIDUMP file details "
+!     write(lupri,*)"======================" 
+!     write(lupri,*) 
+
+!     Print header of FCIDUMP file using MOLPRO format
+      if (LUFCID .le. 0) then
+      CALL GPOPEN(LUFCID,'FCIDUMP','new',' ',
+     &                'FORMATTED',IDUMMY,.false.)
+      end if
+
+      write(LUFCID,form2) ' &FCI NORB=', nasht*2 , 
+     & ',NELEC=', NKRCIAELEC, ',MS2=',
+     &  0, ','
+      write(LUFCID,"(A)",advance='no') '  ORBSYM=' 
+      do IFSYM=1,NFSYM,1
+         if(NASH(IFSYM) /= 0)then
+            do i=1,2*nash(ifsym),1
+            write(LUFCID,"(I1,A1)",advance='no') ifsym,','
+         end do
+         end if
+      end do
+
+
+!     write(lupri,form2) ' &FCI NORB=', nasht*2 , 
+!    & ',NELEC=', NKRCIAELEC, ',MS2=',
+!    &  0, ','
+
+
+      write(LUFCID,*) 
+      write(LUFCID,"(A7,I1)") '  ISYM=',1
+      write(LUFCID,"(A5)") ' &END'
+
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+
+      !> 2e-integrals
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO I = 1,2*NASHT
+!     only real groups needed for now ==> only even number of bars: 0, 2, 4
+      if(l<=nasht .and. k<=nasht .and. j<=nasht .and. i<=nasht)then !(ij|kl)
+        continue
+      else if(l> nasht .and. k> nasht .and. j> nasht .and. i> nasht)then!(IJ|KL)
+        continue
+      else if(l<=nasht .and. k<=nasht .and. j> nasht .and. i> nasht)then!(IJ|kl)
+        continue
+      else if(l> nasht .and. k> nasht .and. j<=nasht .and. i<=nasht)then!(ij|KL)
+        continue
+      else if(l> nasht .and. k<=nasht .and. j> nasht .and. i<=nasht)then!(iJ|kL)
+        continue
+      else if(l> nasht .and. k<=nasht .and. j<=nasht .and. i> nasht)then!(Ij|kL)
+        continue
+      else if(l<=nasht .and. k> nasht .and. j<=nasht .and. i> nasht)then!(Ij|Kl)
+        continue
+      else if(l<=nasht .and. k> nasht .and. j> nasht .and. i<=nasht)then!(iJ|Kl)
+        continue
+      else
+        cycle ! odd number of bars
+      end if
+                 write(LUFCID,form1) VMUUUU(I,J,K,L,1),I,J,K,L
+               END DO
+            END DO
+         END DO
+      END DO
+      !> 1e-integrals
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+           write(LUFCID,form1) hcore(K,L,1),K,L,0,0
+         END DO
+      END DO
+
+      !> core energy
+      write(LUFCID,form3) ecore, 0,0 ,0,0
+ 
+      call GPCLOSE(LUFCID,'KEEP')
+C
+      END

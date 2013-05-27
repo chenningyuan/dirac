@@ -2,6 +2,10 @@
 .TITLE
   LiH
 .WAVE F ! Activate integral and wave functions modules
+**GENERAL
+# taken older value due to compatibility with older test results
+.CVALUE
+137.035989500
 **INTEGRALS
 .PRINT
 1

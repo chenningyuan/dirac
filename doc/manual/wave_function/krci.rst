@@ -40,6 +40,7 @@ properties at the GASCI level [Knecht2009]_ .
 keyword(CI PROGRAM)
 
 specifies the CI module behind KRCI.
+Two choices: LUCIAREL and GASCIP
 
 ::
 

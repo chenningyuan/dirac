@@ -107,6 +107,7 @@
       LOGICAL CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD, CINT_SPLIT
       LOGICAL GENFOCK, CHCKPT_WRT, CPBLCK_FILE, TRA_NATO, CINT_LOWSRT
       LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save, save_reordered_nos
+      LOGICAL fcidump
 !     cana_mcscf means: analysis of mcscf reference vector in a separate 
 !                       ci run (after mcscf convergence)
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
@@ -115,7 +116,8 @@
      &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
      &                CINT_SPLIT, GENFOCK, CHCKPT_WRT, CPBLCK_FILE,     &
      &                TRA_NATO, OPT_CHCKJZ, CINT_LOWSRT, spinfr_krmc,   &
-     &                cana_mcscf, no1pdens_save, save_reordered_nos
+     &                cana_mcscf, no1pdens_save, save_reordered_nos,    &
+     &                fcidump
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP

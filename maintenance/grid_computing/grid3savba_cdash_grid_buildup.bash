@@ -61,10 +61,16 @@ if [[ -n $DO_UPDATE ]]; then
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # update the local trunk...
-echo -e "\n updating the local $DIRAC"
-git pull
+#echo -e "\n updating the local $DIRAC"
+#git pull
 
- ./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON --force $BUILD
+if [[ -d "$BUILD" ]]; then
+   echo "removing previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+
+#./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
+./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64=on -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
 
  cd $BUILD
  make ExperimentalUpdate
@@ -79,8 +85,13 @@ git pull
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
 
- cd $DIRAC
- ./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON --force $BUILD_SERIAL
+cd $DIRAC
+if [[ -d "$BUILD_SERIAL" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL"
+  /bin/rm -rf $BUILD_SERIAL
+fi
+
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
  cd $BUILD_SERIAL
  make ExperimentalUpdate
  make ExperimentalConfigure
@@ -97,7 +108,11 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 # cancel the variable #
  unset MATH_ROOT
  cd $DIRAC
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON --force $BUILD_GNU_SERIAL
+ if [[ -d "$BUILD_GNU_SERIAL" ]]; then
+   echo "removing previous build directory $BUILD_GNU_SERIAL"
+  /bin/rm -rf $BUILD_GNU_SERIAL
+ fi
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
  cd $BUILD_GNU_SERIAL
  make ExperimentalUpdate
  make ExperimentalConfigure

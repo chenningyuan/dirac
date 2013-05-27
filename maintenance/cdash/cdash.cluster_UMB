@@ -16,8 +16,10 @@ source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 
 # My own OpenMPI Intel
-export PATH=/home/milias/bin/openmpi/bin:$PATH
-export LD_LIBRARY_PATH=/home/milias/bin/openmpi/lib:$LD_LIBRARY_PATH
+#export PATH=/home/milias/bin/openmpi/bin:$PATH
+#export LD_LIBRARY_PATH=/home/milias/bin/openmpi/lib:$LD_LIBRARY_PATH
+export PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/bin:$PATH
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/lib:$LD_LIBRARY_PATH
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
@@ -40,7 +42,7 @@ echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "PBS_O_QUEUE=$PBS_O_QUEUE"
 echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
 
-NPROCS=4 # hard set number of procs for computations
+#NPROCS=4 # hard set number of procs for computations
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
@@ -54,23 +56,31 @@ cd $DIRAC
 #git pull
 
 BUILD=build_Intel_OpenMPI_MKL_ILP64
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
 echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
 ./pamadm -a --builddir=$BUILD
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64=on -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --force $BUILD
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64=on -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD
 cd $BUILD
-make clean
+#make ExperimentalUpdate
 make Experimental
 
 #
 #  serial DIRAC buildup, Intel MKL
 #
 BUILD_SERIAL=build_Intel_MKL_ILP64_serial
-echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
-./pamadm -a --builddir=$BUILD_SERIAL
 cd $DIRAC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --force $BUILD_SERIAL
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
+if [[ -d "$BUILD_SERIAL" ]]; then
+  echo "deleting previous build directory $BUILD_SERIAL"
+  /bin/rm -rf $BUILD_SERIAL
+fi
+./pamadm -a --builddir=$BUILD_SERIAL
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
-make clean
+#make ExperimentalUpdate
 make Experimental 
 
 #
@@ -79,10 +89,14 @@ make Experimental
 BUILD_SERIAL_STATIC=build_Intel_MKL_ILP64_serial_static
 echo -e "\n\n Running serial, static DIRAC buildup in $BUILD_SERIAL_STATIC"
 cd $DIRAC
+if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_SERIAL_STATIC"
+  /bin/rm -rf $BUILD_SERIAL_STATIC
+fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --force $BUILD_SERIAL_STATIC
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
-make clean
+#make ExperimentalUpdate
 make Experimental 
 
 #
@@ -91,12 +105,17 @@ make Experimental
 BUILD_STATIC=build_Intel_OpenMPI_MKL_ILP64_static
 echo -e "\n\n Running OpenMPI parallel, static DIRAC buildup in $BUILD_STATIC"
 cd $DIRAC
+if [[ -d "$BUILD_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_STATIC"
+  /bin/rm -rf $BUILD_STATIC
+fi
 ./pamadm -a --builddir=$BUILD_STATIC
-./setup -D VERBOSE_OUTPUT=ON --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=$NPROCS -D DART_TESTING_TIMEOUT=99999 --force $BUILD_STATIC
+./setup -D VERBOSE_OUTPUT=ON --int64=on --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D RUNTEST_TIMEOUT="00:18:00"  -D RUNTEST_NR_PROC=$NPROCS -D DART_TESTING_TIMEOUT=99999 $BUILD_STATIC
 cd $BUILD_STATIC
-make clean
+#make ExperimentalUpdate
 make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
 exit 0
+

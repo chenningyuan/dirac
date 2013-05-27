@@ -31,6 +31,7 @@ module input_reader
       module procedure kw_read_r4
       module procedure kw_read_ivec
       module procedure kw_read_ivec_all
+      module procedure kw_append_ivec
    end interface
 
    integer, parameter :: max_nr_kw   = 200
@@ -283,6 +284,34 @@ contains
          end do
          start = verify(line,' ,;')
       end do
+
+      return
+
+1     call kw_read_error(kw_input)
+
+   end subroutine
+
+   subroutine kw_append_ivec(kw_input, v, filled, k)
+
+      character(kw_length), intent(in)    :: kw_input
+      integer,              intent(inout) :: v(:)
+      integer,              intent(in)    :: k
+      integer,              intent(inout) :: filled
+      integer                             :: j
+      integer, allocatable, dimension(:)  :: temp
+
+
+      allocate(temp(k))
+      read(get_file_unit(), *,err=1) (temp(j), j=1,k)
+
+      do j=1, k
+        if (all(v/=temp(j))) then
+          filled    = filled + 1
+          v(filled) = temp(j)
+        end if
+      end do
+
+      deallocate(temp)
 
       return
 
