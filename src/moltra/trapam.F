@@ -48,6 +48,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbham.h" ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
@@ -194,6 +195,8 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
+      CALL IZERO(IBEIG,NORBT)
+      CALL DZERO(EIG,NORBT)
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
 
@@ -208,7 +211,14 @@ C
      &              ' label NEWORB on file KRMCSCF'
             END IF
          END IF
+         ! stefan - may 2013: the above fix (zeroing) is dirty - fix
+         ! it soon!
+         WRITE(LUPRI,'(/A)')
+     &   ' (PAMTRA)  WARNING!!! zero   ' //
+     &   ' boson information and eigenvalues. FIXME!'
          CLOSE (LUKRMC)
+         IF(spinfr.or.linear) 
+     &   call quit('pamtra: fix spinfr/linear cases with KRMCSCF')
       ELSE IF (TOBEKK) THEN
          CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PAMTRA')
          JRDMO = -1
@@ -218,6 +228,14 @@ C
      &     ' (PAMTRA)  Orbitals read from' //
      &     ' label NEWNATOB on file KRMCOLD'
          END IF
+         ! stefan - may 2013: the above fix (zeroing) is dirty - fix
+         ! it soon!
+         WRITE(LUPRI,'(/A)')
+     &   ' (PAMTRA)  WARNING!!! zero   ' //
+     &   ' boson information and eigenvalues. FIXME!'
+         IF(spinfr.or.linear) 
+     &   call quit('pamtra: fix spinfr/linear cases with KRMCOLD')
+         
          CLOSE (LUKRMC)
       ELSE
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
