@@ -50,7 +50,7 @@ C
 #include "dcbgen.h"
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
+      LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -195,6 +195,7 @@ C
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -206,6 +207,16 @@ C
      &              ' (PAMTRA)  Orbitals read from' //
      &              ' label NEWORB on file KRMCSCF'
             END IF
+         END IF
+         CLOSE (LUKRMC)
+      ELSE IF (TOBEKK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWNATOB on file KRMCOLD'
          END IF
          CLOSE (LUKRMC)
       ELSE
@@ -365,16 +376,25 @@ C
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
          CALL RREADMO(CMO,JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
-            IF (IPRTRA .GE. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &              ' (PAMTRA)  Orbitals read from' //
-     &              ' label NEWORB on file KRMCSCF'
-            END IF
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWORB on file KRMCSCF'
+         END IF
+         CLOSE (LUKRMC)
+      ELSE IF (TOBEKK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWNATOB on file KRMCOLD'
          END IF
          CLOSE (LUKRMC)
       ELSE
