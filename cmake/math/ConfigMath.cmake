@@ -28,6 +28,13 @@ if(DEFINED MKL_FLAG)
         )
     message("-- User set explicit MKL flag which is passed to the compiler and linker: ${MKL_FLAG}")
 else()
-    config_math_service(LAPACK)
-    config_math_service(BLAS)
+# stefan: FIXME: we need a better way to allow for explicit MATH libs and no automatic math detection 
+#         for the time being i restored exclusivity.
+if(EXPLICIT_LIBS)
+    message("-- User set explicit libraries - skip BLAS/LAPACK detection")
+else()
+     config_math_service(LAPACK)
+     config_math_service(BLAS)
+endif()
+
 endif()
