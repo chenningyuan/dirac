@@ -267,22 +267,22 @@ C
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
 C     Switch on evaluation of property output if necessary
-      IF (SPFR.AND.DOMP2G) 
-     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
+         IF (SPFR) 
+     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
-          IPRPWF = 0
-          DO I = 1, NPRPWF
-             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
           END DO
-          IF (IPRPWF.EQ.0) THEN
-             IF (NPRPWF .GE. MXPRPWF) THEN
-                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
              ELSE
-                NPRPWF = NPRPWF + 1
-                IPRPWF = NPRPWF
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
              END IF
-             PRPWF(IPRPWF) = 'MP2 '
+             PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
       MXDIMGR = MAXDIM
@@ -293,7 +293,7 @@ C     Input for the linear response calculation.
 C
       NAOPER = 1
       NBOPER = 1
-      NFREQ = 1
+      NFREQ  = 1
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
@@ -311,8 +311,8 @@ C
     7 CALL QUIT('Error exit while reading namelist CCSOPR')
     8 CONTINUE
       MXDIMRP = MAXDIM
-      MXITRP = MAXIT
-      NTOLRP = NTOL
+      MXITRP  = MAXIT
+      NTOLRP  = NTOL
 C
 C     Input for the excitation energy calculation.
 C
@@ -2794,10 +2794,9 @@ C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
           IPRINT_NO = 1
-          KFREE1=1
-          LFREE1=NBUF3*RCW
+          call dealloc(a_BUF3, id="buf3") 
 C
-          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
+          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
 C
 C        Release the slaves (in case of parallel runs)
@@ -2810,7 +2809,7 @@ C
          ENDDO
 #endif
  431  CONTINUE
-         call dealloc(a_BUF3, id="buf3")
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       ENDIF
 C
       call dealloc( a_FOO, id="foo")

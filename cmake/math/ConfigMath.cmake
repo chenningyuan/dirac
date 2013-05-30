@@ -1,27 +1,4 @@
-macro(config_math_service _SERVICE)
-    set(ENABLE_${_SERVICE}
-        ENABLE_${_SERVICE}
-        CACHE BOOL
-        "Enable ${_SERVICE}"
-        )
-    set(${_SERVICE}_FOUND FALSE)
-    if(ENABLE_${_SERVICE})
-        find_package(${_SERVICE})
-    endif()
-    if(${_SERVICE}_FOUND)
-        set(LIBS
-            ${LIBS}
-            ${${_SERVICE}_LIBRARIES}
-            )
-    else()
-        if(ENABLE_${_SERVICE})
-            message("-- No external ${_SERVICE} library found")
-        endif()
-        message("-- Using own ${_SERVICE} implementation (slow)")
-        add_definitions(-DUSE_OWN_${_SERVICE})
-        set(USE_OWN_${_SERVICE} TRUE)
-    endif()
-endmacro()
+include(MathLibsFunctions)
 
 set(MATH_LANG "Fortran")
 
@@ -40,8 +17,16 @@ if(EXPLICIT_LIBS)
         ${LIBS}
         ${EXPLICIT_LIBS}
         )
-    message("-- User set math libraries: ${EXPLICIT_LIBS}")
+    message("-- User set explicit libraries (skipping BLAS/LAPACK detection): ${EXPLICIT_LIBS}")
 else()
-    config_math_service(LAPACK)
-    config_math_service(BLAS)
+    if(DEFINED MKL_FLAG)
+        set(LIBS
+            ${LIBS}
+            ${MKL_FLAG}
+            )
+        message("-- User set explicit MKL flag which is passed to the compiler and linker (skipping BLAS/LAPACK detection): ${MKL_FLAG}")
+    else()
+         config_math_service(LAPACK)
+         config_math_service(BLAS)
+    endif()
 endif()

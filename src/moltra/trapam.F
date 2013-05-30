@@ -48,9 +48,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbham.h" ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
+      LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -194,7 +195,10 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
+      CALL IZERO(IBEIG,NORBT)
+      CALL DZERO(EIG,NORBT)
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -207,6 +211,31 @@ C
      &              ' label NEWORB on file KRMCSCF'
             END IF
          END IF
+         ! stefan - may 2013: the above fix (zeroing) is dirty - fix
+         ! it soon!
+         WRITE(LUPRI,'(/A)')
+     &   ' (PAMTRA)  WARNING!!! zero   ' //
+     &   ' boson information and eigenvalues. FIXME!'
+         CLOSE (LUKRMC)
+         IF(spinfr.or.linear) 
+     &   call quit('pamtra: fix spinfr/linear cases with KRMCSCF')
+      ELSE IF (TOBEKK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWNATOB on file KRMCOLD'
+         END IF
+         ! stefan - may 2013: the above fix (zeroing) is dirty - fix
+         ! it soon!
+         WRITE(LUPRI,'(/A)')
+     &   ' (PAMTRA)  WARNING!!! zero   ' //
+     &   ' boson information and eigenvalues. FIXME!'
+         IF(spinfr.or.linear) 
+     &   call quit('pamtra: fix spinfr/linear cases with KRMCOLD')
+         
          CLOSE (LUKRMC)
       ELSE
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
@@ -365,16 +394,25 @@ C
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
          CALL RREADMO(CMO,JRDMO,1,LUKRMC)
          IF (JRDMO .EQ. 0) THEN
-            IF (IPRTRA .GE. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &              ' (PAMTRA)  Orbitals read from' //
-     &              ' label NEWORB on file KRMCSCF'
-            END IF
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWORB on file KRMCSCF'
+         END IF
+         CLOSE (LUKRMC)
+      ELSE IF (TOBEKK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+           WRITE(LUPRI,'(/A)')
+     &     ' (PAMTRA)  Orbitals read from' //
+     &     ' label NEWNATOB on file KRMCOLD'
          END IF
          CLOSE (LUKRMC)
       ELSE
@@ -1541,6 +1579,7 @@ C
 C
       IF (IMODUL .NE. 4 ) THEN
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+         INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
          IF (.NOT.TOBEK) THEN
             INQUIRE(FILE='DFCOEF',EXIST=TOBE)
             IF (.NOT.TOBE) THEN

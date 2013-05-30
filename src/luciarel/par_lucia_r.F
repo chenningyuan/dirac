@@ -1740,7 +1740,7 @@ C
       INTEGER(KIND=df_MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
       LOGICAL EX
 #include "parluci.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 #include "dcbkrci.h"
       ILU1_IOFFX = 0
       MULTX      = 0
@@ -2820,7 +2820,7 @@ C
 #include "infpar.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 #include "dcbkrmc.h"
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU7BL,PLU5BL, PLUCBL
       CHARACTER*10 PDIA, PLU1, PLU2, PLU3, PLU4, PLU5, PLU6, PLU7, PLUC
