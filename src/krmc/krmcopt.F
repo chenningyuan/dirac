@@ -28,7 +28,7 @@ C***********************************************************************
 C
 C     Driver routine to PSIOP1
 C     Get second order optimized wave function.
-C     Either DHF or KR-MCSCF...
+C     Either DHF or KR-MCSCF... (WFTYP = 'SCF   ' or 'MCSCF ')
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
@@ -3550,8 +3550,7 @@ C
             RTHRCI = OPT_THRGRD
             CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,
-     &                         OPT_CIPROGRAM,
+     &                         IOPT_ISTATE,ICONV_TOT,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
@@ -3562,8 +3561,7 @@ C
             CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_ISTATE,THRPCI,
-     &                           OPT_CIPROGRAM,IPROPT,
-     &                           WORK,KFREE,LFREE)
+     &                           IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,
@@ -3948,7 +3946,7 @@ C
      &              get_orbital_rotation_indices_pp(),1)
          CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,
      &              get_orbital_rotation_indices_pn(),1)
-        
+
 C
       END IF
 C

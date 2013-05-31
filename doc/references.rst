@@ -33,7 +33,8 @@ or popular Google-Books web-space.
 .. [Baker1993] J. Baker,
    *Techniques for geometry optimization: A comparison of cartesian and natural internal coordinates*, J. Comp. Chem. **14**, 1085 (1993)
    `[web] <http://dx.doi.org/10.1002/jcc.540140910>`_
-.. [Bast2009} Radovan Bast, Hans Jørgen Aa. Jensen and Trond Saue, 
+
+.. [Bast2009] Radovan Bast, Hans Jørgen Aa. Jensen and Trond Saue, 
    *Relativistic adiabatic time-dependent density functional theory using hybrid functionals and noncollinear spin magnetization*, Int. J. Quant. Chem. **109**, 2091 (2009) 
    `[web] <http://dx.doi.org/10.1002/qua.22065>`_
 

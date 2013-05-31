@@ -19,6 +19,7 @@ macro(config_math_service _SERVICE)
         endif()
         message("-- Using own ${_SERVICE} implementation (slow)")
         add_definitions(-DUSE_OWN_${_SERVICE})
+        set(USE_OWN_${_SERVICE} TRUE)
     endif()
 endmacro()
 
@@ -30,6 +31,9 @@ set(EXPLICIT_LIBS
     "User set math libraries"
     FORCE
     )
+
+set(USE_OWN_BLAS   FALSE)
+set(USE_OWN_LAPACK FALSE)
 
 if(EXPLICIT_LIBS)
     set(LIBS

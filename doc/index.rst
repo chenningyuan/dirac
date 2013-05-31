@@ -18,7 +18,8 @@ Setting up DIRAC
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`MPI <installation/int64/mpi>` |
-  :doc:`Math libraries <installation/int64/math>`
+  :doc:`Math libraries <installation/int64/math>` |
+  :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
@@ -42,7 +43,8 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>` |
+  :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
@@ -153,6 +155,7 @@ Developers
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
+  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**
