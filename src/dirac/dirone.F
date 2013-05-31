@@ -236,21 +236,19 @@ C         Calculate property matrices for nuclear displacements
 C           Calculate the integrals  
             CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
      &                  DOINT,OMITVNUC,IPRHAM)
-!                                      iprint is not defined - stefan april 2011
-!    &                  DOINT,OMITVNUC,IPRINT)
           ENDDO
           GNUEXP(K) = EXPPLC
 C         Create total property matrix with correct prefactor
           CALL MEMGET('REAL',KHELP,NNBBASX,WORK,KFREE,LFREE)
+          call dzero(work(khelp),nnbbasx)
           prefac2(1) = +1.0d0
           prefac2(2) = -8.0d0
           prefac2(3) = +8.0d0
           prefac2(4) = -1.0d0
-          call dscal(NNBBASX,PREFACTOR*prefac2(1),WORK(KONEIN),1)
-          do l = 2, 4
-          call dcopy(NNBBASX,WORK(KONEIN+(L-1)*NNBBASX),1,work(KHELP),1)
-          call daxpy(NNBBASX,PREFACTOR*prefac2(l),work(KHELP),1,
-     &               WORK(KONEIN),1)
+          do l = 1, 4
+          call daxpy(NNBBASX,PREFACTOR*prefac2(l),
+     &               work(konein+(l-1)*nnbbasx),1,
+     &               WORK(khelp),1)
           end do
 !         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
 !    &    (
@@ -259,10 +257,10 @@ C         Create total property matrix with correct prefactor
 !    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
 !    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
 !    &    )
-          CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
 C         Store matrix in AOproper file 
           ITYP = ITYP + 1
-          CALL WRTPRO(WORK(KONEIN),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
+          CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
+          CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
         ENDIF
       ENDDO
 
@@ -299,13 +297,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION GEXPEFFDE2(4)
 C     Generate nuclear radius from the gaussian exponent    
       RADIUS = SQRT(3D0 / (2D0 * GNUEXP(NUCLEUS)) )
-C     Generate new gaussian parameters dR=0.005R
+C     Generate new gaussian parameters with dR=0.005R
       GEXPEFFDE2(1) = 3D0 / (2D0 * 0.990D0 * 0.990D0 * RADIUS * RADIUS) 
       GEXPEFFDE2(2) = 3D0 / (2D0 * 0.995D0 * 0.995D0 * RADIUS * RADIUS)
       GEXPEFFDE2(3) = 3D0 / (2D0 * 1.005D0 * 1.005D0 * RADIUS * RADIUS)
-      GEXPEFFDE2(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)  
-C     Prefactor = 3 / (48*Z*Pi*R*dR) 
+      GEXPEFFDE2(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)
+C     Prefactor = 3 / (48*Z*Pi*R*dR)
       PREFACTOR = 12.5D0 / (RADIUS * RADIUS * CHARGE(NUCLEUS) * PI)
+!     write(lupri,*) 'gnuexp, radius, pi, prefac, new exp',
+!    & GNUEXP(NUCLEUS), radius, pi, prefactor,GEXPEFFDE2(1:4) 
       RETURN
       END 
 

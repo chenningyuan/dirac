@@ -86,6 +86,12 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
    {
 // now we branch off for the different pieces of the trace we want 
 // to use 
+
+//  if we are on a mac, reformat the traceback strings
+#if (__APPLE__ & __MACH__)
+      parse_trace(size,strings);
+#endif
+
       if ( *action == printAllToStdout ) 
          retrieve_symbol(symbolRetAddr,symbol_name,strings[i]);
       else if ( *action == printPrettyTrace || *action == prinRawTrace )
@@ -109,9 +115,6 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 // i=3 before) 
 //
 ////        print_trace_to_stdout(prinRawTrace,size,strings);
-#if (__APPLE__ & __MACH__)
-            parse_trace(size,strings);
-#endif
             j = findnext_internal_symbols(size,strings);
 
 ////        printf("now the pretty trace...\n");

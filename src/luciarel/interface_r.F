@@ -1412,10 +1412,11 @@ C     NOINT_FILE = .TRUE.
         end if
         ITPSV = 0
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1) 
-     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
+          if (NTEST.ge.1)then
+            write(LUINGR,'(A)') 'INTEGRAL FILE'
             call dump_integral_info(f1,f2,IRI,nasht/2,NASHT,nz,
      &                              irilp,ipqtoq(1,0),luingr)
+          end if
         end if
 
  
