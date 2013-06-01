@@ -154,6 +154,7 @@ CONTAINS
     !reladc_md_filediag = fn_adcdiag
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
+    reladc_md_isfano   = .true.
 
     
     CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
@@ -170,6 +171,8 @@ CONTAINS
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
     CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    ! For the next runs Lanczos is again in normal mode
+    reladc_md_isfano = .false.
 
     CALL dealloc(buflanc)
 
