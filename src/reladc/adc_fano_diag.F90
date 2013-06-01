@@ -152,7 +152,7 @@ CONTAINS
 !
 !--------------------------------------------------------------
 !
-  SUBROUTINE fano_find_in_vec(n,z,positions,nr_in_vecs)
+  SUBROUTINE fano_find_in_vec(n,z,positions,nr_in_vecs,iw)
 !
 !  Purpose: To find the eigenvectors of the Lanczos matrix having
 !           a non-negliable contribution to the Fano initial state
@@ -168,6 +168,7 @@ CONTAINS
     REAL(8), INTENT(IN), DIMENSION(N,N) :: z
     INTEGER, INTENT(OUT), DIMENSION(N)  :: positions
     INTEGER, INTENT(OUT)                :: nr_in_vecs
+    INTEGER, INTENT(IN)                 :: iw
 
 !
 ! Local Variables

@@ -80,10 +80,9 @@ CONTAINS
     nok  = NO(krep)
     najl = NOOVT(krep)
 
-    ! Check physical possibility of initial state choice
+!    ! Check physical possibility of initial state choice
     IF (reladc_fano_inrelsp > nok) THEN
-      CALL QUIT('Spinor of initial state ', reladc_fano_inrelsp, &
-                ' larger than number of hole states ', nok)
+      CALL QUIT('Unphysical choice of initial state')
     END IF
 
     ! Create lookup table bigicra
