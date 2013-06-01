@@ -148,4 +148,51 @@ CONTAINS
                                                                   
   END SUBROUTINE fano_wcondat_s             
 
+
+!
+!--------------------------------------------------------------
+!
+  SUBROUTINE fano_find_in_vec(n,z,positions,nr_in_vecs)
+!
+!  Purpose: To find the eigenvectors of the Lanczos matrix having
+!           a non-negliable contribution to the Fano initial state
+!           and write the positions within Z to an array
+
+    use adc_cfg
+
+    IMPLICIT NONE
+!
+! Calling Variables
+!
+    INTEGER, INTENT(IN)                 :: n
+    REAL(8), INTENT(IN), DIMENSION(N,N) :: z
+    INTEGER, INTENT(OUT), DIMENSION(N)  :: positions
+    INTEGER, INTENT(OUT)                :: nr_in_vecs
+
+!
+! Local Variables
+!
+    REAL(8)                :: contrib
+    REAL, PARAMETER        :: thresh=0.2
+    INTEGER                :: initial
+    INTEGER                :: j
+
+!
+! Code
+!
+    positions  = 0
+    nr_in_vecs = 0
+    initial    = reladc_fano_inrelsp
+
+    DO j=1,n
+      contrib = z(initial,j) * z(initial,j)
+      IF (contrib >= thresh) THEN
+        nr_in_vecs = nr_in_vecs + 1
+        positions(nr_in_vecs) = j
+      END IF
+    END DO
+
+
+  END SUBROUTINE fano_find_in_vec
+
 END MODULE adc_fano_diag
