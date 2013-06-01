@@ -77,14 +77,19 @@ CONTAINS
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
 
+    nok  = NO(krep)
+    najl = NOOVT(krep)
+
+    ! Check physical possibility of initial state choice
+    IF (reladc_fano_inrelsp > nok) THEN
+      CALL QUIT('Spinor of initial state ', reladc_fano_inrelsp, &
+                ' larger than number of hole states ', nok)
+    END IF
 
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
     CALL make_bigicra(krep,bigicra,iw)
     CALL alloc(icra,6,nvoot(krep), id='FanoADC: icra - integer')
-
-    nok  = NO(krep)
-    najl = NOOVT(krep)
 
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
