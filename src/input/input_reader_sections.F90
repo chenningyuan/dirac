@@ -1238,7 +1238,7 @@
          reladc_no_sipreps = reladc_no_sipreps + 1
          reladc_sipreps(reladc_no_sipreps) = reladc_fano_inrep
          reladc_sipeigv(reladc_no_sipreps) = 0
-         call kw_read(word, reladc_fano_inabssp) ! use absolute spinor numbers
+         call kw_read(word, reladc_fano_inrelsp) ! use relative spinor numbers
       end if
 
       if (kw_matches(word, '.FANOCHNL')) then

@@ -79,7 +79,7 @@ module adc_cfg
   logical, public                  :: reladc_dofano       = .false.
   logical, public                  :: reladc_fanoonly     = .false.
   integer, public                  :: reladc_fano_inrep   = 0
-  integer, public                  :: reladc_fano_inabssp = 0
+  integer, public                  :: reladc_fano_inrelsp = 0
   integer, public                  :: reladc_fano_nrchannels = 0
   integer, public                  :: reladc_fano_eigv    = 0
   integer, public, allocatable, dimension(:,:)     :: reladc_fano_channels
