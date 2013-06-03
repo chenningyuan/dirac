@@ -87,7 +87,7 @@ C
       DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
-     &            '.PRINT ','.FCIDUM','.NATOCC','xxxxxxx','.INTFLG',
+     &            '.PRINT ','.FCIDUM','.NATOCC','.XPSINT','.INTFLG',
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
@@ -141,6 +141,7 @@ C
       LOWSORT_KRCI      = .FALSE.
       save_reordered_nos_krci = .false.
       fcidump_krci      = .false.
+      XPSINTERFACE_KRCI = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -527,7 +528,8 @@ C&&& .FCIDUMP
 C&&& .NATOCC: synonym for .NOOCCN
                GO TO 10
    19          CONTINUE
-C&&& xxxxxx:
+C&&& .XPSINTERFACE: interface information for Paul Bagus XPS system
+                  XPSINTERFACE_KRCI = .TRUE.
                GO TO 100
    20          CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
@@ -614,42 +616,42 @@ C&&& .TRDM calculation of transition dipole moments and oscillator strenghts
                   DOOSCILLST  = .TRUE.
                GO TO 100
    33          CONTINUE
-C&&& OMEGA quantum number: calculate <CI state|j_z|CI state> expectation value
+C&&& .OMEGA quantum number: calculate <CI state|j_z|CI state> expectation value
 C                          using j_z = l_z + s_z
                   DOPROP_KRCI  = .TRUE.
                   DOJZEXP = .TRUE.
                GO TO 100
-C&&&  THRECI:  CI energy convergence threshold
+C&&& .THRECI:  CI energy convergence threshold
    34          CONTINUE
                read(lucmd,*) DKRCI_THRECI
                GO TO 100
    35          CONTINUE
-C&&&  CHECKP:  write intermediate check point file that is readable by
+C&&& .CHECKP:  write intermediate check point file that is readable by
 C              the MASTER - useful in parallel calculations
                CHCKPT_KRCI = .TRUE.
                GO TO 100
    36          CONTINUE
-C&&&  USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (ascii format)
+C&&& .USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (ascii format)
 C              to write/get connection matrix and resulting block
 C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
-C&&&  GENFOC:  transform positronic/inactive/virtual spinors to
+C&&& .GENFOC:  transform positronic/inactive/virtual spinors to
 C              Fock-type spinors
                GENFOCK_KRCI = .TRUE.
                GO TO 100
    38          CONTINUE
-C&&&  TRA NO:  transform to natural CI spinors
+C&&& .TRA NO:  transform to natural CI spinors
                TRANATO_KRCI = .TRUE.
                GO TO 100
    39          CONTINUE
-C&&&  LOWSRT:  use memory-saving path in the integral sorting step
+C&&& .LOWSRT:  use memory-saving path in the integral sorting step
 C              can only be used in combination with .IJKLRO
                LOWSORT_KRCI = .TRUE.
                GO TO 100
    40          CONTINUE
-C&&&  SEL ST:  select CI state(s) by <j_z> expectation value
+C&&& .SEL ST:  select CI state(s) by <j_z> expectation value
 C              the coefficients will be stored on the vector file
 C              KRCI_CVECS."$sym_tag".select
 C              this option may be used for "state-selection" in a
@@ -672,18 +674,18 @@ C              subsequent MCSCF...
                END IF
                GO TO 100
    41          CONTINUE
-C&&&  DIPMOM:  calculate permanent dipole moment of electronic ground
+C&&& .DIPMOM:  calculate permanent dipole moment of electronic ground
 C              and excited states.
                doprop_krci   = .true.
                dodipmom_krci = .true.
                GO TO 100
    42          CONTINUE
-!&&&  MCANA :  tell luciarel that this is a analyze run where the CI vector is to be read from the MCSCF file
+!&&& .MCANA :  tell luciarel that this is a analyze run where the CI vector is to be read from the MCSCF file
                domcana_krci  = .true.
                GO TO 100
    43          CONTINUE
 
-C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA)
+C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA)
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRCIGAS .GT. 0)THEN
                   CALL QUIT('*** ERROR in *KRCICALC *** ' //
@@ -754,11 +756,11 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                GO TO 100
    44          CONTINUE
-C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
+C&&& .SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
                save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
-C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+C&&& .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
                save_reordered_nos_krci = .true.
                READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
@@ -1187,14 +1189,17 @@ C
   303   continue
       end if
 C
+      IF ( XPSINTERFACE_KRCI ) THEN
+         WRITE (LUPRI,'(/A)')
+     &   " * Writing interface file to Paul Bagus' XPS programs"
+      END IF
+C
   400 if(linear) then
-!       call quit('bla bla')
         if(allocated(nkrci_ciroots_symstr))
      &    deallocate(nkrci_ciroots_symstr)
       end if
 
-!     call quit('bla bla... :)')
-
+      return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_CALC(WFTYP,WFCONV)
@@ -1299,6 +1304,11 @@ C
 !
 !     set convergence threshold for GASCIP CI calculations
       opt_thrgrd = DKRCI_THRGCI
+
+      IF ( XPSINTERFACE_KRCI ) THEN
+      ! write headers to XPS interface files
+         CALL QUIT('Sorry, .XPSINTERFACE is not implemented yet')
+      END IF
 C
 C     ***************************************************
 C     *** Loop over symmetries for CI roots *************
