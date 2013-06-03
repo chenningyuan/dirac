@@ -9,6 +9,8 @@ if(ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
+    else()
+        message(FATAL_ERROR "You asked for mpi, but cmake couldn't find any MPI installation")
     endif()
 endif()
 
