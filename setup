@@ -25,7 +25,7 @@ default_path = os.path.join(root_directory, 'build')
 
 # initialize parser
 
-parser = ArgumentParser(description="Setup build configurations.")
+parser = ArgumentParser(description="setup build configurations")
 
 # define options
 
@@ -35,7 +35,7 @@ parser.add_argument('builddir', nargs='?',
         help='build directory [default: %(default)s]',
         metavar='build path')
 
-group = parser.add_argument_group('Basic options')
+group = parser.add_argument_group('basic options')
 group.add_argument('--fc',
         action='store',
         default=None,
@@ -287,8 +287,7 @@ def setup_build_path(build_path, only_show_command):
         fname = os.path.join(build_path, 'CMakeCache.txt')
         if os.path.exists(fname):
             if not only_show_command:
-                print('aborting setup - build directory %s which contains CMakeCache.txt' % build_path)
-                print('exists already')
+                print('aborting setup - build directory %s which contains CMakeCache.txt exists already' % build_path)
                 print('remove the build directory and then rerun setup')
                 sys.exit()
     else:
@@ -302,7 +301,13 @@ def run_cmake(command, build_path):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
     s = p.communicate()[0]
+    # print cmake output to screen
     print(s)
+    # write cmake output to file
+    f = open('setup_cmake_output', 'w')
+    f.write(s)
+    f.close()
+    # change directory and return
     os.chdir(topdir)
     return s
 
