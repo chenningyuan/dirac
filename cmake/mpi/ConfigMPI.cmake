@@ -18,7 +18,6 @@ endif()
 if(MPI_FOUND)
 
     # test whether we are able to compile a simple MPI program
-    # if not, we stop configuration
     file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
@@ -54,16 +53,16 @@ if(MPI_FOUND)
         if(ENABLE_64BIT_INTEGERS)
             message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
             add_definitions(-DVAR_MPI_32BIT_INT)
+            set(USE_32BIT_MPI_INTERFACE TRUE)
         else()
             message("-- WARNING: Cannot determine whether MPI is built for 32bit integers")
         endif()
     endif()
 
-    if(ENABLE_32BIT_MPI_INTERFACE)
-        if(ENABLE_64BIT_INTEGERS)
-            message("-- 32-bit integer MPI interface activated by the user")
-            add_definitions(-DVAR_MPI_32BIT_INT)
-        endif()
+    if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
+        message("-- 32-bit integer MPI interface activated by the user")
+        add_definitions(-DVAR_MPI_32BIT_INT)
+        set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
 
     if(ENABLE_MPI2_DETECTION)
