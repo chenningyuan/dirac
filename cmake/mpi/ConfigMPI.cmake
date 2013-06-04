@@ -3,6 +3,7 @@ include(CheckFortranSourceCompiles)
 if(ENABLE_SGI_MPT)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -lmpi")
     set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -lmpi")
+    set(MPI_FOUND TRUE)
 endif()
 
 if(ENABLE_MPI)
@@ -10,11 +11,11 @@ if(ENABLE_MPI)
     if(MPI_FOUND)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
     else()
-        message(FATAL_ERROR "You asked for mpi, but cmake couldn't find any MPI installation")
+        message(FATAL_ERROR "-- You asked for MPI, but CMake could not find any MPI installation, check $PATH")
     endif()
 endif()
 
-if(MPI_FOUND OR ENABLE_SGI_MPT)
+if(MPI_FOUND)
 
     # test whether we are able to compile a simple MPI program
     # if not, we stop configuration
@@ -82,13 +83,4 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
         message("-- MPI-2 support disabled, will try with MPI-1")
     endif()
 
-endif()
-
-if(ENABLE_OPENMP)
-    find_package(OpenMP)
-    if(OpenMP_FOUND)
-        add_definitions(-DVAR_OMP)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_COMPILE_FLAGS}")
-        include_directories(${OpenMP_INCLUDE_PATH})
-    endif()
 endif()
