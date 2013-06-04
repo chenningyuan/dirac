@@ -5,6 +5,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
                                    # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops -w")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -static"
@@ -25,11 +26,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -ftest-coverage"
             )
     endif()
-    if(ENABLE_PROFILING)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -pg"
-            )
-    endif()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
@@ -40,6 +36,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
     if(DEFINED MKL_FLAG)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
@@ -61,11 +58,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
             )
     endif()
-    if(ENABLE_PROFILING)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -pg"
-            )
-    endif()
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
@@ -79,6 +71,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -87,11 +80,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} "
-            )
-    endif()
-    if(ENABLE_PROFILING)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -pg"
             )
     endif()
     if(ENABLE_CODE_COVERAGE)
@@ -105,6 +93,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qsuppress=cmpmsg")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -qintsize=8 -q64"

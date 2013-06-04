@@ -16,7 +16,6 @@ option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"              
 # option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
 # option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
 # option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
-option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
@@ -34,6 +33,7 @@ option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"  
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
+option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
