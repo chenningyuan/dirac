@@ -18,7 +18,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
 
     # test whether we are able to compile a simple MPI program
     # if not, we stop configuration
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPATIBLE
@@ -31,7 +31,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     include_directories(${MPI_INCLUDE_PATH})
 
     # test whether MPI module is compatible with compiler
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compiler-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPILER_MATCHES
@@ -44,7 +44,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     endif()
 
     # test whether MPI integer type matches
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-itype-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_ITYPE_MATCHES
@@ -67,7 +67,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
 
     if(ENABLE_MPI2_DETECTION)
         # test whether MPI-2 is available
-        file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90" _source)
+        file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-2-compatibility.F90" _source)
         check_fortran_source_compiles(
             ${_source}
             MPI_2_COMPATIBLE
