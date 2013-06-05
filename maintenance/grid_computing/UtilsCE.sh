@@ -58,11 +58,10 @@ echo -e "through the 'free -t -m' command (values in MB): "; free -m -t
 #####################
 # check space on CE #
 #####################
-echo -e "\n--- Server's current dir filesystem (df -h .): "; df -h .
-echo -e "--- My current directory :  $PWD "
+echo -e "\n--- My current directory :  $PWD "
+echo -e "--- Server's current dir filesystem (df -h .): "; df -h .
 echo -e "--- Occupied current space by me (du -hs .) : \c"; du -hs .
 
-echo -e "\n--- Server's tmp, scratch filesystems (df -hl /tmp /scratch): "; df -hl /tmp /scratch
 echo -e "\n--- Server's tmp filesystem (df -h /tmp/.): "; df -h /tmp/.
 echo -e "\n--- Server's whole filesystem (df -h): "; df -h
 
