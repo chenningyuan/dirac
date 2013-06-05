@@ -112,14 +112,14 @@ CONTAINS
 !
 !  allocate arrays
 !
-    CALL alloc(single_col,ladc)
-    CALL alloc(inbuf,fano_intbuf)
-    CALL alloc(inioi,fano_intbuf)
-    CALL alloc(inioj,fano_intbuf)
-    CALL alloc(adcbuf,fano_intbuf)
-    CALL alloc(adcioi,fano_intbuf)
-    CALL alloc(adcioj,fano_intbuf)
-    CALL alloc(temp_array,fin_max,3)
+    CALL alloc(single_col,ladc,id='single column in Fano hphp')
+    CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
+    CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
+    CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
+    CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
+    CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
+    CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
+    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
 
 ! ---------------------------------
 !  Code
@@ -529,9 +529,9 @@ CONTAINS
       fincol = 0
       finib = 0
       finnbufs = 0
-      CALL alloc(finbuf, fano_intbuf)
-      CALL alloc(finioi, fano_intbuf)
-      CALL alloc(finioj, fano_intbuf)
+      CALL alloc(finbuf, fano_intbuf,id='buffer of final state')
+      CALL alloc(finioi, fano_intbuf,id='row buffer final state')
+      CALL alloc(finioj, fano_intbuf,id='col buffer final state')
       DO finalcol = 1, fin_max
         adccol = adccol + 1
         fincol = fincol + 1
@@ -611,9 +611,9 @@ CONTAINS
       CALL dealloc(adcioi)
       CALL dealloc(adcioj)
       ! allocate final buffers
-      CALL alloc(finbuf, fano_intbuf)
-      CALL alloc(finioi, fano_intbuf)
-      CALL alloc(finioj, fano_intbuf)
+      CALL alloc(finbuf, fano_intbuf,id='buffer final state')
+      CALL alloc(finioi, fano_intbuf,id='row buffer final state')
+      CALL alloc(finioj, fano_intbuf,id='col buffer final state')
       finib = 0
       !WRITE(iw,*) 'finib = ', finib
       !WRITE(iw,*) 'end   = ', ladc-fin_max+1
