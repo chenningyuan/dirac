@@ -2899,7 +2899,7 @@ c
 
       IF (reladc_md_isfano) THEN
         CALL alloc(positions,N,id="array of position numbers fano Lanc")
-        CALL fano_find_in_vec(N,Z,positions,nr_in_vecs,iw)
+        CALL fano_find_in_vec(N,EVL,Z,positions,nr_in_vecs,iw)
 
         OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
         WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors

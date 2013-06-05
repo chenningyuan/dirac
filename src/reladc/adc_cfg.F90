@@ -78,6 +78,7 @@ module adc_cfg
 !
   logical, public                  :: reladc_dofano       = .false.
   logical, public                  :: reladc_fanoonly     = .false.
+  logical, public                  :: reladc_fano_ovl_in  = .false.
   integer, public                  :: reladc_fano_inrep   = 0
   integer, public                  :: reladc_fano_inrelsp = 0
   integer, public                  :: reladc_fano_nrchannels = 0
