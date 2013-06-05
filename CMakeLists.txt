@@ -218,12 +218,6 @@ add_library(
     ${GENERATED_FILES}
     )
 
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dirac.x
-    )
-
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     add_executable(
@@ -315,3 +309,7 @@ else()
 endif()
 
 include(ConfigPackaging)
+
+# give information about system, compiler flags, and size of static allocations
+set(STATIC_MEM_INFO_BINARIES dirac)
+include(ConfigInfo)
