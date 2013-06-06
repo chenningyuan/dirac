@@ -30,6 +30,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
@@ -161,6 +162,7 @@
       enddo
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
+
 !
 !  release all memory
 !
@@ -337,6 +339,11 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAR2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+
+      use memory_allocator
+      use adc_fano_exchange
+      use adc_mat
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
@@ -465,6 +472,18 @@
       enddo
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
+!
+!  in case of a Fano run, write eigenvectors to array
+!
+      IF(reladc_md_isfano) THEN
+        CALL alloc(fin_evecs,ladc,ladc,id='array of Fano final states')
+        CALL alloc(fin_energies,ladc,id='2h1p energies of final states')
+        WRITE(*,*) 'Saving final state vectors and energies to arrays'
+        
+        fin_energies(1:ladc)     = evl(1:ladc)
+        fin_evecs(1:ladc,1:ladc) = a(1:ladc,1:ladc)
+
+      END IF
 !
 !  release all memory
 !
