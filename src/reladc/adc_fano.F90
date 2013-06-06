@@ -19,6 +19,8 @@ CONTAINS
     use adc_fano_diag
     use adc_fano_routines
     use memory_allocator
+    use adc_fano_exchange
+    use adc_fano_matmul
 
     IMPLICIT NONE
 
@@ -43,7 +45,6 @@ CONTAINS
 !
 !  Data dictionary: Local Variables (and to be shared with subroutines)
 !
-    INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: icra
     INTEGER, ALLOCATABLE, DIMENSION(:,:)  :: bigicra
     INTEGER                               :: nr_in, nr_fin
     INTEGER                               :: nok, najl
@@ -55,6 +56,8 @@ CONTAINS
 !    INTEGER                               :: ierror = 0
     INTEGER                               :: idpt
     INTEGER                               :: ixx
+
+    REAL(8), ALLOCATABLE, DIMENSION(:)    :: e2h1p, t_mom
 
 !
 !  Interfaces
@@ -88,7 +91,6 @@ CONTAINS
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
     CALL make_bigicra(krep,bigicra,iw)
-    CALL alloc(icra,6,nvoot(krep), id='FanoADC: icra - integer')
 
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
@@ -108,7 +110,6 @@ CONTAINS
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
                        finalpos,iw,mxno)
 
-    CALL dealloc(icra)
     CALL dealloc(bigicra)
 
     WRITE(iw,*)
@@ -127,6 +128,7 @@ CONTAINS
     
 
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
+    reladc_md_isfano   = .true.
     CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
@@ -158,7 +160,6 @@ CONTAINS
     !reladc_md_filediag = fn_adcdiag
     reladc_md_filecnf  = fn_conf
     reladc_md_nmspec   = 'FSPEC'
-    reladc_md_isfano   = .true.
 
     
 !    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
@@ -177,8 +178,17 @@ CONTAINS
     CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
-
     CALL dealloc(buflanc)
+
+    WRITE(iw,*)
+    WRITE(iw,*) '------------------------------------------'
+    WRITE(iw,*) 'All vectors and matrices are now present'
+    WRITE(iw,*) 'The next step of the Fano run is the    '
+    WRITE(iw,*) 'matrix vector multiplication.'
+    WRITE(iw,*) '------------------------------------------'
+    WRITE(iw,*)
+
+    CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin,e2h1p,t_mom,iw)
 
   END SUBROUTINE fanoadc
 
