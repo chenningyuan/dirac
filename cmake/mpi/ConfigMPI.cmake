@@ -3,20 +3,28 @@ include(CheckFortranSourceCompiles)
 if(ENABLE_SGI_MPT)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -lmpi")
     set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -lmpi")
+    set(MPI_FOUND TRUE)
 endif()
 
 if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
+    if(ENABLE_CRAY_WRAPPERS)
+        message("-- Use CRAY wrappers; this disables MPI detection")
+        set(MPI_FOUND TRUE)
+    else()
+        find_package(MPI)
+        if(MPI_FOUND)
+            set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
+            include_directories(${MPI_INCLUDE_PATH})
+        else()
+            message(FATAL_ERROR "-- You asked for MPI, but CMake could not find any MPI installation, check $PATH")
+        endif()
     endif()
 endif()
 
-if(MPI_FOUND OR ENABLE_SGI_MPT)
+if(MPI_FOUND)
 
     # test whether we are able to compile a simple MPI program
-    # if not, we stop configuration
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPATIBLE
@@ -26,10 +34,9 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
   # endif()
 
     add_definitions(-DVAR_MPI)
-    include_directories(${MPI_INCLUDE_PATH})
 
     # test whether MPI module is compatible with compiler
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-compiler-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compiler-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_COMPILER_MATCHES
@@ -42,7 +49,7 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
     endif()
 
     # test whether MPI integer type matches
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-itype-compatibility.F90" _source)
+    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-itype-compatibility.F90" _source)
     check_fortran_source_compiles(
         ${_source}
         MPI_ITYPE_MATCHES
@@ -51,21 +58,21 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
         if(ENABLE_64BIT_INTEGERS)
             message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
             add_definitions(-DVAR_MPI_32BIT_INT)
+            set(USE_32BIT_MPI_INTERFACE TRUE)
         else()
             message("-- WARNING: Cannot determine whether MPI is built for 32bit integers")
         endif()
     endif()
 
-    if(ENABLE_32BIT_MPI_INTERFACE)
-        if(ENABLE_64BIT_INTEGERS)
-            message("-- 32-bit integer MPI interface activated by the user")
-            add_definitions(-DVAR_MPI_32BIT_INT)
-        endif()
+    if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
+        message("-- 32-bit integer MPI interface activated by the user")
+        add_definitions(-DVAR_MPI_32BIT_INT)
+        set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
 
     if(ENABLE_MPI2_DETECTION)
         # test whether MPI-2 is available
-        file(READ "${CMAKE_SOURCE_DIR}/cmake/parallel-environment/test-MPI-2-compatibility.F90" _source)
+        file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-2-compatibility.F90" _source)
         check_fortran_source_compiles(
             ${_source}
             MPI_2_COMPATIBLE
@@ -80,13 +87,4 @@ if(MPI_FOUND OR ENABLE_SGI_MPT)
         message("-- MPI-2 support disabled, will try with MPI-1")
     endif()
 
-endif()
-
-if(ENABLE_OPENMP)
-    find_package(OpenMP)
-    if(OpenMP_FOUND)
-        add_definitions(-DVAR_OMP)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_COMPILE_FLAGS}")
-        include_directories(${OpenMP_INCLUDE_PATH})
-    endif()
 endif()

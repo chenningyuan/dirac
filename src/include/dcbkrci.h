@@ -9,14 +9,16 @@
      &        CSHMEMO_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI,           &
      &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI, GENFOCK_KRCI, &
      &        TRANATO_KRCI, LOWSORT_KRCI, STATE_SELECT_KRCI,            &
-     &        domcana_krci, save_reordered_nos_krci, fcidump_krci
+     &        domcana_krci, save_reordered_nos_krci, fcidump_krci,      &
+     &        XPSINTERFACE_KRCI
       CHARACTER*8 KRCI_CIPROGRAM
       COMMON /DCLKRCI/ KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI,        &
      &                 CWRTFO_MAT_KRCI, CSHMEMO_KRCI, CINT_REORD_KRCI,  &
      &                 CINT_SPLIT_KRCI, NATOLCR_KRCI, CHCKPT_KRCI,      &
      &                 CUSE_PBLFL_KRCI, GENFOCK_KRCI, TRANATO_KRCI,     &
      &                 LOWSORT_KRCI, STATE_SELECT_KRCI, domcana_krci,   &
-     &                 save_reordered_nos_krci, fcidump_krci
+     &                 save_reordered_nos_krci, fcidump_krci,           &
+     &        XPSINTERFACE_KRCI
 
       INTEGER NKRCIISH(2), NKRCIASH(2), NKRCISSH(2),                    &
      &        NKRCIGSH(2, MXGAS), NKRCIGSP(2, MXGAS), NKRCIESH(2),      &
