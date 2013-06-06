@@ -576,6 +576,7 @@ C
       INTEGER KFRSAV,LFRSAV,IDUMMY(2)
       REAL*8 RDUMMY(2)
       COMPLEX*16 CDUMMY(2)
+      REAL(8), ALLOCATABLE, DIMENSION(:,:) :: adummy
 
       CHARACTER*5 NMSPECF
       PARAMETER(NMSPECF='SSPEC')
@@ -1658,7 +1659,7 @@ c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
 c
 c  call Lanczos diagonalizer. 
 c
-            CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+            CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE,adummy,idummy)
 c
             WRITE(IW,*)
             WRITE(IW,*) '       ------------------------------'
