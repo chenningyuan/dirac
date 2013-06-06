@@ -44,6 +44,10 @@
 ! read in the long eigenvectors in memory (one is in general only interested in a very
 ! small subset of eigenvectors compared to the size of the ADC matrix).
 !
+      use adc_mat
+      use adc_fano_exchange
+      use memory_allocator
+
       implicit none
 !
 ! transferred variables
@@ -291,6 +295,11 @@
 !______________________________________________________
 !|
 !|
+        IF(reladc_md_isfano) THEN
+          nr_in_evecs = nindep
+          CALL alloc(in_evecs,ladcx,nr_in_evecs)
+        END IF
+
         DO 177 K=1,NINDEP
 !
 ! it can happen that even a set of linearly independent vectors still does not
@@ -324,6 +333,10 @@
               icount = icount + 1
             endif
           ENDDO
+
+          IF(reladc_md_isfano) THEN
+            in_evecs(1:ladcx,k) = evli(1:ladcx,k)
+          END IF
 !
         ELSE IF(ionizlevel.eq.2) then
 !
