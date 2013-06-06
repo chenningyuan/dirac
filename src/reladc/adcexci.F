@@ -44,9 +44,6 @@
       integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
       real*8, allocatable     :: cc(:)   ! work space for diag_lanc
-      ! dummy variables for DIAG_LANC, needed for Fano
-      real(8), allocatable, dimension(:,:) :: a2dummy
-      integer                              :: idummy
 !
 !-----------------------interface section---------------------
 !
@@ -317,8 +314,7 @@
 !
 !  perform Lanczos
 !
-          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore,a2dummy,
-     &                   idummy)
+          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
 ! free all memory that was used for diagonalization
 !
@@ -1313,7 +1309,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
 
       CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!     write(*,'(A,4I4)') '?: cdrep,klrep,cdrep*klrep*,desrepkr',
+!     write(*,'(A,4I4)') 'µ: cdrep,klrep,cdrep*klrep*,desrepkr',
 !    &  cdrep,klrep,MULTB(CDREP+NREP,KLREP+NREP,2),desrepkr
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1393,7 +1389,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
 
         CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!       write(*,'(A,4I4)') '?: cdrep,klrep,cdrep*klrep*,desrep',
+!       write(*,'(A,4I4)') '¶: cdrep,klrep,cdrep*klrep*,desrep',
 !    &   cdrep,klrep,MULTB(CDREP+NREP,KLREP+NREP,2),desrepkr
 !
       DO 10 LREP = 1, NREP

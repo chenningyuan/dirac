@@ -55,19 +55,15 @@ CONTAINS
 !    INTEGER                               :: ierror = 0
     INTEGER                               :: idpt
     INTEGER                               :: ixx
-    INTEGER                               :: nr_in_evecs
-    REAL(8), ALLOCATABLE, DIMENSION(:,:)  :: in_evecs
 
 !
 !  Interfaces
 !
     INTERFACE
-      SUBROUTINE diag_lanc(cc,kfree,lfree,iw,doincore,in_evecs,nr_in_evecs)
-        REAL(8), DIMENSION(*)                 :: cc
-        INTEGER                               :: kfree, lfree, iw
-        LOGICAL, INTENT(IN)                   :: doincore
-        INTEGER, INTENT(OUT)                  :: nr_in_evecs
-        REAL(8), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT)  :: in_evecs
+      SUBROUTINE diag_lanc(cc,kfree,lfree,iw,doincore)
+        REAL(8), DIMENSION(*)  :: cc
+        INTEGER                :: kfree, lfree, iw
+        LOGICAL                :: doincore
       END SUBROUTINE diag_lanc
     END INTERFACE
 
@@ -178,7 +174,7 @@ CONTAINS
      &                KFREE,LFREE,.true.)
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
-    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.,in_evecs,nr_in_evecs)
+    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
 

@@ -633,8 +633,7 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE,in_evecs,
-     &                     nr_in_evecs)
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
 
       use adc_mat      !obtain matrix parameters via descriptor file
       use adc_cfg
@@ -645,8 +644,6 @@
       INTEGER KFREE,LFREE
       INTEGER IW
       LOGICAL DOINCORE
-      REAL(8), ALLOCATABLE, DIMENSION(:,:) :: in_evecs
-      INTEGER                              :: nr_in_evecs
 C
 C---------------Description--------------------------------------------
 C

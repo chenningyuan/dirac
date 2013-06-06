@@ -55,8 +55,6 @@ c variables for the lanczos
       REAL*8 RDUMMY
       INTEGER IONIZLEVEL
       INTEGER IRECL
-      REAL(8), ALLOCATABLE, DIMENSION(:,:) :: a2dummy
-      INTEGER                              :: idummy
 C
 C---------------Executable code--------------------------------------
 C
@@ -459,7 +457,7 @@ c
 c
 c  call Lanczos diagonalizer.
 c
-        CALL DIAG_LANC(CC,KFRSAV2,LFREE,IW,DOINCORE,a2dummy,idummy)
+        CALL DIAG_LANC(CC,KFRSAV2,LFREE,IW,DOINCORE)
 c
 c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
