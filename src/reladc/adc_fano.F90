@@ -188,7 +188,8 @@ CONTAINS
     WRITE(iw,*) '------------------------------------------'
     WRITE(iw,*)
 
-    CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin,e2h1p,t_mom,iw)
+    CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
+                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,iw)
 
   END SUBROUTINE fanoadc
 
