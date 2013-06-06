@@ -917,7 +917,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XTIME (TIMERT,FUNCT,NAME)
+      SUBROUTINE XTIME (TIMERT,FUNCT,NAME_IN)
 C
 C     Initial routine written by M. Pernpointner
 C     Documented and revised by L. Visscher
@@ -940,12 +940,15 @@ C         - NAME   : Name of the timer (max 30 characters)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
-      CHARACTER*30 NAME,T_REPORT
+      CHARACTER*(*) NAME_IN
+      CHARACTER*30  NAME, T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
 #include "priunit.h"
 #include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
+C
+      NAME = NAME_IN   ! extend with blanks if NAME_IN shorter than 30 chars
 C
 C     Check first for operations that involve all timers
 C

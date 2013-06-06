@@ -15,3 +15,6 @@
   and internally translate them.
 - Bugfix for permanent dipole moment calculations with KRCI. Missing nuclear contribution term 
   have been added and the correct sign for the dipole integrals (length gauge) has been introduced.
+- Bugfix for MP2-NO calculations. correct writing of 2-electron file MDCINT.
+- Workaround for memory allocator segmentation fault with gfortran can now be triggered with:
+  ./setup -D CPP="-DGFORTRAN_ALLOCATOR_WORKAROUND"

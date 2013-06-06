@@ -1294,19 +1294,19 @@ C
 C
 C
       IF (IPROPT .GE. 10) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) I, IFSMO, IOBTYP, IDXG2U, IDXG2E'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) I, IFSMO, IOBTYP, IDXG2U, IDXG2E'
          DO I = 1, NORBT
             WRITE(LUPRI,'(8X,I6,I7,I8,2I12)')
      &           I, IFSMO(I), IOBTYP(I), IDXG2U(I), IDXG2E(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) E and IDXE2G'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) E and IDXE2G'
          DO I = 1, NESHT
             WRITE(LUPRI,'(8X,I6,I11)') I, IDXE2G(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) U and IDXU2G'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) U and IDXU2G'
          DO I = 1, NASHT
             WRITE(LUPRI,'(8X,I6,I11)') I, IDXU2G(I)
          END DO
