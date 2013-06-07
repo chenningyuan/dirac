@@ -784,7 +784,7 @@ C     calculate 1-particle density to be exported on file - default
         CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
         CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &             .false.,.false.,.true.,IPRNO,WORK,KFREE,LFREE)
+     &             .false.,MOISNO,.true.,1,WORK,KFREE,LFREE)
         CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
       end if
 C
