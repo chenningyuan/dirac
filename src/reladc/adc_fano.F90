@@ -81,7 +81,7 @@ CONTAINS
     WRITE(iw,*) 
 
     nok  = NO(krep)
-    najl = NOOVT(krep)
+    najl = NVOOT(krep)
 
 !    ! Check physical possibility of initial state choice
     IF (reladc_fano_inrelsp > nok) THEN
@@ -95,6 +95,11 @@ CONTAINS
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
     fin_max = nr_fin
+
+    IF (fin_max == 0) THEN
+      CALL QUIT('No valid Fano final states given')
+    END IF
+
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
 
