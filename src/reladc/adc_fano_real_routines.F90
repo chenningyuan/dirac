@@ -76,13 +76,12 @@ CONTAINS
 !  Common Blocks
 !
 #include "../relccsd/symm.inc"
-!#include "../relccsd/files.inc" !brauche ich hoffentlich nicht
 
 !
 !  Data dictionary: Calling Variables
 !
     INTEGER, INTENT(IN)    :: crep              ! current representation
-    REAL(8), INTENT(IN), DIMENSION(no(crep)*no(crep))       :: ckks
+    REAL(8), INTENT(IN), DIMENSION(no(crep)*no(crep))    :: ckks
     REAL(8), INTENT(IN), DIMENSION(no(crep)*nvoot(crep)) :: bufhp
     INTEGER, INTENT(IN)    :: ladc              ! length of adc matrix
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
