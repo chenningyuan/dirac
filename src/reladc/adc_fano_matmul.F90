@@ -67,6 +67,8 @@ CONTAINS
     DO i = 1, nr_in_evecs
       vec1 = 0
       vec_start(1:nr_in) = in_evecs(1:nr_in,i)
+      !WRITE(iw,*) 'starting vector'
+      !WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
 
       CALL alloc(diag,ladc)
       REWIND(fhdiag)
@@ -76,12 +78,15 @@ CONTAINS
         vec1(j) = vec1(j) + diag(j) * vec_start(j)
       END DO
       CALL dealloc(diag)
+      !WRITE(iw,*) 'Vector with diagonal'
+      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
 
       DO k = 1, nbufs
         READ(fhmat) (buf(ixx),ixx=1,intbuf), &
                     (ioi(ixx),ixx=1,intbuf), &
                     (ioj(ixx),ixx=1,intbuf), &
                     nact, idummy
+!        WRITE(iw,*) 'nact = ', nact
         DO j = 1, nact
           irow   = ioi(j)
           jcol   = ioj(j)
@@ -91,6 +96,9 @@ CONTAINS
           vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
         END DO
       END DO
+      !WRITE(iw,*) 'Vector with total sorted matrix'
+      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+      
 !
 ! Now we have the initial state vector multiplied with the sorted ADC matrix.
 ! We will further multiply this vector to each and every final state vector.
@@ -99,10 +107,18 @@ CONTAINS
         vec2 = 0
         counter = counter + 1
         vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
+        !WRITE(iw,*) 'Final state vector'
+        !WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
         e2h1p(counter) = fin_energies(j)
+        ! This part is ony necessary, when the initial and final states
+        ! are non-orthogonal, which they are not at the moment!
+        !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
+        !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
         t_mom(counter) = DOT_PRODUCT(vec1,vec2)
       END DO
     END DO
+    WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
+    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx), ixx=1,counter)
 
     CALL dealloc(buf)
     CALL dealloc(ioi)
@@ -113,6 +129,7 @@ CONTAINS
     CALL dealloc(vec2)
 
     CALL dealloc(in_evecs)
+    !CALL dealloc(in_energy)
     CALL dealloc(fin_evecs)
     CALL dealloc(fin_energies)
 

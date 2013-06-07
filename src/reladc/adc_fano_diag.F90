@@ -19,7 +19,7 @@ CONTAINS
 !
 !---------------Calling variables--------------------------------------
 !
-    CHARACTER(8), INTENT(IN)                 :: FILENAME
+    CHARACTER(6), INTENT(IN)                 :: FILENAME
     INTEGER, INTENT(IN)                     :: LUN,DESREP,lenmat
     INTEGER, INTENT(OUT)                    :: irecl
     INTEGER, INTENT(IN)                     :: fin_max
@@ -160,6 +160,7 @@ CONTAINS
 
     use adc_cfg
     use memory_allocator
+    use adc_fano_exchange
 
     IMPLICIT NONE
 !
@@ -228,8 +229,10 @@ CONTAINS
         WRITE(iw,*) 'Selection by overlap does not work yet.'
 
       CASE (.FALSE.)
+        !CALL alloc(in_energy,nr_in)
         DO i = 1, nr_in
-          energy1 = evl(selected(i))
+          energy1      = evl(selected(i))
+          !in_energy(i) = energy1
           DO j = 1, n
             energy2 = evl(j)
             IF (ABS(energy1 - energy2) < ethresh) THEN
