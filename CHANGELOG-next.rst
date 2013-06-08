@@ -19,3 +19,5 @@
 - Workaround for memory allocator segmentation fault with gfortran can now be triggered with:
   ./setup -D CPP="-DGFORTRAN_ALLOCATOR_WORKAROUND"
 - improved final state analysis for MCSCF wave functions: print natural orbital occupation numbers by default
+- BUGfix for parallel CC/MP2 calculations using the RELCCSD module and the new input style (the old Namelist input was
+  fine); thanks to Kirk Peterson for pointing it out.
