@@ -6947,29 +6947,36 @@ C
 C     Check for C1 symmetry if localization requested
 C
       IF(DOLOC .AND. (NBSYM .GT. 1)) THEN
-         WRITE (LUPRI,'(/2A)') ' * WARNING : Orbital localization not',
-     S   ' yet implemented'
-         WRITE (LUPRI,'(A)') '             for other groups than C1 !!!'
-         WRITE (LUPRI,'(A)') '   -> LOCALIZE ignored'
+         WRITE (LUPRI,'(/A/A)')
+     &   ' * WARNING : Orbital localization not'//
+     &      ' yet implemented for other groups than C1 !!!',
+     &   ' * WARNING : -> .LOCALIZE option is ignored'
          DOLOC = .FALSE.
       ENDIF
 C
 C     Checks related to Gaunt. Allow dft+"hf gaunt" for developers.
 C
-      IF (GAUNT.AND.(DOTRA.OR.dirac_cfg_dft_calculation)) THEN
-       WRITE (LUPRI,*) " Gaunt only available for Hartree-Fock"
-       WRITE (LUPRI,*) ' "HF Gaunt" will be added in DFT'
-      END IF
+      IF (GAUNT) THEN
 
-      IF (GAUNT.AND.LONDON)
-     & CALL QUIT ('London orbitals are not implemented for GAUNT')
+         IF (dirac_cfg_dft_calculation) WRITE (LUPRI,'(/A)')
+     &   ' * INFO: Gaunt only available for Hartree-Fock, '//
+     &   ' the "HF Gaunt" term will be added in DFT.'
 
-      IF (GAUNT.AND.SOFOCK) THEN
-         WRITE (LUPRI,'(/2A)')
-     &   'Gaunt only implemented for AO Fock builder',
-     &   ' ---> switched to AOFOCK'
-         SOFOCK = .FALSE.
-      ENDIF
+         IF (DOTRA) WRITE (LUPRI,'(/A)')
+     &   ' * WARNING: Gaunt only available for Hartree-Fock, '//
+     &   ' and will be ignored in 2-electron integral transformation.'
+
+         IF (SOFOCK) THEN
+            WRITE (LUPRI,'(/A)')
+     &      ' * INFO: Gaunt only implemented for AO Fock builder'//
+     &      ' ---> switched to AOFOCK'
+            SOFOCK = .FALSE.
+         ENDIF
+
+         IF (LONDON)
+     &   CALL QUIT ('London orbitals are not implemented for GAUNT')
+
+      END IF ! (GAUNT)
 
 !     check whether both .URKBAL and .SPINFREE are set and exit if true
 !     =================================================================
