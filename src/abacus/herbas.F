@@ -100,7 +100,6 @@ C
       CHARACTER BASTMP*80, BASSAV*80
       CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
-      logical :: is_pople_basis_set
 #ifdef PRG_DIRAC
 C     Define a maximum number of primitives that can go in one block
 C     for UNCONTRACTED basis sets. The value given is for s-functions
@@ -145,36 +144,6 @@ C      except for 2c NR calculations
       end if
 #endif
       ENDIF
-
-      ! for windows we keep "-star" basis set files and not "*" files
-      ! now we will translate a possible "*" basis set input
-      ! first find out whether basis set is a pople basis
-      is_pople_basis_set = .false.
-      if (index(basnam, '3-21') > 0) then
-         is_pople_basis_set = .true.
-      end if
-      if (index(basnam, '6-31') > 0) then
-         is_pople_basis_set = .true.
-      end if
-      if (is_pople_basis_set) then
-         ! replace possible "*" by "-star"
-         index_star = index(basnam, '*')
-         if (index_star > 0) then
-            do i = len(basnam), index_star+5, -1
-               basnam(i:i) = basnam(i-4:i-4)
-            end do
-            basnam(index_star:index_star+4) = '-star'
-         end if
-         ! replace possible second "*" by "-star"
-         index_star = index(basnam, '*')
-         if (index_star > 0) then
-            do i = len(basnam), index_star+5, -1
-               basnam(i:i) = basnam(i-4:i-4)
-            end do
-            basnam(index_star:index_star+4) = '-star'
-         end if
-      end if
-
 
       IF (ISET .EQ. 2) THEN
 C jan 2000 hjaaj:
