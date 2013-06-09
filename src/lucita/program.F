@@ -58,7 +58,6 @@
 #include "cc_exc.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-#include "dcbgen.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #endif
@@ -283,32 +282,37 @@ C
 CSK   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,MYPROC
 C
 #if defined (VAR_MPI2)
-      IF(PARCAL) THEN
-        CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
+      CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
      &                     WORK(KRCCTOS),WORK(KBSCLFC),
      &                     NVAR,IPROCLIST)
+csk   WRITE(LUCIWT,*) ' block length'
+csk   CALL IWRTMAMN(WORK(KBLCKIF),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   WRITE(LUCIWT,*) ' distribution'
+csk   CALL IWRTMAMN(WORK(KBLCKPD),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   WRITE(LUCIWT,*) ' RCCTOS output'
+csk   CALL IWRTMAMN(WORK(KRCCTOS),1,NBLOCK,1,NBLOCK,LUCIWT)
 C
 C     MPI file I/O setup
 C
-        CALL CALC_OFF_MPI_FILE2('ILUC  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),1)
-        CALL CALC_OFF_MPI_FILE2('ILU1  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),      NROOT)
-        CALL CALC_OFF_MPI_FILE2('ILU2  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),MXCIV+NROOT)
-        CALL CALC_OFF_MPI_FILE2('ILU3  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),MXCIV + NROOT)
-        CALL CALC_OFF_MPI_FILE2('ILU4  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),MXCIV + NROOT)
-        CALL CALC_OFF_MPI_FILE2('ILU5  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),MXCIV + NROOT)
-        CALL CALC_OFF_MPI_FILE2('ILU6  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),1)
-        CALL CALC_OFF_MPI_FILE2('ILU7  ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),MXCIV)
-        CALL CALC_OFF_MPI_FILE2('LUDIA ',IGROUPLIST,WORK(KBLCKIF),
-     &                          WORK(KBLCKPD),1)
-      ENDIF
+      CALL CALC_OFF_MPI_FILE2('ILUC  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
+      CALL CALC_OFF_MPI_FILE2('ILU1  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),      NROOT)
+csk  &                        WORK(KBLCKPD),MXCIV+NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU2  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV+NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU3  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU4  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU5  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU6  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
+      CALL CALC_OFF_MPI_FILE2('ILU7  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV)
+      CALL CALC_OFF_MPI_FILE2('LUDIA ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
 C     initialize general offset for ILUC
 C
 C     NOTE: LU2 and LU4 have to have the same offset:
@@ -318,6 +322,8 @@ C
 C     length for allocation of file arrays
       IALL_LUC = NUM_BLOCKS2
       IALL_LU1 = (         NROOT ) * MY_ACT_BLK2
+csk   IALL_LU2 = (         NROOT ) * MY_ACT_BLK2
+csk   IALL_LU1 = ( MXCIV + NROOT ) * MY_ACT_BLK2
       IALL_LU2 = ( MXCIV + NROOT ) * MY_ACT_BLK2
       IALL_LU3 = ( MXCIV + NROOT ) * MY_ACT_BLK2
       IALL_LU4 = ( MXCIV + NROOT ) * MY_ACT_BLK2
@@ -502,27 +508,25 @@ C       construct H diagonal
       END IF
 #if defined (VAR_MPI2)
 C     debug printing
-      IF(PARCAL) THEN
-        NPTEST_VAR = 00
-        IF( NPTEST_VAR .ge. 10 ) THEN
-          ITEST_OFF = 0
-          ITEST_OFF = MY_DIA_OFF
-          DO IIBLK = 1, NUM_BLOCKS
-              ILEN = 0
-              CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
-              IF( MYPROC .eq. IPROC ) THEN
-                CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
-                call interface_mpi_FILE_READ_AT_r(IDIA,ITEST_OFF,
-     &                                WORK(KVEC1),ILEN,
-     &                                ISTAT)
-                WRITE(LUWRT,*) ' Diagonal elements',ILEN
-                CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
-                ITEST_OFF = ITEST_OFF + ILEN
-            END IF
-          END DO
-        ENDIF
-        NPTEST_VAR = 00
+      NPTEST_VAR = 00
+      IF( NPTEST_VAR .ge. 10 ) THEN
+        ITEST_OFF = 0
+        ITEST_OFF = MY_DIA_OFF
+        DO IIBLK = 1, NUM_BLOCKS
+            ILEN = 0
+            CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
+            IF( MYPROC .eq. IPROC ) THEN
+              CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
+              call interface_mpi_FILE_READ_AT_r(IDIA,ITEST_OFF,
+     &                              WORK(KVEC1),ILEN,
+     &                              ISTAT)
+              WRITE(LUWRT,*) ' Diagonal elements',ILEN
+              CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
+              ITEST_OFF = ITEST_OFF + ILEN
+          END IF
+        END DO
       ENDIF
+      NPTEST_VAR = 00
 #endif
 *
 *     explicit Hamiltonian
@@ -622,25 +626,23 @@ C     check for restart without CI --> we want to run an analysis only
 C
 #if defined (VAR_MPI2)
 C
-      IF(PARCAL) THEN
-C       copy restart vector to MPI-file format
-        IF( INICI .lt. 0) THEN
+C     copy restart vector to MPI-file format
+      IF( INICI .lt. 0) THEN
 C
-           WRITE(LUWRTOUT,'(2X,A)')
-     &     ' restart file LUCVECT.0 will be copied to'//
-     &     ' MPI-readable format ...'
+         WRITE(LUWRTOUT,'(2X,A)')
+     &   ' restart file LUCVECT.0 will be copied to'//
+     &   ' MPI-readable format ...'
 C
-           IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,LBLK)
+         IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,LBLK)
 C
-           CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
-     &                           WORK(KILU1LIST),
-     &                           WORK(KBLCKPD),WORK(KBLCKIF),
-     &                           NBLOCK,NROOT,IRC_SAVE)
+         CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
+     &                         WORK(KILU1LIST),
+     &                         WORK(KBLCKPD),WORK(KBLCKIF),
+     &                         NBLOCK,NROOT,IRC_SAVE)
 C
-          WRITE(LUWRTOUT,'(2X,A)') ' restart file is now in place! '
+        WRITE(LUWRTOUT,'(2X,A)') ' restart file is now in place! '
 C
-        END IF
-      ENDIF
+      END IF
 C
 #endif
       CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
@@ -681,49 +683,48 @@ C
       CALL REWINE(LUC,-1)
 C
 #if defined (VAR_MPI2)
-      IF(PARCAL) THEN
 C
-C       close parallel files that are not needed anymore...
 C
-        CALL SETUNITS_PAR_CLOSE_1
+C     close parallel files that are not needed anymore...
 C
-        IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
+      CALL SETUNITS_PAR_CLOSE_1
 C
-         LBLK = -1
+      IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
 C
-C       copy c-vectors from nodes and master back to the master
+      LBLK = -1
 C
-C       NOTE: only C-vectors will be saved.
+C     copy c-vectors from nodes and master back to the master
 C
-        CALL REWINE(LUC,-1)
-        DO JROOT = 1, NROOT
-          CALL REWINE(LUSC41,-1)
-          CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
+C     NOTE: only C-vectors will be saved.
+C
+      CALL REWINE(LUC,-1)
+      DO JROOT = 1, NROOT
+        CALL REWINE(LUSC41,-1)
+        CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
      &                            global_communicator,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
-          IF(MYPROC.EQ.MASTER) THEN
-            CALL REWINE(LUSC41,-1)
-            CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
-          END IF
-        END DO
-        CALL REWINE(LUC,-1)
-        NPTESTVAR = 00
-        IF( NPTESTVAR .ge. 10 )THEN
-          IF(MYPROC.EQ.MASTER) THEN
-            DO IVEC = 1, NROOT
-              WRITE(LUWRT,*) '  final new C vector',IVEC
-              CALL WRTVCD(WORK(KVEC1),LUC,0,LBLK)
-            END DO
-          END IF
+        IF(MYPROC.EQ.MASTER) THEN
+           CALL REWINE(LUSC41,-1)
+           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
         END IF
-        CALL REWINE(LUC,-1)
-        NPTESTVAR = 00
+      END DO
+      CALL REWINE(LUC,-1)
+      NPTESTVAR = 00
+      IF( NPTESTVAR .ge. 10 )THEN
+        IF(MYPROC.EQ.MASTER) THEN
+          DO IVEC = 1, NROOT
+            WRITE(LUWRT,*) '  final new C vector',IVEC
+            CALL WRTVCD(WORK(KVEC1),LUC,0,LBLK)
+          END DO
+        END IF
+      END IF
+      CALL REWINE(LUC,-1)
+      NPTESTVAR = 00
 C
  505    CONTINUE
-        close(unit=LUSC41,status='DELETE')
-      ENDIF
+      close(unit=LUSC41,status='DELETE')
 *
 #endif
 C
@@ -1006,7 +1007,6 @@ C
 
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "dcbgen.h"
 #if defined (VAR_MPI2)
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -1111,55 +1111,54 @@ C     initialize number of process groups sharing a c-vector file
       NFLGRPS     = 0
 C
 #if defined (VAR_MPI2)
-      IF(PARCAL) THEN
 C
-        global_scratch_disk = get_environment_integer('GLBSCR',
-     &  global_scratch_disk)
+      global_scratch_disk = get_environment_integer('GLBSCR',
+     &global_scratch_disk)
 
-        if(global_scratch_disk.ne.0 .or. global_scratch_disk.ne.1)then
+      if(global_scratch_disk .ne. 0 .or. global_scratch_disk.ne. 1)then
 !       fall back to default: 0
-          global_scratch_disk = 0
-        end if
+        global_scratch_disk = 0
+      end if
 
-        call interface_mpi_bcast(global_scratch_disk,1,
-     &                 MASTER,global_communicator)
+      call interface_mpi_bcast(global_scratch_disk,1,
+     &               MASTER,global_communicator)
 
-        if(global_scratch_disk .eq. 0)then
+      if(global_scratch_disk .eq. 0)then
 
-C         parallel I/O mode for parallel runs / executable
-          IIOMOD = 1
+C       parallel I/O mode for parallel runs / executable
+        IIOMOD = 1
 C
-          call interface_mpi_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH)
+        call interface_mpi_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH)
 C
-          CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
-     &                             WORK(KPROCLIST),WORK(KPROCLENGTH))
+        CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
+     &                           WORK(KPROCLIST),WORK(KPROCLENGTH))
 C
-          IF( NFLGRPS .eq. 1 ) THEN 
-            CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-          END IF
-        else
-!         in case of a parallel filesystem, we should use it
-          NFLGRPS = 1
-          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-        end if
+        IF( NFLGRPS .eq. 1 ) THEN 
+           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+      else
+!       in case of a parallel filesystem, we should use it
+        NFLGRPS = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      end if
 C
-C       compatibilty with LUCIAREL
+C     compatibilty with LUCIAREL
 C
-        SHARED_M = .FALSE.
-        IT_SHL   = - 1
-        IC_SHL   = - 1
-        CALL ISETVC(WORK(KGROUPLIST2),1,NMPROC)
+      SHARED_M = .FALSE.
+      IT_SHL   = - 1
+      IC_SHL   = - 1
+      CALL ISETVC(WORK(KGROUPLIST2),1,NMPROC)
 C
-C       set-up all useful MPI stuff: communication groups, MPI-files ...
-C                                    all important variables are stored
-C                                    on common block /LUPARGROUP/
+C     set-up all useful MPI stuff: communication groups, MPI-files ...
+C                                   all important variables are stored
+C                                   on common block /LUPARGROUP/
 C
-C        construct new communication groups
-         CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
-     &                             WORK(KGROUPLIST2))
+C      construct new communication groups
+       CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
+     &                            WORK(KGROUPLIST2))
 C
-         NPTESTVAR = 00
-         IF( NPTESTVAR .ge. 20 ) THEN
+       NPTESTVAR = 00
+       IF( NPTESTVAR .ge. 20 ) THEN
           WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
           WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
           WRITE(LUWRT,*) 'this is my file grouplist:'
@@ -1168,14 +1167,13 @@ C
           CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUWRT)
           WRITE(LUWRT,*) 'this is my shared memory proclist:'
           CALL IWRTMAMN(WORK(KGROUPLIST2),1,NMPROC,1,NMPROC,LUWRT)
-         END IF
-         NPTESTVAR = 0
+       END IF
+       NPTESTVAR = 0
 C
-C        open the files for parallel file I/O
+C      open the files for parallel file I/O
 C
-         CALL SETUNITS_PAR_OPEN(MY_GROUPN)
+       CALL SETUNITS_PAR_OPEN(MY_GROUPN)
 C
-      ENDIF
 #endif
 C
 C     Ratio beteeen real and integer word length
@@ -1549,10 +1547,8 @@ C
 C
 C     close MPI-I/O files and free groups
 C
-      IF(PARCAL) THEN
-        CALL SETUNITS_PAR_CLOSE_2
-        CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
-      ENDIF
+      CALL SETUNITS_PAR_CLOSE_2
+      CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
 C
       WRITE (LUOUT,*) ' Lucita says:'
@@ -1632,7 +1628,7 @@ C
 *
       INTEGER CITYP
 *.Largest allowed number of allowed irreps for orbs
-#include "dcbgen.h"
+
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "cstate.inc"
@@ -1665,20 +1661,18 @@ C
 *
       IN_MPINN ="LUCIAIN"
 #if defined (VAR_MPI2)
-      IF(PARCAL) THEN
-        IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
-          WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',MYPROC
-          IN_MPILL=9
-        ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
-          WRITE (NNIN_MPI,'(A7,A1,I2)') IN_MPINN,'.',MYPROC
-          IN_MPILL=10
-        ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-          WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',MYPROC
-          IN_MPILL=11
-        ELSE
-          CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
-        ENDIF
-     ENDIF
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',MYPROC
+         IN_MPILL=9
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NNIN_MPI,'(A7,A1,I2)') IN_MPINN,'.',MYPROC
+         IN_MPILL=10
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',MYPROC
+         IN_MPILL=11
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
+      ENDIF
 #else
       NNIN_MPI=IN_MPINN
       IN_MPILL=7
