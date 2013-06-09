@@ -3877,7 +3877,7 @@ C&&&& LABEL: pre-define labels
                  READ(LUCMD,'(A7)') WORD
                  IF    (WORD.EQ.'ATOM   ') THEN
                    LABOPT = 1
-                 ELSEIF(WORD.EQ.'ORBITAL') THEN
+                 ELSEIF(WORD.EQ.'SHELL  ') THEN
                    LABOPT = 2
                  ELSE
                    CALL QUIT('*POPINP: Unknown word after LABEL')
@@ -3937,7 +3937,8 @@ C
       IF    (LABOPT.EQ.1) THEN
         WRITE(LUPRI,'(1X,A)') '* Label defined for individual atoms'
       ELSEIF(LABOPT.EQ.2) THEN
-        WRITE(LUPRI,'(1X,A)') '* Label defined for individual orbitals'
+        WRITE(LUPRI,'(1X,A)') 
+     &  '* Label defined for individual orbital shells'
       ENDIF
       IF(ILABDF.EQ.1) THEN
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on AO-labels'
@@ -6670,17 +6671,19 @@ C***********************************************************************
 C    
 C     Define labels according to pre-defined types
 C       LABOPT = 1: individual atoms
-C       LABOPT = 2: individual orbital types
+C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
 #include"implicit.h"
 #include"priunit.h"
+#include "maxaqn.h"
 #include "maxorb.h"
 C
+#include "ccom.h"
 #include "dcblab.h"
-      CHARACTER LAB(*)*12
+      CHARACTER LAB(*)*12,SPDCAR*1
       DIMENSION ILAB(*)
-      integer, allocatable              :: ibuf(:)
+      integer, allocatable              :: ibuf(:),ibuf2(:)
 C Bit operations
 #include "dcbibt.h"
       allocate(IBUF(NPLAB(0)))
@@ -6688,7 +6691,8 @@ C Bit operations
 C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
-        DO ILAB1 = 1,NPLAB(0)
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
           IDEG   = KGET(IATTR(ILAB1,ILABDF))          
@@ -6708,6 +6712,43 @@ C.........define label
  10       CONTINUE
         ENDDO
       ELSEIF(LABOPT.EQ.2) THEN
+C.....Individual orbital shells
+C     First make pointer to orbital angular momentum
+        NDIM   = MXQN*(MXQN+1)*(MXQN+2)/6
+        allocate(IBUF2(NDIM))
+        ITYP = 0
+        DO LVAL = 1,NHTYP
+          DO ICOMP = 1,KHK(LVAL)
+            ITYP = ITYP + 1
+            IBUF2(ITYP)=LVAL
+          ENDDO
+        ENDDO
+        ILABDF = 1
+        NLAB   = 0
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
+          IC     = IGET(IATTR(ILAB1,ILABDF))          
+          ICENT  = JGET(IATTR(ILAB1,ILABDF))          
+          IDEG   = KGET(IATTR(ILAB1,ILABDF))          
+          ITYP   = LGET(IATTR(ILAB1,ILABDF))          
+          LVAL   = IBUF2(ITYP)
+          KATT   = IPACK(ICLS,ICENT,IDEG,0)
+C.........check if label is already defined
+          DO JLAB = 1,NLAB
+          IF(KATT.EQ.IBUF(JLAB)) THEN
+            ILAB(ILAB1) = JLAB
+            GOTO 20
+          ENDIF
+          ENDDO
+C.........define label
+          NLAB = NLAB + 1
+          ILAB(ILAB1) = NLAB
+          IBUF(NLAB) = KATT
+          LAB(NLAB)  = PLABEL(ILAB1,ILABDF)(1:8)//
+     &                 SPDCAR(LVAL)//'   '
+ 20       CONTINUE
+        ENDDO
+        deallocate(ibuf2)
       ENDIF
       deallocate(ibuf)
       RETURN
