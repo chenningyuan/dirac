@@ -6731,8 +6731,8 @@ C.......consider only large component labels
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
           IDEG   = KGET(IATTR(ILAB1,ILABDF))          
           ITYP   = LGET(IATTR(ILAB1,ILABDF))          
-          LVAL   = IBUF2(ITYP)
-          KATT   = IPACK(ICLS,ICENT,IDEG,0)
+          LVAL   = IBUF2(ITYP) - 1
+          KATT   = IPACK(ICLS,ICENT,IDEG,LVAL)
 C.........check if label is already defined
           DO JLAB = 1,NLAB
           IF(KATT.EQ.IBUF(JLAB)) THEN
