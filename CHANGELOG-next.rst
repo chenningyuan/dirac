@@ -10,9 +10,6 @@
 - DIRAC compiles using Portland group compilers.
 - Introduced block for any structure optimization runs using the xyz format.
 - Removed --force option from setup script.
-- Pople basis sets containing "*" have been renamed to "-star" file names. However you do
-  not need to change your input files. DIRAC will understand "*" characters in Pople basis sets
-  and internally translate them.
 - Bugfix for permanent dipole moment calculations with KRCI. Missing nuclear contribution term 
   have been added and the correct sign for the dipole integrals (length gauge) has been introduced.
 - Bugfix for MP2-NO calculations. correct writing of 2-electron file MDCINT.
