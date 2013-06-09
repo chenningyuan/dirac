@@ -158,15 +158,6 @@ file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    # on non-windows machines rename "-star" basis set files to "*" basis set files
-    file(GLOB _star_basis_set_files "${CMAKE_BINARY_DIR}/basis_dalton/*star")
-    foreach(_basis_set_file ${_star_basis_set_files})
-       string(REGEX REPLACE "-star" "*" _basis_set_file_replaced ${_basis_set_file})
-       file(RENAME ${_basis_set_file} ${_basis_set_file_replaced})
-    endforeach()
-endif()
-
 set(GENERATED_FILES
     ${PROJECT_BINARY_DIR}/fortran_interface.h
     )
