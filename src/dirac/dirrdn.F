@@ -3796,7 +3796,7 @@ C
 C
 ! HJAAJ TODO : new parameter to set ADD_ALL = .TRUE. /Jan 2010
       SAVE SET
-      DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.XXXXXX',
+      DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.LABEL ',
      &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3811,6 +3811,7 @@ C
       END IF
 #include "memint.h"
 C
+      LABOPT = 0
 C
 C     Initialize /CBIPOP/
 C     ===================
@@ -3866,11 +3867,21 @@ C&&&& LABDEF: Define groups of primitive labels
                GO TO 100
     3          CONTINUE
 C&&&& VECPOP: Number of spinors to analyze
-                  READ(LUCMD,'(A72)') (VECPOP(I),I=1,NFSYM)
-                  ORBDEF = .FALSE.
-                  IPRPOP = MAX(IPRPOP,1)
+                 READ(LUCMD,'(A72)') (VECPOP(I),I=1,NFSYM)
+                 ORBDEF = .FALSE.
+                 IPRPOP = MAX(IPRPOP,1)
                GO TO 100
     4          CONTINUE
+C&&&& LABEL: pre-define labels
+                 LABDEF = .TRUE.
+                 READ(LUCMD,'(A7)') WORD
+                 IF    (WORD.EQ.'ATOM   ') THEN
+                   LABOPT = 1
+                 ELSEIF(WORD.EQ.'SHELL  ') THEN
+                   LABOPT = 2
+                 ELSE
+                   CALL QUIT('*POPINP: Unknown word after LABEL')
+                 ENDIF
                GO TO 100
     5          CONTINUE
 C&&&& IPRPOP: Print level
@@ -3911,6 +3922,7 @@ C
           ENDIF
         ENDDO
       ENDIF
+      IF(LABOPT.GT.0) CALL PRELAB(LABOPT,ILABDF,IPOPLAB,POPLAB,NPOPLAB)
 C
 C     Print section
 C     =============
@@ -3922,6 +3934,12 @@ C
       WRITE(LUPRI,'(1X,A)') '* Gross populations'
       IF(DONETP) WRITE(LUPRI,'(1X,A)')
      &     '* Net populations and overlap'
+      IF    (LABOPT.EQ.1) THEN
+        WRITE(LUPRI,'(1X,A)') '* Label defined for individual atoms'
+      ELSEIF(LABOPT.EQ.2) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &  '* Label defined for individual orbital shells'
+      ENDIF
       IF(ILABDF.EQ.1) THEN
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on AO-labels'
       ELSE
@@ -6621,7 +6639,7 @@ C***********************************************************************
 C
 C     Process labels:
 C       Read a string of new label name and list of primitive labels.
-C       Form pointer ILAB relating primitve labels with new labels.
+C       Form pointer ILAB relating primitive labels with new labels.
 C
 C     Written by T.Saue - Feb 3 1998
 C
@@ -6646,6 +6664,95 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Prelab */
+      SUBROUTINE PRELAB(LABOPT,ILABDF,ILAB,LAB,NLAB)
+C***********************************************************************
+C    
+C     Define labels according to pre-defined types
+C       LABOPT = 1: individual atoms
+C       LABOPT = 2: individual orbital shells
+C
+C***********************************************************************
+#include"implicit.h"
+#include"priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+#include "ccom.h"
+#include "dcblab.h"
+      CHARACTER LAB(*)*12,SPDCAR*1
+      DIMENSION ILAB(*)
+      integer, allocatable              :: ibuf(:),ibuf2(:)
+C Bit operations
+#include "dcbibt.h"
+      allocate(IBUF(NPLAB(0)))
+      IF    (LABOPT.EQ.1) THEN
+C.....Individual atoms
+        ILABDF = 1
+        NLAB   = 0
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
+          IC     = IGET(IATTR(ILAB1,ILABDF))          
+          ICENT  = JGET(IATTR(ILAB1,ILABDF))          
+          IDEG   = KGET(IATTR(ILAB1,ILABDF))          
+          KATT   = IPACK(ICLS,ICENT,IDEG,0)
+C.........check if label is already defined
+          DO JLAB = 1,NLAB
+          IF(KATT.EQ.IBUF(JLAB)) THEN
+            ILAB(ILAB1) = JLAB
+            GOTO 10
+          ENDIF
+          ENDDO
+C.........define label
+          NLAB = NLAB + 1
+          ILAB(ILAB1) = NLAB
+          IBUF(NLAB) = KATT
+          LAB(NLAB) = PLABEL(ILAB1,ILABDF)(1:8)//'    '
+ 10       CONTINUE
+        ENDDO
+      ELSEIF(LABOPT.EQ.2) THEN
+C.....Individual orbital shells
+C     First make pointer to orbital angular momentum
+        NDIM   = MXQN*(MXQN+1)*(MXQN+2)/6
+        allocate(IBUF2(NDIM))
+        ITYP = 0
+        DO LVAL = 1,NHTYP
+          DO ICOMP = 1,KHK(LVAL)
+            ITYP = ITYP + 1
+            IBUF2(ITYP)=LVAL
+          ENDDO
+        ENDDO
+        ILABDF = 1
+        NLAB   = 0
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
+          IC     = IGET(IATTR(ILAB1,ILABDF))          
+          ICENT  = JGET(IATTR(ILAB1,ILABDF))          
+          IDEG   = KGET(IATTR(ILAB1,ILABDF))          
+          ITYP   = LGET(IATTR(ILAB1,ILABDF))          
+          LVAL   = IBUF2(ITYP)
+          KATT   = IPACK(ICLS,ICENT,IDEG,0)
+C.........check if label is already defined
+          DO JLAB = 1,NLAB
+          IF(KATT.EQ.IBUF(JLAB)) THEN
+            ILAB(ILAB1) = JLAB
+            GOTO 20
+          ENDIF
+          ENDDO
+C.........define label
+          NLAB = NLAB + 1
+          ILAB(ILAB1) = NLAB
+          IBUF(NLAB) = KATT
+          LAB(NLAB)  = PLABEL(ILAB1,ILABDF)(1:8)//
+     &                 SPDCAR(LVAL)//'   '
+ 20       CONTINUE
+        ENDDO
+        deallocate(ibuf2)
+      ENDIF
+      deallocate(ibuf)
+      RETURN
+      END 
 #ifdef NOT_USED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck READREORDER*/
