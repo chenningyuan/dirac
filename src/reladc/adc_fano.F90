@@ -50,9 +50,7 @@ CONTAINS
     INTEGER                               :: nok, najl
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
-    INTEGER                               :: recl_fin
     CHARACTER(6)                          :: fn_conf='FANCNF'
-    CHARACTER(6)                          :: fn_finconf='FINCNF'
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: buflanc
     INTEGER                               :: kfree, lfree, kfreebase
 !    INTEGER                               :: ierror = 0
@@ -135,58 +133,16 @@ CONTAINS
     
 
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
-    !reladc_md_isfano   = .true.
+    reladc_md_isfano   = .true.
     CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
-    !CALL fano_wcondat_fin_s(itapfano+6,fn_finconf,recl_fin,krep,fin_max, &
-    !                    finalpos,fin_max,iw)
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
                         finalpos,fin_max,iw)
     !CALL WCONDAT_S(itapfano+6,fn_conf,recl_condat_s,krep,ladc)
 
     CALL dealloc(finalpos)
 
-!!
-!! This is only for testing purposes
-!!
-!    ! Write all characteristics of the matrix to be diagonalised
-!    ! to adc_mat. We are using the lanczos diagonaliser.
-!    reladc_md_iobase   = itapfano+6
-!    reladc_md_ionizl   = 1
-!    reladc_md_ioldnew  = 2 !new, diagonal is not written to extra file
-!    reladc_md_intbuf   = fano_intbuf
-!    reladc_md_desrep   = krep
-!    reladc_md_rcw      = 1 !is real, for complex 2
-!    reladc_md_lnzitr   = reladc_sipiter
-!    reladc_md_matdim   = fin_max
-!    reladc_md_irecl    = recl_fin
-!    reladc_md_nmain    = nok
-!    reladc_md_nbufs    = finnbufs
-!    reladc_md_neigenv  = reladc_fano_eigv
-!    reladc_md_fileadc  = fn_finmat
-!    reladc_md_filecnf  = fn_finconf
-!    reladc_md_nmspec   = 'FSPEF'
-!
-!    
-!    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
-!    
-!    kfree     = 1
-!    lfree     = reladc_lancmem
-!    kfreebase = 1
-!
-!    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
-!     &                KFREE,LFREE,.true.)
-!    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
-!
-!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
-!    ! For the next runs Lanczos is again in normal mode
-!    CALL dealloc(buflanc)
-
-!
-! This is the actual code
-!
-    reladc_md_isfano   = .true.
     ! Write all characteristics of the matrix to be diagonalised
     ! to adc_mat. We are using the lanczos diagonaliser.
     reladc_md_iobase   = itapfano+6
@@ -224,7 +180,7 @@ CONTAINS
      &                KFREE,LFREE,.true.)
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
-    !CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
     CALL dealloc(buflanc)
