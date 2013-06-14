@@ -179,7 +179,7 @@ CONTAINS
     REAL(8)                          :: contrib
     REAL, PARAMETER                  :: thresh=0.2
     REAL(8), PARAMETER               :: ovlthresh=1.0D-2
-    REAL(8), PARAMETER               :: ethresh=1.0D-13
+    REAL(8), PARAMETER               :: ethresh=1.0D-12
     INTEGER                          :: initial
     INTEGER                          :: i,j,k
     INTEGER,ALLOCATABLE,DIMENSION(:) :: selected

@@ -158,7 +158,7 @@ CONTAINS
     reladc_md_nmain    = nok
     reladc_md_nbufs    = innbufs
     !reladc_md_nbufs    = adcnbufs
-    reladc_md_neigenv  = reladc_fano_eigv
+    reladc_md_neigenv  = 0 !will be chosen automatically
     reladc_md_fileadc  = fn_inmat
     !reladc_md_fileadc  = fn_adcmat
     reladc_md_filediag = fn_indiag
