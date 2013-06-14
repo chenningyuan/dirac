@@ -954,7 +954,7 @@ C
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
-        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
       ENDIF
@@ -2820,7 +2820,7 @@ c
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
+      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
       use adc_mat
       use memory_allocator
@@ -2829,6 +2829,7 @@ C
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IOUNIT,N,NP,LDAB
+      INTEGER NEIGENV
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -2920,6 +2921,7 @@ c
         CALL alloc(positions,N,id="array of position numbers fano Lanc")
         CALL fano_find_in_vec(N,EVL,Z,positions,nr_in_vecs,iw)
 
+        NEIGENV = nr_in_vecs
         OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
         WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors
         WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)

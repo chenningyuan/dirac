@@ -1265,10 +1265,6 @@
          end do
       end if
 
-      if (kw_matches(word, '.FANOEIGV')) then
-         call kw_read(word, reladc_fano_eigv)
-      end if
-
       if (kw_matches(word, '.FANOONLY')) then
          reladc_dosips     = .true.
          reladc_sipreps    = 0
