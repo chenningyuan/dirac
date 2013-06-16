@@ -21,8 +21,8 @@
 
 
 module DIRAC_HSFS
-  use Memory
-  use Vectors
+ ! use Memory
+ ! use Vectors
 ! HSFS parameters read in through the DIRAC input
 ! convergence
 integer :: iconv_hsfs=8
@@ -32,7 +32,9 @@ integer, parameter :: luhsfs=18
 ! ... depends only on integral file (no transformation etc..)
 logical :: i_file_based=.false.
 ! array for HSFS indexes
-type(Vect), save :: hsfs_indx, boson_irps_indx, hsfs_orben
+!type(Vect), save :: hsfs_indx, boson_irps_indx, hsfs_orben
+integer, save, allocatable :: hsfs_indx(:), boson_irps_indx(:)
+real*8,  save, allocatable :: hsfs_orben(:)
 contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -93,7 +95,7 @@ subroutine HSFS_STUFF(WORK,LWORK)
 ! 
 !  Written by Miro Ilias, Tel Aviv/Prievidza 2009
 !----------------------------------------------------------------------------------
-use Memory
+!use Memory
 use io_moltra
 use DIRAC_HSFS
 implicit none
@@ -107,12 +109,12 @@ if (i_file_based) then
  return
 endif
 call print_HSFS_Dirac_info
-call StickMemory(WORK,LWORK)
+!call StickMemory(WORK,LWORK)
 HSFS_mode=.true.
 call read_mrconee;  call print_mrconee_data
 call scan_mdcint
 call read_mdcint_hsfs
-call UnstickMemory
+!call UnstickMemory
 end subroutine HSFS_STUFF
 
 
@@ -386,31 +388,41 @@ subroutine get_HSFS_indexes()
 !                 assumes MRCONEE is read !
 !
 !----------------------------------------------------------------------------------
-use Memory
-use Vectors
+!use Memory
+!use Vectors
+
 use DIRAC_HSFS
 use io_moltra
 implicit none
 #include "priunit.h"
 logical :: indx_found
-integer, external :: GetNBSYM
-integer :: isp, icheck,i,ik,j,k,nirp,ix
+  integer, external :: GetNBSYM
+  integer :: isp, icheck,i,ik,j,k,nirp,ix
+  integer :: istat
+
 !  ... allocate vectors ...
-hsfs_indx=MakeVector('INTE',NSP,'HSFS indexes')
-boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
-write(LUPRI,*)  'get_HSFS_indexes: hsfs_indx vector allocated'
+!hsfs_indx=MakeVector('INTE',NSP,'HSFS indexes')
+  allocate (hsfs_indx(NSP),stat=istat);  call alloc_stat_check("hsfs_indx(NSP)",istat)
+  write(LUPRI,*)  'get_HSFS_indexes: hsfs_indx vector allocated'
+!boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
+allocate (boson_irps_indx(GetNBSYM()),stat=istat); call alloc_stat_check("boson_irps_indx(GetNBSYM())",istat)
+write(LUPRI,*)  'get_HSFS_indexes: boson_irps_indx vector allocated, GetNBSYM()=',GetNBSYM()
+call izero(boson_irps_indx,GetNBSYM())
 
 do isp=1, nsp
-
   if (iprint_hsfs >= 2) then
    write (LUPRI,'(2x,a,i4,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
   endif
+
   if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
-     boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
+     !boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
+     boson_irps_indx( IREPSP(NSP+ISP) ) = boson_irps_indx( IREPSP(NSP+ISP) ) + 1 
+
      if (iprint_hsfs >= 2) then
-       write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+       !write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+       write(LUPRI,*) '- irrep:',boson_irps_indx( IREPSP(NSP+ISP) )
       endif
   endif
 enddo
@@ -419,9 +431,11 @@ enddo
 icheck=0
 do i=1,GetNBSYM()
  if (iprint_hsfs >= 6) then
-    write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+    !write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+    write(LUPRI,*) i,'irrep:',boson_irps_indx(i)
  endif
- icheck=icheck+boson_irps_indx%p_iA1D(i)
+ !icheck=icheck+boson_irps_indx%p_iA1D(i)
+ icheck=icheck+boson_irps_indx(i)
 enddo
 
 if (icheck /= nsp/2) then
@@ -435,7 +449,8 @@ if (iprint_hsfs >= 2) then
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
 ! boson_irps_indx%p_iA1D(i)=0
- write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx%p_iA1D(i)
+ !write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx%p_iA1D(i)
+ write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx(i)
 enddo
 endif
 
@@ -448,7 +463,8 @@ do j=1,nsp
  !  write(LUPRI,'(a,3i3)') 'i,j,IREPSP(NSP+j):',i,j,IREPSP(NSP+j)
    k=ik
    k=k+1
-   hsfs_indx%p_iA1D(j) = k
+      !hsfs_indx%p_iA1D(j) = k
+      hsfs_indx(j) = k
    ik=k
  endif
 
@@ -462,7 +478,8 @@ if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
   if ( iprint_hsfs >= 2) then
     write (LUPRI,'(2x,a,i4,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
             IREPSP(ISP),IREPSP(NSP+ISP), &
-    ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+    !' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+    ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx(isp)
   endif
 endif
 enddo
@@ -475,16 +492,20 @@ nirp=GetNBSYM()
 
 write(luhsfs) nirp, nsp/2
 write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
-write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
-write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
+!write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
+write(luhsfs) ( boson_irps_indx(i),i=1,nirp )
+!write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
+write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx(i),i=1,nirp )
 
 ix=0
 do isp=1,nsp
   indx_found=.false.
   do j=1,nsp
-     if (isp == hsfs_indx%p_iA1D(j)) then
+     !if (isp == hsfs_indx%p_iA1D(j)) then
+     if (isp == hsfs_indx(j)) then
        if ( iprint_hsfs >= 10 ) then
-         write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+         !write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+         write(LUPRI,*) 'found:',isp,hsfs_indx(j),j  
        endif
        indx_found=.true.
        Exit
@@ -519,24 +540,36 @@ use io_moltra
 implicit none
 #include "priunit.h"
 logical :: print_batch_info, print_int, is_mdc, duplicity, still_duplicity
-type(Vect) :: indk_vect, indl_vect, cbuf_vect, mdcint_vect 
-type(Array2Dim) :: ij_store
+!type(Vect) :: indk_vect, indl_vect, cbuf_vect, mdcint_vect 
+integer, allocatable :: indk_vect(:), indl_vect(:)
+real*8, allocatable  ::  cbuf_vect(:), mdcint_vect(:)
+ 
+!type(Array2Dim) :: ij_store
+integer, allocatable :: ij_store(:,:)
+
 integer :: i,j,k,l,nn,nnzi_save,ij,MOINT,iblock,icount,IKR,JKR,NONZR
 integer :: nnnn, INZ, i1,i2,i3,i4,i1hsfs,i2hsfs,i3hsfs,i4hsfs
 integer :: ipos,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
 integer :: icbuf,ic
-integer, external :: Find_ijkl_pos
+!integer, external :: Find_ijkl_pos
+ interface
+   integer function Find_ijkl_pos(i0,j0,k0,l0,ij_store)
+     integer, intent (in) :: i0,j0,k0,l0
+     integer, intent(in) :: ij_store(:,:)
+   end function Find_ijkl_pos
+ end interface
 real*8 :: xint
+integer :: istat
 
 Call Header('MDCINT control print-out',-1)
 
 ! ... check if memory block is present
-if (.not.IsMemorySticked() ) then
- write(LUPRI,*) 'read_mdcint: memory array not present !' 
- call Quit('read_mdcint: memory array not present !  ')
-else
- write(LUPRI,*) 'read_mdcint: memory sticked !' 
-endif
+!if (.not.IsMemorySticked() ) then
+! write(LUPRI,*) 'read_mdcint: memory array not present !' 
+! call Quit('read_mdcint: memory array not present !  ')
+!else
+! write(LUPRI,*) 'read_mdcint: memory sticked !' 
+!endif
 
 print_batch_info = ( iprint_hsfs >= 8 )
        print_int = ( iprint_hsfs >= 14 )
@@ -623,17 +656,21 @@ write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
 !pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
 !pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array 
 
-indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
-indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
+!indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+  allocate(indk_vect(ilenght),stat=istat);  call alloc_stat_check("indk_vect(ilenght)",istat)
+!indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
+  allocate(indl_vect(ilenght),stat=istat);  call alloc_stat_check("indl_vect(ilenght)",istat)
 
 nn=NKR*(NKR+1)/2
-ij_store = Make2DimArray('INTE',nn,2,'i,j-indexes of common ij')
+!ij_store = Make2DimArray('INTE',nn,2,'i,j-indexes of common ij')
+  allocate(ij_store(nn,2),stat=istat);  call alloc_stat_check("ij_store(nn,2)",istat)
 
 ij=0
 do i=1,NKR
 do j=1,i
  ij=ij+1
- ij_store%p_iA2D(ij,1)=i; ij_store%p_iA2D(ij,2)=j
+ !ij_store%p_iA2D(ij,1)=i; ij_store%p_iA2D(ij,2)=j
+ ij_store(ij,1)=i; ij_store(ij,2)=j
 enddo
 enddo
 
@@ -641,14 +678,18 @@ nnnn=Find_ijkl_pos(NKR,NKR,NKR,NKR,ij_store)
 
 write(LUPRI,*) 'ijkl batch, all,nnnn=',nnnn
 
-cbuf_vect   =   MakeVector('REAL',nintmaxbl,'MDCINT largest integral block')
-mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
+!cbuf_vect   =   MakeVector('REAL',nintmaxbl,'MDCINT largest integral block')
+allocate(cbuf_vect(nintmaxbl),stat=istat); call alloc_stat_check("cbuf_vect(nintmaxbl)",istat)
+
+!mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
+allocate(mdcint_vect(nnnn),stat=istat);  call alloc_stat_check("mdcint_vect(nnnn)",istat)
+
 
   rewind(MDINT)
   read(MDINT)
 
-  call ZeroObject(cbuf_vect)
-  call ZeroObject(mdcint_vect)
+ ! call ZeroObject(cbuf_vect)
+ ! call ZeroObject(mdcint_vect)
 
   write(LUPRI,*) 'Going to read MDCINT transformed integrals'
 
@@ -657,9 +698,15 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
   icount = 0
  1 continue
 ! ... only real integrals !!!
-   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                               &
-   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),          INZ=1,NONZR,1),     &
-   (                        cbuf_vect%p_rA1D(INZ),          INZ=1,NONZR,1) 
+   !READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                               &
+   !( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),          INZ=1,NONZR,1),     &
+   !(                        cbuf_vect%p_rA1D(INZ),          INZ=1,NONZR,1) 
+
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,     &
+   ( indk_vect(INZ), indl_vect(INZ),          INZ=1,NONZR,1),     &
+   (                        cbuf_vect(INZ),          INZ=1,NONZR,1) 
+
+
 
   if (NONZR > ilenght) then
     write(LUPRI,*) 'NONZR :',NONZR,' ilenght :',ilenght
@@ -680,13 +727,17 @@ mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
 if (print_int) then
  write(LUPRI,'(/,2x,a,2i4)') 'read ( I J |... indexes:',KR(IKR),KR(JKR)
  do INZ=1, NONZR
-   i1=KR(IKR); i2=KR(JKR); i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
+   i1=KR(IKR); i2=KR(JKR)
+   !i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
+   i3=KR(indk_vect(INZ)); i4=KR(indl_vect(INZ))
    icount = icount + 1
    !  ... unique, KU indexes ... (i1 i2|i3 i4)=<i1 i3|i2 i4>
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i3,a,i3,a,i3,a,i3,a)')  & 
-           icount,'. (',KR(IKR),' ',KR(JKR),'|',                                   & 
-           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=',           &
-           cbuf_vect%p_rA1D(INZ),' = <',i1,' ',i3,'|',i2,' ',i4,'>'
+           icount,'. (',KR(IKR),' ',KR(JKR),'|',                              & 
+           !KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=',           &
+           KR(indk_vect(INZ)),' ',KR(indl_vect(INZ)),')=',           &
+           !cbuf_vect%p_rA1D(INZ),' = <',i1,' ',i3,'|',i2,' ',i4,'>'
+           cbuf_vect(INZ),' = <',i1,' ',i3,'|',i2,' ',i4,'>'
      CALL FLSHFO(LUPRI)
  enddo
 endif
@@ -695,10 +746,14 @@ endif
 
   do INZ=1, NONZR
    icount = icount + 1
-   i1=KR(IKR); i2=KR(JKR); i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
+   i1=KR(IKR); i2=KR(JKR)
+   !i3=KR(indk_vect%p_iA1D(INZ)); i4=KR(indl_vect%p_iA1D(INZ))
+   i3=KR(indk_vect(INZ)); i4=KR(indl_vect(INZ))
 !  (i1 i2|i3 i4)=<i1 i3|i2 i4>
-   i1hsfs=hsfs_indx%p_iA1D(i1); i2hsfs=hsfs_indx%p_iA1D(i3)
-   i3hsfs=hsfs_indx%p_iA1D(i2); i4hsfs=hsfs_indx%p_iA1D(i4)
+   !i1hsfs=hsfs_indx%p_iA1D(i1); i2hsfs=hsfs_indx%p_iA1D(i3)
+   i1hsfs=hsfs_indx(i1); i2hsfs=hsfs_indx(i3)
+   !i3hsfs=hsfs_indx%p_iA1D(i2); i4hsfs=hsfs_indx%p_iA1D(i4)
+   i3hsfs=hsfs_indx(i2); i4hsfs=hsfs_indx(i4)
    call permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs   ,i4hsfs  ,  & 
                      i1hsfs_p,i2hsfs_p,i3hsfs_p ,i4hsfs_p)
     ipos= Find_ijkl_pos(i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p,ij_store) 
@@ -711,13 +766,15 @@ endif
     endif
 
    ! store integral according to its unique indexes
-    mdcint_vect%p_rA1D(ipos)= cbuf_vect%p_rA1D(INZ)
+    !mdcint_vect%p_rA1D(ipos)= cbuf_vect%p_rA1D(INZ)
+    mdcint_vect(ipos)= cbuf_vect(INZ)
 
   if (print_int) then
     write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,2i3,a,2i3,a,i4)')  & 
           icount,'. (',i1,' ',i2,'|',  & 
           i3,' ',i4,')=', &
-          cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,' :p <',   &  
+          !cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,' :p <',   &  
+          cbuf_vect(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,' :p <',   &  
           i1hsfs_p,i2hsfs_p,'|',i3hsfs_p,i4hsfs_p,'>; pos',ipos
   endif
 
@@ -766,7 +823,8 @@ endif
  do k=1,i
  do l=1,j
    ipos= Find_ijkl_pos(i,j,k,l,ij_store)
-   xint=mdcint_vect%p_rA1D(ipos)
+   !xint=mdcint_vect%p_rA1D(ipos)
+   xint=mdcint_vect(ipos)
    if (dabs(xint).ge.1.0d-15) then
      ic = ic + 1
      write(luhsfs) i,j,k,l,xint
@@ -784,11 +842,16 @@ endif
  CALL FLSHFO(LUPRI)
 
 ! ... deallocate ...
- call DeAllocObject(mdcint_vect)
- call DeAllocObject(cbuf_vect)
- call DeAllocObject(ij_store)
- call DeAllocObject(indl_vect)
- call DeAllocObject(indk_vect)
+ !call DeAllocObject(mdcint_vect)
+ !call DeAllocObject(cbuf_vect)
+ !call DeAllocObject(ij_store)
+ !call DeAllocObject(indl_vect)
+ !call DeAllocObject(indk_vect)
+ deallocate(mdcint_vect)
+ deallocate(cbuf_vect)
+ deallocate(ij_store)
+ deallocate(indl_vect)
+ deallocate(indk_vect)
 
  write(LUPRI,*) 'mdcint_vect, cbuf_vect, indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
 
@@ -891,12 +954,13 @@ function Find_ijkl_pos(i0,j0,k0,l0,ij_store) result(ipos)
 !      ...  ipos of <ij|kl> 
 !
 !----------------------------------------------------------------
-  use Memory
-  use Vectors
+ ! use Memory
+ ! use Vectors
   implicit none
   integer, intent (in) :: i0,j0,k0,l0
   integer :: ipos,kl,i,j,is,ij,ij0
-  type(Array2Dim), intent(in) :: ij_store
+  !type(Array2Dim), intent(in) :: ij_store
+  integer, intent(in) :: ij_store(:,:)
 
   kl=(k0-1)*j0 + l0
 
@@ -904,7 +968,8 @@ function Find_ijkl_pos(i0,j0,k0,l0,ij_store) result(ipos)
   is =0
   do ij=1,ij0-1
     ! call get_indxs(ij,i,j)
-    i=ij_store%p_iA2D(ij,1); j=ij_store%p_iA2D(ij,2)
+    !i=ij_store%p_iA2D(ij,1); j=ij_store%p_iA2D(ij,2)
+    i=ij_store(ij,1); j=ij_store(ij,2)
     is = is +(i*j)
   enddo
   ipos=is + kl ! resulting position on array depending of i,j,k,l indexes
