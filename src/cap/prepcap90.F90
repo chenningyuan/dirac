@@ -235,11 +235,8 @@ DIMENSION WORK(LWORK)
 
 !  ... control test... 
  !   call test_oof_basis_fu(WORK,LWORK)
-
  !call set_vect_iprint(IPRCAP)
-
  !write(LUPRI,*) 'before stick into memory...LWORK=',LWORK
-
 ! ... stick the memory  ... 
  !call StickMemory(WORK,LWORK)
 
@@ -278,7 +275,7 @@ DIMENSION WORK(LWORK)
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
            !  ILFREE=get_lfree()
          !CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
-         CALL CAPADAPT(icabfo,iobf1_2)
+         CALL CAPADAPT(icabfo,iobf1_2,WORK,LWORK)
          CALL CAP_OVLP_COMP
          call quit('CAP_STUFF: only integral comparison !')
      ELSE
@@ -295,7 +292,7 @@ DIMENSION WORK(LWORK)
         ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 1'
           
          !CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
-         CALL CAPADAPT(icabfo,iobf1_2)
+         CALL CAPADAPT(icabfo,iobf1_2,WORK,LWORK)
 
          CALL CAP_OVLP_COMP
        ENDIF
@@ -308,7 +305,7 @@ DIMENSION WORK(LWORK)
           CALL DOSAJEEV(WORK,LWORK)
           CALL CAP_DIRAC_AO(icabfo,iobf1_2)
           !CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE) 
-          CALL CAPADAPT(icabfo,iobf1_2) 
+          CALL CAPADAPT(icabfo,iobf1_2,WORK,LWORK) 
           CALL CAP_DIPVEL_COMP
           call QUIT('CAP_STUFF: comparison')
         ENDIF
@@ -320,7 +317,7 @@ DIMENSION WORK(LWORK)
         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
        ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 2'
         !CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
-        CALL CAPADAPT(icabfo,iobf1_2)
+        CALL CAPADAPT(icabfo,iobf1_2,WORK,LWORK)
         CAPDIPVEL = CAPDIPVEL_SAVE
      ENDIF
 
@@ -357,10 +354,10 @@ integer, allocatable :: IOBF1(:,:),IOBF2(:,:),ILC1(:),ILC2(:)
  !call mymemget('INTE',KIOBF2,3*NBASIS)
  !call mymemget('INTE',KILC1,NUCDEP)
  !call mymemget('INTE',KILC2,NUCDEP)
- allocate(IOBF1(3,NBASIS));! call izero(IOBF1,3*NBASIS)
- allocate(IOBF2(3,NBASIS));! call izero(IOBF2,3*NBASIS)
- allocate(ILC1(NUCDEP));    call izero(ILC1,NUCDEP)
- allocate(ILC2(NUCDEP));    call izero(ILC2,NUCDEP)
+ allocate(IOBF1(3,NBASIS));  !call izero(IOBF1,3*NBASIS)
+ allocate(IOBF2(3,NBASIS));  !call izero(IOBF2,3*NBASIS)
+ allocate(ILC1(NUCDEP));     call izero(ILC1,NUCDEP)
+ allocate(ILC2(NUCDEP));     call izero(ILC2,NUCDEP)
 
 write(LUPRI,*) "IOBF1, IOBF2....NBASIS=",NBASIS
 write(LUPRI,*) "ILC1, ILC2....NUCDEP=",NUCDEP
@@ -371,12 +368,17 @@ write(LUPRI,*) "ILC1, ILC2....NUCDEP=",NUCDEP
  !CALL IZERO(AccessWork(KILC2),NUCDEP)
 
  !CALL GET_DIR_CAP_AO_MATCH( AccessWork(get_vect_kstart(icapbfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(KIOBF1), AccessWork(KIOBF2),AccessWork(KILC1),AccessWork(KILC2) )
+
+  IOBF1(1,1)=0; IOBF2(1,1)=0
+! this routine hurts allocated arrays !
  CALL GET_DIR_CAP_AO_MATCH( icapbfo,iobf1_2,IOBF1, IOBF2,ILC1,ILC2 )
 
- !deallocate(ILC2)
- !deallocate(ILC1) ! some problems with the deallocation
+ deallocate(ILC2)
+ deallocate(ILC1) ! some problems with the deallocation
  deallocate(IOBF2)
  deallocate(IOBF1)
+
+ call quit('stop here...')
 
  !call mymemrel('CAP_DIRAC_AO',KILC2,KILC2)
  !call mymemrel('CAP_DIRAC_AO',KILC1,KILC1)
