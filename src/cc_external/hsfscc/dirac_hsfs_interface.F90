@@ -403,14 +403,16 @@ logical :: indx_found
 !  ... allocate vectors ...
 !hsfs_indx=MakeVector('INTE',NSP,'HSFS indexes')
   allocate (hsfs_indx(NSP),stat=istat);  call alloc_stat_check("hsfs_indx(NSP)",istat)
-  write(LUPRI,*)  'get_HSFS_indexes: hsfs_indx vector allocated'
+  call izero(hsfs_indx,NSP)
+  write(LUPRI,*)  'get_HSFS_indexes: hsfs_indx integer vector allocated and zeroed, its size=',NSP
+
 !boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
 allocate (boson_irps_indx(GetNBSYM()),stat=istat); call alloc_stat_check("boson_irps_indx(GetNBSYM())",istat)
 write(LUPRI,*)  'get_HSFS_indexes: boson_irps_indx vector allocated, GetNBSYM()=',GetNBSYM()
 call izero(boson_irps_indx,GetNBSYM())
 
 do isp=1, nsp
-  if (iprint_hsfs >= 2) then
+  if (iprint_hsfs >= 0) then
    write (LUPRI,'(2x,a,i4,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
@@ -419,8 +421,7 @@ do isp=1, nsp
   if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
      !boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
      boson_irps_indx( IREPSP(NSP+ISP) ) = boson_irps_indx( IREPSP(NSP+ISP) ) + 1 
-
-     if (iprint_hsfs >= 2) then
+     if (iprint_hsfs >= 0) then
        !write(LUPRI,*) '- irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
        write(LUPRI,*) '- irrep:',boson_irps_indx( IREPSP(NSP+ISP) )
       endif
@@ -445,8 +446,8 @@ if (icheck /= nsp/2) then
  call quit('wrong number of spinors !')
 endif
 
-if (iprint_hsfs >= 2) then
-write(LUPRI,*) 'filled irreps'
+if (iprint_hsfs >= 0) then
+write(LUPRI,'(2x,a)') 'filled irreps'
 do i=1,GetNBSYM()
 ! boson_irps_indx%p_iA1D(i)=0
  !write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx%p_iA1D(i)
@@ -458,7 +459,6 @@ endif
 ik=0
 do i=1,GetNBSYM()
 do j=1,nsp
-
  if ( i == IREPSP(NSP+j) ) then
  !  write(LUPRI,'(a,3i3)') 'i,j,IREPSP(NSP+j):',i,j,IREPSP(NSP+j)
    k=ik
@@ -467,15 +467,14 @@ do j=1,nsp
       hsfs_indx(j) = k
    ik=k
  endif
-
 enddo
 enddo
 
 write(LUPRI,'(/,2x,a)') '* HSFS - MOLTRA MO-integrals index mapping done.'
 
 do isp=1,nsp
-if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
-  if ( iprint_hsfs >= 2) then
+if (IREPSP(ISP)==1.or.IREPSP(ISP)==3) then
+  if ( iprint_hsfs >= 0) then
     write (LUPRI,'(2x,a,i4,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
             IREPSP(ISP),IREPSP(NSP+ISP), &
     !' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
@@ -491,7 +490,7 @@ write(LUPRI,'(/,2x,a)') 'going to write luhsfs data...'
 nirp=GetNBSYM()
 
 write(luhsfs) nirp, nsp/2
-write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
+write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort (as nsp/2)=',nsp/2
 !write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
 write(luhsfs) ( boson_irps_indx(i),i=1,nirp )
 !write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
@@ -684,14 +683,15 @@ allocate(cbuf_vect(nintmaxbl),stat=istat); call alloc_stat_check("cbuf_vect(nint
 !mdcint_vect = MakeVector('REAL',nnnn,'all spinfree MDCINT integrals block')
 allocate(mdcint_vect(nnnn),stat=istat);  call alloc_stat_check("mdcint_vect(nnnn)",istat)
 
-
   rewind(MDINT)
   read(MDINT)
 
  ! call ZeroObject(cbuf_vect)
+  call dzero(cbuf_vect,nintmaxbl)
  ! call ZeroObject(mdcint_vect)
+ call dzero(mdcint_vect,nnnn)
 
-  write(LUPRI,*) 'Going to read MDCINT transformed integrals'
+  write(LUPRI,'(/,2x,a)') 'Going to read  MO-transformed integrals from the MDCINT file'
 
   MOINT = 0
   iblock = 0
