@@ -1369,7 +1369,7 @@ C
      &               'Input error for .OPEN SHELL under *SCF')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
-                  READ (TEXT,*) IELEC
+                  READ (TEXT,*) FELEC
 C
                   IPERIOD= INDEX(LINE,',')
 
@@ -1417,6 +1417,7 @@ C
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
+                  FACTOT = real(IAC1+IAC2,8)
                   IF ( (MOD(IAC1,2) .NE. 0) .OR.
      &                 (MOD(IAC2,2) .NE. 0) .OR.
      &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
@@ -1427,17 +1428,16 @@ C
                      CALL QUIT('ERROR: Number of spinors must be '//
      &                         'a positive even number')
                   END IF
-c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                  IF (IELEC .LT. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                     WRITE(LUPRI,'(A,I3,A,I3)')
-     &                  'ERROR: Number of electrons (',IELEC,
+                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
+                     WRITE(LUPRI,'(A,F8.2,A,I3)')
+     &                  'ERROR: Number of electrons (',FELEC,
      &                  ') must be a positive even number less than',
      &                  IAC1+IAC2
                      CALL QUIT('ERROR: in number of electrons')
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
-                  DF(IOPEN) = real(IELEC,8)/real(IAC1+IAC2,8)
+                  DF(IOPEN) = FELEC/FACTOT
                END DO
                INIOCC = .FALSE.
                GO TO 100
