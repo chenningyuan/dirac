@@ -50,11 +50,43 @@ For maximum performance we will add hardware-specific optimization flags::
 Finally we configure and build the binary::
 
   $ ./setup --fc=ifort --cc=icc --cxx=icpc --int64 --sgi-mpt
+  $ cd build
   $ make
+
+
+Setting up pam
+--------------
+
+In your top directory you may configure the pam run script by adding a file ``.diracrc`` with contents::
+
+  --scratch=/tmpdir
+  --machfile=$PBS_NODEFILE
+  --noarch
+  --debugger=/usr/bin/gdb
+  --basis="$HOME/Dirac/basis:$HOME/Dirac/basis_dalton"
+  --profiler=/usr/bin/gprof
 
 
 Example run script
 ------------------
+
+Here is a simple example of a run script::
+
+  #PBS -S /bin/bash 
+  #PBS -N fullHe
+  #PBS -l select=1:ncpus=8:mpiprocs=4
+  #PBS -l walltime=01:00:00
+  #PBS -M trond.saue@irsamc.ups-tlse.fr -m ae 
+
+  cd $PBS_O_WORKDIR
+  nproc=`cat $PBS_NODEFILE | wc -l`
+  inp=HF
+  mol=H2O
+  pam --mpi=$nproc --inp=${inp} --mol=${mol}
+  exit 0
+
+The meta-launcher paul
+----------------------
 
 Use the meta-launcher ``paul`` as a good starting point::
 

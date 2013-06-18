@@ -25,7 +25,8 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
 
 
 Updates and patches
