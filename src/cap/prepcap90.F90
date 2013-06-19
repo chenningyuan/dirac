@@ -225,6 +225,12 @@ subroutine CAP_STUFF(WORK,LWORK)
 #include "nuclei.h"
 #include "iratdef.h"
 
+INTERFACE 
+    SUBROUTINE CAP_DIRAC_AO(icabfo,iobf1_2) 
+       integer, allocatable :: icabfo(:), iobf1_2(:)
+   END SUBROUTINE CAP_DIRAC_AO
+END INTERFACE
+
 !type(Vect) :: icabfo, iobf1_2
 integer, allocatable :: icabfo(:), iobf1_2(:)
 
