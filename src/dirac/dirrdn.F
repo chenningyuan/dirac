@@ -1373,7 +1373,7 @@ C
      &               'Input error for .OPEN SHELL under *SCF')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
-                  READ (TEXT,*) IELEC
+                  READ (TEXT,*) FELEC
 C
                   IPERIOD= INDEX(LINE,',')
 
@@ -1421,6 +1421,7 @@ C
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
+                  FACTOT = real(IAC1+IAC2,8)
                   IF ( (MOD(IAC1,2) .NE. 0) .OR.
      &                 (MOD(IAC2,2) .NE. 0) .OR.
      &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
@@ -1431,17 +1432,16 @@ C
                      CALL QUIT('ERROR: Number of spinors must be '//
      &                         'a positive even number')
                   END IF
-c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                  IF (IELEC .LT. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                     WRITE(LUPRI,'(A,I3,A,I3)')
-     &                  'ERROR: Number of electrons (',IELEC,
+                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
+                     WRITE(LUPRI,'(A,F8.2,A,I3)')
+     &                  'ERROR: Number of electrons (',FELEC,
      &                  ') must be a positive even number less than',
      &                  IAC1+IAC2
                      CALL QUIT('ERROR: in number of electrons')
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
-                  DF(IOPEN) = real(IELEC,8)/real(IAC1+IAC2,8)
+                  DF(IOPEN) = FELEC/FACTOT
                END DO
                INIOCC = .FALSE.
                GO TO 100
@@ -3800,7 +3800,7 @@ C
 C
 ! HJAAJ TODO : new parameter to set ADD_ALL = .TRUE. /Jan 2010
       SAVE SET
-      DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.XXXXXX',
+      DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.LABEL ',
      &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3815,6 +3815,7 @@ C
       END IF
 #include "memint.h"
 C
+      LABOPT = 0
 C
 C     Initialize /CBIPOP/
 C     ===================
@@ -3870,11 +3871,21 @@ C&&&& LABDEF: Define groups of primitive labels
                GO TO 100
     3          CONTINUE
 C&&&& VECPOP: Number of spinors to analyze
-                  READ(LUCMD,'(A72)') (VECPOP(I),I=1,NFSYM)
-                  ORBDEF = .FALSE.
-                  IPRPOP = MAX(IPRPOP,1)
+                 READ(LUCMD,'(A72)') (VECPOP(I),I=1,NFSYM)
+                 ORBDEF = .FALSE.
+                 IPRPOP = MAX(IPRPOP,1)
                GO TO 100
     4          CONTINUE
+C&&&& LABEL: pre-define labels
+                 LABDEF = .TRUE.
+                 READ(LUCMD,'(A7)') WORD
+                 IF    (WORD.EQ.'ATOM   ') THEN
+                   LABOPT = 1
+                 ELSEIF(WORD.EQ.'SHELL  ') THEN
+                   LABOPT = 2
+                 ELSE
+                   CALL QUIT('*POPINP: Unknown word after LABEL')
+                 ENDIF
                GO TO 100
     5          CONTINUE
 C&&&& IPRPOP: Print level
@@ -3915,6 +3926,7 @@ C
           ENDIF
         ENDDO
       ENDIF
+      IF(LABOPT.GT.0) CALL PRELAB(LABOPT,ILABDF,IPOPLAB,POPLAB,NPOPLAB)
 C
 C     Print section
 C     =============
@@ -3926,6 +3938,12 @@ C
       WRITE(LUPRI,'(1X,A)') '* Gross populations'
       IF(DONETP) WRITE(LUPRI,'(1X,A)')
      &     '* Net populations and overlap'
+      IF    (LABOPT.EQ.1) THEN
+        WRITE(LUPRI,'(1X,A)') '* Label defined for individual atoms'
+      ELSEIF(LABOPT.EQ.2) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &  '* Label defined for individual orbital shells'
+      ENDIF
       IF(ILABDF.EQ.1) THEN
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on AO-labels'
       ELSE
@@ -6625,7 +6643,7 @@ C***********************************************************************
 C
 C     Process labels:
 C       Read a string of new label name and list of primitive labels.
-C       Form pointer ILAB relating primitve labels with new labels.
+C       Form pointer ILAB relating primitive labels with new labels.
 C
 C     Written by T.Saue - Feb 3 1998
 C
@@ -6650,6 +6668,95 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Prelab */
+      SUBROUTINE PRELAB(LABOPT,ILABDF,ILAB,LAB,NLAB)
+C***********************************************************************
+C    
+C     Define labels according to pre-defined types
+C       LABOPT = 1: individual atoms
+C       LABOPT = 2: individual orbital shells
+C
+C***********************************************************************
+#include"implicit.h"
+#include"priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+#include "ccom.h"
+#include "dcblab.h"
+      CHARACTER LAB(*)*12,SPDCAR*1
+      DIMENSION ILAB(*)
+      integer, allocatable              :: ibuf(:),ibuf2(:)
+C Bit operations
+#include "dcbibt.h"
+      allocate(IBUF(NPLAB(0)))
+      IF    (LABOPT.EQ.1) THEN
+C.....Individual atoms
+        ILABDF = 1
+        NLAB   = 0
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
+          IC     = IGET(IATTR(ILAB1,ILABDF))          
+          ICENT  = JGET(IATTR(ILAB1,ILABDF))          
+          IDEG   = KGET(IATTR(ILAB1,ILABDF))          
+          KATT   = IPACK(ICLS,ICENT,IDEG,0)
+C.........check if label is already defined
+          DO JLAB = 1,NLAB
+          IF(KATT.EQ.IBUF(JLAB)) THEN
+            ILAB(ILAB1) = JLAB
+            GOTO 10
+          ENDIF
+          ENDDO
+C.........define label
+          NLAB = NLAB + 1
+          ILAB(ILAB1) = NLAB
+          IBUF(NLAB) = KATT
+          LAB(NLAB) = PLABEL(ILAB1,ILABDF)(1:8)//'    '
+ 10       CONTINUE
+        ENDDO
+      ELSEIF(LABOPT.EQ.2) THEN
+C.....Individual orbital shells
+C     First make pointer to orbital angular momentum
+        NDIM   = MXQN*(MXQN+1)*(MXQN+2)/6
+        allocate(IBUF2(NDIM))
+        ITYP = 0
+        DO LVAL = 1,NHTYP
+          DO ICOMP = 1,KHK(LVAL)
+            ITYP = ITYP + 1
+            IBUF2(ITYP)=LVAL
+          ENDDO
+        ENDDO
+        ILABDF = 1
+        NLAB   = 0
+C.......consider only large component labels
+        DO ILAB1 = 1,NPLAB(1)
+          IC     = IGET(IATTR(ILAB1,ILABDF))          
+          ICENT  = JGET(IATTR(ILAB1,ILABDF))          
+          IDEG   = KGET(IATTR(ILAB1,ILABDF))          
+          ITYP   = LGET(IATTR(ILAB1,ILABDF))          
+          LVAL   = IBUF2(ITYP) - 1
+          KATT   = IPACK(ICLS,ICENT,IDEG,LVAL)
+C.........check if label is already defined
+          DO JLAB = 1,NLAB
+          IF(KATT.EQ.IBUF(JLAB)) THEN
+            ILAB(ILAB1) = JLAB
+            GOTO 20
+          ENDIF
+          ENDDO
+C.........define label
+          NLAB = NLAB + 1
+          ILAB(ILAB1) = NLAB
+          IBUF(NLAB) = KATT
+          LAB(NLAB)  = PLABEL(ILAB1,ILABDF)(1:8)//
+     &                 SPDCAR(LVAL)//'   '
+ 20       CONTINUE
+        ENDDO
+        deallocate(ibuf2)
+      ENDIF
+      deallocate(ibuf)
+      RETURN
+      END 
 #ifdef NOT_USED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck READREORDER*/
@@ -6951,29 +7058,36 @@ C
 C     Check for C1 symmetry if localization requested
 C
       IF(DOLOC .AND. (NBSYM .GT. 1)) THEN
-         WRITE (LUPRI,'(/2A)') ' * WARNING : Orbital localization not',
-     S   ' yet implemented'
-         WRITE (LUPRI,'(A)') '             for other groups than C1 !!!'
-         WRITE (LUPRI,'(A)') '   -> LOCALIZE ignored'
+         WRITE (LUPRI,'(/A/A)')
+     &   ' * WARNING : Orbital localization not'//
+     &      ' yet implemented for other groups than C1 !!!',
+     &   ' * WARNING : -> .LOCALIZE option is ignored'
          DOLOC = .FALSE.
       ENDIF
 C
 C     Checks related to Gaunt. Allow dft+"hf gaunt" for developers.
 C
-      IF (GAUNT.AND.(DOTRA.OR.dirac_cfg_dft_calculation)) THEN
-       WRITE (LUPRI,*) " Gaunt only available for Hartree-Fock"
-       WRITE (LUPRI,*) ' "HF Gaunt" will be added in DFT'
-      END IF
+      IF (GAUNT) THEN
 
-      IF (GAUNT.AND.LONDON)
-     & CALL QUIT ('London orbitals are not implemented for GAUNT')
+         IF (dirac_cfg_dft_calculation) WRITE (LUPRI,'(/A)')
+     &   ' * INFO: Gaunt only available for Hartree-Fock, '//
+     &   ' the "HF Gaunt" term will be added in DFT.'
 
-      IF (GAUNT.AND.SOFOCK) THEN
-         WRITE (LUPRI,'(/2A)')
-     &   'Gaunt only implemented for AO Fock builder',
-     &   ' ---> switched to AOFOCK'
-         SOFOCK = .FALSE.
-      ENDIF
+         IF (DOTRA) WRITE (LUPRI,'(/A)')
+     &   ' * WARNING: Gaunt only available for Hartree-Fock, '//
+     &   ' and will be ignored in 2-electron integral transformation.'
+
+         IF (SOFOCK) THEN
+            WRITE (LUPRI,'(/A)')
+     &      ' * INFO: Gaunt only implemented for AO Fock builder'//
+     &      ' ---> switched to AOFOCK'
+            SOFOCK = .FALSE.
+         ENDIF
+
+         IF (LONDON)
+     &   CALL QUIT ('London orbitals are not implemented for GAUNT')
+
+      END IF ! (GAUNT)
 
 !     check whether both .URKBAL and .SPINFREE are set and exit if true
 !     =================================================================

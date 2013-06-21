@@ -1639,7 +1639,7 @@ C
 !
 !     written by S. Knecht
 !
-!     based on the respectively routine written for Dalton by 
+!     based on an analogous routine written for Dalton by
 !     Katharina Boguslawski and Pawel Tecmer
 !
 !***********************************************************************
@@ -1675,7 +1675,7 @@ C
 
 !     Print header of FCIDUMP file using MOLPRO format
       if (LUFCID .le. 0) then
-      CALL GPOPEN(LUFCID,'FCIDUMP','new',' ',
+         CALL GPOPEN(LUFCID,'FCIDUMP','new',' ',
      &                'FORMATTED',IDUMMY,.false.)
       end if
 

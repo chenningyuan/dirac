@@ -58,11 +58,10 @@ echo -e "through the 'free -t -m' command (values in MB): "; free -m -t
 #####################
 # check space on CE #
 #####################
-echo -e "\n--- Server's current dir filesystem (df -h .): "; df -h .
-echo -e "--- My current directory :  $PWD "
+echo -e "\n--- My current directory :  $PWD "
+echo -e "--- Server's current dir filesystem (df -h .): "; df -h .
 echo -e "--- Occupied current space by me (du -hs .) : \c"; du -hs .
 
-echo -e "\n--- Server's tmp, scratch filesystems (df -hl /tmp /scratch): "; df -hl /tmp /scratch
 echo -e "\n--- Server's tmp filesystem (df -h /tmp/.): "; df -h /tmp/.
 echo -e "\n--- Server's whole filesystem (df -h): "; df -h
 
@@ -91,7 +90,7 @@ voms-proxy-info --all
 #
 if [[ -n $CE_ID ]]; then
 # get info about CE #
-  local attribs="UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster"
+  local attribs="UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,MaxWCTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster"
   echo -e "\n Going to querry attribute on this CE=$CE_ID:"
   echo -e "attributes of interest are: $attribs"
   #lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime

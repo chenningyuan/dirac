@@ -70,7 +70,7 @@ if [[ -d "$BUILD" ]]; then
 fi
 
 #./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
-./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64=on -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
+./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
 
  cd $BUILD
  make ExperimentalUpdate
