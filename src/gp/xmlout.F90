@@ -104,7 +104,7 @@ module xmlout
       logical :: isOpen
       
       integer, parameter :: MIN_UNIT_NUMBER = 10
-      integer, parameter :: MAX_UNIT_NUMBER = 299
+      integer, parameter :: MAX_UNIT_NUMBER = 399
       
       do unit = MAX_UNIT_NUMBER, MIN_UNIT_NUMBER,-1
          inquire(unit = unit, opened = isOpen)
