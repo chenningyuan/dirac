@@ -11,7 +11,7 @@ Magnesium atom. Fockspace test calculations.
 *CAP
 .NONREL
 .PRINT
-0
+2
 .INPQD
 0.250
 .INPCAP

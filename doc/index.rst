@@ -25,7 +25,8 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
 
 
 Updates and patches
@@ -43,7 +44,7 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>` |
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`   |
   :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**

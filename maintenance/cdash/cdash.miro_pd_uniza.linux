@@ -24,21 +24,20 @@ BUILD_OMPI_INTEL_STATIC=build_ompi_intel_static
 
 # go to the local DIRAC directory
 cd $DIRAC
-#git pull 
 
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-#./setup --fc=/home/ilias/bin/ompi_i32lp64_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.openmpi_gfortran_gcc_ilp64_fullSTATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON  -D ENABLE_BOUNDS_CHECK=ON $BUILD_OMPI_STATIC
 if [[ -d "$BUILD_OMPI_GNU_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_OMPI_GNU_STATIC"
   /bin/rm -rf $BUILD_OMPI_GNU_STATIC
 fi
 pamadm -a --builddir=$BUILD_OMPI_GNU_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_GNU_STATIC
+./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --mpi --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_GNU_STATIC
 cd $BUILD_OMPI_GNU_STATIC
 make ExperimentalUpdate
-cmake ..
-make clean
-make Experimental
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalTest
+make ExperimentalSubmit
 
 
 #############################
@@ -60,7 +59,7 @@ if [[ -d "$BUILD_OMPI_INTEL_STATIC" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL_STATIC
 fi
 pamadm -a --builddir=$BUILD_OMPI_INTEL_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_intel_MKL_ilp64_STATIC" --int64 --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_INTEL_STATIC
+./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_intel_MKL_ilp64_STATIC" --int64 --static --mpi -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_INTEL_STATIC
 cd $BUILD_OMPI_INTEL_STATIC
 make ExperimentalUpdate
 make ExperimentalConfigure
