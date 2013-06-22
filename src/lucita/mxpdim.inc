@@ -8,7 +8,7 @@
       PARAMETER (MXPOBS = 35)
 CTF  Globally included here:
       parameter (MXTSOB = 30)
-CSK      parameter (MXTSOB = 50)
+CSK   parameter (MXTSOB = 50)
 *
       PARAMETER (MXPR4T = 10)
       PARAMETER (MXPR0T = 1)

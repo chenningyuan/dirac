@@ -18,6 +18,24 @@ keyword(NETPOP)
 
 Give Mulliken net/overlap populations in addition to gross populations.
 
+keyword(LABEL)
+
+Use pre-defined labels for use in Mulliken population analysis.
+The following defintions are recognized by DIRAC:
+
+::
+
+    .LABEL
+    ATOM
+
+Provide labels for individual atoms. This is useful for getting Mulliken charges.
+
+::
+
+    .LABEL
+    SHELL
+
+Provide labels for individual orbital types.
 
 keyword(LABDEF)
 

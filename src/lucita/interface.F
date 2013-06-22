@@ -3744,20 +3744,20 @@ C
       IF (MYPROC.EQ.MASTER) THEN
 C
 
-      open(LU1INT,FILE='MRCONEE',FORM='UNFORMATTED')
-      read(LU1INT) MORB,BREIT,ECORE_DIR,NFSYM,NZ
-      read(LU1INT) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
+      open(LUOINT,FILE='MRCONEE',FORM='UNFORMATTED')
+      read(LUOINT) MORB,BREIT,ECORE_DIR,NFSYM,NZ
+      read(LUOINT) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
      &                    (IDUM2(ID),ID=1,IDUMMY),
      &                    (NSTR(I),I=1,NFSYM),
      &                    (IDUM2(ID),ID=1,NFSYM),
      &                    (NCORE(I),I=1,NFSYM),
      &                    (IDUM2(ID),ID=1,NFSYM),
      &                    (NDELE(I),I=1,NFSYM)
-      read(LU1INT)
-      read(LU1INT)
-      read(LU1INT) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
+      read(LUOINT)
+      read(LUOINT)
+      read(LUOINT) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
      &             (IDUMAR(I),I=1,MORB,1),(IDUM2(ID),ID=1,NFSYM),NBREPD
-      close(LU1INT)
+      close(LUOINT)
 *
       if (NTEST.ge.1)
      &  write(6,'(A,1F18.10)') '    DIRAC core energy = ',ECORE_DIR
@@ -4076,15 +4076,15 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
       ELSE IF (INTIMP.EQ.3.AND.NOINT.EQ.0 ) THEN
         WRITE(6,*) ' Integrals imported formatted (E22.15) '
 *.1 : One-electron integrals
-        REWIND LU2INT
-        READ(LU2INT,'(E22.15)') (WORK(KINT1-1+INT1),INT1=1,NINT1)
+        REWIND LUTINT
+        READ(LUTINT,'(E22.15)') (WORK(KINT1-1+INT1),INT1=1,NINT1)
 *.2 : Two-electron integrals
         IF(INCORE.EQ.1.OR.EXTSPC.EQ.0) THEN
-          READ(LU2INT,'(E22.15)') (WORK(KINT2-1+INT2),INT2=1,NINT2)
+          READ(LUTINT,'(E22.15)') (WORK(KINT2-1+INT2),INT2=1,NINT2)
         END IF
 *.3 : Core energy
         WRITE(6,*) ' Core energy will be read '
-        READ(LU2INT,'(E22.15)') ECORE
+        READ(LUTINT,'(E22.15)') ECORE
 *
 *. Proceed in Normal MOLCAS way so
         INTIMP = 1
@@ -6483,14 +6483,14 @@ C    &           ' MO orbitals obtained from LUCIA ')
       IMXDDIM = IMXDIM*2
       call memman(KPICHE2,(2*IMXDDIM)**2,'ADDL  ',2,'IPIHE2')
 *
-      call rdone_dirac(WORK(KDIONEE),LU1INT,DIRACONE,MORB,
+      call rdone_dirac(WORK(KDIONEE),LUOINT,DIRACONE,MORB,
      &                 ISYDISUM,NBASD,ISPINFREE,WORK(KBOSYM),
      &                 WORK(KIDUMAR),WORK(KDUMAR),NIRREP,
      &                 NGSSH,NGAS,NSTR,
      &                 IPGTYP,INVERSM,INVERSM+1,NTEST)
 *
       call rdtwo_dirac(WORK(KDITWOE),
-     &                 LU2INT,DIRACTWO,
+     &                 LUTINT,DIRACTWO,
      &                 ISYDISUM,ISPINFREE,MORB,
      &                 WORK(KKR),WORK(KIOFF12),WORK(KNUMINT),
      &                 WORK(KINDK),WORK(KINDL),NTEST)

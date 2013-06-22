@@ -38,7 +38,7 @@ C
 C     Output:
 C        OCCNO - natural orbital occupation numbers
 C        UNO   - transformation matrix
-C        MOISNO - MO orbitals was already NO orbitals.
+C        MOISNO - MO orbitals were already NO orbitals.
 C        CMO   - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
@@ -125,7 +125,6 @@ C
         CALL NEWLAB('MC  DENS',lunii,LUPRI)
         CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
         CLOSE(Unit=lunii,Status='KEEP')
-        goto 100
       end if
 C
 C     Calculate max off-diagonal elements of density matrix
@@ -175,9 +174,11 @@ C     Diagonalize density matrix
 C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
-      if(save_reordered_nos)then
-!       to not destroy some U2 MCSCF/GASCI stuff...
-        if(ngas_dc > 2) call gasno(work(kdv))
+      if(.not.save_1pdens)then
+        if(save_reordered_nos)then
+!         to not destroy some U2 MCSCF/GASCI stuff...
+          if(ngas_dc > 2) call gasno(work(kdv))
+        end if
       end if
 
       IF (.NOT. MOISNO) THEN
@@ -247,11 +248,19 @@ C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
             WRITE(LUPRI,'(//A/A/A)')
-     &' **************************************************************',
-     &' *************** CI natural orbital calculation ***************',
-     &' **************************************************************'
+     &' ***************************************************',
+     &' *************** CI natural orbitals ***************',
+     &' ***************************************************'
+         WRITE(LUPRI,'(//A,I3,/A)')
+     &        '   Natural orbital occupation numbers for state:', 
+     &            IDENSLR_STATE,
+     &        '   ------------------------------------------------'
+         ELSE
+            WRITE(LUPRI,'(//A/A/A)')
+     &' ***************************************************',
+     &' *************** MCSCF natural orbitals ************',
+     &' ***************************************************'
          END IF
-         ICI_RT = IDENSLR_STATE
 C        
 C        save occupancies for later use 
          DO I = 1, NFSYM
@@ -265,9 +274,6 @@ C        save occupancies for later use
              CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
            END IF
          END DO
-         WRITE(LUPRI,'(//A,I3,/A)')
-     &        '   Natural orbital occupation numbers for state:',ICI_RT,
-     &        '   ------------------------------------------------'
          DO I = 1, NFSYM
             NOCCI = NOCC(I)
             IF (NOCCI .EQ. 0) THEN

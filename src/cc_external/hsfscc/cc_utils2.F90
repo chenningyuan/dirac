@@ -3912,7 +3912,7 @@ implicit none
           write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
           call quit('rdsym: error in reading nclass!')
   endif
-  write(LUPRI,'(2x,a,i2)') 'get value nclass=',nclass
+  write(LUPRI,'(2x,a,i2)') 'got the value nclass=',nclass
 
   write(LUPRI,'(/,2x,a)')  & 
  'Reading number of of orbitals (20i3) per symmetry(1-nclass):'
@@ -3935,10 +3935,9 @@ implicit none
 !c  isym is  1 for orbs changing sign
 !c  isym is -1 for orbs doing neither
 !c-------------------------------------------------
-  write(LUPRI,'(1x,a)') 'reading orbitals symmetry operations characteristics:'
+  write(LUPRI,'(1x,a)') '=== reading in orbitals symmetry operations characteristics ==='
   nsym=1
   110 continue
-  !read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
   read (LUCMD,*,iostat=ios) (isym(i,nsym),i=1,nclass)
   if (ios.ne.0) then
     write(LUPRI,*) 'error in reading isym, so far read nsym=',nsym
@@ -3951,7 +3950,7 @@ implicit none
   ! in between print out what was read
   write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
   1200  format(' isym(',i3,')=',30i3)
-  nsym=nsym+1
+  nsym=nsym+1 ! increase counter ...
   go to 110 ! read again
 
 ! end of reading
@@ -3988,13 +3987,15 @@ implicit none
 ! set the number of  (irreducible representations ?) - nir
   if (nclass.eq.1) then
     nir=1
+    write(lupri,'(a,$)')  'nir=1 '
   else
     nir=2**nsym
+    write(lupri,'(a,i1,1x,$)')  'nir=2**nsym, where nsym=',nsym
   end if
-  write(LUPRI,'(a,i3)') 'set nir=',nir
+  write(LUPRI,'(1x,a,i3)') '==> set nir=',nir
 
-! print out the matrix multiplication table
-  write(LUPRI,'(/,1x,a)') 'matrix (group) multiplication table:'
+!  print out the matrix multiplication table
+  write(LUPRI,'(/,1x,a,i1,a,i1)') 'matrix (group) multiplication table: ',nir,' x ', nclass
   do i=1,nir
     write(LUPRI,'(8i3)') (igmt(i,j),j=1,nclass)
   enddo
