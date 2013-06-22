@@ -1273,6 +1273,10 @@
          reladc_fanoonly   = .true.
       end if
 
+      if (kw_matches(word, '.FANOFCHK')) then
+         reladc_fano_checkfin = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
