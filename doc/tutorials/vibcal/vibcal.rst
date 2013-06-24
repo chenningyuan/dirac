@@ -2,6 +2,10 @@ VIBCAL
 ======
 
 VIBCAL is a utility program allowing the calculation of vibrationally averaged properties.
+
+Theory
+------
+
 Suppose that we have optimized the geometry of our molecule and have carried out a harmonic
 vibrational analysis. For a selected normal mode we expand the electronic energy :math:`E` 
 as function of the associated normal coordinate :math:`q` about the equilibrium position 
@@ -31,3 +35,6 @@ Experimentally one can observe the change in this expectation value between two 
 .. math::
 
    P_{\nu'} - P_{\nu} = \frac{1}{2}\frac{\hbar}{\mu\omega_e}\left[P^{[2]}-\frac{1}{\mu\omega_e^2}P^{[1]}E^{[3]}\right]\Delta\nu;\quad \Delta\nu=\nu' - \nu
+
+We note that the purely electronic contribution :math:`P^{[0]}` does not contribute to the vibrational shift. Furthermore, we may note that for a purely
+harmonic mode (:math:`E^{[3]}=0`) and a property purely linear in the normal coordinate (:math:`P^{[2]}=0`) the vibrational shift is strictly zero.
