@@ -167,7 +167,7 @@ CONTAINS
     reladc_md_nmspec   = 'FSPEC'
 
     
-    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
+!    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
 !    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep)
 
     CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
@@ -180,7 +180,7 @@ CONTAINS
      &                KFREE,LFREE,.true.)
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
-!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
     CALL dealloc(buflanc)
