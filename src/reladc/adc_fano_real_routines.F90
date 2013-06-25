@@ -233,11 +233,11 @@ CONTAINS
       DO temp_row = 1, fincount
         adcib = adcib + 1
         adcbuf(adcib) = temp_array(temp_row,1)
-        !adcioi(adcib) = temp_array(temp_row,2) + inrow
-        !adcioj(adcib) = temp_array(temp_row,3)
+        adcioi(adcib) = temp_array(temp_row,2) + inrow
+        adcioj(adcib) = temp_array(temp_row,3)
         !write upper right part
-        adcioi(adcib) = temp_array(temp_row,3)
-        adcioj(adcib) = temp_array(temp_row,2) + inrow
+        !adcioi(adcib) = temp_array(temp_row,3)
+        !adcioj(adcib) = temp_array(temp_row,2) + inrow
         IF (adcib == fano_intbuf) THEN
           CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
                 adcib,adcfh)
@@ -310,7 +310,7 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     INTEGER                                :: nok, najl
-    REAL(8)                                :: temp
+    INTEGER                                :: temp
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
     INTEGER                                :: irep
@@ -322,6 +322,7 @@ CONTAINS
     INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
     INTEGER                                :: finib
     INTEGER                                :: irow, jcol, i, j, k
+    INTEGER                                :: coupcol, couprow
     INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
@@ -426,17 +427,36 @@ CONTAINS
         !WRITE(iw,*) 'adccol1 = ', adccol
         ! is the column a column of the final states?
         IF (temp == jcol) THEN
-          fincol = fincol + 1
+          coupcol = adccol
+          couploop:DO irow = jcol+1, najl
+            IF (ANY(finalpos == irow)) THEN
+              CYCLE couploop
+            END IF
+
+            s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+
+            couprow = ladc - fin_max + fincol
+            coupcol = coupcol + 1
+
+            IF (s /= 0.0D0) THEN
+              adcib = adcib + 1
+              adcbuf(adcib) = s
+              adcioi(adcib) = couprow
+              adcioj(adcib) = coupcol
+              IF (adcib == fano_intbuf) THEN
+                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                    adcnbufs,adcib,adcfh)
+              END IF
+            END IF
+            
+          END DO couploop
+          fincol  = fincol + 1
           CYCLE colloop
         END IF
          
         ! determine the column of the initial and total matrix
         adccol = adccol + 1
         incol  = incol  + 1
-
-        !WRITE(iw,*) 'adccol = ', adccol
-        !WRITE(iw,*) ' incol = ',  incol
-        !WRITE(iw,*) 'jcol = ', jcol
 
         finrow = 1
         adcrow = adccol - 1
@@ -500,11 +520,11 @@ CONTAINS
           IF (s /= 0.0D0) THEN
             adcib = adcib + 1
             adcbuf(adcib) = s
-            !adcioi(adcib) = adcrow
-            !adcioj(adcib) = adccol
+            adcioi(adcib) = adcrow
+            adcioj(adcib) = adccol
             ! write upper right part of the matrix
-            adcioi(adcib) = adccol
-            adcioj(adcib) = adcrow
+            !adcioi(adcib) = adccol
+            !adcioj(adcib) = adcrow
             IF (adcib == fano_intbuf) THEN
               CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                   adcnbufs,adcib,adcfh)
@@ -588,7 +608,7 @@ CONTAINS
         END DO
       END DO
 
-      !WRITE(iw,*) 'ADCib = ', adcib
+      WRITE(iw,*) 'ADCib = ', adcib
 !      WRITE(iw,*) 'Finib = ', finib
 
       DEALLOCATE(oolt)    
