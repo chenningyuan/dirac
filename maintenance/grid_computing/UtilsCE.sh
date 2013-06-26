@@ -90,7 +90,7 @@ voms-proxy-info --all
 #
 if [[ -n $CE_ID ]]; then
 # get info about CE #
-  local attribs="UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster"
+  local attribs="UsedOnline,TotalOnline,FreeOnline,TotalNearline,SMPSize,TotalCPUs,PlatformArch,Memory,VMemory,ClockSpeed,MaxCPUTime,MaxWCTime,CPUVendor,PhysicalCPU,CE,CEStatus,FreeCPUs,Cluster"
   echo -e "\n Going to querry attribute on this CE=$CE_ID:"
   echo -e "attributes of interest are: $attribs"
   #lcg-info --list-ce --query "CE=$CE_ID" --attrs PlatformArch,SMPSize,TotalCPUs,Memory,VMemory,ClockSpeed,MaxCPUTime

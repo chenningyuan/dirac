@@ -201,16 +201,16 @@ CONTAINS
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
             END IF
-            !Todo: write out rest of in matrix after all loops
             ! We write out the sorted ADC matrix
-            adcib  = adcib + 1
-            adcbuf(adcib) = single_col(adcrow)
-            adcioi(adcib) = inrow
-            adcioj(adcib) = adccol
-            IF (adcib == fano_intbuf) THEN
-              CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-                                  adcnbufs,adcib,adcfh)
-            END IF
+            ! We skip that since we only need interaction block
+            !adcib  = adcib + 1
+            !adcbuf(adcib) = single_col(adcrow)
+            !adcioi(adcib) = inrow
+            !adcioj(adcib) = adccol
+            !IF (adcib == fano_intbuf) THEN
+            !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
+            !                      adcnbufs,adcib,adcfh)
+            !END IF
           END IF
         ELSE is_initial
           !WRITE(iw,*) 'inrow = ', inrow
@@ -235,6 +235,9 @@ CONTAINS
         adcbuf(adcib) = temp_array(temp_row,1)
         adcioi(adcib) = temp_array(temp_row,2) + inrow
         adcioj(adcib) = temp_array(temp_row,3)
+        !write upper right part
+        !adcioi(adcib) = temp_array(temp_row,3)
+        !adcioj(adcib) = temp_array(temp_row,2) + inrow
         IF (adcib == fano_intbuf) THEN
           CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
                 adcib,adcfh)
@@ -307,7 +310,7 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     INTEGER                                :: nok, najl
-    REAL(8)                                :: temp
+    INTEGER                                :: temp
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
     REAL(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
     INTEGER                                :: irep
@@ -319,6 +322,7 @@ CONTAINS
     INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
     INTEGER                                :: finib
     INTEGER                                :: irow, jcol, i, j, k
+    INTEGER                                :: coupcol, couprow
     INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
@@ -423,17 +427,36 @@ CONTAINS
         !WRITE(iw,*) 'adccol1 = ', adccol
         ! is the column a column of the final states?
         IF (temp == jcol) THEN
-          fincol = fincol + 1
+          coupcol = adccol
+          couploop:DO irow = jcol+1, najl
+            IF (ANY(finalpos == irow)) THEN
+              CYCLE couploop
+            END IF
+
+            s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
+
+            couprow = ladc - fin_max + fincol
+            coupcol = coupcol + 1
+
+            IF (s /= 0.0D0) THEN
+              adcib = adcib + 1
+              adcbuf(adcib) = s
+              adcioi(adcib) = couprow
+              adcioj(adcib) = coupcol
+              IF (adcib == fano_intbuf) THEN
+                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+                                    adcnbufs,adcib,adcfh)
+              END IF
+            END IF
+            
+          END DO couploop
+          fincol  = fincol + 1
           CYCLE colloop
         END IF
          
         ! determine the column of the initial and total matrix
         adccol = adccol + 1
         incol  = incol  + 1
-
-        !WRITE(iw,*) 'adccol = ', adccol
-        !WRITE(iw,*) ' incol = ',  incol
-        !WRITE(iw,*) 'jcol = ', jcol
 
         finrow = 1
         adcrow = adccol - 1
@@ -473,14 +496,15 @@ CONTAINS
                                     innbufs,inib,infh)
               END IF
               ! now total adc-matrix
-              adcib = adcib + 1
-              adcbuf(adcib) = s
-              adcioi(adcib) = adcrow
-              adcioj(adcib) = adccol
-              IF (adcib == fano_intbuf) THEN
-                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-                                    adcnbufs,adcib,adcfh)
-              END IF
+              ! we skipt that, since we only need the interaction matrix
+              !adcib = adcib + 1
+              !adcbuf(adcib) = s
+              !adcioi(adcib) = adcrow
+              !adcioj(adcib) = adccol
+              !IF (adcib == fano_intbuf) THEN
+              !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+              !                      adcnbufs,adcib,adcfh)
+              !END IF
             END IF
           END IF isdiag
 
@@ -498,6 +522,9 @@ CONTAINS
             adcbuf(adcib) = s
             adcioi(adcib) = adcrow
             adcioj(adcib) = adccol
+            ! write upper right part of the matrix
+            !adcioi(adcib) = adccol
+            !adcioj(adcib) = adcrow
             IF (adcib == fano_intbuf) THEN
               CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                   adcnbufs,adcib,adcfh)
@@ -552,16 +579,17 @@ CONTAINS
             finioj(finib) = fincol
           ELSE isfindiag
             IF (s /= 0.0D0) THEN
-              adcib = adcib + 1
-              adcbuf(adcib) = s
-              adcioi(adcib) = adcrow
-              adcioj(adcib) = adccol
-              !WRITE(iw,*) 'adccolsat = ', adccol
-              !WRITE(iw,*) 'adcrowsat = ', adcrow
-              IF (adcib == fano_intbuf) THEN
-                CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-                                    adcnbufs,adcib,adcfh)
-              END IF
+              ! only save interaction block
+              !adcib = adcib + 1
+              !adcbuf(adcib) = s
+              !adcioi(adcib) = adcrow
+              !adcioj(adcib) = adccol
+              !!WRITE(iw,*) 'adccolsat = ', adccol
+              !!WRITE(iw,*) 'adcrowsat = ', adcrow
+              !IF (adcib == fano_intbuf) THEN
+              !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
+              !                      adcnbufs,adcib,adcfh)
+              !END IF
               finib = finib + 1
               finbuf(finib) = s
               finioi(finib) = finrow
@@ -580,7 +608,7 @@ CONTAINS
         END DO
       END DO
 
-!      WRITE(iw,*) 'ADCib = ', adcib
+      WRITE(iw,*) 'ADCib = ', adcib
 !      WRITE(iw,*) 'Finib = ', finib
 
       DEALLOCATE(oolt)    
@@ -637,7 +665,7 @@ CONTAINS
     CALL dealloc(finioj)
 
     ! write the diagonal to separate files
-    CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
+    !CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
     !WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
     !CALL rwrite_diag(diag,ladc,ladc-fin_max+1,ladc,findiagfh,adcnbufs,iw)

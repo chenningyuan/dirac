@@ -3,7 +3,7 @@ MODULE adc_fano_matmul
 CONTAINS
 
   SUBROUTINE fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
-                               fhmat,fhdiag,intbuf,e2h1p,t_mom,iw)
+                               fhmat,fhdiag,intbuf,e2h1p,t_mom,nbufs,iw)
 !
 ! Purpose: 
 !
@@ -23,6 +23,7 @@ CONTAINS
     INTEGER, INTENT(IN)                             :: fhmat, fhdiag
     REAL(8), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: e2h1p
     REAL(8), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: t_mom
+    INTEGER, INTENT(IN)                             :: nbufs
     INTEGER, INTENT(IN)                             :: iw
 
 !
@@ -30,7 +31,7 @@ CONTAINS
 !
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: diag
     INTEGER                               :: ixx
-    INTEGER                               :: nbufs
+!    INTEGER                               :: nbufs
     INTEGER                               :: nact
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: buf
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: ioi, ioj
@@ -62,24 +63,25 @@ CONTAINS
     counter   = 0
 
     OPEN(fhmat,FILE=fn_adcmat,FORM='unformatted',STATUS='unknown')
-    OPEN(fhdiag,FILE=fn_adcdiag,FORM='unformatted',STATUS='unknown')
+!    OPEN(fhdiag,FILE=fn_adcdiag,FORM='unformatted',STATUS='unknown')
 
     DO i = 1, nr_in_evecs
       vec1 = 0
       vec_start(1:nr_in) = in_evecs(1:nr_in,i)
-      !WRITE(iw,*) 'starting vector'
-      !WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
+!      WRITE(iw,*) 'starting vector'
+!      WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
 
-      CALL alloc(diag,ladc)
-      REWIND(fhdiag)
+!      CALL alloc(diag,ladc)
+!      REWIND(fhdiag)
       REWIND(fhmat)
-      READ(fhdiag) (diag(ixx), ixx=1, ladc), nbufs
-      DO j = 1, ladc
-        vec1(j) = vec1(j) + diag(j) * vec_start(j)
-      END DO
-      CALL dealloc(diag)
-      !WRITE(iw,*) 'Vector with diagonal'
-      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+!      READ(fhdiag) (diag(ixx), ixx=1, ladc), nbufs
+!      DO j = 1, ladc
+!        vec1(j) = vec1(j) + diag(j) * vec_start(j)
+!      END DO
+!      CALL dealloc(diag)
+!      !WRITE(iw,*) 'Vector with diagonal'
+!      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+      WRITE(iw,*) 'nbufs =', nbufs
 
       DO k = 1, nbufs
         READ(fhmat) (buf(ixx),ixx=1,intbuf), &
@@ -91,13 +93,14 @@ CONTAINS
           irow   = ioi(j)
           jcol   = ioj(j)
           buffer = buf(j)
+!          WRITE(iw,*) 'buffer = ', buffer
 
           vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
           vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
         END DO
       END DO
-      !WRITE(iw,*) 'Vector with total sorted matrix'
-      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+      WRITE(iw,*) 'Vector with total sorted matrix'
+      WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
       
 !
 ! Now we have the initial state vector multiplied with the sorted ADC matrix.
