@@ -3414,122 +3414,18 @@ C
 C A possiblitity to do mixed core-valence in cas space is now allowed
 C Assumption at the moment is core space 1 and cas space 3
 C
-          IF(ABS(INOCOVA).GE.0) THEN
-            NOCCLS = NOCCLS + 1
-            IF(IWAY.EQ.2) THEN
-              IF(NTEST.GE.1000) THEN
-                WRITE(6,*) ' Another allowed class : '
-                CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-              END IF
-              CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
+          NOCCLS = NOCCLS + 1
+          IF(IWAY.EQ.2) THEN
+            IF(NTEST.GE.1000) THEN
+              WRITE(6,*) ' Another allowed class : '
+              CALL IWRTMA(IOC,1,NGAS,1,NGAS)
+            END IF
+            CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
 *
-              IF(I_DO_BASSPC.EQ.1) THEN
-              IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-              END IF
+            IF(I_DO_BASSPC.EQ.1) THEN
+            IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
+            END IF
 *
-            END IF
-          ELSE IF(INOCOVA.EQ.1) THEN !Do the check
-C Find max mixed core valence excitation
-            IMAXMIX = IOCMAX(1) - IOCMIN(1)
-C Find reference OCCLSE
-            IREFOCCLSE(1) = IOCMAX(1)
-            DO IGAS= 2,NGAS-1
-              IREFOCCLSE(IGAS) = IOCMAX(IGAS) - IOCMAX(IGAS-1)
-            END DO
-            IREFOCCLSE(NGAS) = 0
-C Find current mixed excitation
-            IMIX = IREFOCCLSE(1) - IOC(1)
-            IF(IMIX.GE.1) THEN
-              DO IGAS = 2,NGAS
-                IF(IREFOCCLSE(IGAS).EQ.0) THEN
-                  EXIT
-                ELSE
-                  IMIX = IMIX + IREFOCCLSE(IGAS) - IOC(IGAS)
-                END IF
-              END DO
-            ELSE
-              IMIX = 0
-            END IF
-C           print*,'IMIX',IMIX
-            IF(IMAXMIX.GE.IMIX) THEN
-              IPASS = 1
-            ELSE
-              IPASS = 0
-            END IF
-            IF(IPASS.EQ.1) THEN
-              NOCCLS = NOCCLS + 1
-              IF(IWAY.EQ.2) THEN
-                IF(NTEST.GE.1000) THEN
-                  WRITE(6,*) ' Another allowed class : '
-                  CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-                END IF
-                CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
-*
-                IF(I_DO_BASSPC.EQ.1) THEN
-                  IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-                END IF
-*
-              END IF
-            END IF
-          ELSE
-C Here the mixed core-valence correlation in cas comes in
-C Find max mixed core valence excitation
-            IMAXMIX  = IOCMAX(1) - IOCMIN(1)
-            IMAXMIX2 = IOCMAX(3) - IOCMIN(3)
-C Find reference OCCLSE
-            IREFOCCLSE(1) = IOCMAX(1)
-            DO IGAS= 2,NGAS-1
-              IREFOCCLSE(IGAS) = IOCMAX(IGAS) - IOCMAX(IGAS-1)
-            END DO
-            IREFOCCLSE(NGAS) = 0
-C Find current mixed excitation
-            IMIX = IREFOCCLSE(1) - IOC(1)
-            IF(IMIX.GE.1) THEN
-              DO IGAS = 2,NGAS
-                IF(IREFOCCLSE(IGAS).EQ.0) THEN
-                  IF(IMIX.GT.IMAXMIX) THEN
-C Here the 3. space is skipped in counting for IMIX
-                    DO IIGAS = IGAS+1,NGAS
-                      IF(IOC(IIGAS).NE.0) THEN
-C In case of 4+ spaces (and then virtuals are split)
-                        IMIX = IMAXMIX + 1
-                        EXIT
-                      ELSE
-C This will be an allowed excitation
-                        IMIX = IMAXMIX
-                      END IF
-                    END DO
-                  ELSE
-                    EXIT
-                  END IF
-                ELSE
-                  IMIX = IMIX + IREFOCCLSE(IGAS) - IOC(IGAS)
-                END IF
-              END DO
-            ELSE
-              IMIX = 0
-            END IF
-C           print*,'IMIX',IMIX
-            IF(IMAXMIX.GE.IMIX) THEN
-              IPASS = 1
-            ELSE
-              IPASS = 0
-            END IF
-            IF(IPASS.EQ.1) THEN
-              NOCCLS = NOCCLS + 1
-              IF(IWAY.EQ.2) THEN
-                IF(NTEST.GE.1000) THEN
-                  WRITE(6,*) ' Another allowed class : '
-                  CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-                END IF
-                CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
-*
-                IF(I_DO_BASSPC.EQ.1) THEN
-                  IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-                END IF
-*
-              END IF
-            END IF
           END IF
         END IF
       END IF
