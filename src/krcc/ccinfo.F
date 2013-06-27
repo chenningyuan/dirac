@@ -3599,7 +3599,7 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
                   CYCLE
                 END IF
 * See if we also want to eliminate core to valence
-                IF(INOCOVA.LT.0) THEN
+                IF(INOCOVA.GT.0) THEN !can be eliminated for negative NOCOVA
                   IF(ICREA(3).NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
 * Eliminate the core to valence (Done by not storing it)
                     IF(NTEST.GE.100) THEN
