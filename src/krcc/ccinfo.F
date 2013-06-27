@@ -3315,7 +3315,7 @@ C End Lasse
       INTEGER IOCMIN(MXPNGAS),IOCMAX(MXPNGAS),IREFOCCLSE(MXPNGAS)
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.100) THEN
          WRITE(6,*)  ' OCCLS in action '
          WRITE(6,*) ' =================='
@@ -3414,7 +3414,7 @@ C
 C A possiblitity to do mixed core-valence in cas space is now allowed
 C Assumption at the moment is core space 1 and cas space 3
 C
-          IF(INOCOVA.EQ.0) THEN
+          IF(ABS(INOCOVA).GE.0) THEN
             NOCCLS = NOCCLS + 1
             IF(IWAY.EQ.2) THEN
               IF(NTEST.GE.1000) THEN
@@ -3670,6 +3670,54 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
 *
           MX_EXC_LEVEL = MAX(MX_EXC_LEVEL,NCREA)
           IF(NCREA+NANNI.NE.0) THEN
+* Inserting a NOCOVA check - Lasse
+* This will eliminate the OBEX type of operators a set by NOCOVA
+            IF(ABS(INOCOVA).GE.1) THEN
+* At the moment it is assumed that:
+* First GAS is the core
+* Second GAS the valence occupied
+* Third GAS the valence unoccupied
+* Fourth GAS and beyond virtuals
+*
+              IF(IANNI(1).GE.1) THEN
+* We can now perhaps eliminate
+                IANNITOT = 0
+                DO JGAS = 1,NGAS
+* Will give the excitation rank
+                  IANNITOT = IANNITOT + IANNI(JGAS)
+                END DO
+                IVIRT = 0
+                DO JGAS = 4,NGAS
+* Will give the number of virtual indices outside the valence
+                  IVIRT = IVIRT + ICREA(JGAS)
+                END DO
+                IF(IVIRT.NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
+* Eliminate the core to virtuals (Done by not storing it)
+                  IF(NTEST.GE.100) THEN
+                    WRITE(6,*) 'Eliminated a core virtual'
+                    WRITE(6,*) ' Creation part,  Annihilation  part '
+                    WRITE(6,*) ' ==================================='
+                    WRITE(6,'(16I4,16I4)')
+     &                   (IANNI(I),I=1, NGAS),(ICREA(I),I=1, NGAS)
+                  END IF
+                  CYCLE
+                END IF
+* See if we also want to eliminate core to valence
+                IF(INOCOVA.LT.0) THEN
+                  IF(ICREA(3).NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
+* Eliminate the core to valence (Done by not storing it)
+                    IF(NTEST.GE.100) THEN
+                      WRITE(6,*) 'Eliminated a core valence'
+                      WRITE(6,*) ' Creation part,  Annihilation  part '
+                      WRITE(6,*) ' ==================================='
+                      WRITE(6,'(16I4,16I4)')
+     &                     (IANNI(I),I=1, NGAS),(ICREA(I),I=1, NGAS)
+                    END IF
+                    CYCLE
+                  END IF
+                END IF
+              END IF
+            END IF
             NOBEX_TP = NOBEX_TP + 1
             IF(IFLAG.NE.1) THEN
               LCOBEX_TP(NOBEX_TP) = NCREA
@@ -7215,7 +7263,7 @@ C
 *.Output
       INTEGER ISPCOMP_ACT(4*NGAS,*)
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ACT_SPOEX....: Orbital excitation '
         CALL IWRTMA(IOBEX_TP,1,2*NGAS,1,2*NGAS)
