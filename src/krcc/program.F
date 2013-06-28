@@ -448,6 +448,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
       IZERO = 0
       CALL ISTVC3(WORK(KLSOBEX_CC),(NSPOBEX_TPE-1)*4*NGAS+1,IZERO,
      &            4*NGAS)
+      NTEST = 5
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Extended list of spin-orbital excitations : '
         CALL WRT_SPOX_TP_CC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE)

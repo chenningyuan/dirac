@@ -112,6 +112,9 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
+* **Utility programs:**
+  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
+
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
   :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
