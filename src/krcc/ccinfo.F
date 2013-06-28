@@ -4537,6 +4537,7 @@ C       CALL MEMCHK_KRCC(WORK)
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
 C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
       IKRFLIPMAX = NACTEL !Set it to this value for all
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       print*,'IKRFLIPMAX',IKRFLIPMAX
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1

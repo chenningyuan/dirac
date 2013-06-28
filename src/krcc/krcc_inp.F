@@ -32,7 +32,7 @@ C
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
      &            '.GASSHK','.INACTI','.IBATCH','.NO4IDX','.IREADB',
      &            '.CC_EXC','.CCROOT','.MXCIV ','.MXITLR','.CONVEX',
-     &            '.ONLYTR','.******','.******','.******','.******'/
+     &            '.ONLYTR','.MK2INT','.******','.******','.******'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -62,6 +62,7 @@ C     ===================
 C
       MK2REF    = 0
       MK2DEL    = 0
+      MK2INT    = 0
       NO4IDX    = 0 ! Skip 4-index transformation
       I_DO_CC_EXC_E = 0
       MXCIV     = 0
@@ -259,7 +260,8 @@ C&&& Only transformation no CC. Will just exit after transformation
                  IKWSET(21) = 1
                GO TO 100
    22          CONTINUE
-C&&& 
+C&&& Further restrictions on Kramers flipping on intermediates
+                 MK2INT = 1
                  IKWSET(22) = 1
                GO TO 100
    23          CONTINUE
