@@ -428,7 +428,9 @@ C
           LCMBSPC(ICISPC) = 1
           ICMBSPC(1,ICISPC) = ICISPC
         END DO
-        LCSBLK = 6400000
+C       LCSBLK = 6400000
+C       LCSBLK = 46400000
+        LCSBLK = 668099141
 C
 C     Print section
 C     =============
