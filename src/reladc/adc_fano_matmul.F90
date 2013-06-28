@@ -43,6 +43,10 @@ CONTAINS
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec_start
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec1, vec2
 
+    CHARACTER(6),PARAMETER                :: fn_trans = 'FPSPEC'
+    INTEGER                               :: fh_trans
+    INTEGER                               :: ierror
+
 
 !
 ! Code
@@ -81,7 +85,7 @@ CONTAINS
 !      CALL dealloc(diag)
 !      !WRITE(iw,*) 'Vector with diagonal'
 !      !WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
-      WRITE(iw,*) 'nbufs =', nbufs
+!      WRITE(iw,*) 'nbufs =', nbufs
 
       DO k = 1, nbufs
         READ(fhmat) (buf(ixx),ixx=1,intbuf), &
@@ -99,8 +103,8 @@ CONTAINS
           vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
         END DO
       END DO
-      WRITE(iw,*) 'Vector with total sorted matrix'
-      WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+!      WRITE(iw,*) 'Vector with total sorted matrix'
+!      WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
       
 !
 ! Now we have the initial state vector multiplied with the sorted ADC matrix.
@@ -121,7 +125,7 @@ CONTAINS
       END DO
     END DO
     WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx), ixx=1,counter)
+    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx)*t_mom(ixx), ixx=1,counter)
 
     CALL dealloc(buf)
     CALL dealloc(ioi)
@@ -139,6 +143,12 @@ CONTAINS
 !
 ! To be removed as soon as Dirac has its own Stieltjes routine
 !
+    fh_trans = fhdiag
+    OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+         ACTION='WRITE',iostat=ierror)
+    WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+    CLOSE(fh_trans)
+
     CALL dealloc(e2h1p)
     CALL dealloc(t_mom)
 
