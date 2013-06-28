@@ -4535,8 +4535,11 @@ C       CALL MEMCHK_KRCC(WORK)
       IP = 1
       IH = 0
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
-      IKRFLIPMAX = NACTEL !Set it to this value for all
+      IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
+C Set it to this value for all. Since we cannot have intermediates of 
+C higher particle rank than T it does not matter that NACTEL is too 
+C large since there will be no operators for this.
+C     IKRFLIPMAX = NACTEL 
       IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       print*,'IKRFLIPMAX',IKRFLIPMAX
       IHOLEATOT = NGAS+1
@@ -4616,7 +4619,7 @@ C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
 *
       IP = 0
       IH = 1
-C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4695,7 +4698,7 @@ C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
       IP = 1
       IH = 1
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,MX_EXC_LEVEL)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4853,7 +4856,7 @@ C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IP = 0
       IH = 2
 C     IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+2*MK2DEL,MX_EXC_LEVEL)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4932,7 +4935,7 @@ C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IP = 1
       IH = 2
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,MX_EXC_LEVEL)
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
