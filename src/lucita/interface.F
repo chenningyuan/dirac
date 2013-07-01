@@ -100,6 +100,7 @@ C     dimension IMOKW(NTABLE)
       character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
 *
       common/MLCENV/MOLUCENV
+      real(8) :: energy_convergence
 *
 *
 * Set logical units
@@ -523,6 +524,12 @@ C        .. we do not accept user input of less than 100 000 !
           IMOKW(26) = 2
         endif
       end if
+      if (IMOKW(27).eq.1) then
+        energy_convergence = my_convergence
+      else
+        energy_convergence = 1.0D-8
+      end if
+*
 *
 * 28: Truncate residual vectors before creating new trial vector?
 *     (14-jun-07, hjaaj)
@@ -719,7 +726,8 @@ C        .. we do not accept user input of less than 100 000 !
 *-----------------------------------------------------------------*
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
-      call mol2luc(NTIT,NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3)
+      call mol2luc(NTIT,NGAS,NCISPC,IPLOCAL,CARD,CARD2,CARD3,
+     &             energy_convergence)
 *
 6666  continue
 *
@@ -4289,7 +4297,8 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
-     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
+     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV,
+     &                   energy_convergence)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -4305,6 +4314,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
       INTEGER LUCIAIN_MPIL
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
+      real(8), intent(in) :: energy_convergence
 *
 *-----------------------------------------------------------------*
 *  Print input for LUCITA input file           
@@ -4418,13 +4428,17 @@ CTF      write(*,'(1X,A6)') MACHINE
          write(*,'(A6)') 'IPROCC'
          write(*,'(1X,I3)') IPROCC
          write(*,'(A6)') 'PRNCIV'
-         write(*,'(1X,I3,A)') IPRNCIV
+         write(*,'(1X,I3)') IPRNCIV
 *
          write(*,'(A6)') 'RESDIM'
          write(*,'(1X,I4)') IRESDIM
 *
          write(*,'(A6)') 'LCSBLK'
          write(*,'(I20)') LCSBLK
+
+         write(*,'(A6)') 'CICONV'
+         write(*,'(1X,E22.15)') energy_convergence
+        
 *
          if (IUSE_PH.eq.1) then
             write(*,'(A6)') 'USE_PH'
@@ -4575,6 +4589,9 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *
          write(LUINP,'(A6)') 'LCSBLK'
          write(LUINP,'(I20)') LCSBLK
+
+         write(LUINP,'(A6)') 'CICONV'
+         write(LUINP,'(1X,E22.15)') energy_convergence
 *
          if (IUSE_PH.eq.1) then
             write(LUINP,'(A6)') 'USE_PH'
@@ -4663,7 +4680,8 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *
 *************************************************************
 *
-      subroutine mol2luc(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3)
+      subroutine mol2luc(NTIT,NGAS,NCISPC,IPRT,CARD,CARD2,CARD3,
+     &                   energy_convergence)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -4681,6 +4699,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
       dimension IHELP(4),NINOBS(MXPIRR)
+      real(8), intent(in) :: energy_convergence
 *
 *------------------------------------------------------------------*
 *  Create default settings for LUCITA
@@ -6009,7 +6028,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
-     &             IPRDEN,IPROCC,IPRNCIV)
+     &             IPRDEN,IPROCC,IPRNCIV,energy_convergence)
 *
       return
       end
@@ -7241,7 +7260,7 @@ c     call XFLUSH(6)
 *  Call conversion routine for creating LUCIA input
 *-----------------------------------------------------------------*
       call mol2luc(NTIT,NGAS,NCISPC,IPLOCAL,
-     &             CARD,CARD2,CARD3)
+     &             CARD,CARD2,CARD3,1.0d-8)
 *
 6666  continue
       if (IMOKW(20).eq.1) then
