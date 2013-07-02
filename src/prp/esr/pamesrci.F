@@ -206,7 +206,7 @@ C
 
          CALL GASCIP_RCISTD(N_CIROOTS,THR_CI,MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
-     &                     WORK(KZCONF),CMO, IOPT_ISTATE, ICONV_TOT
+     &                     WORK(KZCONF),CMO, IOPT_ISTATE, ICONV_TOT,
      &                     IPROPT, WORK(KFREE),LFREE)
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
