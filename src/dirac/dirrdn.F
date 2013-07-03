@@ -3045,7 +3045,7 @@ C
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
-     &            '.DISTRT','xxxxxxx','.TRUNCF','.MEMFAC','XXXXXXX'/
+     &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3204,7 +3204,7 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxxxxx:
+C&&& xxxxxx: 
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
@@ -3228,7 +3228,9 @@ C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
                   IMOKW(26) = 1
                GO TO 100
    27          CONTINUE
-C&&& xxxxxxxxx:
+C&&& CONVER: set convergence threshold
+                  READ(LUCMD,*) my_convergence
+                  IMOKW(27) = 1
                GO TO 100
    28          CONTINUE
 C&&& TRUNCFactor: truncation factor for residual vectors for next trial
