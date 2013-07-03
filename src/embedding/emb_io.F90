@@ -1,5 +1,3 @@
-#define MOD_UNRELEASED
-
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.

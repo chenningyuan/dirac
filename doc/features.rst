@@ -14,7 +14,8 @@ New features in DIRAC13
 * enhancements to FDE
 * polarization propagator for 4-C excitations (ADC2 extended)
 * Fano ADC (perhaps)
-* C1 X2C and new AMFI (Stefan please fill in details)
+* improved X2C (reduced memory cost) + local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry; other double groups perhaps)
+* atomic spin-orbit code (spin-same orbit) replacing AMFI
 * commutator-based CC (to be discussed with Timo and Mickael)
 * PCM (check with Roberto)
 * Pol embedding (to see with Erik)
@@ -23,5 +24,6 @@ New features in DIRAC13
 New defaults
 ------------
 
-* if linked to MKL and nr of MKL threads not set, we quit with clear message what to do
-* OMP threads should be set to 1
+* The pam script sets MKL_NUM_THREADS=1, MKL_DYNAMIC="FALSE",
+  OMP_NUM_THREADS=1, and OMP_DYNAMIC="FALSE" unless these variables are set by
+  the user.
