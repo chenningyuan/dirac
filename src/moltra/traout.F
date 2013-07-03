@@ -259,14 +259,6 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
-C     LV   Deactivated this filesplitting option, should be obsolete now. 
-C     If the lines below are still commented out in 2013, please delete altogether !
-C
-C     We may exceed the maximum file length. Check it in the following
-C     routine !
-C
-C     CALL MDINTN (NZKL)
-
 C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
@@ -365,7 +357,6 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -386,10 +377,10 @@ C
          RCW = 2
       ENDIF
 C
-      call alloc(FTMAT,NKL,RCW)
-      call alloc(  RKL,NKL,RCW)
-      call alloc(INDK ,NKL)
-      call alloc(INDL, NKL)
+      allocate(FTMAT(NKL,RCW))
+      allocate(  RKL(NKL,RCW))
+      allocate(INDK(NKL))
+      allocate(INDL(NKL))
 C
       IF (SPINFR) THEN
 C
@@ -522,10 +513,10 @@ C
 C
       ENDIF ! spinfree
 C
-      call dealloc(FTMAT)
-      call dealloc(RKL)
-      call dealloc(INDK)
-      call dealloc(INDL)
+      deallocate(FTMAT)
+      deallocate(RKL)
+      deallocate(INDK)
+      deallocate(INDL)
 C
       RETURN
       END

@@ -44,7 +44,6 @@
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -170,7 +169,8 @@ C
        END IF
 CSK    NTEST = 0
 C
-      ECORE = ECORE_KRMC
+!     already done one routine up
+!     ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
       IF(NTEST > 25) 
      &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET

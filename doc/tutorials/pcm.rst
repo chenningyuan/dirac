@@ -4,7 +4,7 @@ Polarizable Continuum Model
 ===========================
 
 The possibility to perform solvent calculations is currently under development in the 
-``pcm-response`` branch. We will exploit a *Continuum Solvation Model* (CSM) namely the
+``pcm`` branch. We will exploit a *Continuum Solvation Model* (CSM) namely the
 *Polarizable Continuum Model* (PCM).
 PCM is a *focused model*: the solute (a single molecule or a cluster containing the solute 
 and some relevant solvent molecules) is described quantum mechanically, while the solvent is 
@@ -67,3 +67,12 @@ The electrostatic term is, usually, the largest contribution to the solvation en
 **exclusively** be concerned with its calculation (see also [Amovilli1998]_ for a discussion of the other terms).
 In CSMs the calculation of this term requires the solution of the classical Poisson problem nested within the
 QM calculation.
+
+Compilation
+-----------
+
+DIRAC uses the PCMSolver submodule to perform solvent calculations with the PCM. Hence
+to compile DIRAC on the ``pcm`` branch you will need to be granted access to the 
+PCMSolver repository.
+
+

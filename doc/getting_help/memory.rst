@@ -19,7 +19,6 @@ They look like this::
 
    Date and time (Linux) : Fri Nov 26 10:48:19 2010
    MEMGET ERROR, insufficient work space in memory
-   Intentionally causing a crash with a Segmentation Fault
 
 This means that you need to increase the WORK array (increase ``--mb``).
 

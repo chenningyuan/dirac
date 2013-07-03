@@ -627,15 +627,15 @@ C*****************************************************************************
 !        set the A operators to the x,y,z-dipole operators
          OPNAME = 'XDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
          OPNAME = 'YDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
          OPNAME = 'ZDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
 !     keyword: .EXCPRP
       ELSE IF (KEYWID .eq. 2) THEN

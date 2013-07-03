@@ -38,7 +38,7 @@ C
 C     Output:
 C        OCCNO - natural orbital occupation numbers
 C        UNO   - transformation matrix
-C        MOISNO - MO orbitals was already NO orbitals.
+C        MOISNO - MO orbitals were already NO orbitals.
 C        CMO   - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
@@ -125,7 +125,6 @@ C
         CALL NEWLAB('MC  DENS',lunii,LUPRI)
         CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
         CLOSE(Unit=lunii,Status='KEEP')
-        goto 100
       end if
 C
 C     Calculate max off-diagonal elements of density matrix
@@ -175,9 +174,11 @@ C     Diagonalize density matrix
 C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
-      if(save_reordered_nos)then
-!       to not destroy some U2 MCSCF/GASCI stuff...
-        if(ngas_dc > 2) call gasno(work(kdv))
+      if(.not.save_1pdens)then
+        if(save_reordered_nos)then
+!         to not destroy some U2 MCSCF/GASCI stuff...
+          if(ngas_dc > 2) call gasno(work(kdv))
+        end if
       end if
 
       IF (.NOT. MOISNO) THEN
@@ -247,11 +248,19 @@ C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
             WRITE(LUPRI,'(//A/A/A)')
-     &' **************************************************************',
-     &' *************** CI natural orbital calculation ***************',
-     &' **************************************************************'
+     &' ***************************************************',
+     &' *************** CI natural orbitals ***************',
+     &' ***************************************************'
+         WRITE(LUPRI,'(//A,I3,/A)')
+     &        '   Natural orbital occupation numbers for state:', 
+     &            IDENSLR_STATE,
+     &        '   ------------------------------------------------'
+         ELSE
+            WRITE(LUPRI,'(//A/A/A)')
+     &' ***************************************************',
+     &' *************** MCSCF natural orbitals ************',
+     &' ***************************************************'
          END IF
-         ICI_RT = IDENSLR_STATE
 C        
 C        save occupancies for later use 
          DO I = 1, NFSYM
@@ -265,30 +274,40 @@ C        save occupancies for later use
              CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
            END IF
          END DO
-         WRITE(LUPRI,'(//A,I3,/A)')
-     &        '   Natural orbital occupation numbers for state:',ICI_RT,
-     &        '   ------------------------------------------------'
          DO I = 1, NFSYM
             NOCCI = NOCC(I)
             IF (NOCCI .EQ. 0) THEN
                WRITE(LUPRI,9001) I
             ELSE
+               NISHI = NISH(I)
+               NASHI = NASH(I)
                IOCCI = IOCC(I)
+               IOCCA = IOCCI + NISHI
                OCCSUM = DSUM(NOCCI,OCCNO(IOCCI+1),1)
-               WRITE(LUPRI,9002) I, (OCCNO(IOCCI+J),J=1,NOCCI)
-               WRITE(LUPRI,9003) OCCSUM
+               IF (NASHI .GT. 0) THEN
+                  WRITE(LUPRI,9002) I, (OCCNO(IOCCA+J),J=1,NASHI)
+                  OCCSUMA = DSUM(NASHI,OCCNO(IOCCA+1),1)
+               ELSE
+                  OCCSUMA = 0.0D0
+               END IF
 
-               CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),NOCCI,NOCCI,0,-1)
-               WRITE(LUPRI,9004) I, (OCCNO(IOCCI+J),J=1,NOCCI)
+               WRITE(LUPRI,9003) OCCSUM-OCCSUMA,OCCSUMA,OCCSUM
+
+               IF (NASHI .GT. 0) THEN
+                  CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),
+     &               NOCCI,NOCCI,0,-1)
+                  WRITE(LUPRI,9004) I, (OCCNO(IOCCA+J),J=1,NASHI)
+               END IF
             END IF
          END DO
       END IF
 C
- 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
- 9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
- 9003 FORMAT(/'   Sum =',T15,F14.9)
- 9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9))
+ 9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
+ 9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
+     &      //,(5F14.9))
+ 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
+     &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
@@ -488,8 +507,7 @@ C
 !         end do
 
           CALL REORD(CMO,WORK(KOCCNO2),WORK(KMJVEC),
-     &               reorder_list,reorder_fermion,nesht,
-     &               WORK(KFREE),LFREE)
+     &               reorder_list,reorder_fermion,nesht)
 
           call dealloc(reorder_list)
           call dealloc(reorder_fermion)
@@ -1436,6 +1454,11 @@ C
          CALL DZERO(WORK(KRPRPMO),N2ORBXQ)
          CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),CMO,
      &               DUMMY,ICMOQ,NORB,WORK,KFREE,LFREE,IPROPT)
+
+         if(filelab(3:8) == 'dipole')then
+!          scale with proper prefactor for dipole (length) integrals (see factor -1.0d0 in src/prp/pamprp.F - def_dipole)
+           call dscal(NZ*NORBT**2,-1.0d0,WORK(KRPRPMO),1)
+         end if
 C
 C        print full property matrix
 C
@@ -1543,6 +1566,8 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
+#include "mxcent.h"
+#include "dipole.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
@@ -1670,7 +1695,10 @@ C             length gauge
               IF( MZ .eq. 2 )
      &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-              XMOM          = DCMPLX(XREAL,XCOMP)
+              XMOM          = XREAL
+              if(mz.eq.2)then
+                xmom        = dcmplx(xreal,xcomp)
+              end if
               OSCL(IPRP)    = XMOM
               OSCLABS(IPRP) = ABS(XMOM)
             END DO
@@ -1762,7 +1790,7 @@ C     =======================================================
       if(dodipmom_krci)then
 C
 C       print title
-        write(lupri,'(/28x,a/28x,a/28x,a)') 
+        write(lupri,'(/4x,a/4x,a/4x,a)') 
      & ' ********************************************************',
      & ' ********* permanent electric  dipole moment(s) *********',
      & ' ********************************************************'
@@ -1779,17 +1807,23 @@ C       determine index for (x,y,z)
         IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
         XREAL = 0.0D0
         XCOMP = 0.0D0
+
+C       Nuclear contribution to dipole moment
+C       ========================================
+C
+        call dipnuc(0,.false.)
+
 !
 !       -------------------
 !       print dipole moment
 !       -------------------
-        write(lupri,'(/a/a)')
-     & '            < state |x,y,z| state>  '//
-     & '               dipole moment [a.u.] (x, y, z)     Norm [a.u.]'//
-     & '  Norm [Debye]',
-     & '  __________________       _________________'//
-     & '    ________________________________________________________'//
-     & '_______'
+!       write(lupri,'(/a/a)')
+!    & '            < state |x,y,z| state>  '//
+!    & '               dipole moment [a.u.] (x, y, z)     Norm [a.u.]'//
+!    & '  Norm [Debye]',
+!    & '  __________________       _________________'//
+!    & '    ________________________________________________________'//
+!    & '_______'
         do 202 ivec = 1, nprop_roots_krci
 
           jvec  = ivec
@@ -1800,7 +1834,10 @@ C       determine index for (x,y,z)
             if(mz.eq.2)
      &      xcomp         = xpropmat(inist,jflst,ind_dip(iprp),2)
             xreal         = xpropmat(inist,jflst,ind_dip(iprp),1)
-            xmom          = dcmplx(xreal,xcomp)
+            xmom          = xreal
+            if(mz.eq.2)then
+              xmom          = dcmplx(xreal,xcomp)
+            end if
             oscl(iprp)    = xmom
             osclabs(iprp) = abs(xmom)
           end do
@@ -1813,17 +1850,43 @@ C       determine index for (x,y,z)
             call dzero(oscl,3)
           end if
 
-       write(lupri,'(a,i3,a,a4,a,i3,a,a4,a,3f12.8,2x,1f12.8,2x 1f12.8)')
-     &  '   * state',inist,'(',xrepeig(isymst_in),')         * state',
-     &      jflst,'(',xrepeig(isymst_fl),')   ',
-     &      oscl(1),oscl(2),oscl(3),
-     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2)),
-     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2))*debye
+
+!      write(lupri,'(a,i3,a,a4,a,i3,a,a4,a,3f12.8,1f14.8,1f14.8/)')
+!    &  '   * state',inist,'(',xrepeig(isymst_in),')         * state',
+!    &      jflst,'(',xrepeig(isymst_fl),')   ',
+!    &      oscl(1),oscl(2),oscl(3),
+!    &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2)),
+!    &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2))*debye
+
+       write(lupri,'(/a,i3,a,a4,a/)')
+     &  '     * dipole moment for electronic state: ',
+     &           inist,' (',xrepeig(isymst_in),')'
+
+      CALL PRSYMB(LUPRI,'-',76,5)
+      WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'Electronic  ','Nuclear     ','Total       '
+      WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'contribution','contribution','contribution'
+      CALL PRSYMB(LUPRI,'-',76,5)
+      IOFF = ICHAR('w')
+      ! print in debye
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &                   (DEBYE*DIPMN(I)),' Debye',
+     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',76,5)
+      ! print in a.u.
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &                   (DIPMN(I)),' a.u. ',
+     &        (oscl(I)+DIPMN(I)),' a.u.'
+      ENDDO
+
+
  202    continue
-        write(lupri,'(a)')
-     & '  __________________________________________'//
-     & '    ________________________________________________________'//
-     & '_______'
 
       end if
 !

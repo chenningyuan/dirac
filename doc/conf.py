@@ -22,12 +22,22 @@ sys.path.append(os.path.abspath('sphinxext'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest']
 
+#miro: try to add conditionally the extension in order not to hurt the doc compilation
+# older machines might lack it
+
+try:
+  import sphinx.ext.mathjax
+  extensions.append('sphinx.ext.mathjax')
+  print "The sphinx.ext.mathjax extension was added for proper doc-math rendereding."
+except ImportError:
+  print 'The sphinx.ext.mathjax extension could not be added => some math shall not be rendered properly.'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,8 +59,11 @@ copyright = u'The authors of DIRAC'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-# Read version from file
-dirac_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
+# Read version from file (miro: workaround for Windows as for some reasons it does not find the file)
+try:
+  dirac_version = open(os.path.join('..', '..', 'VERSION'), 'r').read().rstrip()
+except:
+  dirac_version = 'not found'
 # The short X.Y version.
 version = dirac_version
 # The full version, including alpha/beta/rc tags.

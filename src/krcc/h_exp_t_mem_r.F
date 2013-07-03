@@ -69,11 +69,12 @@ C     CALL MEMMAN(KCCVEC1,N_CC_AMPP1,'ADDL  ',2,'CCVEC1')
 C     KCCVEC1 = 0
 C     KCCVEC2 = 0
 *.3 : Maps for T1T2 => T12 for individual strings types 
+* This mapping should also include the intermediates since we can with
+* roughly equal number of virtuals and occupied (In a GAS) have that
+* this mapping is larger for intermediates
       CALL DIM_T1T2_TO_T12_MAP_REL(LEN_T1T2_STRING,LENT_T1T2_TCC,
      &                             WORK,KFREE,LFREE)
-      DO I=1,1000
-      print*,'temporary dimensioning of LEN_T1T2_STRING'
-      END DO
+C     CALL DIM_T1T2_OR_T1M2_TO_T12_OR_M12_MAP_REL
 C     LEN = LEN_T1T2_STRING
       LEN = 40*LEN_T1T2_STRING
       print*,'LEN_T1T2_STRING',LEN_T1T2_STRING
@@ -113,6 +114,8 @@ C
       NBEL = NELFTP(IBTP)
       LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB + NOCOB*NOCOB
       LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
+      LZSCR = LZSCR*8
+      LZ = LZ*8
       print*,'LZSCR,LZ',LZSCR,LZ
       CALL MEMGET('INTE',KLZ,LZ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLZSCR,LZSCR,WORK,KFREE,LFREE)
@@ -133,8 +136,8 @@ C
       WRITE(6,*) ' SET DIMENSION FROM LCCB '
       LB = LCCB
       LEN = LCCB**2
-      LEN3 = LCCB**3
       print*,'LCCB,LEN',LCCB,LEN
+C This is correct Lasse 2012
       CALL MEMGET('REAL',KLTSCR1,LEN,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KLTSCR2,LEN,WORK,KFREE,LFREE)
 C     CALL MEMGET('REAL',KLTSCR3,LEN,WORK,KFREE,LFREE)
@@ -154,7 +157,8 @@ C This may not be true for the intermediates!!!
 C Should move this allocation
       CALL FIND_LARGEST_DIFF_FOR_NEIGHBOURS(LOPSCR,IOFFINTTYPE,
      &                                      NSPOBEX_TP)
-      LOPSCR = LOPSCR*20
+      LOPSCR = LOPSCR*250
+      print*,'LOPSCR',LOPSCR
       CALL MEMGET('REAL',KLOPSCR,LOPSCR,WORK,KFREE,LFREE)
 *. Number and symmetries of each substring for 6 complete T-blocks 
 *. Largest number of strings in intermediate arrays

@@ -609,7 +609,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 000
+      NTEST = 00
       IT = 0
 C     print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS

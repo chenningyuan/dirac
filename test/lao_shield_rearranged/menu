@@ -1,0 +1,35 @@
+quick
+
+lao_shield_unchanged_sc_septep.inp     co2_c1.mol
+lao_shield_unchanged_sc_septep_doeprn.inp     co2_c1.mol
+lao_shield_lr_rearranged_septep.inp     co2_c1.mol
+
+lao_shield_unchanged_sc.inp     co2_c1.mol
+lao_shield_unchanged_nc.inp     co2_c1.mol
+lao_shield_rearranged_sc.inp    co2_c1.mol
+lao_shield_rearranged_nc.inp    co2_c1.mol
+lao_shield_lr_rearranged.inp    co2_c1.mol
+
+regular
+
+# radovan: these are slow and bring no new information
+#          DFT is covered with sym tests and C1 is covered with HF
+# lao_shield_unchanged_sc_b3lyp.inp     co2_c1.mol
+# lao_shield_rearranged_sc_b3lyp.inp    co2_c1.mol
+# lao_shield_lr_rearranged_b3lyp.inp    co2_c1.mol
+
+
+lao_shield_unchanged_sc.inp     co2_d2h.mol
+lao_shield_unchanged_nc.inp     co2_d2h.mol
+lao_shield_rearranged_sc.inp    co2_d2h.mol
+lao_shield_rearranged_nc.inp    co2_d2h.mol
+lao_shield_lr_rearranged.inp    co2_d2h.mol
+
+lao_shield_unchanged_sc_b3lyp.inp     co2_d2h.mol
+lao_shield_rearranged_sc_b3lyp.inp    co2_d2h.mol
+lao_shield_lr_rearranged_b3lyp.inp    co2_d2h.mol
+
+# radovan: this file has no reference output
+# lao_shield_unchanged_sc_orbstr_co2_d2h.inp    co2_d2h.mol
+
+

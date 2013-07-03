@@ -3347,7 +3347,8 @@ C***********************************************************************
 #include "dcbibn.h"
 C
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
-      PARAMETER(DLIM = 1.0D-3)
+      PARAMETER(DLIM = 1.0D-6)
+!     PARAMETER(DLIM = 1.0D-3) sk+hjaaj test
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -3426,8 +3427,8 @@ CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
-CHJ           THRBVEC = THRZER
-              THRBVEC = THCXRS*1.0D-4
+              THRBVEC = THRZER
+!sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ
               DO IVAR = 1,NVAR
@@ -3441,7 +3442,8 @@ C
                        BVEC(IVAR,IZ,IP) =
      &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG(IVAR))
                   ELSE
-                    BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP) / DLIM
+                    BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
+!sk+hjaaj test      BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP) / DLIM
                   END IF
                 ELSE
                   BVEC(IVAR,IZ,IP) = D0
@@ -3977,11 +3979,13 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+        use london_helper
         use dirac_cfg
         use dft_cfg
         use xcint_main
+!       use fde_mod, only: fde_set_isymop, fde_set_ihrmop,fde_calculate_emb_linrsp_mat 
         use fde_mod
-        use fde_integrate
+        use fde_dirac_matrices_integration
         use num_grid_gen
 #ifdef PCM_MODULE
         use pcm_interface
@@ -4123,7 +4127,15 @@ C
 !          call fde_set_nz(nz)
 !          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
-          call integrate_fde(fde_mat_dim            = ntbas(0),
+          call fde_dirac_set_isymop(isymop)
+          call fde_dirac_set_ihrmop(ihrmop)
+!         call fde_calculate_emb_linrsp_mat(ntbas(0),
+!    &                                      work(kbuf),
+!    &                                      ndmat,
+!    &                                      fmo,
+!    &                                      fao)
+          call fde_dirac_emb_matrices_via_integration(       
+     &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
      &                       fde_dmat_0             = work(kbuf),
      &                       fde_nr_dmat            = ndmat,
@@ -4159,11 +4171,12 @@ C
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
-     &               'b-transformed polarization charges.'
+           write(lupri,'(a)') '* Calling pcm_lintra_driver to get '//
+     &               'b-transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-           call pcm_fock_driver(fao, fmo, work(kfree), lfree)
+            call pcm_lintra_driver(fao, fmo, ndmat, -1.0d0, 
+     &      work(kfree), lfree)
         endif 
 #endif      
 

@@ -443,7 +443,7 @@
             ! read occupation
             read(word_array(3), *) f
             ! update occupation vector
-            do j = istart, iend 
+            do j = istart, iend
                visual_cfg_occupation(j, isym) = f
             end do
             ! print confirmation to screen
@@ -575,6 +575,10 @@
 
       if (kw_matches(word, '.SKIPEP')) then
          openrsp_cfg_skip_pn = .true.
+      end if
+
+      if (kw_matches(word, '.MLLSUS')) then
+         openrsp_cfg_mllsus = .true.
       end if
 
       if (kw_matches(word, '.SKIP1E')) then
@@ -1136,7 +1140,7 @@
 
    end subroutine
 !
-!  new reladc input subroutine
+!  reladc input subroutine
 !
    subroutine read_input_reladc(word, kw_section)
 
@@ -1149,12 +1153,15 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
+      integer                          :: i, j !counters
+      character(100)                   :: line
       integer                          :: user_req_symmetries
+      integer                          :: no_sipreps
 !     --------------------------------------------------------------------------
 
-!     write(*,*) 'In reladc input reader:',word,kw_section,len(word)
-
       call reset_available_kw_list()
+
+      no_sipreps = 0
 
       if (kw_matches(word, '.ADCLEV')) then
          read(get_file_unit(),'(i5)') reladc_adclevel
@@ -1168,14 +1175,28 @@
          reladc_dodips = .true.
       end if
 
+      if (kw_matches(word, '.DOEXCI')) then
+         reladc_doexci = .true.
+      end if
+
+      if (kw_matches(word, '.FANO  ')) then
+         reladc_dofano = .true.
+      end if
+
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
-         call kw_read(word, reladc_sipreps, user_req_symmetries)
+         !call kw_read(word, reladc_sipreps, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, no_sipreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.DIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_dipreps, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.EXCREP')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, reladc_excreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.READQK')) then
@@ -1194,6 +1215,18 @@
          reladc_dofull = .true.
       end if
 
+      if (kw_matches(word, '.DOLANC')) then
+         reladc_dolanc = .true.
+      end if
+
+      if (kw_matches(word, '.DODAVI')) then
+         reladc_dodavi = .true.
+      end if
+
+      if (kw_matches(word, '.DOXEXT')) then
+         reladc_doxext = .true.
+      end if
+
       if (kw_matches(word, '.VCONV ')) then
          read(get_file_unit(),'(f15.8)') reladc_vconv
       end if
@@ -1202,11 +1235,38 @@
          read(get_file_unit(),'(f18.6)') reladc_adcthr
       end if
 
+      if (kw_matches(word, '.FANOIN')) then
+         call kw_read(word, reladc_fano_inrep)
+         call kw_read(word, reladc_fano_inabssp) ! use absolute spinor numbers
+      end if
+
+      if (kw_matches(word, '.FANOCHNL')) then
+         ! read number of channels
+         call kw_read(word, reladc_fano_nrchannels)
+         allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         print *, ''
+         print *, 'Absolute spinor numbers of Fano final states: '
+         do i = 1, reladc_fano_nrchannels
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            ! read the absolute spinor numbers of the final states
+            read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
+            print *, (reladc_fano_channels(i,j), j=1,2)
+         end do
+      end if
+
+      if (kw_matches(word, '.FANOONLY')) then
+         reladc_dosips     = .true.
+         reladc_sipreps    = 0
+         reladc_sipreps(1) = reladc_fano_inrep
+         reladc_dodiag     = .false.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
 !
-!  new lanczos input subroutine
+!  lanczos input subroutine
 !
    subroutine read_input_lanczos(word, kw_section)
 
@@ -1233,6 +1293,10 @@
          read(get_file_unit(),'(i8)') reladc_dipiter
       end if
 
+      if (kw_matches(word, '.EXCITER')) then
+         read(get_file_unit(),'(i8)') reladc_exciter
+      end if
+
       if (kw_matches(word, '.SIPEIGV')) then
          read(get_file_unit(),'(i8)') user_req_symmetries
          call kw_read(word, reladc_sipeigv, user_req_symmetries)
@@ -1243,6 +1307,11 @@
          call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
+      if (kw_matches(word, '.EXCEIGV')) then
+         read(get_file_unit(),'(i8)') user_req_symmetries
+         call kw_read(word, reladc_exceigv, user_req_symmetries)
+      end if
+
       if (kw_matches(word, '.SIPPRNT')) then
          read(get_file_unit(),'(f18.6)') reladc_sipprnt
       end if
@@ -1251,8 +1320,32 @@
          read(get_file_unit(),'(f18.6)') reladc_dipprnt
       end if
 
+      if (kw_matches(word, '.EXCPRNT')) then
+         read(get_file_unit(),'(f18.6)') reladc_excprnt
+      end if
+
       if (kw_matches(word, '.DOINCORE')) then
          reladc_doincore = .true.
+      end if
+
+      if (kw_matches(word, '.LANCMEM')) then
+         read(get_file_unit(),'(i12)') reladc_lancmem
+      end if
+
+      if (kw_matches(word, '.DVROOTS')) then
+         read(get_file_unit(),'(i12)') reladc_davroots
+      end if
+
+      if (kw_matches(word, '.DVMAXSP')) then
+         read(get_file_unit(),'(i12)') reladc_davmaxsp
+      end if
+
+      if (kw_matches(word, '.DVMAXIT')) then
+         read(get_file_unit(),'(i12)') reladc_davmaxit
+      end if
+
+      if (kw_matches(word, '.DVCONV')) then
+         read(get_file_unit(),'(f18.6)') reladc_davconv
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1306,6 +1399,7 @@
 
    subroutine read_input_pcm(word, kw_section)
 
+      use dirac_cfg
 #ifdef PCM_MODULE
       use pcmmod_cfg
 #endif

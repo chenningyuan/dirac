@@ -11,16 +11,16 @@ Within the Born-Oppenheimer approximation the generic form of the electronic Ham
 
 .. math::
 
-    H = \sum_{i}\ h\left(i\right) + \frac{1}{2}\sum_{i\ne j}\ g\left(i,j\right) + V_{NN};
-    \quad V_{NN} = \frac{1}{2}\sum_{A\ne B} \frac{Z_A Z_B}{R_{AB}}
+    H = \sum_{i}\ h\left(i\right) + \frac{1}{2}\sum_{i\ne j}\ g\left(i,j\right) + V_{NN}; \quad V_{NN} = \frac{1}{2}\sum_{A\ne B} \frac{Z_A Z_B}{R_{AB}}
 
-where :math:`V_{NN}` is the repulsion of classical nuclei.
+where :math:`V_{NN}` is the operator of the repulsion of classical nuclei.
 The one-electron hamiltonian :math:`h\left(i\right)` splits into the free-electron Hamiltonian
 :math:`h_0` and the electron-nucleus interaction :math:`V_{eN}`. In the non-relativistic case
 the free-electron Hamiltonian is simply the kinetic energy operator, whereas a rest mass term
 is added in the relativistic case, e.g. for the Dirac (bare-nucleus) Hamiltonian
 
 .. math::
+
     h_D = \beta mc^2 + c\left(\alpha\cdot\mathbf{p}\right) + V_{eN}
 
 In the non-relativistic case the two-electron operator :math:`g\left(i,j\right)` is the
@@ -354,13 +354,18 @@ examples.
 
 keyword(PCM)
 
-.. warning:: documentation missing
+Model solvent effects by placing the molecule in a cavity in a dielectric
+continuum. The cavity is shaped on the actual geometry of the solute, the
+full molecular electrostatic potential is used.
+
+.. warning:: Development version only, requires PCMSolver submodule.
 
 
 keyword(SOLVENT)
 
 Model solvent effects by placing the molecule in a spherical cavity in a
-dielectric continuum.
+dielectric continuum. The solute electrostatic potential is represented
+in terms of a truncated multipolar expansion.
 
 
 keyword(FDE)
@@ -556,10 +561,10 @@ AMFI is the default. This holds also for keywords :ref:`.X2C` and
 :ref:`.X2C4`). In the DIRAC08 distribution version .NOAMFI was the
 default.
 
-.. warning:: missing AMFI contribution (for :ref:`.X2C`,
-             :ref:`.X2C4` and :ref:`.BSS` keywords) may lead to
-             overestimation of spin-orbit effects since these would be represented by
-             one-electron terms only, without two-electron shielding.
+.. warning:: 
+ missing AMFI contribution (for :ref:`.X2C`, :ref:`.X2C4` and :ref:`.BSS` keywords)
+ may lead to overestimation of spin-orbit effects since these would be represented by
+ one-electron terms only, without two-electron shielding.
 
 
 keyword(DO2C4C)
@@ -567,7 +572,7 @@ keyword(DO2C4C)
 After iterations at the two-component level ascend to the
 four-component level.
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 
 keyword(DO4C2C)
@@ -575,12 +580,12 @@ keyword(DO4C2C)
 After iterations at the four-component level do the relativistic
 transformation to the two-component level.
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 
 keyword(USE_DF)
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 After the four-component DC-SCF method do the infinite order transformation
 (either one- or two-step) upon the Fock-Dirac matrix.  Otherwise it is
@@ -591,7 +596,7 @@ Used only with keyword :ref:`.DO4C2C`.
 
 keyword(CONT2C)
 
-.. warning :: only in development version
+.. warning:: only in development version
 
 After four-component DC-SCF continue with two-component iterations.
 

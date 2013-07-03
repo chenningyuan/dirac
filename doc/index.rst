@@ -18,13 +18,21 @@ Setting up DIRAC
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`MPI <installation/int64/mpi>` |
-  :doc:`Math libraries <installation/int64/math>`
+  :doc:`Math libraries <installation/int64/math>` |
+  :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
+
+
+Updates and patches
+===================
+
+* :doc:`ChangeLog <patches/CHANGELOG>`
 
 
 First steps in DIRAC territory
@@ -36,11 +44,12 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`   |
+  :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` 
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -49,6 +58,10 @@ First steps in DIRAC territory
 
 Tutorials and walkthrus
 =======================
+
+* **Basis sets:**
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas.rst>` |
+  :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
   :doc:`Atomic start <tutorials/atomic_start/tutorial>`
@@ -72,7 +85,8 @@ Tutorials and walkthrus
 * **DFT:**
   :doc:`TDDFT <tutorials/dft/tddft>` |
   :doc:`BSSE <tutorials/dft/bsse>` |
-  :doc:`CAM functional <tutorials/dft/cam>`
+  :doc:`CAM functional <tutorials/dft/cam>` |
+  :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -83,9 +97,11 @@ Tutorials and walkthrus
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
-  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>`
+  :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
 
 * **Open-shell SCF:**
+  :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
@@ -96,6 +112,9 @@ Tutorials and walkthrus
 * **ECP:**
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **Utility programs:**
+  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -140,7 +159,9 @@ Developers
   :doc:`Nightly tests <programmers/cdash>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
-  :doc:`Further development <programmers/further_development>` 
+  :doc:`Further development <programmers/further_development>` |
+  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
+  :doc:`Protecting your code  <programmers/protecting_your_code>` 
 
 * **Notes:**
   :doc:`Standalone programs <programmers/standalones>` |

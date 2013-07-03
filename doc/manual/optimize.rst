@@ -50,7 +50,7 @@ Include LL, SL, and SS integral contributions to the gradient
 
 keyword(BAKER)
 
-Baker's convergence criteria [J. Comp. Chem. 14 (1993) 1085] will be
+Baker's convergence criteria [Baker1993]_ will be
 used.
 
 

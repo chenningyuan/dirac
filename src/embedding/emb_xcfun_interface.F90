@@ -1,3 +1,4 @@
+
 !dirac_copyright_start
 !      Copyright (c) 2012 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -19,11 +20,10 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module emb_xcfun_interface
+module fde_xcfun_interface
 
-   use xcfun
-   use xc_max_block_length
-   use xc_mpi
+   use xcfun_1_0
+   use fde_max_block_length
 
    implicit none
 
@@ -538,7 +538,7 @@ contains
          derv(k, d0000000) = f%output(1, k)
 
          if (order == 0) then
-               call my_quit('get_functional_derv: order 0; probably programming error')
+               call fde_quit('get_functional_derv: order 0; probably programming error')
          end if
 
          if (order > 0) then
@@ -603,7 +603,7 @@ contains
 
          if (order > 2) then
                if (do_alda_real .or. do_alda_imag) then
-                  call my_quit('get_functional_derv: xcfun alda qr not implemented')
+                  call fde_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
                if (fun_is_lda(f)) then
                   derv(k, d2000000) = f%output(XC_D20, k)
@@ -632,12 +632,12 @@ contains
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
                else if (fun_is_tau_mgga(f)) then
-                  call my_quit('get_functional_derv: tau mgga qr not implemented')
+                  call fde_quit('get_functional_derv: tau mgga qr not implemented')
                end if
          end if
 
          if (order > 3) then
-               call my_quit('get_functional_derv: order too high')
+               call fde_quit('get_functional_derv: order too high')
          end if
 
       end do
@@ -682,13 +682,6 @@ contains
 !     --------------------------------------------------------------------------
 
       if (.not. f%xcfun_id_is_set) then
-#ifdef VAR_MPI
-         if (parallel_xc) then
-            call xc_mpi_bcast(f%w)
-            call xc_mpi_bcast(f%id)
-            call xc_mpi_bcast(f%xcfun_id_is_set)
-         end if
-#endif
          f%id = xc_new_functional()
          call xc_set_mode(f%id, XC_VARS_NS)
 

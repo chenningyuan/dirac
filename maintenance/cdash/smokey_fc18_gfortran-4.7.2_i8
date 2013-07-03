@@ -1,0 +1,30 @@
+#!/bin/bash
+
+export MATH_ROOT=/usr/lib64/atlas
+
+TMP_DIR=/home/bast/trash/scratch-nightly-compile
+mkdir -p $TMP_DIR
+
+git clone git@repo.ctcc.no:dirac.git $TMP_DIR
+
+cd $TMP_DIR
+
+# this is to test release
+# git checkout release-12
+# ./pamadm --release
+
+# overkill: testing make release target
+mkdir build
+cd build
+cmake ..
+make release
+tar xvzf DIRAC-*-Source.tar.gz
+cd DIRAC-*-Source
+
+./setup --fc=gfortran --cc=gcc --int64 -D BUILDNAME="smokey_fc18_gfortran-4.7.2_i8"
+cd build
+make Nightly
+
+rm -rf $TMP_DIR
+
+exit 0

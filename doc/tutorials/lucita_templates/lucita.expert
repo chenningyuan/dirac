@@ -11,7 +11,7 @@
 .LVCORR
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .LUCITA
 # here we insert the number of electrons
 # (if inversion for gerade and ungerade separately)

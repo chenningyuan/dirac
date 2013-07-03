@@ -21,7 +21,7 @@
 .SCF
 *SCF
 .CLOSED SHELL
-4 0 
+4 
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...

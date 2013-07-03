@@ -30,6 +30,14 @@ or popular Google-Books web-space.
    J. Chem. Phys. **136**, 150902 (2012)
    `[web] <http://dx.doi.org/10.1063/1.3702628>`_
 
+.. [Baker1993] J. Baker,
+   *Techniques for geometry optimization: A comparison of cartesian and natural internal coordinates*, J. Comp. Chem. **14**, 1085 (1993)
+   `[web] <http://dx.doi.org/10.1002/jcc.540140910>`_
+
+.. [Bast2009] Radovan Bast, Hans Jørgen Aa. Jensen and Trond Saue, 
+   *Relativistic adiabatic time-dependent density functional theory using hybrid functionals and noncollinear spin magnetization*, Int. J. Quant. Chem. **109**, 2091 (2009) 
+   `[web] <http://dx.doi.org/10.1002/qua.22065>`_
+
 .. [Bast2011] Radovan Bast,  Anton Koers,  André Severo Pereira Gomes,  Miroslav Iliaš,  Lucas Visscher,  Peter Schwerdtfeger and Trond Saue
    *Analysis of parity violation in chiral molecules*, PCCP **13**, 864 (2011)
    `[web] <http://dx.doi.org/10.1039/c0cp01483d>`_
@@ -71,17 +79,20 @@ or popular Google-Books web-space.
    `[web] <http://dx.doi.org/10.1017/S0305004100016108>`_
 
 .. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue and K.Fægri,
-   Bonding analysis using localized relativistic orbitals:
-   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po),
+   *Bonding analysis using localized relativistic orbitals:
+   Water, the ultrarelativistic case and the heavy homologues :math:`H_{2}X` (X=Te, Po, eka-Po)*,
    J. Chem. Phys. **124**, *154307* (2006)
    `[web] <http://dx.doi.org/10.1063/1.2187001>`_
 
-.. [Dunning1989] T. H. Dunning, *bla*, J. Chem. Phys. **106**, *0* (1989)
-   `[web] <http://dx.doi.org/10.1007/s002140100263>`_
+.. [Dunning1989] T. H. Dunning, 
+   *Gaussian basis sets for use in correlated molecular calculations. I. The atoms boron through neon and hydrogen*,
+   J. Chem. Phys. **90**, *1007* (1989)
+   `[web] <http://dx.doi.org/10.1063/1.456153>`_
 
 .. [Dyall1994] K. G. Dyall, *An exact separation of the
    spin-free and spin-dependent terms of the Dirac-Coulomb-Breit
-   hamiltonian*, J. Chem. Phys. **100**, *2118* (1994)
+   hamiltonian*,
+   J. Chem. Phys. **100**, *2118* (1994)
    `[web] <http://dx.doi.org/10.1063/1.466508>`_
 
 .. [Dyall2007] K. G. Dyall and K. Fægri jr., *Introduction to Relativistic Quantum
@@ -320,6 +331,11 @@ or popular Google-Books web-space.
    Journal of Physics: Conference Series **80** (2007) 012050
    `[web] <http://dx.doi.org/10.1088/1742-6596/80/1/012050>`_
 
+.. [Nielsen_JCP1980]  Egon S. Nielsen, Poul Jørgensen, and Jens Oddershede,
+   *Transition moments and dynamic polarizabilities in a second order polarization propagator approach*,
+   J. Chem. Phys. **73**, 6238 (1980)
+   `[web] <http://link.aip.org/link/doi/10.1063/1.440119>`_
+
 .. [Norman2011] Patrick Norman,
    * A perspective on nonresonant and resonant electronic response theory for time-dependent molecular properties*,
    Phys. Chem. Chem. Phys., **13** *20519-20535* (2011)
@@ -479,6 +495,11 @@ or popular Google-Books web-space.
    Chem. Rev. **105**, 2999 (2005)
    `[web] <http://www.ncbi.nlm.nih.gov/pubmed/16092826>`_
 
+.. [Tozer_JCP1998] David J. Tozer and Nicholas C. Handy
+   *Improving virtual Kohn–Sham orbitals and eigenvalues: Application to excitation energies and static polarizabilities*,
+   J. Chem. Phys. **109**, 10180 (1998)
+   `[web] <http://link.aip.org/link/doi/10.1063/1.477711>`_
+
 .. [vanLenthe1994]  E. van Lenthe, E. J. Baerends, and J. G. Snijders,
    *Relativistic total energies using regular approximations*,
    J. Chem. Phys. **101**, *9783* (1994)
@@ -557,3 +578,8 @@ or popular Google-Books web-space.
    Density Calculations: A Critical Analysis*,
    Can. J. Phys. **58**, *1200* (1980)
    `[web] <http://dx.doi.org/10.1139/p80-159>`_
+
+.. [Yanai_CPL2004] Takeshi Yanai, David P. Tew and Nicholas C. Handy.
+   *"A new hybrid exchange–correlation functional using the Coulomb-attenuating method (CAM-B3LYP)*,
+   Chem. Phys. Lett. **393**, 51 (2004)
+   `[web] <http://dx.doi.org/10.1016/j.cplett.2004.06.011>`_

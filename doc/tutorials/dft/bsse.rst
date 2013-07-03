@@ -57,9 +57,9 @@ you can export the DFT grid of the full system by copying the file
 "numerical\_grid" from the scratch directory, and import this grid back into
 the calculation with ghost atoms::
 
-  *DFT
+  **GRID
   .IMPORT
-  grid_file
+  numerical_grid
 
 Make sure to copy the grid file from/to the working directory by using::
 

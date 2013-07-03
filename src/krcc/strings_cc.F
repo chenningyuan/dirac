@@ -3116,10 +3116,10 @@ C     print*,'NHX at the end',NHX
         end do
       end if
 *
-      NTEST = 00
+      NTEST = 100
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
-          WRITE(6,*) ' Information from  GET_HX_RELA_CC '
+          WRITE(6,*) ' Information from  GET_HX_RELA_KRCC '
           WRITE(6,*)
           write(6,*) ' Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
@@ -3994,6 +3994,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
         end do
       end if
 *
+      NTEST = 100
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
           WRITE(6,*) ' Information from  GET_HX_RELA '
@@ -4681,7 +4682,7 @@ C     CALL MEMCHK_KRCC(WORK)
       print*,'IDIMINDX',IDIMINDX
 *
 * First cluster operator (could perhaps be done before (see if this
-* needs to mve later on)
+* needs to move later on)
       CALL MEMGET('INTE',KT_IDXS,IDIMINDX,WORK,KFREE,LFREE)
       CALL ISETVC(WORK(KT_IDXS),IZERO,IDIMINDX)
       CALL MEMGET('INTE',KT_IDXF,IDIMINDX,WORK,KFREE,LFREE)
@@ -4698,6 +4699,12 @@ C     CALL MEMCHK_KRCC(WORK)
      &                     MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,
      &                     WORK(KT_IDXS),WORK(KT_IDXF),
      &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* New insert only for Cluster operator since we before sorting define
+* certain mappings some of these have to be redefined
+*
+      CALL REDEFINE_MAPPING_FOR_T(WORK(KHELP_IDX),WORK(KLSOX_TO_OX),
+     &                            NSPOBEX_TPE)
 *
 * release memory
 *

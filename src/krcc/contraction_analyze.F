@@ -985,7 +985,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 *
       ISYMINT = 1
 *
-      NTEST = 100
+      NTEST = 00
       IDUM = 0
       ZERO = 0.0D0
 *
@@ -1272,6 +1272,9 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
         CALL WRT_SPOX_TP_CC_KRCC(TTYPE,1)
         WRITE(6,*) ' Resulting operator '
         CALL WRT_SPOX_TP_CC_KRCC(RESTYPE,1)
+        WRITE(6,*) ' IFHM = ',IFHM
+        WRITE(6,*) ' Intermediate size = ',IDIMEXDX
+        WRITE(6,*) ' IWAY = ',IWAY
       END IF
 *
 * First find EX,DX by calling old routines
@@ -1280,7 +1283,6 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
       NTOP = 1
       CALL HTYPE_TO_ED_KRCC(MTYPE,IHINDEX,NHOP,ICONN,NTOP,NRANK,
      &                   IDX,IEX,IEXD1234,IORD,ISIGN_DE)
-      CALL MEMCHK_KRCC(WORK)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Excitation part '
@@ -1299,7 +1301,7 @@ C             CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
 * else perform the mapping
 *
       IF(IFHM.EQ.2) THEN
-        CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+        CALL IDIM_EX_DX_MASTER(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
      &                  IHSM,OUTT,IDIMEXDX,T,
      &                  WORK,KFREE,LFREE)
       ELSE
@@ -2039,8 +2041,59 @@ C    &                NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
       RETURN
       END
 *
+      SUBROUTINE IDIM_EX_DX_MASTER(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                      ISM,OUTT,IDIMEXDX,T,
+     &                      WORK,KFREE,LFREE)
+*
+* Do as the routine name says. Dimension EX and DX.
+* Based on ANA_GENCCS_CC_KRCC just with more loops.
+* Moved GETSTR2_TOTSM_SPGP_KRCC into loop structure for speed up and
+* added a lot of IF statements. Not so pretty but faster.
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+#include "ctcc.inc"
+*
+      INTEGER IEX(4*NGAS),IDX(4*NGAS),MTYPE(4*NGAS)
+      DIMENSION OUTT(IDIMEXDX),T(*),WORK(*)
+* Local scratch 
+      NNDIM = NRANK*MX_ST_TSOSO_BLK_MX
+      NMDIM = MX_ST_TSOSO_BLK_MX 
+      CALL MEMGET('INTE',KIOCC_CAE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CBE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AAE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_ABE,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CAD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CBD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AAD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_ABD,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CA,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_CB,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AA,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_AB,NNDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIOCC_FREE,NNDIM,WORK,KFREE,LFREE)
+      CALL IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
+     &                      ISM,OUTT,IDIMEXDX,T,
+     & WORK(KIOCC_CAE),WORK(KIOCC_CBE),WORK(KIOCC_AAE),WORK(KIOCC_ABE),
+     & WORK(KIOCC_CAD),WORK(KIOCC_CBD),WORK(KIOCC_AAD),WORK(KIOCC_ABD),
+     & WORK(KIOCC_CA),WORK(KIOCC_CB),WORK(KIOCC_AA),WORK(KIOCC_AB),
+     & WORK(KIOCC_FREE),
+     &                      WORK,KFREE,LFREE)
+*
+      CALL MEMREL('MAPP',WORK,KIOCC_CAE,KIOCC_CAE,KFREE,LFREE)
+      RETURN
+      END
+*
       SUBROUTINE IDIM_EX_DX(IWAY,IMAP,IEX,IDX,MTYPE,NRANK,
      &                      ISM,OUTT,IDIMEXDX,T,
+     & IOCC_CAE,IOCC_CBE,IOCC_AAE,IOCC_ABE,IOCC_CAD,IOCC_CBD,
+     & IOCC_AAD,IOCC_ABD,IOCC_CA,IOCC_CB,IOCC_AA,IOCC_AB,IOCC_FREE,
      &                      WORK,KFREE,LFREE)
 *
 * Do as the routine name says. Dimension EX and DX.
@@ -2352,6 +2405,12 @@ C              END IF
           CALL WRTMAT(T,1,I_ORI_DIM_M,1,I_ORI_DIM_M)
           WRITE(6,*) ' The new EX,DX order '
           CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
+          IF(IMAP.GE.60) THEN
+          ZERO = 0.0D0
+          CALL SETVEC(OUTT,ZERO,IDIMEXDX)
+          WRITE(6,*) ' Zeroed out the EX,DX order '
+          CALL WRTMAT(OUTT,1,IDIMEXDX,1,IDIMEXDX)
+          END IF
         END IF
       END IF
 *
@@ -2932,11 +2991,51 @@ C             print*,'---------------------------'
 *
 * To be used with sorting routines
 *
+#include "implicit.inc"
       INTEGER ISET(NSTR_D,NSTR_D)
 * Local scratch
       INTEGER IMARK(NSTR_D*(NSTR_D-1)/2),ISCR(NSTR_D)
 *
-      NTEST = 00
+      NTEST = 100
+*
+      IZERO = 0
+*
+      DO I = 1, NSTR_D
+        ISET(I,I) = IZERO
+      END DO
+* Fill a triangle
+      IFILL = 0
+C     print*,'NSTR_D',NSTR_D
+      DO I=2,NSTR_D
+C       print*,'I',I
+        DO J=1,I-1
+C         print*,'J',J
+          IFILL = IFILL + 1
+C         print*,'IFILL',IFILL
+          ISET(J,I) = IFILL
+          ISET(I,J) = IFILL
+        END DO
+      END DO
+C       WRITE(6,*) ' The offsets are '
+C       CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
+      RETURN
+      IFILL = 0
+      DO I=1,NSTR_D-1
+C       print*,'I',I
+        DO J=I+1,NSTR_D
+C         print*,'J',J
+          IFILL = IFILL + 1
+C         print*,'IFILL',IFILL
+          ISET(J,I) = IFILL
+        END DO
+      END DO
+        IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' The offsets are '
+        CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
+        END IF
+      RETURN
+* Copy to other half
+      GO TO 22
 *
       NTOT = NSTR_D*(NSTR_D-1)/2
 *
@@ -2944,14 +3043,16 @@ C             print*,'---------------------------'
 *
       IMARK(1) = 1
       DO ISTR = 2,NTOT
-        IMARK(ISTR) = (ISTR-1)* NSTR_E_REMAIN + IMARK(ISTR-1)
+        IMARK(ISTR) = (ISTR-1)* NSTR_E_REMAIN + ISTR !+ IMARK(ISTR-1) !COULD BE BUG
+        print*,'IMARK,ISTR',IMARK(ISTR),ISTR
       END DO 
 *
 * Fill the scratch array
 *
       ISCR(1) = 0
       DO ISTR =2,NSTR_D
-        ISCR(ISTR) = ISCR(ISTR-1) + NSTR_D - ISTR
+        ISCR(ISTR) = ISCR(ISTR-1) + ISTR !+ NSTR_D - ISTR
+        print*,'ISCR,ISTR',ISCR(ISTR),ISTR
       END DO
 *
       DO ISTR = 1,NSTR_D
@@ -2965,6 +3066,7 @@ C             print*,'---------------------------'
         END DO
       END DO
 *
+22    CONTINUE
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' The offsets are '
         CALL IWRTMA(ISET,NSTR_D,NSTR_D,NSTR_D,NSTR_D)
@@ -2986,7 +3088,7 @@ C             print*,'---------------------------'
 * Local scratch
       INTEGER ISET(NSTR_CAD,NSTR_CAD)
 *
-      NTEST = 0
+      NTEST = 00
 *
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' Welcome to sorting routine number 6 '
@@ -2995,6 +3097,8 @@ C             print*,'---------------------------'
 * Calculate the length of remaining indices of CA
 *
       NSTR_CAE_REMAIN = NSTR_CAE/NSTR_CAD ! Yes this is an integer!
+C     print*,'NSTR_CAE_REMAIN,NSTR_CAE,NSTR_CAD',
+C    &        NSTR_CAE_REMAIN,NSTR_CAE,NSTR_CAD
 *
       CALL SET_MARK(ISET,NSTR_CAD,NSTR_CAE_REMAIN)
 *
@@ -3016,7 +3120,7 @@ C     print*,'I,J,K,L,M',I,J,K,L,M
 *
       DO ISTR_ABE = 1,NSTR_ABE
 C      print*,'ISTR_ABE',ISTR_ABE
-        IOFF_ABE = (ISTR_ABE-1)*M
+       IOFF_ABE = (ISTR_ABE-1)*M
        DO ISTR_AAE = 1,NSTR_AAE
         IOFF_AAE = (ISTR_AAE-1)*L
 C       print*,'ISTR_AAE',ISTR_AAE
@@ -3025,28 +3129,38 @@ C       print*,'ISTR_AAE',ISTR_AAE
 C        print*,'ISTR_CBE',ISTR_CBE
 * Splitting loop over CA for EX
 C        DO ISTR_CAE = 1,NSTR_CAE
+C Next rwo loops may have to switch for more than CCSD
          DO ISTR_CAE = 1,NSTR_CAD ! Not a typo
-C        print*,'ISTR_CAE',ISTR_CAE
           DO ISTR_CAR = 1,NSTR_CAE_REMAIN
+C        print*,'ISTR_CAE',ISTR_CAE
 * DX start ! Since DX will only be one creation operator everyting else
 * is eliminated
            DO ISTR_CAD = 1,NSTR_CAD
 C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
             IF(ISET(ISTR_CAE,ISTR_CAD).NE.0) THEN
-             IOFF_CA = ISET(ISTR_CAE,ISTR_CAD) + ISTR_CAR - 1 
+C            IOFF_CA = ISET(ISTR_CAE,ISTR_CAD) + (ISTR_CAR -1)*NSTR_CAD
+C            IOFF_CA = (ISTR_CAD-1)*NSTR_CAE_REMAIN + NSTR_CAR+NSTR_CAR
+             IOFF_CA = ISET(ISTR_CAE,ISTR_CAD) 
+             IF(NSTR_CAE_REMAIN.GE.2) THEN
+             IOFF_CA = (IOFF_CA-1)*NSTR_CAE_REMAIN+ISTR_CAR 
+             END IF
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
-             IOFF_CA=IOFF_CA+IOFF_CBE+IOFF_AAE+IOFF_ABE
+             IOFF_TOT=IOFF_CA+IOFF_CBE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
+C     print*,'IOFF_CA,IOFF_CBE,IOFF_AAE,IOFF_ABE,ICOUNT',
+C    &        IOFF_CA,IOFF_CBE,IOFF_AAE,IOFF_ABE,ICOUNT
              IF(ISTR_CAE.GT.ISTR_CAD) THEN
                SIGN = 1.0D0
              ELSE
                SIGN = -1.0D0
              END IF
-             OUTT(ICOUNT) = SIGN*T(IOFF_CA)
+             OUTT(ICOUNT) = SIGN*T(IOFF_TOT)
+C     print*,'IOFF_TOT,SIGN',IOFF_TOT,SIGN
             ELSE 
              ICOUNT = ICOUNT + 1
+C            print*,'zero term,ICOUNT',ICOUNT
 ! Next line only for show
-             IOFF_CA = 0
+             IOFF_TOT = 0
              OUTT(ICOUNT) = 0.0D0
             END IF
 C           print*,'IOFF_CA,ICOUNT',IOFF_CA,ICOUNT
@@ -3085,7 +3199,7 @@ C           print*,'---------------------------'
 * Local scratch
       INTEGER ISET(NSTR_CBD,NSTR_CBD)
 *
-      NTEST = 0
+      NTEST = 00
 *
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' Welcome to sorting routine number 7 '
@@ -3094,6 +3208,7 @@ C           print*,'---------------------------'
 * Calculate the length of remaining indices of CB
 *
       NSTR_CBE_REMAIN = NSTR_CBE/NSTR_CBD ! Yes this is an integer!
+C     print*,'NSTR_CBE_REMAIN',NSTR_CBE_REMAIN
 *
       CALL SET_MARK(ISET,NSTR_CBD,NSTR_CBE_REMAIN)
 *
@@ -3105,8 +3220,8 @@ C           print*,'---------------------------'
       DO JLOOP = 1,NSTR_CBD-1
         J = J + JLOOP 
       END DO
-!     I = NSTR_CAE*NSTR_CAD
-      I = NSTR_CAE !I*NSTR_CBE_REMAIN
+      I = NSTR_CAE*NSTR_CAD
+C     I = NSTR_CAE !I*NSTR_CBE_REMAIN
 !     J = I*NSTR_CBE*NSTR_CBD
       J = J*I*NSTR_CBE_REMAIN!*NSTR_CBD
       K = J*NSTR_AAE*NSTR_AAD
@@ -3122,9 +3237,9 @@ C      print*,'ISTR_ABE',ISTR_ABE
 C       print*,'ISTR_AAE',ISTR_AAE
 * Splitting loop over CB for EX
         DO ISTR_CBE = 1,NSTR_CBD ! Not a typo
+         DO ISTR_CBR = 1,NSTR_CBE_REMAIN
 !        IOFF_CBE = (ISTR_CBE-1)*I 
 C        print*,'ISTR_CBE',ISTR_CBE
-         DO ISTR_CBR = 1,NSTR_CBE_REMAIN
 C        print*,'ISTR_CBR',ISTR_CBR
           DO ISTR_CAE = 1,NSTR_CAE
            IOFF_CAE = ISTR_CAE-1 
@@ -3134,20 +3249,28 @@ C         print*,'ISTR_CAE',ISTR_CAE
            DO ISTR_CBD = 1,NSTR_CBD
 C           IOFF_CA = (NSTR_CAE * (ISTR_CAD- 1)+ISTR_CAE)
             IF(ISET(ISTR_CBE,ISTR_CBD).NE.0) THEN
-             IOFF_CB = ISET(ISTR_CBE,ISTR_CBD) + ISTR_CBR - 1 
+       IOFF_CB = (ISET(ISTR_CBE,ISTR_CBD)-1)*NSTR_CAE + 1
+             IF(NSTR_CBE_REMAIN.GE.2) THEN
+             IOFF_CB = (IOFF_CB-1)*NSTR_CBE_REMAIN + ISTR_CBR
+             END IF
+C      IOFF_CB = IOFF_CB + 1 + (ISTR_CBR - 1)*NSTR_CBD
 !            IOFF_CA = NSTR_CAR * (ISTR_CAE- 1) + IOFF_CA
-             IOFF_CB=IOFF_CB+IOFF_CAE+IOFF_AAE+IOFF_ABE
+             IOFF_TOT=IOFF_CB+IOFF_CAE+IOFF_AAE+IOFF_ABE
              ICOUNT = ICOUNT + 1
+C     print*,'IOFF_CB,IOFF_CAE,IOFF_AAE,IOFF_ABE,ICOUNT',
+C    &        IOFF_CB,IOFF_CAE,IOFF_AAE,IOFF_ABE,ICOUNT
              IF(ISTR_CBE.GT.ISTR_CBD) THEN
                SIGN = 1.0D0
              ELSE
                SIGN = -1.0D0
              END IF
-             OUTT(ICOUNT) = SIGN*T(IOFF_CB)
+             OUTT(ICOUNT) = SIGN*T(IOFF_TOT)
+C     print*,'IOFF_TOT,SIGN',IOFF_TOT,SIGN
             ELSE 
              ICOUNT = ICOUNT + 1
+C            print*,'zero term,ICOUNT',ICOUNT
 ! Next line only for show
-             IOFF_CB = 0
+             IOFF_TOT = 0
              OUTT(ICOUNT) = 0.0D0
             END IF
 C           print*,'IOFF_CB,ICOUNT',IOFF_CB,ICOUNT

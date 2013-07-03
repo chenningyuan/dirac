@@ -24,30 +24,631 @@
 #define ZDOTC z_dot_c
 #define zdotc z_dot_c
 #endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C
-C      ****  Diagonalization Routines for the RELADC package  ****
-C
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAGEXE(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!
+!      ****  Diagonalization Routines for the RELADC package  ****
+!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
+      CHARACTER(len=6)              :: FILEN4, FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large symmetric matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8                          :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      REAL*8, allocatable             :: A(:,:),WORK(:),EVL(:),BUF(:)
+      INTEGER, allocatable            :: IOI(:),IOJ(:)
+      INTEGER                         :: NBUFS,LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=9)                :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering FULL diagonalizer (debug)+')
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Skipping this step...'
+        return
+      ENDIF
+
+      LUN_DIA=IOUNIT
+      LUN_OFF=IOUNIT+1
+      LUN_OUT=IOUNIT+2
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A7,I2)') 'FULLEV.',KREP
+      ELSE
+        WRITE(longfilename,'(A6,A2,I1)') 'FULLEV','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(work(lwork))
+      
+      A=0.0d0
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_DIA,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_DIA); REWIND(LUN_OFF)
+      READ(LUN_DIA,ERR=88,END=99) (A(IXX,IXX),IXX=1,LADC),NBUFS
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF),
+     &                        (IOI(IXX),IXX=1,INTBUF),
+     &                        (IOJ(IXX),IXX=1,INTBUF),
+     &                         NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+
+          IF(ICOL.GE.IROW) CALL QUIT('ICOL.GE.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_DIA)
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling DSYEV with lwork=',lwork
+      CALL DSYEV( JOBZ, UPLO, LADC, A, LADC, EVL, WORK, LWORK, INFO )
+!     write(*,*) 'AFTER  DSYEV with optimal lwork=',work(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in DSYEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAR (lapack dsyev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues (lowest 10):'
+      DO I=1,min(10,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential', 
+     &     form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)')
+     &         '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(work)
+
+      RETURN
+
+ 88   STOP 'Error reading the diagonal (FULLDIAR)'
+ 99   STOP 'Unexpected end of diagonal file (FULLDIAR)'
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAR)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAC(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
+      CHARACTER(len=6)              :: FILEN4, FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large Hermitian matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      COMPLEX*16                      :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      COMPLEX*16,   allocatable       :: A(:,:),CWORK(:),BUF(:)
+      REAL*8,       allocatable       :: EVL(:),RWORK(:)
+      INTEGER,      allocatable       :: IOI(:),IOJ(:)
+      INTEGER                         :: NBUFS,LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=9)                :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering FULL diagonalizer (debug)+')
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Skipping this step...'
+        return
+      ENDIF
+
+      LUN_DIA=IOUNIT
+      LUN_OFF=IOUNIT+1
+      LUN_OUT=IOUNIT+2
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A7,I2)') 'FULLEV.',KREP
+      ELSE
+        WRITE(longfilename,'(A6,A2,I1)') 'FULLEV','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(rwork(lwork))
+      allocate(cwork(lwork))
+      
+      A=(0.0d0,0.0d0)
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_DIA,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_DIA); REWIND(LUN_OFF)
+      READ(LUN_DIA,ERR=88,END=99) (A(IXX,IXX),IXX=1,LADC),NBUFS
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF),
+     &                        (IOI(IXX),IXX=1,INTBUF),
+     &                        (IOJ(IXX),IXX=1,INTBUF),
+     &                         NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+
+          IF(ICOL.GE.IROW) CALL QUIT('ICOL.GE.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_DIA)
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling ZHEEV with lwork=',lwork
+      CALL ZHEEV( JOBZ, UPLO, LADC, A, LADC, EVL, CWORK,
+     &            LWORK, RWORK, INFO )
+!     write(*,*) 'AFTER  ZHEEV with optimal lwork=',cwork(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in ZHEEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAC (lapack zheev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues (lowest 10):'
+      DO I=1,min(10,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential',
+     &     form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)')
+     &         '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,2f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(rwork)
+      deallocate(cwork)
+
+      RETURN
+
+ 88   STOP 'Error reading the diagonal (FULLDIAC)'
+ 99   STOP 'Unexpected end of diagonal file (FULLDIAC)'
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAC)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAR2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
+      CHARACTER(len=6)              :: FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large symmetric matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8                          :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      REAL*8, allocatable             :: A(:,:),WORK(:),EVL(:),BUF(:)
+      INTEGER, allocatable            :: IOI(:),IOJ(:)
+      INTEGER                         :: LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=10)               :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering (new format) REAL FULL diagonalizer+')
+      write(*,*) 'Number of buffers to read:',nbufs
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Exiting from this...'
+        return
+      ENDIF
+
+      LUN_OFF=IOUNIT
+      LUN_OUT=IOUNIT+1
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A8,I2)') 'FULLEVD.',KREP
+      ELSE
+        WRITE(longfilename,'(A7,A2,I1)') 'FULLEVD','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(work(lwork))
+      
+      A=0.0d0
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_OFF)
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF),
+     &                        (IOI(IXX),IXX=1,INTBUF),
+     &                        (IOJ(IXX),IXX=1,INTBUF),
+     &                         NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+!         write(*,'(A,2I4,F20.12)') 'Q<--',irow,icol,S
+
+          IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling DSYEV with lwork=',lwork
+      CALL DSYEV( JOBZ, UPLO, LADC, A, LADC, EVL, WORK, LWORK, INFO )
+!     write(*,*) 'AFTER  DSYEV with optimal lwork=',work(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in DSYEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAR (lapack dsyev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues (lowest 20):'
+      DO I=1,min(20,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential',
+     &     form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)')
+     &         '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(work)
+
+      RETURN
+
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAR)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAC2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
+      CHARACTER(len=6)              :: FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large Hermitian matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      COMPLEX*16                      :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      COMPLEX*16,   allocatable       :: A(:,:),CWORK(:),BUF(:)
+      REAL*8,       allocatable       :: EVL(:),RWORK(:)
+      INTEGER,      allocatable       :: IOI(:),IOJ(:)
+      INTEGER                         :: LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=10)                :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering (new format) FULL complex diagonalizer+')
+      write(*,*) 'Number of buffers to read:',nbufs
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Exiting from this ...'
+        return
+      ENDIF
+
+      LUN_OFF=IOUNIT
+      LUN_OUT=IOUNIT+1
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A8,I2)') 'FULLEVD.',KREP
+      ELSE
+        WRITE(longfilename,'(A7,A2,I1)') 'FULLEVD','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(rwork(lwork))
+      allocate(cwork(lwork))
+      
+      A=(0.0d0,0.0d0)
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_OFF)
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF),
+     &                        (IOI(IXX),IXX=1,INTBUF),
+     &                        (IOJ(IXX),IXX=1,INTBUF),
+     &                         NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+
+          IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling ZHEEV with lwork=',lwork
+      CALL ZHEEV( JOBZ, UPLO, LADC, A, LADC, EVL, CWORK,
+     &            LWORK, RWORK, INFO )
+!     write(*,*) 'AFTER  ZHEEV with optimal lwork=',cwork(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in ZHEEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAC (lapack zheev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues (lowest 10):'
+      DO I=1,min(10,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential',
+     &     form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)')
+     &         '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,2f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(rwork)
+      deallocate(cwork)
+
+      RETURN
+
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAC)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+
+      use adc_mat      !obtain matrix parameters via descriptor file
+      use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
       REAL*8  CC(*)
       INTEGER KFREE,LFREE
-      INTEGER INFOHANDLE
       INTEGER IW
       LOGICAL DOINCORE
 C
 C---------------Description--------------------------------------------
 C
 C  This routine executes diagonalizer on any matrix (SIP/DIP) coming
-C  from the previous ADC code. All information comes from file MATINFO
-C  which is opened in the upper routine via infohandle.
 C  
-C  Infohandle is the file handle associated with the MATINFO file.
+C  Infohandle is the base file handle.
 C  the subsequent handles INFOHANDLE+1, +2 ... are available and
 C  can be used. The allocation is as follows:
 c
@@ -60,7 +661,9 @@ C
 C---------------Local variables--------------------------------------
 C
 c *** for infofile
+      INTEGER INFOHANDLE
       INTEGER IONIZLEVEL
+      INTEGER INTBUF
       INTEGER KREP
       INTEGER RCW
       INTEGER IOLDNEW
@@ -89,28 +692,43 @@ c
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE(IW,*) 'Memory pointers on DIAGEXE entry:',KFREE,LFREE
+!     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-      WRITE(IW,*) 'Memory check done.'
 c
-c  read required information from info file
+c default to a predefined buffer length. Will be changed
+c in the future because we need a flexible buffer size,
 c
-      READ(INFOHANDLE,'(I1)')    IONIZLEVEL
-      READ(INFOHANDLE,'(I2)')    KREP
-      READ(INFOHANDLE,'(I1)')    RCW
-      READ(INFOHANDLE,'(I1)')    IOLDNEW
-      READ(INFOHANDLE,'(I12)')   LADC
-      READ(INFOHANDLE,'(A6)')    FILEADC
-      READ(INFOHANDLE,'(A6)')    FILEDIA
-      READ(INFOHANDLE,'(A6)')    FILECNF
-      READ(INFOHANDLE,'(A5)')    NMSPEC
-      READ(INFOHANDLE,'(I9)')    IRECL
-      READ(INFOHANDLE,'(I9)')    NITER
-      READ(INFOHANDLE,'(I9)')    NOCC 
-      READ(INFOHANDLE,'(I9)')    NBUFS 
-      READ(INFOHANDLE,'(I9)')    NEIGENV 
-      READ(INFOHANDLE,'(F10.1)') EVLLIM 
+      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
+c
+c  transfer required parameters from matrix descriptor module
+c  to actual modules.
+c
+      IONIZLEVEL = reladc_md_ionizl
+      IF(IONIZLEVEL.eq.3) THEN
+        INTBUF = reladc_md_intbuf
+      ENDIF
+      INFOHANDLE   =  reladc_md_iobase
+      KREP         =  reladc_md_desrep
+      RCW          =  reladc_md_rcw
+      IOLDNEW      =  reladc_md_ioldnew
+      LADC         =  reladc_md_matdim
+      FILEADC      =  reladc_md_fileadc
+      FILEDIA      =  reladc_md_filediag
+      FILECNF      =  reladc_md_filecnf
+      NMSPEC       =  reladc_md_nmspec
+      IRECL        =  reladc_md_irecl
+      NITER        =  reladc_md_lnzitr
+      NOCC         =  reladc_md_nmain
+      NBUFS        =  reladc_md_nbufs    
+      NEIGENV      =  reladc_md_neigenv
+      IF (IONIZLEVEL.eq.1) THEN
+        EVLLIM     =  reladc_sipprnt
+      ELSE IF (IONIZLEVEL.eq.2) THEN
+        EVLLIM     =  reladc_dipprnt
+      ELSE IF (IONIZLEVEL.eq.3) THEN
+        EVLLIM     =  reladc_excprnt
+      END IF
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
@@ -119,7 +737,6 @@ c
       IF(IOLDNEW.EQ.1) OPEN(INFOHANDLE+2,
      %     FILE=FILEDIA,FORM='UNFORMATTED',STATUS='UNKNOWN')
 
-      INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
 c this is the absolute lower bound to which we will return as soon as the
 c diagonalization has been finished. We must not go further down because
@@ -151,7 +768,8 @@ c
       WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
-      WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
+      WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP,3=EXC):',IONIZLEVEL
+      WRITE(IW,*) 'Write buffer length is:           ',INTBUF
       WRITE(IW,*) 'Final states have symmetry:       ',KREP
       WRITE(IW,*) 'ADC matrix is (1=real,2=complex): ',RCW
       WRITE(IW,*) 'ADC matrix format (1=old/2=new):  ',IOLDNEW
@@ -162,7 +780,7 @@ c
       WRITE(IW,*) 'Eigenvalues written to:           ',NMSPEC,'.#IREP'
       WRITE(IW,*) 'Record length of Config file:     ',IRECL
       WRITE(IW,*) 'Number of requ. Lanc iterations:  ',NITER
-      WRITE(IW,*) 'Half band width (1h/2h states):   ',NOCC
+      WRITE(IW,*) 'Half band width (1h/2h/hp states):',NOCC
       WRITE(IW,*) 'Number of chunks in ADC file:     ',NBUFS
       WRITE(IW,*) 'Number of requested eigenvectors: ',NEIGENV
       WRITE(IW,*) 'Printing limit for eigenvalues:   ',EVLLIM
@@ -188,19 +806,28 @@ C
 
       N=2*NP+1
       CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  1 done.' 
       N=(2*NP+1)*LADC*RCW
       CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  2 done.' 
       N=(NP+1)*NITER*RCW
       CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  3 done.' 
       N=LADC*RCW
       CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  4 done.' 
       CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  5 done.' 
       N=INTBUF*RCW
       CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  6 done.' 
       N=INTBUF
       CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  7 done.' 
       CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
+      write(*,*) 'allocation  8 done.' 
       CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
+      write(*,*) 'allocation  9 done.' 
 c
 c  remember memory pointers before we do the huge incore parts.
 c
@@ -1757,8 +2384,8 @@ c
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -1770,15 +2397,15 @@ c
 
         ELSE
 c
-c  take care of double ionizations
+c  take care of double ionizations and excitations
 c
            idipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)') 
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)') 
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.001) then
@@ -2106,8 +2733,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) isipcount = isipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',isipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
@@ -2127,8 +2754,8 @@ c
              ththr=z(iths,j)*dconjg(z(iths,j))
              if(ththr.gt.0.001) idipcount = idipcount + 1
            ENDDO 
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
-     &        d(j)*AUEV,x1,y1,'@',idipcount
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4,A,I3)')
+     &        d(j)*AUEV,x1,y1,'@',idipcount,'  File: ',irrep
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.001) then
@@ -2830,6 +3457,911 @@ c
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIAG_DAVI(iw)
+
+      use adc_cfg   !make input variables accessible here
+!                   !abandons the old adc_input common block.
+      use adc_mat   !contains matrix descriptor for the matrix
+                    !in the actual run. Abandons INFOFILE.
+
+      IMPLICIT NONE
+
+      INTEGER                      :: iw
+!
+!---------------Description--------------------------------------------
+!
+! entry point for Davidson diagonalisator
+!
+!
+! *** variables for Matrix descriptor file
+      INTEGER         :: iobase
+      INTEGER         :: intbuf,desrep,rcw
+      INTEGER         :: ladc,irecl,nmain,nbufs
+      CHARACTER*6     :: fileadc,filecnf
+      CHARACTER*5     :: nmspec 
+! *** variables for Davidson control
+      INTEGER         :: nroots,maxdavsp,maxdavit
+      REAL*8          :: convthr
+! *** end definition variables for Matrix descriptor file
+!
+!---------------Local variables----------------------------------------
+!
+      integer         :: i,j,k,ialloc
+      integer         :: nsiz
+      integer         :: iroot,locdim
+      integer         :: lwork,info
+      integer         :: idavit,iobase1
+      integer, allocatable, dimension(:)  :: ievec
+      logical         :: notallconv,proxflag,orthoviolflag
+
+      real*8, allocatable, dimension(:,:)   :: bold,bnew,aij,evint
+      real*8, allocatable, dimension(:)     :: lambda,reserr,work
+      real*8, allocatable, dimension(:)     :: qm,adiag,xi,dmp1
+      real*8                                :: qmn,a1,a2,ortho
+      real*8,parameter                      :: autoev = 27.2113957D0
+      character*11                          :: davstartname
+      character*11                          :: davevcname
+      character*8                           :: dsroot ='DAVSTART'
+      character*8                           :: dsroot2='DAVILONG'
+      character*8                           :: dsroot3='DAVISHRT'
+      character*60                          :: listout
+      character*56                          :: field
+      logical, allocatable, dimension(:)    :: notconverged
+
+!
+!---------------Executable code----------------------------------------
+!
+
+      Call PST('Entering (real) Davidson diagonalizer+')
+!
+!  fill current descriptor variables with transferred values
+!
+      iobase   =  reladc_md_iobase      !file handle for matrix handling
+      intbuf   =  reladc_md_intbuf      !buffer length in matrix
+      desrep   =  reladc_md_desrep      !current symmetry
+      rcw      =  reladc_md_rcw         !real/complex matrix
+      ladc     =  reladc_md_matdim      !matrix dimension
+      fileadc  =  reladc_md_fileadc     !file name of ADC matrix
+      filecnf  =  reladc_md_filecnf     !file name of configuration file
+      nmspec   =  reladc_md_nmspec      !file name of spectral output file
+      irecl    =  reladc_md_irecl       !record length of configuration data
+      nmain    =  reladc_md_nmain       !size of ADC matrix main block 
+      nbufs    =  reladc_md_nbufs       !number of buffers of len "intbuf"
+      nroots   =  reladc_md_davroots    !number of requested Davidson roots
+      maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
+      maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
+      convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
+!
+!  write out matrix  and Davidson parameters
+!
+      WRITE(iw,*) ' ------ Matrix parameters -----------'
+      WRITE(iw,*)
+      WRITE(iw,*) 'Write buffer length is:           ',intbuf
+      WRITE(iw,*) 'Final states have symmetry:       ',desrep
+      WRITE(iw,*) 'ADC matrix is (1=real,2=complex): ',rcw
+      WRITE(iw,*) 'ADC matrix dimension (# of rows): ',ladc
+      WRITE(iw,*) 'Packed matrix stored in:          ',fileadc
+      WRITE(iw,*) 'Configuration data stored in:     ',filecnf
+      WRITE(iw,*) 'Eigenvalues written to:           ',nmspec,'.XX'
+      WRITE(iw,*) 'Record length of Config file:     ',irecl
+      WRITE(iw,*) 'Size of main space:               ',nmain
+      WRITE(iw,*) 'Number of chunks in ADC file:     ',nbufs
+      WRITE(iw,*)
+      WRITE(iw,*) ' ------ Davidson parameters -----------'
+      WRITE(iw,*)
+      WRITE(iw,*) 'Number of Davidson roots:         ',nroots
+      WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
+      WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
+      WRITE(iw,*) 'Eigenvalue convergence up to:     ',convthr
+!
+!   allocate work space arrays
+!
+      lwork = 3*maxdavsp
+      allocate(aij(maxdavsp,maxdavsp))   !Dav. overlap matrix (DOM)
+      allocate(lambda(maxdavsp))         !Eigenvalues of DOM
+      allocate(reserr(maxdavsp))         !Residual errors of eigenvalues
+      allocate(work(lwork))              !workspace for DSYEV
+      allocate(qm(ladc))                 !intermediate vector
+      allocate(adiag(ladc))              !vector of ADC diagonal elements
+      allocate(xi(ladc))                 !intermediate vector
+      allocate(ievec(ladc))
+      allocate(dmp1(ladc))
+      allocate(notconverged(maxdavsp))
+
+      allocate(bold(ladc,maxdavsp),stat=ialloc)
+      if(ialloc.ne.0) then
+        call quit('Allocation problem in DO_DAVI!')
+      endif
+
+      allocate(bnew(ladc,maxdavsp),stat=ialloc)
+      if(ialloc.ne.0) then
+        call quit('Allocation problem in DO_DAVI!')
+      endif
+
+      allocate(evint(ladc,nroots),stat=ialloc)
+      if(ialloc.ne.0) then
+        call quit('Allocation problem in DO_DAVI!')
+      endif
+!
+! clear relevant arrays
+!
+      aij    = 0.0d0
+      reserr = 0.0d0
+      qm     = 0.0d0
+      adiag  = 0.0d0
+      xi     = 0.0d0
+      dmp1   = 0.0d0
+      bold   = 0.0d0
+      bnew   = 0.0d0
+      evint  = 0.0d0
+!__________________________________________________________
+!| open file of main block eigenvectors and read them in 
+!| select the first 1,...,nroots vectors from the file
+!| which are the lowest ones in the main space.
+!|
+      IF(desrep.GT.9) THEN
+        WRITE(davstartname,'(A8,A1,I2)') dsroot,'.',desrep
+      ELSE
+        WRITE(davstartname,'(A8,A2,I1)') dsroot,'.0',desrep
+      ENDIF
+
+      OPEN(iobase,file=davstartname,access='sequential',
+     &     status='unknown',form='unformatted')
+      READ(iobase) nsiz
+      WRITE(*,*) 'Found',nsiz,' Start vectors on file ',davstartname
+
+      If(2*nroots.gt.maxdavsp) then
+         Call Quit('Increase Davidson space!')
+      Endif
+
+      If(nroots.gt.nsiz) then
+        Write(*,*) 'You request more states than there',
+     &             ' are in the Main space.'
+        Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
+        nroots = nsiz
+      Endif
+
+      Do i=1,nroots
+        Read(iobase) (bold(j,i),j=1,nsiz)
+      Enddo
+      Close(iobase,status='delete')
+!|
+!|  end reading initial vectors and diagonal.
+!|___________________________________________________________
+
+      WRITE(*,*) '  '
+!
+!  from now on the ADC matrix file handle is used and the
+!  file is open. Diagonal elements are fetched once.
+!
+      orthoviolflag = .false.
+
+      Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
+      Call XMATINI_R(iobase,intbuf,nbufs,ladc,adiag) 
+!__________________________________________________________
+!|
+!|
+!|             DAVIDSON  MACRO ITERATION LOOP
+!|
+      Do idavit = 1,maxdavit
+
+      Write(*,*) '  ****   MACRO iteration',idavit
+      Write(*,*)
+!
+!      STEP  A.
+!
+      locdim = nroots    ! we start with the smallest dav space
+      notconverged = .true.  !all vectors are at first not converged
+!
+! check convergence of the start vectors
+! 
+      ortho = 0.0d0
+      Do i=1,nroots
+      Do j=1,nroots
+        a1 = dot_product(bold(:,i),bold(:,j))
+        ortho = ortho + abs(a1)
+      Enddo
+      Enddo
+      ortho = ortho - dble(nroots)
+      WRITE(*,*) 'Orthogonality of the Davidson start vectors:',ortho
+      WRITE(*,*)
+      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
+     &           'exc.energy','error','status'
+      WRITE(*,'(56A1)') ('-',i=1,56)
+
+      Call XMVMULBL_R(iobase,intbuf,nbufs,ladc,locdim,
+     &                bold,bnew)
+    
+!_______________________________________________________________
+!|
+!|         Davidson micro iteration loop
+!|
+      DO      ! MICRO iteration loop. Terminated by an exit statement
+!
+!  form  b_i*A*b_j and diagonalize. Matrix is replaced by eigenvectors.
+!  Compiler knows length of matrix columns
+!  AIJ is symmetric because ADC matrix is symmetric.
+!
+        Do j=1,locdim
+        Do i=j,locdim
+          aij(i,j) = dot_product(bold(:,i),bnew(:,j))
+          aij(j,i) = aij(i,j)   !symmetrize
+        Enddo
+        Enddo
+        CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
+        If(INFO.NE.0) Then
+          Call Quit('Error in DSYEV (diag_davi routine)')
+        Endif
+!
+!  STEP B + C.  Form residual vector q_m for each eigenvalue k
+!
+!***************************** loop over the roots
+        Do k = 1,nroots   ! loop over sought eigenvalues lambda_k
+!*****************************
+
+          proxflag = .false.
+
+          qm = 0.0d0
+          Do i = 1,locdim
+            qm(:) = qm(:) + aij(i,k)*bnew(:,i)
+          Enddo
+
+          evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
+          a1 = dot_product(evint(:,k),evint(:,k))
+          a1 = sqrt(a1)
+          evint(:,k) = evint(:,k)/a1
+
+          Do i = 1,locdim
+            qm(:) = qm(:) - aij(i,k)*lambda(k)*bold(:,i)
+          Enddo
+          qmn = sqrt(dot_product(qm,qm))
+          reserr(k) = qmn
+         
+          if(qmn.le.convthr) then
+            notconverged(k) = .false.
+!           write(*,*) '+++++ Root',k,' converged:',qmn,convthr
+!           Write(*,*) '+++++',lambda(k),' Res.norm:',qmn
+          else
+!           Write(*,*)  k,lambda(k),' Res.norm:',qmn
+            notconverged(k) = .true.
+          endif
+          write(listout,'(A3,I3,A3,I5,6X,F10.7,6X,F10.7)') '   ',
+     &           k,'   ',locdim,lambda(k),qmn
+          if(notconverged(k).eqv..false.) then
+            listout(47:48) =  ' *'
+          else
+            listout(47:48) =  ' o'
+          endif
+!
+!  STEP D. form new preconditioner Xi
+!  here one has to take care of the division!!!
+!  It may happen that lambda(k) is approx. eq. to adiag(j)!
+!
+          Do j=1,ladc
+            a1=lambda(k) - adiag(j)
+            if(dabs(a1).lt.1.0e-03) then
+              proxflag = .true.
+              listout(49:51) =  ' PX'
+              xi(j) = 1.0d0
+            else
+              xi(j)=qm(j)/a1
+            endif
+          Enddo
+!         write(*,*) '   @Norm of preconditioner xi:',
+!    &           sqrt(dot_product(xi(:),xi(:)))
+!
+!  STEP E. form  vector d_(M+1) for the kth eigenvalue
+!  orthogonalize to *all* previous b_i directions from xi
+!  Importance of new vector is decided on its norm !
+!
+          dmp1 = xi
+          Do i = 1,locdim + k - 1
+            a1=dot_product(xi,bold(:,i))
+            dmp1(:) = dmp1(:) - a1*bold(:,i)
+          Enddo
+          a1 = sqrt(dot_product(dmp1,dmp1))
+!         write(*,*) '   @Norm of preconditioner d(M+1):',a1
+!
+!  STEP F. form  vector b_(M+1): b_(M+1)=d_(M+1)/||d_(M+1)||
+!  this vector has to be included in the array of old vectors!
+!  important. This is useful only if the vector b_(M+1) adds
+!  new information (should be linearly independent)
+!
+          dmp1(:)=dmp1(:)/a1
+          bold(:,locdim+k)=dmp1(:)
+          xi = bold(:,locdim+k)
+          a2 = sqrt(dot_product(xi,xi))
+!
+!  intermediate ortho check of new b vector.
+!
+          ortho=0.0d0
+          xi = bold(:,locdim+k)
+          Do i=1,locdim+k-1
+            a1 = dot_product(xi,bold(:,i))
+            ortho = ortho + a1
+          Enddo
+          If(abs(ortho).lt.1.0E-06) then
+            listout(52:54) = ' OK'
+          else
+            listout(52:54) = ' VI'
+            orthoviolflag = .true.
+          endif
+!         WRITE(*,*) 'Ortho. of the newly added b-vector',ortho
+!
+!  STEP G.  Form A*b_(M+1)
+!  this vector has to be included in the array of new vectors!
+!
+          Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
+     &                  bold(:,locdim+k),bnew(:,locdim+k))
+
+          Write(*,*)  listout
+!
+! check orthogonality violation of newly added vectors.
+! If it can not be maintained we have to exit in order to
+! avoid intruder states.
+!
+          If(orthoviolflag.eqv..true.) EXIT   !leave this do loop
+
+
+!*****************************  end loop over the roots
+        Enddo
+!*****************************
+        Write(*,*) '    '        !spacer
+
+!
+! check vector convergence in microiterations
+!
+        notallconv = .false.
+        do k=1,nroots
+          notallconv=notallconv.or.notconverged(k)
+        enddo
+
+        if(notallconv.eqv..false.) then
+          write(*,*) 'All vectors converged. Leaving',
+     &               ' microiteration loop.'
+          exit
+        endif
+
+        If(orthoviolflag.eqv..true.) exit
+      
+        locdim = locdim + nroots
+!       write(*,*) 'New local dimension:',locdim
+!
+! check for macroiteration, transfer new start vector set.
+! Attention!! It was observed that orthogonality slowly gets
+! lost when macroiterations are entered. We therefore
+! reorthogonalize the new start vector set.
+!
+        if( (locdim + nroots).gt.maxdavsp) then
+          write(*,*) 'Davidson space exhausted.'
+          write(*,*) 'Generating new (orthogonalized) start vectors.'
+          write(*,*) 'For the next macroiteration.'
+          do k=1,nroots
+            bold(:,k)=evint(:,k)
+          enddo
+          call reortho(bold,ladc,nroots)
+          bnew = 0.0d0
+          exit
+        endif
+
+      ENDDO
+!|
+!|         End Davidson micro iteration loop
+!|
+!|______________________________________________________________
+!
+!  we have to check convergence again to distinguish between next
+!  macroiteration or end of davidson
+!
+      if(notallconv.eqv..false.) exit
+
+      If(orthoviolflag.eqv..true.) exit
+
+      ENDDO   !idavit loop
+
+      write(*,*) 'Leaving Davidson macro iteration loop.'
+
+      If(orthoviolflag.eqv..true.) then
+        write(*,*) 'Orthogonality of new vectors can not'
+        write(*,*) 'be maintained any longer. Exiting...'
+      Endif
+
+      if(notallconv.eqv..false.) then
+        write(*,*) 'All vectors converged to desired threshold'
+      else
+        write(*,*) '**WARNING: Not all vectors converged to desired'
+        write(*,*) '**         Threshold. Check residual errors!'
+      endif
+!|
+!|         End Davidson MACRO iteration loop
+!|
+!|______________________________________________________________
+!
+!   close ADC matrix file and delete it
+!
+      close(iobase,status='delete')
+!
+!   open configuration file
+!
+      iobase1 = iobase + 1
+      OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+!
+!   write out results as LONG output (symmetry specific)
+!
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') dsroot2,'.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') dsroot2,'.0',desrep
+      ENDIF
+      OPEN(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+!
+!__________________ loop over the roots and write out ** LONG ** results
+!|
+!|
+!|
+      Do K = 1,nroots
+!
+! determine pole strength
+!
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        Write(iobase,'(A28,F15.6)') 'Norm^2 of double exc. contr:',
+     &         1.0d0 - a1
+        Write(iobase,'(A)') ' '
+!
+! write out all vector components
+!
+        do j=1,ladc
+          Read(iobase1,rec=j) field
+          Write(iobase,'(A56,F15.6,3X,F15.6)') field,
+     &       evint(j,k),evint(j,k)*evint(j,k)
+        enddo
+        Write(iobase,'(A17)') '-----------------'
+        Write(iobase,'(A)') ' '
+
+      Enddo
+      CLOSE(iobase)
+!|
+!|
+!|_______________________________________________
+!
+!   write out results as SHORT output (symmetry specific)
+!
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') dsroot3,'.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') dsroot3,'.0',desrep
+      ENDIF
+      OPEN(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+!
+!__________________ loop over the roots and write out ** SHORT ** results
+!|
+!|
+!|
+      Do K = 1,nroots
+!
+! determine pole strength
+!
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        Write(iobase,'(A28,F15.6)') 'Norm^2 of double exc. contr:',
+     &         1.0d0 - a1
+        Write(iobase,'(A)') ' '
+!
+! determine 20 most relevant configurations
+! reuse xi-array for modulus calculation and sort
+! the corresponding eigenvector with respect to coeffs.
+!
+        do j=1,ladc;ievec(j)=j;enddo
+        xi=-abs(evint(:,k))
+        Call DISORT(ladc,xi,ievec)  !sorts from smallest to largest
+        Do j=1,min(20,ladc)
+          Read(iobase1,rec=ievec(j)) field
+          a1 = evint(ievec(j),k)
+          Write(iobase,'(A56,F15.6,3X,F15.6)') field,a1,a1*a1
+        Enddo
+        Write(iobase,'(A17)') '-----------------'
+        Write(iobase,'(A)') ' '
+
+      Enddo
+      CLOSE(iobase)
+!|
+!|
+!|_______________________________________________
+
+      CLOSE(iobase1)
+!
+!  deallocate all intermediate arrays
+!
+      deallocate(aij)
+      deallocate(lambda)
+      deallocate(work)
+      deallocate(qm)
+      deallocate(adiag)
+      deallocate(xi)
+      deallocate(dmp1)
+      deallocate(notconverged)
+      deallocate(bold)
+      deallocate(bnew)
+      deallocate(evint)
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XMATINI_R(iobase,intbuf,nbufs,ladc,adiag)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: iobase,intbuf,nbufs,ladc
+      REAL*8                         :: adiag(ladc)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+
+!
+!---------------Description--------------------------------------------
+!
+!  Fetch the diagonal entries of the sparse matrix A
+!  This routine will simplify considerably in the future.
+!---------------Executable code--------------------------------------
+!
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+
+c  .. read elements
+
+      REWIND(iobase)
+      DO I = 1,NBUFS
+        READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          IF(IROW.EQ.ICOL) adiag(irow) = A
+
+        ENDDO
+      ENDDO
+
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in XMATINI_R')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XMVMULBL_R(iobase,intbuf,nbufs,ladc,nvecs,PO,PN)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: iobase,intbuf,nbufs,ladc,nvecs
+      REAL*8                         :: PO(LADC,nvecs), PN(LADC,nvecs)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,J,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the real symmetric multiplication of the external ADC matrix
+!  with the vector PO and store the result in the vector PN
+!
+!  Matrix format is assumed to include the diagonal (new format)
+!
+!  Intermediate buffers are allocated internally !
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+!  since the diagonal is now *contained* in the matrix
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+!
+!  new vector has to be zeroed!
+!
+      DO J = 1, nvecs
+      DO I = 1, ladc
+        PN(I,J) =  0.0d0
+      ENDDO
+      ENDDO
+
+c  .. read off-diagonal elements and multiply on the fly
+
+      REWIND(iobase)
+      DO I = 1,NBUFS
+        READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          DO J = 1,NVECS
+         
+            PN(IROW,J) = PN(IROW,J) + PO(ICOL,J) * A
+            IF(IROW.NE.ICOL) PN(ICOL,J) = PN(ICOL,J) + PO(IROW,J) * A
+
+          ENDDO
+        ENDDO
+      ENDDO
+
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in XMVMULBL_R')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XMVMUL_R(iobase,intbuf,nbufs,ladc,PO,PN)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: iobase,intbuf,nbufs,ladc
+      REAL*8                         :: PO(LADC), PN(LADC)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the real symmetric multiplication of the external ADC matrix
+!  with the vector PO and store the result in the vector PN
+!
+!  Matrix format is assumed to include the diagonal (new format)
+!
+!  Intermediate buffers are allocated internally !
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+!  since the diagonal is now *contained* in the matrix
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+!
+!  new vector has to be zeroed!
+!
+      DO I = 1, LADC
+        PN(I) =  0.0d0
+      ENDDO
+
+c  .. read off-diagonal elements and multiply on the fly
+
+      REWIND(iobase)
+      DO I = 1,NBUFS
+        READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+        ENDDO
+      ENDDO
+
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in XMVMUL_R')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE REORTHO(v,ladc,nroots)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: ladc,nroots
+      REAL*8                         :: v(ladc,nroots)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)     :: x
+      REAL*8                                 :: a1
+      INTEGER                                :: i,k
+
+!
+!---------------Description--------------------------------------------
+!
+!     write(*,*) 'In reortho ***********************'
+      allocate(x(ladc))
+!
+! reorthogonalize nvec vectors stored columnwise in the array a
+!
+      Do k=1,nroots
+        x = v(:,k)
+        Do i=1,k-1
+          a1 = dot_product(x(:),v(:,i))
+!         write(*,*) i,k,a1
+          x = x - a1*v(:,i)
+        Enddo
+        a1 = sqrt(dot_product(x,x))
+!       write(*,*) 'norm k:',k,a1
+        v(:,k)  =  x/a1
+      Enddo
+!     write(*,*) 'Exiting  reortho ***********************'
+!
+!---------------Executable part----------------------------------------
+!
+      deallocate(x)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DISORT(n,arr,brr)
+!
+! adapted from numerical recipes in fortran 77
+! to simultaneously shuffle the index array brr
+! with the sorted array arr
+!
+      implicit none
+      INTEGER n,M,NSTACK
+      REAL*8 arr(n)
+      INTEGER brr(n)
+      PARAMETER (M=7,NSTACK=50)
+      INTEGER i,ir,j,jstack,k,l,istack(NSTACK)
+      REAL*8 a,atemp
+      INTEGER b,btemp
+      jstack=0
+      l=1
+      ir=n
+1     if(ir-l.lt.M)then
+        do 12 j=l+1,ir
+          a=arr(j)
+          b=brr(j)
+          do 11 i=j-1,1,-1
+            if(arr(i).le.a)goto 2
+            arr(i+1)=arr(i)
+            brr(i+1)=brr(i)
+11        continue
+          i=0
+2         arr(i+1)=a
+          brr(i+1)=b
+12      continue
+        if(jstack.eq.0)return
+        ir=istack(jstack)
+        l=istack(jstack-1)
+        jstack=jstack-2
+      else
+        k=(l+ir)/2
+        atemp=arr(k)
+        arr(k)=arr(l+1)
+        arr(l+1)=atemp
+        btemp=brr(k)
+        brr(k)=brr(l+1)
+        brr(l+1)=btemp
+        if(arr(l+1).gt.arr(ir))then
+          atemp=arr(l+1)
+          arr(l+1)=arr(ir)
+          arr(ir)=atemp
+          btemp=brr(l+1)
+          brr(l+1)=brr(ir)
+          brr(ir)=btemp
+        endif
+        if(arr(l).gt.arr(ir))then
+          atemp=arr(l)
+          arr(l)=arr(ir)
+          arr(ir)=atemp
+          btemp=brr(l)
+          brr(l)=brr(ir)
+          brr(ir)=btemp
+        endif
+        if(arr(l+1).gt.arr(l))then
+          atemp=arr(l+1)
+          arr(l+1)=arr(l)
+          arr(l)=atemp
+          btemp=brr(l+1)
+          brr(l+1)=brr(l)
+          brr(l)=btemp
+        endif
+        i=l+1
+        j=ir
+        a=arr(l)
+        b=brr(l)
+3       continue
+          i=i+1
+        if(arr(i).lt.a)goto 3
+4       continue
+          j=j-1
+        if(arr(j).gt.a)goto 4
+        if(j.lt.i)goto 5
+        atemp=arr(i)
+        arr(i)=arr(j)
+        arr(j)=atemp
+        btemp=brr(i)
+        brr(i)=brr(j)
+        brr(j)=btemp
+        goto 3
+5       arr(l)=arr(j)
+        arr(j)=a
+        brr(l)=brr(j)
+        brr(j)=b
+        jstack=jstack+2
+        if(jstack.gt.NSTACK)then
+          stop 'increase NSTACK in DISORT'
+        endif
+        if(ir-i+1.ge.j-l)then
+          istack(jstack)=ir
+          istack(jstack-1)=i
+          ir=j-1
+        else
+          istack(jstack)=j-1
+          istack(jstack-1)=l
+          l=i
+        endif
+      endif
+      goto 1
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
@@ -2890,13 +4422,12 @@ C|
         WRITE(IW,*) 'Final state symmetry: ',DESREP
 
 c ** start with 1h configurations
-c ** write absolute spinor numbers
 
         DO k=1,no(DESREP)
           koff=io(DESREP)+k
           WRITE(FIELD44,381) 
      &            k,repna(DESREP),
-     &            koff,bl_abs,
+     &            koff,repna(DESREP),
      &            bl_conf,bl_irna,
      &            bl_conf,bl_irna 
           WRITE(LUN,REC=lcount) FIELD44
@@ -3091,6 +4622,140 @@ C|____________________________________________________________
 
  381  FORMAT(4(I3,'(',A4,')  '))
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit configuration information for the excited
+C     states in symmetry DESREP.
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER LUN,IRECL,DESREP
+      CHARACTER*6 FILENAME
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*56 FIELD
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna
+      INTEGER RECCOUNT
+      
+C
+C---------------Executable code--------------------------------------
+C
+C open config file
+C
+      IRECL = 56
+!     WRITE(IW,*) 'Writing EXC configs to ',FILENAME
+!     WRITE(IW,*) 'State symmetry: ',DESREP
+!     WRITE(IW,*) 'Record length: ',IRECL
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+C
+C First do the H--->P part. Column counter is the decisive
+C IRREP.
+C
+      BL_CONF = 0
+      BL_IRNA = '    '
+      RECCOUNT = 1
+
+C____________ START WITH H ---> P __________________________
+C|
+C|
+C|
+
+      do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
+        brep = multb(desrep+nrep,jrep,1)
+        do jfun = 1,NO(jrep)
+        do bfun = 1,NV(brep)
+          jabs=IO(jrep) + jfun
+          babs=IO(nrep+1) + IV(brep) + bfun
+
+          WRITE(FIELD,333)
+     &         jabs,REPNA(jrep),
+     &         babs,REPNA(brep),
+     &         BL_CONF,BL_IRNA,
+     &         BL_CONF,BL_IRNA 
+
+          WRITE(LUN,REC=RECCOUNT) FIELD
+          RECCOUNT = RECCOUNT + 1
+
+        enddo
+        enddo
+      enddo
+      if( (reccount-1).ne.MVO(desrep))
+     &   stop 'Inconsistent rec counter in WCONDAT_X!'
+C|
+C|
+C|
+C|__________________________________________________________
+C
+C
+C____________ NOW DO  2H ---> 2P ___________________________
+C|
+C| important: exactly the same order as the column counter in
+C| XSATMAKE! Otherwise config. information will be erroneous
+C|
+C|
+C|
+      DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      DO 10 LREP = 1, NREP
+      KREP = MULTB(LREP,KLREP+NREP,2)
+      IF (KREP.LT.LREP) GOTO 10
+      DO L = 1, NO(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, NO(KREP)
+            DO 20 DREP = 1, NREP
+              CREP = MULTB(DREP,CDREP+NREP,2)
+              IF (CREP.LT.DREP) GOTO 20
+              DO D = 1, NV(DREP)
+                CMIN = 1
+                IF (CREP.EQ.DREP) CMIN = D + 1
+                DO C = CMIN, NV(CREP)
+
+          kabs =IO(krep) + K
+          labs =IO(lrep) + L
+          ccabs=IO(nrep+1) + IV(crep) + C
+          ddabs=IO(nrep+1) + IV(drep) + D
+
+          WRITE(FIELD,333)
+     &         kabs,REPNA(krep),
+     &         ccabs,REPNA(crep),
+     &         labs,REPNA(lrep),
+     &         ddabs,REPNA(drep)
+
+          WRITE(LUN,REC=RECCOUNT) FIELD
+          RECCOUNT = RECCOUNT + 1
+
+                ENDDO
+              ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C|
+C|
+C|
+C|__________________________________________________________
+
+      CLOSE(LUN)
+
+ 333  FORMAT(2(I3,' (',A4,')  ---> ',I3,' (',A4,') '))
+ 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

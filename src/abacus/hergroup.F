@@ -1294,4 +1294,33 @@ C
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION IQFROMPQ(IBSYM,IFSYM,IC,IZ)
+C***********************************************************************
+C
+C     Give quaternion unit corresponding to symmetry-packed one
+C     IBSYM is index of boson irreps of fermion ircop IFSYM
+C     Written by T. Saue April 10 2013
+C
+C***********************************************************************
+#include "implicit.h"
+C
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dgroup.h"
+      DIMENSION III(2)
+#include "dcbibt.h"
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C.....find the boson irrep that corresponds to index IBSYM of IFSYM for component IC
+      ITMP     = MOD(IFSYM+IC,2) + 1
+      ITMP     = JFSYM(IBSYM,ITMP) - 1
+      ITMP     = IBTXOR(ITMP,III(IC))
+      ITMP     = IPQTOQ(IZ,ITMP)
+      IQFROMPQ = IQMAP(ITMP)
+      END
 C --- end of hergroup.F ---

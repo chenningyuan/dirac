@@ -152,30 +152,25 @@ C  LABELS: NLAB
 #include "dgroup.h"
 C
       DIMENSION CMO(*), EIG(*), IBEIG(*), WORK(LWORK)
-      LOGICAL DONETP_M,ADD_ALL_M,ADDSML_M,LABDEF_M
+      LOGICAL   DONETP_M,LABDEF_M
 C
       CALL QENTER('SCF_MULPOP')
 #include "memint.h"
 C
-CHJ   CALL TITLER('Mulliken population analysis','*',122)
-C
-C     save possible user input (for default Mull. pop) and set
+C     Save possible user input (for default Mull. pop) and set
 C     SCF_MULPOP default values
+C
       IPRPOP_M = IPRPOP
       ILABDF_M = ILABDF
       DONETP_M = DONETP
-      ADD_ALL_M = ADD_ALL
-!     ADDSML_M = ADDSML
       LABDEF_M = LABDEF
 C
       IPRPOP   = -1 ! suppress normal MULPOP output
       ILABDF   =  1 ! select AO basis for easy summing for an atom
       DONETP   = .FALSE. ! no net populations
-      ADD_ALL  = .TRUE.  ! only total charges for each atom
-!     ADDSML   = .TRUE.  ! only total small charge for each atom
-!                          (irrelevant when ADD_ALL is true)
       LABDEF   = .FALSE. ! labels not already defined
-      DO_SCFPOP = .TRUE. ! select SCFPOP special output
+      DO_SCFPOP = .TRUE. ! select SCFPOP special output;
+                         ! implies only total charges for each atom, omit point charges
 C
       KRMC_FLG = 0
 C
@@ -220,8 +215,6 @@ C     restore user input for Mull. pop. ana.
       IPRPOP   = IPRPOP_M
       ILABDF   = ILABDF_M
       DONETP   = DONETP_M
-!     ADDSML   = ADDSML_M
-      ADD_ALL  = ADD_ALL_M
       LABDEF   = LABDEF_M
       DO I = 1, NFSYM
          VECPOP(I) = VECPOP_SAVE(I)
@@ -347,7 +340,7 @@ C          ... read from file
            CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/MP2NOOCC on file KRMCOLD'
+     &           ' label NEWNATOB/NEWNATOC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
@@ -412,10 +405,7 @@ C        long run, occupancies should also be stored on DFCOEF. FIXME!
 C
 C     Get labels for population analysis
 C
-      IPRPOP_SAVE = IPRPOP
-      IPRPOP = 2
       CALL GETPLB(IPRPOP)
-      IPRPOP = IPRPOP_SAVE
 C
 C     Memory allocation
       NNLAB = (NPOPLAB*(NPOPLAB+1))/2
@@ -635,7 +625,7 @@ C
       IF (DO_SCFPOP) THEN
 !       calculate net atomic charge
         DO I = 1, NPOPLAB
-           PGTOT(I,1) = ICHRG(I) - PGTOT(I,1)
+           PGTOT(I,1) = CHRGNUC(I) - PGTOT(I,1)
         END DO
         CALL WR_MULCHRG(PGTOT(1,1),POPLAB,NPOPLAB)
       ELSE
@@ -1524,6 +1514,12 @@ C
      &            WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &            WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRPRJ)
+      IF(IPRPRJ.GE.2) THEN
+        WRITE(6,*) '* Projection vector BVEC for fermion ircop ',
+     &             FREP(IFRP)
+        CALL PRQMAT(BVEC,NREF,NMOL,NTOT,NMOL,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
       CALL MEMGET('REAL',KOCC,NMOL,WORK,KFREE,LFREE)
       IF(NREFS.GT.1) THEN
 C
@@ -1939,14 +1935,29 @@ C
 C
 #include "dcbibt.h"
 C
-      IF (ADD_ALL) THEN
+      IF (DO_SCFPOP) THEN
+C- combine all large and small component types for each center
+C- omit point charges
+        NPOPLAB = 0
+        DO I = 1, NPLAB(0)
+          ICENT      = JGET(IATTR(I,ILABDF))
+          IDEG       = KGET(IATTR(I,ILABDF))
+          ICENT_DEP  = NUCPRE(ICENT) + IDEG
+          IPOPLAB(I)         = ICENT_DEP
+          CHRGNUC(ICENT_DEP) = CHARGE(ICENT)
+          POPLAB(ICENT_DEP)  = '    '//NAMDEP(ICENT_DEP)
+          IF (.NOT. NOORBT(ICENT)) THEN   ! omit point charges
+            NPOPLAB = MAX(NPOPLAB, ICENT_DEP)
+          END IF
+        END DO
+        GO TO 8000
+      ELSE IF (ADD_ALL) THEN
 C- combine all large and small component types for each center
         DO I = 1, NPLAB(0)
           ICENT = JGET(IATTR(I,ILABDF))
           IDEG  = KGET(IATTR(I,ILABDF))
           ICENT_DEP = NUCPRE(ICENT) + IDEG
           IPOPLAB(I) = ICENT_DEP
-          ICHRG(ICENT_DEP) = NINT(CHARGE(ICENT))
         END DO
         NPOPLAB = NUCDEP
         DO I = 1,NPOPLAB
@@ -1994,7 +2005,7 @@ C
  8000 IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from GETPLB: Group labels',-1)
         WRITE(LUPRI,'(A,I5)') '* Total number : ',NPOPLAB
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,POPLAB(I),I=1,NPOPLAB)
+        WRITE(LUPRI,'(6(I6,2X,A12))') (I,POPLAB(I),I=1,NPOPLAB)
         IF(IPRINT.GE.5) THEN
           CALL PRIVEC('IPOPLAB ',IPOPLAB,NPLAB(0))
         ENDIF

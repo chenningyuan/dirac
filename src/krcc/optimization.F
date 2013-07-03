@@ -1,5 +1,5 @@
-      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,VEC1,VEC2,
-     &                         CCTYPE,ECC,WORK,KFREE,LFREE)
+      SUBROUTINE OPTIM_CC2_KRCC(CC_AMP,CCVEC1,
+     &                         ECC,WORK,KFREE,LFREE)
 *
 * Optimize CC wave function
 *
@@ -7,31 +7,23 @@
 *
 * Jeppe Olsen
 *
-* Summer of 99 : CCTYPE added so both CCSD and General CC can be realized
-* Feb  2000    : ICCSOLVE added for DIIS etc
-* June 2001    : Version with just three vectors
-*
 * Input :
 * ========
 *
 * CC_AMP : Initial set of CC amplitiudes
-* CCVEC6 : Imaginary Initial set of CC amplitiudes
 *
 * Output
 * ========
 *
 * CC_AMP : Final set of amplitudes 
-* CCVEC6 : Imaginary Final set of amplitudes
 *
 * Scratch
 * ========
 *
-* VEC1, VEC2 : Two vectors for CI calculations (old CCVEC)
 * CCVEC1 : Complete CC vector
 *
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
-      CHARACTER*6 CCTYPE
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "crun.inc"
@@ -49,21 +41,17 @@
 C added
 #include "cicisp.inc"
 *. Scratch 
-      DIMENSION VEC1(*),VEC2(*), CCVEC1(*)
+      DIMENSION CCVEC1(*)
 *. Input and output
       DIMENSION CC_AMP(*),WORK(*)
-* Test
-      INTEGER INUMBER
 *
       IDUMMY = 0
+      I_WRITE_INTERMEDIATES = 0
 C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *
       LBLK = -1
 *
       NTEST = 000 
-      IF(NTEST.GE.5) THEN
-        WRITE(6,'(A,A)') ' OPTIM_CC: Form of CC expansion ',CCTYPE
-      END IF
 *. Optimization of coupled cluster wavefunction defines symmetry as
       ICSM = IREFSM
       ISSM = IREFSM
@@ -81,10 +69,6 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *             Construct diagonal 
 * ===========================================
 *
-C     IF(I_DO_NEWCCV.GE.1) THEN
-C
-C Inactive Fock Matrix only used in new cc vector function hence only contructed there. Lasse
-C Comes in a lttle differently in CI-driven
 * Obtain Inactive Fock matrix
 *
       CALL FI_KRCC(WORK(KT_CC),WORK(KFI),ECC,1,ISPINFREE)
@@ -97,25 +81,12 @@ C Imaginary part of inactive fock-matrix, At the moment only real.
         ECORE_H = ECORE_AB
         ECORE = ECORE_ORIG + ECORE_H
         WRITE(6,*) ' Updated core energy ',ECORE 
-C     ELSE
-C       ECORE_H = 0.0D0
-C       ECORE_ORIG = 0.D0
-C     END IF
-C      print*,'real diagonal'
-C      print*,(WORK(KT_CC+II),II=0,N1ELINT+N2ELINT-1)
-C      print*,'imaginay diagonal'
-C      print*,(WORK(KT_CC+II),II=N1ELINT+N2ELINT,2*(N1ELINT+N2ELINT))
 *. And the diagonal 
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
 C
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-! should be since this is the starting!!
-      print*,'call GENCC_F_DIAG_M_KRCC'
-! not NSPOBEX_TP_CC but NSPOBEX_TPE since identity will be first!
+C Remember the 1 is the symmetry
+C
       CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,CCVEC1,
      &      1,KDUM,KDUM,MX_ST_TSOSO_MX,
      &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
@@ -129,7 +100,7 @@ C
 *. Save Diagonal on Disc 
 *  Should probably also save the imaginary part, needed later
 *  so just here a null vector.
-      CALL VEC_TO_DISC(CCVEC1,IMULTFAC*N_CC_AMP,1,LBLK,LUDIA)
+      CALL VEC_TO_DISC(CCVEC1(2),IMULTFAC*N_CC_AMP-1,1,LBLK,LUDIA)
 C reset CCVEC1
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
@@ -153,7 +124,7 @@ C reset CCVEC1
 *. result in CCVEC1
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' Current CC amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CC_AMP,LU,
      &                     WORK,KFREE,LFREE)
         END IF
 C**************************************************************
@@ -166,7 +137,9 @@ C       stop 'after CC_VEC_FNC_KRCC'
 C**************************************************************
 *. Save on LUHC
 C Save real and imagenary if complex algebra otherwise just real
-        CALL VEC_TO_DISC(CCVEC1,IMULTFAC*(N_CC_AMP+1),1,LBLK,LUHC)
+C         CALL FIRST_ELEMENT_LAST(CC_AMP,IMULTFAC*N_CC_AMP)
+C         CALL FIRST_ELEMENT_LAST(CCVEC1,IMULTFAC*N_CC_AMP)
+        CALL VEC_TO_DISC(CCVEC1(2),IMULTFAC*N_CC_AMP-1,1,LBLK,LUHC)
 C FIX FOR ECORE
         IF(ITER.EQ.1) THEN
           CALL GET_ECC(ECORE2)
@@ -185,15 +158,6 @@ C Norm of real + imagenary
         do i=1,N_CC_AMP +1
           print*,'CC_AMP',CC_AMP(i)
         end do
-        print*
-        do i=1,N_CC_AMP+1
-          print*,'VEC1',VEC1(i)
-        end do
-        print*
-        do i=1,N_CC_AMP+1
-          print*,'VEC2',VEC2(i)
-        end do
-        print*
         END IF
 C Notice the identety is now number one and not the last element!
          XNORM = SQRT(INPROD(CCVEC1(2),CCVEC1(2),IMULTFAC*N_CC_AMP))
@@ -214,11 +178,11 @@ C Notice the identety is now number one and not the last element!
         IF(IM_CONVERGED.EQ.1) GOTO 1001
         IF(NTEST.GE.100) THEN
           WRITE(6,*) ' vector function : '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CCVEC1,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
-        IF(XNORM.GE.50) STOP 'NOT CONVERGING'
+        IF(XNORM.GE.500) STOP 'NOT CONVERGING'
 *
 * =========================
 * Obtain  correction vector 
@@ -230,9 +194,9 @@ C Notice the identety is now number one and not the last element!
 * 2 : Use Diagonal + the current set of CC vector functions to obtain 
 *     the improved guess 
 * Hardwirering
-        I_DO_SBSPJA = 0
+        I_DO_SBSPJA = 1
         IF(I_DO_SBSPJA.EQ.0) THEN
-        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP+1,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KDIA,IMULTFAC*N_CC_AMP,WORK,KFREE,LFREE)
 *
 * Simple perturbation update
 *. find change of CC coefficients as - Scaled(diag)-1 * CC_VEC_FNC on CCVEC1
@@ -241,15 +205,15 @@ C Notice the identety is now number one and not the last element!
 C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 C Both real and imagenary
 C          print*,'before VEC_FROM_DISC'
-         CALL VEC_FROM_DISC(WORK(KDIA),IMULTFAC*N_CC_AMP+1,1,LBLK,LUDIA)
+         CALL VEC_FROM_DISC(WORK(KDIA),IMULTFAC*N_CC_AMP-1,1,LBLK,LUDIA)
            print*,'after VEC_FROM_DISC'
           CALL MEMCHK_KRCC(WORK)
            print*,'after rmemchk'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1,CCVEC2',CCVEC1(i),CCVEC2(i),i
 C          end do
-          CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA+1),
-     &                ZERO,IMULTFAC*N_CC_AMP)
+          CALL DIAVC2(CCVEC1(2),CCVEC1(2),WORK(KDIA),
+     &                ZERO,IMULTFAC*N_CC_AMP-1)
            print*,'after DIAVC2'
 C          CALL DUMDUM(N_CC_AMP,CCVEC1,WORK(KDIA))
 C          do i=1,IMULTFAC*N_CC_AMP
@@ -258,9 +222,14 @@ C          end do
           CALL MEMCHK_KRCC(WORK)
            print*,'after 2'
           ONEM = -1.0D0
-          CALL SCALVE(CCVEC1,ONEM,IMULTFAC*N_CC_AMP)
+          CALL SCALVE(CCVEC1(2),ONEM,IMULTFAC*N_CC_AMP-1) !see if correct
         CALL MEMREL('MAPPING',WORK,KDIA,KDIA,KFREE,LFREE)
         ELSE
+* Silly Lasse edition due to laziness
+* Reason I have the identity first Jeppe has it last
+* and I don't feel like changing his optimizer
+C         CALL FIRST_ELEMENT_LAST(CC_AMP,IMULTFAC*N_CC_AMP)
+C         CALL FIRST_ELEMENT_LAST(CCVEC1,IMULTFAC*N_CC_AMP)
 *
 * Use diagonal + subspace approximation 
 *
@@ -278,31 +247,31 @@ C          end do
 *
 *. Place last set of differences of coefs and vector functions
 *. on disc
-          CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LUSC41)
+          CALL VEC_TO_DISC(CC_AMP(2),N_CC_AMP-1,1,LBLK,LUSC41)
           IF(ITER.GT.1) THEN
 *. Obtain X_{i+1} - X_{i} and save as vector ITER-1 in FILE LU_CCVECT
 *. X_{i} is in LU_CCVECL
-            CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LUSC1)
-            CALL SKPVCD(LU_CCVECT,ITER-2,CCVEC1,1,LBLK)
+            CALL VEC_TO_DISC(CC_AMP(2),N_CC_AMP-1,1,LBLK,LUSC1)
+            CALL SKPVCD(LU_CCVECT,ITER-2,CCVEC1(2),1,LBLK)
             CALL REWINO(LUSC1)
             CALL REWINO(LU_CCVECL)
             ONE = 1.0D0
             ONEM = -1.0D0
 C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
 C     &                  LUSC1,LU_CCVECL,LU_CCVECT,0,LBLK)
-            CALL VECSMD(CC_AMP,CCVEC1,ONE,ONEM,
+            CALL VECSMD(CC_AMP(2),CCVEC1(2),ONE,ONEM,
      &                  LUSC1,LU_CCVECL,LU_CCVECT,0,LBLK)
 C          CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LU_CCVECL)
 *. Obtain CCVF(X_{i+1})-CCVF(X_{i}) as vector ITER-1 in FILE LU_CCVECF
 *. Previous CC vector function resides on LU_CCVECFL
-            CALL SKPVCD(LU_CCVECF,ITER-2,CCVEC1,1,LBLK)
+            CALL SKPVCD(LU_CCVECF,ITER-2,CCVEC1(2),1,LBLK)
             CALL REWINO(LUHC)
             CALL REWINO(LU_CCVECFL)
             ONE = 1.0D0
             ONEM = -1.0D0
 C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
 C     &                  LUHC,LU_CCVECFL,LU_CCVECF,0,LBLK)
-            CALL VECSMD(CCVEC1,CC_AMP,ONE,ONEM,
+            CALL VECSMD(CCVEC1(2),CC_AMP(2),ONE,ONEM,
      &                  LUHC,LU_CCVECFL,LU_CCVECF,0,LBLK)
           END IF
 *. The previous amplitudes and vector function can now 
@@ -310,8 +279,8 @@ C     &                  LUHC,LU_CCVECFL,LU_CCVECF,0,LBLK)
 *. X_{i+1}
 C          IF(ITER.EQ.1) THEN
           CALL REWINO(LUSC41)
-          CALL VEC_FROM_DISC(CC_AMP,N_CC_AMP,1,LBLK,LUSC41)
-          CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LU_CCVECL)
+          CALL VEC_FROM_DISC(CC_AMP(2),N_CC_AMP-1,1,LBLK,LUSC41)
+          CALL VEC_TO_DISC(CC_AMP(2),N_CC_AMP-1,1,LBLK,LU_CCVECL)
 C          END IF
 *. CCvec_{i+1}
 C              COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
@@ -323,106 +292,23 @@ C              COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 C          print*,'NSBSPC_VEC ',NSBSPC_VEC
           CALL APRJAC_TV(NSBSPC_VEC,LU_CCVECFL,LUSC1,LU_CCVECT,
 C     &                   LU_CCVECF,LUDIA,CCVEC1,CCVEC2,
-     &                   LU_CCVECF,LUDIA,CCVEC1,CC_AMP,
-     &                   WORK(KSBSPJA),N_CC_AMP,LUSC2,LUSC3,
+     &                   LU_CCVECF,LUDIA,CCVEC1(2),CC_AMP(2),
+     &                   WORK(KSBSPJA),N_CC_AMP-1,LUSC2,LUSC3,
      &                   MAXVEC)
 *. The new correction vector is now residing in LUSC1,
 *. Fetch and multiply with -1
-          CALL VEC_FROM_DISC(CCVEC1,N_CC_AMP,1,LBLK,LUSC1)
+          CALL VEC_FROM_DISC(CCVEC1(2),N_CC_AMP-1,1,LBLK,LUSC1)
           ONEM = -1.D0
-          CALL SCALVE(CCVEC1,ONEM,N_CC_AMP)
+          CALL SCALVE(CCVEC1(2),ONEM,N_CC_AMP-1)
           CALL REWINO(LUSC41)
-          CALL VEC_FROM_DISC(CC_AMP,N_CC_AMP,1,LBLK,LUSC41)
-C*
-C* Use diagonal + subspace approximation 
-C*
-C* Add current correction vector and the corresponding Jacobian 
-C* vector to disc.
-C*
-C* The subspace approach is based upon assuming that the jacobian 
-C* is nearly constant so we can obtain information about from the 
-C* difference between two vector functions
-C*
-C* CC(X_{i+1}) - CC(X_{i}) = J(X_{i+1}) - CC(X_{i})
-C*
-C* So the approach is based upon a sequence of changes of 
-C* CC coefficients and CC vector functions
-C*
-C*. Place last set of differences of coefs and vector functions
-C*. on disc
-C          print*,'iter',iter
-C          IF(ITER.GT.1) THEN
-C*. Obtain X_{i+1} - X_{i} and save as vector ITER-1 in FILE LU_CCVECT
-C*. X_{i} is in LU_CCVECL
-CC real
-C            CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LUSC1)
-CC imagenary
-C            CALL VEC_TO_DISC(CC_AMP(N_CC_AMP+1),N_CC_AMP,0,LBLK,LUSC1)
-CC real part
-C            CALL SKPVCD(LU_CCVECT,2*ITER-4,CCVEC1,1,LBLK)
-C            CALL REWINO(LUSC1)
-C            CALL REWINO(LU_CCVECL)
-C            ONE = 1.0D0
-C            ONEM = -1.0D0
-C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
-C     &                  LUSC1,LU_CCVECL,LU_CCVECT,0,LBLK)
-CC imagenary part
-CC input vector just dummys
-CC No need to skip or rewind since files is in right place
-CC            CALL SKPVCD(LU_CCVECT,2*ITER-5,CCVEC1,1,LBLK)
-CC no rewind since they now should be at right place
-CC            CALL REWINO(LUSC1)
-CC            CALL REWINO(LU_CCVECL)
-C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
-C     &                  LUSC1,LU_CCVECL,LU_CCVECT,0,LBLK)
-C*. Obtain CCVF(X_{i+1})-CCVF(X_{i}) as vector ITER-1 in FILE LU_CCVECF
-C*. Previous CC vector function resides on LU_CCVECFL
-C real
-C            CALL SKPVCD(LU_CCVECF,2*ITER-4,CCVEC1,1,LBLK)
-C            CALL REWINO(LUHC)
-C            CALL REWINO(LU_CCVECFL)
-C            ONE = 1.0D0
-C            ONEM = -1.0D0
-C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
-C     &                  LUHC,LU_CCVECFL,LU_CCVECF,0,LBLK)
-CC imagenary
-CC Same here
-CC            CALL SKPVCD(LU_CCVECF,2*ITER-5,CCVEC1,1,LBLK)
-CC            CALL REWINO(LUHC)
-CC            CALL REWINO(LU_CCVECFL)
-C            CALL VECSMD(CCVEC1,CCVEC2,ONE,ONEM,
-C     &                  LUHC,LU_CCVECFL,LU_CCVECF,0,LBLK)
-C          END IF
-C*. The previous amplitudes and vector function can now 
-C*. be overwritten
-C*. X_{i+1}
-CC REAL
-C          CALL VEC_TO_DISC(CC_AMP,N_CC_AMP,1,LBLK,LU_CCVECL)
-CC IMAGENARY
-C          CALL VEC_TO_DISC(CC_AMP(N_CC_AMP+1),N_CC_AMP,0,LBLK,LU_CCVECL)
-C*. CCvec_{i+1}
-CC              COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
-C          CALL COPVCDC(LUHC,LU_CCVECFL,CCVEC1,1,LBLK)
-C*. Multiply current CC vector function with approximate Jacobin 
-C*. to obtain new step
-C          NSBSPC_VEC = ITER-1
-C          MAXVEC = MIN(15,MAXIT)
-C          CALL APRJAC_TV_REL(NSBSPC_VEC,LU_CCVECFL,LUSC1,LU_CCVECT,
-C     &                   LU_CCVECF,LUDIA,CCVEC1,CCVEC2,
-C     &                   WORK(KSBSPJA),N_CC_AMP,LUSC2,LUSC3,
-C     &                   MAXVEC)
-C*. The new correction vector is now residing in LUSC1,
-C*. Fetch and multiply with -1
-CC REAL
-C          CALL VEC_FROM_DISC(CCVEC1,N_CC_AMP,1,LBLK,LUSC1)
-CC IMAGENARY
-C          CALL VEC_FROM_DISC(CCVEC1(N_CC_AMP+1),N_CC_AMP,0,LBLK,LUSC1)
-C          ONEM = -1.D0
-C          CALL SCALVE(CCVEC1,ONEM,2*N_CC_AMP)
+          CALL VEC_FROM_DISC(CC_AMP(2),N_CC_AMP-1,1,LBLK,LUSC41)
+* Lasse addition for laziness
+C         CALL LAST_ELEMENT_FIRST(CC_AMP,IMULTFAC*N_CC_AMP)
+C         CALL LAST_ELEMENT_FIRST(CCVEC1,IMULTFAC*N_CC_AMP)
         END IF
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction  vector '
-          CALL WRT_CC_VEC2(CCVEC1,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CCVEC1,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
@@ -434,7 +320,7 @@ C          CALL SCALVE(CCVEC1,ONEM,2*N_CC_AMP)
           ONE = 1.0D0
 * REAL AND IMG STORED AFTER EACH OTHER so just 2*N_CC_AMP
           CALL VECSUM(CC_AMP(2),CC_AMP(2),CCVEC1(2),
-     &                ONE,ONE,IMULTFAC*N_CC_AMP)
+     &                ONE,ONE,IMULTFAC*N_CC_AMP-1)
         ELSE IF(ICCSOLVE.EQ.2) THEN 
 *. DIIS
           IF(ITER.EQ.1) THEN
@@ -476,7 +362,7 @@ C              VEC_FROM_DISC(VEC,LENGTH,IREW,LBLK,LU)
 *       ^ End of PERT/DIIS switch 
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Updated amplitudes '
-          CALL WRT_CC_VEC2(CC_AMP,LU,CCTYPE,
+          CALL WRT_CC_VEC2(CC_AMP,LU,
      &                     WORK,KFREE,LFREE)
 * (LU is not active)
         END IF
@@ -510,17 +396,36 @@ C      stop
       ELSE
         WRITE(6,'(A,I4,A)') 
      &  ' Convergence obtained in ', IITER, ' iterations'
-        print*,'Convergerged energy',ECC
+        WRITE(6,*) 'Convergerged energy',ECC
       END IF
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Final set of CC_amplitudes '
-        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
+        CALL WRT_CC_VEC2(CC_AMP,6,
      &                   WORK,KFREE,LFREE)
       END IF
 *
-      WRITE(6,*) ' Largest T(D,L) block in use = ', NTDL_MAX_ACT
+C     WRITE(6,*) ' Largest T(D,L) block in use = ', NTDL_MAX_ACT
+*. Dump to LU_CCAMP
+      OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
+     &     Form='UNFORMATTED')
+C    &     Form='FORMATTED')
+        CALL REWINO(LU_CCAMP)
+        I_FORMATTED = 2
+C        print*,'2*N_CC_AMP ',2*N_CC_AMP
+        IF(I_FORMATTED.EQ.1) THEN
+          WRITE(LU_CCAMP,'(I9)') N_CC_AMP
+          DO I = 1, IMULTFAC*N_CC_AMP
+            WRITE(LU_CCAMP,'(E25.15)') CC_AMP(I)
+          END DO
+        ELSE
+          WRITE(LU_CCAMP) N_CC_AMP
+          WRITE(LU_CCAMP) (CC_AMP(I),I=1,IMULTFAC*N_CC_AMP)
+        END IF
+        CALL REWINO(LU_CCAMP)
+      CLOSE(LU_CCAMP)
+*
 C     CALL MEMMAR(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'CC_OPT')
       RETURN
       END
@@ -1209,7 +1114,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
       RETURN
       END
 *
-      SUBROUTINE INVERT_BY_DIAG3
+      SUBROUTINE INVERT_BY_DIAG4
       print*,'you should call INVERT_BY_DIAG2 instead'
       stop 'you should call INVERT_BY_DIAG2 instead'
       END 
@@ -1222,3 +1127,126 @@ C?    CALL PRSYM(BMAT,NVECP1)
             print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
           end do
       END
+*
+      SUBROUTINE FIRST_ELEMENT_LAST(VEC,NDIM)
+#include "implicit.inc"
+      DIMENSION VEC(NDIM)
+*
+      NTEST = 100
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Enter FIRST_ELEMENT_LAST'
+        CALL WRTMAT(VEC,1,NDIM,1,NDIM)
+      END IF
+*
+      A_FIRST_ELEMENT = VEC(1)
+      CALL COPVEC(VEC(2),VEC,NDIM-1)
+      VEC(NDIM) = A_FIRST_ELEMENT
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Exit FIRST_ELEMENT_LAST'
+        CALL WRTMAT(VEC,1,NDIM,1,NDIM)
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE LAST_ELEMENT_FIRST(VEC,NDIM)
+#include "implicit.inc"
+      DIMENSION VEC(NDIM)
+*
+      NTEST = 100
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Enter LAST_ELEMENT_FIRST'
+        CALL WRTMAT(VEC,1,NDIM,1,NDIM)
+      END IF
+*
+      A_LAST_ELEMENT = VEC(NDIM)
+      DO I=NDIM,2,-1
+        VEC(I)= VEC(I-1)
+      END DO
+      VEC(1) = A_LAST_ELEMENT
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Exit LAST_ELEMENT_FIRST'
+        CALL WRTMAT(VEC,1,NDIM,1,NDIM)
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE INVERT_BY_DIAG3(A,B,SCR,VEC,NDIM)
+*
+* Invert symmetric  - hopefully nonsingular - matrix A 
+* by diagonalization
+*
+* Jeppe Olsen, Oct 97 to check INVMAT
+*              March 00 : Scale initial matrix to obtain unit diagonal
+*
+#include "implicit.inc"
+*. Input and output matrix
+      DIMENSION A(*)       
+*. Scratch matrices and vector
+      DIMENSION B(*),SCR(*),VEC(*)
+*
+      NTEST = 00
+*. Reform a to symmetric packed form
+      CALL TRIPAK(A,SCR,1,NDIM,NDIM,1.0D0)
+*. Extract diagonal
+      CALL COPDIA(SCR,VEC,NDIM,1)
+*
+*.scale 
+*
+      DO I = 1, NDIM
+*. Scaling vector
+        IF(VEC(I).EQ.0.0D0) THEN
+          VEC(I) = 1.0D0
+        ELSE
+          VEC(I) = 1.0D0/SQRT(ABS(VEC(I)))
+        END IF
+      END DO
+*. Scale matrix
+      IJ = 0
+      DO I = 1, NDIM
+        DO J = 1, I
+          IJ = IJ + 1
+          SCR(IJ) = SCR(IJ)*VEC(I)*VEC(J)
+        END DO
+      END DO
+C     DO I = 1, NDIM
+C       VEC(I) = 1.0D0/VEC(I)
+C     END DO
+*. Diagonalize
+      CALL EIGEN(SCR,B,NDIM,0,1)
+*. Scale eigenvectors
+      DO IVEC = 1, NDIM 
+        IOFF = 1 + (IVEC-1)*NDIM
+        CALL VVTOV(B(IOFF),VEC,B(IOFF),NDIM)
+      END DO
+*. 
+      CALL COPDIA(SCR,VEC,NDIM,1)
+      IF( NTEST .GE. 1 ) THEN
+        WRITE(6,*) ' Eigenvalues of scaled matrix : '
+        CALL WRTMAT(VEC,NDIM,1,NDIM,1)
+      END IF
+*. Invert diagonal elements 
+      DO I = 1, NDIM
+       IF(ABS(VEC(I)).GT.1.0D-15) THEN
+         VEC(I) = 1.0D0/VEC(I)
+       ELSE
+         VEC(I) = 0.0D0
+         WRITE(6,*) ' Singular mode activated '
+       END IF
+      END DO
+*. and obtain inverse matrix by transformation
+C     XDIAXT(XDX,X,DIA,NDIM,SCR)
+      CALL XDIAXT(A,B,VEC,NDIM,SCR)
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Inverse matrix from INVERSE_BY_DIAG'
+        CALL WRTMAT(A,NDIM,NDIM,NDIM,NDIM)
+      END IF
+*
+      RETURN
+      END 

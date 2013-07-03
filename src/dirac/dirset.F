@@ -122,16 +122,7 @@ C     ===================
       ENDIF
  11   continue
 #ifdef MOD_CAP
-CMI ... check if CAP is not for everlap control
-CMI  ... call of F90 routine
-!        call TEST_OOF(WORK,LWORK)
-!        call StickMemory(WORK,LWORK)
-!        call TEST_OOF ! memmory was unsticked here
-!         call StickMemory(WORK,LWORK) ! stick again
-!         call cap_ovlp
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
-!    .... independent tests
-!       call test_oof_basis_fu(WORK,LWORK)
 #endif
 
       IF(DOHRM) THEN
@@ -1264,7 +1255,7 @@ C
 C     ... Calculate dipole moment integrals (stored on LU1INT)
 C
       IF (NMPOLOP .GT. 1 .AND. .NOT. DIPDONE) THEN
-         CALL DEF_DIPOLE(INDDIP,WORK(KFREE),LFREE,IPRINT)
+         CALL DEF_DIPOLE(INDDIP,IPRINT)
 C
 C        ... Open AOPROPER integral file for ONEGEN
 C            (is closed again inside ONEGEN)

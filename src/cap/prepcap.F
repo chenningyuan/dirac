@@ -51,7 +51,7 @@ C
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
-#include "memint.h"
+!#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -708,6 +708,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      & 'Total number of atomic basis functions, NBASIS = ',NBASIS
       ENDIF
 
+      !return
+
 C ...  read DIRAC/CAP basis functions ...
 C       .. skip text lines
       READ(LUCD,*)
@@ -742,6 +744,8 @@ C         ...    printout of IOBF parameters
         ENDIF
 
       ENDDO
+
+      !return
 
       CALL GPCLOSE(LUCD,'KEEP')
       CALL GPCLOSE(LUCL,'KEEP')
@@ -1359,7 +1363,7 @@ C
       NPCOMP           = 1
       PFAC(1)          = D1
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+     &      INDXPR,ISYXPR,ITRXPR,IPRCAP)
 
 C             ... assign indexes
 C ---------------------------------------------------
@@ -1404,7 +1408,7 @@ C     CVALX = 0.50D0*CVAL ! inly for checking ...
       PLABEL(2) = 'YCAPD1R'
       PLABEL(3) = 'ZCAPD1R'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+     &         INDXPR,ISYXPR,ITRXPR,IPRCAP)
       IPCAP_DR = INDXPR
 
       PNAME    = 'CAP_D_Im  '
@@ -1417,7 +1421,7 @@ C     CVALX = 0.50D0*CVAL ! inly for checking ...
       PLABEL(2) = 'YCAPD1I'
       PLABEL(3) = 'ZCAPD1I'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+     &         INDXPR,ISYXPR,ITRXPR,IPRCAP)
       IPCAP_DI = INDXPR
 
       IF (IPRCAP.GE.2) THEN
@@ -1443,7 +1447,7 @@ C     CVALX = 0.50D0*CVAL ! inly for checking ...
       PLABEL(2) = 'YCAPDVE'
       PLABEL(3) = 'ZCAPDVE'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRCAP)
+     &         INDXPR,ISYXPR,ITRXPR,IPRCAP)
       IPCAP_DV = INDXPR
 
       IF (IPRCAP.GE.2) THEN

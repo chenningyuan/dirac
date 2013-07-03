@@ -366,10 +366,10 @@ C
 C
       SAVE SET
       DATA SET/.FALSE./
-      DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
+      DATA TABLE /'.PRINT ','.XXXXXX','.ANALYZ','.OPERAT',
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
-     &            '-------','-------','.INTFLG','-------',
+     &            '.EPOLE ','.MPOLE ','.INTFLG','-------',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
@@ -483,17 +483,17 @@ C&&&& PRINT:  Print level
                   READ(LUCMD,*) IPRXPP
                GO TO 100
     2          CONTINUE
-C&&&& A OPERATOR: transition moment operator
-    4          CONTINUE
-C&&&& OPERATOR: = A OPERATOR here
-                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
-                  CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
-     &                        MAXLPP)
                GO TO 100
     3          CONTINUE
 C&&&& ANALYZe: Analyze individual contributions to repsonse functions
                   XPPANA = .TRUE.
+               GO TO 100
+    4          CONTINUE
+C&&&& OPERATOR: operator of transition moment
+                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
+     &                        WORK,LWORK,IPRXPP)
+                  CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
+     &                        MAXLPP)
                GO TO 100
     5          CONTINUE
 C&&&& EXCITAtions - how many roots in symmetry I
@@ -527,14 +527,36 @@ C&&& E2CHEK: explicit contruction of the electronic Hessian E2
                XPP_E2CHEK = .TRUE.
                GOTO 100
  12            CONTINUE
-C&&&& XPPNRM: normalize trial vectors
+C&&&& NONORM: normalize trial vectors
                  XPPNRM = .FALSE.
                GOTO 100
-C&&&&
  13            CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+               NPPAPT = NPPAPT + NDEG
                GOTO 100
-C&&&&
  14            CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L 
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+               NPPAPT = NPPAPT + NDEG
                GOTO 100
 C&&&& INTFLG: specify what two-electron integrals to include
  15            CONTINUE

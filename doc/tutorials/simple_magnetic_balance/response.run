@@ -1,1 +1,1 @@
-pam --inp=response.inp --mol=hf.mol --put=DFCOEF
+pam --inp=response.inp --mol=hf.mol --incmo

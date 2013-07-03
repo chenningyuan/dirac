@@ -4,7 +4,7 @@
 GRASP computer exercises
 ************************
 
-The follwoing exercises are to be done in groups of 2-3 students each group covering different groups/atoms of the periodic table of elements.
+The following exercises are to be done in groups of 2-3 students. Each group shall cover different groups/atoms of the periodic table of elements.
 At the end of the day, all groups should give a short presentation on their findings to the other groups.
 
 In order to run a GRASP calculation you need an input file of arbitrary name, e.g. :file:`grasp.inp` which will be setup in the
@@ -150,9 +150,9 @@ Spin-orbit mixing within a group
 
 **Questions**:
 
-1. Does the singlet-triplet mixing (*state interaction*) increase/decrease with increasing *Z*?
+1. Does the singlet-triplet mixing (*state interaction*) increase or decrease with increasing *Z*?
 
-2. How much of the ground state is described by the p :math:`_{1/2}^{2}` configuration with increasing *Z*?
+2. How much of the ground state is described by the :math:`p_{1/2}^{2}` configuration with increasing *Z*?
 
 Speed of light and the non-relativistic limit
 ---------------------------------------------

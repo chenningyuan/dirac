@@ -1,0 +1,4 @@
+pcm-levy-polarizability.inp   CH4.mol --put @pcmsolver.inp
+pcm-levy-polarizability.inp   H2O.mol --put @pcmsolver.inp
+pcm-dc-polarizability.inp     CH4.mol --put @pcmsolver.inp
+pcm-dc-polarizability.inp     H2O.mol --put @pcmsolver.inp

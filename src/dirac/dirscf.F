@@ -149,7 +149,7 @@ C
 C     Output section
 C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+     &            LFREE,IPRSCF)
 
 CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
@@ -262,7 +262,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
      &        WORK(KFREE),LFREE)
 
          CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+     &            LFREE,IPRSCF)
         ELSE
          DHFCONV(1)=.TRUE.
         ENDIF
@@ -308,7 +308,7 @@ CMI ... consider TRMO4C2C ...???
 C         ... need to reset them...
           DHFCONV(1)=.FALSE.
           DHFCONV(2)=.FALSE.
-          DHFEXIT=.FALSE.
+          DHFEXIT   =.FALSE.
 
 CMI    ...remove some files from the previous 4c-SCF cycle ...
           INQUIRE(FILE='DFDIIS',EXIST=EX)
@@ -329,7 +329,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
      &          WORK(KFREE),LFREE)
 
           CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &              LFREE,IPRINT)
+     &              LFREE,IPRSCF)
 
           CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
@@ -428,7 +428,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
-      CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRINT)
+      CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
@@ -598,8 +598,9 @@ C
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_dirac_set_nz(nz)
+!          call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
 
            tdfde =  second() - tdfde
         endif
@@ -694,7 +695,8 @@ C
            end do
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &          work(kfree), lfree)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1039,7 +1041,7 @@ C
 C     Level shift
 C     ===========
 C
-      IF(DOLEV) CALL LEVSHI(FMO,FAO)
+      IF (DOLEV) CALL LEVSHI(FMO,FAO)
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -1477,8 +1479,9 @@ C
 #ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_dirac_set_nz(nz)
+!          call fde_calculate_embpot(ntbas(0),dmat,fock)
+           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
            tdfde = second() - tdfde
         endif
 #endif
@@ -1620,7 +1623,8 @@ C
            write(lupri,'(a)') '* Calling pcm_fock_driver'
 ! fock is the 2-el Fock matrix
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, work(kfree), lfree)
+           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+     &              work(kfree), lfree)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1911,7 +1915,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, work, lwork)
+        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif
@@ -2544,7 +2548,7 @@ C
            IF (NISHT .GT. 0) THEN
               E1PART = E1PART + D2*DSUM(NISH(IFRP),
      &                         EIG(IORB(IFRP)+NPSH(IFRP)+1),1)
-              IF (IPRSCF.GE.15) THEN
+              IF (IPRSCF.GE.5) THEN
                write(lupri,*) 'ONEERG: eigenvalues:',
      &          (EIG(IORB(IFRP)+NPSH(IFRP)+i),i=1,NISH(IFRP))
                write(lupri,*) '2*sum: ',D2*DSUM(NISH(IFRP),
@@ -2584,7 +2588,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
-      SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,WORK,LWORK)
+      SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD)
 C**********************************************************************
 C
 C     PURPOSE:
@@ -2595,14 +2599,17 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION WORK(LWORK),CMO(*),EIG(*),IBEIG(*)
+      DIMENSION CMO(*),EIG(*),IBEIG(*)
       DIMENSION IMOORD(MXREORD,2),IREORD(2)
+
+      real(8), allocatable :: cmo_save(:)
+      real(8), allocatable :: eig_save(:)
+      integer, allocatable :: ibeig_save(:)
+
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-C
-#include "memint.h"
 C
       CALL QENTER('REORD')
 C
@@ -2627,24 +2634,27 @@ C
 C
 C        Save coefficients
 C
-         CALL MEMGET('REAL',KTCMO,NCMOQ(I),WORK,KFREE,LFREE)
-         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,WORK(KTCMO),1)
-         CALL MEMGET('REAL',KTEIG,NORB(I),WORK,KFREE,LFREE)
-         CALL DCOPY(NORB(I),EIG(1+IORB(I)),1,WORK(KTEIG),1)
-         CALL MEMGET('INTE',KTIBE,NORB(I),WORK,KFREE,LFREE)
-         CALL ICOPY(NORB(I),IBEIG(1+IORB(I)),1,WORK(KTIBE),1)
+         allocate(cmo_save(ncmoq(i)))
+         allocate(eig_save(norb(i)))
+         allocate(ibeig_save(norb(i)))
+
+         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,cmo_save,1)
+         CALL DCOPY(NORB(I),EIG(1+IORB(I)),1,eig_save,1)
+         CALL ICOPY(NORB(I),IBEIG(1+IORB(I)),1,ibeig_save,1)
 C
 C        Reorder coefficients
 C
-         CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTCMO),
-     &              EIG(1+IORB(I)),WORK(KTEIG),
-     &              IBEIG(1+IORB(I)),WORK(KTIBE),
+         CALL REOR1(CMO(1+ICMOQ(I)),cmo_save,
+     &              EIG(1+IORB(I)),eig_save,
+     &              IBEIG(1+IORB(I)),ibeig_save,
      &              NFBAS(I,0),NORB(I),NZ,
      &              IMOORD(1,I),IREORD(I),NPSH(I),NESH(I))
 C
 C        Release memory
 C
-         CALL MEMREL('REORD',WORK,KWORK,KWORK,KFREE,LFREE)
+         deallocate(cmo_save)
+         deallocate(eig_save)
+         deallocate(ibeig_save)
 C
          IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: after reordering',-1)
@@ -3782,7 +3792,7 @@ C
       DIMENSION IEIGMIN(2)
       logical   symmetry_broken
       integer, save :: icharge       = 0
-      integer       :: total_num_e
+      integer       :: total_num_e, nish_save(2),nash_save(2)
 
 !     radovan: the check below is skipped if fndocc is called from visual
 !              this is to avoid modification of occupation if converged homo-lumo gap
@@ -3813,7 +3823,9 @@ C
       
 !     initialize arrays
       DO I = 1,NFSYM
-         IEIGMIN(I)     = 1+IORB(I) + NPSH(I)
+         nish_save(I)   = NISH(I)
+         nash_save(I)   = NASH(I)
+         IEIGMIN(I)     = IORB(I) + NPSH(I) + 1
          NISH(I)        = 0
          NASH(I)        = 0
          NACSH(I,1)     = 0
@@ -3856,7 +3868,7 @@ C
  190  IF (NAELEC_DHF .gt. 0) THEN
          IEIGSYM          = 0
  200     IEIGSYM          = IEIGSYM + 1
-            IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
+      IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
          J                = IEIGSYM
          DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
@@ -3877,6 +3889,15 @@ C
            call check_for_symmetry_broken_occupations(eig,nish,nash,
      &                             norb,norbt,ieigsym,nfsym,ieigmin,
      &                             total_num_e,symmetry_broken)
+           if (symmetry_broken) then
+           !  symmetry broken compared to aufbau, is it also symmetry broken
+           !  compared to previous SCF iteration ???
+              symmetry_broken = .false.
+              do i = 1,nfsym
+                 if (nish(i) .ne. nish_save(i)) symmetry_broken = .true.
+                 if (nash(i) .ne. nash_save(i)) symmetry_broken = .true.
+              end do
+           end if
          end if
       end if
 !
@@ -3916,6 +3937,12 @@ C***********************************************************************
 !     purpose: detect symmetry-broken solutions when using the
 !     Aufbau principle to set-up an (initial) electronic configuration.
 !
+!     In other words: detect if degenerate orbitals not all have same
+!     occupation.
+!
+!     Redistribute electrons to not break symmetry by using
+!     average-of-configurations (AOC), if needed.
+!
 !     written by s. knecht - jan 2011
 !
 !***********************************************************************
@@ -3935,7 +3962,7 @@ C***********************************************************************
       integer, intent(inout) :: nish(nfsym), nash(nfsym), norb(nfsym)
       integer, intent(inout) :: ieigmin(nfsym)
       logical, intent(inout) :: symmetry_broken
-      integer, intent(in)    :: total_num_e
+      integer, intent(in)    :: ieigsym_last_occ,total_num_e
 
       real(8), allocatable :: eig_deg(:)
       integer, allocatable :: ieig_deg(:)
@@ -3956,7 +3983,8 @@ C***********************************************************************
 
 !     initialize the last Kramers-pair in which electron(s) was (were) put 
       ilast           = ieigmin(ieigsym_last_occ) - 1
-      naelec_dhf_save = naelec_dhf
+
+      naelec_dhf_save = naelec_dhf ! =0 if number of electrons is even, =1 if odd
 
       call alloc(ieig_deg,max_degeneracy,
      &           id='pointer to degenerate orbs')
@@ -4869,6 +4897,19 @@ C
 C     Written by T. Saue July 4 2006
 C
 C  MI July 6,2006: Requires DFCOEF with written MO's
+!
+!     sknecht: attempt to change level shift for closed-shell cases: i do not understand 
+!              the old implementation below but apparently it is ok. 
+!              my "intuitive solution" via shift_virtuals that is according
+!              to the paper cited below is wrong. 
+!              the diagonal elements of the Fock matrix in MO basis do NOT
+!              seem to roughly correspond to the orbital energies even when damping/diis/differential density matrix 
+!              options are turned off... can anyone explain it to me what is wrong with my idea/approach? 
+!              the way i intend to do it is exactly the same as it is done+working 
+!              in Turbomole (my reference check) and ReSpect (where i implemented it)
+!              for further information check: 
+!              V. R. Saunders and I. H. Hillier, 
+!              A “Level–Shifting” method for converging closed shell Hartree–Fock wave functions, IJQC, 7, p699-705 (1973).
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4903,7 +4944,19 @@ C
           ISTART = ISTART + NACSHMF(I,IOPEN)
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
-        IF(DLSHIF.NE.D0) THEN
+        IF(DLSHIF.GT.D0) THEN
+
+!         CALL HEADER(
+!    &   'shift virt:Ferm.symm.blocked MO matrix to be diagonalized',-1)
+!         WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+!    &    '*** Fermion corep ',I,'/',NFSYM
+!        CALL PRQMAT(FMO(1+I2TMOT(I)),
+!    &    NTMO(I),NTMO(I),NTMO(I),NTMO(I),
+!    &    NZ,IPQTOQ(1,0),LUPRI)
+
+!         call shift_virtuals(fmo(I2TMOT(I)+1),nz,ntmo(i),
+!    &                        istart,dlshif)
+
           CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
@@ -4914,6 +4967,29 @@ C
       CALL QEXIT('LEVSHI')
       RETURN
       END
+
+      subroutine shift_virtuals(fock,nz,lrc,offset,shift)
+      implicit none
+      !input/output  
+      real(8), intent(inout) :: fock(lrc,lrc,nz)
+      real(8), intent(in)    :: shift
+      integer, intent(in)    :: nz
+      integer, intent(in)    :: lrc
+      integer, intent(in)    :: offset
+
+      ! local variables
+      integer                :: i, j
+      
+      print *, 'total dimension: lrc + offset',lrc, offset
+      do i = 1, nz
+        do j = offset, lrc
+          print *, 'fock before lshift: j,i ',j,i,fock(j,j,i)
+          fock(j,j,i) = fock(j,j,i) + shift
+          print *, 'fock after lshift:  j,i ',j,i,fock(j,j,i)
+        end do
+      end do
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE UNDOLEVSHI(EIG)
 C***********************************************************************
