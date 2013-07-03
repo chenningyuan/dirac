@@ -3953,7 +3953,7 @@ implicit none
   nsym=nsym+1 ! increase counter ...
   go to 110 ! read again
 
-! end of reading
+! end of reading, decrease nsym...
   120 nsym=nsym-1
 
 !  ----   fill ibias, ici   ----- 
