@@ -24,5 +24,6 @@ New features in DIRAC13
 New defaults
 ------------
 
-* if linked to MKL and nr of MKL threads not set, we quit with clear message what to do
-* OMP threads should be set to 1
+* The pam script sets MKL_NUM_THREADS=1, MKL_DYNAMIC="FALSE",
+  OMP_NUM_THREADS=1, and OMP_DYNAMIC="FALSE" unless these variables are set by
+  the user.
