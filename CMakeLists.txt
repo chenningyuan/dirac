@@ -90,7 +90,6 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
-add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
@@ -216,6 +215,8 @@ add_library(
     ${DIRAC_SOURCES}
     ${GENERATED_FILES}
     )
+
+add_dependencies(dirac run_pamadm)
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)

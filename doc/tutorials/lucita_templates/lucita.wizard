@@ -12,7 +12,7 @@
 .LVCORR
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .LUCITA
 *SCF
 # here we insert the number of electrons for the closed shell

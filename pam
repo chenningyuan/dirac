@@ -823,6 +823,12 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
+        else:
+            dirac_num_mpi_threads = os.environ.get('DIRAC_NUM_MPI_THREADS')
+            if dirac_num_mpi_threads != None:
+                if dirac_num_mpi_threads > 1:
+                    self.nr_proc = dirac_num_mpi_threads
+                    self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -998,6 +1004,27 @@ Options are also read from ~/.diracrc"""
         else:
             # assign default name
             self.output_name = 'dirac_output.' + str(self.current_pid)
+
+
+    def set_environment_variables(self):
+        '''
+        set OMP and MKL environment variables to safe defaults
+        unless they are set by the user where we leave them as
+        they are and trust that the user knows what he/she is doing
+        '''
+        if not os.environ.get('MKL_NUM_THREADS'):
+            os.environ['MKL_NUM_THREADS'] = '1'
+            print('  Setting MKL_NUM_THREADS=1')
+        if not os.environ.get('MKL_DYNAMIC'):
+            os.environ['MKL_DYNAMIC'] = 'FALSE'
+            print('  Setting MKL_DYNAMIC="FALSE"')
+        if not os.environ.get('OMP_NUM_THREADS'):
+            os.environ['OMP_NUM_THREADS'] = '1'
+            print('  Setting OMP_NUM_THREADS=1')
+        if not os.environ.get('OMP_DYNAMIC'):
+            os.environ['OMP_DYNAMIC'] = 'FALSE'
+            print('  Setting OMP_DYNAMIC="FALSE"')
+
 
     def copy_files(self):
         '''copies file from the home directory to the scratch directory'''
@@ -1648,6 +1675,7 @@ class pam_run(pam_enviroment):
             self.pam_variables.show_settings()
             sys.exit()
         self.pam_variables.print_header()
+        self.pam_variables.set_environment_variables()
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
