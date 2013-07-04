@@ -1213,6 +1213,11 @@ Options are also read from ~/.diracrc"""
                     + str(self.nr_proc) + ' '
 
             # add extra mpi arguments
+            if self.machinefile == None:
+                self.dirac_cmd += ' '
+            else: 
+                self.dirac_cmd += '--hostfile ' + self.machinefile + ' '
+
             if self.mpiarg:
                 self.dirac_cmd += self.mpiarg + ' '
 
