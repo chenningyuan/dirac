@@ -580,7 +580,8 @@ C
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
-      integer :: verbose = 0
+      integer :: verbose    = 0
+      integer :: ncore_elec = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -641,7 +642,7 @@ C
 C
 C     Read symmetry information
 C
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
@@ -707,7 +708,7 @@ C
       ENDDO
 
 !     total charge of the system
-      call get_charge_cc(mycharge,nelect) 
+      call get_charge_cc(mycharge,nelect,ncore_elec)
 C
       if ( maxcor .gt. 0) then
       WRITE (IW,1004) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
@@ -3799,7 +3800,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
+      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
@@ -3819,6 +3820,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
+      integer ncore_elec
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3833,17 +3835,27 @@ C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
+      integer   :: spinor_info(5,2)
 C
 C---------------Executable code--------------------------------------
 C
-C     Read symmetry information (master node only)
+C     Read symmetry and spinor information (master node only)
+C
+      spinor_info(1:5,1:2) = 0
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP)
+     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+     &                 (spinor_info(1,irp),irp=1,nfsym), 
+     &                 (spinor_info(2,irp),irp=1,nfsym), 
+     &                 (spinor_info(3,irp),irp=1,nfsym), 
+     &                 (spinor_info(4,irp),irp=1,nfsym), 
+     &                 (spinor_info(5,irp),irp=1,nfsym)
+       ncore_elec = 0
+       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
@@ -4366,17 +4378,17 @@ C
 C
       RETURN
       END
-      subroutine get_charge_cc(mycharge,nelect_cc)
+
+      subroutine get_charge_cc(mycharge,nelect_cc,ncore_elec_cc)
       implicit none
-#include "dcborb.h"
       integer, intent(inout) :: mycharge
       integer, intent(in)    :: nelect_cc
+      integer, intent(in)    :: ncore_elec_cc
       integer                :: charge
-      charge = 0
+      charge   = 0
       call rmolchr(charge)
-      mycharge = charge - nisht*2 + nelect_cc
-      print *, 'charge, nisht*2, nelect_cc, mycharge',
-     & charge, nisht*2, nelect_cc, mycharge
- 
+      mycharge = charge - (ncore_elec_cc + nelect_cc)
+!     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
+!    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
 
