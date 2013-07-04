@@ -705,12 +705,17 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+
+!     total charge of the system
+      call get_charge_cc(mycharge,nelect) 
 C
       if ( maxcor .gt. 0) then
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1004) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
       else
-      WRITE (IW,1414) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1414) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
 C     
@@ -888,6 +893,7 @@ C
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -900,6 +906,7 @@ C
      &        /" Memory limit (MWord) not set in Dirac but by the OS"
      &        /" Interface used       :",T40,A10//)
 1004  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -4359,4 +4366,17 @@ C
 C
       RETURN
       END
+      subroutine get_charge_cc(mycharge,nelect_cc)
+      implicit none
+#include "dcborb.h"
+      integer, intent(inout) :: mycharge
+      integer, intent(in)    :: nelect_cc
+      integer                :: charge
+      charge = 0
+      call rmolchr(charge)
+      mycharge = charge - nisht*2 + nelect_cc
+      print *, 'charge, nisht*2, nelect_cc, mycharge',
+     & charge, nisht*2, nelect_cc, mycharge
+ 
+      end subroutine
 
