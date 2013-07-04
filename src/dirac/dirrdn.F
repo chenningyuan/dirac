@@ -994,8 +994,8 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-CTROND      NOQCDHF   = .FALSE.
-      NOQCDHF   = .TRUE.
+      NOQCDHF   = .FALSE.
+C      NOQCDHF   = .TRUE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
@@ -1800,7 +1800,10 @@ C
          NFROT_DHF  = NFRO_DHF(1)  + NFRO_DHF(2)
          NELECT_DHF = NELEC_DHF(1) + NELEC_DHF(2)
       END IF
-      IF(NASHT_DHF.EQ.0) AOC = .FALSE.
+      IF(NASHT_DHF.EQ.0) THEN
+        AOC     = .FALSE.
+        NOQCDHF = .FALSE.
+      ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
