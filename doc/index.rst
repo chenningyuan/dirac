@@ -60,6 +60,7 @@ Tutorials and walkthrus
 =======================
 
 * **Basis sets:**
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas.rst>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
@@ -111,6 +112,9 @@ Tutorials and walkthrus
 * **ECP:**
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **Utility programs:**
+  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
