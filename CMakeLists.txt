@@ -217,6 +217,7 @@ add_library(
     )
 
 add_dependencies(dirac run_pamadm)
+add_dependencies(dirac generate_binary_info)
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
