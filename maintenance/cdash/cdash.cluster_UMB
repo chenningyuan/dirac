@@ -18,8 +18,8 @@ echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 # My own OpenMPI Intel
 #export PATH=/home/milias/bin/openmpi/bin:$PATH
 #export LD_LIBRARY_PATH=/home/milias/bin/openmpi/lib:$LD_LIBRARY_PATH
-export PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/bin:$PATH
-export LD_LIBRARY_PATH=/home/milias/bin/openmpi_1.6.4_intel_ilp64/lib:$LD_LIBRARY_PATH
+export PATH=/home/milias/bin/openmpi_1.6.4_intel_i32lp64/bin:$PATH
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi_1.6.4_intel_i32lp64/lib:$LD_LIBRARY_PATH
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
