@@ -109,7 +109,7 @@ The generally non-zero elements of the gradient vector are:
 - inter-shell active-active rotations
 .. math:: 
 
-  quad g_{uv}=(f_U-f_V)F^I_{vu}-(\alpha_U-1)f_UQ^U_{vu}-(\alpha_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
+  \quad g_{uv}=(f_U-f_V)F^I_{vu}-(\alpha_U-1)f_UQ^U_{vu}-(\alpha_V-1)f_VQ^V_{vu};\quad u\in U,\ v\in V
 
 where we have introduced 
 

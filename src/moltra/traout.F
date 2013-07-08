@@ -357,7 +357,6 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -378,10 +377,10 @@ C
          RCW = 2
       ENDIF
 C
-      call alloc(FTMAT,NKL,RCW)
-      call alloc(  RKL,NKL,RCW)
-      call alloc(INDK ,NKL)
-      call alloc(INDL, NKL)
+      allocate(FTMAT(NKL,RCW))
+      allocate(  RKL(NKL,RCW))
+      allocate(INDK(NKL))
+      allocate(INDL(NKL))
 C
       IF (SPINFR) THEN
 C
@@ -514,10 +513,10 @@ C
 C
       ENDIF ! spinfree
 C
-      call dealloc(FTMAT)
-      call dealloc(RKL)
-      call dealloc(INDK)
-      call dealloc(INDL)
+      deallocate(FTMAT)
+      deallocate(RKL)
+      deallocate(INDK)
+      deallocate(INDL)
 C
       RETURN
       END

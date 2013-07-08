@@ -142,7 +142,7 @@ program DIRAC12_PROGRAM
      write(lupri, '(//a)') 'Binary information'
      write(lupri, '(a/)')  '------------------'
 
-     call print_binary_info()
+     call print_binary_info(lupri)
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info

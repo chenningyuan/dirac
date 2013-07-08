@@ -38,7 +38,7 @@ C
 C     Output:
 C        OCCNO - natural orbital occupation numbers
 C        UNO   - transformation matrix
-C        MOISNO - MO orbitals was already NO orbitals.
+C        MOISNO - MO orbitals were already NO orbitals.
 C        CMO   - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
@@ -125,7 +125,6 @@ C
         CALL NEWLAB('MC  DENS',lunii,LUPRI)
         CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
         CLOSE(Unit=lunii,Status='KEEP')
-        goto 100
       end if
 C
 C     Calculate max off-diagonal elements of density matrix
@@ -175,9 +174,11 @@ C     Diagonalize density matrix
 C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
-      if(save_reordered_nos)then
-!       to not destroy some U2 MCSCF/GASCI stuff...
-        if(ngas_dc > 2) call gasno(work(kdv))
+      if(.not.save_1pdens)then
+        if(save_reordered_nos)then
+!         to not destroy some U2 MCSCF/GASCI stuff...
+          if(ngas_dc > 2) call gasno(work(kdv))
+        end if
       end if
 
       IF (.NOT. MOISNO) THEN
@@ -247,11 +248,19 @@ C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
             WRITE(LUPRI,'(//A/A/A)')
-     &' **************************************************************',
-     &' *************** CI natural orbital calculation ***************',
-     &' **************************************************************'
+     &' ***************************************************',
+     &' *************** CI natural orbitals ***************',
+     &' ***************************************************'
+         WRITE(LUPRI,'(//A,I3,/A)')
+     &        '   Natural orbital occupation numbers for state:', 
+     &            IDENSLR_STATE,
+     &        '   ------------------------------------------------'
+         ELSE
+            WRITE(LUPRI,'(//A/A/A)')
+     &' ***************************************************',
+     &' *************** MCSCF natural orbitals ************',
+     &' ***************************************************'
          END IF
-         ICI_RT = IDENSLR_STATE
 C        
 C        save occupancies for later use 
          DO I = 1, NFSYM
@@ -265,30 +274,40 @@ C        save occupancies for later use
              CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
            END IF
          END DO
-         WRITE(LUPRI,'(//A,I3,/A)')
-     &        '   Natural orbital occupation numbers for state:',ICI_RT,
-     &        '   ------------------------------------------------'
          DO I = 1, NFSYM
             NOCCI = NOCC(I)
             IF (NOCCI .EQ. 0) THEN
                WRITE(LUPRI,9001) I
             ELSE
+               NISHI = NISH(I)
+               NASHI = NASH(I)
                IOCCI = IOCC(I)
+               IOCCA = IOCCI + NISHI
                OCCSUM = DSUM(NOCCI,OCCNO(IOCCI+1),1)
-               WRITE(LUPRI,9002) I, (OCCNO(IOCCI+J),J=1,NOCCI)
-               WRITE(LUPRI,9003) OCCSUM
+               IF (NASHI .GT. 0) THEN
+                  WRITE(LUPRI,9002) I, (OCCNO(IOCCA+J),J=1,NASHI)
+                  OCCSUMA = DSUM(NASHI,OCCNO(IOCCA+1),1)
+               ELSE
+                  OCCSUMA = 0.0D0
+               END IF
 
-               CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),NOCCI,NOCCI,0,-1)
-               WRITE(LUPRI,9004) I, (OCCNO(IOCCI+J),J=1,NOCCI)
+               WRITE(LUPRI,9003) OCCSUM-OCCSUMA,OCCSUMA,OCCSUM
+
+               IF (NASHI .GT. 0) THEN
+                  CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),
+     &               NOCCI,NOCCI,0,-1)
+                  WRITE(LUPRI,9004) I, (OCCNO(IOCCA+J),J=1,NASHI)
+               END IF
             END IF
          END DO
       END IF
 C
- 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
- 9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
- 9003 FORMAT(/'   Sum =',T15,F14.9)
- 9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9))
+ 9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
+ 9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
+     &      //,(5F14.9))
+ 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
+     &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
@@ -1676,7 +1695,10 @@ C             length gauge
               IF( MZ .eq. 2 )
      &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-              XMOM          = DCMPLX(XREAL,XCOMP)
+              XMOM          = XREAL
+              if(mz.eq.2)then
+                xmom        = dcmplx(xreal,xcomp)
+              end if
               OSCL(IPRP)    = XMOM
               OSCLABS(IPRP) = ABS(XMOM)
             END DO

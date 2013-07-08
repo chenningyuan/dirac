@@ -486,8 +486,6 @@
                   call quit('.OPTIMIZE not supported with xyz format')
               end if
 
-              print *, 'raboof optimi', OPTIMI
-
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               IF (section(2)=='*SYMMETRY'.AND.                          &
      &            section(3)=='.NOSYM') THEN

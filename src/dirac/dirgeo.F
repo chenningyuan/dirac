@@ -106,6 +106,10 @@ C     To avoid readin twice in the 0. iteration skip
 C     the readin/setup.
 C
 C     Input and initialization
+
+C     Always do wave function (implicit .WAVE FUNCTION parameter)
+      DOPSI = .TRUE.
+
 C
       IF ( FIRST ) THEN
          FIRST = .FALSE.
@@ -130,8 +134,6 @@ C******************************************************************************
 C*****  G E T    W A V E    F U N C T I O N   *********************************
 C******************************************************************************
 C
-C     Always do wave function
-      DOPSI = .TRUE.
 C
 C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
@@ -143,7 +145,7 @@ C*****************************************************************************
 C*****  A N A L Y S I S    M O D U L E  **************************************
 C*****************************************************************************
 C
-      IF(DOANA) CALL PAMANA()
+      IF (DOANA) CALL PAMANA()
 C
 C
 C*****************************************************************************

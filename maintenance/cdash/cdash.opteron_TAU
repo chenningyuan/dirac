@@ -3,7 +3,6 @@
 # cron prescription
 #15 00 * * 1,2,3,4,5,6,7   . /etc/profile; . /etc/bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};  echo "running dirac CDash buildup at "$timestamp; DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.opteron.ompi_ifort.gcc.mkl.ilp64  > $DIRAC/maintenance/CDash_buildup_log_$timestamp 2>&1 || {echo "cront initiated command failed at" $timestamp}
 
-
 # for cron&queue system you have to set up enviroment !
 # own python 2.7.1
 export PATH=/home/miro/bin/python/Python-2.7.1:$PATH
@@ -23,30 +22,16 @@ BUILD_STATIC=build_ifort_ilp64_static
 cd $DIRAC
 
 # configure step
-#./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90  --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --math="-L/opt/intel/mkl/10.0.3.020/lib/em64t -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build-dir=$BUILD 
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi=on -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64=on -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD
+#
+./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 $BUILD
+#./setup --fc=ifort  --cc=gcc  --cxx=g++ -D BUILDNAME="opteron_ifort_ilp64_serial_STATIC" --int64 --static -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_STATIC
 #
 cd $BUILD
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
-
-#####
-export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-if [[ -d "$BUILD_STATIC" ]]; then
-  echo "deleting previous build directory $BUILD_STATIC"
-  /bin/rm -rf $BUILD_STATIC
-fi
-./setup --fc=ifort  --cc=gcc  --cxx=g++ -D BUILDNAME="opteron_ifort_ilp64_serial_STATIC" --int64=on -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_STATIC
-#
-cd $BUILD_STATIC
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
