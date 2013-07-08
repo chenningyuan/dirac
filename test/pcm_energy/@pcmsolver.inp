@@ -3,9 +3,11 @@ TAG F KW 1
 STR Units 1 True
 AU
 SECT Cavity 0 True
-TAG F KW 10
+TAG F KW 11
 DBL Area 1 True
 357.106482748
+STR RadiiSet 1 False
+Bondi
 DBL Coarsity 1 False
 0.5
 INT_ARRAY Atoms 0 False
