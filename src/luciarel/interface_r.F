@@ -1412,8 +1412,11 @@ C     NOINT_FILE = .TRUE.
         end if
         ITPSV = 0
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1) 
-     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
+          if (NTEST.ge.1)then
+            write(LUINGR,'(A)') 'INTEGRAL FILE'
+            call dump_integral_info(f1,f2,IRI,nasht/2,NASHT,nz,
+     &                              irilp,ipqtoq(1,0),luingr)
+          end if
         end if
 
  
@@ -1928,10 +1931,10 @@ C FIXME !! Uncommented sign here!!
      &                              'INTEGRALs: YINT,YXINT,YINT-YXINT',
      &                                          YINT,YXINT,YINT-YXINT
 *                               write integral to file (for debugging):
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
                                 if (IXCH.eq.0) then
                                   write(LUINGR,'(I4,4X,4I3,1F18.14)') 
      &                                  ICOUNT_I8,INDEX(1),
@@ -2002,6 +2005,50 @@ C
 #undef LUCI_DEBUG
       end
 ***********************************************************************
+      subroutine dump_integral_info(h1,h2ac,iri,nashth,nasht,nz,
+     &                              irilp,ipqtoq,luwrt)
+
+!     dump all 1e/2e integrals on file INTEGRALS in nice format
+
+      implicit none
+!     input
+      real(8), intent(in)    :: h1((2*nasht)**2 * irilp)
+      real(8), intent(in)    :: h2ac(nashth,nashth,
+     &                              (nashth*(nashth+1))/2,nz,*)
+      integer, intent(in)    :: iri, irilp,nashth, nasht, nz, luwrt
+      integer, intent(in)    :: ipqtoq(4,0:7)
+
+!     scratch
+      integer                :: i, j , ii, jj
+
+      write(luwrt,'(/A)')' print of unsorted integrals from MOLTRA'
+      write(luwrt,'(A/)')' ---------------------------------------'
+
+      ! 1e-integrals
+      write(luwrt,'(a/)') ' list of 1e-integrals'
+      write(luwrt,'(a)' ) ' indices         elements       '
+      write(luwrt,'(a)' ) '--------------------------------'
+      do i = 1, nasht
+        do j = 1, nasht
+          ii = i
+          jj = j
+          if(i > nashth) ii = -(i-nashth)
+          if(j > nashth) jj = -(j-nashth)
+          write(luwrt,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,h1(((iri-1)*((nasht)**2))+(j-1)*nasht + i)
+        end do  
+      end do 
+
+      ! 2e-integrals
+      write(luwrt,'(/A)')' list of 2e-integrals in (NZ,3) format'
+      call prdnz3(h2ac(1,1,1,1,1),nashth,(nashth*(nashth+1))/2,nz,
+     &            ipqtoq(1,0),luwrt)
+
+      write(luwrt,'(/A)')' start of sorted integrals for KRCI'
+      write(luwrt,'(A/)')' ----------------------------------'
+
+      end 
+***********************************************************************
 
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,NASHT,NNASHX,H2AC,IPRNT)
 !
@@ -2029,7 +2076,7 @@ C
         INDEX_LOC(IL) = INDEX(IL)
       end do
 *
-      NTESTL = 0
+      NTESTL = 000
       NTEST = max(NTESTL,IPRNT/100)
 *
       if (IRI.eq.1) then
@@ -2248,7 +2295,24 @@ C***********************************************************************
       WRITE(6,*) '  Compound index dimension: ',NNASHX
       WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
       WRITE(6,*) '1-el. integral array in GETIND_NTS:'
-      CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+!     CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+      if(iri == 1)then
+        write(6,'(a/)') ' real part of 1e-integrals'
+      else
+        write(6,'(a/)') ' imaginary part of 1e-integrals'
+      end if
+      write(6,*) ' indices         elements       '
+      write(6,*) '--------------------------------'
+      do i = 1, nasht * 2
+        do j = 1, nasht * 2
+          ii = i
+          jj = j
+          if(i > nasht) ii = -ii
+          if(j > nasht) jj = -jj
+          write(6,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,DMFC(((IRI-1)*n2ashx2)+(j-1)*nasht*2 + i)
+        end do  
+      end do  
 #endif
 !#undef LUCI_DEBUG
 !
@@ -2304,7 +2368,7 @@ C***********************************************************************
       write(6,*) '1-electron integral.'
       write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
 #endif
-!#undef LUCI_DEBUG
+#undef LUCI_DEBUG
       end
 ***********************************************************************
 

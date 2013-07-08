@@ -27,5 +27,5 @@
      &                 IPRNGD,IPRNLD,IDENSD,MXHL1D,MXEL3D,INGASD,NSEQCD,&
      &                 IRSTLT, MXCIVE, IPARMODEL, ICIMAXITER,           &
      &                 IMAXBLKSIZE, I_USE_DIST_ROUTE, IN_MEMFAC
-      REAL*8 CTRUNC_FAC
-	COMMON /LUCTINFR/ CTRUNC_FAC
+      REAL*8 CTRUNC_FAC, my_convergence
+	COMMON /LUCTINFR/ CTRUNC_FAC, my_convergence

@@ -5,8 +5,8 @@ module fde_nadd_derv
 
 #ifdef MOD_UNRELEASED
 
-      use xc_max_block_length
-      use emb_xcfun_interface
+      use fde_max_block_length
+      use fde_xcfun_interface
 
       public fde_initialize_nadd_functionals
       public fde_print_nadd_functionals

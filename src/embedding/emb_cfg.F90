@@ -23,7 +23,43 @@ module fde_cfg
 ! this module holds all options for the embedding code, and routines to set/access
 ! this information
 
-   use fde_types
+   type fde_export
+      character(len=4) :: ex_level
+      character(len=3) :: ex_format
+      logical          :: ex_n
+      logical          :: ex_gn
+      logical          :: ex_coulomb
+      logical          :: do_grid_out
+   end type
+   
+   type fde_import
+      character(len=4) :: im_level
+      character(len=3) :: im_format
+      logical          :: im_n
+      logical          :: im_gn
+      logical          :: im_coulomb
+      logical          :: im_vemb
+      logical          :: im_frozen
+      logical          :: im_update_vemb
+   end type
+
+   type fde_file
+      character(len=60) :: name
+      integer           :: unit
+   end type
+   
+   type fde_files
+      type(fde_file) :: embpot
+      type(fde_file) :: frozen
+      type(fde_file) :: export
+      type(fde_file) :: test
+      type(fde_file) :: logfile
+   end type
+
+   public fde_export
+   public fde_import
+   public fde_file
+   public fde_files
 
    public fde_initialize_cfg
    
@@ -42,9 +78,9 @@ module fde_cfg
 
    private
 
-   integer, save :: fde_print_level = 0
+   integer, save      :: fde_print_level   = 0
    real(kind=8), save :: fde_cfg_screening = 1.0d-9
-   logical,save :: parallel_fde = .false.
+   logical, save      :: fde_is_parallel   = .false.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control

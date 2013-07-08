@@ -29,6 +29,12 @@ module xmlout
   integer, parameter :: max_tag_len = 256
   integer :: depth
   character(max_tag_len) :: tag_stack(max_depth) = ' '
+
+  interface xml_quantity
+      module procedure xml_real
+      module procedure xml_integer
+  end interface
+
   contains
     function xml_newid()
       integer xml_newid
@@ -98,7 +104,7 @@ module xmlout
       logical :: isOpen
       
       integer, parameter :: MIN_UNIT_NUMBER = 10
-      integer, parameter :: MAX_UNIT_NUMBER = 99
+      integer, parameter :: MAX_UNIT_NUMBER = 399
       
       do unit = MAX_UNIT_NUMBER, MIN_UNIT_NUMBER,-1
          inquire(unit = unit, opened = isOpen)
@@ -183,13 +189,21 @@ module xmlout
       call xml_end('matrix')
     end subroutine xml_matrix
 
-    subroutine xml_quantity(label,value,unit)
+    subroutine xml_real(label,value,unit)
       character *(*) label,unit
-      double precision value
+      real(8),intent(in) :: value
       if (doxml) then
-         write(luxml,'(A,A,A,A,A,F20.8,A)') '<quantity label="',trim(label),'" unit="',trim(unit),'">',value,'</quantity>'
+         write(luxml,'(A,A,A,A,A,F30.15,A)') '<quantity label="',trim(label),'" unit="',trim(unit),'">',value,'</quantity>'
       endif
-    end subroutine xml_quantity
+    end subroutine xml_real
+
+    subroutine xml_integer(label,value)
+      character *(*) label
+      integer,intent(in) :: value
+      if (doxml) then
+         write(luxml,'(A,A,A,I16,A)') '<quantity label="',trim(label),'">',value,'</quantity>'
+      endif
+    end subroutine xml_integer
 
 ! Read file from file_path and put it in the xml file.
 ! This is not very robust, one should use base64 encoding

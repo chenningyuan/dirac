@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -N cdash_buildup
+#PBS -l nodes=2
+#PBS -l walltime=6:00:00
+#PBS -j oe
+#PBS -q workq
+
+# My own Intel Fortran/C/C++ and MKL stuff
+source $HOME/intel/bin/compilervars.sh intel64
+
+# My own Intel based OpenMPI stuff, I32LP64
+export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/lib:$LD_LIBRARY_PATH
+
+# cmake stuff
+export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
+# my most recent python 2.7.1 #
+export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "running dirac cdash buildup at "$timestamp
+
+which ifort
+which icc
+
+DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
+#
+BUILD=build_ompi_ifort_icc_mkl_ilp64
+OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin
+
+cd $DIRAC
+#
+# reset back to the launching directory and rerun setup command with new parameters
+#
+export MATH_ROOT=/people/disk2/ilias/intel/mkl
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
+./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD
+cd $BUILD
+make ExperimentalUpdate 
+cmake ..
+make Experimental 
+
+#
+# run static dirac
+#
+BUILD_STATIC=build_ompi_ifort_icc_ilp64_static
+#cd $DIRAC
+#if [[ -d "$BUILD" ]]; then
+#  echo "deleting previous build directory $BUILD"
+#  /bin/rm -rf $BUILD
+#fi
+#/bin/rm -rf $BUILD_STATIC
+#./setup --fc=ifort --cc=icc --cpp=icpc  --int64 --static -D BUILDNAME="linux.fe6_Odense.ifort_icc_ilp64_STATIC" -D VERBOSE_OUTPUT=ON -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 --build-dir=$BUILD_STATIC
+#cd $DIRAC/$BUILD_STATIC
+#make dirac.x
+#make info_ext
+#make Experimental 
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "buildup finished at "$timestamp
+exit 0

@@ -11,7 +11,7 @@
      &            LCSBLK,
 ! Add idensi to input
      &            IDENSI,
-     &            MK2REF,MK2DEL,
+     &            MK2REF,MK2DEL,MK2INT,
 ! Set ISPINFREE or remove it
      &            ISPINFREE,
 ! For properties
@@ -34,7 +34,7 @@
 ! set and add input for MXCIV_ORIG
      &            MXCIV_ORIG,MXCIV,MXITLR,CCCONV_EX,
 ! add input for I_DO_CC_EXP
-     &            I_DO_CC_EXP,
+     &            I_DO_CC_EXP,IDONOT,
      &            NO4IDX, ! No 4-index transformation
      &            IONLYTRANS, ! Only transformation no CC
 ! logicals

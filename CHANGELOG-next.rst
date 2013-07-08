@@ -1,8 +1,6 @@
 
 
-12.7
+12.8
 ----
 
-- DSO integrals can be limited by the .SELECT keyword. Previously DSO integral code
-  ignored .SELECT.
-- Extended addressing of DSO integrals up to 333 atom centers.
+- Write me ...

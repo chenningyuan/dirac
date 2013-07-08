@@ -462,7 +462,7 @@ C
       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
       CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)
       CALL SETDCBIDX()
-      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL RSETWOP('KR-CI',WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
 
 C
@@ -739,6 +739,7 @@ C       CALL MEMCHK_KRCC(WORK)
       IF(IMPORT_ARDUCCA.EQ.1) THEN
         WRITE(6,*) ' INTEGRALS TAKEN FROM ARDUCCA'
       END IF
+C       CALL MEMCHK_KRCC(WORK)
 *
 * Loop over real/imaginary part
       ICOUNT = 1
@@ -2103,6 +2104,8 @@ C         END DO
         WRITE(6,*) ' Initial set of integrals '
         WRITE(6,*) ' ======================== '
         WRITE(6,*)
+        WRITE(6,*) ' Number of integrals read ',NINT
+        WRITE(6,*)
         DO I=1,NINT
           WRITE(6,*) T(I)
         END DO
@@ -2111,3 +2114,22 @@ C         END DO
       RETURN
       END
 *
+      SUBROUTINE DIFFF(VEC1,VEC2,NDIM)
+*
+#include "implicit.inc"
+      DIMENSION VEC1(NDIM), VEC2(NDIM)
+*
+      ITOOMUCH = 0
+      AERROR = 1.0E-10
+      DO I=1,NDIM
+        DIFF = VEC1(I)-VEC2(I)
+        print*,'DIFFFF',DIFF,VEC1(I),VEC2(I)
+        IF(ABS(DIFF).GE.AERROR) THEN
+         ITOOMUCH = ITOOMUCH + 1
+        END IF
+      END DO
+      IF(ITOOMUCH.GE.1) THEN
+       print*,'SOMETHING IS WRONG',ITOOMUCH
+       stop 'loll'
+      END IF
+      END 

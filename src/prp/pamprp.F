@@ -37,7 +37,7 @@ C***********************************************************************
 #include "mxcent.h"
 C
 C Used in common blocks:
-C dcbprp.h: NPRPWF, PRPWF(*)
+C dcbprp.h: NPRP_WF, PRP_WF(*)
 C
 #include "dcbprp.h"
 C
@@ -50,25 +50,25 @@ C
  9000 FORMAT(//,
      &     3X,'This is output from the Dirac property module:',/,
      &    /3X,'HF & DFT first order properties',/,
-     &     3X,'Trond Saue',//,
+     &     6X,'Trond Saue',//,
      &     3X,'First-order ESR properties',/,
-     &     3X,'Hans Joergen Aa. Jensen and Anette Noerager',//,
+     &     6X,'Hans Joergen Aa. Jensen et al.',//,
      &     3X,'MP2 first order properties:',/,
-     &     3X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
+     &     6X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
      &       ,' and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.',//
      &     3X,'KR-RPA second-order properties',/,
-     &     3X,'Hans Joergen Aa. Jensen and Trond Saue',//,
+     &     6X,'Hans Joergen Aa. Jensen and Trond Saue',//,
      &     3X,'KR-QR third order properties',/,
-     &     3X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
+     &     6X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
      &     3X,'Molecular gradient',/,
-     &     3X,'Joern Thyssen',//,
+     &     6X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
-     &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
+     &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
-      DO I = 1, NPRPWF
-         WF = PRPWF(I)
+      DO I = 1, NPRP_WF
+         WF = PRP_WF(I)
 C
-         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
+         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
@@ -114,7 +114,7 @@ C
 C     This note is not to be removed or altered.
 C
 C     Written by T.Saue June 24 1996
-C     The last revision: 1997/09/15 - jth (addition of gradient code)
+C     Revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
 
@@ -140,7 +140,6 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
-      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -157,7 +156,7 @@ C*****  M O L E C U L A R    G R A D I E N T ***************************
 C***********************************************************************
 C
       IF (MGRAD) THEN
-         IF (WF .NE. 'DHF') THEN
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF') THEN
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Molecular gradient not implemented for ' // WF )
          END IF
@@ -198,7 +197,7 @@ C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
       IF (DOXPP) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
@@ -211,7 +210,7 @@ C*****  L I N E A R   R E S P O N S E  *********************************
 C***********************************************************************
 C
       IF(DOXLR) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
@@ -228,9 +227,9 @@ C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
       IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
-         IF (WF. NE. 'DHF') 
-     &        CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
-     &        'Quadratic response not implemented for ' // WF )
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF' .AND. WF .NE. 'DFT')
+     &      CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
+     &         'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
@@ -266,9 +265,10 @@ C
 C JHS 17 apr 2008
 C
 #ifdef MOD_UNRELEASED
-      if (dirac_cfg_fde) then
+      if (dirac_cfg_fde_export) then
 #ifdef MOD_XML
-         call fde_export_write_data_to_file(wf)
+         CALL TITLER('Output FDE data to XML file','*',118)
+         call fde_export_to_file(wf)
 #endif
       END IF
 #endif
@@ -4285,9 +4285,9 @@ C
 C     define operator type, factor, name and label
 C
       NPCOMP = 1
-      PFAC(1)  = D1
-      PFAC(2)  = D1
-      PFAC(3)  = D1
+      PFAC(1)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(2)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(3)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
 C     three components of dipole length integrals
       PNAME(1)  = 'X dipole length'
       PNAME(2)  = 'Y dipole length'

@@ -21,7 +21,6 @@
 
 module fde_data
       
-   use memory_allocator
    use fde_types
    use fde_cfg
    use fde_io
@@ -33,129 +32,54 @@ module fde_data
 ! routines
 !
    public fde_cleanup_data
-   public get_fde_grid_coord
-   public get_fde_grid_weight
    public fde_test_frozen_density
    public fde_test_active_density
    public fde_test_export
-#ifdef MOD_UNRELEASED
    public fde_import_frozen
    public fde_import_gridout
-#endif
    public fde_import_static
-   public fde_initialize_data
-
-   interface get_fde_grid_coord
-      module procedure get_fde_grid_coords_single
-      module procedure get_fde_grid_coords_block
-   end interface get_fde_grid_coord
-
-   interface get_fde_grid_weight
-      module procedure get_fde_grid_weight_single
-      module procedure get_fde_grid_weight_block
-   end interface get_fde_grid_weight
-
-
+   public fde_initialize_import_data
 !
 ! variables 
 !
-   public fde_frozen_n, fde_frozen_gn, fde_frozen_hn, fde_frozen_elpot
-   public fde_active_n, fde_active_gn, fde_active_hn, fde_active_elpot
-   public fde_grid
-   public fde_vemb
-   public fde_grid_np
+! first, those related to the static embedding potential
+!  
+   public fde_grid_sv
+   public fde_static_vemb
 
+   integer, save :: fde_static_vemb_grid_np = 0
+   logical, save :: static_data_is_initialized = .false.
+
+   type(fde_grid), save :: fde_grid_sv
+   real(kind=8), save, allocatable, target :: fde_static_vemb(:)
+!
+! importing frozen density, so the active one is needed too
+! the grid imported isn't necessarily that of the static 
+! potential
+!
    public gf_frozen
    public gf_active
+   public fde_grid_im
 
-   integer, save :: fde_grid_np = 0
-   logical, save :: data_is_initialized = .false.
+   integer, save :: fde_import_grid_np = 0
+   logical, save :: import_data_is_initialized = .false.
 
-!  todo: replace the frozen, active variables belot by 
    type(grid_function), save :: gf_frozen
    type(grid_function), save :: gf_active
-!
-   real(kind=8), save, allocatable, target :: fde_frozen_n(:)
-   real(kind=8), save, allocatable, target :: fde_frozen_gn(:,:)
-   real(kind=8), save, allocatable, target :: fde_frozen_hn(:,:)
-   real(kind=8), save, allocatable, target :: fde_frozen_elpot(:)
-
-   real(kind=8), save, allocatable, target :: fde_active_n(:)
-   real(kind=8), save, allocatable, target :: fde_active_gn(:,:)
-   real(kind=8), save, allocatable, target :: fde_active_hn(:,:)
-   real(kind=8), save, allocatable, target :: fde_active_elpot(:)
-
-   real(kind=8), save, allocatable, target :: fde_vemb(:)
-
-   real(kind=8), save, allocatable, target :: fde_grid(:,:) 
-
+   type(fde_grid), save      :: fde_grid_im
 !
 ! export, using a different grid
 !
-   public fde_export_grid
-   public fde_export_grid_np
-
    public gf_export
+   public fde_grid_ex
 
    logical, save :: export_data_is_initialized = .false.
    integer, save :: fde_export_grid_np = 0
+
+   type(fde_grid), save      :: fde_grid_ex
    type(grid_function), save :: gf_export
-   real(kind=8), save, allocatable, target :: fde_export_grid(:,:) 
 
    contains
-
-!   ----------------------------------------------------------------------------
-      subroutine get_fde_grid_coords_single(i,x,y,z)
-!   ----------------------------------------------------------------------------
-         integer, intent(in) :: i
-         real(kind=8), intent (out) :: x, y, z
-
-         x = fde_grid(1,i)
-         y = fde_grid(2,i)
-         z = fde_grid(3,i)
-      end subroutine get_fde_grid_coords_single
-
-
-!   ----------------------------------------------------------------------------
-      subroutine get_fde_grid_coords_block(first,last,x,y,z)
-!   ----------------------------------------------------------------------------
-         integer, intent(in) :: first, last
-         integer :: j, k 
-         real(kind=8), intent (out) :: x(:), y(:), z(:)
-
-         k = 1
-         do j = first, first+last-1
-            x(k) = fde_grid(1,j)
-            y(k) = fde_grid(2,j)
-            z(k) = fde_grid(3,j)
-            k = k+1
-         enddo
-      end subroutine get_fde_grid_coords_block
-
-
-!   ----------------------------------------------------------------------------
-      subroutine get_fde_grid_weight_single(i,w)
-!   ----------------------------------------------------------------------------
-         integer, intent(in) :: i
-         real(kind=8), intent (out) :: w
-
-         w = fde_grid(4,i)
-      end subroutine get_fde_grid_weight_single
-
-
-!   ----------------------------------------------------------------------------
-      subroutine get_fde_grid_weight_block(first,last,w)
-!   ----------------------------------------------------------------------------
-         integer, intent(in) :: first, last
-         integer :: j, k
-         real(kind=8), intent (out) :: w(:)
-
-         k = 1
-         do j = first, first+last-1
-            w(k) = fde_grid(4,j)
-            k = k+1
-         enddo
-      end subroutine get_fde_grid_weight_block
 
 
 !   ----------------------------------------------------------------------------
@@ -176,24 +100,23 @@ module fde_data
       call read_grid(file_unit,gridp,fde_vtmp)
       call fde_close_file(file_unit)
 
-      fde_grid_np = size(gridp,2)
+      fde_static_vemb_grid_np = size(gridp,2)
 
-      call fde_initialize_data
+      call fde_initialize_static_data
 
-      do i=1, fde_grid_np
-         fde_vemb(i)   = fde_vtmp(i)
-         fde_grid(1,i) = gridp(1,i)
-         fde_grid(2,i) = gridp(2,i)
-         fde_grid(3,i) = gridp(3,i)
-         fde_grid(4,i) = gridp(4,i)
+      do i=1, fde_grid_sv%npoints
+         fde_static_vemb(i) = fde_vtmp(i)
+         fde_grid_sv%r(1,i) = gridp(1,i)
+         fde_grid_sv%r(2,i) = gridp(2,i)
+         fde_grid_sv%r(3,i) = gridp(3,i)
+         fde_grid_sv%w(i)   = gridp(4,i)
       enddo
 
-      call deallocp(fde_vtmp)
-      call deallocp(gridp)
+      deallocate(fde_vtmp)
+      deallocate(gridp)
    end subroutine fde_import_static
 
 
-#ifdef MOD_UNRELEASED
    subroutine fde_import_gridout
       integer :: file_unit
       character(len=60) :: file_name
@@ -211,16 +134,17 @@ module fde_data
       call fde_close_file(file_unit)
 
       fde_export_grid_np = size(gridp,2)
+!aspg print *," np export ",fde_export_grid_np," file "//file_name
 
       call fde_initialize_export_data
 
-      do i=1, fde_export_grid_np 
-         fde_export_grid(1,i) = gridp(1,i)
-         fde_export_grid(2,i) = gridp(2,i)
-         fde_export_grid(3,i) = gridp(3,i)
-         fde_export_grid(4,i) = gridp(4,i)
+      do i=1, fde_grid_ex%npoints
+         fde_grid_ex%r(1,i) = gridp(1,i)
+         fde_grid_ex%r(2,i) = gridp(2,i)
+         fde_grid_ex%r(3,i) = gridp(3,i)
+         fde_grid_ex%w(i)   = gridp(4,i)
       enddo
-      call deallocp(gridp)
+      deallocate(gridp)
    end subroutine
 
 
@@ -242,27 +166,28 @@ module fde_data
       call read_grid(file_unit,gridp,fde_frozen_prp)
       call fde_close_file(file_unit)
 
-      fde_grid_np = size(gridp,2)
+      fde_import_grid_np = size(gridp,2)
 
-      call fde_initialize_data
+      call fde_initialize_import_data
       
-      do i=1, fde_grid_np
-         fde_frozen_elpot(i) = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
-         fde_frozen_n(i)     = fde_frozen_prp(3,i)
-         fde_frozen_gn(1,i)  = fde_frozen_prp(4,i)
-         fde_frozen_gn(2,i)  = fde_frozen_prp(5,i)
-         fde_frozen_gn(3,i)  = fde_frozen_prp(6,i)
+!aspg print *, "np #1: ",fde_import_grid_np,"  np #2: ",fde_grid_im%npoints
+      do i = 1, fde_grid_im%npoints
+         gf_frozen%elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
+!        gf_frozen%nucpot(i) = 0.0
+         gf_frozen%n(i)      = fde_frozen_prp(3,i)
+         gf_frozen%gn(1,i)   = fde_frozen_prp(4,i)
+         gf_frozen%gn(2,i)   = fde_frozen_prp(5,i)
+         gf_frozen%gn(3,i)   = fde_frozen_prp(6,i)
          
-         fde_grid(1,i)       = gridp(1,i)
-         fde_grid(2,i)       = gridp(2,i)
-         fde_grid(3,i)       = gridp(3,i)
-         fde_grid(4,i)       = gridp(4,i)
+         fde_grid_im%r(1,i)  = gridp(1,i)
+         fde_grid_im%r(2,i)  = gridp(2,i)
+         fde_grid_im%r(3,i)  = gridp(3,i)
+         fde_grid_im%w(i)    = gridp(4,i)
       enddo
 
-      call deallocp(fde_frozen_prp)
-      call deallocp(gridp)
+      deallocate(fde_frozen_prp)
+      deallocate(gridp)
    end subroutine fde_import_frozen
-#endif /* MOD_UNRELEASED */ 
 
 
 !   ----------------------------------------------------------------------------
@@ -272,12 +197,10 @@ module fde_data
          export_data_is_initialized = .true.
          if (fde_export_grid_np > 0) then
 
-            if (.not.allocated(fde_export_grid)) then
-               call alloc(fde_export_grid, 4,fde_export_grid_np, id="fde_export_grid")
-            endif
+            call new_fde_grid(fde_grid_ex,fde_export_grid_np)
             call new_grid_function(gf_export,fde_export_grid_np)
          else
-            call quit('there are no grid points for fde export!')
+            call fde_quit('there are no grid points for fde export!')
          endif
       endif
 
@@ -285,142 +208,77 @@ module fde_data
 
 
 !   ----------------------------------------------------------------------------
-   subroutine fde_initialize_data
+   subroutine fde_initialize_static_data
 !   ----------------------------------------------------------------------------
-      if (.not.data_is_initialized) then
-         data_is_initialized = .true.
-         if (fde_grid_np > 0) then
-            
-            if (.not.allocated(fde_grid)) then
-               call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
+      if (.not.static_data_is_initialized) then
+         static_data_is_initialized = .true.
+
+         if (fde_static_vemb_grid_np > 0) then
+
+            call new_fde_grid(fde_grid_sv,fde_static_vemb_grid_np)
+
+            if (.not.allocated(fde_static_vemb)) then
+               allocate(fde_static_vemb(fde_static_vemb_grid_np))
+               fde_static_vemb         = 0.0d0
             endif
-            call fde_initialize_frozen_data
-            call fde_initialize_active_data
          else
-            call quit('there are no grid points for fde!')
+            call fde_quit('there are no grid points for vemb!')
+         endif
+      endif
+  end subroutine fde_initialize_static_data
+
+!   ----------------------------------------------------------------------------
+   subroutine fde_initialize_import_data
+!   ----------------------------------------------------------------------------
+      if (.not.import_data_is_initialized) then
+         import_data_is_initialized = .true.
+         if (fde_import_grid_np > 0) then
+            call new_fde_grid(fde_grid_im,fde_import_grid_np)
+            call new_grid_function(gf_frozen,fde_import_grid_np)
+            call new_grid_function(gf_active,fde_import_grid_np)
+         else
+            call fde_quit('there are no grid points for fde import !')
          endif
       endif
       
-   end subroutine fde_initialize_data
+   end subroutine fde_initialize_import_data
 
-
-!   ----------------------------------------------------------------------------
-   subroutine fde_initialize_frozen_data
-!   ----------------------------------------------------------------------------
-         if (.not.allocated(fde_vemb)) then
-            call alloc(fde_vemb, fde_grid_np, id="fde_vemb")
-            fde_vemb         = 0.0d0
-         endif
-         
-         if (.not.allocated(fde_frozen_n)) then
-            call alloc(fde_frozen_n,     fde_grid_np, id="fde_frozen_n")
-            fde_frozen_n     = 0.0d0
-         endif
-         
-         if (.not.allocated(fde_frozen_gn)) then
-            call alloc(fde_frozen_gn, 3,   fde_grid_np, id="fde_frozen_gn")
-            fde_frozen_gn    = 0.0d0
-         endif
-         
-         if (.not.allocated(fde_frozen_hn)) then
-            call alloc(fde_frozen_hn, 6,   fde_grid_np, id="fde_frozen_hn")
-            fde_frozen_hn    = 0.0d0
-         endif
-         
-         if (.not.allocated(fde_frozen_elpot)) then
-            call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
-            fde_frozen_elpot = 0.0d0
-         endif
-
-
-         call new_grid_function(gf_frozen,fde_grid_np)
-
-         
-   end subroutine fde_initialize_frozen_data
-
-
-!   ----------------------------------------------------------------------------
-   subroutine fde_initialize_active_data
-!   ----------------------------------------------------------------------------
-      if (.not.allocated(fde_active_n)) then
-         call alloc(fde_active_n,     fde_grid_np, id="fde_active_n")
-         fde_active_n     = 0.0d0
-      endif
-
-      if (.not.allocated(fde_active_gn)) then
-         call alloc(fde_active_gn, 3,   fde_grid_np, id="fde_active_gn")
-         fde_active_gn    = 0.0d0
-      endif
-
-      if (.not.allocated(fde_active_hn)) then
-         call alloc(fde_active_hn, 6,   fde_grid_np, id="fde_active_hn")
-         fde_active_hn    = 0.0d0
-      endif
-
-      if (.not.allocated(fde_active_elpot)) then
-         call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
-         fde_active_elpot = 0.0d0
-      endif
-
-
-      call new_grid_function(gf_active,fde_grid_np)
-
-   end subroutine fde_initialize_active_data
-   
 
 !   ----------------------------------------------------------------------------
    subroutine fde_cleanup_data
 !   ----------------------------------------------------------------------------
-      if (data_is_initialized) then
-         call dealloc(fde_grid)
-         call fde_cleanup_active_data
-         call fde_cleanup_frozen_data
+      if (static_data_is_initialized) then
+         deallocate(fde_static_vemb)
+         call del_fde_grid(fde_grid_sv)
+      endif
+
+      if (import_data_is_initialized) then
+         call del_grid_function(gf_active)
+         call del_grid_function(gf_frozen)
+         call del_fde_grid(fde_grid_im)
       endif
 
       if (export_data_is_initialized) then
          call del_grid_function(gf_export)
+         call del_fde_grid(fde_grid_ex)
       endif
    end subroutine fde_cleanup_data
 
 
 !   ----------------------------------------------------------------------------
-   subroutine fde_cleanup_frozen_data
-!   ----------------------------------------------------------------------------
-      call dealloc(fde_vemb)
-      call dealloc(fde_frozen_n)
-      call dealloc(fde_frozen_gn)
-      call dealloc(fde_frozen_hn)
-      call dealloc(fde_frozen_elpot)
-      call del_grid_function(gf_frozen)
-   end subroutine fde_cleanup_frozen_data
-
-   
-!   ----------------------------------------------------------------------------
-   subroutine fde_cleanup_active_data
-!   ----------------------------------------------------------------------------
-      call dealloc(fde_active_n)
-      call dealloc(fde_active_gn)
-      call dealloc(fde_active_hn)
-      call dealloc(fde_active_elpot)
-      call del_grid_function(gf_active)
-
-   end subroutine fde_cleanup_active_data
-
-
-!   ----------------------------------------------------------------------------
    subroutine fde_test_frozen_density
 !   ----------------------------------------------------------------------------
-      integer      :: point
-      real(kind=8) :: frozen_particle_number = 0.0
+      integer      :: i
+      real(kind=8) :: frz_particle_nr = 0.0
 
-      do point = 1, fde_grid_np 
-         frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_n(point) 
+      do i = 1, fde_grid_im%npoints
+         frz_particle_nr = frz_particle_nr + fde_grid_im%w(i)*gf_frozen%n(i) 
       end do
       
-      write (*,*) '  Frozen density integrates to ',frozen_particle_number,' electrons'
-      write (*,*) '  Grid points processed ',fde_grid_np
+      write (*,'(A,F16.6,A)') '  Frozen density integrates to ',frz_particle_nr,' electrons'
+      write (*,'(A,I12)') '  Grid points processed ',fde_grid_im%npoints
 
-      frozen_particle_number = 0.0
+      frz_particle_nr = 0.0
 
    end subroutine fde_test_frozen_density
 
@@ -428,19 +286,19 @@ module fde_data
 !   ----------------------------------------------------------------------------
    subroutine fde_test_active_density
 !   ----------------------------------------------------------------------------
-      integer      :: point
-      real(kind=8) :: active_particle_number 
+      integer      :: i 
+      real(kind=8) :: act_particle_nr 
 
-      active_particle_number = 0.0d0
+      act_particle_nr = 0.0d0
 
-      do point = 1, fde_grid_np 
-         active_particle_number = active_particle_number + fde_grid(4,point)*fde_active_n(point) 
+      do i = 1, fde_grid_im%npoints
+         act_particle_nr = act_particle_nr + fde_grid_im%w(i)*gf_active%n(i) 
       end do
       
-      write (*,*) ' Active density integrates to ',active_particle_number,' electrons'
-      write (*,*) ' Grid points processed ',fde_grid_np
+      write (*,*) ' Active density integrates to ',act_particle_nr,' electrons'
+      write (*,*) ' Grid points processed ',fde_grid_im%npoints
 
-      active_particle_number = 0.0
+      act_particle_nr = 0.0
 
    end subroutine fde_test_active_density
 
@@ -458,14 +316,14 @@ module fde_data
       exp_int_vn = 0.0d0  
 
       
-      do i = 1, fde_export_grid_np 
-         exp_int_n  = exp_int_n  +       fde_export_grid(4,i)*gf_export%n(i) 
-         exp_int_vc = exp_int_vc - 0.5d0*fde_export_grid(4,i)*gf_export%n(i)*(gf_export%elpot(i)-gf_export%nucpot(i)) 
-         exp_int_vn = exp_int_vn -       fde_export_grid(4,i)*gf_export%n(i)*gf_export%nucpot(i) 
+      do i = 1, fde_grid_ex%npoints
+         exp_int_n  = exp_int_n  +       fde_grid_ex%w(i)*gf_export%n(i) 
+         exp_int_vc = exp_int_vc - 0.5d0*fde_grid_ex%w(i)*gf_export%n(i)*(gf_export%elpot(i)-gf_export%nucpot(i)) 
+         exp_int_vn = exp_int_vn -       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%nucpot(i) 
       end do
       
       write (*,*) ' '
-      write (*,*) 'Exported quantities (over ',fde_export_grid_np,'grid points) integrate to:'
+      write (*,'(A,I12,A)') ' Exported quantities (over ',fde_grid_ex%npoints,' grid points) integrate to:'
       write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
       write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vc,' a.u.'
       write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'

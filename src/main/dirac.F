@@ -124,7 +124,7 @@ C***********************************************************************
           call quit('Polarizable Continuum Model calculation not '//
      & 'working with X2C Hamiltonian!')
         end if
-        call init_pcm 
+        call init_pcm
         call print_pcm
         print *, 'PCMSolver initialized.'
       end if
@@ -154,7 +154,7 @@ C
 
       if (doxml) then
          call xml_end('output')
-         call xml_end('task') ! started om dirrdn.F
+         call xml_end('run') ! started om dirrdn.F
       endif
       CALL QEXIT('DIRCTL')
       END
@@ -196,7 +196,7 @@ C*****  A N A L Y S I S    M O D U L E  ********************************
 C***********************************************************************
 C
       IF(DOANA .AND. .NOT.
-     & ((dirac_cfg_scf_calculation.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
+     & ((dirac_cfg_scf_calculation.AND.DOPSI).OR.(DOKRMC.AND.DOPSI)))
      &   CALL PAMANA()
 C
 C
@@ -218,7 +218,7 @@ C***********************************************************************
 C ***** cleaning up data stored in fde calculations ********************
 C***********************************************************************
 C
-      if (dirac_cfg_fde) 
+      if (dirac_cfg_fde)
      &   call fde_cleanup_data()
 
 
@@ -291,7 +291,7 @@ C         *************************************************
 C         *** Call PSIOPT for second order optimization ***
 C         *************************************************
 C
-          IF ( .NOT. NOQCDHF .AND. 
+          IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
              CALL PSIOPT('SCF  ',WFCONV)
@@ -349,8 +349,8 @@ C       to do an MR-CC or MR-CI /hjaaj aug 03
 C
         IF(DOKRMC) THEN
 C
-C          Transfer DHF info to common block DCBORB
-C          and recalculate DCBORB.
+C          Transfer KRMC information from common block DCOKRMC to
+C          common block DCBORB and set common block DCxOPT
 C
            CALL TKRMCORB
 C
@@ -474,11 +474,11 @@ C  /* Deck tdhforb */
       SUBROUTINE TDHFORB(CISELECT)
 C***********************************************************************
 C
-C     Transfer information from common block DCODHF to 
+C     Transfer information from common block DCODHF to
 C     common block DCBORB and set common block DCxOPT
 C
 C     Written by J. Thyssen - Oct 22 1998
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
@@ -536,7 +536,7 @@ C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
          THR_CVEC = 1.0D-3
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NACSH(I,J)
@@ -549,8 +549,8 @@ C
          XELEC = D0
          DO J = 1, NGAS_DC
             XELEC = XELEC + D2*DF(J)*NGSHT(J)
-            NGSP(1,J) = NINT(XELEC)
-            NGSP(2,J) = NINT(XELEC)
+            NGASSP(1,J) = NINT(XELEC)
+            NGASSP(2,J) = NINT(XELEC)
          END DO
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
 C        ... do a full CI in the active space
@@ -560,7 +560,7 @@ C        ... do a full CI in the active space
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
 
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NASH(I)
@@ -570,12 +570,10 @@ C        ... set CI program in charge
 C
 C        initialize min and max accumlated no. of electrons in each gas space
 C
-         NGSP(1,1) = NAELEC
-         NGSP(2,1) = NAELEC
+         NGASSP(1,1) = NAELEC
+         NGASSP(2,1) = NAELEC
       ELSE IF (CISELECT .EQ. 'ESRCI') THEN
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
-C            (Cxx are preparation for RESOLVE instead of FULLCI
-C             in the DHF open shells)
 
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
@@ -603,18 +601,20 @@ C
 C
 C        initialize min and max accumulated no. of electrons in each gas space
 C
-         CALL IZERO(NGSHT,MXMCGAS)
+         CALL IZERO(NGSHT,MXGAS)
          NGAS_DC = 0
          IF (NCESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
-            NGSP(2,NGAS_DC) = 2*NCESRT
+            NGASSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
+            NGASSP(2,NGAS_DC) = 2*NCESRT
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NCESR(I)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          END IF
 
+C            (Cxx are preparation for RESOLVE instead of FULLCI
+C             in the DHF open shells)
 Cxx      XELEC = D2*NCESRT
          IF (NOPEN .NE. 1) THEN
             write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
@@ -623,10 +623,10 @@ Cxx      XELEC = D2*NCESRT
          DO J = 1, NOPEN
             NGAS_DC = NGAS_DC + 1
 Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGSP(1,NGAS_DC) = NINT(XELEC)
-Cxx         NGSP(2,NGAS_DC) = NINT(XELEC)
-            NGSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
-            NGSP(2,NGAS_DC) = NAELEC
+Cxx         NGASSP(1,NGAS_DC) = NINT(XELEC)
+Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
+            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
+            NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSH(I,NGAS_DC) = NASH(I)
@@ -635,14 +635,14 @@ Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
          END DO
          IF (NVESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGSP(1,NGAS_DC) = NAELEC
-            NGSP(2,NGAS_DC) = NAELEC
+            NGASSP(1,NGAS_DC) = NAELEC
+            NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
                NGSH(I,NGAS_DC) = NVESR(I)
                NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             END DO
          ELSE
-            NGSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
+            NGASSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals
@@ -708,6 +708,7 @@ C
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
       no1pdens_save  = .true.
       save_reordered_nos = .false.
+      fcidump            = .false.
 C
 C     Set common block DCCOPT
 C
@@ -729,11 +730,11 @@ C  /* Deck tkrmcorb */
       SUBROUTINE TKRMCORB
 C***********************************************************************
 C
-C     Transfer information from common block DCOMC to 
+C     Transfer information from common block DCOKRMC to
 C     common block DCBORB and set common block DCxOPT
 C
 C     Written by J. Thyssen - Oct 22 1998
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
@@ -767,7 +768,7 @@ C
         igas_tmp     = 0
         accum_act(1) = 0
         accum_act(2) = 0
-        do 
+        do
           igas_tmp = igas_tmp + 1
           if(NKRMCGSH(1,igas_tmp) == -9999)then
             do i = 1, nfsym
@@ -781,11 +782,11 @@ C
           end if
         end do
 !       print some extra info
-        write(lupri,*) 
+        write(lupri,*)
      &  '  *** extra info from TKRMCORB for full CI option ***'
-        write(lupri,*) 
+        write(lupri,*)
      &  '  ---------------------------------------------------'
-        write(lupri,*) 
+        write(lupri,*)
      &  '     total # of active orbitals: ', nasht_tmp
 
         do i = 1, ngas_dc
@@ -796,7 +797,7 @@ C
      &    '    (constraints: min/max active electrons after space : ',
      &         NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
         end do
-        write(lupri,*) 
+        write(lupri,*)
      &  '  ---------------------------------------------------'
 
 !       test for maximum # of orbitals
@@ -813,7 +814,7 @@ C
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
       MAXMK2 = NKRMC_MAXMK2
-      CALL IZERO(NGSHT,MXMCGAS)
+      CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
@@ -830,8 +831,8 @@ c         NPSH(I) = NKRMCPSH(I)
       NAELEC = NKRMCAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRMCGSP(1,J)
-         NGSP(2,J) = NKRMCGSP(2,J)
+         NGASSP(1,J) = NKRMCGSP(1,J)
+         NGASSP(2,J) = NKRMCGSP(2,J)
       END DO
 C
 C     Calculated derived variables in /DCBORB/
@@ -865,6 +866,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
+      THRECI         = MAX(DKRCI_THRECI, OPT_THRGRD**2)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
@@ -893,9 +895,9 @@ C
          OPT_DELSTR(I) = KRMC_DELSTR(I)
       END DO
 C
-C     Set "constant" CI internal variables 
+C     Set "constant" CI internal variables
 C
-      NMAX_SYM    = IKRMC_SYMMETRY   
+      NMAX_SYM    = IKRMC_SYMMETRY
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.
@@ -913,13 +915,13 @@ C  /* Deck tkrciorb */
       SUBROUTINE TKRCIORB
 C***********************************************************************
 C
-C     Transfer information from common block DCOCI to 
+C     Transfer information from common block DCOCI to
 C     common block DCBORB and set common block DCxOPT
 C
 C     Based on TKRMCORB.
 C
 C     Written by S. Knecht - Aug 2008
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
@@ -941,8 +943,7 @@ C
       MINMK2 = NKRCI_MINMK2
       MAXMK2 = NKRCI_MAXMK2
 
-C     ... do not change MXMCGAS to MXCIGAS; not necessary...
-      CALL IZERO(NGSHT,MXMCGAS)
+      CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRCIISH(I)
          NASH(I) = NKRCIASH(I)
@@ -957,8 +958,8 @@ C     ... do not change MXMCGAS to MXCIGAS; not necessary...
       NAELEC = NKRCIAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRCIGSP(1,J)
-         NGSP(2,J) = NKRCIGSP(2,J)
+         NGASSP(1,J) = NKRCIGSP(1,J)
+         NGASSP(2,J) = NKRCIGSP(2,J)
       END DO
 C
 C
@@ -986,11 +987,11 @@ C     Set common block DCROPT
 C
       OPT_CNVINT(1)  = DKRCI_CNVINT(1)
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
-      OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0d-03
-      THRECI         = DKRCI_THRGCI
+      OPT_THRGRD     = 1.D99
+      THRECI         = DKRCI_THRECI
 C
 C     Set common block DCLOPT
 C
@@ -1049,6 +1050,7 @@ C
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = CHCKPT_KRCI
       CPBLCK_FILE = CUSE_PBLFL_KRCI
+      fcidump     = fcidump_krci
 C
       CALL QEXIT('TKRCIORB')
       END
@@ -1098,7 +1100,7 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
          write(lupri,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
          call sleep(sleep_time)
-      endif 
+      endif
 #endif
 
 C
@@ -1138,14 +1140,14 @@ Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1 
+      ICHECK_MPI2 = - 1
 #if defined (VAR_MPI2)
       ICHECK_MPI2 =   0
 #endif
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
      &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
-        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
        CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
       END IF
@@ -1248,14 +1250,14 @@ C
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1 
+      ICHECK_MPI2 = - 1
 #if defined (VAR_MPI2)
       ICHECK_MPI2 =   0
 #endif
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
      &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
-        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
        CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
       END IF
@@ -1384,7 +1386,7 @@ C     Check environment variable BASDIR
 C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-        CALL DIST_ENV(0) 
+        CALL DIST_ENV(0)
       ELSE
 #endif /* VAR_MPI */
 #if defined (SYS_T3D) || defined (SYS_T90)
@@ -1399,18 +1401,18 @@ C
       END
 #ifdef MOD_KRCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck tkrciorb */
+C  /* Deck tkrccorb */
       SUBROUTINE TKRCCORB
 C***********************************************************************
 C
-C     Transfer information from common block DCOCI to 
+C     Transfer information from common block DCOCI to
 C     common block DCBORB and set common block DCxOPT
 C
 C     Based on TKRMCORB.
 C
-C     Written by S. Knecht - Aug 2008. 
+C     Written by S. Knecht - Aug 2008.
 C     Well Lasse did a copy and paste of it to this routine 2010
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1423,8 +1425,8 @@ C#include "dcbkrci.h"
 #include "dcbgascip.h"
 #include "dcbibt.h"
 C Scratch
-      INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXMCGAS)
-      INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXMCGAS)
+      INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXGAS)
+      INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXGAS)
 C
       CALL QENTER('TKRCCORB')
 C
@@ -1440,9 +1442,8 @@ C since there are some variables with the same name we will call a routine for t
       MK2DEL = NKRCC_MK2DEL
       MINMK2 = NKRCC_MINMK2
       MAXMK2 = NKRCC_MAXMK2
-C     ... do not change MXMCGAS to MXCIGAS; not necessary...
-      CALL IZERO(NGSHT,MXMCGAS)
-      DO I = 1,NFSYM 
+      CALL IZERO(NGSHT,MXGAS)
+      DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
          NASH(I) = NKRCCASH(I)
          DO J = 1, NGAS_DC
@@ -1456,13 +1457,13 @@ C     ... do not change MXMCGAS to MXCIGAS; not necessary...
       NAELEC = NKRCCAELEC
 C     min and max electrons in each gas space:
       DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRCCGSP(1,J)
-         NGSP(2,J) = NKRCCGSP(2,J)
+         NGASSP(1,J) = NKRCCGSP(1,J)
+         NGASSP(2,J) = NKRCCGSP(2,J)
       END DO
 C
 C
 C     Set common block DCIOPT
-C     
+C
       IPROPT = 0 !IPRKRCI
       IOPT_ITRINT(1) = 1 !IKRCI_ITRINT(1)
       IOPT_ITRINT(2) = 1 !IKRCI_ITRINT(2)
@@ -1480,9 +1481,9 @@ C IOPT_INTDEF controls the Hamiltonian
       IOPT_SYMMETRY  = -1
       IMEMFAC        = 9 !IKRCI_MEMFAC
       JKRRUNTYPE     = 2
-C     
+C
 C     Set common block DCROPT
-C     
+C
       E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 
@@ -1529,6 +1530,7 @@ C at the moment no fock type orbitlas
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
       no1pdens_save  = .true.
+      fcidump     = .false.
 C
       CALL QEXIT('TKRCCORB')
       END

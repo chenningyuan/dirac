@@ -578,6 +578,15 @@ C&&&& Range of ACTIVE orbitals in 4-index transformation module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') TRA_INDSTR(I)
                   ENDDO
+C                 Allow for one-line input also for groups with inversion symmetry
+                  IF (NFSYM.EQ.2) THEN
+                     PROMPT = TRA_INDSTR(2)
+                     IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#' 
+     &                   .OR. PROMPT .EQ. '*') THEN
+                        TRA_INDSTR(2) = TRA_INDSTR(1)
+                        BACKSPACE(LUCMD)
+                     END IF
+                  END IF
                GO TO 100
     3          CONTINUE
 C&&&& INTFLG - Integral classes not included in transformation
