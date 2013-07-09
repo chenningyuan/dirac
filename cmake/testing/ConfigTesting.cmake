@@ -12,11 +12,6 @@ set(DART_TESTING_TIMEOUT
     "Set default timeout in seconds for every single test"
     )
 
-# set timeout (this is not DART_TESTING_TIMEOUT)
-if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-    set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
-endif()
-
 include(Tests)
 include(CTest)
 enable_testing()
