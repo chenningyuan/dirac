@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#
+
 # get static size of binary
 # written by: Radovan Bast <bast@kth.se>
 #             Miroslav Ilias <miroslav.ilias@umb.sk>
@@ -32,16 +32,26 @@ print('%10.2f MB' % total_size)
 command = "readelf -s %s 2> /dev/null || echo 'cannot be determined, readelf not present'" % binary
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 
-l = []
+d = {}
 for line in process.stdout.readlines():
-    if (line.find('DEFAULT') != -1) and (line.find('FUNC') != -1 or line.find('OBJECT') != -1) and (line.find('UND') == -1):
-        size = int(line.split()[2], 16) # get the size in hex number
-        name = line.split()[7]          # extract the name
-        type = line.split()[-5]         # extract type, necessary to identify variable
-        l.append([size, name, type])
+    if 'OBJECT' in line:
+        name = line.split()[-1]
+        addr = line.split()[1]
+        size = int(line.split()[2], 16)
+        d[(name, addr)] = float(size)/(1024*1024)
+
+l = []
+for entry in d:
+    name, addr = entry
+    size = d[entry]
+    l.append([size, name])
+
 l.sort(reverse=True)
 
-print('\ntop %i consumers:' % nr_top_consumers)
+print('\ntop %i objects:' % nr_top_consumers)
+
+mb_sum = 0.0
 for i in range(nr_top_consumers):
-    ii = 2*i + 1
-    print('%10.2f MB %20s  (%8s)' % (float(l[ii][0])/(1024*1024), l[ii][1], l[ii][2]))
+    size, name = l[i]
+    mb_sum += size
+    print('%10.2f MB %20s      (sum: %.2f MB)' % (size, name, mb_sum))
