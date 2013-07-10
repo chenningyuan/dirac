@@ -60,7 +60,7 @@ Tutorials and walkthrus
 =======================
 
 * **Basis sets:**
-  :doc:`Basis sets for relativistic calculations <tutorials/relbas.rst>` |
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
