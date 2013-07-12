@@ -773,7 +773,7 @@ Options are also read from ~/.diracrc"""
             print parser.format_help().strip()
             print
             print '  further information on Dirac calculations may be found at:'
-            print '  http://wiki.chem.vu.nl/dirac/index.php/Dirac_Program'
+            print '  http://www.diracprogram.org'
             print
             sys.exit()
 
