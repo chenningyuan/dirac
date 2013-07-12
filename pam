@@ -304,22 +304,13 @@ class pam_enviroment:
             else:
                 print '  The scratch directory already exists and is empty'
 
-    def copy_file(self, src, dest, message=False):
+    def copy_file(self, src, dest):
         """copy file from directory "scr" to "dest"
      for the printout use 'purified' file names"""
         try:
             if self.verbose: print "  Copying %s to %s" % (src, dest)
             shutil.copy(src, dest)
         except:
-            if os.path.isfile(src):
-                src_message="...src exists"
-            else:
-                src_message="...src does not exist !"
-            if os.path.isdir(dest):
-                src_message="...dest exists"
-            else:
-                src_message="...dest does not exist !"
-
             print >> sys.stderr,\
            'Copying of files - shutil.copy(src, dest) - failed, error exit !'
             print >> sys.stderr,' src full path:', src
@@ -346,7 +337,7 @@ class pam_enviroment:
                         l = l.replace(r.split('=')[0], r.split('=')[1])
                     of.write(l)
                 of.close()
-        except IOError, e:
+        except IOError:
             print >> sys.stderr, "pam: Error copying file %s" % src
             raise
 
@@ -1028,7 +1019,7 @@ Options are also read from ~/.diracrc"""
             full_file_name = os.path.join(self.input_directory,file_name_local)
             if os.path.isfile(full_file_name):
                 file_name_scratch = os.path.join(self.scratch_dir, file_name_scr)
-                self.copy_file(full_file_name, file_name_scratch,message=True)
+                self.copy_file(full_file_name, file_name_scratch)
             else:
                 if self.expert_mode:
                     print >> sys.stderr,'happens in input directory:',self.input_directory
@@ -1043,7 +1034,7 @@ Options are also read from ~/.diracrc"""
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file),message=True)
+        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
 
     # restarting stuff
         if self.full_restart:
@@ -1060,15 +1051,12 @@ Options are also read from ~/.diracrc"""
         if self.input_file_molecule:
             if self.xyz_molecule_input:
                 self.copy_with_replacement(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.XYZ'))
-              # self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.XYZ'), message=True)
             else:
                 self.copy_with_replacement(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.MOL'))
-              # self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.MOL'), message=True)
         else:
             print '  No molecule file provided; pam will assume that it is obtained from the restart file.'
         if self.input_file_dirac:
             self.copy_with_replacement(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'))
-          # self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'), message=True)
         else:
             print '  No input file provided; pam will assume that it is obtained from the restart file.'
 
@@ -1304,12 +1292,12 @@ Options are also read from ~/.diracrc"""
 
     def grep_for_warnings(self):
         if os.path.isfile(self.output_file_full):
-            file = open(self.output_file_full, 'r')
+            f = open(self.output_file_full, 'r')
             warnings = ''
-            for line in file.readlines():
+            for line in f.readlines():
                 if 'warning' in line.lower():
                     warnings += line
-            file.close()
+            f.close()
             if warnings != '':
                 print 'output lines containing warnings:'
                 print warnings
@@ -1335,7 +1323,7 @@ Options are also read from ~/.diracrc"""
                             % basis_set_directory_list[i]
         if not self.debug and not self.vg_debug:
             self.launch_dirac_subprocess()
-        elif self.parallel_run == False:
+        elif not self.parallel_run:
             print '  debugging dirac.x in plain serial run, command:'
             print  self.dirac_cmd
             os.system(self.dirac_cmd)
@@ -1688,7 +1676,7 @@ class pam_run(pam_enviroment):
         self.pam_variables.grep_for_warnings()
 
 # short definition of the script's main function
-def main(*args):
+def main():
     dirac_run = pam_run()
     dirac_run.perform()
 
@@ -1831,7 +1819,6 @@ class disk_space_find:
         fill (initialize) wanted variables, no other info needed sofar
         if entering variable path is not proper, returns None
         """
-        import os
         # initialize
         self.capacity=disk_space(path).capacity
         self.available=disk_space(path).available
@@ -1877,12 +1864,9 @@ def backup_file(some_file,upto):
     Important routine doing backup of the file "some_file", version up to
     number "upto"
     """
-    import os.path, shutil
     def do_copy_print(backup_file_name,backup_file_name_p1):
         shutil.copy(backup_file_name,backup_file_name_p1)
         #         "file.n"  -->  "file.n+1"
-        pure_file_path='';pure_file_name=''
-        pure_file_path_p1='';pure_file_name_p1=''
         result=extract_path_file()
         result.get_path_file(backup_file_name)
         result_p1=extract_path_file()
@@ -1911,8 +1895,6 @@ def find_executable(executable, path=None):
     found
     from: http://snippets.dzone.com/posts/show/6313
     """
-    import os
-    import sys
     if not executable:
         sys.exit("find_executable: no executable privided on input!")
     if path is None:
@@ -1947,4 +1929,4 @@ def print_error_message(s):
     sys.stderr.flush()
 
 if __name__ == '__main__':
-    sys.exit(main(*sys.argv))
+    sys.exit(main())
