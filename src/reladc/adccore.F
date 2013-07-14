@@ -1473,7 +1473,7 @@ C
           WRITE(iw,*)
           WRITE(iw,*) '**************************************'
           WRITE(iw,*) '*                                    *'
-          WRITE(iw,*) '* You selected (also) a Fano run     *'
+          WRITE(iw,*) '* You selected a FanoADC run         *'
           WRITE(iw,*) '*                                    *'
           WRITE(iw,*) '**************************************'
 

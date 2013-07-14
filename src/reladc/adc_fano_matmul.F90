@@ -5,7 +5,8 @@ CONTAINS
   SUBROUTINE fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
                                fhmat,fhdiag,intbuf,e2h1p,t_mom,nbufs,iw)
 !
-! Purpose: 
+! Purpose: Do the final multiplication of the initial wave function
+!          with the coupling block and the final state wavefunctions.
 !
 
     use adc_fano_exchange

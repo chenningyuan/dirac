@@ -6,8 +6,7 @@ CONTAINS
                      eajl,oooo,vovo,mxno)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
-!           This is the controlling module. All routines are to be found
-!           in adc_fano_routines.
+!           This is the controlling module for the real calculation.
 !           This module is supposed to be tidied up. No other routines are
 !           to be added.
 !
@@ -53,7 +52,6 @@ CONTAINS
     CHARACTER(6)                          :: fn_conf='FANCNF'
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: buflanc
     INTEGER                               :: kfree, lfree, kfreebase
-!    INTEGER                               :: ierror = 0
     INTEGER                               :: idpt
     INTEGER                               :: ixx
 
@@ -83,7 +81,7 @@ CONTAINS
     nok  = NO(krep)
     najl = NVOOT(krep)
 
-!    ! Check physical possibility of initial state choice
+    ! Check physical possibility of initial state choice
     IF (reladc_fano_inrelsp > nok) THEN
       CALL QUIT('Unphysical choice of initial state')
     END IF
@@ -167,9 +165,12 @@ CONTAINS
     reladc_md_nmspec   = 'FSPEC'
 
     
+!    Calling full diagonalizer for testing purposes
 !    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
 !    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep)
 
+    ! This is a workaround which allows to use routines based on the old
+    ! memory handling with MEMOPT
     CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
     
     kfree     = 1
@@ -181,6 +182,7 @@ CONTAINS
     CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
 
     CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
     CALL dealloc(buflanc)
