@@ -4657,9 +4657,6 @@ C
 C open config file
 C
       IRECL = 56
-!     WRITE(IW,*) 'Writing EXC configs to ',FILENAME
-!     WRITE(IW,*) 'State symmetry: ',DESREP
-!     WRITE(IW,*) 'Record length: ',IRECL
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 C
@@ -4676,7 +4673,7 @@ C|
 C|
 
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
-        brep = multb(desrep+nrep,jrep,1)
+        brep = multb(desrep+nrep,jrep,2)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun
@@ -4710,7 +4707,7 @@ C|
 C|
 C|
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10

@@ -3611,7 +3611,7 @@ c     else
 c       write(*,*) 'boo/oo checksum(r):',ddot(moo(1),boo,1,boo,1)
 c     endif
 C
-C  sort the V_ai,bj integrals to V_ab,ij and contract wit Q_ab to b_ij
+C  sort the V_ai,bj integrals to V_ab,ij and contract with Q_ab to b_ij
 C  this contribution is symmetric and is added as b_oo/VV to the part
 C  from above.
 C
