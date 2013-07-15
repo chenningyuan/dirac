@@ -54,17 +54,7 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 cd $DIRAC
 
-BUILD=build_Intel_OpenMPI_MKL_ILP64
-if [[ -d "$BUILD" ]]; then
-  echo "deleting previous build directory $BUILD"
-  /bin/rm -rf $BUILD
-fi
-echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
-./pamadm -a --builddir=$BUILD
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD
-cd $BUILD
-python binary_info.py
-make Experimental
+export LC_ALL=C
 
 #
 #  serial DIRAC buildup, Intel MKL
@@ -86,7 +76,6 @@ fi
 cd $BUILD_SERIAL
 python binary_info.py
 make Experimental 
-
 #
 #  serial,static DIRAC buildup
 #
@@ -107,6 +96,18 @@ sed -i "s/-lcilkrts//g" CMakeFiles/dirac.x.dir/link.txt
 make ExperimentalTest
 make ExperimentalSubmit
  
+
+BUILD=build_Intel_OpenMPI_MKL_ILP64
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
+./pamadm -a --builddir=$BUILD
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" -D RUNTEST_NR_PROC=$NPROCS --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 $BUILD
+cd $BUILD
+python binary_info.py
+make Experimental
 
 #
 # OpenMPI parallel, static
