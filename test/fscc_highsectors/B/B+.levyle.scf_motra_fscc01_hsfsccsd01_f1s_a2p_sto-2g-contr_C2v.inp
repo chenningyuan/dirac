@@ -37,14 +37,14 @@ csv
 #csu
 .END
 .INPUT
- B+ test with DIRAC-HSFS-CCSD, 2p active space; 1s(2) frozen
+ B+ test with DIRAC-HSFS-CCSD, only 2p active space; 1s(2) frozen
   3 80 08  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
   4
 hvvv
   4
   2  1  1  0
   0  0  0  0
-9
+9 0 0 0
 **ANALYZE
 .MULPOP
 *MULPOP
@@ -56,7 +56,7 @@ all
 energy -4.0 1000.0 1.0
 *END OF
 
- # active space 2p
+ # (0,1) sector, active space 2p
  &RELCCSD DOFSPC=T DOENER=F IPRNT=1  INTERFACE="DIRAC6" DEBUG=F  &END
  &CCENER NTOL=08 &END
  &CCFSPC MAXIT=50, NACTH=0,0, NACTP=3,3, FSSECT=1,1,0,0,0,0  &END

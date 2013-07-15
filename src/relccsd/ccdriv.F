@@ -581,11 +581,12 @@ C
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
-      integer :: verbose = 0
-      integer(kind=8)        :: maxcor
-      integer(kind=8)        :: mxcorr
-      integer(kind=8)        :: mxcorr1
-      integer(kind=8)        :: mword_limit
+      integer :: verbose    = 0
+      integer :: ncore_elec = 0
+      integer(kind=klongint) :: maxcor
+      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: mxcorr1
+      integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
@@ -642,7 +643,7 @@ C
 C
 C     Read symmetry information
 C
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
@@ -706,6 +707,9 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+
+!     total charge of the system
+      call get_charge_cc(mycharge,nelect,ncore_elec)
 C
 C     Write output in xml format
 C
@@ -721,10 +725,12 @@ C
 
 C
       if ( maxcor .gt. 0) then
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1004) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
       else
-      WRITE (IW,1414) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1414) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
 C     
@@ -907,6 +913,7 @@ C
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -919,6 +926,7 @@ C
      &        /" Memory limit (MWord) not set in Dirac but by the OS"
      &        /" Interface used       :",T40,A10//)
 1004  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -3830,7 +3838,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
+      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
@@ -3850,6 +3858,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
+      integer ncore_elec
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3864,17 +3873,27 @@ C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
+      integer   :: spinor_info(5,2)
 C
 C---------------Executable code--------------------------------------
 C
-C     Read symmetry information (master node only)
+C     Read symmetry and spinor information (master node only)
+C
+      spinor_info(1:5,1:2) = 0
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP)
+     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+     &                 (spinor_info(1,irp),irp=1,nfsym), 
+     &                 (spinor_info(2,irp),irp=1,nfsym), 
+     &                 (spinor_info(3,irp),irp=1,nfsym), 
+     &                 (spinor_info(4,irp),irp=1,nfsym), 
+     &                 (spinor_info(5,irp),irp=1,nfsym)
+       ncore_elec = 0
+       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
@@ -4432,4 +4451,17 @@ C
 C
       RETURN
       END
+
+      subroutine get_charge_cc(mycharge,nelect_cc,ncore_elec_cc)
+      implicit none
+      integer, intent(inout) :: mycharge
+      integer, intent(in)    :: nelect_cc
+      integer, intent(in)    :: ncore_elec_cc
+      integer                :: charge
+      charge   = 0
+      call rmolchr(charge)
+      mycharge = charge - (ncore_elec_cc + nelect_cc)
+!     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
+!    & charge, ncore_elec_cc, nelect_cc, mycharge
+      end subroutine
 

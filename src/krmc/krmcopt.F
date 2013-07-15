@@ -1951,7 +1951,7 @@ C     *** Configurational parameters ********************
 C     ***************************************************
 C
       CALL RSETCI(OPT_CIPROGRAM,WORK,KFREE,LFREE)
-      IF (NZCONF .LE. 0) THEN
+      IF (WFTYP(1:3) .NE. 'SCF' .AND. NZCONF .LE. 0) THEN
          GO TO 9000
       END IF
 C
