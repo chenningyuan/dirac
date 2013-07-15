@@ -162,7 +162,7 @@ contains
          if( norb_dim(i) > 0 )then
 
 !          debug print
-           if(print_lvl > 1)then
+           if (print_lvl >= 3) then
              call print_x2cmat(h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,nbas1_f,nz,ipq_off_in(1,0),      &
                               'x2c - h1_4c-basic-saao',6)
            end if
