@@ -1,17 +1,21 @@
 .. _reladc:
 
-RELADC & LANCZOS
+RELADC, FANOADC and LANCZOS
 ================
 
-This section lists the available keywords for RELADC and the closely connected
+This section lists the available keywords for RELADC, FanoADC and the closely connected
 iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.
 
 If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
-propagator you invoke both by setting the .RELADC keyword in the \*\*WAVE FUNCTION
+propagator or a FanoADC claculation you invoke all of them by setting the
+.RELADC keyword in the \*\*WAVE FUNCTION
 Section.
 
 The RELADC/LANCZOS calculation is then individually controlled in the
 \*\*RELADC and \*\*LANCZOS input sections.
+
+The FanoADC calculation is a special case of a one-particle propagator
+calculation. Therefore the keywords are part of the \*\*RELADC section.
 
 star(RELADC)
 
@@ -165,6 +169,121 @@ the behavior is system-dependent.
 
     .ADCTHR
     1.0E-05
+
+keyword(FANO)
+
+This keyword activates the FanoADC module. It requires the specification of the
+initial and final states to be investigated. By running the default calculation
+settings, specified ionization spectra are calculated as well. This can be turned
+off by using the keyword FANOONLY.
+
+*Default:*
+
+::
+
+    False
+
+For an Fano calculation it is crucial to use a proper (and normally large)
+basis set. It has been shown, that it is beneficial to add KBJ exponents to the
+atoms themselves or to ghost atoms surrounding the system in order to span a basis
+for the interaction region of the final state and the outgoing electron.
+By this the user
+should take care not to loose symmetry by specifying the positions of ghost atoms.
+
+More information about the proper selection of basis sets can be found here.
+
+keyword(FANOIN)
+
+Here the initially ionized state is specified by symmetry and relative spinor number.
+The following example chooses the first spinor in the first symmetry to be the
+initial state:
+
+::
+
+    .FANOIN
+     1 # symmetry
+     1 # relative spinor number
+
+You can find a table of spinors, their symmetries and relative and absolute
+spinor numbers at the beginning of every ADC calculation with the *same* active
+space. 
+For the case of the Auger process of a neon atom, this looks like:
+
+::
+
+    Spinor   Abelian Rep.         Energy   Recalc. Energy
+     O    1    1    1g      -32.8174679811  -32.8174680470
+     O    2    2    1g       -1.9358495110   -1.9358495652
+     O    1    3   -1g      -32.8174679811  -32.8174680470
+     O    2    4   -1g       -1.9358495110   -1.9358495652
+     O    1    5    1u       -0.8528295909   -0.8528295926
+     O    2    6    1u       -0.8482685119   -0.8482685445
+     O    1    7   -1u       -0.8528295909   -0.8528295926
+     O    2    8   -1u       -0.8482685119   -0.8482685445
+     O    1    9    3u       -0.8482685155   -0.8482685461
+     O    1   10   -3u       -0.8482685155   -0.8482685461
+     .
+     .
+     virtual orbitals
+
+which means, that the first spinor of the first symmetry (1g) which represents
+the Ne1s orbital is chosen as the initially ionized state.
+
+keyword(FANOCHNL)
+
+Autoionization processes decay via several channels into different final states.
+These are specified in this section. In the first line, the number of channels
+, let us call it N, needs to be given. 
+The following N lines have to be pairs of absolute spinor numbers characterizing
+the final state. This part is at the moment no black box method and the user
+is required to think carefully about the selection of these final states and not
+to forget a possible channel. On the other hand, this gives a lot of control to
+the user to specify exactly what he/she wants to calculate.
+
+Again the Neon atom as example:
+
+::
+
+    .FANOCHNL
+     27
+     2 5
+     2 6
+     2 7
+     2 8
+     2 9
+     2 10
+     4 5
+     4 6
+     4 7
+     4 8
+     4 9
+     4 10
+     5 6
+     5 7
+     5 8
+     5 9
+     5 10
+     6 7
+     6 8
+     6 9
+     6 10
+     7 8
+     7 9
+     7 10
+     8 9
+     8 10
+     9 10
+
+keyword(FANOONLY)
+
+This keyword enforces to run only a FanoADC run and overwrite every other
+calculation of the one-particle propagator.
+
+*Default:*
+
+::
+
+    False
 
 star(LANCZOS)
 
