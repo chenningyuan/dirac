@@ -30,7 +30,7 @@ print_CE_info
 querry_CE_attributes $VO
 check_file_on_SE $VO
 # download & unpack tar-file onto CE - MUST be successfull or exit
-download_from_SE $VO
+download_from_SE $VO "dirac_grid_suite.tgz"
 #RETVAL=$?; [ $RETVAL -ne 0 ] && exit 4
 
 # get number of procs #
