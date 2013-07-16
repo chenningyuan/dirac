@@ -1465,6 +1465,7 @@ C  there are more diagonal elements to be calculated in MAKEHPHP !
 C  diagonal is written out in MAKEHPHP
 C  all other elements are finished and can be written out.
 C
+        WRITE(iw,*) 'CARITH = ', CARITH
 
 !
 ! This is the big Fano-IF-clause introduced by Elke
@@ -1478,14 +1479,28 @@ C
           WRITE(iw,*) '**************************************'
 
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
-          IF (ADCLEVEL.EQ. 1) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
-     &                   )
-          ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
-     &                   )
+          WRITE(iw,*) 'CARITH = ', CARITH
+          IF (CARITH) THEN
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+     &                     )
+            END IF
+
+          ELSE
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+     &                     )
+            END IF
           END IF
           CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
         END IF
