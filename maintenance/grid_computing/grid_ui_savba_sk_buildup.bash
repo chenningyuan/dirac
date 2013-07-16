@@ -90,14 +90,15 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 cd $DIRAC
 
 # copy there the mpirun static with related directories & files
-cp    /home/ilias/bin/bin/openmpi_intel_stat/bin/mpirun                     $DIRAC/$BUILD_OMPI_INTEL/.
+cp    /home/ilias/bin/openmpi_intel_stat/bin/mpirun                         $DIRAC/$BUILD_OMPI_INTEL/.
 /bin/rm -rf $BUILD_OMPI_INTEL/share
 mkdir $BUILD_OMPI_INTEL/share
-cp -R -P /home/ilias/bin//home/ilias/bin/openmpi_intel_stat/share/openmpi   $DIRAC/$BUILD_OMPI_INTEL/share/.
-cp -R  /home/ilias/bin/openmpi_intel_stat/etc                               $DIRAC/$BUILD_OMPI_INTEL/.
+cp -R -P  /home/ilias/bin/openmpi_intel_stat/share/openmpi                  $DIRAC/$BUILD_OMPI_INTEL/share/.
+cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIRAC/$BUILD_OMPI_INTEL/.
+# don't forget export OPAL_PREFIX=$PWD/$BUILD 
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
-/bin/rm test/*/*.out*
+/bin/rm    test/*/*.out*
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz
