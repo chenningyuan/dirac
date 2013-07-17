@@ -540,7 +540,7 @@ Options are also read from ~/.diracrc"""
             dest='dest_mw',
             default=self.default_memory_work_master,
             help="""set max memory (in megawords) for WORK array
-                    for the master [default: %default]
+                    for the master (for each MPI thread) [default: %default]
                   """,
             metavar='INTEGER',
             )
@@ -550,7 +550,7 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_mb',
             help="""set max memory (in MB) for WORK array
-                    for the master [default: %default]
+                    for the master (for each MPI thread) [default: %default]
                   """,
             metavar='INTEGER',
             )
@@ -560,7 +560,7 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_nw',
             help="""set max memory (in megawords) for WORK array
-                    for the co-workers [default: --mw set value]
+                    for the co-workers (for each MPI thread) [default: --mw set value]
                   """,
             metavar='INTEGER',
             )
@@ -571,7 +571,7 @@ Options are also read from ~/.diracrc"""
             dest='dest_aw',
             default=self.default_memory_dynamic,
             help="""set max dynamically allocatable memory (in megawords)
-                     [default: %default]
+                    (for each MPI thread) [default: %default]
                   """,
             metavar='INTEGER',
             )
