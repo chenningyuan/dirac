@@ -49,6 +49,7 @@
          double precision, allocatable, target :: vdatadb(:), vdatarl(:)
          real(kind=kreal), allocatable :: matrix(:,:)
          real(kind=kreal), pointer             :: p_mem, p_mem42(:)
+         complex(kind=kreal), allocatable :: cmatrix(:,:)
        
          character(len=charArrayLength) :: kbytesAvailable
 
@@ -69,6 +70,7 @@
          call alloc(vdatarl,v2size)
          call allocp(p_mem42,v2size)
          call alloc(matrix,v2size,v2size,id="matrix")
+         call alloc(cmatrix,v2size,v2size,id="matrix")
 
          p_mem => vdatadb(0)
 
