@@ -3,7 +3,7 @@
 # Python replacement of the previous bash pam script
 #
 # Written by Miro ILIAS, Matej Bel University,
-#        Banska Bystrica, Slovakia, end of 2010
+#        Banska Bystrica, Slovakia, 2010-2013
 #
 # Contributors:  Rado Bast, France
 #                Ulf Ekstrom, Sweden
@@ -13,6 +13,22 @@
 # Purpose: Given one single input (consisting of a mol/xyz and a inp file)
 #          run Dirac once at a known place and bring back output and restart data to the (also known) starting directory.
 #          No more no less.
+#
+#
+# Environmental variables dealt with in this script :
+# ---------------------------------------------------
+#          BASDIR - put there basis set directory
+#          DIRTIMEOUT - reads in time out limit for dirac run
+#          DIRWRK - put there value for working space
+#          DIRMAX - put there value of maximum working space
+#          XLFRTEOPTS - put there some specific string for IBM architecture
+#          DIRPAR - put there "1", if parallel run
+#          DIRNOD - put there maximum memory for nodes, if  parallel run
+#          GLBSCR - put "1" for global scratch disk, otherwise put "0" - only if parallel run
+#          MKL_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
+#          MKL_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
+#          OMP_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
+#          OMP_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
 #
 ##############################################################################################################################
 
@@ -228,9 +244,8 @@ class pam_enviroment:
         self.inkrmc = False
         self.outkrmc = False
 
-    # execution time-limit (in seconds; TODO: implement general time format)
-        self.set_timeout_limit = False
-        self.timeout = ''
+    # execution time-limit in seconds (TODO: implement general time format)
+        self.timeout = None
 
     # total spent time for pam script + job execution
         self.start_time=time.time()
@@ -756,7 +771,7 @@ Options are also read from ~/.diracrc"""
             type='string',
             action='store',
             dest='dest_timeout',
-            help='limit dirac.x execution time (in #d#h#m#s, or in pure seconds-integer) [default: no limit]'
+            help='limit dirac.x execution time (in #d#h#m#s, or in pure seconds-integer) [default: no limit; reads env.var. DIRTIMEOUT]'
                 ,
             metavar='TIME_STRING',
             )
@@ -830,8 +845,8 @@ Options are also read from ~/.diracrc"""
             print_error_message(err_message)
 
         if options.dest_timeout:
+            print '...timeout from pam:'
             self.timeout = process_time_string(options.dest_timeout)
-            self.set_timeout_limit = True
 
         self.nobackup = options.dest_nobackup
 
@@ -992,8 +1007,9 @@ Options are also read from ~/.diracrc"""
             self.output_name = 'dirac_output.' + str(self.current_pid)
 
 
-    def set_environment_variables(self):
+    def set_mkl_environment_variables(self):
         '''
+        For the Intel-MKL library linked with DIRAC
         set OMP and MKL environment variables to safe defaults
         unless they are set by the user where we leave them as
         they are and trust that the user knows what he/she is doing
@@ -1169,6 +1185,12 @@ Options are also read from ~/.diracrc"""
     # Next line is for IBM only but will not hurt other systems
 
         os.putenv('XLFRTEOPTS', "'namelist=old'")
+
+    # check the timeout environmental variable, check if the timeout variable did not enter already through the pam flag --timeout
+
+        timeout_env=os.getenv('DIRTIMEOUT')
+        if timeout_env and self.timeout==None:
+            self.timeout = process_time_string(timeout_env)
 
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
@@ -1385,7 +1407,7 @@ Options are also read from ~/.diracrc"""
             # stamp the  general  interruption message into the output file
             self.f.write(interrupt_message+"\n") #
             # flush out specific timeout interruption message
-            if signum == 14 and self.set_timeout_limit:
+            if signum == 14 and self.timeout:
                 timeout_interrupt_message="\npam: This is specific timeout kill after "+str(self.timeout)+" seconds."
                 print_error_message(timeout_interrupt_message)
                 self.f.write(timeout_interrupt_message+"\n")
@@ -1420,7 +1442,7 @@ Options are also read from ~/.diracrc"""
         if not is_windows():
             signal.signal(signal.SIGHUP,self.child_signaller)
             signal.signal(signal.SIGPIPE,self.child_signaller)
-            if self.set_timeout_limit: # set timeout alarm if selected
+            if self.timeout: # set timeout alarm if selected
                 signal.signal(signal.SIGALRM, self.child_signaller)
                 signal.alarm(self.timeout)
         else:
@@ -1622,10 +1644,10 @@ Options are also read from ~/.diracrc"""
                 print '  rsh/rcp        :', self.rsh,'/',self.rcp
                 print '  machine file   :', self.machinefile
 
-        if self.set_timeout_limit and not is_windows():
+        if self.timeout and not is_windows():
             print '  Allowed runtime:', self.timeout, \
                 ' seconds. Killing afterwards.'
-        elif self.set_timeout_limit and is_windows():
+        elif self.timeout and is_windows():
            print '--timeout not (yet) working for Windows !'
 
         if self.profile:
@@ -1662,12 +1684,14 @@ class pam_run(pam_enviroment):
         if self.pam_variables.just_show_settings:
             self.pam_variables.show_settings()
             sys.exit()
+
+        self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
-        self.pam_variables.set_environment_variables()
+        self.pam_variables.set_mkl_environment_variables()
+
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
-        self.pam_variables.set_dirac_environment()
         self.pam_variables.set_dirac_cmd()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
@@ -1703,10 +1727,10 @@ def kill_win(pid):
 
 def process_time_string_core(time_string):
     """
-    core subroutine :
-    process entering time_string of the form "#d#h#m#s"
+    process the entering time string of the form "#d#h#m#s"
     or as pure integer number;
     returns the resulting time in seconds (integer)
+    - called from process_time_string - 
     """
     secs=0
     mins=0
