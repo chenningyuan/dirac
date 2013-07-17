@@ -17,9 +17,10 @@ echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
 BUILD=build_ompi_ifort_ilp64
-BUILD_STATIC=build_ifort_ilp64_static
 # go to the local DIRAC directory
 cd $DIRAC
+
+export DIRTIMEOUT="11m"
 
 # configure step
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
@@ -28,8 +29,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 #
-./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999 $BUILD
-#./setup --fc=ifort  --cc=gcc  --cxx=g++ -D BUILDNAME="opteron_ifort_ilp64_serial_STATIC" --int64 --static -D RUNTEST_TIMEOUT="00:30:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_STATIC
+./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999 $BUILD
 #
 cd $BUILD
 make ExperimentalUpdate
