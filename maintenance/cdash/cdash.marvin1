@@ -24,6 +24,8 @@ DIRAC=/home/ilias/Work/software/dirac/working_trunk
 # go to the local DIRAC directory
 cd $DIRAC
 
+export DIRTIMEOUT="10m"
+
 BUILD_PGI=build_PGI_i32lp64_acml_dyn
 if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI."
@@ -33,7 +35,7 @@ fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI
 cd $BUILD_PGI
 make ExperimentalUpdate
 make ExperimentalConfigure
@@ -49,7 +51,7 @@ if [[ -d "$BUILD_PGI1" ]]; then
 fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI1
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC --int64 -D BUILDNAME="PGI_ownmath_i8" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI1
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC --int64 -D BUILDNAME="PGI_ownmath_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI1
 cd $BUILD_PGI1
 make ExperimentalUpdate
 make ExperimentalConfigure
@@ -66,7 +68,7 @@ fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI_I8
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64  -D BUILDNAME="PGI_acml_i8" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI_I8
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64 -D BUILDNAME="PGI_acml_i8" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI_I8
 cd $BUILD_PGI_I8
 make ExperimentalUpdate
 make ExperimentalConfigure

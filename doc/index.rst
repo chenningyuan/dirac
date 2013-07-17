@@ -28,6 +28,9 @@ Setting up DIRAC
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
 
+* **pam script:**
+  :doc:`How to set the scratch directory <pam/scratch>`
+
 
 Updates and patches
 ===================
