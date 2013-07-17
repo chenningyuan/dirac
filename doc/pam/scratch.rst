@@ -13,8 +13,8 @@ You can set the scratch space like this::
 
   $ pam --scratch=/somepath
 
-If ``--scratch`` is not set, DIRAC will look for the environment variables
-``SCRATCH`` or ``TMPDIR``.
+If ``--scratch`` is not set, DIRAC will look for the environment variabls
+``DIRAC_TMPDIR``.
 
 If these variables are not set, DIRAC defaults to
 ``$HOME/DIRAC_scratch_directory``.
