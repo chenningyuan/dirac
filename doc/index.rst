@@ -27,6 +27,9 @@ Setting up DIRAC
 * **Example installations and run scripts:**
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
 
+* **pam script:**
+  :doc:`How to set the scratch directory <pam/scratch>`
+
 
 Updates and patches
 ===================
