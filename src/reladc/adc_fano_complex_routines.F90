@@ -909,39 +909,5 @@ CONTAINS
 !      END FUNCTION     
 
 
-!
-!------------------------------------------------------------------
-!
-  SUBROUTINE rarray_to_carray_1(rarray,rlength,carray)
-!
-! Purpose: To read in 1D arrays of real numbers, which implicitely
-!          define complex numbers and write the complex numbers to 
-!          a new array.
-!
-    IMPLICIT NONE
-
-!
-! Calling Variables
-!
-    INTEGER, INTENT(IN)                           :: rlength
-    REAL(8), DIMENSION(rlength), INTENT(IN)       :: rarray
-    COMPLEX(8), DIMENSION(rlength/2), INTENT(OUT) :: carray
-
-!
-! Local Variables
-!
-    INTEGER      :: i, counter
-
-!
-! Code
-!
-    counter = 0
-
-    DO i = 1, rlength-1, 2
-      counter = counter + 1
-      carray(counter) = CMPLX(rarray(i),rarray(i+1),8)
-    END DO
-
-  END SUBROUTINE rarray_to_carray_1
 
 END MODULE adc_fano_complex_routines
