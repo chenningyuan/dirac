@@ -194,6 +194,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
+      real(8), allocatable :: testoooo(:)
 
       call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
@@ -437,6 +438,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+! Elke
+      WRITE(iw,*) 'after ccseti'
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
