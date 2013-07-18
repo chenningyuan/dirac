@@ -85,6 +85,9 @@ CONTAINS
     IF (reladc_fano_inrelsp > nok) THEN
       CALL QUIT('Unphysical choice of initial state')
     END IF
+    IF (reladc_fano_nrchannels == 0) THEN
+      CALL QUIT('No Fano final states selected')
+    END IF
 
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
@@ -290,6 +293,9 @@ CONTAINS
     IF (reladc_fano_inrelsp > nok) THEN
       CALL QUIT('Unphysical choice of initial state')
     END IF
+    IF (reladc_fano_nrchannels == 0) THEN
+      CALL QUIT('No Fano final states selected')
+    END IF
 
     ! Create lookup table bigicra
     CALL alloc(bigicra,9,NVOOT(krep), id='FanoADC: bigicra')
@@ -317,14 +323,15 @@ CONTAINS
     ! Create sorted h/2h1p block
     CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw)
+    CALL dealloc(bufhp)
 
-!    ! Create an array of final state positions in the 2h1p part
-!    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
-!    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
-!
-!    ! Create the sorted 2h1p/2h1p block
-!    CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-!                       finalpos,iw,mxno)
+    ! Create an array of final state positions in the 2h1p part
+    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
+    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+
+    ! Create the sorted 2h1p/2h1p block
+    CALL cfano_makehphp(ckks,eajl,roooo,rvovo,bigicra,ladc,krep,  &
+                       finalpos,iw,mxno)
 !
 !    CALL dealloc(bigicra)
 !
