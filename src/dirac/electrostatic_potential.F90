@@ -332,6 +332,16 @@ module electrostatic_potential
                   ader = 2.0d0 * ader
               end if
 ! We multiply by +2.0d0. The D matrix refers to the alpha part only.
+!     do ipoint = 1, nr_points
+!        print *, "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
+!        do ib = 1, kcktb
+!          do ia = 1, kckta
+!             print *, "ELEMENT", ia, ib
+!             print *, ader(ipoint, ia, ib)
+!        call output(ader(ipoint,:,:),1,kckta,1,kcktb,kckta,kcktb,2,6)
+!          enddo
+!        enddo
+!     enddo 
               do ipoint = 1, nr_points
               if (do_matrix) then
                  do ib = 1, kcktb
@@ -353,6 +363,10 @@ module electrostatic_potential
        idena = idena + khkta * multa
       end do
 
+
+!          do ipoint = 1, nr_points
+!            print *, "Electronic ESP @point", ipoint, vector(ipoint)
+!          end do
       if (iprint > 5) then
           do ipoint = 1, nr_points
             print *, "Electronic ESP @point", ipoint, vector(ipoint)

@@ -940,7 +940,6 @@ CONTAINS
     DO i = 1, rlength-1, 2
       counter = counter + 1
       carray(counter) = CMPLX(rarray(i),rarray(i+1),8)
-      WRITE(*,*) 'carray = ', carray(counter)
     END DO
 
   END SUBROUTINE rarray_to_carray_1

@@ -44,15 +44,15 @@ module overlap_diagnostic
 
    private
 
-   integer                 :: nr_g_ao_blocks
-   integer                 :: nr_u_ao_blocks
-   integer                 :: g_ao_start(8)
-   integer                 :: u_ao_start(8)
-   integer                 :: g_ao_end(8)
-   integer                 :: u_ao_end(8)
-
-   real(8), allocatable    :: o_matrix(:, :)
-   real(8), allocatable    :: buffer(:, :, :)
+   integer                 :: nr_g_ao_blocks(2)
+   integer                 :: nr_u_ao_blocks(2)
+   integer                 :: g_ao_start(8,2)
+   integer                 :: u_ao_start(8,2)
+   integer                 :: g_ao_end(8,2)
+   integer                 :: u_ao_end(8,2)
+   integer                 :: nc
+   real(8), allocatable,public    :: o_matrix(:,:)
+   real(8), allocatable    :: spinor(:, :, :, :)
 
    character(*), parameter :: file_name = 'o_matrix'
    integer,      parameter :: file_unit = 137
@@ -105,11 +105,14 @@ contains
 !     --------------------------------------------------------------------------
       logical, intent(in) :: parallel_xc, i_am_master
 !     --------------------------------------------------------------------------
-      integer             :: k, irep, ic, nc
+      integer             :: k, irep, ic
 !     --------------------------------------------------------------------------
 
       if (i_am_master) then
          
+!         nr_g_ao_blocks(1) = 0
+!         nr_u_ao_blocks(1) = 0
+
          nr_g_ao_blocks = 0
          nr_u_ao_blocks = 0
          g_ao_start     = 0
@@ -122,6 +125,8 @@ contains
             nc = 2
          else
             nc = 1
+           nr_g_ao_blocks(2) = 0
+           nr_u_ao_blocks(2) = 0
          end if
 
          do ic = 1, nc
@@ -129,13 +134,14 @@ contains
                if (ao_nr(irep, ic) > 0) then
 !                 fixme check this carefully
                   if (ao_fermion_corep(irep, ic) == 1) then
-                     nr_g_ao_blocks = nr_g_ao_blocks + 1
-                     g_ao_start(nr_g_ao_blocks) = ao_off(irep, ic) + 1
-                     g_ao_end(nr_g_ao_blocks)   = ao_off(irep, ic) + ao_nr(irep, ic)
+                     nr_g_ao_blocks(ic) = nr_g_ao_blocks(ic) + 1
+!avijit:separating small and large component            
+                     g_ao_start(nr_g_ao_blocks(ic),ic) = ao_off(irep, ic) + 1
+                     g_ao_end(nr_g_ao_blocks(ic),ic)   = ao_off(irep, ic) + ao_nr(irep, ic)
                   else
-                     nr_u_ao_blocks = nr_u_ao_blocks + 1
-                     u_ao_start(nr_u_ao_blocks) = ao_off(irep, ic) + 1
-                     u_ao_end(nr_u_ao_blocks)   = ao_off(irep, ic) + ao_nr(irep, ic)
+                     nr_u_ao_blocks(ic) = nr_u_ao_blocks(ic) + 1
+                     u_ao_start(nr_u_ao_blocks(ic),ic) = ao_off(irep, ic) + 1
+                     u_ao_end(nr_u_ao_blocks(ic),ic)   = ao_off(irep, ic) + ao_nr(irep, ic)
                   end if
                end if
             end do
@@ -154,10 +160,9 @@ contains
 #endif
 
       allocate(o_matrix(nr_mo, nr_mo))
-      allocate(buffer(max_block_length, nr_mo, nr_quaternion_blocks))
+      allocate(spinor(max_block_length, nr_mo, 4,nc))
 
       o_matrix = 0.0d0
-
 
    end subroutine
 
@@ -187,7 +192,7 @@ contains
       u_ao_end       = 0
 
       if (allocated(o_matrix)) deallocate(o_matrix)
-      if (allocated(buffer))   deallocate(buffer)
+      if (allocated(spinor))   deallocate(spinor)
 
    end subroutine
 
@@ -237,7 +242,6 @@ contains
 !        close(file_unit, status = 'keep')
 !        return
       end if
-
       allocate(o_matrix(nr_mo_gerade + nr_mo_ungerade, nr_mo_gerade + nr_mo_ungerade))
       read(file_unit) o_matrix
 
@@ -252,19 +256,18 @@ contains
                   1,              &
                   (/1, 2, 3, 4/), &
                   6)
-
+     
      trace = 0.0d0
      do p = 1, nr_mo
         trace = trace + o_matrix(p, p)
      end do
-     write(*, *) 'trace (should be nr of orbitals):', trace
+     write(*, *) 'trace(should be nr of orbitals):', trace
      write(*, *) 'trace/nr of orbitals (should be very close to 1):', trace/nr_mo
      diff = dabs((trace/nr_mo) - 1.0d0)
      diff_tolerance = 1.0d-4
      if (diff > diff_tolerance) then
         call quit('overlap_diagnostic: avg O_ia trace significantly different from 1.0')
      end if
-
    end subroutine
 
    subroutine integrate_o_matrix(block_length, w, ao)
@@ -275,9 +278,14 @@ contains
       real(8), intent(in)    :: ao(block_length, *)
 !     --------------------------------------------------------------------------
       integer                :: s, t
-      integer                :: i, l, n, k
-      integer                :: iz
-      real(8)                :: q1, q2, q3, q4, q_norm
+      integer                :: i, l, n, k, ic
+      integer                :: iz, iq
+      integer, external      :: iqfrompq
+      real(8)                :: q_norm
+!      real(8),dimension(block_length,nr_mo)    ::q
+
+      real(8),dimension(:,:),allocatable::q
+
 !     --------------------------------------------------------------------------
 !
 !     structure of mo_coef (assuming no active orbitals):
@@ -312,86 +320,76 @@ contains
 !     | |___
 !     |_____
 
+      spinor = 0.0d0
+!     construct the 4*nc parts of gerade spinor s in point k
       i = 0
       do iz = 1, nr_quaternion_blocks
 !        gerade
          do s = 1, nr_mo_gerade
-            do k = 1, block_length
-               buffer(k, s, iz) = 0.0d0
-            end do
-            do n = 1, nr_g_ao_blocks
-               do l = g_ao_start(n), g_ao_end(n)
-                  i = i + 1
-                  do k = 1, block_length
-                     buffer(k, s, iz) = buffer(k, s, iz) + ao(k, l)*mo_coef(i)
-                  end do
-               end do
-            end do
-!           here you square buffer(k, s, iz)
-         end do
-      end do
+            do ic = 1,nc
+              do n = 1, nr_g_ao_blocks(ic)
+                iq = iqfrompq(n,1,ic,iz)
+                do l = g_ao_start(n,ic), g_ao_end(n,ic)
+                   i = i + 1
+                   do k = 1, block_length
+                      spinor(k, s, iq,ic) = spinor(k, s, iq, ic) + ao(k, l)*mo_coef(i)
+                   end do
+                end do
+              end do
+            enddo
+         enddo
+      enddo
+
+!     construct the 4*nc parts of ungerade spinor s in point k
       if (nr_fermion_coreps > 1) then
          do iz = 1, nr_quaternion_blocks
 !           ungerade
-            do s = nr_mo_gerade + 1, nr_mo
-               do k = 1, block_length
-                  buffer(k, s, iz) = 0.0d0
+           do s = nr_mo_gerade + 1, nr_mo
+               do ic = 1,nc
+                 do n = 1, nr_u_ao_blocks(ic)
+                   iq = iqfrompq(n,2,ic,iz)
+                   do l = u_ao_start(n,ic), u_ao_end(n,ic)
+                      i = i + 1
+                      do k = 1, block_length
+                        spinor(k, s, iq, ic) = spinor(k, s, iq, ic) + ao(k, l)*mo_coef(i) 
+                      end do
+                   end do
+                 end do
                end do
-               do n = 1, nr_u_ao_blocks
-                  do l = u_ao_start(n), u_ao_end(n)
-                     i = i + 1
-                     do k = 1, block_length
-                        buffer(k, s, iz) = buffer(k, s, iz) + ao(k, l)*mo_coef(i)
-                     end do
-                  end do
-               end do
-!           here you square buffer(k, s, iz)
-            end do
+           end do
          end do
       end if
-!     here you sum up the 1,2 or 4 contributions to buffer, take the square root and put in iz=1
-!     Next you only need to multiply together buffer for s and t
+
+
+     allocate(q(block_length,nr_mo))
+      q=0.0d0 
+!     construct the modulus of spinor s in point k
+      do ic = 1,nc
+        do iq = 1,4 !nr_quaternion_blocks ! be alerted
+          do s=1,nr_mo
+            do k=1,block_length
+               q(k, s)= q(k, s)+ spinor(k, s, iq, ic)*spinor(k, s, iq, ic)
+            enddo
+          enddo
+        enddo
+      enddo
+      do s=1,nr_mo
+        do k=1,block_length
+          q(k,s)=dsqrt(q(k,s))
+        enddo        
+      enddo
+!     combine moduli of spinors s and t to overlap diagnostic matrix
       do s = 1, nr_mo
          do t = s, nr_mo
+!Avijit: separating large and small component
             q_norm = 0.0d0
-            select case (nr_quaternion_blocks)
-               case (1)
-                  do k = 1, block_length
-                     q1 = buffer(k, s, 1)*buffer(k, t, 1)
-                     q_norm = q_norm + w(k)*dsqrt(q1*q1)
-                  end do
-               case (2)
-                  do k = 1, block_length
-                     q1 = buffer(k, s, 1)*buffer(k, t, 1) &
-                        - buffer(k, s, 2)*buffer(k, t, 2)
-                     q2 = buffer(k, s, 1)*buffer(k, t, 2) &
-                        + buffer(k, s, 2)*buffer(k, t, 1)
-                     q_norm = q_norm + w(k)*dsqrt(q1*q1 + q2*q2)
-                  end do
-               case (4)
-                  do k = 1, block_length
-                     q1 = buffer(k, s, 1)*buffer(k, t, 1) &
-                        - buffer(k, s, 2)*buffer(k, t, 2) &
-                        - buffer(k, s, 3)*buffer(k, t, 3) &
-                        - buffer(k, s, 4)*buffer(k, t, 4)
-                     q2 = buffer(k, s, 1)*buffer(k, t, 2) &
-                        + buffer(k, s, 2)*buffer(k, t, 1) &
-                        + buffer(k, s, 3)*buffer(k, t, 4) &
-                        - buffer(k, s, 4)*buffer(k, t, 3)
-                     q3 = buffer(k, s, 1)*buffer(k, t, 3) &
-                        + buffer(k, s, 3)*buffer(k, t, 1) &
-                        - buffer(k, s, 2)*buffer(k, t, 4) &
-                        + buffer(k, s, 4)*buffer(k, t, 2)
-                     q4 = buffer(k, s, 1)*buffer(k, t, 4) &
-                        + buffer(k, s, 4)*buffer(k, t, 1) &
-                        + buffer(k, s, 2)*buffer(k, t, 3) &
-                        - buffer(k, s, 3)*buffer(k, t, 2)
-                     q_norm = q_norm + w(k)*dsqrt(q1*q1 + q2*q2 + q3*q3 + q4*q4)
-                  end do
-            end select
+            do k = 1, block_length
+              q_norm = q_norm + w(k)*q(k, s)*q(k, t)
+            enddo
             o_matrix(s, t) = o_matrix(s, t) + q_norm
          end do
       end do
+   deallocate(q)
 
    end subroutine
 

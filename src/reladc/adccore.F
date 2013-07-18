@@ -182,7 +182,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-      integer :: verbose = 0
+      integer :: verbose        = 0
+      integer :: ncore_elec_adc = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -335,7 +336,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Read symmetry information from MRCONEE
 !
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec_adc)
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN ADCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
@@ -3677,7 +3678,7 @@ c     else
 c       write(*,*) 'boo/oo checksum(r):',ddot(moo(1),boo,1,boo,1)
 c     endif
 C
-C  sort the V_ai,bj integrals to V_ab,ij and contract wit Q_ab to b_ij
+C  sort the V_ai,bj integrals to V_ab,ij and contract with Q_ab to b_ij
 C  this contribution is symmetric and is added as b_oo/VV to the part
 C  from above.
 C
