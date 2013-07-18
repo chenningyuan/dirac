@@ -469,9 +469,9 @@ end subroutine
       subroutine eneru2 (egr0,nval,ihp,ipr)
 !--------------------------------------------------------------------------------
 !
-!     Calculates resulting energy levels by diagonalization, prints them
+!  Calculates resulting energy levels by diagonalization, prints them out.
 !
-!     Requires presence of wave-function files "tABf", AB=u,v,w,...
+!  Requires presence of wave-function files "tABf", AB=u,v,w,...
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -831,11 +831,17 @@ end subroutine
       !call dimx(ndt,60,"ndt ","ener",350)
       call dimx(ndt,60,"ndt ")
 !     if (ipr.lt.2) go to 830
+! print out effective hamiltonian 
+! --------------------------------
       write (*,8100)
 8100  format ('  effective hamiltonian:')
+
       do 820 i=1,ndt
 820   write (*,8200) i,(ham(i,j),j=1,ndt)
 8200  format (' row',i3,10f12.7/(1x,10f12.7))
+
+
+!     now do th diagonalization 
 830   call rg(60,ndt,ham,ev,evi,1,vec,scr,scr(61),ierr)
       if (ierr.ne.0) then                
         write (*,'('' rg ierr='',i4)') ierr
@@ -962,7 +968,6 @@ end subroutine
 
 !     restrict number of collected energies to 200
       if (icol.gt.200) icol=200
-
 
       write(LUPRI,*)
 

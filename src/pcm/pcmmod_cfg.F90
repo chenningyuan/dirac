@@ -28,6 +28,7 @@ module pcmmod_cfg
 ! logical block
   logical, public :: pcmmod_doss     =  .false.
   logical, public :: pcmmod_separate =  .false.
+  logical, public :: pcmmod_dospf    =  .false.
 ! printlevel
   integer, public :: pcmmod_print    = 0
 
