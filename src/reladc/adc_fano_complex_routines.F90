@@ -111,7 +111,7 @@ CONTAINS
 
 !  allocate arrays
 
-    CALL alloc(single_col,ladc,id='single column in Fano hphp')
+    CALL alloc(single_col,ladc,id='single column in Fano hhp')
     CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
     CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
     CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
@@ -260,157 +260,166 @@ CONTAINS
 
 
   END SUBROUTINE cfano_write_hhp
+
+
+
+
 !
+!---------------------------------------------------------------------
 !
+  SUBROUTINE cfano_makehphp(ckks,eajl,roooo,rvovo,bigicra,ladc,krep,  &
+                           finalpos,iw,mxno)
+
 !
+!  Purpose: Create all elements of the ADC Sat Block and write them to the
+!           different Fano matrices
 !
-!!
-!!---------------------------------------------------------------------
-!!
-!  SUBROUTINE cfano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
-!                           finalpos,iw,mxno)
+
+    use adc_cfg
+    use adc_fano_routines
+    use memory_allocator
+
+    IMPLICIT NONE
+
 !
-!!
-!!  Purpose: Create all elements of the ADC Sat Block and write them to the
-!!           different Fano matrices
-!!
+!  Common Blocks
 !
-!    use adc_cfg
-!    use adc_fano_routines
-!    use memory_allocator
+#include "../relccsd/symm.inc"
+
 !
-!    IMPLICIT NONE
+!  Data dictionary: Calling Variables
 !
-!!
-!!  Common Blocks
-!!
-!#include "../relccsd/symm.inc"
+    INTEGER,INTENT(IN)                                  :: krep
+    COMPLEX(8),INTENT(IN),DIMENSION(no(krep)*no(krep))  :: ckks
+    REAL(8),INTENT(IN)                                  :: eajl(*)
+    REAL(8),INTENT(IN), DIMENSION(2*ioooott(nrep+1))    :: roooo
+    REAL(8),INTENT(IN), DIMENSION(2*ivovo(nrep+1))      :: rvovo
+    INTEGER,INTENT(IN),DIMENSION(9,nvoot(krep))         :: bigicra
+    INTEGER,INTENT(IN)                                  :: ladc
+    INTEGER,INTENT(IN),DIMENSION(fin_max)               :: finalpos
+    INTEGER,INTENT(IN)                                  :: iw
+    INTEGER,INTENT(IN)                                  :: mxno
+    
+
 !
-!!
-!!  Data dictionary: Calling Variables
-!!
-!    INTEGER,INTENT(IN)                               :: krep
-!    REAL(8),INTENT(IN),DIMENSION(no(krep)*no(krep))  :: ckks
-!    REAL(8),INTENT(IN)                               :: eajl(*)
-!    REAL(8),INTENT(IN)                               :: oooo(*), vovo(*)
-!    INTEGER,INTENT(IN),DIMENSION(9,nvoot(krep))      :: bigicra
-!    INTEGER,INTENT(IN)                               :: ladc
-!    INTEGER,INTENT(IN),DIMENSION(fin_max)            :: finalpos
-!    INTEGER,INTENT(IN)                               :: iw
-!    INTEGER,INTENT(IN)                               :: mxno
-!    
+!  Data dictionary: Local Variables
 !
-!!
-!!  Data dictionary: Local Variables
-!!
-!    INTEGER                                :: nok, najl
-!    INTEGER                                :: temp
-!    REAL(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
-!    REAL(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
-!    INTEGER                                :: irep
-!    INTEGER,ALLOCATABLE,DIMENSION(:,:,:)   :: oolt
-!    REAL(8),ALLOCATABLE,DIMENSION(:)       :: diag
-!    INTEGER                                :: fincount
-!    INTEGER                                :: finrow, fincol
-!    REAL(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
-!    INTEGER,ALLOCATABLE,DIMENSION(:)       :: finioi, finioj
-!    INTEGER                                :: finib
-!    INTEGER                                :: irow, jcol, i, j, k
-!    INTEGER                                :: coupcol, couprow
-!    INTEGER                                :: finalrow, finalcol
-!    INTEGER                                :: counter
-!    INTEGER                                :: off1, ioff 
-!    REAL                                   :: s
-!    INTEGER                                :: zeros, ixx
+    COMPLEX(8), ALLOCATABLE, DIMENSION(:)     :: oooo, vovo
+
+    INTEGER                                   :: nok, najl
+    INTEGER                                   :: temp
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:)       :: tempe !temporary array for diag
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:)       :: temp_fin
+    INTEGER                                   :: irep
+    INTEGER,ALLOCATABLE,DIMENSION(:,:,:)      :: oolt
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:)       :: diag
+    INTEGER                                   :: fincount
+    INTEGER                                   :: finrow, fincol
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:)       :: finbuf
+    INTEGER,ALLOCATABLE,DIMENSION(:)          :: finioi, finioj
+    INTEGER                                   :: finib
+    INTEGER                                   :: irow, jcol, i, j, k
+    INTEGER                                   :: coupcol, couprow
+    INTEGER                                   :: finalrow, finalcol
+    INTEGER                                   :: counter
+    INTEGER                                   :: off1, ioff 
+    REAL                                      :: s
+    INTEGER                                   :: zeros, ixx
+
 !
-!!
-!!  Code
-!!
-!    WRITE(iw,*) 'FanoADC: Entering ADC Satellite block'
-!    nok  = no(krep) ! /= mxno
-!    najl = nvoot(krep)
+!  Code
 !
-!!
-!! Open all files used only in this routine
-!!
-!    adcdiagfh = itapfano + 6
-!    indiagfh  = itapfano + 8
-!    finfh     = itapfano + 10
+    WRITE(iw,*) 'FanoADC: Entering ADC Satellite block'
+    nok  = no(krep) ! /= mxno
+    najl = nvoot(krep)
+
 !
-!    OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
-!    OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
-!    OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
+! Open all files used only in this routine
 !
-!
-!    CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
-!
-!    ! Fill in the diagonal of the h/h block
-!    off1 = 1
-!    DO k = 1, nok
-!      diag(k) = ckks(off1 + k - 1)
-!      off1 = off1 + nok
-!    END DO
-!    
-!    ! Take care of the diagonal of the 2h1p/2h1p block
-!    CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
-!    CALL alloc(temp_fin, fin_max)
-!    tempe = 0
-!    counter = 0
-!    ! add the 2h1p diag sorted elements
-!    diag_2h1p:DO k = 1, najl
-!      DO fincount = 1, fin_max
-!        temp = finalpos(fincount)
-!        IF (temp == k) THEN
-!          temp_fin(fincount) = eajl(k)
-!          CYCLE diag_2h1p
-!        END IF  
-!      END DO
-!      counter = counter + 1
-!      tempe(counter) = eajl(k)
-!    END DO diag_2h1p
-!
-!    WRITE(iw,*) 'Diagonal sorted.'
-!
-!    ! add final state diagonal
-!    tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
-!    diag(nok+1:ladc)           = tempe(1:najl)
-!
-!    CALL dealloc(temp_fin)
-!    CALL dealloc(tempe)
-!
-!    WRITE(iw,*) 'Diagonal is written to temporary array'
-!
-!    ! In case of strict ADC2 the offdiagonal elements are zero
-!    ! and no sorting and/or writing is necessary.
-!    offdiag:IF(reladc_adclevel >= 2) THEN
-!      CALL GETOOOO(oooo)
-!      CALL GETVOVO(vovo)
-!
-!      ! construct oolt lookup table for KCOCC
-!      ALLOCATE(oolt(mxno,mxno,nrep))
-!      oolt = 0
-!      DO irep = 1, nrep
-!        ioff = 1
-!        DO j = 1, no(irep)
-!          DO i = j + 1, no(irep)
-!            oolt(i,j,irep) = ioff
-!            ioff = ioff + 1
-!          END DO
-!        END DO
-!      END DO
-!
-!      WRITE(iw,*) 'OOLT constructed'
-!
-!!  
-!!    loop over the original structure of the ADC matrix and write the matrix
-!!    elements sorted into different buffers
-!!  
-!      fincol = 1
-!      zeros = 0
-!
+    adcdiagfh = itapfano + 6
+    indiagfh  = itapfano + 8
+    finfh     = itapfano + 10
+
+    OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+
+
+    CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
+
+    ! Fill in the diagonal of the h/h block
+    off1 = 1
+    DO k = 1, nok
+      diag(k) = ckks(off1 + k - 1)
+      off1 = off1 + nok
+    END DO
+    
+    ! Take care of the diagonal of the 2h1p/2h1p block
+    CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
+    CALL alloc(temp_fin, fin_max)
+    tempe = (0.0D0,0.0D0)
+    temp_fin = (0.0D0,0.0D0)
+    counter = 0
+    ! add the 2h1p diag sorted elements
+    diag_2h1p:DO k = 1, najl
+      DO fincount = 1, fin_max
+        temp = finalpos(fincount)
+        IF (temp == k) THEN
+          temp_fin(fincount) = CMPLX(eajl(k),0.0D0,8)
+          CYCLE diag_2h1p
+        END IF  
+      END DO
+      counter = counter + 1
+      tempe(counter) = CMPLX(eajl(k),0.0D0,8)
+    END DO diag_2h1p
+
+    WRITE(iw,*) 'Diagonal sorted.'
+
+    ! add final state diagonal
+    tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
+    diag(nok+1:ladc)           = tempe(1:najl)
+
+    CALL dealloc(temp_fin)
+    CALL dealloc(tempe)
+
+    WRITE(iw,*) 'Diagonal is written to temporary array'
+    !WRITE(iw,'(1X,2ES14.5)') (diag(ixx), ixx=1,ladc)
+
+    ! In case of strict ADC2 the offdiagonal elements are zero
+    ! and no sorting and/or writing is necessary.
+    offdiag:IF(reladc_adclevel >= 2) THEN
+      CALL GETOOOO(roooo)
+      CALL GETVOVO(rvovo)
+      CALL alloc(oooo,ioooott(nrep+1))
+      CALL alloc(vovo,ivovo(nrep+1))
+      oooo = TRANSFER(roooo,oooo)
+      vovo = TRANSFER(rvovo,vovo)
+
+      ! construct oolt lookup table for KCOCC
+      ALLOCATE(oolt(mxno,mxno,nrep))
+      oolt = 0
+      DO irep = 1, nrep
+        ioff = 1
+        DO j = 1, no(irep)
+          DO i = j + 1, no(irep)
+            oolt(i,j,irep) = ioff
+            ioff = ioff + 1
+          END DO
+        END DO
+      END DO
+
+      WRITE(iw,*) 'OOLT constructed'
+
+!  
+!    loop over the original structure of the ADC matrix and write the matrix
+!    elements sorted into different buffers
+!  
+      fincol = 1
+      zeros = 0
+
 !      colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
 !        temp = finalpos(fincol)
 !        IF (temp == jcol) THEN
@@ -601,7 +610,7 @@ CONTAINS
 !      CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
 !                               finib,finfh)
 !
-!    ELSE offdiag
+    ELSE offdiag
 !      ! deallocate all no longer used arrays
 !      CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
 !                               inib,infh)
@@ -634,7 +643,7 @@ CONTAINS
 !      CALL rwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
 !                               finib,finfh)
 !
-!    END IF offdiag
+    END IF offdiag
 !
 !    CALL dealloc(finbuf)
 !    CALL dealloc(finioi)
@@ -660,9 +669,9 @@ CONTAINS
 !
 !
 !
-!  END SUBROUTINE cfano_makehphp
-!
-!
+  END SUBROUTINE cfano_makehphp
+
+
 !
 !---------------------------------------------------------------------
 !
