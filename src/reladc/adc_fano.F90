@@ -308,11 +308,12 @@ CONTAINS
 
     !Read the real arrays into a complex array with the same content
     CALL alloc(ckks,nok*nok, id='complex Fano ckks array')
-    WRITE(iw,*) 'rckks first', (rckks(ixx), ixx=1,4)
+!    WRITE(iw,*) 'rckks first', (rckks(ixx), ixx=1,4)
 !    ckks = TRANSFER(rckks,(/(0.0,0.0)/))
+!    WRITE(iw,*) 'ckks first', (ckks(ixx), ixx=1,4)
     CALL rarray_to_carray_1(rckks,2*nok*nok,ckks)
-    WRITE(iw,*) 'ckks first', (ckks(ixx), ixx=1,4)
-!
+!    WRITE(iw,*) 'ckks first', (ckks(ixx), ixx=1,4)
+
 !    ! Create sorted h/2h1p block
 !    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
 !                             itapadc,iw)

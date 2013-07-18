@@ -437,8 +437,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
-! Elke
-      WRITE(iw,*) 'after ccseti'
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
@@ -1409,8 +1407,8 @@ C  ***************************  start h/h block  ****************************
 C  ... BKC:  |><|
 C
 ! Elke:
-        WRITE(iw,*) 'ckks'
-        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
+!        WRITE(iw,*) 'ckks'
+!        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
 
         CALL MAKE_HH2(CC(CKKS),CC(BUF1A),CC(BUF1B),EPS,CC(BUF4),KREP)
 C
