@@ -308,14 +308,16 @@ CONTAINS
 
     !Read the real arrays into a complex array with the same content
     CALL alloc(ckks,nok*nok, id='complex Fano ckks array')
-!    WRITE(iw,*) 'rckks first', (rckks(ixx), ixx=1,4)
     ckks = TRANSFER(rckks,ckks)
-!    WRITE(iw,*) 'ckks first', (ckks(ixx), ixx=1,4)
 
-!    ! Create sorted h/2h1p block
-!    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
-!                             itapadc,iw)
-!
+    CALL alloc(bufhp,najl*najl, id='complex Fano bufhp array')
+    bufhp = TRANSFER(rbufhp,bufhp)
+
+
+    ! Create sorted h/2h1p block
+    CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
+                             itapadc,iw)
+
 !    ! Create an array of final state positions in the 2h1p part
 !    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
 !    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)

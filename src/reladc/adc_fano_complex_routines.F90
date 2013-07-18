@@ -46,220 +46,220 @@ MODULE adc_fano_complex_routines
 
 CONTAINS
 
-!  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+
 !
-!!
-!!  Purpose: Calculate the coupling block of the ADC matrix and sort
-!!           the matrix elements according to their description of
-!!           initial or final states. Write out the lower triangle
-!!           of the matrix for the initial state description and write
-!!           the coupling block of the sorted ADC matrix.
-!!
-!!           -----                -----
-!!     1h    |   |             1h |   |
-!!           -----                -----
-!!           |   |   ------>      |   |
-!!     fin   ~~~~~                |   |
-!!           |   |            fin ~~~~~
-!!           -----                -----
-!!
-!!  Author: Elke Fasshauer
-!!
+!  Purpose: Calculate the coupling block of the ADC matrix and sort
+!           the matrix elements according to their description of
+!           initial or final states. Write out the lower triangle
+!           of the matrix for the initial state description and write
+!           the coupling block of the sorted ADC matrix.
 !
-!    use adc_cfg
-!    use adc_fano_routines
-!    use memory_allocator
+!           -----                -----
+!     1h    |   |             1h |   |
+!           -----                -----
+!           |   |   ------>      |   |
+!     fin   ~~~~~                |   |
+!           |   |            fin ~~~~~
+!           -----                -----
 !
-!    IMPLICIT NONE
+!  Author: Elke Fasshauer
 !
-!!
-!!  Common Blocks
-!!
-!#include "../relccsd/symm.inc"
+
+    use adc_cfg
+    use adc_fano_routines
+    use memory_allocator
+
+    IMPLICIT NONE
+
 !
-!!
-!!  Data dictionary: Calling Variables
-!!
-!    INTEGER, INTENT(IN)    :: crep              ! current representation
-!    REAL(8), INTENT(IN), DIMENSION(no(crep)*no(crep))    :: ckks
-!    REAL(8), INTENT(IN), DIMENSION(no(crep)*nvoot(crep)) :: bufhp
-!    INTEGER, INTENT(IN)    :: ladc              ! length of adc matrix
-!    INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
-!    INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
-!    INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+!  Common Blocks
 !
-!!
-!!  Data dictionary: Local Variables
-!!
-!    REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-!    REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
-!    INTEGER                            :: temp_row     !row of temp_array
-!    INTEGER                            :: finrow       !row of final states
-!    INTEGER                            :: k, ixx, fincount ! counters
-!    LOGICAL                            :: is_in  = .TRUE.
-!    LOGICAL                            :: is_coupl = .FALSE.
-!    LOGICAL                            :: is_fin = .FALSE.
-!    INTEGER, PARAMETER                 :: jdummy = 0
+#include "../relccsd/symm.inc"
+
 !
-!!
-!!  Data dictionary: Variables taken from WRITE_HHP, not initialized there
-!!
-!    INTEGER                            :: off1, off2, off3
-!    INTEGER                            :: nok, najl
-!    INTEGER                            :: dummy
+!  Data dictionary: Calling Variables
 !
-!!
-!!  allocate arrays
-!!
-!    CALL alloc(single_col,ladc,id='single column in Fano hphp')
-!    CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
-!    CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
-!    CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
-!    CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
-!    CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
-!    CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
-!    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
+    INTEGER, INTENT(IN)    :: crep              ! current representation
+    COMPLEX(8), INTENT(IN), DIMENSION(no(crep)*no(crep))    :: ckks
+    COMPLEX(8), INTENT(IN), DIMENSION(no(crep)*nvoot(crep)) :: bufhp
+    INTEGER, INTENT(IN)    :: ladc              ! length of adc matrix
+    INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
+    INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
+    INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+
 !
-!! ---------------------------------
-!!  Code
-!! ---------------------------------
+!  Data dictionary: Local Variables
 !
-!!  clear output buffers
-!    single_col = 0.0D0
-!    inbuf      = 0.0D0
-!    inioi      = 0
-!    inioj      = 0
-!    adcbuf     = 0.0D0
-!    adcioi     = 0
-!    adcioj     = 0
-!    temp_array = 0
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
+    INTEGER                               :: temp_row     !row of temp_array
+    INTEGER                               :: finrow       !row of final states
+    INTEGER                               :: k, ixx, fincount ! counters
+    LOGICAL                               :: is_in  = .TRUE.
+    LOGICAL                               :: is_coupl = .FALSE.
+    LOGICAL                               :: is_fin = .FALSE.
+    INTEGER, PARAMETER                    :: jdummy = 0
+
 !
-!    inrow      = 1
-!    finrow     = 0
-!    fincount   = 0
+!  Data dictionary: Variables taken from WRITE_HHP, not initialized there
 !
-!    itapfano   = itapadc
-!!  remember: at this moment, itapadc+4 and itapadc+5
-!!            are open due to adc_sngl_main
-!    adcfh      = itapfano + 7 !Files need to be opened
-!    infh       = itapfano + 9
+    INTEGER                               :: off1, off2, off3
+    INTEGER                               :: nok, najl
+    INTEGER                               :: dummy
+
+
+!  allocate arrays
+
+    CALL alloc(single_col,ladc,id='single column in Fano hphp')
+    CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
+    CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
+    CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
+    CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
+    CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
+    CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
+    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
+
+! ---------------------------------
+!  Code
+! ---------------------------------
+
+!  clear output buffers
+    single_col = (0.0D0,0.0D0)
+    inbuf      = (0.0D0,0.0D0)
+    inioi      = 0
+    inioj      = 0
+    adcbuf     = (0.0D0,0.0D0)
+    adcioi     = 0
+    adcioj     = 0
+    temp_array = 0
+
+    inrow      = 1
+    finrow     = 0
+    fincount   = 0
+
+    itapfano   = itapadc
+!  remember: at this moment, itapadc+4 and itapadc+5
+!            are open due to adc_sngl_main
+    adcfh      = itapfano + 7 !Files need to be opened
+    infh       = itapfano + 9
+
+    ! open the matrix files of the sorted ADC matrix and the matrix of the
+    ! initial states
+    OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
+         ACTION='WRITE',iostat=ierror)
+    OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
+         ACTION='WRITE',iostat=ierror)
+
+
+!                                                                       
+!  create h/h and h/2h1p column by column
+!  write out h/h and h/2h1p buffers                                     
 !
-!    ! open the matrix files of the sorted ADC matrix and the matrix of the
-!    ! initial states
-!    OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
-!         ACTION='WRITE',iostat=ierror)
-!    OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
-!         ACTION='WRITE',iostat=ierror)
+    nok  = no(crep)
+    najl = nvoot(crep)
+
+    inib  = 0
+    adcib = 0
+
+    off1 = 1
+    off3 = 1
+
+    one_column:DO k = 1, nok
+      adccol = k
+      off2   = 1
+      CALL ZCOPY(nok,ckks(off1),1,single_col(off2),1)
+      off2   = off2 + nok
+      CALL ZCOPY(najl,bufhp(off3),1,single_col(off2),1)
+
+      DO adcrow = adccol + 1, ladc
+        incol = adccol
+        !inrow = adcrow
+        IF (adcrow-nok > 0) THEN
+          !WRITE(iw,*) 'adcrow = ', adcrow
+          !WRITE(iw,*) 'nok    = ', nok
+          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
+          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
+                               is_coupl,is_fin,1)
+        ELSE
+          is_in = .TRUE.
+        END IF
+        is_initial:IF (is_in) THEN
+          inrow = inrow + 1
+          !WRITE(iw,*) 'inrow = ', inrow
+          IF (single_col(adcrow) /= 0.0D0) THEN
+            ! Handle the matrix of initial states
+            inib   = inib + 1
+            inbuf(inib) = single_col(adcrow)
+            inioi(inib) = inrow
+            inioj(inib) = adccol
+!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib)
+            IF (inib == fano_intbuf) THEN
+              CALL cwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
+                                  innbufs,inib,infh)
+            END IF
+            ! We write out the sorted ADC matrix
+            ! We skip that since we only need interaction block
+            !adcib  = adcib + 1
+            !adcbuf(adcib) = single_col(adcrow)
+            !adcioi(adcib) = inrow
+            !adcioj(adcib) = adccol
+            !IF (adcib == fano_intbuf) THEN
+            !  CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
+            !                      adcnbufs,adcib,adcfh)
+            !END IF
+          END IF
+        ELSE is_initial
+          !WRITE(iw,*) 'inrow = ', inrow
+          !WRITE(iw,*) 'adcrow     : ', adcrow
+          finrow = finrow + 1
+          IF (single_col(adcrow) /= 0.0D0) THEN
+            fincount = fincount + 1
+            temp_array(fincount,1) = single_col(adcrow)
+            temp_array(fincount,2) = finrow
+            temp_array(fincount,3) = adccol
+            !WRITE(iw,*) 'adcrow     : ', adcrow
+            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
+          END IF
+        END IF is_initial
+      END DO
 !
+!  One column has been processed, now the final states are added to
+!  the end of the corresponding column
 !
-!!                                                                       
-!!  create h/h and h/2h1p column by column
-!!  write out h/h and h/2h1p buffers                                     
-!!
-!    nok  = no(crep)
-!    najl = nvoot(crep)
+      DO temp_row = 1, fincount
+        adcib = adcib + 1
+        adcbuf(adcib) = temp_array(temp_row,1)
+        adcioi(adcib) = temp_array(temp_row,2) + inrow
+        adcioj(adcib) = temp_array(temp_row,3)
+        IF (adcib == fano_intbuf) THEN
+          CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                adcib,adcfh)
+        END IF
+      END DO 
+
+      inrow = adccol + 1
+      finrow = 0
+      fincount = 0
+
+      off1 = off1 + nok
+      off3 = off3 + najl
+
+    END DO one_column
+
+!    DO ixx=1, najl + nok
+!      WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
+!                                     -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
+!    END DO
+
 !
-!    inib  = 0
-!    adcib = 0
+!  deallocate local arrays
 !
-!    off1 = 1
-!    off3 = 1
-!
-!    one_column:DO k = 1, nok
-!      adccol = k
-!      off2   = 1
-!      CALL XCOPY(nok,ckks(off1),1,single_col(off2),1)
-!      off2   = off2 + nok
-!      CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
-!
-!      DO adcrow = adccol + 1, ladc
-!        incol = adccol
-!        !inrow = adcrow
-!        IF (adcrow-nok > 0) THEN
-!          !WRITE(iw,*) 'adcrow = ', adcrow
-!          !WRITE(iw,*) 'nok    = ', nok
-!          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-!          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-!                               is_coupl,is_fin,1)
-!        ELSE
-!          is_in = .TRUE.
-!        END IF
-!        is_initial:IF (is_in) THEN
-!          inrow = inrow + 1
-!          !WRITE(iw,*) 'inrow = ', inrow
-!          IF (single_col(adcrow) /= 0.0D0) THEN
-!            ! Handle the matrix of initial states
-!            inib   = inib + 1
-!            inbuf(inib) = single_col(adcrow)
-!            inioi(inib) = inrow
-!            inioj(inib) = adccol
-!!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib)
-!            IF (inib == fano_intbuf) THEN
-!              CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
-!                                  innbufs,inib,infh)
-!            END IF
-!            ! We write out the sorted ADC matrix
-!            ! We skip that since we only need interaction block
-!            !adcib  = adcib + 1
-!            !adcbuf(adcib) = single_col(adcrow)
-!            !adcioi(adcib) = inrow
-!            !adcioj(adcib) = adccol
-!            !IF (adcib == fano_intbuf) THEN
-!            !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-!            !                      adcnbufs,adcib,adcfh)
-!            !END IF
-!          END IF
-!        ELSE is_initial
-!          !WRITE(iw,*) 'inrow = ', inrow
-!          !WRITE(iw,*) 'adcrow     : ', adcrow
-!          finrow = finrow + 1
-!          IF (single_col(adcrow) /= 0.0D0) THEN
-!            fincount = fincount + 1
-!            temp_array(fincount,1) = single_col(adcrow)
-!            temp_array(fincount,2) = finrow
-!            temp_array(fincount,3) = adccol
-!            !WRITE(iw,*) 'adcrow     : ', adcrow
-!            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
-!          END IF
-!        END IF is_initial
-!      END DO
-!!
-!!  One column has been processed, now the final states are added to
-!!  the end of the corresponding column
-!!
-!      DO temp_row = 1, fincount
-!        adcib = adcib + 1
-!        adcbuf(adcib) = temp_array(temp_row,1)
-!        adcioi(adcib) = temp_array(temp_row,2) + inrow
-!        adcioj(adcib) = temp_array(temp_row,3)
-!        IF (adcib == fano_intbuf) THEN
-!          CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
-!                adcib,adcfh)
-!        END IF
-!      END DO 
-!
-!      inrow = adccol + 1
-!      finrow = 0
-!      fincount = 0
-!
-!      off1 = off1 + nok
-!      off3 = off3 + najl
-!
-!    END DO one_column
-!
-!!    DO ixx=1, najl + nok
-!!      WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
-!!                                     -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
-!!    END DO
-!
-!!
-!!  deallocate local arrays
-!!
-!    CALL dealloc(single_col)
-!    CALL dealloc(temp_array)
-!
-!
-!  END SUBROUTINE cfano_write_hhp
+    CALL dealloc(single_col)
+    CALL dealloc(temp_array)
+
+
+  END SUBROUTINE cfano_write_hhp
 !
 !
 !
@@ -663,45 +663,45 @@ CONTAINS
 !  END SUBROUTINE cfano_makehphp
 !
 !
-!!
-!!---------------------------------------------------------------------
-!!
-!  SUBROUTINE cwrite_to_disk(buf,ioi,ioj,intbuf,nbufs,ib,fh)
-!!
-!!  Purpose:  to write the three arrays buf, ioi, ioj of length intbuf
-!!            to disk
-!!
-!    IMPLICIT NONE
-!!
-!!  Data dictionary: Calling Variables
-!!
-!    INTEGER, INTENT(IN)                     :: intbuf, fh
-!    INTEGER, INTENT(INOUT)                  :: nbufs, ib
-!    REAL(8), DIMENSION(intbuf), INTENT(IN)  :: buf
-!    INTEGER, DIMENSION(intbuf), INTENT(IN)  :: ioi, ioj
-!!
-!!  Data dictionary: Local Variables
-!!
-!    INTEGER :: ixx
-!    INTEGER :: jdummy
 !
-!!
-!!  Code
-!!
+!---------------------------------------------------------------------
 !
-!    jdummy = 0
+  SUBROUTINE cwrite_to_disk(buf,ioi,ioj,intbuf,nbufs,ib,fh)
 !
-!    nbufs = nbufs + 1
+!  Purpose:  to write the three arrays buf, ioi, ioj of length intbuf
+!            to disk
 !
-!    WRITE(fh) (-buf(ixx), ixx = 1, intbuf),    &
-!              (ioi(ixx), ixx = 1, intbuf),     &
-!              (ioj(ixx), ixx = 1, intbuf),     &
-!              intbuf, jdummy
-!    ib = 0
+    IMPLICIT NONE
 !
-!  END SUBROUTINE cwrite_to_disk
+!  Data dictionary: Calling Variables
 !
+    INTEGER, INTENT(IN)                     :: intbuf, fh
+    INTEGER, INTENT(INOUT)                  :: nbufs, ib
+    COMPLEX(8), DIMENSION(intbuf), INTENT(IN)  :: buf
+    INTEGER, DIMENSION(intbuf), INTENT(IN)  :: ioi, ioj
 !
+!  Data dictionary: Local Variables
+!
+    INTEGER :: ixx
+    INTEGER :: jdummy
+
+!
+!  Code
+!
+
+    jdummy = 0
+
+    nbufs = nbufs + 1
+
+    WRITE(fh) (-buf(ixx), ixx = 1, intbuf),    &
+              (ioi(ixx), ixx = 1, intbuf),     &
+              (ioj(ixx), ixx = 1, intbuf),     &
+              intbuf, jdummy
+    ib = 0
+
+  END SUBROUTINE cwrite_to_disk
+
+
 !!
 !!--------------------------------------------------------------------
 !!
