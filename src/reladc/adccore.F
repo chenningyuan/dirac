@@ -194,10 +194,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
-      real(8), allocatable :: oooo(:)
 
       call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
+
 
 !
 !---------------Executable code--------------------------------------
@@ -437,6 +437,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+! Elke
+      WRITE(iw,*) 'after ccseti'
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
@@ -599,6 +601,8 @@ C
       real*8 ddot
       logical done
       complex*16 zdotc
+
+      
 
 #ifdef SYS_AIX
       integer(8) :: ivmax
@@ -1404,6 +1408,10 @@ C
 C  ***************************  start h/h block  ****************************
 C  ... BKC:  |><|
 C
+! Elke:
+        WRITE(iw,*) 'ckks'
+        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
+
         CALL MAKE_HH2(CC(CKKS),CC(BUF1A),CC(BUF1B),EPS,CC(BUF4),KREP)
 C
 C  If ADC(3) is activated: compute C(3) and add Sigma(inf).
