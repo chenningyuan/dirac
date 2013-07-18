@@ -774,7 +774,7 @@ CONTAINS
     
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-     FUNCTION fano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
+  FUNCTION fano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
 
      IMPLICIT NONE
 !

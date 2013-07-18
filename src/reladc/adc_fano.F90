@@ -215,7 +215,7 @@ CONTAINS
 
     use adc_cfg
     use adc_mat
-!    use adc_fano_real_routines
+    use adc_fano_complex_routines
 !    use adc_fano_diag
     use adc_fano_routines
     use memory_allocator
@@ -233,8 +233,8 @@ CONTAINS
 !  Data dictionary: Calling Variables
 !
     INTEGER, INTENT(IN)   :: krep
-    REAL(8), INTENT(IN), DIMENSION(2*no(krep)*2*no(krep))       :: rckks
-    REAL(8), INTENT(IN), DIMENSION(2*no(krep)*2*nvoot(krep)) :: rbufhp
+    REAL(8), INTENT(IN), DIMENSION(no(krep)*2*no(krep))    :: rckks
+    REAL(8), INTENT(IN), DIMENSION(no(krep)*2*nvoot(krep)) :: rbufhp
     INTEGER, INTENT(IN)   :: ladc
     INTEGER, INTENT(IN)   :: itapadc
     INTEGER, INTENT(IN)   :: iw
@@ -255,6 +255,9 @@ CONTAINS
     INTEGER                               :: kfree, lfree, kfreebase
     INTEGER                               :: idpt
     INTEGER                               :: ixx
+
+    COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: ckks
+    COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: bufhp
 
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: e2h1p
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: t_mom
@@ -294,14 +297,18 @@ CONTAINS
 
     nr_in   = det_nr_configs(nok+1,ladc,bigicra,krep,1,iw)
     nr_fin  = det_nr_configs(nok+1,ladc,bigicra,krep,2,iw)
-!    fin_max = nr_fin
+    fin_max = nr_fin
 
-!    IF (fin_max == 0) THEN
-!      CALL QUIT('No valid Fano final states given')
-!    END IF
+    IF (fin_max == 0) THEN
+      CALL QUIT('No valid Fano final states given')
+    END IF
 
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
+
+    !Read the real arrays into a complex array with the same content
+!    CALL alloc(ckks,nok*nok, id='complex Fano ckks array')
+!    CALL rarray_to_carray_1(rckks,2*nok*nok,ckks)
 !
 !    ! Create sorted h/2h1p block
 !    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
