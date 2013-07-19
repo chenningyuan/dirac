@@ -316,13 +316,13 @@ CONTAINS
     CALL alloc(ckks,nok*nok, id='complex Fano ckks array')
     ckks = TRANSFER(rckks,ckks)
 
-    CALL alloc(bufhp,najl*najl, id='complex Fano bufhp array')
+    CALL alloc(bufhp,nok*najl, id='complex Fano bufhp array')
     bufhp = TRANSFER(rbufhp,bufhp)
-
 
     ! Create sorted h/2h1p block
     CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw)
+
     CALL dealloc(bufhp)
 
     ! Create an array of final state positions in the 2h1p part
@@ -332,8 +332,9 @@ CONTAINS
     ! Create the sorted 2h1p/2h1p block
     CALL cfano_makehphp(ckks,eajl,roooo,rvovo,bigicra,ladc,krep,  &
                        finalpos,iw,mxno)
-!
-!    CALL dealloc(bigicra)
+
+    CALL dealloc(ckks)
+    CALL dealloc(bigicra)
 !
 !    WRITE(iw,*)
 !    WRITE(iw,*) 'Diagonal elements of the sorted ADC matrix written to        : ', &
@@ -359,7 +360,7 @@ CONTAINS
 !                        finalpos,fin_max,iw)
 !    !CALL WCONDAT_S(itapfano+6,fn_conf,recl_condat_s,krep,ladc)
 !
-!    CALL dealloc(finalpos)
+    CALL dealloc(finalpos)
 !
 !    ! Write all characteristics of the matrix to be diagonalised
 !    ! to adc_mat. We are using the lanczos diagonaliser.
