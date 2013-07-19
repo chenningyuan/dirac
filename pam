@@ -207,8 +207,8 @@ class pam_enviroment:
         self.output_suffix = 'out'
 
     # output file (sitting in the input directory)
-        self.output_file = ''
-        self.output_file_full = ''  # full (absolute) path
+        self.output_file = None
+        self.output_file_full = None  # full (absolute) path
 
     # lu of the DIRAC run output file (open in the "execute_dirac" method)
         self.f = None
@@ -427,7 +427,7 @@ class pam_enviroment:
         print
         print '  exit date      :', datetime.datetime.now()
         print '  elapsed time   :', time.strftime('%Hh%Mm%Ss', time.gmtime(elapsed_time))
-        f = open(self.output_file)
+        f = open(self.output_file_full)
         if 'E N D   of   D I R A C  output' in f.read():
             print '  exit           : normal'
         else:
@@ -859,6 +859,7 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_put:
             self.put_files = options.dest_put
+            print 'self.put_files=',self.put_files
 
         if options.dest_get:
             self.get_files = options.dest_get
@@ -1029,24 +1030,24 @@ Options are also read from ~/.diracrc"""
 
 
     def copy_files(self):
-        '''copies file from the home directory to the scratch directory'''
+        '''copy file from any directory to the scratch directory'''
 
-        def copy_single_file(file_name_local, file_name_scr):
-            full_file_name = os.path.join(self.input_directory,file_name_local)
-            if os.path.isfile(full_file_name):
-                file_name_scratch = os.path.join(self.scratch_dir, file_name_scr)
-                self.copy_file(full_file_name, file_name_scratch)
+        def copy_single_file(file_name, file_name_scr):
+            if os.path.isfile(file_name):
+                file_name_scratch = os.path.join(self.scratch_dir,os.path.basename(file_name_scr))
+                self.copy_file(file_name, file_name_scratch)
             else:
                 if self.expert_mode:
                     print >> sys.stderr,'happens in input directory:',self.input_directory
-                    print >> sys.stderr,'  Warning: file "', file_name_local, \
+                    print >> sys.stderr,'  Warning: file "', file_name, \
                         '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
                     print >> sys.stderr,'happens in input directory:',self.input_directory
-                    print >> sys.stderr,'Error exit: file "', file_name_local, \
+                    print >> sys.stderr,'Error exit: file "', file_name, \
                         '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(11)
 
+    # create the scratch directory ...
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
@@ -1076,8 +1077,8 @@ Options are also read from ~/.diracrc"""
         else:
             print '  No input file provided; pam will assume that it is obtained from the restart file.'
 
-        # put files to scratch
-        if self.put_files is not None:
+        # put files to the scratch directory
+        if self.put_files:
             for p in self.put_files.split():
                 if '=' in p:
                     f1 = p.split('=')[0]
@@ -1140,7 +1141,7 @@ Options are also read from ~/.diracrc"""
         '''Set the name of the output file by using "self.output_name"
     which is prepared in set_output_name(self) routine'''
 
-        if len(self.output_name) > 0 and len(self.output_suffix) > 0:
+        if self.output_name and self.output_suffix:
 
             output_file_base = self.output_name
             if self.string_replace_list != []:
