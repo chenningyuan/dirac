@@ -396,8 +396,8 @@ class pam_enviroment:
     def remove_scratch_dir(self):
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
-            if self.verbose:
-                 self.list_scratch_dir()
+            if self.verbose and os.path.isdir(self.scratch_dir):
+                self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
