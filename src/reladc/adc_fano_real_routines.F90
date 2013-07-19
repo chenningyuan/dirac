@@ -111,7 +111,7 @@ CONTAINS
 !
 !  allocate arrays
 !
-    CALL alloc(single_col,ladc,id='single column in Fano hphp')
+    CALL alloc(single_col,ladc,id='single column in Fano hhp')
     CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
     CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
     CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
@@ -320,7 +320,7 @@ CONTAINS
     INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
-    REAL                                   :: s
+    REAL(8)                                :: s
     INTEGER                                :: zeros, ixx
 
 !
