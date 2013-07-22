@@ -10,6 +10,7 @@ CONTAINS
 
     use adc_fano_exchange
     use memory_allocator
+    use codata
 
     IMPLICIT NONE
 
@@ -125,7 +126,7 @@ CONTAINS
       END DO
     END DO
     WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
 
     CALL dealloc(buf)
     CALL dealloc(ioi)
@@ -146,7 +147,7 @@ CONTAINS
     fh_trans = fhdiag
     OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
          ACTION='WRITE',iostat=ierror)
-    WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+    WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
     CLOSE(fh_trans)
 
     CALL dealloc(e2h1p)
