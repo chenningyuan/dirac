@@ -182,7 +182,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-      integer :: verbose = 0
+      integer :: verbose        = 0
+      integer :: ncore_elec_adc = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -193,10 +194,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       integer :: MAXCORE
       real(8), allocatable :: CC(:)
-      real(8), allocatable :: oooo(:)
+      real(8), allocatable :: testoooo(:)
 
       call legacy_lwork_get(MAXCORE)
       call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
+
 
 !
 !---------------Executable code--------------------------------------
@@ -335,7 +337,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Read symmetry information from MRCONEE
 !
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec_adc)
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN ADCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
@@ -436,6 +438,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+! Elke
+      WRITE(iw,*) 'after ccseti'
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
@@ -598,6 +602,8 @@ C
       real*8 ddot
       logical done
       complex*16 zdotc
+
+      
 
 #ifdef SYS_AIX
       integer(8) :: ivmax
@@ -1403,6 +1409,10 @@ C
 C  ***************************  start h/h block  ****************************
 C  ... BKC:  |><|
 C
+! Elke:
+!        WRITE(iw,*) 'ckks'
+!        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
+
         CALL MAKE_HH2(CC(CKKS),CC(BUF1A),CC(BUF1B),EPS,CC(BUF4),KREP)
 C
 C  If ADC(3) is activated: compute C(3) and add Sigma(inf).
@@ -1465,6 +1475,7 @@ C  there are more diagonal elements to be calculated in MAKEHPHP !
 C  diagonal is written out in MAKEHPHP
 C  all other elements are finished and can be written out.
 C
+        WRITE(iw,*) 'CARITH = ', CARITH
 
 !
 ! This is the big Fano-IF-clause introduced by Elke
@@ -1473,19 +1484,33 @@ C
           WRITE(iw,*)
           WRITE(iw,*) '**************************************'
           WRITE(iw,*) '*                                    *'
-          WRITE(iw,*) '* You selected (also) a Fano run     *'
+          WRITE(iw,*) '* You selected a FanoADC run         *'
           WRITE(iw,*) '*                                    *'
           WRITE(iw,*) '**************************************'
 
           CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
-          IF (ADCLEVEL.EQ. 1) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),RDUMMY,RDUMMY,MXNO
-     &                   )
-          ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-            CALL fanoadc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                   CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
-     &                   )
+          WRITE(iw,*) 'CARITH = ', CARITH
+          IF (CARITH) THEN
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+     &                     )
+            END IF
+
+          ELSE
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
+     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+     &                     )
+            END IF
           END IF
           CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
         END IF
@@ -3662,7 +3687,7 @@ c     else
 c       write(*,*) 'boo/oo checksum(r):',ddot(moo(1),boo,1,boo,1)
 c     endif
 C
-C  sort the V_ai,bj integrals to V_ab,ij and contract wit Q_ab to b_ij
+C  sort the V_ai,bj integrals to V_ab,ij and contract with Q_ab to b_ij
 C  this contribution is symmetric and is added as b_oo/VV to the part
 C  from above.
 C

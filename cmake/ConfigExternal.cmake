@@ -1,13 +1,13 @@
 
 if(DEVELOPMENT_CODE)
     include(FindGit)
-    if (GIT_FOUND)
+    if(GIT_FOUND)
         add_custom_target(
             git_update
             COMMAND ${GIT_EXECUTABLE} submodule init
             COMMAND ${GIT_EXECUTABLE} submodule update
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        )
+            )
     else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
     endif()
@@ -34,8 +34,6 @@ macro(add_external _project)
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
-  # radovan: don't think the next line is right/needed
-  # include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
     if(DEVELOPMENT_CODE)

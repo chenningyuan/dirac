@@ -111,7 +111,7 @@ CONTAINS
 !
 !  allocate arrays
 !
-    CALL alloc(single_col,ladc,id='single column in Fano hphp')
+    CALL alloc(single_col,ladc,id='single column in Fano hhp')
     CALL alloc(inbuf,fano_intbuf,id='buffer of initial state matrix')
     CALL alloc(inioi,fano_intbuf,id='row buffer initial state')
     CALL alloc(inioj,fano_intbuf,id='col buffer initial state')
@@ -144,19 +144,16 @@ CONTAINS
     adcfh      = itapfano + 7 !Files need to be opened
     infh       = itapfano + 9
 
-    WRITE(iw,*) 'Elke: Here we go!'
-
     ! open the matrix files of the sorted ADC matrix and the matrix of the
     ! initial states
     OPEN(adcfh,FILE=fn_adcmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
-    !WRITE(iw,*) 'adcmat = ', ierror
     OPEN(infh,FILE=fn_inmat,STATUS='UNKNOWN',FORM='UNFORMATTED',    &
          ACTION='WRITE',iostat=ierror)
-    !WRITE(iw,*) 'inmat = ', ierror
 
 
 !                                                                       
+!  create h/h and h/2h1p column by column
 !  write out h/h and h/2h1p buffers                                     
 !
     nok  = no(crep)
@@ -235,9 +232,6 @@ CONTAINS
         adcbuf(adcib) = temp_array(temp_row,1)
         adcioi(adcib) = temp_array(temp_row,2) + inrow
         adcioj(adcib) = temp_array(temp_row,3)
-        !write upper right part
-        !adcioi(adcib) = temp_array(temp_row,3)
-        !adcioj(adcib) = temp_array(temp_row,2) + inrow
         IF (adcib == fano_intbuf) THEN
           CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
                 adcib,adcfh)
@@ -326,7 +320,7 @@ CONTAINS
     INTEGER                                :: finalrow, finalcol
     INTEGER                                :: counter
     INTEGER                                :: off1, ioff 
-    REAL                                   :: s
+    REAL(8)                                :: s
     INTEGER                                :: zeros, ixx
 
 !
@@ -345,13 +339,10 @@ CONTAINS
 
     OPEN(adcdiagfh,FILE=fn_adcdiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
-    !WRITE(iw,*) 'adcdiag = ', ierror
     OPEN(indiagfh,FILE=fn_indiag,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
-    !WRITE(iw,*) 'indiag = ', ierror
     OPEN(finfh,FILE=fn_finmat,STATUS='UNKNOWN',FORM='UNFORMATTED',  &
          ACTION='WRITE',iostat=ierror)
-    !WRITE(iw,*) 'finmat = ', ierror
 
 
     CALL alloc(diag,nok+najl, id='FanoADC: Array of diagonal')
@@ -363,6 +354,7 @@ CONTAINS
       off1 = off1 + nok
     END DO
     
+    ! Take care of the diagonal of the 2h1p/2h1p block
     CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
     CALL alloc(temp_fin, fin_max)
     tempe = 0
@@ -378,14 +370,11 @@ CONTAINS
       END DO
       counter = counter + 1
       tempe(counter) = eajl(k)
-      !WRITE(iw,*) 'counter = ', counter
-      !WRITE(iw,*) 'k       = ', k
     END DO diag_2h1p
 
     WRITE(iw,*) 'Diagonal sorted.'
 
     ! add final state diagonal
-    ! todo: write several diagonal files from temp_fin, tempe and total
     tempe(najl-fin_max+1:najl) = temp_fin(1:fin_max)
     diag(nok+1:ladc)           = tempe(1:najl)
 
@@ -394,6 +383,8 @@ CONTAINS
 
     WRITE(iw,*) 'Diagonal is written to temporary array'
 
+    ! In case of strict ADC2 the offdiagonal elements are zero
+    ! and no sorting and/or writing is necessary.
     offdiag:IF(reladc_adclevel >= 2) THEN
       CALL GETOOOO(oooo)
       CALL GETVOVO(vovo)
@@ -407,7 +398,6 @@ CONTAINS
           DO i = j + 1, no(irep)
             oolt(i,j,irep) = ioff
             ioff = ioff + 1
-            !WRITE(iw,'(1X,4(A7,I4))') 'OOLT = ', ioff-1, 'irep = ', irep, 'j = ', j, 'i = ', i
           END DO
         END DO
       END DO
@@ -416,19 +406,18 @@ CONTAINS
 
 !  
 !    loop over the original structure of the ADC matrix and write the matrix
-!    elements into different buffers
+!    elements sorted into different buffers
 !  
       fincol = 1
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
         temp = finalpos(fincol)
-        !WRITE(iw,*) 'jcol = ', jcol
-        !WRITE(iw,*) 'adccol1 = ', adccol
-        ! is the column a column of the final states?
         IF (temp == jcol) THEN
           coupcol = adccol
-          couploop:DO irow = jcol+1, najl
+!     couplings between final states that are not taken care of in the column
+!     wise handling are taken care of here (row < col).
+          couploop:DO irow = jcol+1, najl 
             IF (ANY(finalpos == irow)) THEN
               CYCLE couploop
             END IF
@@ -471,10 +460,6 @@ CONTAINS
           adcrow = adcrow + 1
           inrow  = inrow  + 1
 
-          !WRITE(iw,*) 'adccol = ', adccol
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'irow = ', irow
-
           s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
           !WRITE(iw,'(1X,A4,ES15.4)') 's = ', s
           IF (s == 0.0D0) THEN
@@ -489,8 +474,6 @@ CONTAINS
               inbuf(inib) = s
               inioi(inib) = inrow
               inioj(inib) = incol
-              !WRITE(iw,*) 'incol = ', incol
-              !WRITE(iw,*) 'inrow = ', inrow
               IF (inib == fano_intbuf) THEN
                 CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                     innbufs,inib,infh)
@@ -513,8 +496,6 @@ CONTAINS
         DO fincount = 1, fin_max
           irow = finalpos(fincount)
           adcrow = adcrow + 1
-          !WRITE(iw,*) 'adccolcpl = ', adccol
-          !WRITE(iw,*) 'adcrowcpl = ', adcrow
 
           s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
           IF (s /= 0.0D0) THEN
@@ -522,9 +503,6 @@ CONTAINS
             adcbuf(adcib) = s
             adcioi(adcib) = adcrow
             adcioj(adcib) = adccol
-            ! write upper right part of the matrix
-            !adcioi(adcib) = adccol
-            !adcioj(adcib) = adcrow
             IF (adcib == fano_intbuf) THEN
               CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
                                   adcnbufs,adcib,adcfh)
@@ -599,7 +577,6 @@ CONTAINS
             END IF
           END IF isfindiag
 
-!          WRITE(iw,*) 'Fin entry = ', finbuf(finib)
 
           IF (finib == fano_intbuf) THEN
             CALL rwrite_to_disk(finbuf,finioi,finioj,fano_intbuf, &
@@ -616,7 +593,6 @@ CONTAINS
       WRITE(iw,*) 'Writing final state contributions for level>1'
       CALL rwrite_rest_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs, &
                                adcib,adcfh)
-!      WRITE(iw,*) 'ADCib = ', adcib
 
       CALL dealloc(adcbuf)
       CALL dealloc(adcioi)
@@ -665,6 +641,7 @@ CONTAINS
     CALL dealloc(finioj)
 
     ! write the diagonal to separate files
+    !Coupling block does not contain diagonal elements
     !CALL rwrite_diag(diag,ladc,1,ladc,adcdiagfh,adcnbufs,iw)
     !WRITE(iw,'(1X,ES14.5)') (diag(fincount), fincount = 1,ladc)
     CALL rwrite_diag(diag,ladc,1,ladc-fin_max,indiagfh,innbufs,iw)
@@ -750,11 +727,6 @@ CONTAINS
 !
 !  Code
 !
-!    IF (fh == itapfano+9) THEN
-!      DO ixx=1, intbuf
-!        WRITE(iw,'(1X,ES14.5,I4,I4)') -buf(ixx),ioi(ixx),ioj(ixx)
-!      END DO
-!    END IF
 
     jdummy = 0
 
@@ -802,7 +774,7 @@ CONTAINS
     
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-     FUNCTION fano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
+  FUNCTION fano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
 
      IMPLICIT NONE
 !

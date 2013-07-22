@@ -229,8 +229,7 @@ CONTAINS
                              is_coupl,is_fin,block)
 !
 !  Purpose: to determine whether an matrix element belongs to an initial
-!           or final state configuration. Hereby sort the 1h/2h1p and
-!           the 2h1p,2h1p space
+!           or final state configuration. Hereby sort the 1h/2h1p space.
 !           "block" is telling the program which part of the matrix is
 !           currently being built.
 !
@@ -296,7 +295,7 @@ CONTAINS
           END IF
         END DO each_channel
 
-      CASE (2) ! We are dealing with the 2h1p/2h1p block
+!      CASE (2) ! We are dealing with the 2h1p/2h1p block
       CASE DEFAULT ! Programmer has introduced a bug, since users can't
                    ! change this variable
         CALL QUIT ('block in determine_block can only be 1 or 2')
