@@ -310,9 +310,9 @@ In the CCIH namelist section:
  
 .IHSCHEME
 ~~~~~~~~~
-Particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2
+Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
  
-IHSCHEME =1 corresponds to the extrapolated IH
+The IHSCHEME =1 corresponds to the extrapolated IH
 (XIH) approach, described in the paper [Eliav2005]_.
 
 Main idea: proper modification of the energetic denominators,
@@ -330,10 +330,10 @@ could be used in the procedure of the extrapolation of
 the "exact" effective Hamiltonian solutions from
 corresponding IH CC energies and wave functions.
  
-IHSCHEME =2 corresponds to the IH-2 approach, described in
+IHSCHEME =2 corresponds to the simplified IH-2 approach, described in
 the paper [Landau2004]_.
  
-Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})`  are
+Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})` are
 substituted simply by the factor 0.
  
 Default: IHSCHEME = 2
@@ -363,6 +363,9 @@ Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real
 .SHIFTP2
 ~~~~~~~~
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
+Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
+orbital energy belonging to the Pm space. 
+Works only  with the old style of input.
 
 .SHIFTHP    
 ~~~~~~~~
@@ -374,7 +377,7 @@ Compensation factor, used in expression (1). Arguments: real positive, not great
  
 .NIH 
 ~~~~
-compensation power, used in expression (1). Arguments: integer.
+Compensation power, used in expression (1). Arguments: integer.
  
 In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
 we have so called "full compensation" method, corresponding to the
