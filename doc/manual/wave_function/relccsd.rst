@@ -262,12 +262,22 @@ Minimum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
 secundary (Q) space and do not contribute to the model space.
 
+low limit of orbital energies of active occupied
+orbitals, which constitute the secondary Pi space. Could be
+used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
+
+
 .EHMAX
 ~~~~~~
 
 Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
 primary (Pm) space.
+
+This is upper limit of one-electronic energies of
+active occupied orbitals, which constitute the secondary Pi space.
+Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
+ 
 
 .EPMIN
 ~~~~~~
@@ -276,6 +286,11 @@ Minimum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
 primary (Pm) space.
 
+This is the low limit of orbital energies of active virtual
+orbitals, which constitute the secondary Pi space.
+Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
+ 
+
 .EPMAX
 ~~~~~~
 
@@ -283,3 +298,84 @@ Maximum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
 secundary (Q) space and do not contribute to the model space.
 
+This is the upper limit of one-electronic energies of active virtual
+orbitals, which constitute the secondary Pi space. Could be
+used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
+ 
+
+Other Intermediate Hamiltonian (IH) input parameters:
+-----------------------------------------------------
+ 
+In the CCIH namelist section:
+ 
+.IHSCHEME
+~~~~~~~~~
+Particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2
+ 
+IHSCHEME =1 corresponds to the extrapolated IH
+(XIH) approach, described in the paper [Eliav2005]_.
+
+Main idea: proper modification of the energetic denominators,
+containing problematic Pi  -> Q transition.
+The original denominator 1/(E_Pi  -  E_Q) , used during CC
+iterations, is substituted by the following expression (1)
+
+.. math::
+
+ \frac{(1-[\frac{AIH*SHIFT}{(E_{Pi} - E_{Q} + SHIFT)}]^{NIH})}{\frac{(1-AIH*SHIFT}{(E_{Pi}  -  E_{Q} + SHIFT))}},
+
+here AIH, SHIFT,NIH are parameters, specially chosen for
+overcoming of the intruder states problem. These parameters
+could be used in the procedure of the extrapolation of
+the "exact" effective Hamiltonian solutions from
+corresponding IH CC energies and wave functions.
+ 
+IHSCHEME =2 corresponds to the IH-2 approach, described in
+the paper [Landau2004]_.
+ 
+Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})`  are
+substituted simply by the factor 0.
+ 
+Default: IHSCHEME = 2
+ 
+Next key options are used only in case of XIH (IHSCHEME = 1).
+ 
+.SHIFTH11  
+~~~~~~~~~
+Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
+
+.SHIFTH12 
+~~~~~~~~~
+Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
+
+.SHIFTH2     
+~~~~~~~~
+Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
+
+.SHIFTP11       
+~~~~~~~~~
+Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
+
+.SHIFTP12  
+~~~~~~~~~
+Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
+
+.SHIFTP2
+~~~~~~~~
+Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
+
+.SHIFTHP    
+~~~~~~~~
+Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
+
+.AIH
+~~~~
+Compensation factor, used in expression (1). Arguments: real positive, not greater then 1.0.
+ 
+.NIH 
+~~~~
+compensation power, used in expression (1). Arguments: integer.
+ 
+In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
+we have so called "full compensation" method, corresponding to the
+extrapolation of the effective Hamiltonian from the intermediate one.
