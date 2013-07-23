@@ -306,7 +306,9 @@ used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
 Other Intermediate Hamiltonian (IH) input parameters:
 -----------------------------------------------------
  
-In the CCIH namelist section:
+For *experts* only.
+
+Following keyowrds belong to the CCIH namelist section.
  
 .IHSCHEME
 ~~~~~~~~~
@@ -365,7 +367,7 @@ Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
 Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
 orbital energy belonging to the Pm space. 
-Works only  with the old style of input.
+Works only with the old style of RELCC input.
 
 .SHIFTHP    
 ~~~~~~~~
