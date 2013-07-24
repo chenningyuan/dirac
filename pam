@@ -830,10 +830,10 @@ Options are also read from ~/.diracrc"""
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
         else:
-            dirac_num_mpi_threads = os.environ.get('DIRAC_NUM_MPI_THREADS')
-            if dirac_num_mpi_threads != None:
-                if dirac_num_mpi_threads > 1:
-                    self.nr_proc = dirac_num_mpi_threads
+            nr_tasks = os.environ.get('DIRAC_NUM_MPI_TASKS')
+            if nr_tasks != None:
+                if nr_tasks > 1:
+                    self.nr_proc = nr_tasks
                     self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
