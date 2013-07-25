@@ -261,4 +261,120 @@ CONTAINS
 
   END SUBROUTINE fano_find_in_vec
 
+
+
+
+!
+!--------------------------------------------------------------
+!
+  SUBROUTINE cfano_find_in_vec(n,evl,z,positions,nr_in_vecs,iw)
+!
+!  Purpose: To find the eigenvectors of the Lanczos matrix having
+!           a non-negliable contribution to the Fano initial state
+!           and write the positions within Z to an array
+
+    use adc_cfg
+    use memory_allocator
+    use adc_fano_exchange
+
+    IMPLICIT NONE
+!
+! Calling Variables
+!
+    INTEGER, INTENT(IN)                    :: n
+    REAL(8), INTENT(IN), DIMENSION(N)      :: evl
+    COMPLEX(8), INTENT(IN), DIMENSION(N,N) :: z
+    INTEGER, INTENT(OUT), DIMENSION(N)     :: positions
+    INTEGER, INTENT(OUT)                   :: nr_in_vecs
+    INTEGER, INTENT(IN)                    :: iw
+
+!
+! Local Variables
+!
+    REAL(8)                             :: contrib
+    REAL, PARAMETER                     :: thresh=0.2
+    REAL(8), PARAMETER                  :: ovlthresh=1.0D-2
+    REAL(8), PARAMETER                  :: ethresh=1.0D-12
+    INTEGER                             :: initial
+    INTEGER                             :: i,j,k
+    INTEGER,ALLOCATABLE,DIMENSION(:)    :: selected
+    INTEGER                             :: nr_in
+    COMPLEX(8),ALLOCATABLE,DIMENSION(:) :: vec1, vec2 
+    REAL(8)                             :: ovl
+    REAL(8)                             :: energy1, energy2
+
+!
+! Code
+!
+    positions  = 0
+    nr_in      = 0
+    nr_in_vecs = 0
+    initial    = reladc_fano_inrelsp
+
+    CALL alloc(selected,n,id="selected eigenvectors in Fano Lanczos")
+    selected   = 0
+
+    DO j=1,n
+      contrib = CDABS(z(initial,j)) * CDABS(z(initial,j))
+      IF (contrib >= thresh) THEN
+        nr_in      = nr_in + 1
+        selected(nr_in) = j
+      END IF
+    END DO
+
+    SELECT CASE (reladc_fano_ovl_in)
+      CASE (.TRUE.)
+        !CALL alloc(vec1,n)
+        !CALL alloc(vec2,n)
+        !DO i = 1, nr_in
+        !  vec1(1:n) = z(1:n,selected(i))
+        !  DO j = 1, n
+        !    vec2(1:n) = z(1:n,j)
+        !    ovl = dot_product(vec1, vec2)
+        !    WRITE(iw,*) 'j = ', j
+        !    WRITE(iw,*) 'Overlap = ', ovl
+        !    IF (1.0D0 - ABS(ovl) < ovlthresh) THEN
+        !      nr_in_vecs = nr_in_vecs + 1
+        !      positions(nr_in_vecs) = j
+        !    END IF
+        !  END DO
+        !END DO
+        !CALL dealloc(vec1)
+        !CALL dealloc(vec2)
+        WRITE(iw,*) 'Selection by overlap does not work yet.'
+
+      CASE (.FALSE.)
+        !CALL alloc(in_energy,nr_in)
+        DO i = 1, nr_in
+          energy1      = evl(selected(i))
+          !in_energy(i) = energy1
+          DO j = 1, n
+            energy2 = evl(j)
+            IF (ABS(energy1 - energy2) < ethresh) THEN
+              nr_in_vecs = nr_in_vecs + 1
+              positions(nr_in_vecs) = j
+            END IF
+          END DO
+        END DO
+    END SELECT
+
+    CALL dealloc(selected)
+
+    WRITE(iw,*)
+    WRITE(iw,*) '--------------------------------------------------------------'
+    WRITE(iw,*) 'Selection of Lanczos eigenvectors as Fano initial state(s)'
+    WRITE(iw,*) '--------------------------------------------------------------'
+    WRITE(iw,*) 'Energy threshold: ', ethresh
+    WRITE(iw,*) 'Overlap threshold: ', ovlthresh
+    WRITE(iw,*) 'Selection method overlap(T), energy(F): ', reladc_fano_ovl_in
+    WRITE(iw,*) 'Number of contributions: ', nr_in
+    WRITE(iw,*) 'Number of selected eigenvectors: ', nr_in_vecs
+    WRITE(iw,*) 'Selected positions:'
+    WRITE(iw,'(1X,5I4)') (positions(i), i=1, nr_in_vecs)
+    WRITE(iw,*)
+
+
+  END SUBROUTINE cfano_find_in_vec
+
+
 END MODULE adc_fano_diag
