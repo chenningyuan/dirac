@@ -2648,6 +2648,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
+      logical              :: no1esystem_aoosoc
 #endif
 
       CALL QENTER('GMOTRA')
