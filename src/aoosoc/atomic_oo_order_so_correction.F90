@@ -47,11 +47,13 @@ contains
   subroutine get_atomic_oo_order_so_correction(            &
                                                dmat,       &
                                                pct_mat,    &
+                                               calc_2esoc, &
                                                print_lvl   &
                                                )
 !**********************************************************************
      real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
      real(8), intent(in)                :: pct_mat(*)
+     logical, intent(in)                :: calc_2esoc
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
@@ -63,64 +65,65 @@ contains
       fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
-      call get_scso_2e_fock(                           &
-                            dmat,                      &
-                            fmat,                      &
-                            nrows,                     &
-                            ncols,                     &
-                            nr_2e_fock_matrices-1,     &
-                            aoo_dfopen,                &
-                            aoo_intflg,                &
-                            aoo_mdirac,                &
-                            nr_quat,                   &
-                            aoo_cb_pq_to_uq(1,0),      &
-                            aoo_ihqmat(1,-1),          &
-                            nr_ao_total_aoo,           &
-                            print_lvl                  &
+      if(calc_2esoc)then
+        call get_scso_2e_fock(                           &
+                              dmat,                      &
+                              fmat,                      &
+                              nrows,                     &
+                              ncols,                     &
+                              nr_2e_fock_matrices-1,     &
+                              aoo_dfopen,                &
+                              aoo_intflg,                &
+                              aoo_mdirac,                &
+                              nr_quat,                   &
+                              aoo_cb_pq_to_uq(1,0),      &
+                              aoo_ihqmat(1,-1),          &
+                              nr_ao_total_aoo,           &
+                              print_lvl                  &
+                             )
+
+
+!       debug print
+        if(print_lvl > 2)then
+          call print_x2cmat(                             &
+                            fmat,                        &
+                            nr_ao_total_aoo,             &
+                            nr_ao_total_aoo,             &
+                            nr_quat,                     &
+                            aoo_cb_pq_to_uq(1,0),        &
+                            'aoosoc - 2e-full',          &
+                            6                            &
                            )
+        end if
 
-      if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
+!       get 2e-SO-fock matrix
+        call make_so_2e_fock(                            &
+                             fmat,                       & 
+                             nrows/2,                    &
+                             ncols/2,                    &
+                             nr_quat                     &
+                            )
 
-!     debug print
-      if(print_lvl > 2)then
-        call print_x2cmat(                             &
-                          fmat,                        &
-                          nr_ao_total_aoo,             &
-                          nr_ao_total_aoo,             &
-                          nr_quat,                     &
-                          aoo_cb_pq_to_uq(1,0),        &
-                          'aoosoc - 2e-full',          &
-                          6                            &
-                         )
+!       normalize (picture-change transform) 2e-SO-fock matrix
+        call get_normalized_2e_soc(                      &
+                                   fmat,                 &
+                                   pct_mat,              &
+                                   dmat,                 &
+                                   nrows,                &
+                                   ncols,                &
+                                   nr_ao_total_aoo,      &
+                                   nr_ao_large_aoo,      &
+                                   nr_ao_all,            &
+                                   nr_ao_l,              &
+                                   nr_fsym,              &
+                                   nr_quat,              &
+                                   aoo_cb_pq_to_uq,      &
+                                   ioff_aomat_x,         &
+                                   aoo_bs_to_fs,         &
+                                   print_lvl             &
+                                  )
+
       end if
-
-!     get 2e-SO-fock matrix
-      call make_so_2e_fock(                            &
-                           fmat,                       & 
-                           nrows/2,                    &
-                           ncols/2,                    &
-                           nr_quat                     &
-                          )
-
-!     normalize (picture-change transform) 2e-SO-fock matrix
-      call get_normalized_2e_soc(                      &
-                                 fmat,                 &
-                                 pct_mat,              &
-                                 dmat,                 &
-                                 nrows,                &
-                                 ncols,                &
-                                 nr_ao_total_aoo,      &
-                                 nr_ao_large_aoo,      &
-                                 nr_ao_all,            &
-                                 nr_ao_l,              &
-                                 nr_fsym,              &
-                                 nr_quat,              &
-                                 aoo_cb_pq_to_uq,      &
-                                 ioff_aomat_x,         &
-                                 aoo_bs_to_fs,         &
-                                 print_lvl             &
-                                )
-
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
@@ -133,8 +136,9 @@ contains
                                   aoo_fsoc                    &
                                  )
      
+      if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
 !     release memory for atom type
-      if(allocated(atom)) deallocate(atom)                             
+      if(allocated(atom))         deallocate(atom)                             
 
       call goodbye_aoosoc()
 
