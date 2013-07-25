@@ -223,7 +223,7 @@ CONTAINS
     use adc_fano_routines
     use memory_allocator
 !    use adc_fano_exchange
-!    use adc_fano_matmul
+    use adc_fano_matmul
 
     IMPLICIT NONE
 
@@ -263,7 +263,7 @@ CONTAINS
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: bufhp
 
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: e2h1p
-    COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: t_mom
+    REAL(8), ALLOCATABLE, DIMENSION(:) :: t_mom
 
 !
 !  Interfaces
@@ -285,6 +285,8 @@ CONTAINS
     WRITE(iw,*) '*       written by Elke Fasshauer           *'
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
+
+    WRITE(iw,*) 'Using complex algebra'
 
     nok  = NO(krep)
     najl = NVOOT(krep)
@@ -407,17 +409,17 @@ CONTAINS
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
     CALL dealloc(buflanc)
-!
-!    WRITE(iw,*)
-!    WRITE(iw,*) '------------------------------------------'
-!    WRITE(iw,*) 'All vectors and matrices are now present'
-!    WRITE(iw,*) 'The next step of the Fano run is the    '
-!    WRITE(iw,*) 'matrix vector multiplication.'
-!    WRITE(iw,*) '------------------------------------------'
-!    WRITE(iw,*)
-!
-!    CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
-!                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs,iw)
+
+    WRITE(iw,*)
+    WRITE(iw,*) '------------------------------------------'
+    WRITE(iw,*) 'All vectors and matrices are now present'
+    WRITE(iw,*) 'The next step of the Fano run is the    '
+    WRITE(iw,*) 'matrix vector multiplication.'
+    WRITE(iw,*) '------------------------------------------'
+    WRITE(iw,*)
+
+    CALL cfano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
+                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs,iw)
 
   END SUBROUTINE fanoadcc
 END MODULE adc_fano
