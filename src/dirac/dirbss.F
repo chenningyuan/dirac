@@ -8940,8 +8940,17 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
        IF (INDXMINCH > NUCDEP) THEN
         CALL QUIT('AMFIIN: atom type index out of bounds!')
        ENDIF 
+
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
+
+       ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
+       if(icharge-iachnuc < 2)then
+         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
+     &                  ' or hydrogen-like 1e-systems.'//
+     &                  ' AMFI is skipped.'
+         cycle
+       end if
 
        if (IPRINT.GE.2) then
           write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
@@ -9164,7 +9173,9 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
        ISREMOVED = 0
        DO K=1,NAMFA
-         IF (IANUCS(IANUC).EQ.IAMFA(K)) ISREMOVED = 1 
+         IF (IANUCS(IANUC).EQ.IAMFA(K))then
+          ISREMOVED = 1 
+         end if
        ENDDO
 
        IF (ISREMOVED.NE.0) THEN
@@ -9205,21 +9216,21 @@ C      ... indexes of H2CAO(I1,J1,2-4)
 C      ... print out AMFI integrals
        IF (IPRINT.GE.3) THEN
         IF (DABS(SOXINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'X amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|X|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOXINT
         ENDIF
 
         IF (DABS(SOYINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Y amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOYINT
         ENDIF
 
         IF (DABS(SOZINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Z amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOZINT
@@ -9317,12 +9328,12 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
-!       print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
-!    &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
-!       print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
-!    &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
-!       print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
-!    &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
+        print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
+     &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
+        print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
+     &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
+        print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
+     &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 

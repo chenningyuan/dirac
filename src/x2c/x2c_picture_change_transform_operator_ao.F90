@@ -721,7 +721,7 @@ contains
        nz_c1 = max(nz,4)
 
 !      allocate scratch matrices
-       allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices))
+       allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
        scr_mat1 = 0.0d0
 
 !      !> read the 4c 2-electron fock matrices from file
@@ -729,6 +729,7 @@ contains
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
+       print *, 'naosh_ls**2 * nz_c1 * nr_2e_fock_matrices', naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &

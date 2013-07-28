@@ -1,4 +1,4 @@
-#define DEBUG_SOC
+!#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -325,6 +325,7 @@ contains
                       nr_quat                     &
                       )
 
+#ifdef DEBUG_SOC
 !     get lvalues for cartesian functions
       allocate(lvalue_array(nr_ao_large_aoo))
       lvalue_array(1:nr_ao_large_aoo) = 0.0d0
@@ -342,9 +343,10 @@ contains
                       )
 
       deallocate(lvalue_array)
+#endif
 
 !     debug print
-      if(print_lvl > 2)then
+!     if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
@@ -353,7 +355,7 @@ contains
                           'aoosoc - 2e-SOC',      &
                           6                       &
                          )
-      end if
+!     end if
 
 #ifdef DEBUG_SOC
       call print_x2cmat(fmat,                   &

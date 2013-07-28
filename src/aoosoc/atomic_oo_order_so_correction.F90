@@ -91,7 +91,7 @@ contains
                             nr_ao_total_aoo,             &
                             nr_quat,                     &
                             aoo_cb_pq_to_uq(1,0),        &
-                            'aoosoc - 2e-full',          &
+                            'aoosoc - 2e-complete',      &
                             6                            &
                            )
         end if
@@ -103,6 +103,18 @@ contains
                              ncols/2,                    &
                              nr_quat                     &
                             )
+!       debug print
+!       if(print_lvl > 2)then
+          call print_x2cmat(                             &
+                            fmat,                        &
+                            nr_ao_total_aoo,             &
+                            nr_ao_total_aoo,             &
+                            nr_quat,                     &
+                            aoo_cb_pq_to_uq(1,0),        &
+                            'aoosoc - 2e-soc-only',      &
+                            6                            &
+                           )
+!       end if
 
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &
