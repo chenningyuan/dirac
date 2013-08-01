@@ -2648,6 +2648,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
+      logical              :: no1esystem_aoosoc
 #endif
 
       CALL QENTER('GMOTRA')
@@ -3239,9 +3240,15 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
             close(lux2c,status='keep')
 
+!           no 2e-SO correction for 1e-systems
+            call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
+            no1esystem_aoosoc = .false.
+            no1esystem_aoosoc = (ichrg - kcharg > 1)
+             
             call get_atomic_oo_order_so_correction(
      &                                             dmat_aoosoc,
      &                                             pctm_aoosoc,
+     &                                             no1esystem_aoosoc,
      &                                             iprham
      &                                             )
 

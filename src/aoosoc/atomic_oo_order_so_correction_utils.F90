@@ -1,4 +1,4 @@
-#define DEBUG_SOC
+!#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -50,6 +50,8 @@ module atomic_oo_order_so_correction_utils
 
 contains
 
+#define use_orig
+#ifdef use_orig
 !----------------------------------------------------------------------
   subroutine get_scso_2e_fock(           &
                              dmat,       &
@@ -124,6 +126,82 @@ contains
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
+#else
+!----------------------------------------------------------------------
+  subroutine get_scso_2e_fock(           &
+                             dmat,       &
+                             fmat,       &
+                             nrows,      &
+                             ncols,      &
+                             nopen,      &
+                             aoo_dfopen, &
+                             intflg,     &
+                             mdirac,     &
+                             nz,         &
+                             ipqtoq,     &
+                             ihqmat,     &
+                             naosh_ls,   &
+                             print_lvl   &
+                             )
+!**********************************************************************
+     real(8), intent(inout)             :: dmat(nrows,ncols,nz,1+nopen)
+     real(8), intent(out)               :: fmat(nrows,ncols,nz,1+nopen)
+     real(8), intent(in)                :: aoo_dfopen(nopen)
+     integer, intent(in)                :: nopen
+     integer, intent(in)                :: nrows
+     integer, intent(in)                :: ncols
+     integer, intent(in)                :: nz
+     integer, intent(in)                :: intflg
+     integer, intent(in)                :: ipqtoq(4,0:7)
+     integer, intent(in)                :: ihqmat(4,-1:1)
+     integer, intent(in)                :: naosh_ls
+     integer, intent(in)                :: print_lvl
+     logical, intent(in)                :: mdirac
+!----------------------------------------------------------------------
+     real(8), parameter                 :: hfxfac = 1.0d0
+     integer                            :: irep, iz, iq, ih
+     integer                            :: i
+!----------------------------------------------------------------------
+
+!     take care of present "limitations" (being pragmatic for now)
+      if(.not.mdirac   ) stop 'mdirac required for aoosoc module' 
+      if(nz /= 4       ) stop 'c1 symmetry required for aoosoc module' 
+
+      do i = 1, nopen
+
+!     2e-fock matrix construction
+
+#ifdef MOD_INTEREST
+      call process_two_electron_integrals_4comp(               &
+                                                fmat(1,1,1,i), &
+                                                dmat(1,1,1,i), &
+                                                intflg,        &
+                                                hfxfac         &
+                                               )
+#endif
+
+!     Symmetrize FMAT matrix
+!     ======================
+!     IH = 0   Non-symmetric
+!     IH = 1   Symmetric
+!     IH = 2   Anti-symmetric
+
+      irep = 0
+      do iz = 1,nz
+        iq = ipqtoq(iz,irep)
+        ih = ihqmat(iq,1)
+        if(ih == 1)then
+          call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,i))
+        else if(ih == 2)then
+          call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,i))
+        end if
+      end do
+        call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
+      end do
+
+  end subroutine get_scso_2e_fock
+!----------------------------------------------------------------------
+#endif
 
   subroutine make_so_2e_fock(                            &
                              Gmat,                       & 
@@ -301,6 +379,13 @@ contains
                        )
 #endif
 
+      call get_ll_so_2e_fock(                   &
+                             fmat,              & 
+                             nr_ao_large_aoo,   &
+                             nr_ao_large_aoo,   &
+                             nr_quat            &
+                            )
+
       dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
       call perform_pct_saao_bas(fmat,                         &
                                 pct_mat,                      &
@@ -325,6 +410,7 @@ contains
                       nr_quat                     &
                       )
 
+#ifdef DEBUG_SOC
 !     get lvalues for cartesian functions
       allocate(lvalue_array(nr_ao_large_aoo))
       lvalue_array(1:nr_ao_large_aoo) = 0.0d0
@@ -342,9 +428,10 @@ contains
                       )
 
       deallocate(lvalue_array)
+#endif
 
 !     debug print
-      if(print_lvl > 2)then
+!     if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
@@ -353,7 +440,7 @@ contains
                           'aoosoc - 2e-SOC',      &
                           6                       &
                          )
-      end if
+!     end if
 
 #ifdef DEBUG_SOC
       call print_x2cmat(fmat,                   &
@@ -370,6 +457,57 @@ contains
   
 
   end subroutine get_normalized_2e_soc
+!----------------------------------------------------------------------
+
+  subroutine get_ll_so_2e_fock(                            &
+                               Gmat,                       & 
+                               nrow,                       &
+                               ncol,                       &
+                               nz                          &
+                              )
+!----------------------------------------------------------------------
+!
+!    purpose: retain only ll-block of two-electron spin-orbit elements in 2-el Fock matrix
+!
+!----------------------------------------------------------------------
+     real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
+     integer, intent(in)      :: nrow
+     integer, intent(in)      :: ncol
+     integer, intent(in)      :: nz
+!----------------------------------------------------------------------
+     integer                  :: i, j
+!----------------------------------------------------------------------
+
+!      check dimensionalities
+       if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
+ 
+       if(nrow /= ncol) stop '2-el Fock matrix is not in MDIRAC format'
+
+!      take out ss/sl parts
+       do j=1,nrow
+         do i=1,nrow
+           !> quaternion(i) 
+!          Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
+           Gmat(i     ,j     ,2) = 0.0d0
+           Gmat(i+nrow,j     ,2) = 0.0d0
+           Gmat(i     ,j+nrow,2) = 0.0d0
+!          Gmat(i+nrow,j+nrow,2) = 0.0d0
+           !> quaternion(j) 
+!          Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
+           Gmat(i     ,j     ,3) = 0.0d0
+           Gmat(i+nrow,j     ,3) = 0.0d0
+           Gmat(i     ,j+nrow,3) = 0.0d0
+!          Gmat(i+nrow,j+nrow,3) = 0.0d0
+           !> quaternion(k) 
+!          Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
+           Gmat(i     ,j     ,4) = 0.0d0
+           Gmat(i+nrow,j     ,4) = 0.0d0
+           Gmat(i     ,j+nrow,4) = 0.0d0
+!          Gmat(i+nrow,j+nrow,4) = 0.0d0
+         enddo
+       enddo
+
+  end subroutine get_ll_so_2e_fock
 !----------------------------------------------------------------------
 
   subroutine dump_normalized_2e_soc(                            &

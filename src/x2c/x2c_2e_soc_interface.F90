@@ -410,9 +410,9 @@ contains
        end if          
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
-       end if
+!      end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
@@ -433,9 +433,9 @@ contains
        call x2c_read(flabel,scr2_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
-       end if
+!      end if
 
 
 !      add amfi contributions to h1_2c
@@ -477,9 +477,9 @@ contains
        else
 
 !        debug print
-         if(print_lvl > 2)then
+!        if(print_lvl > 2)then
            call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
-         end if
+!        end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
        end if
@@ -592,10 +592,6 @@ contains
        write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
        call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
-!      debug print
-       if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 wo AMFI contribution',6)
-       end if
 
 !      --------------------------------------------------------
 !      step 2. select LL-block of h1_++_saao_cartesian_gaussian
@@ -612,6 +608,10 @@ contains
                                    nz,                  &
                                    0,                   &
                                    op_bs_to_fs)
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 wo aoosoc contribution',6)
+!      end if
 
 !      ---------------------------------------------------------------------------------
 !      step 3. read and distribute aoosoc contributions for symmetry independent centers
@@ -643,9 +643,9 @@ contains
        end do
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',6)
-       end if
+!      end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
@@ -662,6 +662,11 @@ contains
 !      -----------------------------------------
 
        call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr2_mat,1)
+
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 + aooSOC contribution',6)
+!      end if
 
 !      -------------------------------------------------------------
 !      step 5. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 

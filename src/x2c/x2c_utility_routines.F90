@@ -915,7 +915,7 @@ contains
      real(8), optional                :: loop_factor(0:nr_entries-1)
      real(8),           intent(inout) :: xmat(ndim * nr_entries)
 !----------------------------------------------------------------------
-     integer                          :: ndim_check, offset, i
+     integer                          :: ndim_check, offset, i,j
      integer                          :: nr_entries_check
      character (len=74)               :: info_text
      character (len=72)               :: file_name
@@ -946,7 +946,14 @@ contains
        if(nr_entries > 1)then
          offset = 1
          do i = 1, nr_entries
-           if(i > 1) call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat(1),1)
+         print *, 'offset, nr_entries, loop_factor, ndim',offset, nr_entries, loop_factor, ndim
+         print *, 'i, loop_factor(i-1)',i,loop_factor(i-1)
+           if(i > 1)then
+!            do j = 1, ndim
+!              xmat(j) = xmat(j) + xmat(offset+j)*loop_factor(i-1)
+!            end do
+             call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat,1)
+           end if
            offset = offset + ndim
          end do
        end if
