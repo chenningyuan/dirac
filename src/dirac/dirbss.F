@@ -9328,12 +9328,12 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
-        print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
-     &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
-        print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
-     &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
-        print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
-     &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
+!       print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
+!    &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
+!       print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
+!    &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
+!       print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
+!    &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 

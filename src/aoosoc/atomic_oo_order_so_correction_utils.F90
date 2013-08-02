@@ -50,8 +50,6 @@ module atomic_oo_order_so_correction_utils
 
 contains
 
-#define use_orig
-#ifdef use_orig
 !----------------------------------------------------------------------
   subroutine get_scso_2e_fock(           &
                              dmat,       &
@@ -126,82 +124,6 @@ contains
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
-#else
-!----------------------------------------------------------------------
-  subroutine get_scso_2e_fock(           &
-                             dmat,       &
-                             fmat,       &
-                             nrows,      &
-                             ncols,      &
-                             nopen,      &
-                             aoo_dfopen, &
-                             intflg,     &
-                             mdirac,     &
-                             nz,         &
-                             ipqtoq,     &
-                             ihqmat,     &
-                             naosh_ls,   &
-                             print_lvl   &
-                             )
-!**********************************************************************
-     real(8), intent(inout)             :: dmat(nrows,ncols,nz,1+nopen)
-     real(8), intent(out)               :: fmat(nrows,ncols,nz,1+nopen)
-     real(8), intent(in)                :: aoo_dfopen(nopen)
-     integer, intent(in)                :: nopen
-     integer, intent(in)                :: nrows
-     integer, intent(in)                :: ncols
-     integer, intent(in)                :: nz
-     integer, intent(in)                :: intflg
-     integer, intent(in)                :: ipqtoq(4,0:7)
-     integer, intent(in)                :: ihqmat(4,-1:1)
-     integer, intent(in)                :: naosh_ls
-     integer, intent(in)                :: print_lvl
-     logical, intent(in)                :: mdirac
-!----------------------------------------------------------------------
-     real(8), parameter                 :: hfxfac = 1.0d0
-     integer                            :: irep, iz, iq, ih
-     integer                            :: i
-!----------------------------------------------------------------------
-
-!     take care of present "limitations" (being pragmatic for now)
-      if(.not.mdirac   ) stop 'mdirac required for aoosoc module' 
-      if(nz /= 4       ) stop 'c1 symmetry required for aoosoc module' 
-
-      do i = 1, nopen
-
-!     2e-fock matrix construction
-
-#ifdef MOD_INTEREST
-      call process_two_electron_integrals_4comp(               &
-                                                fmat(1,1,1,i), &
-                                                dmat(1,1,1,i), &
-                                                intflg,        &
-                                                hfxfac         &
-                                               )
-#endif
-
-!     Symmetrize FMAT matrix
-!     ======================
-!     IH = 0   Non-symmetric
-!     IH = 1   Symmetric
-!     IH = 2   Anti-symmetric
-
-      irep = 0
-      do iz = 1,nz
-        iq = ipqtoq(iz,irep)
-        ih = ihqmat(iq,1)
-        if(ih == 1)then
-          call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,i))
-        else if(ih == 2)then
-          call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,i))
-        end if
-      end do
-        call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
-      end do
-
-  end subroutine get_scso_2e_fock
-!----------------------------------------------------------------------
-#endif
 
   subroutine make_so_2e_fock(                            &
                              Gmat,                       & 
@@ -379,7 +301,7 @@ contains
                        )
 #endif
 
-      call get_ll_so_2e_fock(                   &
+      call get_ss_so_2e_fock(                   &
                              fmat,              & 
                              nr_ao_large_aoo,   &
                              nr_ao_large_aoo,   &
@@ -431,7 +353,7 @@ contains
 #endif
 
 !     debug print
-!     if(print_lvl > 2)then
+      if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
@@ -440,7 +362,7 @@ contains
                           'aoosoc - 2e-SOC',      &
                           6                       &
                          )
-!     end if
+      end if
 
 #ifdef DEBUG_SOC
       call print_x2cmat(fmat,                   &
@@ -459,7 +381,7 @@ contains
   end subroutine get_normalized_2e_soc
 !----------------------------------------------------------------------
 
-  subroutine get_ll_so_2e_fock(                            &
+  subroutine get_ss_so_2e_fock(                            &
                                Gmat,                       & 
                                nrow,                       &
                                ncol,                       &
@@ -467,7 +389,7 @@ contains
                               )
 !----------------------------------------------------------------------
 !
-!    purpose: retain only ll-block of two-electron spin-orbit elements in 2-el Fock matrix
+!    purpose: retain only ss-block of two-electron spin-orbit elements in 2-el Fock matrix
 !
 !----------------------------------------------------------------------
      real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
@@ -507,7 +429,7 @@ contains
          enddo
        enddo
 
-  end subroutine get_ll_so_2e_fock
+  end subroutine get_ss_so_2e_fock
 !----------------------------------------------------------------------
 
   subroutine dump_normalized_2e_soc(                            &

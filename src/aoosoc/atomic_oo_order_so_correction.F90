@@ -104,7 +104,7 @@ contains
                              nr_quat                     &
                             )
 !       debug print
-!       if(print_lvl > 2)then
+        if(print_lvl > 2)then
           call print_x2cmat(                             &
                             fmat,                        &
                             nr_ao_total_aoo,             &
@@ -114,7 +114,7 @@ contains
                             'aoosoc - 2e-soc-only',      &
                             6                            &
                            )
-!       end if
+        end if
 
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &
