@@ -22,8 +22,8 @@
 !
 !
 ! this module contains all the utility routines required to add two-electron
-! spin-orbit corrections to the hamiltonian in DIRAC-sorted SA-AO basis. 
-! the spin-orbit corrections will be obtained as the spin-dependent parts of the 
+! spin-orbit corrections to the hamiltonian in DIRAC-sorted SA-AO basis.
+! the spin-orbit corrections will be obtained as the spin-dependent parts of the
 ! (converged) 4c-Fock operator in an atomic Dirac run.
 !
 ! written by sknecht august 2012
@@ -83,12 +83,12 @@ contains
 !----------------------------------------------------------------------
      real(8), parameter                 :: hfxfac = 1.0d0
      integer                            :: irep, iz, iq, ih
-     integer                            :: i
+     integer                            :: i, intflg_local
 !----------------------------------------------------------------------
 
 !     take care of present "limitations" (being pragmatic for now)
-      if(.not.mdirac   ) stop 'mdirac required for aoosoc module' 
-      if(nz /= 4       ) stop 'c1 symmetry required for aoosoc module' 
+      if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
+      if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
 
       do i = 1, nopen
         call daxpy(nrows*ncols*nz,aoo_dfopen(i),dmat(1,1,1,i+1),1,dmat(1,1,1,1),1)
@@ -97,12 +97,16 @@ contains
 !     2e-fock matrix construction
 
 #ifdef MOD_INTEREST
+      intflg_local = intflg - mod(intflg,2) ! remove the bit for (LL|LL) integrals
+
       call process_two_electron_integrals_4comp(               &
                                                 fmat(1,1,1,1), &
                                                 dmat(1,1,1,1), &
-                                                intflg,        &
+                                                intflg_local,  &
                                                 hfxfac         &
                                                )
+#else
+      call quit( 'InteRest required for aoosoc module' )
 #endif
 
 !     Symmetrize FMAT matrix
@@ -126,7 +130,7 @@ contains
 !----------------------------------------------------------------------
 
   subroutine make_so_2e_fock(                            &
-                             Gmat,                       & 
+                             Gmat,                       &
                              nrow,                       &
                              ncol,                       &
                              nz                          &
@@ -145,29 +149,29 @@ contains
 !----------------------------------------------------------------------
 
 !      check dimensionalities
-       if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
- 
-       if(nrow /= ncol) stop '2-el Fock matrix is not in MDIRAC format'
+       if(nz /= 4) call quit( '2-el Fock matrix is not in quaternion format' )
+
+       if(nrow /= ncol) call quit( '2-el Fock matrix is not in MDIRAC format' )
 
 !      take out scalar parts
        do j=1,nrow
          do i=1,nrow
-           !> quaternion(0) 
+           !> quaternion(0)
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll
            Gmat(i+nrow,j     ,1) = 0.0d0                 ! sl
            Gmat(i     ,j+nrow,1) = 0.0d0                 ! sl
            Gmat(i+nrow,j+nrow,1) = 0.0d0                 ! ss
-           !> quaternion(i) 
+           !> quaternion(i)
            Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
            Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) ! sl
            Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) ! sl
            Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) ! ss
-           !> quaternion(j) 
+           !> quaternion(j)
            Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
            Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) ! sl
            Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) ! sl
            Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) ! ss
-           !> quaternion(k) 
+           !> quaternion(k)
            Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
            Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) ! sl
            Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) ! sl
@@ -179,7 +183,7 @@ contains
 !----------------------------------------------------------------------
 
   subroutine pure_so_2e(                            &
-                        Gmat,                       & 
+                        Gmat,                       &
                         nrow,                       &
                         ncol,                       &
                         nz                          &
@@ -198,14 +202,14 @@ contains
 !----------------------------------------------------------------------
 
 !      check dimensionalities
-       if(nz /= 4) stop '2-el soc matrix is not in quaternion format'
- 
-       if(nrow /= ncol) stop '2-el soc matrix is not in MDIRAC format'
+       if(nz /= 4) call quit( '2-el soc matrix is not in quaternion format' )
+
+       if(nrow /= ncol) call quit( '2-el soc matrix is not in MDIRAC format' )
 
 !      take out real parts
        do j=1,nrow
          do i=1,nrow
-           !> quaternion(0) 
+           !> quaternion(0)
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll
          enddo
        enddo
@@ -214,8 +218,8 @@ contains
 !----------------------------------------------------------------------
 
   subroutine lval_so_2e(                            &
-                        Gmat,                       & 
-                        cart2lval,                  & 
+                        Gmat,                       &
+                        cart2lval,                  &
                         nrow,                       &
                         ncol,                       &
                         nz                          &
@@ -302,7 +306,7 @@ contains
 #endif
 
       call get_ss_so_2e_fock(                   &
-                             fmat,              & 
+                             fmat,              &
                              nr_ao_large_aoo,   &
                              nr_ao_large_aoo,   &
                              nr_quat            &
@@ -326,7 +330,7 @@ contains
                                 print_lvl)
 !     pure 2e-SO matrix
       call pure_so_2e(                            &
-                      fmat,                       & 
+                      fmat,                       &
                       nr_ao_large_aoo,            &
                       nr_ao_large_aoo,            &
                       nr_quat                     &
@@ -342,8 +346,8 @@ contains
 
 !     check for l-values in 2e-SO matrix
       call lval_so_2e(                            &
-                      fmat,                       & 
-                      lvalue_array,               & 
+                      fmat,                       &
+                      lvalue_array,               &
                       nr_ao_large_aoo,            &
                       nr_ao_large_aoo,            &
                       nr_quat                     &
@@ -376,13 +380,13 @@ contains
       close(99,status='keep')
 #endif
 
-  
+
 
   end subroutine get_normalized_2e_soc
 !----------------------------------------------------------------------
 
   subroutine get_ss_so_2e_fock(                            &
-                               Gmat,                       & 
+                               Gmat,                       &
                                nrow,                       &
                                ncol,                       &
                                nz                          &
@@ -401,30 +405,30 @@ contains
 !----------------------------------------------------------------------
 
 !      check dimensionalities
-       if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
- 
-       if(nrow /= ncol) stop '2-el Fock matrix is not in MDIRAC format'
+       if(nz /= 4) call quit( '2-el Fock matrix is not in quaternion format' )
+
+       if(nrow /= ncol) call quit( '2-el Fock matrix is not in MDIRAC format' )
 
 !      take out ss/sl parts
        do j=1,nrow
          do i=1,nrow
-           !> quaternion(i) 
+           !> quaternion(i)
 !          Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
            Gmat(i     ,j     ,2) = 0.0d0
-           Gmat(i+nrow,j     ,2) = 0.0d0
-           Gmat(i     ,j+nrow,2) = 0.0d0
+!          Gmat(i+nrow,j     ,2) = 0.0d0
+!          Gmat(i     ,j+nrow,2) = 0.0d0
 !          Gmat(i+nrow,j+nrow,2) = 0.0d0
-           !> quaternion(j) 
+           !> quaternion(j)
 !          Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
            Gmat(i     ,j     ,3) = 0.0d0
-           Gmat(i+nrow,j     ,3) = 0.0d0
-           Gmat(i     ,j+nrow,3) = 0.0d0
+!          Gmat(i+nrow,j     ,3) = 0.0d0
+!          Gmat(i     ,j+nrow,3) = 0.0d0
 !          Gmat(i+nrow,j+nrow,3) = 0.0d0
-           !> quaternion(k) 
+           !> quaternion(k)
 !          Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
            Gmat(i     ,j     ,4) = 0.0d0
-           Gmat(i+nrow,j     ,4) = 0.0d0
-           Gmat(i     ,j+nrow,4) = 0.0d0
+!          Gmat(i+nrow,j     ,4) = 0.0d0
+!          Gmat(i     ,j+nrow,4) = 0.0d0
 !          Gmat(i+nrow,j+nrow,4) = 0.0d0
          enddo
        enddo
@@ -433,7 +437,7 @@ contains
 !----------------------------------------------------------------------
 
   subroutine dump_normalized_2e_soc(                            &
-                                    Gmat,                       & 
+                                    Gmat,                       &
                                     nrow,                       &
                                     ncol,                       &
                                     nz,                         &
@@ -478,7 +482,7 @@ contains
 !----------------------------------------------------------------------
 
   subroutine read_normalized_2e_soc(                            &
-                                    Gmat,                       & 
+                                    Gmat,                       &
                                     nrow,                       &
                                     ncol,                       &
                                     nz,                         &
@@ -519,17 +523,17 @@ contains
           access='sequential',action="readwrite",position='rewind')
 
      read(fh) nrow_tmp, ncol_tmp, nz_tmp
-     if(nrow_tmp >  nrow)then 
+     if(nrow_tmp >  nrow)then
        print *, 'read_normalized_2e_soc: row dimension does not fit',nrow_tmp,nrow
-       stop 'read_normalized_2e_soc: row dimension does not fit'
+       call quit( 'read_normalized_2e_soc: row dimension does not fit' )
      end if
      if(ncol_tmp >  ncol)then
        print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
-       stop 'read_normalized_2e_soc: col dimension does not fit'
+       call quit( 'read_normalized_2e_soc: col dimension does not fit' )
      end if
-     if(nz_tmp   /= 4   )then 
+     if(nz_tmp   /= 4   )then
        print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp
-       stop 'read_normalized_2e_soc: nz  dimension does not fit'
+       call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
      end if
 
      read(fh) Gmat
@@ -571,6 +575,27 @@ contains
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine goodbye_aoosoc
+!**********************************************************************
+
+#if !defined(PRG_DIRAC) && !defined(PRG_DALTON)
+  subroutine quit(text)
+!**********************************************************************
+
+#ifdef VAR_MPI
+    use mpi
+#endif
+
+    character*(*), inten(in) :: text
+
+#ifdef VAR_MPI
+    print *, text
+    call MPI_ABORT(-100)
+#else
+    stop text
+#endif
+
+  end subroutine quit
+#endif
 !**********************************************************************
 
  end module

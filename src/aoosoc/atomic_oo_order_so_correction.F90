@@ -21,17 +21,17 @@
 !
 !
 ! this module contains all the functionality required to add one- and two-electron
-! spin-orbit corrections to the hamiltonian in DIRAC-sorted SA-AO basis. 
-! the spin-orbit corrections will be obtained as the spin-dependent parts of the 
+! spin-orbit corrections to the hamiltonian in DIRAC-sorted SA-AO basis.
+! the spin-orbit corrections will be obtained as the spin-dependent parts of the
 ! (converged) 4c-Fock operator in an atomic Dirac run.
 !
 ! written by sknecht august 2012
 !
 module atomic_oo_order_so_correction
 
-  use atomic_oo_order_so_correction_cfg 
-  use atomic_oo_order_so_correction_utils 
-  use module_aoosoc_pfg 
+  use atomic_oo_order_so_correction_cfg
+  use atomic_oo_order_so_correction_utils
+  use module_aoosoc_pfg
   use x2c_utils, only: print_x2cmat
 
   implicit none
@@ -98,7 +98,7 @@ contains
 
 !       get 2e-SO-fock matrix
         call make_so_2e_fock(                            &
-                             fmat,                       & 
+                             fmat,                       &
                              nrows/2,                    &
                              ncols/2,                    &
                              nr_quat                     &
@@ -139,7 +139,7 @@ contains
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
-                                  fmat,                       & 
+                                  fmat,                       &
                                   nrows/2,                    &
                                   ncols/2,                    &
                                   nr_quat,                    &
@@ -147,10 +147,10 @@ contains
                                   nint(atom(1)%charge),       &
                                   aoo_fsoc                    &
                                  )
-     
+
       if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
 !     release memory for atom type
-      if(allocated(atom))         deallocate(atom)                             
+      if(allocated(atom))         deallocate(atom)
 
       call goodbye_aoosoc()
 
@@ -167,7 +167,7 @@ contains
                                                center_total,                &
                                                max_center,                  &
                                                print_lvl                    &
-                                              )    
+                                              )
 !**********************************************************************
      real(8), optional, intent(inout)   :: Gmat(*)
      integer, intent(in)                :: naosh_l
@@ -191,7 +191,7 @@ contains
 !     print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
 !     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
       call read_normalized_2e_soc(                                 &
-                                  Gmat_frag,                       & 
+                                  Gmat_frag,                       &
                                   nrows_ext,                       &
                                   ncols_ext,                       &
                                   nr_quat_ext,                     &
@@ -215,7 +215,7 @@ contains
                        center_total,                    &
                        aoo_nont(center_id),             &
                        aoo_nucdeg(center_total),        &
-                       4,                               & 
+                       4,                               &
                        Gmat_frag,                       &
                        nrows_ext,                       &
                        nrows_ext,                       &
