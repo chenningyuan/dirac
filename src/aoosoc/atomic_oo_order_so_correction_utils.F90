@@ -82,6 +82,7 @@ contains
      logical, intent(in)                :: mdirac
 !----------------------------------------------------------------------
      real(8), parameter                 :: hfxfac = 1.0d0
+     real(8), allocatable               :: fmat_local(:,:,:,:)
      integer                            :: irep, iz, iq, ih
      integer                            :: i, intflg_local
 !----------------------------------------------------------------------
@@ -97,14 +98,28 @@ contains
 !     2e-fock matrix construction
 
 #ifdef MOD_INTEREST
-      intflg_local = intflg - mod(intflg,2) ! remove the bit for (LL|LL) integrals
+      intflg_local = intflg
+!     intflg_local = intflg - mod(intflg,2) ! remove the bit for (LL|LL) integrals
+      ! stefan: the "easy way" modification above does not work with the present version of InteRest
+      !         we will thus do it differently for the time being...
+      ! g[(ll|ss)+(ss|ss)] = gg[(ll|ll)+(ll|ss)+(ss|ss)] - g[(ll|ll)]
 
       call process_two_electron_integrals_4comp(               &
                                                 fmat(1,1,1,1), &
                                                 dmat(1,1,1,1), &
-                                                intflg_local,  &
+                                                intflg_local,  & !all classes by default
                                                 hfxfac         &
                                                )
+      allocate(fmat_local(nrows,ncols,nz,1))
+      fmat_local = 0
+      call process_two_electron_integrals_4comp(                     &
+                                                fmat_local(1,1,1,1), &
+                                                dmat(1,1,1,1),       &
+                                                1,                   & !(LL|LL)
+                                                hfxfac               &
+                                               )
+      call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat(1,1,1,1),1)
+      deallocate(fmat_local)
 #else
       call quit( 'InteRest required for aoosoc module' )
 #endif
@@ -414,19 +429,19 @@ contains
          do i=1,nrow
            !> quaternion(i)
 !          Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
-           Gmat(i     ,j     ,2) = 0.0d0
+!          Gmat(i     ,j     ,2) = 0.0d0
 !          Gmat(i+nrow,j     ,2) = 0.0d0
 !          Gmat(i     ,j+nrow,2) = 0.0d0
 !          Gmat(i+nrow,j+nrow,2) = 0.0d0
            !> quaternion(j)
 !          Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
-           Gmat(i     ,j     ,3) = 0.0d0
+!          Gmat(i     ,j     ,3) = 0.0d0
 !          Gmat(i+nrow,j     ,3) = 0.0d0
 !          Gmat(i     ,j+nrow,3) = 0.0d0
 !          Gmat(i+nrow,j+nrow,3) = 0.0d0
            !> quaternion(k)
 !          Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
-           Gmat(i     ,j     ,4) = 0.0d0
+!          Gmat(i     ,j     ,4) = 0.0d0
 !          Gmat(i+nrow,j     ,4) = 0.0d0
 !          Gmat(i     ,j+nrow,4) = 0.0d0
 !          Gmat(i+nrow,j+nrow,4) = 0.0d0
