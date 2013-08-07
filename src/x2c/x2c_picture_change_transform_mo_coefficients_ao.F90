@@ -574,20 +574,22 @@ contains
                      nzt,                                    &
                      print_lvl)
          ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,0) * nesh_dim(i) * nz
-         do j = 1 , nesh_dim(i)
-           do iz = 1 , nz
-             call dcopy(naosh_L(i),mo_coeff_2c_ao( 1 + (iz-1)*nfbas(i,0)*nesh_dim(i) + (j-1)*nfbas(i,0) ),1, &
-                                   scrmat(         1 + (iz-1)*naosh_L(i)*nesh_dim(i) + (j-1)*naosh_L(i) ),1)
-           end do
-         end do
+!stefan test
+!        do j = 1 , nesh_dim(i)
+!          do iz = 1 , nz
+!            call dcopy(naosh_L(i),mo_coeff_2c_ao( 1 + (iz-1)*nfbas(i,0)*nesh_dim(i) + (j-1)*nfbas(i,0) ),1, &
+!                                  scrmat(         1 + (iz-1)*naosh_L(i)*nesh_dim(i) + (j-1)*naosh_L(i) ),1)
+!          end do
+!        end do
+!stefan test
        end do
 
 !stefan test
-       call dzero(mo_coeff_2c_ao, ndim_2c_mo_ao)
-       ndim_2c_mo_ao = k
-       call dcopy(ndim_2c_mo_ao,scrmat,1,mo_coeff_2c_ao,1)
-       dimension_info(3,1) = naosh_L(1);  if(nfsym == 2)  dimension_info(3,2) = naosh_L(2) 
-       deallocate(scrmat)
+!      call dzero(mo_coeff_2c_ao, ndim_2c_mo_ao)
+!      ndim_2c_mo_ao = k
+!      call dcopy(ndim_2c_mo_ao,scrmat,1,mo_coeff_2c_ao,1)
+!      dimension_info(3,1) = naosh_L(1);  if(nfsym == 2)  dimension_info(3,2) = naosh_L(2) 
+!      deallocate(scrmat)
 !stefan test
 
 !      write the new DFCOEF file

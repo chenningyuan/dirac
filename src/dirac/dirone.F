@@ -3185,19 +3185,21 @@ C
      &                                    nfbas(1,0),nfbas(1,1),nesh,nz,
      &                                    nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
-          TWOCOMP = .TRUE.
-          RDINPC = .FALSE.
-          IPREAD = IPREAD - 5
-          CALL READIN(.FALSE.)
-          CALL SETDC1(IPREAD)
+!stefan test
+!         TWOCOMP = .TRUE.
+!         RDINPC = .FALSE.
+!         IPREAD = IPREAD - 5
+!         CALL READIN(.FALSE.)
+!         CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
-          call getlab(ipread)
-          IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
-          NEWPRP = .TRUE.
-          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
-          CALL ONEGEN(WORK,LWORK)
-          call renew_x2c_cb_orb_shell_dim(3)
+!         call getlab(ipread)
+!         IPREAD = IPREAD + 5
+!.........reset NEWPRP to re-initialize AOPROPER
+!         NEWPRP = .TRUE.
+!         CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+!         CALL ONEGEN(WORK,LWORK)
+!         call renew_x2c_cb_orb_shell_dim(3)
+! stefan test
 
         else if(aoomod)then 
 #ifdef MOD_AOOSOC
