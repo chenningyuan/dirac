@@ -83,6 +83,7 @@ contains
 !----------------------------------------------------------------------
      real(8), parameter                 :: hfxfac = 1.0d0
      real(8), allocatable               :: fmat_local(:,:,:,:)
+     real(8), allocatable               :: fmat_local2(:,:,:,:)
      integer                            :: irep, iz, iq, ih
      integer                            :: i, intflg_local
 !----------------------------------------------------------------------
@@ -118,8 +119,50 @@ contains
                                                 1,                   & !(LL|LL)
                                                 hfxfac               &
                                                )
+      allocate(fmat_local2(nrows,ncols,nz,1))
+      fmat_local2 = 0
+      call process_two_electron_integrals_4comp(                     &
+                                                fmat_local2(1,1,1,1),&
+                                                dmat(1,1,1,1),       &
+                                                3,                   & !(LL|LL) + (SS|LL)
+                                                hfxfac               &
+                                               )
+      call print_x2cmat(fmat,                   &
+                        nrows,                  &
+                        ncols,                  &
+                        nz,                     &
+                        ipqtoq(1,0),            &
+                        'aoosoc - 2e-full     ',&
+                        6                       &
+                        )
+      call print_x2cmat(fmat_local,             &
+                        nrows,                  &
+                        ncols,                  &
+                        nz,                     &
+                        ipqtoq(1,0),            &
+                        'aoosoc - 2e-llll     ',&
+                        6                       &
+                        )
+      call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat_local2(1,1,1,1),1)
       call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat(1,1,1,1),1)
+      call print_x2cmat(fmat_local2,            &
+                        nrows,                  &
+                        ncols,                  &
+                        nz,                     &
+                        ipqtoq(1,0),            &
+                        'aoosoc - 2e-ssll     ',&
+                        6                       &
+                        )
+      call print_x2cmat(fmat,                   &
+                        nrows,                  &
+                        ncols,                  &
+                        nz,                     &
+                        ipqtoq(1,0),            &
+                        'aoosoc - 2e-ssll-ssss',&
+                        6                       &
+                        )
       deallocate(fmat_local)
+      deallocate(fmat_local2)
 #else
       call quit( 'InteRest required for aoosoc module' )
 #endif
