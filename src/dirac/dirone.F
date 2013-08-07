@@ -3185,6 +3185,8 @@ C
      &                                    nfbas(1,0),nfbas(1,1),nesh,nz,
      &                                    nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
+!       set intflag to (LL|LL) integrals only...
+        call set_intflg(1)
 !stefan test
 !         TWOCOMP = .TRUE.
 !         RDINPC = .FALSE.
@@ -7277,4 +7279,55 @@ C
 C
       RETURN
       END
+      subroutine set_intflg(new_intflg)
+#include "implicit.h"
+      integer, intent(in) :: new_intflg
+#include "mxmcgas.h"
+#include "mxcent.h"
+#include "dcbcosc.h"
+#include "dcbdhf.h"
+#include "dcbgrd.h"
+#include "dcbkrci.h"
+#include "dcbmp2.h"
+#include "dcbopt.h"
+      ICOSC_INTDEF = new_intflg
+      ICOSC_INTFLG = new_intflg
+      ICOSC_INTBUF = new_intflg
+      
+      INTDEF       = new_intflg   
+      INTDEF_SAVE  = new_intflg 
+      INTFLG       = new_intflg 
+      INTBUF       = new_intflg
+       
+      IGRD_INTFLG  = new_intflg 
+      IGRD_INTBUF  = new_intflg
+       
+      iKRCI_INTDEF = new_intflg   
+      iKRCI_INTFLG = new_intflg 
+      iKRCI_INTBUF = new_intflg
+       
+      MP2_INTFLG   = new_intflg
+
+      iOPT_INTDEF = new_intflg   
+      iOPT_INTFLG = new_intflg 
+      iOPT_INTBUF = new_intflg
+
+      call set_intfl1(new_intflg)
+
+      end
+      subroutine set_intfl1(new_intflg)
+      implicit none
+      integer, intent(in) :: new_intflg
+#include "mxmcgas.h"
+#include "dcbxrs.h"
+#include "dcbkrmc.h"
+      INTDEF       = new_intflg   
+      INTFLG       = new_intflg 
+      INTBUF       = new_intflg
+
+      iKRMC_INTDEF = new_intflg   
+      iKRMC_INTFLG = new_intflg 
+      iKRMC_INTBUF = new_intflg
+
+      end
 ! -- end of dirone.F --

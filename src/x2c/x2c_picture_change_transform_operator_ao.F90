@@ -729,7 +729,7 @@ contains
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
-       print *, 'naosh_ls**2 * nz_c1 * nr_2e_fock_matrices', naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1
+!      print *, 'naosh_ls**2 * nz_c1 * nr_2e_fock_matrices', naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &

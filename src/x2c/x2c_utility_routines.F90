@@ -1287,6 +1287,9 @@ contains
          do i=1,nrow
            !> quaternion(0) 
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll
+           Gmat(i     ,j     ,2) = 0.0d0                 ! ll
+           Gmat(i     ,j     ,3) = 0.0d0                 ! ll
+           Gmat(i     ,j     ,4) = 0.0d0                 ! ll
          enddo
        enddo
 
