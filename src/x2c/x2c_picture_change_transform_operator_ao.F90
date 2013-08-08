@@ -729,7 +729,6 @@ contains
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
-!      print *, 'naosh_ls**2 * nz_c1 * nr_2e_fock_matrices', naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &
@@ -785,7 +784,7 @@ contains
        end if
 
 !      check this with hjaaj...
-!      take out LL-part and scalar-relativistic terms
+!      take out LL-SO-part and scalar-relativistic terms
        call make_two_e_fock_so_exclusive(                            &
                                          scr_mat2,                   & 
                                          naosh_ls,                   &
@@ -899,34 +898,19 @@ contains
                                  ioff_aomx,                    &
                                  op_fer_rep,                   &
                                  op_bs_to_fs,                  &
-!                                .true.,                       & ! stefan:  this is how it is supposed to be...
-                                 .false.,                      & ! stefan test
+                                 .true.,                       &
                                  print_lvl)
-! stefan test
+
 !      store the picture-change transformed 1e+2e fock matrix on file
 !      --------------------------------------------------------------
        open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
        call write_fock_matrices_saao_basis_x2c(scr_mat1,              &
-                                               naosh_ls**2*nz,        &
+                                               nr_ao_L**2*nz,         &
                                                1,                     &
                                                fh,                    &
                                                print_lvl)
        close(fh,status='keep')
-! stefan test
-
-! stefan: this is how it is supposed to be...
-!      store the picture-change transformed 1e+2e fock matrix on file
-!      --------------------------------------------------------------
-!      open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
-!           access='sequential',action="readwrite",position='rewind')
-!      call write_fock_matrices_saao_basis_x2c(scr_mat1,              &
-!                                              nr_ao_L**2*nz,         &
-!                                              1,                     &
-!                                              fh,                    &
-!                                              print_lvl)
-!      close(fh,status='keep')
-! stefan: this is how it is supposed to be... end of
        !> end
 
        deallocate(scr_mat2)

@@ -991,7 +991,7 @@ contains
 !      step 2: write matrix elements to file
 !      -------------------------------------
        rewind fh
-       write(info_text,'(a74)') 'X2C molecular-mean-field run: picture-change transformed fock matrix/ces. '
+       write(info_text,'(a74)') 'X2C molecular-mean-field: picture-change transformed effective F[1] matrix.'
        write(fh) info_text
        write(fh) ndim, nr_entries
        if(print_lvl > 2)then
@@ -1300,21 +1300,24 @@ contains
 !**********************************************************************
 
     print '(/18x,a)', ' *********************************************************************'
-    print '( 18x,a)', ' ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***'
+    print '(18x,a )', ' ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** library version:  1.1 (January 2013)                          ***'
+    print '(18x,a )', ' *** library version:  1.2 (August  2013)                          ***'
     print '(18x,a )', ' ***                                                               ***'
     print '(18x,a )', ' *** authors:          - Stefan Knecht                             ***'
     print '(18x,a )', ' ***                   - Trond Saue                                ***'
     print '(18x,a )', ' *** contributors:     - Hans Joergen Aagaard Jensen               ***'
-    print '(18x,a )', ' ***                   - Miroslav Ilias                            ***'
     print '(18x,a )', ' ***                   - Michal Repisky                            ***'
+    print '(18x,a )', ' ***                   - Miroslav Ilias                            ***'
     print '(18x,a )', ' *** features:         - X2C                                       ***'
-    print '(18x,a )', ' ***                   - atomic/fragment X2C                       ***'
+    print '(18x,a )', ' ***                   - X2C-atomic/fragment (X2C-LU)              ***'
     print '(18x,a )', ' ***                   - X2C-spinfree                              ***'
     print '(18x,a )', ' ***                   - X2C-molecular-mean-field (X2Cmmf)         ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '( 18x,a)', ' *** Universities of Odense, Toulouse, Banska Bystrica and Tromsoe ***'
+    print '(18x,a )', ' ***                      Universities of                          ***'
+    print '(18x,a )', ' ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** contact: stefan.knecht@phys.chem.ethz.ch                      ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine hello_dirx2c

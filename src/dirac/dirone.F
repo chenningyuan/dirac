@@ -3188,19 +3188,22 @@ C
 !       set intflag to (LL|LL) integrals only...
         call set_intflg(1)
 !stefan test
-!         TWOCOMP = .TRUE.
-!         RDINPC = .FALSE.
-!         IPREAD = IPREAD - 5
-!         CALL READIN(.FALSE.)
-!         CALL SETDC1(IPREAD)
+          TWOCOMP = .TRUE.
+          RDINPC = .FALSE.
+          IPREAD = IPREAD - 5
+          CALL READIN(.FALSE.)
+          CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
-!         call getlab(ipread)
-!         IPREAD = IPREAD + 5
+          call getlab(ipread)
+          IPREAD = IPREAD + 5
 !.........reset NEWPRP to re-initialize AOPROPER
-!         NEWPRP = .TRUE.
-!         CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
-!         CALL ONEGEN(WORK,LWORK)
-!         call renew_x2c_cb_orb_shell_dim(3)
+          NEWPRP = .TRUE.
+          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+          CALL ONEGEN(WORK(kfree),lfree)
+          call renew_x2c_cb_orb_shell_dim(3)
+
+!         reset 2e-common blocks in Hermit
+          CALL PAOVEC(WORK(kfree),lfree,0,0)
 ! stefan test
 
         else if(aoomod)then 
