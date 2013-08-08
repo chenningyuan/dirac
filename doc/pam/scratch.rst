@@ -77,3 +77,4 @@ The input files are by default distributed using rsh/rcp. If your cluster
 does not support these you can change to ssh/scp protocol::
 
   $ pam --scratch=/somepath/$USER/$PBS_JOBID --machfile=/path/to/machfile --rsh=ssh --rcp=scp
+

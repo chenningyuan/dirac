@@ -30,6 +30,7 @@ Setting up DIRAC
 
 * **pam script:**
   :doc:`How to set the scratch directory <pam/scratch>`
+  :doc:`Replacements of strings by pam <pam/replace>`
 
 
 Updates and patches
