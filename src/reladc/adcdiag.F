@@ -2804,6 +2804,9 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
 C
+      use memory_allocator
+      use adc_mat
+
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IOUNIT,N,NP,LDAB
@@ -2837,6 +2840,11 @@ C
       CHARACTER*1 JOBZ,UPLO
       REAL*8 Y
       REAL*8 AUEV
+
+      INTEGER                            :: nr_in_vecs
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: j, k
+      REAL                               :: upper, lower
 
 C
 C---------------Executable code--------------------------------------
@@ -2889,13 +2897,29 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
+      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      nr_in_vecs = 0
+
+      upper = reladc_md_eeigv_upper
+      lower = reladc_md_eeigv_lower
+
+      DO j = 1, N
+        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+          nr_in_vecs = nr_in_vecs + 1
+          positions(nr_in_vecs) = j
+        END IF
+      END DO
+
+      NEIGENV = nr_in_vecs
+
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
+      DO k = 1, nr_in_vecs
+        j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
+      END DO
       CLOSE(IOUNIT)
     
       WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
