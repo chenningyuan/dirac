@@ -558,6 +558,7 @@ C
       REAL*8 CC(*)
       INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
       REAL*8 EPS(*)
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1610,8 +1611,8 @@ c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
           reladc_md_irecl       = IRECL
           reladc_md_nmain       = NO(KREP)
           reladc_md_nbufs       = NBUFS
-          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1)
-          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2)
+          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
+          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
           reladc_md_fileadc     = FILEN5
           reladc_md_filediag    = FILEN4 
           reladc_md_filecnf     = FILEN2
