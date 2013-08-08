@@ -737,7 +737,8 @@ contains
                                               .true.,                &
                                               aoc_open_shell_factors &
                                              )
-       close(fh,status='keep')
+!old   close(fh,status='keep')
+       close(fh,status='delete')
 
 !      debug print
        if(print_lvl > 2)then

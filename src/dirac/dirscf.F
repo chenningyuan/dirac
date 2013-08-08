@@ -1991,6 +1991,7 @@ C
       IF(ISSINT.EQ.1) INTTYP(7:9) = 'SS '
       IF(IGTINT.EQ.1) INTTYP(10:12) = 'GT '
       INTFLG= ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
+      print *, 'intcon, intflg', intflg
 C
       RETURN
 C
