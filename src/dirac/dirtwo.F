@@ -4382,6 +4382,8 @@ C
 C
 C     Initialization
 C
+      intflg_local = intflg
+      if(twocomp .or. twocompbss) intflg_local = 1
       NDMAT = NFMAT*NZ
       CALL DZERO(DNTSKP,8)
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZ,ISYMOP,IHRMOP,IFCKOP,IPRINT)
@@ -4435,7 +4437,7 @@ C
          SOTEXT = 'SOfock:GT'
 Cluuk: scale real part by factor 3 and eliminate Coulomb
 Cluuk: this code does only work for C1 and Ci, use AOFOCK
-        IF (LBIT(INTFLG,4).AND.NZ.LT.4) 
+        IF (LBIT(intflg_local,4).AND.NZ.LT.4) 
      &     call quit ('Gaunt not implemented for SOFOCK')
          factor = -3.d0
          CALL DSCAL(N2BBASX,factor,DSO,1)
@@ -4444,7 +4446,7 @@ Cluuk: this code does only work for C1 and Ci, use AOFOCK
 C
 C....> Check whether the class is active
 C
-      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
+      IF(LBIT(intflg_local,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
@@ -4502,6 +4504,9 @@ C
 C
 C.... End of loop over integral classes
 C
+!      WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I2typ,' of',4
+!      CALL PRQMAT(FSO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             NZ,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
       ENDDO
 C

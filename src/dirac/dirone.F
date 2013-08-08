@@ -7322,6 +7322,7 @@ C
 #include "dcbmp2.h"
 #include "dcbopt.h"
 #include "../prp/dcbxqr.h"
+#include "../prp/dcbxpp.h"
       ICOSC_INTDEF = new_intflg
       ICOSC_INTFLG = new_intflg
       ICOSC_INTBUF = new_intflg
@@ -7346,7 +7347,10 @@ C
 
       intxqr      = new_intflg
 
+!     intxpp      = new_intflg
+
       call set_intfl1(new_intflg)
+      call set_intfl2(new_intflg)
 
       end
       subroutine set_intfl1(new_intflg)
@@ -7355,6 +7359,8 @@ C
 #include "mxmcgas.h"
 #include "dcbxrs.h"
 #include "dcbkrmc.h"
+#include "dcbxlr.h"
+#include "dcbnmr.h"
       INTXRS       = new_intflg   
       INTDEF       = new_intflg   
       INTFLG       = new_intflg 
@@ -7363,6 +7369,23 @@ C
       iKRMC_INTDEF = new_intflg   
       iKRMC_INTFLG = new_intflg 
       iKRMC_INTBUF = new_intflg
+
+      INTXLR       = new_intflg   
+
+      INTNMR       = new_intflg
+
+      end
+      subroutine set_intfl2(new_intflg)
+      implicit none
+      integer, intent(in) :: new_intflg
+#include "dcbgen.h"
+
+!     INTGEN       = new_intflg   
+      ILLDIR       = new_intflg
+      ISLDIR       = 0
+      ISSDIR       = 0
+      IGTDIR       = 0
+!     IDFLAG       = 1
 
       end
 ! -- end of dirone.F --

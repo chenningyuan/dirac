@@ -3203,7 +3203,6 @@ C     ======================================
 C
       ITNEX  = ITMIC + 1
       INTBUF = INTFLG
-      print *, 'intbuf, intflg, intdef',intbuf, intflg, intdef
       CALL INTCON(INTFLG,INTBUF,INTDEF,
      &            CNVMAX,CNVINT,ITNEX,ITRINT,XRS_INTTYP)
       USEXVC = INTFLG.NE.INTBUF
@@ -4057,7 +4056,6 @@ C
 #ifdef MOD_DNF
       DODFLR = .TRUE.
 #endif
-      print *, 'intflg = ',intflg
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
