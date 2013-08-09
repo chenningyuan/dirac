@@ -412,6 +412,10 @@
 !  complex counterpart of LVECANALY_R
 !  for comments, see this routine.
 !
+      use adc_mat
+      use adc_fano_exchange
+      use memory_allocator
+!
       implicit none
 !
 ! transferred variables
@@ -674,6 +678,11 @@
 !______________________________________________________
 !|
 !|
+        IF(reladc_md_isfano) THEN                                      
+          nr_in_evecs = nindep                                         
+          CALL alloc(cin_evecs,ladcx,nr_in_evecs)                       
+        END IF    
+
         DO 177 K=1,NINDEP
 
         polestr=vnorm_cmplx(evli(1:nocc,k))
@@ -703,6 +712,11 @@
               icount = icount + 1
             endif
           ENDDO
+
+          IF(reladc_md_isfano) THEN
+            cin_evecs(1:ladcx,k) = evli(1:ladcx,k)
+          END IF
+
         ELSE
           write(io3,'(A8,2X,4A11,2A20)') &
             'No.',ostr,ostr,ostr,vstr,' Coeff(real)',' Coeff(imag)'

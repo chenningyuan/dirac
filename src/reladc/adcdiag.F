@@ -503,6 +503,11 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAC2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+
+      use memory_allocator
+      use adc_fano_exchange
+      use adc_mat
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
@@ -633,6 +638,18 @@
       enddo
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
+!
+!  in case of a Fano run, write eigenvectors to array
+!
+      IF(reladc_md_isfano) THEN
+        CALL alloc(cfin_evecs,ladc,ladc,id='array of Fano final states')
+        CALL alloc(fin_energies,ladc,id='2h1p energies of final states')
+        WRITE(*,*) 'Saving final state vectors and energies to arrays'
+        
+        fin_energies(1:ladc)     = evl(1:ladc)
+        cfin_evecs(1:ladc,1:ladc) = a(1:ladc,1:ladc)
+
+      END IF
 !
 !  release all memory
 !
@@ -950,7 +967,7 @@ C
       CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
@@ -2952,11 +2969,16 @@ c
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
+      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
+      use adc_mat
+      use memory_allocator
+      use adc_fano_diag
+!
       IMPLICIT INTEGER (A-Z)
 
       INTEGER N,NP,LDAB
+      INTEGER NEIGENV
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
       DOUBLE PRECISION RWORK(6*N),EVL(N)
       
@@ -2979,6 +3001,9 @@ C
       CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
       REAL*8 AUEV
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions             
+      INTEGER                            :: nr_in_vecs            
+      INTEGER                            :: counter
 
 C
 C---------------Executable code--------------------------------------
@@ -3026,16 +3051,49 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
-      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
-        WRITE(IOUNIT) EVL(J) ! eigenvalue
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
-      CLOSE(IOUNIT)
-    
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+                                                                  
+      IF (reladc_md_isfano) THEN                                  
+        CALL alloc(positions,N,id="array of position numbers fano Lanc")
+        CALL cfano_find_in_vec(N,EVL,Z,positions,nr_in_vecs,iw)    
+                                                                  
+        NEIGENV = nr_in_vecs                                      
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO counter=1, nr_in_vecs                                  
+          j = positions(counter)                                  
+          WRITE(IOUNIT) EVL(J) ! eigenvalue                       
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        ENDDO                                                     
+        CLOSE(IOUNIT)                                             
+                                                                  
+        WRITE(*,*) 'Fano set of Lanczos eigenvectors saved to TMATEVC'
+                                                                  
+        CALL dealloc(positions)                                   
+                                                                  
+      ELSE                                                        
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO J=1,N                                                  
+          WRITE(IOUNIT) EVL(J) ! eigenvalue                       
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        ENDDO                                                     
+        CLOSE(IOUNIT)                                             
+                                                                  
+        WRITE(*,*) 'Complete set of Lanczos eigenvecs saved to TMATEVC'
+      END IF  
+
+!      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+!      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+!      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+!      DO J=1,N
+!        WRITE(IOUNIT) EVL(J) ! eigenvalue
+!        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+!      ENDDO
+!      CLOSE(IOUNIT)
+!    
+!      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
 
       RETURN
       END
