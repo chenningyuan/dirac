@@ -2923,7 +2923,8 @@ c
       END DO
       CLOSE(IOUNIT)
     
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
       RETURN
       END
