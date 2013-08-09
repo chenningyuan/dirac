@@ -1301,10 +1301,8 @@
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
-         !read(get_file_unit(),'(i8)') user_req_symmetries
          call kw_read(word, user_req_symmetries)
-         !call kw_read(word, reladc_sipeigv, user_req_symmetries)
-         print *, 'lower and upper boundaries'
+         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
@@ -1314,13 +1312,29 @@
       end if
 
       if (kw_matches(word, '.DIPEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_dipeigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_dip_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_dip_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.EXCEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_exceigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_exc_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_exceigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then
