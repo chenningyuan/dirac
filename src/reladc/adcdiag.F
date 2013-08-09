@@ -2804,12 +2804,13 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
-      use memory_allocator
       use adc_mat
+      use memory_allocator
 
       IMPLICIT INTEGER (A-Z)
 
-      INTEGER IOUNIT,N,NP,LDAB, NEIGENV
+      INTEGER IOUNIT,N,NP,LDAB
+      INTEGER NEIGENV
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -2841,8 +2842,8 @@ C
       REAL*8 Y
       REAL*8 AUEV
 
-      INTEGER                            :: nr_in_vecs
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: nr_in_vecs
       INTEGER                            :: j, k
       REAL                               :: upper, lower
 
