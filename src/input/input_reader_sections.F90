@@ -1313,7 +1313,7 @@
 
       if (kw_matches(word, '.DIPEIGV')) then
          call kw_read(word, user_req_symmetries)
-         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         print *, 'lower and upper energy boundaries for ADC double ion. eigenvectors'
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
@@ -1326,7 +1326,7 @@
 
       if (kw_matches(word, '.EXCEIGV')) then
          call kw_read(word, user_req_symmetries)
-         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
