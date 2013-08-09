@@ -48,7 +48,8 @@
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0.0
+          REAL(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
+          REAL(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
           REAL(KIND=8)            :: nucexp=0.0
           TYPE(atom), POINTER     :: next
         END TYPE atom
@@ -103,6 +104,7 @@
           newatom%name=name
           IF (PRESENT(x)) newatom%x=x
           newatom%charge=find_charge(name)
+          newatom%bascharge=find_charge(name)
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
@@ -438,7 +440,7 @@
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
           CHARACTER(LEN=namelen)             :: name, prevname
-          REAL(KIND=8)                       :: charge, nucexp
+          REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
           CHARACTER(LEN=9) :: symtxt
 
@@ -598,6 +600,7 @@
 !               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
                 name=' '
                 charge=0.0
+                bascharge=0.0
                 nucexp=0.0
   
                 read(tmp_file,*,iostat=ios) name, charge
@@ -606,6 +609,16 @@
      &          "Invalid name or charge specified in *CENTERS"
                     CALL QUIT ('ERROR(readbasis): .NUCLEUS')
                 end if
+!               Try to read also element number so that we can use the basis set library (e.g. in
+!               counterpoise calculations)
+                backspace(tmp_file)
+                read(tmp_file,*,iostat=ios) name, charge, bascharge
+                if (ios.ne.0) then
+!                  User did not give two values, take the element number
+!                  equal to the charge
+                   bascharge=charge
+                   backspace(tmp_file)
+                end if
 
 !               Set charge information for all atoms of this type
                 mol=>firstatom
@@ -613,6 +626,7 @@
                   mol=>find_atom(mol,name)
                   IF (associated(mol)) THEN 
                     mol%charge=charge
+                    mol%bascharge=bascharge
                     mol%nucexp=nucexp
                     mol=>mol%next
                   ELSE
@@ -988,7 +1002,7 @@
      &             ALPHA(1,IBLOCK(1),1),                                &
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
      &             NBLOCK,ISGEN(IBLOCK(1)),                             &
-     &             KAOVEC,KPRIM,mol%charge,mol%charge,                  &
+     &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
      &             1,DSM,BASREF(1,basindex,1))                         
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
