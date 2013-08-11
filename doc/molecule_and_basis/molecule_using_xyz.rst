@@ -65,7 +65,7 @@ geometry file methanol.xyz we need to specify::
 Another reason to change the charge of the nucleus is to be able to run counterpoise
 calculations in which a ghost basis set is to be placed without adding a charge. This
 can be achieved by defining the ghost center as (for instance) O.Gh and then putting
-the nuclear charge to zero using 
+the nuclear charge to zero using::
 
   *CENTERS
   .NUCLEUS
@@ -73,7 +73,7 @@ the nuclear charge to zero using
 
 the first number is the charge to be used, the second corresponds to the element number
 and is used to search the basis set library. In this example you can therefore simply specify
-the basis set name using the *DEFAULT or *SPECIAL keywords and the program will then find the
+the basis set name using the *DEFAULT* or *SPECIAL* keywords and the program will then find the
 corresponding oxygen basis.
 
 
