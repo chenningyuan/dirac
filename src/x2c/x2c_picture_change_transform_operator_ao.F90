@@ -730,6 +730,9 @@ contains
        nz_c1 = max(nz,4)
 !      allocate scratch matrices
        allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
+
+#ifdef continue_work
+
        scr_mat1 = 0.0d0
        allocate(scr_mat2(naosh_ls**2 * nz_c1* nr_2e_fock_matrices+1))
        scr_mat2   = 0.0d0
@@ -973,6 +976,15 @@ contains
          call daxpy(nr_ao_L**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
        end if
 
+       deallocate(pctmat)
+       deallocate(scr_mat3)
+       deallocate(scr_mat2)
+#else
+       fh = 99
+       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+       access='sequential',action="readwrite",position='rewind')
+       close(fh,status='delete')
+#endif
 
 
 !      store the picture-change transformed 1e+2e fock matrix on file
@@ -987,10 +999,7 @@ contains
        close(fh,status='keep')
        !> end
 
-       deallocate(scr_mat3)
-       deallocate(scr_mat2)
        deallocate(scr_mat1)
-       deallocate(pctmat)
 
   end subroutine pctrafo_fockmatrices_4cto2c_saao_bas
 
