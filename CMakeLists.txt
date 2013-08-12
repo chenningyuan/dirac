@@ -140,6 +140,7 @@ if(ENABLE_PCMMOD)
         cavity
 	utils
         metal
+	tsless
         pedra
         pwl
         wem
