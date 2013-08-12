@@ -55,6 +55,7 @@ module x2c_utils
   public get_boson_irrep_info
   public make_spinfree_h1_onmo
   public make_two_e_fock_so_exclusive
+  public get_2e_fock_matrix_x2c
   public hello_dirx2c
   public goodbye_dirx2c
 
@@ -1294,6 +1295,126 @@ contains
        enddo
 
   end subroutine make_two_e_fock_so_exclusive
+!**********************************************************************
+
+  subroutine get_2e_fock_matrix_x2c(                            &
+                                    Gmat,                       & 
+                                    nrows,                      & 
+                                    ncols,                      & 
+                                    nz,                         & 
+                                    nr_2e_fock_matrices,        & 
+                                    intflg,                     & 
+                                    is_len_wrk,                 & 
+                                    print_lvl,                  & 
+                                    aoc_factors                 & 
+                                   )
+!**********************************************************************
+!
+!    purpose: get 2e-fock matrix with integral contributions according to 
+!             intflg (bit packed integer):
+!             (LL|LL)                     == 1
+!                       (SS|LL)           == 2
+!             (LL|LL) + (SS|LL)           == 3
+!                                 (SS|SS) == 4
+!             (LL|LL)           + (SS|SS) == 5
+!                       (SS|LL) + (SS|SS) == 6
+!             (LL|LL) + (SS|LL) + (SS|SS) == 7
+!
+!             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
+!
+!**********************************************************************
+#ifdef VAR_MPI
+  use mpi
+#endif
+     real(8), intent(inout)   :: Gmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     integer, intent(in)      :: nrows
+     integer, intent(in)      :: ncols
+     integer, intent(in)      :: nz
+     integer, intent(in)      :: nr_2e_fock_matrices
+     integer, intent(in)      :: intflg
+     integer, intent(in)      :: is_len_wrk
+     integer, intent(in)      :: print_lvl
+     real(8), intent(in)      :: aoc_factors(*)
+!----------------------------------------------------------------------
+     integer                  :: i, npos, local_lwork, lucoef
+     real(8)                  :: xx, j
+     real(8), allocatable     :: work(:)
+     real(8), allocatable     :: dmat(:)
+     real(8), allocatable     :: cmo(:)
+     integer, allocatable     :: isymop(:), ifckop(:), ihrmop(:), pos(:)
+     logical, allocatable     :: saveflags(:)
+     logical                  :: parcal
+!**********************************************************************
+
+ !   generate density matri(x/ces)
+     allocate(dmat(nrows*ncols*nz*nr_2e_fock_matrices))
+     allocate(cmo(nrows*ncols*nz))
+     dmat = 0.0d0
+     cmo  = 0.0d0
+!    read coefficients
+     lucoef = 99
+     call opnfil(lucoef,'DFCOEF','OLD','x2cfck')
+     rewind(lucoef)
+     call reacmo_no_work(lucoef,'DFCOEF',cmo,xx,i,j,2)
+     close(lucoef,status='keep')
+
+!    generate density matri(x/ces) (denmat is a general driver routine from Dirac 
+!    computing all inactive and active density matrices)
+     call denmat(dmat,cmo,print_lvl)
+     deallocate(cmo)
+
+     allocate(isymop(nr_2e_fock_matrices))
+     allocate(ifckop(nr_2e_fock_matrices))
+     allocate(ihrmop(nr_2e_fock_matrices))
+
+     ihrmop = 0
+     ifckop = 0 
+     isymop = 0
+
+     do i = 1,nr_2e_fock_matrices
+!      totally symmetric operator
+       isymop(i) = 1
+!      fock matrix type
+       ifckop(i) = 1
+!      hermitian operator
+       ihrmop(i) = 1
+     end do
+
+     allocate(saveflags(4))
+
+     call SaveTaskDistribFlags(saveflags)
+     call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+     parcal = .false.
+#ifdef VAR_MPI
+     call mpi_initialized(parcal,i)
+#endif
+     call SetIntTaskArrayDimension(npos,parcal)
+     allocate(pos(npos))
+
+     local_lwork = is_len_wrk - 3*nrows*ncols*nz*nr_2e_fock_matrices 
+     allocate(work(local_lwork))
+
+!    2e-fock matrices (Dirac driver routine)
+     call twofck(isymop,ihrmop,ifckop,Gmat,dmat,nr_2e_fock_matrices,   &
+                 pos,intflg,print_lvl,work,local_lwork)
+
+!     accumulate active fock matrices (add to inactive fock matrix)
+      if(nr_2e_fock_matrices > 1)then
+        do i = 1, nr_2e_fock_matrices-1
+          call daxpy(nrows*ncols*nz,aoc_factors(i),Gmat(1,1,1,i+1),1,Gmat(1,1,1,1),1)
+        end do
+     end if
+
+     deallocate(work)
+     if(parcal) call SetTaskDistribFlags(saveflags)
+     deallocate(pos)
+     deallocate(saveflags)
+     deallocate(ihrmop)
+     deallocate(ifckop)
+     deallocate(isymop)
+     deallocate(dmat)
+
+  end subroutine get_2e_fock_matrix_x2c
 !**********************************************************************
 
   subroutine hello_dirx2c()
