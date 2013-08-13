@@ -177,7 +177,7 @@ CONTAINS
 ! Local Variables
 !
     REAL(8)                          :: contrib
-    REAL, PARAMETER                  :: thresh=0.2
+    REAL, PARAMETER                  :: thresh=0.1
     REAL(8), PARAMETER               :: ovlthresh=1.0D-2
     REAL(8), PARAMETER               :: ethresh=1.0D-12
     INTEGER                          :: initial
@@ -229,10 +229,8 @@ CONTAINS
         WRITE(iw,*) 'Selection by overlap does not work yet.'
 
       CASE (.FALSE.)
-        !CALL alloc(in_energy,nr_in)
         DO i = 1, nr_in
           energy1      = evl(selected(i))
-          !in_energy(i) = energy1
           DO j = 1, n
             energy2 = evl(j)
             IF (ABS(energy1 - energy2) < ethresh) THEN
