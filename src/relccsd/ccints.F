@@ -701,10 +701,10 @@ C
          DO I = 1, NSP
             F_ANTI_HERMITIAN = FOCKR(I,J) - FOCKR(J,I)
             IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
-     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+     &         CALL QUIT ("Perturbed (real)Fock matrix is nonhermitian")
             F_ANTI_HERMITIAN = FOCKI(I,J) + FOCKI(J,I)
             IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
-     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+     &         CALL QUIT ("Perturbed (imag)Fock matrix is nonhermitian")
          ENDDO
       ENDDO
       RETURN
