@@ -134,17 +134,7 @@ if(ENABLE_PCMMOD)
 
     set(LIBS
         stdc++
-	interface
-        solver
-        green
-        cavity
-	utils
-        metal
-	tsless
-        pedra
-        pwl
-        wem
-        wavcav
+	pcm
         getkw
         ${LIBS}
         )
