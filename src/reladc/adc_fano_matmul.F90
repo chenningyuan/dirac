@@ -45,7 +45,8 @@ CONTAINS
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec_start
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec1, vec2
 
-    CHARACTER(6),PARAMETER                :: fn_trans = 'FPSPEC'
+    CHARACTER(6), PARAMETER               :: nmspec = 'FPSPEC'
+    CHARACTER(9)                          :: fn_trans
     INTEGER                               :: fh_trans
     INTEGER                               :: ierror
 
@@ -76,6 +77,14 @@ CONTAINS
       vec_start(1:nr_in) = in_evecs(1:nr_in,i)
 !      WRITE(iw,*) 'starting vector'
 !      WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
+
+! Choose file name of the pseudo-spectrum
+      IF(i.GT.9) THEN
+        WRITE(fn_trans,'(a6,a1,i2)') nmspec,'.',i
+      ELSE
+        WRITE(fn_trans,'(a6,a2,i1)') nmspec,'.0',i
+      END IF
+
 
 !      CALL alloc(diag,ladc)
 !      REWIND(fhdiag)
@@ -125,9 +134,18 @@ CONTAINS
         !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
         t_mom(counter) = DOT_PRODUCT(vec1,vec2)
       END DO
+
+      WRITE(iw,*)
+      WRITE(iw,*) '-------------------------------------------------------------'
+      WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
+      WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+                                              'eV', 'polestrength: ', in_energy(2,i)
+      WRITE(iw,*) '-------------------------------------------------------------'
+      WRITE(iw,*)
+      WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
+      WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+
     END DO
-    WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
 
     CALL dealloc(buf)
     CALL dealloc(ioi)
