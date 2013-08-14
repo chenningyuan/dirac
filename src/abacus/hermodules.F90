@@ -826,6 +826,7 @@
 !               and writing them to the commonblocks
 
       use codata
+      use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
@@ -833,6 +834,7 @@
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+#include "symmet.h"
 
 !     COMMONBLOCKS
 #include "clsfmm.h"
@@ -1145,9 +1147,13 @@
           IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
         END DO
 
+        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
+
         typepointer=>typepointer%next
         
       END DO
+
+
 
       LINEAR = .FALSE.
       CLASS = 'N/A'
@@ -1200,6 +1206,12 @@
 !
 
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
+
+          CALL RECP_LNK_CHECKMOL(DOCART)
+          CALL RECP_LNK_IRREP(MAXREP)
+          CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,                    &
+     &            IQM,JCO,KATOM,KANG)
+         
 
           DEALLOCATE(JCO)
           DEALLOCATE(JCO2)
