@@ -2843,7 +2843,7 @@ C
       REAL*8 AUEV
 
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
-      INTEGER                            :: nr_in_vecs
+      INTEGER                            :: nr_vecs
       INTEGER                            :: j, k
       REAL                               :: upper, lower
 
@@ -2899,24 +2899,24 @@ c calculation, TMATVEC does not get an individual symmetry label.
 c
 
       CALL alloc(positions,N,id='chosen eigenvectors for analysis')
-      nr_in_vecs = 0
+      nr_vecs = 0
 
       upper = reladc_md_eeigv_upper
       lower = reladc_md_eeigv_lower
 
       DO j = 1, N
         IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
-          nr_in_vecs = nr_in_vecs + 1
-          positions(nr_in_vecs) = j
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
         END IF
       END DO
 
-      NEIGENV = nr_in_vecs
+      NEIGENV = nr_vecs
 
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO k = 1, nr_in_vecs
+      DO k = 1, nr_vecs
         j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
@@ -2925,6 +2925,8 @@ c
     
       WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
       WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
@@ -2961,7 +2963,7 @@ C
       COMPLEX*16 Y
       REAL*8 AUEV
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
-      INTEGER                            :: nr_in_vecs
+      INTEGER                            :: nr_vecs
       INTEGER                            :: j, k
       REAL                               :: upper, lower
 
@@ -3011,24 +3013,24 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
       CALL alloc(positions,N,id='chosen eigenvectors for analysis')
-      nr_in_vecs = 0
+      nr_vecs = 0
 
       upper = reladc_md_eeigv_upper
       lower = reladc_md_eeigv_lower
 
       DO j = 1, N
         IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
-          nr_in_vecs = nr_in_vecs + 1
-          positions(nr_in_vecs) = j
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
         END IF
       END DO
 
-      NEIGENV = nr_in_vecs
+      NEIGENV = nr_vecs
 
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO k = 1, nr_in_vecs
+      DO k = 1, nr_vecs
         j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
@@ -3037,6 +3039,8 @@ c
     
       WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
       WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
