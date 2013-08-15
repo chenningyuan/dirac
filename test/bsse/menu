@@ -1,0 +1,4 @@
+quick
+x2c.scf_autoocc.inp     HF.sto-2g.lsym.mol
+Gh_HF.x2c.scf.inp       Gh_HF.sto-2g.lsym.mol
+x2c.scf_autoocc.inp     HGh_F.sto-2g.lsym.mol
