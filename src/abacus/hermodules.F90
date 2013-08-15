@@ -949,6 +949,19 @@
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
 
+!       Clear the input buffer (if any) of the RDLINE functionality
+!       This makes sure a new line is read when RDLINE is called next
+        CALL RDLINE(infile)
+!       POSITION the input file.
+        IF (baspointer%name == 'DEFAULT') THEN
+           CALL POS_FILE(infile, lupri, linelen,                        &
+     &       '**MOLECULE', '*BASIS', '.DEFAULT')
+           CALL RDLINE(infile)
+        ELSE
+           CALL POS_FILE(infile, lupri, linelen,                        &
+     &       '**MOLECULE', '*BASIS', baspointer%name)
+        ENDIF
+
         SELECT CASE (baspointer%type)
         CASE ('NOBASIS','POINTCHARGE')
           IQM(basindex,1)=0
@@ -964,11 +977,7 @@
           END DO           
           BASNAM='Explicit'
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
-
-!     POSITION the input file.
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
-!     Additional check : read iqm once more
+!     Useful check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,1))                         &
      &         CALL QUIT ('Error in write_atomtypes')
@@ -1009,8 +1018,6 @@
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
@@ -1027,8 +1034,6 @@
      & "Well-tempered basis set typed explicitly in input file "
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
@@ -1084,9 +1089,6 @@
             END DO            
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
-!     POSITION the input file.
-            CALL POS_FILE(infile, lupri, linelen,                       &
-     &           '**MOLECULE', '*BASIS', baspointer%name) 
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,2))                           &
@@ -1147,6 +1149,7 @@
           IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
         END DO
 
+!       This routine reads the next line to check whether an ECP is specified for this type
         CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
 
         typepointer=>typepointer%next
