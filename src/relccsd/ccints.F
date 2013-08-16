@@ -701,10 +701,10 @@ C
          DO I = 1, NSP
             F_ANTI_HERMITIAN = FOCKR(I,J) - FOCKR(J,I)
             IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
-     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+     &         CALL QUIT ("Perturbed (real)Fock matrix is nonhermitian")
             F_ANTI_HERMITIAN = FOCKI(I,J) + FOCKI(J,I)
             IF (ABS(F_ANTI_HERMITIAN).GT.AH_CHECK)
-     &         CALL QUIT ("Perturbed Fock matrix is nonhermitian")
+     &         CALL QUIT ("Perturbed (imag)Fock matrix is nonhermitian")
          ENDDO
       ENDDO
       RETURN
@@ -770,6 +770,7 @@ C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
       INOP = 0
     1 READ (MDPROP,ERR=10,END=11) ACHAR
+       print *,'ACHAR=',ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP
@@ -1309,16 +1310,24 @@ C
         READ (MRCONEE) 
         READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
         CLOSE (MRCONEE)
+
 C       We may add a property operator here, scaled with a field strength
 C       Note that the input can supply a list of operators, here we just assume
 C       that only one is added.
 C       Use the VBUF arrays as scratch arrays, they will always be large enough
+C
+!MI,EE (Aug2013) extended as we need to more propety operators, each scaled with own 
+!       field strength
         IF (ADD_FINITE_FIELD) THEN
-           FF_STRENGTH(1) = FF_PROP_STRENGTHS(1,1)
-           FF_STRENGTH(2) = FF_PROP_STRENGTHS(2,1)
-           PROP_NAME = FF_PROP_NAMES(1)
+          WRITE(IW,"(/,1X,A,I2,A)") "Going to add ",NFFOPER,
+     &    " finite field operator(s) to the unrestricted Fock matrix." 
+          DO IOPER=1,NFFOPER
+           FF_STRENGTH(1) = FF_PROP_STRENGTHS(1,IOPER)
+           FF_STRENGTH(2) = FF_PROP_STRENGTHS(2,IOPER)
+           PROP_NAME = FF_PROP_NAMES(IOPER)
            CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,
      &                   BUF1,BUF2,VBUF1,VBUF2)
+          ENDDO
         ENDIF
       ENDIF
 C

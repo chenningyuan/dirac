@@ -167,7 +167,7 @@ C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,NFFOPER,
      &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
@@ -481,6 +481,7 @@ C
       USEOE   = .TRUE.
       NORECMP = .FALSE.
       ADD_FINITE_FIELD = .FALSE.
+      NFFOPER=0
       DO IOPER = 1, MAXOP
          FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_STRENGTHS(1,IOPER) = 0.D0
@@ -491,6 +492,10 @@ C
       GOTO 14
    13 CALL QUIT('Error exit while reading namelist CCSORT')
    14 CONTINUE
+      IF (ADD_FINITE_FIELD.AND.NFFOPER.EQ.0) THEN
+        CALL QUIT('You did not specify the NFFOPER parameter'//
+     &' in the CCSORT input list when you want finite field operators!')
+      ENDIF
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
