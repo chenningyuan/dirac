@@ -1,4 +1,4 @@
-
+.. _molecule_using_xyz:
 
 How to specify the molecule and basis set using xyz files
 =========================================================
