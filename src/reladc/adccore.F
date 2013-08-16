@@ -558,6 +558,7 @@ C
       REAL*8 CC(*)
       INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
       REAL*8 EPS(*)
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1599,22 +1600,23 @@ c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in t
 c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
 
 
-          reladc_md_iobase   = ITAPADC
-          reladc_md_ionizl   = IONIZLEVEL
-          reladc_md_ioldnew  = 1
-          reladc_md_intbuf   = INTBUF
-          reladc_md_desrep   = KREP
-          reladc_md_rcw      = RCW
-          reladc_md_lnzitr   = SIPITER
-          reladc_md_matdim   = LADC
-          reladc_md_irecl    = IRECL
-          reladc_md_nmain    = NO(KREP)
-          reladc_md_nbufs    = NBUFS
-          reladc_md_neigenv  = SIPEIGV(IRPLOOP)
-          reladc_md_fileadc  = FILEN5
-          reladc_md_filediag = FILEN4 
-          reladc_md_filecnf  = FILEN2
-          reladc_md_nmspec   = NMSPECF
+          reladc_md_iobase      = ITAPADC
+          reladc_md_ionizl      = IONIZLEVEL
+          reladc_md_ioldnew     = 1
+          reladc_md_intbuf      = INTBUF
+          reladc_md_desrep      = KREP
+          reladc_md_rcw         = RCW
+          reladc_md_lnzitr      = SIPITER
+          reladc_md_matdim      = LADC
+          reladc_md_irecl       = IRECL
+          reladc_md_nmain       = NO(KREP)
+          reladc_md_nbufs       = NBUFS
+          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
+          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
+          reladc_md_fileadc     = FILEN5
+          reladc_md_filediag    = FILEN4 
+          reladc_md_filecnf     = FILEN2
+          reladc_md_nmspec      = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c

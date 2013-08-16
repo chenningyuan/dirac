@@ -1271,6 +1271,7 @@
    subroutine read_input_lanczos(word, kw_section)
 
       use adc_cfg   ! lanczos only used in combination with reladc. same module
+      use adc_mat
       use input_reader
 
       implicit none
@@ -1280,6 +1281,8 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
+      character(100)                   :: line
+      integer                          :: i, j
 !     --------------------------------------------------------------------------
 
 
@@ -1298,18 +1301,40 @@
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_sipeigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_sip_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_sip_eeigv(i,j), j=1,2)
+         end do
       end if
 
       if (kw_matches(word, '.DIPEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_dipeigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC double ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_dip_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_dip_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.EXCEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_exceigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_exc_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_exceigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then

@@ -44,6 +44,7 @@
       integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
       real*8, allocatable     :: cc(:)   ! work space for diag_lanc
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 !
 !-----------------------interface section---------------------
 !
@@ -126,17 +127,18 @@
       endif
       write(iw,*)
 
-      write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
-      n=0
-      do i=1,32
-        n=n+reladc_exceigv(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None.'
-      else
-        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=1,16)
-        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=17,32)
-      endif
+! This part makes no sense with the new input
+!      write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
+!      n=0
+!      do i=1,32
+!        n=n+reladc_exceigv(i)
+!      enddo
+!      if(n.eq.0) then
+!        write(IW,'(10X,A)') 'None.'
+!      else
+!        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=1,16)
+!        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=17,32)
+!      endif
 
       INTBUF = 5*1024*1024     !we work with a 5 Megaword buffer.
 ! |
@@ -282,24 +284,24 @@
 !
 !** setup matrix descriptor for Lanczos
 !
-          neigenv = reladc_exceigv(IRPLOOP)
 
-          reladc_md_iobase   = iobase
-          reladc_md_ionizl   = IONIZLEVEL
-          reladc_md_ioldnew  = 2
-          reladc_md_intbuf   = INTBUF
-          reladc_md_desrep   = DESREP
-          reladc_md_rcw      = RCW
-          reladc_md_lnzitr   = reladc_exciter
-          reladc_md_matdim   = LADC
-          reladc_md_irecl    = IRECL
-          reladc_md_nmain    = MVO(DESREP)
-          reladc_md_nbufs    = NBUFS
-          reladc_md_neigenv  = neigenv
-          reladc_md_fileadc  = NAMEMATFIL
-          reladc_md_filediag = '      '
-          reladc_md_filecnf  = NAMECNFFIL
-          reladc_md_nmspec   = NAMESPCFIL
+          reladc_md_iobase      = iobase
+          reladc_md_ionizl      = IONIZLEVEL
+          reladc_md_ioldnew     = 2
+          reladc_md_intbuf      = INTBUF
+          reladc_md_desrep      = DESREP
+          reladc_md_rcw         = RCW
+          reladc_md_lnzitr      = reladc_exciter
+          reladc_md_matdim      = LADC
+          reladc_md_irecl       = IRECL
+          reladc_md_nmain       = MVO(DESREP)
+          reladc_md_nbufs       = NBUFS
+          reladc_md_eeigv_lower = reladc_md_exc_eeigv(IRPLOOP,1)/autoev
+          reladc_md_eeigv_upper = reladc_md_exc_eeigv(IRPLOOP,2)/autoev
+          reladc_md_fileadc     = NAMEMATFIL
+          reladc_md_filediag    = '      '
+          reladc_md_filecnf     = NAMECNFFIL
+          reladc_md_nmspec      = NAMESPCFIL
 
           allocate(CC(reladc_lancmem),stat=ialloc)
           if(ialloc.ne.0) stop 'Memory allocation problem.'
