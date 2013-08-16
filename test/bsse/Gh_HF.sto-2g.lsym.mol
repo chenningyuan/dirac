@@ -1,14 +1,11 @@
 INTGRL
  HF molecule
- smallest basis sets STO-2G, for ghost-H typed explicitly
+ smallest basis sets STO-2G, for the ghost-H specified atomic charge 
 C   2
         9.    1
 F             0.00000000          0.00000000          0.00000000
 LARGE BASIS STO-2G
         0.    1
-Gh            0.00000000          0.00000000          1.73280000
-LARGE    1    1
-f   2
-      1.3097564  
-      0.2331360
+H             0.00000000          0.00000000          1.73280000
+LARGE BASIS Q=1.0 STO-2G
 FINISH
