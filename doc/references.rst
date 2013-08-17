@@ -106,6 +106,9 @@ or popular Google-Books web-space.
    The Journal of Chemical Physics **122**,  *074321* (2005)
    `[web] <http://dx.doi.org/10.1063/1.1849167>`_
 
+.. [Eliav2005] Ephraim Eliav and Marius J. Vilkas and Yasuyuki Ishikawa and Uzi Kaldor,
+   J. Chem. Phys. **122** (22), *224113/1-224113/5* (2005)
+   
 .. [Eliav2009] Ephraim Eliav, Anastasia Borschevsky, K. R. Shamasundar,
    Sourav Pal, Uzi Kaldor,
    *Intermediate Hamiltonian Hilbert space coupled cluster method: Theory and pilot application*,
@@ -263,6 +266,9 @@ or popular Google-Books web-space.
 .. [Kutzelnigg1984] W. Kutzelnigg,
    *Chemical Bonding in the Higher Main Group Elements*, Angew. Chem. Int. Ed. Engl. **23**, *272* (1984),
    `[web] <http://dx.doi.org/10.1002/anie.198402721>`_
+
+.. [Landau2004] A. Landau, E. Eliav, Y. Ishikawa and U. Kaldor,
+   J. Chem. Phys. **121**,  *6634-6639* (2004)
 
 .. [Laerdahl1997] J. K. Lærdahl, T. Saue and K. Fægri,
    *Direct relativistic MP2: Properties of ground state CuF, AgF and AuF*,
