@@ -30,6 +30,7 @@ Setting up DIRAC
 
 * **pam script:**
   :doc:`How to set the scratch directory <pam/scratch>`
+  :doc:`Replacements of strings by pam <pam/replace>`
 
 
 Updates and patches
@@ -73,6 +74,7 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**

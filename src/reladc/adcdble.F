@@ -46,6 +46,7 @@ C
       LOGICAL ALLOC_ME,ERRFLG
       INTEGER KFRSAV,LFRSAV
       INTEGER ICOLLEN(MXREP),INTBUF
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 c file names for the Lanczos
       CHARACTER*6 NAME2,NAME3
       PARAMETER(NAME2='ADC2PF',NAME3='ADCCNF')
@@ -179,17 +180,18 @@ C |
         write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
         write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
       endif
-      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
-      n=0
-      do i=1,32
-        n=n+dipeigv(i)
-      enddo
-      if(n.eq.0) then
-        write(IW,'(10X,A)') 'None.'
-      else
-        write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
-        write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
-      endif
+! This output dies not make sense with the new input
+!      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
+!      n=0
+!      do i=1,32
+!        n=n+dipeigv(i)
+!      enddo
+!      if(n.eq.0) then
+!        write(IW,'(10X,A)') 'None.'
+!      else
+!        write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
+!        write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
+!      endif
 !
 ! determine symmetries to be calculated
 !
@@ -426,22 +428,24 @@ c
 C
 C  set matrix descriptor and perform Lanczos diagonalization
 C
-        reladc_md_iobase   = ITAPADC
-        reladc_md_ionizl   = IONIZLEVEL
-        reladc_md_ioldnew  = 2
-        reladc_md_intbuf   = INTBUF
-        reladc_md_desrep   = DESREP
-        reladc_md_rcw      = RCW
-        reladc_md_lnzitr   = DIPITER
-        reladc_md_matdim   = LADC
-        reladc_md_irecl    = IRECL
-        reladc_md_nmain    = NOOT(DESREP)
-        reladc_md_nbufs    = NBUFS
-        reladc_md_neigenv  = DIPEIGV(DESREP)
-        reladc_md_fileadc  = NAME2
-        reladc_md_filediag = '      '
-        reladc_md_filecnf  = NAME3
-        reladc_md_nmspec   = NMSPECF
+        reladc_md_iobase       = ITAPADC
+        reladc_md_ionizl       = IONIZLEVEL
+        reladc_md_ioldnew      = 2
+        reladc_md_intbuf       = INTBUF
+        reladc_md_desrep       = DESREP
+        reladc_md_rcw          = RCW
+        reladc_md_lnzitr       = DIPITER
+        reladc_md_matdim       = LADC
+        reladc_md_irecl        = IRECL
+        reladc_md_nmain        = NOOT(DESREP)
+        reladc_md_nbufs        = NBUFS
+        reladc_md_eeigv_lower  = reladc_md_dip_eeigv(IRPLOOP,1)/autoev
+        reladc_md_eeigv_upper  = reladc_md_dip_eeigv(IRPLOOP,2)/autoev
+        reladc_md_fileadc      = NAME2
+        reladc_md_filediag     = '      '
+        reladc_md_filecnf      = NAME3
+        reladc_md_nmspec       = NMSPECF
+
 
         DIPPRNT = 30.0d0
 c

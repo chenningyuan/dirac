@@ -117,6 +117,7 @@ def main():
     list_of_tests.append('basis_automatic_augmentation')
     list_of_tests.append('basis_contraction')
     list_of_tests.append('basis_input')
+    list_of_tests.append('bsse')
     list_of_tests.append('bss_energy')
     list_of_tests.append('cc_energy_and_mp2_dipole')
     list_of_tests.append('cc_linear')

@@ -1,4 +1,4 @@
-
+.. _molecule_using_xyz:
 
 How to specify the molecule and basis set using xyz files
 =========================================================
@@ -61,6 +61,20 @@ geometry file methanol.xyz we need to specify::
   *CENTERS
   .NUCLEUS
    H1 1.0
+
+Another reason to change the charge of the nucleus is to be able to run counterpoise
+calculations in which a ghost basis set is to be placed without adding a charge. This
+can be achieved by defining the ghost center as (for instance) O.Gh and then putting
+the nuclear charge to zero using::
+
+  *CENTERS
+  .NUCLEUS
+   O.Gh 0.0 8.0
+
+the first number is the charge to be used, the second corresponds to the element number
+and is used to search the basis set library. In this example you can therefore simply specify
+the basis set name using the *DEFAULT* or *SPECIAL* keywords and the program will then find the
+corresponding oxygen basis.
 
 
 \*UNITS
