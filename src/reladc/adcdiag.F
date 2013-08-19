@@ -2877,7 +2877,6 @@ C
       CHARACTER*1 JOBZ,UPLO
       REAL*8 Y
       REAL*8 AUEV
-      INTEGER                            :: nr_in_vecs
       INTEGER                            :: counter
 
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
@@ -2940,13 +2939,13 @@ c
 
       IF (reladc_md_isfano) THEN
         CALL alloc(positions,N,id="array of position numbers fano Lanc")
-        CALL fano_find_in_vec(N,EVL,Z,positions,nr_in_vecs,iw)
+        CALL fano_find_in_vec(N,EVL,Z,positions,nr_vecs,iw)
 
-        NEIGENV = nr_in_vecs
+        NEIGENV = nr_vecs
         OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-        WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors
         WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-        DO counter=1, nr_in_vecs
+        DO counter=1, nr_vecs
           j = positions(counter)
           WRITE(IOUNIT) EVL(J) ! eigenvalue
           WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
@@ -3025,10 +3024,9 @@ C
       COMPLEX*16 Y
       REAL*8 AUEV
 
-      INTEGER                            :: nr_in_vecs            
+      INTEGER                            :: nr_vecs            
       INTEGER                            :: counter
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
-      INTEGER                            :: nr_vecs
       INTEGER                            :: j, k
       REAL                               :: upper, lower
 
@@ -3080,13 +3078,13 @@ c
                                                                   
       IF (reladc_md_isfano) THEN                                  
         CALL alloc(positions,N,id="array of position numbers fano Lanc")
-        CALL cfano_find_in_vec(N,EVL,Z,positions,nr_in_vecs,iw)    
+        CALL cfano_find_in_vec(N,EVL,Z,positions,nr_vecs,iw)    
                                                                   
-        NEIGENV = nr_in_vecs                                      
+        NEIGENV = nr_vecs                                      
         OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-        WRITE(IOUNIT) nr_in_vecs   ! number of computed eigenvectors
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors
         WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-        DO counter=1, nr_in_vecs                                  
+        DO counter=1, nr_vecs                                  
           j = positions(counter)                                  
           WRITE(IOUNIT) EVL(J) ! eigenvalue                       
           WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
