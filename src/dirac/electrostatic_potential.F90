@@ -1,5 +1,7 @@
 module electrostatic_potential
 
+   use memory_allocator
+
    implicit none 
    
    public get_esp
@@ -32,9 +34,9 @@ module electrostatic_potential
 !  --------------------------------------------------------------------------
    logical                       :: nuc_part
    logical                       :: el_part
-   integer, parameter            :: lwork = 10000
    integer                       :: i
-   real(8)                       :: work(lwork)
+   integer                       :: lwork
+   real(8), allocatable          :: work(:)
 !  --------------------------------------------------------------------------
 
    nuc_part = .true.
@@ -47,7 +49,10 @@ module electrostatic_potential
       call get_nuclear_mep(nr_points, r, esp, 0)
    end if
    if (el_part) then
+      call legacy_lwork_get(lwork)
+      call alloc(work, lwork, id='temporary work array in electrostatic potential')
       call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0)
+      call dealloc(work)
    end if
 
    end subroutine

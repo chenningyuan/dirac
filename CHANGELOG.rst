@@ -3,6 +3,7 @@
 12.8
 ----
 
+- Replaced hardcoded memory limit in the calculation of the electrostatic potential.
 - Bugfix for screening in MP2. Now you can use
   screening in conjunction with batched processing (for large systems) by
   specifying .IJTSK in input.
