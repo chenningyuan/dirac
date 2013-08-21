@@ -345,13 +345,13 @@ CONTAINS
 
     counter = 0
 
-    DO row = 1, nvoot(krep)
-      aabs   = bigicra(7,row)
-      kabs   = bigicra(8,row)
-      labs   = bigicra(9,row)
-      each_channel:DO inline = 1, reladc_fano_nrchannels
-        first  = reladc_fano_channels(inline,1)
-        second = reladc_fano_channels(inline,2)
+    each_channel:DO inline = 1, reladc_fano_nrchannels
+      first  = reladc_fano_channels(inline,1)
+      second = reladc_fano_channels(inline,2)
+      DO row = 1, nvoot(krep)
+        aabs   = bigicra(7,row)
+        kabs   = bigicra(8,row)
+        labs   = bigicra(9,row)
         IF (first == kabs) THEN
           IF (second == labs) THEN
             is_fin            = .TRUE. !We hit a final state configuration
@@ -366,11 +366,11 @@ CONTAINS
         END IF
 
         IF (is_fin .EQV. .TRUE.) THEN
-          EXIT each_channel
+          CYCLE each_channel
         END IF
-      END DO each_channel
+      END DO 
       
-    END DO
+    END DO each_channel
 
   END SUBROUTINE make_finalpos
 

@@ -179,6 +179,7 @@ CONTAINS
       rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
         IF (ANY(finalpos + nok == adcrow)) THEN
+          !WRITE(iw,*) 'adcrow hhp = ', adcrow
           CYCLE rowloop
 
         ELSE
@@ -204,6 +205,7 @@ CONTAINS
 !
       DO temp_row = 1, fin_max
         temp = single_col(finalpos(temp_row) + nok)
+        !WRITE(iw,*) 'processing: ', finalpos(temp_row)
         IF (temp /= 0.0D0) THEN
           adcib = adcib + 1
           adcbuf(adcib) = temp
@@ -339,16 +341,17 @@ CONTAINS
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
-      DO fincount = 1, fin_max
-        temp = finalpos(fincount)
-        IF (temp == k) THEN
-          temp_fin(fincount) = eajl(k)
-          CYCLE diag_2h1p
-        END IF  
-      END DO
+      IF (ANY(finalpos == k)) THEN
+        CYCLE diag_2h1p
+      END IF  
       counter = counter + 1
       tempe(counter) = eajl(k)
     END DO diag_2h1p
+
+    DO fincount = 1, fin_max
+      temp = finalpos(fincount)
+      temp_fin(fincount) = eajl(temp)
+    END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
 
@@ -390,8 +393,9 @@ CONTAINS
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-        temp = finalpos(fincol)
-        IF (temp == jcol) THEN
+        IF (ANY(finalpos == jcol)) THEN
+        !temp = finalpos(fincol)
+        !IF (temp == jcol) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
@@ -402,7 +406,14 @@ CONTAINS
 
             s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
 
-            couprow = ladc - fin_max + fincol
+            det_row:DO i = 1, fin_max
+              IF (finalpos(i) == jcol) THEN
+                couprow = ladc - fin_max + i
+                WRITE(iw,*) 'couprow = ', couprow
+                EXIT det_row
+              END IF
+            END DO det_row
+            !couprow = ladc - fin_max + fincol
             coupcol = coupcol + 1
 
             IF (s /= 0.0D0) THEN
@@ -787,23 +798,32 @@ CONTAINS
       INTEGER :: AREP,ASREP,KREP,KSREP,LREP,LSREP
       INTEGER :: ASKREP, ASLREP, KLREP
       INTEGER :: IOFF
+      INTEGER :: tcol, trow
 !
 !---------------Executable code--------------------------------------
 !
-      AS    = ICRA(1,JCOL)
-      ASREP = ICRA(2,JCOL)
-      KS    = ICRA(3,JCOL)
-      KSREP = ICRA(4,JCOL)
-      LS    = ICRA(5,JCOL)
-      LSREP = ICRA(6,JCOL)
+      IF (irow < jcol) THEN
+        tcol = irow
+        trow = jcol
+      ELSE
+        tcol = jcol
+        trow = irow
+      END IF
+
+      AS    = ICRA(1,TCOL)
+      ASREP = ICRA(2,TCOL)
+      KS    = ICRA(3,TCOL)
+      KSREP = ICRA(4,TCOL)
+      LS    = ICRA(5,TCOL)
+      LSREP = ICRA(6,TCOL)
 
 
-      A     = ICRA(1,IROW)                                        
-      AREP  = ICRA(2,IROW)
-      K     = ICRA(3,IROW)
-      KREP  = ICRA(4,IROW)                                        
-      L     = ICRA(5,IROW)                                        
-      LREP  = ICRA(6,IROW)                                        
+      A     = ICRA(1,TROW)                                        
+      AREP  = ICRA(2,TROW)
+      K     = ICRA(3,TROW)
+      KREP  = ICRA(4,TROW)                                        
+      L     = ICRA(5,TROW)                                        
+      LREP  = ICRA(6,TROW)                                        
                                                                   
       S=0.0D0                                                     
                                                                   
