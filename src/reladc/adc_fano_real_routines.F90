@@ -46,7 +46,8 @@ MODULE adc_fano_real_routines
 
 CONTAINS
 
-  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw, &
+                            finalpos)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -87,12 +88,14 @@ CONTAINS
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
     INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
     INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+    INTEGER, INTENT(IN), DIMENSION(fin_max)              :: finalpos
 
 !
 !  Data dictionary: Local Variables
 !
     REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
     REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
+    REAL(8)                            :: temp
     INTEGER                            :: temp_row     !row of temp_array
     INTEGER                            :: finrow       !row of final states
     INTEGER                            :: k, ixx, fincount ! counters
@@ -157,6 +160,7 @@ CONTAINS
 !  write out h/h and h/2h1p buffers                                     
 !
     nok  = no(crep)
+    WRITE(iw,*) 'nok = ', nok
     najl = nvoot(crep)
 
     inib  = 0
@@ -172,19 +176,12 @@ CONTAINS
       off2   = off2 + nok
       CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc
+      rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
-        !inrow = adcrow
-        IF (adcrow-nok > 0) THEN
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'nok    = ', nok
-          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-                               is_coupl,is_fin,1)
+        IF (ANY(finalpos + nok == adcrow)) THEN
+          CYCLE rowloop
+
         ELSE
-          is_in = .TRUE.
-        END IF
-        is_initial:IF (is_in) THEN
           inrow = inrow + 1
           !WRITE(iw,*) 'inrow = ', inrow
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -198,43 +195,24 @@ CONTAINS
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
             END IF
-            ! We write out the sorted ADC matrix
-            ! We skip that since we only need interaction block
-            !adcib  = adcib + 1
-            !adcbuf(adcib) = single_col(adcrow)
-            !adcioi(adcib) = inrow
-            !adcioj(adcib) = adccol
-            !IF (adcib == fano_intbuf) THEN
-            !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-            !                      adcnbufs,adcib,adcfh)
-            !END IF
           END IF
-        ELSE is_initial
-          !WRITE(iw,*) 'inrow = ', inrow
-          !WRITE(iw,*) 'adcrow     : ', adcrow
-          finrow = finrow + 1
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            fincount = fincount + 1
-            temp_array(fincount,1) = single_col(adcrow)
-            temp_array(fincount,2) = finrow
-            temp_array(fincount,3) = adccol
-            !WRITE(iw,*) 'adcrow     : ', adcrow
-            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
-          END IF
-        END IF is_initial
-      END DO
+        END IF
+      END DO rowloop
 !
 !  One column has been processed, now the final states are added to
 !  the end of the corresponding column
 !
-      DO temp_row = 1, fincount
-        adcib = adcib + 1
-        adcbuf(adcib) = temp_array(temp_row,1)
-        adcioi(adcib) = temp_array(temp_row,2) + inrow
-        adcioj(adcib) = temp_array(temp_row,3)
-        IF (adcib == fano_intbuf) THEN
-          CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
-                adcib,adcfh)
+      DO temp_row = 1, fin_max
+        temp = single_col(finalpos(temp_row) + nok)
+        IF (temp /= 0.0D0) THEN
+          adcib = adcib + 1
+          adcbuf(adcib) = temp
+          adcioi(adcib) = temp_row + inrow
+          adcioj(adcib) = adccol
+          IF (adcib == fano_intbuf) THEN
+            CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                  adcib,adcfh)
+          END IF
         END IF
       END DO 
 

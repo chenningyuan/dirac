@@ -177,7 +177,7 @@ CONTAINS
 ! Local Variables
 !
     REAL(8)                          :: contrib
-    REAL, PARAMETER                  :: thresh=0.1
+    REAL, PARAMETER                  :: thresh=0.2
     REAL(8), PARAMETER               :: ovlthresh=1.0D-2
     REAL(8), PARAMETER               :: ethresh=1.0D-12
     INTEGER                          :: initial
