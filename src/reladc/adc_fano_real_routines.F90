@@ -179,6 +179,7 @@ CONTAINS
       rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
         IF (ANY(finalpos + nok == adcrow)) THEN
+          !WRITE(iw,*) 'adcrow hhp = ', adcrow
           CYCLE rowloop
 
         ELSE
@@ -204,6 +205,7 @@ CONTAINS
 !
       DO temp_row = 1, fin_max
         temp = single_col(finalpos(temp_row) + nok)
+        !WRITE(iw,*) 'processing: ', finalpos(temp_row)
         IF (temp /= 0.0D0) THEN
           adcib = adcib + 1
           adcbuf(adcib) = temp
@@ -339,16 +341,17 @@ CONTAINS
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
-      DO fincount = 1, fin_max
-        temp = finalpos(fincount)
-        IF (temp == k) THEN
-          temp_fin(fincount) = eajl(k)
-          CYCLE diag_2h1p
-        END IF  
-      END DO
+      IF (ANY(finalpos == k)) THEN
+        CYCLE diag_2h1p
+      END IF  
       counter = counter + 1
       tempe(counter) = eajl(k)
     END DO diag_2h1p
+
+    DO fincount = 1, fin_max
+      temp     = finalpos(fincount)
+      temp_fin = eajl(temp)
+    END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
 
@@ -390,8 +393,9 @@ CONTAINS
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-        temp = finalpos(fincol)
-        IF (temp == jcol) THEN
+        IF (ANY(finalpos == jcol)) THEN
+        !temp = finalpos(fincol)
+        !IF (temp == jcol) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
