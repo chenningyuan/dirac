@@ -176,24 +176,12 @@ CONTAINS
       off2   = off2 + nok
       CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc
+      rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
-        !inrow = adcrow
-        IF (adcrow-nok > 0) THEN
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'nok    = ', nok
-          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-          !CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-          !                     is_coupl,is_fin,1)
-          IF (ANY(finalpos + nok == adcrow)) THEN
-            is_in = .FALSE.
-          ELSE
-            is_in = .TRUE.
-          END IF
+        IF (ANY(finalpos + nok == adcrow)) THEN
+          CYCLE rowloop
+
         ELSE
-          is_in = .TRUE.
-        END IF
-        is_initial:IF (is_in) THEN
           inrow = inrow + 1
           !WRITE(iw,*) 'inrow = ', inrow
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -207,19 +195,9 @@ CONTAINS
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
             END IF
-            ! We write out the sorted ADC matrix
-            ! We skip that since we only need interaction block
-            !adcib  = adcib + 1
-            !adcbuf(adcib) = single_col(adcrow)
-            !adcioi(adcib) = inrow
-            !adcioj(adcib) = adccol
-            !IF (adcib == fano_intbuf) THEN
-            !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-            !                      adcnbufs,adcib,adcfh)
-            !END IF
           END IF
-        END IF is_initial
-      END DO
+        END IF
+      END DO rowloop
 !
 !  One column has been processed, now the final states are added to
 !  the end of the corresponding column
