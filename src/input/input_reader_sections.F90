@@ -1155,7 +1155,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i, j, k !counters
       character(100)                   :: line
-      integer                          :: temp
+      integer                          :: temp, already
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
 
@@ -1243,25 +1243,35 @@
 
       if (kw_matches(word, '.FANOCHNL')) then
          ! read number of channels
-         call kw_read(word, reladc_fano_nrchannels)
+         call kw_read(word, reladc_fano_nrgroups)
+         allocate(reladc_fano_groups(reladc_fano_nrgroups))
+         allocate(reladc_fano_labels(reladc_fano_nrgroups))
+         reladc_fano_groups = 0
+         call kw_read(word, reladc_fano_groups, reladc_fano_nrgroups)
+         reladc_fano_nrchannels = SUM(reladc_fano_groups)
          allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
          reladc_fano_channels = 0
+         already = 0
          print *, ''
          print *, 'Absolute spinor numbers of Fano final states: '
-         do i = 1, reladc_fano_nrchannels
-            ! read every line
-            read(get_file_unit(), '(a)') line
-            ! read the absolute spinor numbers of the final states
-            read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
-            if (reladc_fano_channels(i,1) < reladc_fano_channels(i,2)) then
-              temp = reladc_fano_channels(i,1)
-              reladc_fano_channels(i,1) = reladc_fano_channels(i,2)
-              reladc_fano_channels(i,2) = temp
-            end if 
-            print *, (reladc_fano_channels(i,j), j=1,2)
-            if (reladc_fano_channels(i,1) == reladc_fano_channels(i,2)) then
-              call quit ( 'Equal spinors in one channel -> Unphysical choice')
-            end if
+         do k = 1, reladc_fano_nrgroups
+           call kw_read(word,reladc_fano_labels(k))
+           do i = 1, reladc_fano_groups(k)
+              ! read every line
+              read(get_file_unit(), '(a)') line
+              ! read the absolute spinor numbers of the final states
+              read(line,*) (reladc_fano_channels(i+already,j), j = 1, 2)
+              if (reladc_fano_channels(i+already,1) < reladc_fano_channels(i+already,2)) then
+                temp = reladc_fano_channels(i+already,1)
+                reladc_fano_channels(i+already,1) = reladc_fano_channels(i+already,2)
+                reladc_fano_channels(i+already,2) = temp
+              end if 
+              print *, (reladc_fano_channels(i+already,j), j=1,2)
+              if (reladc_fano_channels(i+already,1) == reladc_fano_channels(i+already,2)) then
+                call quit ( 'Equal spinors in one channel -> Unphysical choice')
+              end if
+           end do
+           already = already + reladc_fano_groups(k)
          end do
       end if
 
