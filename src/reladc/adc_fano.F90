@@ -104,13 +104,13 @@ CONTAINS
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
 
-    ! Create sorted h/2h1p block
-    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
-                             itapadc,iw)
-
     ! Create an array of final state positions in the 2h1p part
     CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
     CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+
+    ! Create sorted h/2h1p block
+    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
+                             itapadc,iw,finalpos)
 
     ! Create the sorted 2h1p/2h1p block
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
