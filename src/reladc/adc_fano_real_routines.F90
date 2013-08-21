@@ -409,7 +409,6 @@ CONTAINS
             det_row:DO i = 1, fin_max
               IF (finalpos(i) == jcol) THEN
                 couprow = ladc - fin_max + i
-                WRITE(iw,*) 'couprow = ', couprow
                 EXIT det_row
               END IF
             END DO det_row

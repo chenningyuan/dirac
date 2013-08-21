@@ -357,7 +357,7 @@ CONTAINS
             is_fin            = .TRUE. !We hit a final state configuration
             counter           = counter + 1
             finalpos(counter) = row
-            WRITE(iw,*) 'position = ', row
+            !WRITE(iw,*) 'position = ', row
           ELSE
             is_fin = .FALSE.
           END IF
