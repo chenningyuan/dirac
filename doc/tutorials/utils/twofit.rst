@@ -188,8 +188,97 @@ Various options follow, but we will simply say no to all of them::
     Do you want to calculate spectroscopic constants at another geometry (y/n)?
    n
    
+Example 2: Anharmonicity of C-F stretch in CHFClBr
+--------------------------------------------------
 
+We start from a set of CCSD(T) energies (using scalar relativistic pseudopotentials) 
+along the normal coordinate :math:`Q` associated with the C-F stretch of the chiral CHFClBr::
 
+   -0.50  -610.12399429
+   -0.40  -610.62520179
+   -0.30  -610.86649287
+   -0.20  -610.97769875
+   -0.10  -611.02238183
+    0.00  -611.03293760
+    0.10  -611.02641387
+    0.20  -611.01190951
+    0.50  -610.95789506
+    0.75  -610.91897869
+    1.00  -610.89433750
 
+The normal coordinates and associated normal coordinate :math:`\mu = 9.7032` was obtained from vibrational analysis 
+(not using DIRAC). The TWOFIT run proceeds as before::
 
+   twofit.x
+   
+   
+            ***************************************************************
+            ********** TWOFIT for diatomics : Written by T. Saue **********
+            ***************************************************************
+   
+   Select one of the following:
+     1. Spectroscopic constants.
+     2. Spectroscopic constants + properties.
+   1
+   Name of input file with potential curve with " R E(R)" values (A40)
+   chfclbr.pes.dat
+   Select one of the following:
+     1. Bond lengths in Angstroms.
+     2. Bond lengths in atomic units.
+    (Note that all other quantities only in atomic units !)
+   1
+   * Number of points read:   11
+   
+   ** SPECTROSCOPIC CONSTANTS:
+   
+   Polynomial fit: Give order of polynomial 
+   9
+      * Polynomial fit of order:  9
+      * Coefficients:
+      c(  0):   -6.110329E+02
+      c(  1):    6.084737E-05
+      c(  2):    2.297324E-01
+      c(  3):   -2.947082E-01
+      c(  4):    2.477551E-01
+      c(  5):   -1.473893E-01
+      c(  6):    8.141347E-02
+      c(  7):   -7.485671E-02
+      c(  8):    4.956602E-02
+      c(  9):   -1.180208E-02
+           X     Predicted Y Relative error
+      -0.500     -6.101239943742E+02  1.3793E-10
+      -0.400     -6.106252010277E+02 -1.2483E-09
+      -0.300     -6.108664959044E+02  4.9673E-09
+      -0.200     -6.109776918295E+02 -1.1327E-08
+      -0.100     -6.110223916741E+02  1.6111E-08
+       0.000     -6.110329287639E+02 -1.4461E-08
+       0.100     -6.110264185901E+02  7.7249E-09
+       0.200     -6.110119083146E+02 -1.9564E-09
+       0.500     -6.109578950951E+02  5.7392E-11
+       0.750     -6.109189786861E+02 -6.3733E-12
+       1.000     -6.108943375002E+02  4.0123E-13
+      * Chi square :  .2564E-09
+      * Chi square per point:  .2331E-10
+      * Number of singularities(SVD):   0
+   * Local minimum   :          -0.00007 Angstroms =           -0.00013 Bohrs
+   * Expected energy : -6.1103292877E+02 Hartrees
+   Select one of the following:
+     1. Select masses of the most abundant isotopes.
+     2. Employ user-defined atomic masses.
+     3. Normal modes: Give reduced mass.
+   
+but now we select the third option::
 
+      3
+   * Give reduced mass in Daltons:
+   9.7032
+   * Force constant  :        7.1570E+02 N/m
+   * Frequency       : 3.35432E+13 Hz
+                       1.11888E+03 cm-1
+   * Mean displacement in harmonic ground state:    0.0557 Angstroms
+     corresponding to interval: [   -0.0558,    0.0557]
+   * WARNING :    10 points lie outside interval...
+   This may reduce the quality of your spectroscopic constants.
+   * Omega*x_e       : 9.10592E+00 cm-1
+
+   
