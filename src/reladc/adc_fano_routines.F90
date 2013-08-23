@@ -312,6 +312,8 @@ CONTAINS
 !           configurations within the 2h1p part
 !
     use adc_cfg
+    use adc_fano_exchange
+    use memory_allocator
 
     IMPLICIT NONE
 
@@ -336,6 +338,9 @@ CONTAINS
     INTEGER   :: aabs, kabs, labs
     INTEGER   :: first, second
     INTEGER   :: counter
+    INTEGER   :: count2h1p
+    INTEGER   :: channel
+    INTEGER   :: gfirst, glast, off
     LOGICAL   :: is_fin
 
 !
@@ -344,33 +349,47 @@ CONTAINS
     WRITE(iw,*) 'Enter make_finalpos'
 
     counter = 0
+    off = 0
 
-    each_channel:DO inline = 1, reladc_fano_nrchannels
-      first  = reladc_fano_channels(inline,1)
-      second = reladc_fano_channels(inline,2)
-      DO row = 1, nvoot(krep)
-        aabs   = bigicra(7,row)
-        kabs   = bigicra(8,row)
-        labs   = bigicra(9,row)
-        IF (first == kabs) THEN
-          IF (second == labs) THEN
-            is_fin            = .TRUE. !We hit a final state configuration
-            counter           = counter + 1
-            finalpos(counter) = row
-            !WRITE(iw,*) 'position = ', row
+    CALL alloc(nr2h1p,reladc_fano_nrgroups)
+
+    each_group:DO channel = 1, reladc_fano_nrgroups
+      gfirst = off + 1
+      glast  = off + reladc_fano_groups(channel)
+      count2h1p = 0
+
+      each_channel:DO inline = gfirst, glast
+        first  = reladc_fano_channels(inline,1)
+        second = reladc_fano_channels(inline,2)
+        DO row = 1, nvoot(krep)
+          aabs   = bigicra(7,row)
+          kabs   = bigicra(8,row)
+          labs   = bigicra(9,row)
+          IF (first == kabs) THEN
+            IF (second == labs) THEN
+              is_fin            = .TRUE. !We hit a final state configuration
+              counter           = counter + 1
+              finalpos(counter) = row
+              WRITE(iw,*) 'position = ', row
+              count2h1p = count2h1p + 1
+            ELSE
+              is_fin = .FALSE.
+            END IF
           ELSE
             is_fin = .FALSE.
           END IF
-        ELSE
-          is_fin = .FALSE.
-        END IF
 
-        IF (is_fin .EQV. .TRUE.) THEN
-          CYCLE each_channel
-        END IF
-      END DO 
-      
-    END DO each_channel
+          IF (is_fin .EQV. .TRUE.) THEN
+            CYCLE each_channel
+          END IF
+        END DO 
+      END DO each_channel
+
+      nr2h1p(channel) = count2h1p
+      WRITE(iw,*) 'Number of 2h1p states in this group', count2h1p
+      off    = glast
+
+    END DO each_group
 
   END SUBROUTINE make_finalpos
 

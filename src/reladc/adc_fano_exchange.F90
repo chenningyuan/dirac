@@ -1,5 +1,7 @@
 MODULE adc_fano_exchange
 
+INTEGER, ALLOCATABLE, DIMENSION(:)    :: nr2h1p
+
 REAL(8), ALLOCATABLE, DIMENSION(:,:)  :: in_evecs !alloc in lvecanaly_r, dealloc in fano
 INTEGER                               :: nr_in_evecs
 REAL(8), ALLOCATABLE, DIMENSION(:,:)    :: in_energy !holds energies and polestrengths

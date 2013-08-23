@@ -12,6 +12,7 @@ CONTAINS
     use adc_fano_exchange
     use memory_allocator
     use codata
+    use adc_cfg
 
     IMPLICIT NONE
 
@@ -45,7 +46,7 @@ CONTAINS
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec_start
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: vec1, vec2
 
-    CHARACTER(6), PARAMETER               :: nmspec = 'FPSPEC'
+    CHARACTER(3), PARAMETER               :: nmspec = 'FPS'
     CHARACTER(9)                          :: fn_trans
     INTEGER                               :: fh_trans
     INTEGER                               :: ierror
@@ -80,10 +81,16 @@ CONTAINS
 
 ! Choose file name of the pseudo-spectrum
       IF(i.GT.9) THEN
-        WRITE(fn_trans,'(a6,a1,i2)') nmspec,'.',i
+        WRITE(fn_trans,'(a3,a1,i2)') nmspec,'.',i
       ELSE
-        WRITE(fn_trans,'(a6,a2,i1)') nmspec,'.0',i
+        WRITE(fn_trans,'(a3,a2,i1)') nmspec,'.0',i
       END IF
+!! Choose file name of the pseudo-spectrum
+!      IF(i.GT.9) THEN
+!        WRITE(fn_trans,'(a3,a1,i2,a1,a4)') nmspec,'.',i,'.',
+!      ELSE
+!        WRITE(fn_trans,'(a3,a2,i1,a1,a4)') nmspec,'.0',i,'.',
+!      END IF
 
 
 !      CALL alloc(diag,ladc)
