@@ -119,7 +119,8 @@ Tutorials and walkthrus
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
 * **Utility programs:**
-  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
+  :doc:`TWOFIT <tutorials/utils/twofit>`
+  :doc:`VIBCAL <tutorials/utils/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
