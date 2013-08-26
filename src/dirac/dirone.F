@@ -2635,6 +2635,8 @@ C   PAMIOU: LUTMAT
 #include "mxcent.h"
 #include "nuclei.h"
 #endif
+!x2cmmf
+#include "siripc.h"
       real(8), allocatable :: WORK(:)
       logical, intent(in)  :: GOFAST
 !     local scratch
@@ -3198,6 +3200,12 @@ C.........reset NEWPRP to re-initialize AOPROPER
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
           call renew_x2c_cb_orb_shell_dim(3)
+C
+C         Prepare for parallel calculation (set inforb)
+C         ==============================================
+C
+          CALL RELINF
+          NEWGEO = .TRUE.
 
         else if(aoomod)then 
 #ifdef MOD_AOOSOC
