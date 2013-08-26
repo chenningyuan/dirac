@@ -536,7 +536,7 @@ contains
 !        write dimension info for the new DFCOEF
          dimension_info(1,i) = 0
          dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = nfbas(i,1)
+         dimension_info(3,i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
@@ -553,8 +553,9 @@ contains
        ndim_2c_mo_ao = 0
        offset_2      = 1
        do i = 1, nfsym
+!        print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
          call bcktr1(mo_coeff_2c_ao(offset_2),               &
-                     nfbas(i,1),                             &
+                     naosh_L(i),                             &
                      nesh_dim(i),                            &
                      xmat(i2tmot(i)+1),                      &
                      ntmo(i),                                &
@@ -563,7 +564,7 @@ contains
                      nz,                                     &
                      nesh_dim(i),                            &
                      1,                                      &
-                     nfbas(i,1),                             &
+                     naosh_L(i),                             &
                      transformation_matrix_mo2ao(i2tmt(i)+1),&
                      nfbas(i,0),                             &
                      ntmo(i),                                &
@@ -575,9 +576,10 @@ contains
            call print_x2cmat(mo_coeff_2c_ao(offset_2),naosh_L(i),nesh_dim(i),nz,ipq_off_in,'x2c - 2c MO coeff',6)
          end if
 
-         offset_2      = offset_2 + nfbas(i,1)*nesh_dim(i)*nz
-         ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,1) * nesh_dim(i) * nz
+         offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
+         ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
+!      print *, 'dimension...',dimension_info
 
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
