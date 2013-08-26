@@ -37,6 +37,7 @@ module x2c_pct_ao
       read_fock_matrices_saao_basis_x2c, &
       write_fock_matrices_saao_basis_x2c,&
       make_two_e_fock_so_exclusive,      &
+      get_2e_fock_matrix_x2c,            &
       print_x2cmat
 #ifdef MOD_INTEREST
   use module_interest_interface
@@ -169,7 +170,7 @@ contains
 
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
 !      ---------------------------------------------------------
-       if(defining_h1mat == 2 .and. .not. is_1e_system)then
+       if(defining_h1mat == 2)then
          call pctrafo_fockmatrices_4cto2c_saao_bas(naosh_ls,                   &
                                                    nr_ao_L,                    &
                                                    naosh_all,                  &
@@ -189,6 +190,8 @@ contains
                                                    nr_2e_fock_matrices,        &
                                                    file_name_1e_fock_matrix,   &
                                                    file_name_2e_fock_matrices, &
+                                                   is_len_wrk,                 &
+                                                   is_1e_system,               &
                                                    print_lvl)
 !                                                  3)
        end if
@@ -666,6 +669,8 @@ contains
                                                   nr_2e_fock_matrices,         &
                                                   file_name_1e_fock_matrix,    &
                                                   file_name_2e_fock_matrices,  &
+                                                  is_len_wrk,                  &
+                                                  is_1e_system,                &
                                                   print_lvl)
 !**********************************************************************
 !
@@ -701,12 +706,15 @@ contains
      integer, intent(in)            :: quat_pointer(0:7,2)
      integer, intent(in)            :: qdef(4)
      integer, intent(in)            :: nr_2e_fock_matrices
+     integer, intent(in)            :: is_len_wrk
      integer, intent(in)            :: print_lvl
      character (len=6), intent(in)  :: file_name_1e_fock_matrix
      character (len=6), intent(in)  :: file_name_2e_fock_matrices
+     logical, intent(in)            :: is_1e_system
 !----------------------------------------------------------------------
      real(8), allocatable           :: scr_mat1(:)
      real(8), allocatable           :: scr_mat2(:)
+     real(8), allocatable           :: scr_mat3(:)
      real(8), allocatable           :: pctmat(:)
      integer                        :: i, j
      integer                        :: iq, ipq, iz, irepd
@@ -715,21 +723,52 @@ contains
      integer                        :: ioff_pct_mat
      integer                        :: fh
      integer                        :: nz_c1
+     integer                        :: intflg_x2c
      character (len=12)             :: flabel
 !**********************************************************************
 
        nz_c1 = max(nz,4)
-
 !      allocate scratch matrices
        allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
+
+#ifdef continue_work
+
        scr_mat1 = 0.0d0
+       allocate(scr_mat2(naosh_ls**2 * nz_c1* nr_2e_fock_matrices+1))
+       scr_mat2   = 0.0d0
+       allocate(scr_mat3(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
+       scr_mat3 = 0.0d0
+
+       if(.not. is_1e_system)then
+#define lltest
+#ifdef lltest
+         intflg_x2c = 6
+         call get_2e_fock_matrix_x2c(scr_mat2,              &
+                                     naosh_ls,              &
+                                     naosh_ls,              &
+                                     nz,                    &
+                                     nr_2e_fock_matrices,   &
+                                     intflg_x2c,            &
+                                     is_len_wrk,            &
+                                     print_lvl,             &
+                                     aoc_open_shell_factors &
+                                     )
+         fh = 99
+         open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+         access='sequential',action="readwrite",position='rewind')
+         close(fh,status='delete')
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat2,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2-no SC - sl+ss scheme',6)
+!      end if
+
+#else
 
 !      !> read the 4c 2-electron fock matrices from file
 !      -------------------------------------------------
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
-       print *, 'naosh_ls**2 * nz_c1 * nr_2e_fock_matrices', naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &
@@ -738,13 +777,14 @@ contains
                                               .true.,                &
                                               aoc_open_shell_factors &
                                              )
-       close(fh,status='keep')
+       close(fh,status='delete')
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2',6)
-       end if
-       !> end
+!      end if
+!      !> end
+
 
 !      !> zero LL block from f^2_4c to avoid double counting of 2e-SOC in the LL block after the pct transformation
 !      ------------------------------------------------------------------------------------------------------------
@@ -760,7 +800,7 @@ contains
 
        call bstobu_no_work(scr_mat1,nz)
        
-       allocate(scr_mat2(naosh_ls**2 * nz_c1))
+       if(.not.allocated(scr_mat2)) allocate(scr_mat2(naosh_ls**2 * nz_c1))
        scr_mat2 = 0.0d0
 
 !      transform from SO-AO-basis to AO basis
@@ -784,7 +824,8 @@ contains
          call print_x2cmat(scr_mat2,naosh_ls,naosh_ls,nz_c1,qdef,'x2c - 4cfock2-with SC',6)
        end if
 
-!      take out LL-part and scalar-relativistic terms
+!      check this with hjaaj...
+!      take out LL-SO-part and scalar-relativistic terms
        call make_two_e_fock_so_exclusive(                            &
                                          scr_mat2,                   & 
                                          naosh_ls,                   &
@@ -827,9 +868,18 @@ contains
          end do           
        end if 
 
-!      put matrix in buffer space
-       call dcopy(naosh_ls**2*nz,scr_mat1,1,scr_mat2,1)
+!      debug print
+!      if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2-no SC - default scheme',6)
+!      end if
        !> end
+
+!      put matrix in buffer space
+       call daxpy(naosh_ls**2*nz,1.0d0,scr_mat1,1,scr_mat2,1)
+       !> end
+#endif
+       end if ! 2e-fock matrix part only for systems containing more than 1 e-...
+
 
 !      !> read the picture-change transformation matrix U in SA-AO basis from global file
 !      ----------------------------------------------------------------------------------
@@ -867,11 +917,12 @@ contains
 
        close(fh,status='keep')
 
+!old stefan
 !      add 2e-part to 1e-Hamiltonian
 !      -----------------------------
-       call daxpy(naosh_ls**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
-       scr_mat2 = 0.0d0
-
+!      call daxpy(naosh_ls**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
+!      scr_mat2 = 0.0d0
+!old stefan
 
 !      debug print
        if(print_lvl > 2)then
@@ -887,7 +938,7 @@ contains
 
        call perform_pct_saao_bas(scr_mat1,                     &
                                  pctmat,                       &
-                                 scr_mat2,                     &
+                                 scr_mat3,                     &
                                  naosh_ls,                     &
                                  nr_ao_L,                      &
                                  naosh_all,                    &
@@ -901,6 +952,41 @@ contains
                                  .true.,                       &
                                  print_lvl)
 
+       if(.not. is_1e_system)then
+       op_fer_rep = 0
+       scr_mat3 = 0.0d0
+
+       call perform_pct_saao_bas(scr_mat2,                     &
+                                 pctmat,                       &
+                                 scr_mat3,                     &
+                                 naosh_ls,                     &
+                                 nr_ao_L,                      &
+                                 naosh_all,                    &
+                                 naosh_L,                      &
+                                 nfsym,                        &
+                                 nz,                           &
+                                 ipq_off_in,                   &
+                                 ioff_aomx,                    &
+                                 op_fer_rep,                   &
+                                 op_bs_to_fs,                  &
+                                 .true.,                       &
+                                 print_lvl)
+!        add 2e-part to 1e-Hamiltonian
+!        -----------------------------
+         call daxpy(nr_ao_L**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
+       end if
+
+       deallocate(pctmat)
+       deallocate(scr_mat3)
+       deallocate(scr_mat2)
+#else
+       fh = 99
+       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+       access='sequential',action="readwrite",position='rewind')
+       close(fh,status='delete')
+#endif
+
+
 !      store the picture-change transformed 1e+2e fock matrix on file
 !      --------------------------------------------------------------
        open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
@@ -913,9 +999,7 @@ contains
        close(fh,status='keep')
        !> end
 
-       deallocate(scr_mat2)
        deallocate(scr_mat1)
-       deallocate(pctmat)
 
   end subroutine pctrafo_fockmatrices_4cto2c_saao_bas
 

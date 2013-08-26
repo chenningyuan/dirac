@@ -2602,6 +2602,9 @@ C*****************************************************************************
       use x2c_cb_interface, only:
      &    renew_x2c_cb_orb_shell_dim
       use quaternion_algebra
+      use num_grid_gen
+      use interface_mo_specific
+      use interface_ao_specific
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
       use module_aoosoc_pfg
@@ -3187,6 +3190,9 @@ C
      &                                    nfbas(1,0),nfbas(1,1),nesh,nz,
      &                                    nzt,nfsym,
      &                                    nesht,ipqtoq,iprham)
+!       set intflag to (LL|LL) integrals only...
+        call set_intflg(1)
+!stefan test
           TWOCOMP = .TRUE.
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
@@ -3195,10 +3201,10 @@ C
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
+!.........reset NEWPRP to re-initialize AOPROPER
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
-          CALL ONEGEN(WORK,LWORK)
+          CALL ONEGEN(WORK(kfree),lfree)
           call renew_x2c_cb_orb_shell_dim(3)
 C
 C         Prepare for parallel calculation (set inforb)
@@ -3206,6 +3212,35 @@ C         ==============================================
 C
           CALL RELINF
           NEWGEO = .TRUE.
+
+!         reset 2e-common blocks in Hermit
+          CALL PAOVEC(WORK(kfree),lfree,0,0)
+!         reset DFDENS
+          inquire(file='DFDENS',exist=tobe)
+          if(tobe) then
+            lublubb = 99
+            call opnfil(lublubb,'DFDENS','OLD','GMOTRA')
+            close(lublubb,status='DELETE')
+          end if
+!         reset DFT-grid
+          inquire(file='numerical_grid',exist=tobe)
+          if(tobe)then
+            inquire(file='numerical_grid',opened=tobe)
+            if(tobe)then 
+            inquire(file='numerical_grid',number=lublubb)
+              CLOSE(lublubb,STATUS='DELETE')
+            else
+              lublubb = 99
+              CALL OPNFIL(lublubb,'numerical_grid','OLD','GMOTRA')
+              CLOSE(lublubb,STATUS='DELETE')
+            end if
+          end if
+          call reset_num_grid()
+!         reset interface-mo
+          call interface_mo_write()
+!         reset interface-ao
+          call interface_ao_write()
+! stefan test
 
         else if(aoomod)then 
 #ifdef MOD_AOOSOC
@@ -7283,4 +7318,82 @@ C
 C
       RETURN
       END
+      subroutine set_intflg(new_intflg)
+#include "implicit.h"
+      integer, intent(in) :: new_intflg
+#include "mxmcgas.h"
+#include "mxcent.h"
+#include "dcbcosc.h"
+#include "dcbdhf.h"
+#include "dcbgrd.h"
+#include "dcbkrci.h"
+#include "dcbmp2.h"
+#include "dcbopt.h"
+#include "../prp/dcbxqr.h"
+#include "../prp/dcbxpp.h"
+      ICOSC_INTDEF = new_intflg
+      ICOSC_INTFLG = new_intflg
+      ICOSC_INTBUF = new_intflg
+      
+      INTDEF       = new_intflg   
+      INTDEF_SAVE  = new_intflg 
+      INTFLG       = new_intflg 
+      INTBUF       = new_intflg
+       
+      IGRD_INTFLG  = new_intflg 
+      IGRD_INTBUF  = new_intflg
+       
+      iKRCI_INTDEF = new_intflg   
+      iKRCI_INTFLG = new_intflg 
+      iKRCI_INTBUF = new_intflg
+       
+      MP2_INTFLG   = new_intflg
+
+      iOPT_INTDEF = new_intflg   
+      iOPT_INTFLG = new_intflg 
+      iOPT_INTBUF = new_intflg
+
+      intxqr      = new_intflg
+
+!     intxpp      = new_intflg
+
+      call set_intfl1(new_intflg)
+      call set_intfl2(new_intflg)
+
+      end
+      subroutine set_intfl1(new_intflg)
+      implicit none
+      integer, intent(in) :: new_intflg
+#include "mxmcgas.h"
+#include "dcbxrs.h"
+#include "dcbkrmc.h"
+#include "dcbxlr.h"
+#include "dcbnmr.h"
+      INTXRS       = new_intflg   
+      INTDEF       = new_intflg   
+      INTFLG       = new_intflg 
+      INTBUF       = new_intflg
+
+      iKRMC_INTDEF = new_intflg   
+      iKRMC_INTFLG = new_intflg 
+      iKRMC_INTBUF = new_intflg
+
+      INTXLR       = new_intflg   
+
+      INTNMR       = new_intflg
+
+      end
+      subroutine set_intfl2(new_intflg)
+      implicit none
+      integer, intent(in) :: new_intflg
+#include "dcbgen.h"
+
+!     INTGEN       = new_intflg   
+      ILLDIR       = new_intflg
+      ISLDIR       = 0
+      ISSDIR       = 0
+      IGTDIR       = 0
+!     IDFLAG       = 1
+
+      end
 ! -- end of dirone.F --

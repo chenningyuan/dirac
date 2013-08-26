@@ -479,7 +479,6 @@ contains
      integer, intent(in)         :: print_lvl
 !----------------------------------------------------------------------
      real(8)                     :: total_energy
-     real(8), allocatable        :: scrmat(:)
      integer                     :: i, j, iz, k
      integer                     :: ndim_2c_mo_ao
      integer                     :: ndim_2c_ev
@@ -537,7 +536,7 @@ contains
 !        write dimension info for the new DFCOEF
          dimension_info(1,i) = 0
          dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = nfbas(i,0)
+         dimension_info(3,i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
@@ -550,45 +549,37 @@ contains
        call reacmo_no_work(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
        close(fh,status='keep')
 
-       i = naosh_L(1)*nesh_dim(1)*nz; if(nfsym == 2) i = i + naosh_L(2)*nesh_dim(2)*nz
-       k = i
-       allocate(scrmat(i))
-
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
+       offset_2      = 1
        do i = 1, nfsym
-         call bcktr1(mo_coeff_2c_ao(icmoq(i)+1),             &
-                     nfbas(i,0),                             &
+!        print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
+         call bcktr1(mo_coeff_2c_ao(offset_2),               &
+                     naosh_L(i),                             &
                      nesh_dim(i),                            &
                      xmat(i2tmot(i)+1),                      &
                      ntmo(i),                                &
                      ntmo(i),                                &
                      ntmo(i),                                &
                      nz,                                     &
-                     ntmo(i),                                &
+                     nesh_dim(i),                            &
                      1,                                      &
-                     nfbas(i,0),                             &
+                     naosh_L(i),                             &
                      transformation_matrix_mo2ao(i2tmt(i)+1),&
                      nfbas(i,0),                             &
                      ntmo(i),                                &
                      nzt,                                    &
                      print_lvl)
-         ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,0) * nesh_dim(i) * nz
-         do j = 1 , nesh_dim(i)
-           do iz = 1 , nz
-             call dcopy(naosh_L(i),mo_coeff_2c_ao( 1 + (iz-1)*nfbas(i,0)*nesh_dim(i) + (j-1)*nfbas(i,0) ),1, &
-                                   scrmat(         1 + (iz-1)*naosh_L(i)*nesh_dim(i) + (j-1)*naosh_L(i) ),1)
-           end do
-         end do
-       end do
 
-!stefan test
-       call dzero(mo_coeff_2c_ao, ndim_2c_mo_ao)
-       ndim_2c_mo_ao = k
-       call dcopy(ndim_2c_mo_ao,scrmat,1,mo_coeff_2c_ao,1)
-       dimension_info(3,1) = naosh_L(1);  if(nfsym == 2)  dimension_info(3,2) = naosh_L(2) 
-       deallocate(scrmat)
-!stefan test
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(mo_coeff_2c_ao(offset_2),naosh_L(i),nesh_dim(i),nz,ipq_off_in,'x2c - 2c MO coeff',6)
+         end if
+
+         offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
+         ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
+       end do
+!      print *, 'dimension...',dimension_info
 
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
