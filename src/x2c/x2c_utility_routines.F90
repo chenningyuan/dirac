@@ -1324,7 +1324,7 @@ contains
 !
 !**********************************************************************
 #ifdef VAR_MPI
-  use mpi
+#include "mpif.h"
 #endif
      real(8), intent(inout)   :: Gmat(nrows,ncols,nz,nr_2e_fock_matrices)
      integer, intent(in)      :: nrows
