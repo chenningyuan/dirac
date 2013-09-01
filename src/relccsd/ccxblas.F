@@ -81,7 +81,6 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER N,INCX,INCY
       REAL*8 X(*),Y(*)
-      LOGICAL IS_INT64
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -91,12 +90,6 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-!Miro,Aug2013: I added this info to have a clue if the relccsd part crashes for large system
-      IS_INT64=(N > 2147483647)
-      IF (IS_INT64) THEN
-        WRITE(6,*) "XCOPY INFO: entering N exceeds 4 bytes(2^32-1),N=",N
-        CALL FLSHFO(6)
-      ENDIF
       IF (CARITH) THEN
          CALL ZCOPY (N,X,INCX,Y,INCY)
 C64B     CALL CCOPY (N,X,INCX,Y,INCY)
