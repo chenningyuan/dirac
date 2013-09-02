@@ -2,8 +2,7 @@ find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
-        COMMAND ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR};
-                sphinx-build -b html -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc _build/html
+        COMMAND ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 else()

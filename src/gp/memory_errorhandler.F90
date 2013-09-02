@@ -49,23 +49,31 @@
          public varIsAliveA
 
          interface varIsAliveP
+            module procedure cPointerIsAlive_1d
             module procedure rPointerIsAlive_1d
             module procedure iPointerIsAlive_1d
+            module procedure cPointerIsAlive_2d
             module procedure rPointerIsAlive_2d
             module procedure iPointerIsAlive_2d
+            module procedure cPointerIsAlive_3d
             module procedure rPointerIsAlive_3d
             module procedure iPointerIsAlive_3d
+            module procedure cPointerIsAlive_4d
             module procedure rPointerIsAlive_4d
             module procedure iPointerIsAlive_4d
          end interface varIsAliveP
 
          interface varIsAliveA
+            module procedure cAllocatableIsAlive_1d
             module procedure rAllocatableIsAlive_1d
             module procedure iAllocatableIsAlive_1d
+            module procedure cAllocatableIsAlive_2d
             module procedure rAllocatableIsAlive_2d
             module procedure iAllocatableIsAlive_2d
+            module procedure cAllocatableIsAlive_3d
             module procedure rAllocatableIsAlive_3d
             module procedure iAllocatableIsAlive_3d
+            module procedure cAllocatableIsAlive_4d
             module procedure rAllocatableIsAlive_4d
             module procedure iAllocatableIsAlive_4d
          end interface varIsAliveA
@@ -248,6 +256,13 @@
 !
 ! 1d-objects
 !
+            logical function cPointerIsAlive_1d(data)
+               complex(kind=kcomplex), pointer :: data(:)
+
+               cPointerIsAlive_1d = .false.
+               if ( associated(data) ) cPointerIsAlive_1d = .true.
+            end function cPointerIsAlive_1d
+
             logical function rPointerIsAlive_1d(data)
                real(kind=kreal), pointer :: data(:)
 
@@ -261,6 +276,13 @@
                iPointerIsAlive_1d = .false.
                if ( associated(data) ) iPointerIsAlive_1d = .true.
             end function iPointerIsAlive_1d
+
+            logical function cAllocatableIsAlive_1d(data)
+               complex(kind=kcomplex), allocatable :: data(:)
+
+               cAllocatableIsAlive_1d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_1d = .true.
+            end function cAllocatableIsAlive_1d
 
             logical function rAllocatableIsAlive_1d(data)
                real(kind=kreal), allocatable :: data(:)
@@ -278,6 +300,13 @@
 !
 ! 2d-objects
 !
+            logical function cPointerIsAlive_2d(data)
+               complex(kind=kcomplex), pointer :: data(:,:)
+
+               cPointerIsAlive_2d = .false.
+               if ( associated(data) ) cPointerIsAlive_2d = .true.
+            end function cPointerIsAlive_2d
+
             logical function rPointerIsAlive_2d(data)
                real(kind=kreal), pointer :: data(:,:)
 
@@ -291,6 +320,13 @@
                iPointerIsAlive_2d = .false.
                if ( associated(data) ) iPointerIsAlive_2d = .true.
             end function iPointerIsAlive_2d
+
+            logical function cAllocatableIsAlive_2d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:)
+
+               cAllocatableIsAlive_2d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_2d = .true.
+            end function cAllocatableIsAlive_2d
 
             logical function rAllocatableIsAlive_2d(data)
                real(kind=kreal), allocatable :: data(:,:)
@@ -309,6 +345,13 @@
 !
 ! 3d-objects
 !
+            logical function cPointerIsAlive_3d(data)
+               complex(kind=kcomplex), pointer :: data(:,:,:)
+
+               cPointerIsAlive_3d = .false.
+               if ( associated(data) ) cPointerIsAlive_3d = .true.
+            end function cPointerIsAlive_3d
+
             logical function rPointerIsAlive_3d(data)
                real(kind=kreal), pointer :: data(:,:,:)
 
@@ -322,6 +365,13 @@
                iPointerIsAlive_3d = .false.
                if ( associated(data) ) iPointerIsAlive_3d = .true.
             end function iPointerIsAlive_3d
+
+            logical function cAllocatableIsAlive_3d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:,:)
+
+               cAllocatableIsAlive_3d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_3d = .true.
+            end function cAllocatableIsAlive_3d
 
             logical function rAllocatableIsAlive_3d(data)
                real(kind=kreal), allocatable :: data(:,:,:)
@@ -340,6 +390,13 @@
 !
 ! 4d-objects
 !
+            logical function cPointerIsAlive_4d(data)
+               complex(kind=kcomplex), pointer :: data(:,:,:,:)
+
+               cPointerIsAlive_4d = .false.
+               if ( associated(data) ) cPointerIsAlive_4d = .true.
+            end function cPointerIsAlive_4d
+
             logical function rPointerIsAlive_4d(data)
                real(kind=kreal), pointer :: data(:,:,:,:)
 
@@ -353,6 +410,13 @@
                iPointerIsAlive_4d = .false.
                if ( associated(data) ) iPointerIsAlive_4d = .true.
             end function iPointerIsAlive_4d
+
+            logical function cAllocatableIsAlive_4d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:,:,:)
+
+               cAllocatableIsAlive_4d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_4d = .true.
+            end function cAllocatableIsAlive_4d
 
             logical function rAllocatableIsAlive_4d(data)
                real(kind=kreal), allocatable :: data(:,:,:,:)

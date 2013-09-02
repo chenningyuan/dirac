@@ -33,11 +33,10 @@ extensions = ['matplotlib.sphinxext.mathmpl',
 # older machines might lack it
 
 try:
-  import sphinx.ext.mathjax
-  extensions.append('sphinx.ext.mathjax')
-  print "The sphinx.ext.mathjax extension was added for proper doc-math rendereding."
+    import sphinx.ext.mathjax
+    extensions.append('sphinx.ext.mathjax')
 except ImportError:
-  print 'The sphinx.ext.mathjax extension could not be added => some math shall not be rendered properly.'
+    print('sphinx.ext.mathjax extension not found => math will not be properly rendered')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

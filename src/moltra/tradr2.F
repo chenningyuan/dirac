@@ -389,7 +389,7 @@ CTROND  ...this may be improved TODO
         DO I = 1,4
           ISAMEIJ(I) = I
         ENDDO
-        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
+        CALL PR4SC2(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &              WORK(KQ(1,1)),WORK(KQ(1,2)),
      &              WORK(KQ(1,3)),WORK(KQ(1,4)),
      &              NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
@@ -920,7 +920,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
+         CALL PR4SC2(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
       ELSE
@@ -2947,7 +2947,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
+         CALL PR4SC2(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)

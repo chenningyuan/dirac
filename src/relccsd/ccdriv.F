@@ -167,7 +167,7 @@ C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,NFFOPER,
      &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
@@ -481,6 +481,7 @@ C
       USEOE   = .TRUE.
       NORECMP = .FALSE.
       ADD_FINITE_FIELD = .FALSE.
+      NFFOPER=0
       DO IOPER = 1, MAXOP
          FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_STRENGTHS(1,IOPER) = 0.D0
@@ -491,6 +492,10 @@ C
       GOTO 14
    13 CALL QUIT('Error exit while reading namelist CCSORT')
    14 CONTINUE
+      IF (ADD_FINITE_FIELD.AND.NFFOPER.EQ.0) THEN
+        CALL QUIT('You did not specify the NFFOPER parameter'//
+     &' in the CCSORT input list when you want finite field operators!')
+      ENDIF
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
@@ -904,12 +909,12 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1000  FORMAT (/" Total memory available :",T50,I15," MB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
+     &        T50,I15," 8-byte words")
 1002  FORMAT (" Not enough memory, increase to at least",
-     &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
+     &        T50,I15," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
@@ -2085,7 +2090,7 @@ C
       call dealloc(a_VTA , id="vta" )
 C
       RETURN
-1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
@@ -2438,7 +2443,7 @@ C
       call dealloc(a_S2  , id="s2")
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Energy calculations"
      &        /" MP2 module active :",T44,L1
      &        /" CCSD module active :",T44,L1
@@ -2838,7 +2843,7 @@ C
 
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Gradient calculations with the old MP2 module"
      &        //" Z-vector equations are done in MO basis:"
      &        /" Maximum number of iterations :",T40,I5
@@ -3014,7 +3019,7 @@ C
       call dealloc( a_CBUF , id="cbuf"  )
 
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Propagator (RPA) module"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
@@ -3165,7 +3170,7 @@ C
       call dealloc( a_BUF2  , id="buf2"  )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Excitation energy module (RPA)"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of reduced space :",T40,I5

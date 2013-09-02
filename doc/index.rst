@@ -28,6 +28,10 @@ Setting up DIRAC
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
 
+* **pam script:**
+  :doc:`How to set the scratch directory <pam/scratch>`
+  :doc:`Replacements of strings by pam <pam/replace>`
+
 
 Updates and patches
 ===================
@@ -60,7 +64,7 @@ Tutorials and walkthrus
 =======================
 
 * **Basis sets:**
-  :doc:`Basis sets for relativistic calculations <tutorials/relbas.rst>` |
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
@@ -70,6 +74,7 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
@@ -114,7 +119,8 @@ Tutorials and walkthrus
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
 * **Utility programs:**
-  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
+  :doc:`TWOFIT <tutorials/utils/twofit>`
+  :doc:`VIBCAL <tutorials/utils/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |

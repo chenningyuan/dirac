@@ -6171,7 +6171,7 @@ C***********************************************************************
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
-      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
       TEMP=XDEV*XTANG

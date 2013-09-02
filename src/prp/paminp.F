@@ -2373,11 +2373,11 @@ C     Scalar operator
 C     Total time reversal symmetry of the 4-comp.operator
       ICTIM(1) = IATIM*IBTIM
 
-      IF (IPRINT.GE.15) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
         WRITE(LUPRI,'(2X,4(A,I2))')
      &  'IAIND=JM4(1,ITYP)',IAIND,' IBIND=IPRLBL(INDXPR)',IBIND,
-     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
+     &  'assigned IATIM=',IATIM,' scalar part, IBTIM=',IBTIM
         WRITE(LUPRI,'(2X,1(A,I2))')
      &  'ICTIM(1)=',ICTIM(1)
       ENDIF
