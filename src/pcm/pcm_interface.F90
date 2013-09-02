@@ -49,7 +49,6 @@
       
       real(8), intent(out) :: charges(*)
       real(8), intent(out) :: centers(3,*)
-      integer              :: units
       
       integer :: i, j, k 
 
@@ -263,8 +262,8 @@ module pcm_interface
       
       if (.not.(pcmmod_separate)) then 
 ! Compute MEP @tesserae centers
-         potName = 'TotPot'//char(0)
-         chgName = 'TotChg'//char(0)
+         potName = 'TotMEP'//char(0)
+         chgName = 'TotASC'//char(0)
          call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, potentials, potName)
@@ -278,7 +277,7 @@ module pcm_interface
             do i = 1, nr_points
               print *, "MEP @point", i, potentials(i)
               if (printlevel > 10) then
-                 print *, "PC @point", i, charges(i)
+                 print *, "ASC @point", i, charges(i)
               end if
             end do
          end if
@@ -296,10 +295,12 @@ module pcm_interface
          allocate(ele_pol_chg(nr_points))
          ele_pol_chg = 0.0d0
       
+         potName1  = 'NucMEP'//char(0)
+         chgName1  = 'NucASC'//char(0)
          call pcm_nuclear_charges(nuc_pot, nuc_pol_chg)
-         potName  = 'ElePot'//char(0)
-         chgName  = 'EleChg'//char(0)
-         call pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName, chgName)
+         potName2  = 'EleMEP'//char(0)
+         chgName2  = 'EleASC'//char(0)
+         call pcm_electronic_charges(dmat, ndmat, ele_pot, ele_pol_chg, work, lwork, potName2, chgName2)
 
 ! Print some information
         if (printlevel > 5) then
@@ -307,8 +308,8 @@ module pcm_interface
              print *, "NMEP @point", i, nuc_pot(i)
              print *, "EMEP @point", i, ele_pot(i)
              if (printlevel > 10) then
-                print *, "NPC @point", i, nuc_pol_chg(i)
-                print *, "EPC @point", i, ele_pol_chg(i)
+                print *, "NASC @point", i, nuc_pol_chg(i)
+                print *, "EASC @point", i, ele_pol_chg(i)
              end if
            end do
         end if
@@ -320,26 +321,12 @@ module pcm_interface
         end if
 
 ! Obtain vector of total polarization charges 
-        chgName  = 'TotChg'//CHAR(0)
-        chgName1 = 'NucChg'//CHAR(0)
-        chgName2 = 'EleChg'//CHAR(0)
-
-        call append_surf_func(chgName)
-        call clear_surf_func(chgName)
-        call add_surface_function(chgName, factor, chgName1)
-        call add_surface_function(chgName, factor, chgName2)
-        call get_surface_function(nr_points, charges, chgName)
-
-! Obtain vector of total MEP
-! THIS IS NOT STRICTLY NECESSARY AND CAN BE AVOIDED
-        potName  = 'TotPot'//char(0)
-        potName1 = 'NucPot'//char(0)
-        potName2 = 'ElePot'//char(0)
-        call append_surf_func(potName)
-        call clear_surf_func(potName)
-        call add_surface_function(potName, factor, potName1)
-        call add_surface_function(potName, factor, potName2)
-        call get_surface_function(nr_points, potentials, potName)
+        potName  = 'TotMEP'//char(0)
+        potentials(:) = nuc_pot(:) + ele_pot(:)
+        call set_surface_function(nr_points, potentials, potName)
+        chgName  = 'TotASC'//CHAR(0)
+        charges(:) = nuc_pol_chg(:) + ele_pol_chg(:)
+        call set_surface_function(nr_points, charges, chgName)
 
 ! Write to file MEP and ASC
         call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
@@ -392,8 +379,8 @@ module pcm_interface
       character(7) :: chgName
          
 ! Compute nuclear MEP @tesserae centers
-      potName = 'NucPot'//char(0)
-      chgName = 'NucChg'//char(0)
+      potName = 'NucMEP'//char(0)
+      chgName = 'NucASC'//char(0)
       call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
 ! Set a cavity surface function with the nuclear MEP
       call set_surface_function(nr_points, nuc_pot, potName)
@@ -414,8 +401,8 @@ module pcm_interface
       real(8)      :: work(*)
       integer      :: ndmat
       integer      :: lwork
-      character(7) :: potName
-      character(7) :: chgName
+      character(*) :: potName
+      character(*) :: chgName
 
 ! Local variables
       integer      :: i
