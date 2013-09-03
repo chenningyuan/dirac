@@ -64,7 +64,7 @@ module electrostatic_potential
 
 ! Passed variables
       integer, intent(in)  :: nr_points
-      real(8), intent(in)  :: points(nr_points, 3)
+      real(8), intent(in)  :: points(3, nr_points)
       real(8), intent(in)  :: dmat(ntbas(0), ntbas(0), nz)
       real(8), intent(out) :: mep(nr_points)     
       real(8)              :: work(*)
@@ -94,8 +94,9 @@ module electrostatic_potential
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in) :: nr_points
-      real(8) :: points(3, nr_points), nuc_mep(nr_points)
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: points(3, nr_points)
+      real(8), intent(out) :: nuc_mep(nr_points)
       integer :: iprint
 
 !     Local variables
@@ -152,8 +153,9 @@ module electrostatic_potential
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in) :: nr_points
-      real(8) :: points(3, nr_points), ele_mep(nr_points)
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: points(3, nr_points) 
+      real(8), intent(out) :: ele_mep(nr_points)
       integer :: iprint
 
 !     Local variables
@@ -247,7 +249,8 @@ module electrostatic_potential
 ! potential.      
       logical, optional   :: get_matrix 
       real(8)             :: vector(nr_points)
-      real(8)             :: points(3, nr_points), work(*)
+      real(8), intent(in) :: points(3, nr_points)
+      real(8)             :: work(*)
       integer             :: iprint, lwork
 
 ! Local variables

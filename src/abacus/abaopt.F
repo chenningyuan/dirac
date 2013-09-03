@@ -2321,6 +2321,10 @@ C
       use dft_cfg
       use num_grid_gen
 
+#if defined (PCM_MODULE)
+      use pcm_scf
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2429,9 +2433,11 @@ ckr#endif
           call quit('Polarizable Continuum Model calculation not '//
      & 'working with X2C Hamiltonian!')
         end if
-        call init_pcm
-        call print_pcm 
-        print *, 'PCMSolver re-initialized.'
+! First finalize
+        call pcm_scf_finalize
+        write(lupri, *), 'PCMSolver correctly finalized...'
+        call pcm_scf_initialize(lupri)
+        write(lupri, *), '...and re-initialized.'
       end if
 #endif
 

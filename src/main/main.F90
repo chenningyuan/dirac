@@ -30,6 +30,7 @@ program DIRAC12_PROGRAM
   use interface_mo
   use memory_allocator
   use machine_parameters
+  use dirac_cfg
 
 #ifdef USE_MPI_MOD_F90
   use mpi

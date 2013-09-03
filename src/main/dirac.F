@@ -86,6 +86,7 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
+      use pcm_scf
 
       implicit none
 
@@ -124,8 +125,7 @@ C***********************************************************************
           call quit('Polarizable Continuum Model calculation not '//
      & 'working with X2C Hamiltonian!')
         end if
-        call init_pcm
-        call print_pcm
+        call pcm_scf_initialize(lupri)
         print *, 'PCMSolver initialized.'
       end if
 #endif

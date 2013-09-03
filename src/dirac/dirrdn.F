@@ -233,7 +233,7 @@ C
 ! RDR Polarizable Continuum Model calculation
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
-         call report_after_pcm_input()
+         call report_after_pcm_input(lupri)
       end if
 #endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
