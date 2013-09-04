@@ -3,20 +3,28 @@
 Installation on `Hyperion <http://www.calmip.cict.fr/spip/spip.php?rubrique90>`_ (Toulouse)
 ===================================
 
-We will use SGI MPT parallelization.
+We will use SGI Message Passing Toolkit (MPT) parallelization.
 
 
 Configuration
 -------------
 
-First we load some environment variables::
+When loggin in on the machine (Sep 2013) the available compilers and libraries are::
 
-  $ . /etc/profile.d/modules.sh
+   $ module list
+   Currently Loaded Modulefiles:
+     1) default-intel-cc    3) default-intel-mkl
+     2) default-intel-fc    4) default-mpt-sgi
 
-  $ module load python
+Using the command ``module show`` we find that this corresponds to version 11.1 of the Intel compilers and MKL library 
+as well as version 1.26 of SGI MPT. We go for some more recent versions and set (to see available modules do ``module avail``) ::
 
-  $ export MATH_ROOT='/divers/intel/Compiler/12.0.4/mkl'
-  $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/divers/intel/Compiler/12.0.4/mkl/lib/intel64'
+   $ module purge
+   $ module load intel-cc-12/12.0 intel-fc-12/12.0  intel-mkl/12.0.4 sgi-mpt/2.0.4
+
+In order for cmake to find the MKL library we also have to set::
+
+   $ export MATH_ROOT='/divers/intel/Compiler/12.0.4/mkl'
 
 For maximum performance we will add hardware-specific optimization flags::
 
