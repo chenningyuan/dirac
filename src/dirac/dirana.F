@@ -1271,6 +1271,13 @@ C
       KFRSAV = KFREE
       CALL TITLER('Projection analysis','*',122)
 C
+C     If requested, polarize reference orbitals
+C     =========================================
+C
+      IF(POLREF) THEN
+        CALL POLARIZE_REF(WORK,KFREE,LFREE)
+      ENDIF
+C
 C     Find total numbers of reference orbitals;
 C     first scan coefficient files for NPSH/NESH;
 C     this is needed in the case when 'all' or 'oo'
@@ -1370,15 +1377,6 @@ C
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
 C
-C     If requested, polarize reference orbitals
-C     =========================================
-C
-      IF(POLREF) THEN
-        CALL POLARIZE_REF(WORK(KQ(1,1)),NVECS(1,0),NSTR(1,0,1),
-     &                    WORK(KE(1,1)),WORK(KCMO),NVECS,IPRPRJ,
-     &                    IOFF,WORK,KFREE,LFREE)
-      ENDIF
-C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
 C
@@ -1416,19 +1414,6 @@ C.....Reference + polarization coefficients
 C.....Projection coefficients
       CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
       CLOSE(LUCOEF,STATUS='KEEP')
-C
-      IF(POLTST) THEN
-        CALL HEADER('Testing polarization contribution',-1)
-        WRITE(6,'(3X,A)')
-     &  '* Projection analysis of polarization contributions ',
-     &  '  using polarized reference orbitals'
-        CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL POLARIZE_REF(WORK(KQ(1,1)),NVECS(1,0),NSTR(1,0,1),
-     &                    WORK(KE(IFRP,1)),
-     &                    WORK(KCMO),NVECS,IPRPRJ,IOFF,WORK,KFREE,LFREE)
-        CALL MEMREL('POLTST',WORK,KWORK,KCMO,KFREE,LFREE)
-        CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,WORK,KFREE,LFREE)
-      ENDIF
 C
 C     If requested, do phase transformation of molecule coefficients
 C     using a selected reference orbital for alignment
@@ -3032,15 +3017,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck polarize_ref */
-      SUBROUTINE POLARIZE_REF(CSEL,LCC,NSEL,ESEL,CBUF,NVECS,IPRINT,
-     &           IOFF,WORK,KFREE,LFREE)
+      SUBROUTINE POLARIZE_REF(WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Polarize reference orbitals by diagonalizing the block of the
-C     Fock matrix defined by the positive-energy orbitals of a given
-C     reference.
+C     Polarize reference orbitals
 C
-C     Written by S. Dubillard and T. Saue Sep 22 2006
+C     Written by T. Saue Sep 2013
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3049,138 +3031,75 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcbbas.h"
+#include "dcborb.h"
 #include "dcbprj.h"
 #include "dgroup.h"
-      DIMENSION CSEL(*),LCC(*),CBUF(*),WORK(*),IDIM(3,2),KVEC(2),
-     &          NSTR(2,0:2),NSEL(2,0:2,MAXREF),IOFF(2),NVECS(2,0:2),
-     &          ESEL(*)
-      CHARACTER TEXT*74
       LOGICAL TOBE
-      KFRSAV = KFREE
+      CHARACTER TEXT*74,FMT*6,MXFORM*6
+      DIMENSION WORK(*)
+      DIMENSION NSTR(2,0:2),KVEC(2),NVECS(2),IOFF(2),
+     &          NPSH_FRAG(2),NESH_FRAG(2),NFBAS_FRAG(2)
 C
-C     Check for Fock matrices
+      KFRSAV = KFREE    
+CTROND
+      WRITE(6,*) 'Enter POLARIZE_REF'
 C
-      INQUIRE(FILE='DFFCK1',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-        CALL QUIT('POLREF: No 1-Fock found')
-      ENDIF
-      INQUIRE(FILE='DFFCK2',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-        CALL QUIT('POLREF: No 2-Fock found')
-      ENDIF
-      IOPT = 2
-      INUC  = 1
-      ICOFF = 1
-      IEOFF = 1
-      DO IREF = 1,NREFS
-        CALL OPNFIL(LUCOEF,REFFIL(IREF),'OLD','POLARIZE_REF')
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-        NCDIM = 0
-        DO IFRP = 1,NFSYM
-          NSTR(IFRP,1)=IDIM(2,IFRP)
-          NSTR(IFRP,2)=0
-          NSTR(IFRP,0)=NSTR(IFRP,1)
-          NCDIM = NFBAS(IFRP,0)*NSTR(IFRP,1)*NZ
-          CALL MEMGET('INTE',KVEC(IFRP),NSTR(IFRP,1),WORK,KFREE,LFREE)
-          CALL OCCUPY(WORK(KVEC(IFRP)),NSTR(IFRP,1))
-        ENDDO
-        CALL MEMGET('REAL',KCSEL,NCDIM,WORK,KFREE,LFREE)
-        REWIND LUCOEF
-        DO IFRP = 1,NFSYM
-          IOFF(IFRP) = 0
-        ENDDO
-        CALL SELOWN(IOPT,CBUF,DUM,IDUM,
-     &                INUC,NPROJNUC(IREF),LUCOEF,REFFIL(IREF),
-     &                WORK(KCSEL),DUM,IDUM,
-     &                NSTR(1,1),IOFF,KVEC,NSTR,
-     &                WORK,KFREE,LFREE)
-        CLOSE(LUCOEF,STATUS='KEEP')
-C.......Reading AO-Fock matrices implies restricting to closed-shell
-C.......Read one-electron Fock matrix into CBUF
-        CALL OPNFIL(LUCOEF,'DFFCK1','OLD','POLARIZE_REF')
-        CALL REAFCK(LUCOEF,CBUF,.TRUE.,1)
-        CLOSE(LUCOEF,STATUS='KEEP')
-C.......Read two-electron Fock matrice into buffer space, then add
-        CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL OPNFIL(LUCOEF,'DFFCK2','OLD','POLARIZE_REF')
-        CALL REAFCK(LUCOEF,WORK(KFBUF),.TRUE.,1)
-        CLOSE(LUCOEF,STATUS='KEEP')
-        CALL DAXPY(N2BBASXQ,D1,WORK(KFBUF),1,CBUF,1)
-        CALL MEMREL('POLREF.aofck',WORK,KFRSAV,KFBUF,KFREE,LFREE)
+C     Find number of MO-orbitals to analyse
 C
-        DO IFRP = 1,NFSYM
-C.........Allocate space for atomic Fock matrices
-C.........as well as eigenvectors/values
-          NDIM = NSTR(IFRP,1)*NSTR(IFRP,1)*NZ
-          CALL MEMGET('REAL',KFBUF,NDIM,WORK,KFREE,LFREE)
-C.........Transform to atomic block
-          CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &            NSTR(IFRP,1),NSTR(IFRP,1),
-     &            CBUF(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
-     &            NZ,IPQTOQ(1,0),
-     &            WORK(KFBUF),NSTR(IFRP,1),NSTR(IFRP,1),NZ,IPQTOQ(1,0),
-     &            WORK(KCSEL),NFBAS(IFRP,0),NSTR(IFRP,1),NZ,IPQTOQ(1,0),
-     &            WORK(KCSEL),NFBAS(IFRP,0),NSTR(IFRP,1),NZ,IPQTOQ(1,0),
-     &            WORK(KFREE),LFREE,IPRINT)
-C.........Diagonalize
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(A,I3)') 'Fock matrix of fragment:', IREF
-            CALL PRQMAT(WORK(KFBUF),NSTR(IFRP,1),NSTR(IFRP,1),
-     &                  NSTR(IFRP,1),NSTR(IFRP,1),
-     &                  NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
-          CALL MEMGET('REAL',KEVEC,NDIM,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KEIG,NSTR(IFRP,1),WORK,KFREE,LFREE)
-          CALL QDIAG(NZ,NSTR(IFRP,1),
-     &               WORK(KFBUF),NSTR(IFRP,1),NSTR(IFRP,1),
-     &               WORK(KEIG),1,
-     &               WORK(KEVEC),NSTR(IFRP,1),NSTR(IFRP,1),
-     &               WORK(KFREE),LFREE,IERR)
-          IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(A,I3)') 'Eigenvalues of fragment:', IREF
-            DO I = 1,NSTR(IFRP,1)
-              WRITE(LUPRI,'(I4,F16.8)') I,WORK(KEIG+I-1)
-            ENDDO
-          ENDIF
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(A,I3)') 'Eigenvectors of fragment:', IREF
-            CALL PRQMAT(WORK(KEVEC),NSTR(IFRP,1),NSEL(IFRP,0,IREF),
-     &                  NSTR(IFRP,1),NSTR(IFRP,1),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-          ENDIF
-C.........Select coefficients by overlap selection (TODO)
-C.........and backtransform
-          CALL BCKTRA(CSEL(ICOFF),NFBAS(IFRP,0),LCC(IFRP),
-     &                WORK(KEVEC),NSTR(IFRP,1),NSTR(IFRP,1),
-     &                NSTR(IFRP,1),NZ,
-     &                NSEL(IFRP,0,IREF),1,NFBAS(IFRP,0),
-     &                WORK(KCSEL),NFBAS(IFRP,0),NSTR(IFRP,1),NZ,
-     &                IPRPRJ)
-C.........copy eigenvalues
-        CALL DCOPY(NSEL(1,0,IREF),WORK(KEIG),1,ESEL(IEOFF),1)
-        IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,*) '*Polarized orbitals of fragment: ',IREF
-          CALL PRIPOL(IFRP,CSEL(ICOFF),ESEL(IEOFF),
-     &              NSEL(1,0,IREF),NFBAS(IFRP,0),LCC(IFRP))
-        ENDIF
-          CALL MEMREL('POLREF.atomfck',WORK,KFRSAV,KFBUF,KFREE,LFREE)
-        ENDDO
-        CALL MEMREL('POLREF.sel',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-        INUC = INUC + NPROJNUC(IREF)
-        CLOSE(LUCOEF,STATUS='KEEP')
-        ICOFF = ICOFF + NSEL(1,0,IREF)*NFBAS(1,0)
-        IEOFF = IEOFF + NSEL(1,0,IREF)
+      NCDIM = 0
+      DO IFRP = 1,NFSYM
+        NSTR(IFRP,1) = NESH(IFRP)
+        NSTR(IFRP,2) = NPSH(IFRP)
+        CALL ORBNUM(VECPRJ(IFRP),IFRP,KVEC(IFRP),NSTR(1,0),
+     &              WORK,KFREE,LFREE)
+        IOFF(IFRP) = 0
+        NVECS(IFRP) = NSTR(IFRP,0)
+        NCDIM    = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
       ENDDO
-C     Project out the original reference orbitals
-C     in order to better see polarization
-      IF(REMREF) THEN
-CTODO: Renormalize !
-        CALL REMOVE_REF(CSEL,LCC,NVECS(1,1),IPRPRJ,
-     &                    WORK,KFREE,LFREE)
-      ENDIF
 C
-      CALL MEMREL('POLARIZE_REF',WORK,1,KFRSAV,KFREE,LFREE)
+C     Get selected molecular coefficients
+C     
+      CALL MEMGET('REAL',KCSEL,NCDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      IOPT = 3
+      CALL SELFRAG(WORK(KCSEL),NVECS,DUM,DUM,
+     &             1,NSTR(1,0),'DFCOEF',.FALSE.,1,IOPT,
+     &             KVEC,WORK(KCMO),DUM,DUM,
+     &             IOFF,WORK,KFREE,LFREE)
+      CALL MEMREL('POLARIZE_REF.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
+C
+C     Loop over fragments
+C
+      INUC = 1
+      DO IFRAG = 1,NREFS
+        INQUIRE(FILE=REFFIL(IFRAG),EXIST=TOBE)
+        IF (.NOT.TOBE) THEN
+           WRITE(LUPRI,'(A,A6,A)') 
+     &     'Fragment coefficient file ',REFFIL(IFRAG),' not present'
+           CALL QUIT('POLARIZE_REF: No fragment coefficients !')
+        ENDIF
+        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'OLD','POLARIZE_REF')
+        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &       (NPSH_FRAG(I),NESH_FRAG(I),NFBAS_FRAG(I),I=1,NSYM),TOTERG
+        FMT = MXFORM(TOTERG,20)
+        WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
+     &   'POLARIZE_REF: Coefficients read from file ',REFFIL(IFRAG),
+     &   '- Total energy: ',TOTERG
+        WRITE(LUPRI,'(2A)') '* Heading :',TEXT
+        WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
+     &   ' nuclei in this fragment : ', NPROJNUC(IFRAG)      
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- Positrons : ',(NPSH_FRAG(I),I=1,NFSYM)
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- Electrons : ',(NESH_FRAG(I),I=1,NFSYM)
+        WRITE(LUPRI,'(A,2I8)')
+     &   '- SO-basis  : ',(NFBAS_FRAG(I),I=1,NFSYM)
+        CLOSE(LUCOEF,STATUS='KEEP')
+        INUC = INUC + NPROJNUC(IFRAG)
+      ENDDO
+      CALL MEMREL('POLARIZE_REF',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+CTROND
+      WRITE(6,*) 'Exit POLARIZE_REF'
       RETURN
  10   CONTINUE
       CALL QUIT('POLARIZE_REF: END reading TEXT')

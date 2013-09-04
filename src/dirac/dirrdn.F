@@ -4005,7 +4005,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.XXXXX','.POLNRM','.REMREF','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4031,7 +4031,6 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
-      POLTST = .FALSE.
       POLNRM = .FALSE.
       REMREF = .FALSE.
 C
@@ -4107,12 +4106,9 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  9             CONTINUE
-C&&& POLTST: Check if polarization contributions are spanned by
-C            polarizaed atomic orbitals
-                  POLTST = .TRUE.
-                  POLNRM = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
@@ -4202,13 +4198,8 @@ C
           WRITE(LUPRI,'(1X,A)')
      &      '* Project out reference orbitals from polarized ones.'
         ENDIF
-        IF(POLTST) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Test if polarization contributions are spanned by ',
-     &      ' polarized reference orbitals.'
-        ENDIF
       ELSE
-        IF(POLREF.OR.POLTST) THEN
+        IF(POLREF) THEN
           CALL QUIT
      &     ('ANAINP: Polarization only possible with SELOWN=T')
         ENDIF
