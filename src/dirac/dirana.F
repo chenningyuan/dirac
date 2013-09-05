@@ -3030,6 +3030,7 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbprj.h"
@@ -3037,7 +3038,7 @@ C
       LOGICAL TOBE
       CHARACTER TEXT*74,FMT*6,MXFORM*6
       DIMENSION WORK(*)
-      DIMENSION NSTR(2,0:2),KVEC(2),NVECS(2),IOFF(2),
+      DIMENSION NSTR(2,0:2),KVEC(2),NVECS(2),IOFF(2),NQ(2),
      &          NPSH_FRAG(2),NESH_FRAG(2),NFBAS_FRAG(2)
 C
       KFRSAV = KFREE    
@@ -3054,7 +3055,8 @@ C
      &              WORK,KFREE,LFREE)
         IOFF(IFRP) = 0
         NVECS(IFRP) = NSTR(IFRP,0)
-        NCDIM    = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        NQ(IFRP) = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        NCDIM    = NCDIM + NQ(IFRP)
       ENDDO
 C
 C     Get selected molecular coefficients
@@ -3068,10 +3070,16 @@ C
      &             IOFF,WORK,KFREE,LFREE)
       CALL MEMREL('POLARIZE_REF.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
+C     Get overlap matrix packed on fermion ircops
+C
+      CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC)
+C
 C     Loop over fragments
 C
       INUC = 1
       DO IFRAG = 1,NREFS
+        NNUC = NPROJNUC(IFRAG)
         INQUIRE(FILE=REFFIL(IFRAG),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
@@ -3094,9 +3102,63 @@ C
      &   '- Electrons : ',(NESH_FRAG(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
      &   '- SO-basis  : ',(NFBAS_FRAG(I),I=1,NFSYM)
+        ICPT = KCSEL
+        ISPT = KSMAT
+        DO IFRP = 1,NFSYM
+C.........Generate pointer array for from fragment basis to molecular basis
+          CALL MEMGET('INTE',KBAS,NFBAS_FRAG(IFRP),WORK,KFREE,LFREE)
+          CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
+          IF(NSBAS.NE.NFBAS_FRAG(IFRP)) THEN
+            WRITE(LUPRI,'(A,A,I3/A,A4,A,I3)')
+     &        'POLARIZE)_REF: ',
+     &        'Error in selection of coefficients in ircop ',
+     &        IFRP,
+     &        'for fragment ',REFFIL(IFRAG),' no. ',IFRAG
+            WRITE(LUPRI,'(A,I8)')
+     &        'Number of basis functions for this fragment is:',NSBAS,
+     &        'Number of basis functions in coefficient file:',
+     &         NFBAS_FRAG(IFRP)
+           CALL QUIT('POLARIZE_REF: Error in cf.selection !')
+          ENDIF
+C.........Extract fragment chunk from selected molecular coefficients
+          NCOL   = NVECS(IFRP)*NZ
+          NCHUNK = NFBAS_FRAG(IFRP)*NCOL
+          CALL MEMGET('REAL',KCHUNK,NCHUNK,WORK,KFREE,LFREE)
+          CALL EXTVEC(WORK(ICPT),NFBAS(IFRP,0),
+     &                WORK(KCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
+     &                NCOL,WORK(KBAS))
+          WRITE(LUPRI,*) '* Fragment chunk'
+          CALL PRQMAT(WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
+     &                NFBAS_FRAG(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+C.........Extract fragment chunk of overlap matrix
+          NSFRAG  = NVECS(IFRP)*NVECS(IFRP)*NZ
+          CALL MEMGET('REAL',KSFRAG,NSFRAG,WORK,KFREE,LFREE)
+          NSCHUNK = NFBAS_FRAG(IFRP)*NFBAS_FRAG(IFRP)
+          CALL MEMGET('REAL',KSCHUNK,NSCHUNK,WORK,KFREE,LFREE)
+          CALL EXTELM('N',WORK(ISPT),NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &                WORK(KSCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
+     &                NFBAS_FRAG(IFRP),WORK(KBAS),WORK(KBAS))
+C.........Transform to overlap in fragment chunk basis
+          CALL QTRANS('AOMO','S',D0,NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
+     &           NVECS(IFRP),NVECS(IFRP),
+     &           WORK(KSCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
+     &           1,IPQTOQ(1,0),
+     &           WORK(KSFRAG),NVECS(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),
+     &           WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRPRJ)
+          WRITE(LUPRI,*) '* Overlap matrix in fragment chunk basis'
+          CALL PRQMAT(WORK(KSFRAG),NVECS(IFRP),NVECS(IFRP),
+     &                NVECS(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          CALL MEMREL('POLARIZE_REF.if',WORK,KFRSAV,KBAS,KFREE,LFREE)
+          ICPT = ICPT + NQ(IFRP)
+          ISPT = ISPT + NFBAS(IFRP,0)*NFBAS(IFRP,0)
+        ENDDO ! End loop over fermion irreps IFRP
         CLOSE(LUCOEF,STATUS='KEEP')
-        INUC = INUC + NPROJNUC(IFRAG)
-      ENDDO
+        INUC = INUC + NNUC
+      ENDDO ! End loop over REFS
       CALL MEMREL('POLARIZE_REF',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 CTROND
       WRITE(6,*) 'Exit POLARIZE_REF'
