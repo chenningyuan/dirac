@@ -2192,6 +2192,36 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Extvec */
+      SUBROUTINE EXTVEC(AVEC,LDA,BVEC,LDB,NB,NVEC,IBR)
+C***********************************************************************
+C
+C     Extract elements of vectors A(LDA,NVEC) and
+C     insert into vector BVEC(LDB,NVEC) using 
+C     row array IBR.
+C
+C     Written by T.Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
+C
+CTROND
+      WRITE(6,*) 'EXTVEC: pointer array'
+      DO I = 1,NB
+        WRITE(6,*) I,IBR(I)
+      ENDDO
+      DO J = 1,NVEC
+        DO I = 1,NB
+          BVEC(I,J) = AVEC(IBR(I),J)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lmnrep */
       SUBROUTINE LMNREP(IREP,NHKTA,KHKTA,LVALUE,MVALUE,NVALUE)
 C***********************************************************************
