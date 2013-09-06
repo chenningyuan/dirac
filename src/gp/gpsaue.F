@@ -2208,11 +2208,6 @@ C***********************************************************************
 C
       DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
 C
-CTROND
-      WRITE(6,*) 'EXTVEC: pointer array'
-      DO I = 1,NB
-        WRITE(6,*) I,IBR(I)
-      ENDDO
       DO J = 1,NVEC
         DO I = 1,NB
           BVEC(I,J) = AVEC(IBR(I),J)
