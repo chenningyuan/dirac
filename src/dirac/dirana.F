@@ -3053,10 +3053,10 @@ C
         NSTR(IFRP,2) = NPSH(IFRP)
         CALL ORBNUM(VECPRJ(IFRP),IFRP,KVEC(IFRP),NSTR(1,0),
      &              WORK,KFREE,LFREE)
-        IOFF(IFRP) = 0
-        NVECS(IFRP) = NSTR(IFRP,0)
-        NQ(IFRP) = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-        NCDIM    = NCDIM + NQ(IFRP)
+        IOFF(IFRP)   = 0
+        NVECS(IFRP)  = NSTR(IFRP,0)
+        NQ(IFRP)     = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+        NCDIM        = NCDIM + NQ(IFRP)
       ENDDO
 C
 C     Get selected molecular coefficients
@@ -3102,8 +3102,28 @@ C
      &   '- Electrons : ',(NESH_FRAG(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
      &   '- SO-basis  : ',(NFBAS_FRAG(I),I=1,NFSYM)
-        ICPT = KCSEL
-        ISPT = KSMAT
+C
+C       Calculate dimensions
+C       ====================
+C
+        NCFRAG = 0
+        NEFRAG = 0
+        DO IFRP = 1,NFSYM
+          NORB2  = NPSH_FRAG(IFRP)+NESH_FRAG(IFRP)
+          NEFRAG = NEFRAG + NORB2
+          NCFRAG = NCFRAG + NORB2*NFBAS_FRAG(IFRP)
+        ENDDO
+        NCFRAG = NCFRAG*NZ
+        CALL MEMGET('REAL',KCMO2,NCFRAG,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG2,NEFRAG,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBE2,NEFRAG,WORK,KFREE,LFREE)
+        CALL READT(LUCOEF,NCFRAG,WORK(KCMO2))
+        CALL READT(LUCOEF,NEFRAG,WORK(KEIG2))
+        CALL READI(LUCOEF,NEFRAG,WORK(KIBE2))
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IC1 = KCSEL
+        IC2 = KCMO2
+        IS1= KSMAT
         DO IFRP = 1,NFSYM
 C.........Generate pointer array for from fragment basis to molecular basis
           CALL MEMGET('INTE',KBAS,NFBAS_FRAG(IFRP),WORK,KFREE,LFREE)
@@ -3120,42 +3140,32 @@ C.........Generate pointer array for from fragment basis to molecular basis
      &         NFBAS_FRAG(IFRP)
            CALL QUIT('POLARIZE_REF: Error in cf.selection !')
           ENDIF
-C.........Extract fragment chunk from selected molecular coefficients
-          NCOL   = NVECS(IFRP)*NZ
-          NCHUNK = NFBAS_FRAG(IFRP)*NCOL
+C.........Generate polaried fragment orbitals: restrict to posivite-energy orbitals
+          IOFF2  = NPSH_FRAG(IFRP) 
+          NVEC2  = NESH_FRAG(IFRP)
+          NORB2  = NPSH_FRAG(IFRP)+NESH_FRAG(IFRP)
+          NSCOMP = NVEC2*NVECS(IFRP)*NZ
+          CALL MEMGET('REAL',KSCOMP,NSCOMP,WORK,KFREE,LFREE)
+          NCHUNK = NFBAS_FRAG(IFRP)*NVECS(IFRP)*NZ
           CALL MEMGET('REAL',KCHUNK,NCHUNK,WORK,KFREE,LFREE)
-          CALL EXTVEC(WORK(ICPT),NFBAS(IFRP,0),
-     &                WORK(KCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
-     &                NCOL,WORK(KBAS))
-          WRITE(LUPRI,*) '* Fragment chunk'
-          CALL PRQMAT(WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
-     &                NFBAS_FRAG(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
-C.........Extract fragment chunk of overlap matrix
-          NSFRAG  = NVECS(IFRP)*NVECS(IFRP)*NZ
-          CALL MEMGET('REAL',KSFRAG,NSFRAG,WORK,KFREE,LFREE)
-          NSCHUNK = NFBAS_FRAG(IFRP)*NFBAS_FRAG(IFRP)
-          CALL MEMGET('REAL',KSCHUNK,NSCHUNK,WORK,KFREE,LFREE)
-          CALL EXTELM('N',WORK(ISPT),NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &                WORK(KSCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
-     &                NFBAS_FRAG(IFRP),WORK(KBAS),WORK(KBAS))
-C.........Transform to overlap in fragment chunk basis
-          CALL QTRANS('AOMO','S',D0,NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
-     &           NVECS(IFRP),NVECS(IFRP),
-     &           WORK(KSCHUNK),NFBAS_FRAG(IFRP),NFBAS_FRAG(IFRP),
-     &           1,IPQTOQ(1,0),
-     &           WORK(KSFRAG),NVECS(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),
-     &           WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
-     &           NZ,IPQTOQ(1,0),
-     &           WORK(KCHUNK),NFBAS_FRAG(IFRP),NVECS(IFRP),
-     &           NZ,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRPRJ)
-          WRITE(LUPRI,*) '* Overlap matrix in fragment chunk basis'
-          CALL PRQMAT(WORK(KSFRAG),NVECS(IFRP),NVECS(IFRP),
-     &                NVECS(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          CALL POLFRAG(WORK(IC1),NFBAS(IFRP,0),NVECS(IFRP),
+     &                 WORK(IC2),NFBAS_FRAG(IFRP),NORB2,IOFF2,NVEC2,
+     &                 WORK(IS1),WORK(KSCOMP),WORK(KCHUNK),WORK(KBAS),
+     &                 WORK,KFREE,LFREE,IPRPRJ)
+          IC1 = IC1 + NQ(IFRP)
+          IC2 = IC2 + NORB2*NFBAS_FRAG(IFRP)*NZ
+          IS1 = IS1 + NFBAS(IFRP,0)*NFBAS(IFRP,0)
           CALL MEMREL('POLARIZE_REF.if',WORK,KFRSAV,KBAS,KFREE,LFREE)
-          ICPT = ICPT + NQ(IFRP)
-          ISPT = ISPT + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         ENDDO ! End loop over fermion irreps IFRP
+C.......Dump polarized coefficients to file
+        REFFIL(IFRAG)(1:1)='P'
+        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'NEW','POLARIZE_REF')
+        CALL GTINFO(TEXT(51:74))
+        WRITE (LUCOEF) TEXT,NSYM,
+     &       (NPSH_FRAG(I),NESH_FRAG(I),NFBAS_FRAG(I),I=1,NSYM),TOTERG
+        CALL WRITT(LUCOEF,NCFRAG,WORK(KCMO2))
+        CALL WRITT(LUCOEF,NEFRAG,WORK(KEIG2))
+        CALL WRITI(LUCOEF,NEFRAG,WORK(KIBE2))
         CLOSE(LUCOEF,STATUS='KEEP')
         INUC = INUC + NNUC
       ENDDO ! End loop over REFS
@@ -3167,6 +3177,85 @@ CTROND
       CALL QUIT('POLARIZE_REF: END reading TEXT')
  20   CONTINUE
       CALL QUIT('POLARIZE_REF: ERROR reading TEXT')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck polfrag */
+      SUBROUTINE POLFRAG(CMO1,NBAS1,NORB1,CMO2,NBAS2,NORB2,IOFF2,NVEC2,
+     &                   SMAT1,SCOMP,CHUNK,IBAS,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+#include "dgroup.h"
+C
+      DIMENSION CMO1(NBAS1,NORB1,NZ),CMO2(NBAS2,NORB2,NZ),
+     &          SMAT1(NBAS1,NBAS1),SCOMP(NVEC2,NORB1,NZ),
+     &          CHUNK(NBAS2,NORB1,NZ),IBAS(NBAS2),WORK(*)
+C
+      KFRSAV=KFREE      
+C.....Extract fragment chunk from selected molecular coefficients
+      NCOL=NORB1*NZ
+      CALL EXTVEC(CMO1,NBAS1,CHUNK,NBAS2,NBAS2,NCOL,IBAS)
+      WRITE(LUPRI,*) '* Fragment chunk'
+      CALL PRQMAT(CHUNK,NBAS2,NORB1,NBAS1,NORB1,NZ,IPQTOQ(1,0),LUPRI)
+C.....Extract fragment chunk of overlap matrix
+      NSMAT2 = NBAS2*NBAS2
+      CALL MEMGET('REAL',KSMAT2,NSMAT2,WORK,KFREE,LFREE)
+      CALL EXTELM('N',SMAT1,NBAS1,NBAS1,WORK(KSMAT2),NBAS2,NBAS2,NBAS2,
+     &            IBAS,IBAS)
+C.....Transform to overlap in fragment chunk basis
+      NSMATC  = NORB1*NORB1*NZ
+      CALL MEMGET('REAL',KSMATC,NSMATC,WORK,KFREE,LFREE)
+      CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NORB1,NORB1,
+     &           WORK(KSMAT2),NBAS2,NBAS2,1,IPQTOQ(1,0),
+     &           WORK(KSMATC),NORB1,NORB1,NZ,IPQTOQ(1,0),
+     &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
+     &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+      WRITE(LUPRI,*) '* Overlap matrix in fragment chunk basis'
+      CALL PRQMAT(WORK(KSMATC),NORB1,NORB1,NORB1,NORB1,
+     &            NZ,IPQTOQ(1,0),LUPRI)
+      IF(NORB1.EQ.1) THEN
+        FAC = D1/SQRT(WORK(KSMATC))
+        CALL DSCAL(NCHUNK,FAC,CHUNK,1)
+      ENDIF
+      CALL MEMREL('POLFRAG',WORK,KFRSAV,KSMATC,KFREE,LFREE)
+C.....Calculate overlap between free- and polarized fragment orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NVEC2,NORB1,
+     &           WORK(KSMAT2),NBAS2,NBAS2,1,IPQTOQ(1,0),
+     &           SCOMP,NVEC2,NORB1,NZ,IPQTOQ(1,0),
+     &           CMO2(1,IOFF2+1,1),NBAS2,NORB2,NZ,IPQTOQ(1,0),
+     &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+      WRITE(LUPRI,*) '* Overlap free/polarized fragment orbitals'
+      CALL PRQMAT(SCOMP,NVEC2,NORB1,NVEC2,NORB1,NZ,IPQTOQ(1,0),
+     &            LUPRI)
+C.....Use overlap selection to put polarized orbitals in corresponding free position
+      DO J = 1, NORB1
+        DO I = 1,NVEC2
+           SCOMP(I,J,1) = SCOMP(I,J,1)*SCOMP(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NORB2
+          DO I = 1,NVEC2
+             SCOMP(I,J,1) = SCOMP(I,J,1)+SCOMP(I,J,IZ)*SCOMP(I,J,IZ)
+          ENDDO
+      ENDDO
+      ENDDO
+      DO J = 1,NORB2
+        ISEL = IDAMAX(NVEC2,SCOMP(1,J,1),1)
+C       Zero out the selected overlap
+        CALL DCOPY(NORB1,D0,0,SCOMP(ISEL,1,1),NVEC2)
+C       Copy polarized orbitals into corresponding free orbital position
+        DO IZ = 1,NZ
+          CALL DCOPY(NBAS2,CHUNK(1,ISEL,IZ),1,CMO2(1,IOFF2+ISEL,IZ),1)
+        ENDDO
+      ENDDO
+      CALL MEMREL('POLFRAG',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anapr1 */
