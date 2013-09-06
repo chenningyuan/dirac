@@ -3199,7 +3199,7 @@ C.....Extract fragment chunk from selected molecular coefficients
       NCOL=NORB1*NZ
       CALL EXTVEC(CMO1,NBAS1,CHUNK,NBAS2,NBAS2,NCOL,IBAS)
       WRITE(LUPRI,*) '* Fragment chunk'
-      CALL PRQMAT(CHUNK,NBAS2,NORB1,NBAS1,NORB1,NZ,IPQTOQ(1,0),LUPRI)
+      CALL PRQMAT(CHUNK,NBAS2,NORB1,NBAS2,NORB1,NZ,IPQTOQ(1,0),LUPRI)
 C.....Extract fragment chunk of overlap matrix
       NSMAT2 = NBAS2*NBAS2
       CALL MEMGET('REAL',KSMAT2,NSMAT2,WORK,KFREE,LFREE)
@@ -3218,9 +3218,22 @@ C.....Transform to overlap in fragment chunk basis
       CALL PRQMAT(WORK(KSMATC),NORB1,NORB1,NORB1,NORB1,
      &            NZ,IPQTOQ(1,0),LUPRI)
       IF(NORB1.EQ.1) THEN
+C.......Renormalization
         FAC = D1/SQRT(WORK(KSMATC))
         CALL DSCAL(NCHUNK,FAC,CHUNK,1)
+      ELSE
+C.......Canonical orthonormalization
+        CALL MEMGET('REAL',KVMATC,NSMATC,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KSEIG,NORB1,WORK,KFREE,LFREE)
+        STOL=1.0D-2
+        CALL LOWGEN(WORK(KSMATC),NORB1,WORK(KVMATC),NEFF,NORB1,
+     &            STOL,IPRINT,WORK(KSEIG),WORK(KFREE),LFREE)
+CTROND
+        WRITE(6,*) 'Eigenvalues of overlap matrix'
+        CALL OUTPUT(WORK(KSEIG),1,NORB1,1,1,NORB1,1,-1,LUPRI)
       ENDIF
+CTROND
+      STOP 'End of test'
       CALL MEMREL('POLFRAG',WORK,KFRSAV,KSMATC,KFREE,LFREE)
 C.....Calculate overlap between free- and polarized fragment orbitals
       CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NVEC2,NORB1,
