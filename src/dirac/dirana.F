@@ -3219,6 +3219,7 @@ C.....Transform to overlap in fragment chunk basis
      &            NZ,IPQTOQ(1,0),LUPRI)
       IF(NORB1.EQ.1) THEN
 C.......Renormalization
+        NEFF = 1
         FAC = D1/SQRT(WORK(KSMATC))
         CALL DSCAL(NCHUNK,FAC,CHUNK,1)
       ELSE
@@ -3229,36 +3230,50 @@ C.......Canonical orthonormalization
         CALL LOWGEN(WORK(KSMATC),NORB1,WORK(KVMATC),NEFF,NORB1,
      &            STOL,IPRINT,WORK(KSEIG),WORK(KFREE),LFREE)
 CTROND
-        WRITE(6,*) 'Eigenvalues of overlap matrix'
+        WRITE(6,*) 'Eigenvalues of overlap matrix',NEFF
         CALL OUTPUT(WORK(KSEIG),1,NORB1,1,1,NORB1,1,-1,LUPRI)
+        NCHUNK=NBAS2*NORB1*NZ
+        CALL MEMGET('REAL',KBUF,NCHUNK,WORK,KFREE,LFREE)
+        CALL QGEMM(NBAS2,NEFF,NORB1,D1,
+     &             'N','N',IPQTOQ(1,0),CHUNK,NBAS2,NORB1,NZ,
+     &             'N','N',IPQTOQ(1,0),WORK(KVMATC),NORB1,NORB1,NZ,
+     &             D0,IPQTOQ(1,0),WORK(KBUF),NBAS2,NORB1,NZ)
+        CALL DCOPY(NCHUNK,WORK(KBUF),1,CHUNK,1)
+        CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NEFF,NEFF,
+     &           WORK(KSMAT2),NBAS2,NBAS2,1,IPQTOQ(1,0),
+     &           WORK(KSMATC),NEFF,NEFF,NZ,IPQTOQ(1,0),
+     &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
+     &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+        WRITE(LUPRI,*) '* Overlap matrix in orthonormalized chunk basis'
+        CALL PRQMAT(WORK(KSMATC),NEFF,NEFF,NEFF,NEFF,
+     &            NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-CTROND
-      STOP 'End of test'
       CALL MEMREL('POLFRAG',WORK,KFRSAV,KSMATC,KFREE,LFREE)
 C.....Calculate overlap between free- and polarized fragment orbitals
-      CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NVEC2,NORB1,
+      CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NVEC2,NEFF,
      &           WORK(KSMAT2),NBAS2,NBAS2,1,IPQTOQ(1,0),
      &           SCOMP,NVEC2,NORB1,NZ,IPQTOQ(1,0),
      &           CMO2(1,IOFF2+1,1),NBAS2,NORB2,NZ,IPQTOQ(1,0),
      &           CHUNK,NBAS2,NORB1,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
       WRITE(LUPRI,*) '* Overlap free/polarized fragment orbitals'
-      CALL PRQMAT(SCOMP,NVEC2,NORB1,NVEC2,NORB1,NZ,IPQTOQ(1,0),
+      CALL PRQMAT(SCOMP,NVEC2,NEFF,NVEC2,NORB1,NZ,IPQTOQ(1,0),
      &            LUPRI)
 C.....Use overlap selection to put polarized orbitals in corresponding free position
-      DO J = 1, NORB1
+      DO J = 1, NEFF
         DO I = 1,NVEC2
            SCOMP(I,J,1) = SCOMP(I,J,1)*SCOMP(I,J,1)
         ENDDO
       ENDDO
       DO IZ = 2,NZ
-        DO J = 1, NORB2
+        DO J = 1, NEFF
           DO I = 1,NVEC2
              SCOMP(I,J,1) = SCOMP(I,J,1)+SCOMP(I,J,IZ)*SCOMP(I,J,IZ)
           ENDDO
       ENDDO
       ENDDO
-      DO J = 1,NORB2
+      DO J = 1,NEFF
         ISEL = IDAMAX(NVEC2,SCOMP(1,J,1),1)
 C       Zero out the selected overlap
         CALL DCOPY(NORB1,D0,0,SCOMP(ISEL,1,1),NVEC2)
