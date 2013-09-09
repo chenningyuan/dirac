@@ -3228,8 +3228,11 @@ C.......Canonical orthonormalization + realigment
         CALL MEMGET('REAL',KVMATC,NSMATC,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KSEIG,NORB1,WORK,KFREE,LFREE)
         STOL=1.0D-2
-        CALL LOWGEN(WORK(KSMATC),NORB1,WORK(KVMATC),NEFF,NORB1,
-     &            STOL,IPRINT,WORK(KSEIG),WORK(KFREE),LFREE)
+        CALL LOWGENQ(NZ,NORB1,NEFF,
+     &               WORK(KSMATC),NORB1,NORB1,
+     &               WORK(KVMATC),NORB1,NORB1,
+     &               STOL,IPRINT,WORK(KSEIG),IPQTOQ(1,0),
+     &               WORK(KFREE),LFREE)
         IF(IPRINT.GE.2) THEN
           WRITE(6,*) 'Eigenvalues of overlap matrix',NEFF
           CALL OUTPUT(WORK(KSEIG),1,NORB1,1,1,NORB1,1,-1,LUPRI)

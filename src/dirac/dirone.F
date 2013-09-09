@@ -4023,6 +4023,61 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck lowgenq */
+      SUBROUTINE LOWGENQ(NZ,N,NEFF,SMAT,LRS,LCS,VMAT,LRV,LCV,
+     &                   SSTOL,IPRINT,EIG,IPQ,WORK,LWORK)
+C*****************************************************************************
+C
+C     Generate Lowdin matrix
+C     (Lowdin's canonical orthonormalization)
+C
+C     V_ij = U_ij/SQRT(s_j) where U_ij is the matrix that diagonalizes
+C     the overlap matrix S and s_j is eigenvalue j.
+C     Linear dependence is removed by eliminating columns of V
+C     corresponding to eigenvalues of the overlap matrix below
+C     the given threshold.
+C
+C     Written by T. Saue Sep 2013
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dummy.h"
+      PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
+C
+      DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
+     &          WORK(LWORK)
+C
+#include "memint.h"
+      CALL QENTER('LOWGENQ')
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('LOWGENQ: Lowdin input (overlap) matrix:',-1)
+        CALL PRQMAT(SMAT,LRS,LCS,N,N,NZ,IPQ,LUPRI)
+      ENDIF
+C
+C     Diagonalize overlap matrix; scale with minus one to change order of eigenvalues
+C
+      NSDIM = LRS*LCS*NZ
+      CALL DSCAL(NSDIM,DM1,SMAT,1)
+      CALL QDIAG(NZ,N,SMAT,LRS,LCS,EIG,1,VMAT,LRV,LCV,
+     &           WORK,LWORK,IERR)
+      CALL DSCAL(N,DM1,EIG,1)
+!    ... ensure V_ij = U_ij/SQRT(s_j)
+      NEFF = 0
+      DO I = 1,N
+        IF(EIG(I).LE.SSTOL) GOTO 10
+        NEFF  = NEFF + 1
+        FAC = D1/SQRT(EIG(I))
+        DO IZ = 1,NZ
+          CALL DSCAL(N,FAC,VMAT(1,I,IZ),1)
+        ENDDO
+      ENDDO
+ 10   CONTINUE
+      CALL QEXIT('LOWGENQ')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tscorr */
       SUBROUTINE TSCORR(FMAT,WORK,LWORK,IPRINT)
 C*****************************************************************************
