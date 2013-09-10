@@ -688,10 +688,9 @@ C
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
+c     .XMLOUT can be removed after adapting the tests, is now always active
 C
       NOSFCRASH=.FALSE.
-c     no xml output unless .XMLOUT
-      LUXML = -1
 C
 C     Read menu file
 C     ==============
@@ -778,10 +777,8 @@ C&&&& OPTIMIZE: Geometry optimization
 C&&&& MINIMIZE: Geometry optimization (tsaue: retained for backwards compatibility)
             GO TO 111
  113     CONTINUE
-C&&& XMLOUT  : Write output in xml format to separate file
-         call xml_open_file('dirac.xml')
+C&&& XMLOUT  : Retained for backwards compatibility (lv: is now always on)
          GOTO 100
-
 !       xxxxxx keyword
  114     continue
          goto 100

@@ -35,6 +35,7 @@ C***********************************************************************
       use dirac_cfg
       use second_order_minimization
       use memory_allocator
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -53,6 +54,13 @@ C
 
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in PAMANA')
+C
+C     Write output in xml format
+C
+      if (doxml) then
+         call xml_begin('task','type="ANALYSIS"')
+         call xml_begin('output')
+      endif
 C
 C***********************************************************************
 C*****  V E C T O R    P R I N T ***************************************
@@ -122,6 +130,11 @@ C
 C
 C
 C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
+
       call dealloc(WORK)
 C
       CALL QEXIT('PAMANA')
@@ -462,6 +475,7 @@ C     Written by T.Saue July 24 1994
 C     LAST VERSION: Jan 9 1997
 C
 C***********************************************************************
+      use xmlout
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -631,6 +645,12 @@ C
       ELSE
         WRITE(LUPRI,'(//A)') '*** Total gross population ***'
         CALL WRPOPT(PGTOT(1,1),POPLAB,NPOPLAB,IEFF)
+        if (doxml) then
+           do i = 1, npoplab
+              call xml_quantity('Mulliken gross population '//POPLAB(i),
+     &                           PGTOT(i,1),'electron')
+           end do
+        end if
         IF(DONETP) THEN
           CALL DAXPY(N2LAB,D1,PNTOT(1,1,2),1,PNTOT(1,1,1),1)
           WRITE(LUPRI,'(//A)') '*** Total net population ***'
