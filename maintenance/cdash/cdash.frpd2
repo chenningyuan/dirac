@@ -21,7 +21,8 @@ if [[ -d "$BUILD_GNU" ]]; then
 fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
 # configure step
-./setup --fc=mpif90  --cc=mpicc  --cxx=mpiCC  --int64  -D BUILDNAME="frpd2.ompi_gnu_ilp64_static" -D RUNTEST_NR_PROC=2  --mpi --static -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
+export DIRAC_NUM_MPI_TASKS=3
+./setup --fc=mpif90  --cc=mpicc  --cxx=mpiCC  --int64  -D BUILDNAME="frpd2.ompi_gnu_ilp64_static" --mpi --static -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
 cd $BUILD_GNU
 make clean
 cmake ..

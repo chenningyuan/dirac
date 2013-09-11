@@ -28,7 +28,8 @@ make release
 tar xvzf DIRAC-*-Source.tar.gz
 cd DIRAC-*-Source
 
-./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc18_gfortran-4.7.2_mpi" -D RUNTEST_NR_PROC=4
+export DIRAC_NUM_MPI_TASKS=4
+./setup --fc=mpif90 --cc=mpicc -D BUILDNAME="smokey_fc18_gfortran-4.7.2_mpi" 
 cd build
 make Nightly
 
