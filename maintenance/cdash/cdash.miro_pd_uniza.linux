@@ -33,7 +33,8 @@ if [[ -d "$BUILD_OMPI_GNU_STATIC" ]]; then
   /bin/rm -rf $BUILD_OMPI_GNU_STATIC
 fi
 pamadm -a --builddir=$BUILD_OMPI_GNU_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --mpi --static -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_GNU_STATIC
+export DIRAC_NUM_MPI_TASKS=2
+./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --mpi --static  -D DART_TESTING_TIMEOUT=99999 $BUILD_OMPI_GNU_STATIC
 cd $BUILD_OMPI_GNU_STATIC
 make ExperimentalUpdate
 make ExperimentalConfigure
@@ -61,7 +62,7 @@ if [[ -d "$BUILD_OMPI_INTEL_STATIC" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL_STATIC
 fi
 pamadm -a --builddir=$BUILD_OMPI_INTEL_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_intel_MKL_ilp64_STATIC" --int64 --static --mpi -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999 $BUILD_OMPI_INTEL_STATIC
+./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_intel_MKL_ilp64_STATIC" --int64 --static --mpi -D DART_TESTING_TIMEOUT=99999 $BUILD_OMPI_INTEL_STATIC
 cd $BUILD_OMPI_INTEL_STATIC
 make ExperimentalUpdate
 make ExperimentalConfigure

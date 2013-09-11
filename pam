@@ -24,6 +24,7 @@
 #          XLFRTEOPTS - put there some specific string for IBM architecture
 #          DIRPAR - put there "1", if parallel run
 #          DIRNOD - put there maximum memory for nodes, if  parallel run
+#          DIRAC_NUM_MPI_TASKS - number of MPI threads in parallel run
 #          GLBSCR - put "1" for global scratch disk, otherwise put "0" - only if parallel run
 #          MKL_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
 #          MKL_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
