@@ -260,8 +260,7 @@ if(ENABLE_UTILITIES)
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_MEM_TEST) # 
-        #compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
-        compile_standalone(test_allocator.x utils/test_mem_relcc.F90 "${LIST_OF_EXECUTABLES}")
+        compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
 
