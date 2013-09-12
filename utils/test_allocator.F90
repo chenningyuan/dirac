@@ -243,6 +243,8 @@
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
+ call allocator_cleanup()
+
  end subroutine andre_alloc_test
 
 
@@ -305,6 +307,7 @@ subroutine test_xcopy_with_big_array
 !-------------------------------------------------------
 use memory_allocator
 use os_utils
+use input_reader
  implicit none
  integer, parameter :: kreal    = 8
  real (kind=kreal), pointer ::     a_v4(:)
@@ -316,11 +319,16 @@ use os_utils
 #include "../src/relccsd/complex.inc"
  integer :: NVTMIN 
  integer(kind=8) :: maxsize = -1
- !integer(kind=8), external  :: get_environment_integer
- !integer, external  :: get_environment_integer
+
+ integer        :: file_unit=12
+ logical        :: input_found=.False.
+ character*18   :: file_name="test_allocator.inp"
+ character*18   :: input_section_in="**MEMORY_ALLOCATOR"
+
+ !call read_menu_input(file_name, file_unit, input_section_in, input_found)
+
 
  RCW = 1
-
  NVTMIN = 2147483948 ! ! larger than 2^31-1=2147483648
  print *,'NVTMIN=',NVTMIN,' RCW=',RCW
  print *,'a_VT of size NVTMIN*RCW=',NVTMIN*RCW
