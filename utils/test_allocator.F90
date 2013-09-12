@@ -38,24 +38,29 @@
 ! test program for memory allocator for dirac/dalton
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  program alloc_test
-   !call andre_alloc_test
+   call andre_alloc_test
    call test_xcopy_with_big_array
  end program alloc_test
 
  subroutine andre_alloc_test
-!miro: needs replace deactivated calls
+!miro: adapted for current version of memory_allocator
     use memory_allocator
     use os_utils
-         integer, parameter :: kreal = 8, kcomplex = 8
-         integer, parameter :: charArrayLength = 132
-         integer                :: v2size, v1size, p_mem2,p_mem3
-         integer                :: maxsize, minimal = 20, verbose = 0
-         double precision, allocatable, target :: vdatadb(:), vdatarl(:)
-         real(kind=kreal), allocatable :: matrix(:,:)
-         real(kind=kreal), pointer             :: p_mem, p_mem42(:)
-         complex(kind=kreal), allocatable :: cmatrix(:,:)
-         character(len=charArrayLength) :: kbytesAvailable
 
+    integer, parameter :: kreal = 8, kcomplex = 8
+    integer, parameter :: charArrayLength = 132
+    integer                :: v2size, v1size, p_mem2,p_mem3
+    integer                :: maxsize, minimal = 20, verbose = 0
+    double precision, allocatable, target :: vdatadb(:), vdatarl(:)
+    real(kind=kreal), allocatable :: matrix(:,:)
+    real(kind=kreal), pointer             :: p_mem, p_mem42(:)
+    complex(kind=kreal), allocatable :: cmatrix(:,:)
+    character(len=charArrayLength) :: kbytesAvailable
+    logical :: test_huge_alloc=.False.
+
+ ! maxsize to be extracted from environmental variable
+ maxsize = get_environment_integer('DIRMAX',maxsize)
+ print *,'variable from DIRMAX, maxsize=',maxsize
          !maxsize   = 1500
          !maxsize   = 15000 ! MI: increase
          minimal   = 16
@@ -67,8 +72,6 @@
 !        write (*,*) 'memory address 0a: ',c_loc(vdatarl)
 !        write (*,*) 'memory address 0b: ',c_loc(vdatadb)
 
-!maxsize = get_environment_integer('DIRMAX',maxsize)
- print *,'variable from DIRMAX, maxsize=',maxsize
  call allocator_init
  call allocator_set_max(maxsize)
 
@@ -77,8 +80,8 @@
          call alloc(vdatadb,v2size,id="vdatadb")
          call alloc(vdatarl,v2size)
          call allocp(p_mem42,v2size)
-         call alloc(matrix,v2size,v2size,id="matrix")
-         call alloc(cmatrix,v2size,v2size,id="matrix")
+         call alloc(matrix,v2size,v2size,id="real matrix")
+         call alloc(cmatrix,v2size,v2size,id="complx matrix")
 
          p_mem => vdatadb(0)
 
@@ -225,10 +228,10 @@
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
+  if (test_huge_alloc) then
          v2size = huge(maxsize) !  value of 9223372036854775807, not allocatable
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
-
          maxsize = 0
          write (*,*) ' '
          write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
@@ -242,6 +245,7 @@
          write (*,*) ' '
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
+  endif
 
  call allocator_cleanup()
 
@@ -307,7 +311,6 @@ subroutine test_xcopy_with_big_array
 !-------------------------------------------------------
 use memory_allocator
 use os_utils
-use input_reader
  implicit none
  integer, parameter :: kreal    = 8
  real (kind=kreal), pointer ::     a_v4(:)
@@ -319,14 +322,6 @@ use input_reader
 #include "../src/relccsd/complex.inc"
  integer :: NVTMIN 
  integer(kind=8) :: maxsize = -1
-
- integer        :: file_unit=12
- logical        :: input_found=.False.
- character*18   :: file_name="test_allocator.inp"
- character*18   :: input_section_in="**MEMORY_ALLOCATOR"
-
- !call read_menu_input(file_name, file_unit, input_section_in, input_found)
-
 
  RCW = 1
  NVTMIN = 2147483948 ! ! larger than 2^31-1=2147483648
