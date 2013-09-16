@@ -51,7 +51,7 @@ C:\Git\bin\git.exe clean -f 1>> %OUT% 2>&1
 rem show very last commit...
 C:\Git\bin\git.exe log -1 1>> %OUT% 2>&1
 
-del %BUILD%
+rmdir \S \Q %BUILD%
 python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-master"   --generator="MinGW Makefiles" --int64 %BUILD% 1>> %OUT% 2>&1
 cd %BUILD%
 rem cmake ..                    1>> %OUT% 2>&1
