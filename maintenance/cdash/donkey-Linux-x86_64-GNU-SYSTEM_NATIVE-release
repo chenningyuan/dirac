@@ -1,0 +1,18 @@
+#!/bin/bash
+
+CDASH_TEMPORARY_DIR=/home/bast/tmp/scratch-nightly
+mkdir -p $CDASH_TEMPORARY_DIR
+
+export DIRAC_TMPDIR=$CDASH_TEMPORARY_DIR/run
+
+git clone git@repo.ctcc.no:dirac.git $CDASH_TEMPORARY_DIR/compile
+
+cd $CDASH_TEMPORARY_DIR/compile
+./setup --fc=gfortran --cc=gcc --cxx=g++
+cd build
+make -j24
+ctest -D Experimental -j24
+
+rm -rf $CDASH_TEMPORARY_DIR
+
+exit 0
