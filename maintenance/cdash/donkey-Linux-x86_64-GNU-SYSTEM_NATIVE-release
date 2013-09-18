@@ -10,8 +10,8 @@ git clone git@repo.ctcc.no:dirac.git $CTEST_TEMP_DIR/compile
 cd $CTEST_TEMP_DIR/compile
 ./setup --fc=gfortran --cc=gcc --cxx=g++
 cd build
-make -j24
-ctest -D Nightly -j24
+make -j12
+ctest -D Nightly -j12
 
 rm -rf $CTEST_TEMP_DIR
 
