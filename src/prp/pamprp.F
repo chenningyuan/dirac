@@ -1522,6 +1522,12 @@ C     PV contribution to spin-spin coupling
       IF(PVC_SPINSPIN)
      &  CALL PRINTOUT_PVC_SPINSPIN(ABLRF,ABCNV,WORK,KFREE,LFREE)
 C
+C     Spin-rotation
+C
+      IF(SPINRO) THEN
+        CALL PRP_SPINRO(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+      ENDIF
+C
 C
 C     Magnetic susceptibilities
 C
@@ -9173,5 +9179,36 @@ C
       ENDDO
 
       CALL QEXIT('DEF_SPINRO1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck PRP_SPINRO */
+      SUBROUTINE PRP_SPINRO(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Output routine for spin-rotation constant
+C
+C     Written by Agustin Aucar and T. Saue sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
+     &     ABCNV(NBFREQ,NLRBPT),WORK(*)
+      logical, allocatable :: DOATOM(:)
+      KFRSAV = KFREE
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
+CTROND
+      WRITE(6,*) 'Here comes the nice output for spin-rotation.'
+      deallocate(DOATOM)
+      CALL MEMREL('PRP_SPINRO',WORK,1,KFRSAV,KFREE,LFREE)
+C
       RETURN
       END
