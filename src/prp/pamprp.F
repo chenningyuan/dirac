@@ -1347,6 +1347,12 @@ C
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
+C     Spin-rotation constant
+C
+      IF(SPINRO) THEN
+         CALL DEF_SPINRO(WORK,LWORK,IPRPRP)
+      ENDIF
+C
 C     Optical rotation
 C
       IF (OPTROT) THEN
@@ -3924,7 +3930,6 @@ C
 C
 C       Atoms
 C
-C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
@@ -8937,4 +8942,236 @@ C.........Z-component
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_SPINRO */
+      SUBROUTINE DEF_SPINRO(WORK,LWORK,IPRINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Define operators for spin-rotation constants
+C
+C     Written by Augustin Aucar and Trond Saue Sep 2013
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      DIMENSION WORK(LWORK)
+      logical, allocatable :: DOATOM(:)
+C
+#include "memint.h"
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_SPINRO1(DOATOM,WORK(KFREE),LFREE,IPRINT)
+      deallocate(DOATOM)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_spinro1 */
+      SUBROUTINE DEF_SPINRO1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operators for spin-rotation constants
+C
+C     Written by Augustin Aucar and Trond Saue Sep 2013
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h" 
+C..parameters of maximum number of nuclei
+#include "maxaqn.h"
+C..highest angular quantum number
+#include "maxorb.h"
+C..maximum number of orbitals/basis functions
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "chrxyz.h"
+#include "dcbexp.h"
+c...common block for expectation values
+#include "dcbxlr.h"
+C...common block for linear reponse
+#include "dcbxpr.h"
+      PARAMETER(D1 = 1.0D0,DP5=0.5D0,DM1=-1.0D0)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION PFAC(3),IOP(3)
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+      CALL QENTER('DEF_SPINRO1')
+C
+C     Here we set up the operators needed for the expectation value
+C
+      ITYP = 0
+      IPTYP     = 1 ! diagonal operator
+      NPCOMP    = 1 ! number of components
+      PFAC(1)   = D1 ! factor
+      DO IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
+      IF (DOATOM(IATOM)) THEN ! selection of atoms
+        DO IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
+          DO ICOOR = 1, 3 ! loop over coordinates
+            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+            IF(ISCOOR .GT. 0) THEN
+              ITYP = ITYP + 1
+              IFIRST=ISCOOR/100
+              ISECND=MOD(ISCOOR,100)/10
+              ITHIRD = MOD(MOD(ISCOOR,100),10)
+              PLABEL(1) = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+              PNAME    = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
+     &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+            END IF
+          ENDDO
+        ENDDO
+      END IF
+      ENDDO
+C
+C     Here we set up the operators needed for the linear reponse part
+C
+C     Define right-hand operators
+C
+C.....Orbital angular momentum
+C
+      PNAME     = 'Orb.ang.mom.:  X'
+      IPTYP     = 1  ! diagonal operator
+      NPCOMP    = 1  ! one component
+      PFAC(1)   = D1 ! factor
+      PLABEL(1) = 'XANGMOM'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+      PNAME     = 'Orb.ang.mom.:  Y'
+      IPTYP     = 1  ! diagonal operator
+      NPCOMP    = 1  ! one component
+      PFAC(1)   = D1 ! factor
+      PLABEL(1) = 'YANGMOM'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+      PNAME     = 'Orb.ang.mom.:  Z'
+      IPTYP     = 1  ! diagonal operator
+      NPCOMP    = 1  ! one component
+      PFAC(1)   = D1 ! factor
+      PLABEL(1) = 'ZANGMOM'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('ZANGMOM ',INDOP1,LLRBPU,NLBAPT,
+     &                       INDXPR,MAXLLR)
+C
+C     Spin angular momentum
+C                  
+      PNAME     = 'Spin angmom.:  X'
+      IPTYP     = 10  ! Sigma_x
+      NPCOMP    = 1   ! one component
+      PFAC(1)   = DP5 ! factor
+      PLABEL(1) = 'OVERLAP'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+      PNAME     = 'Spin angmom.:  Y'
+      IPTYP     = 11  ! Sigma_y
+      NPCOMP    = 1   ! one component
+      PFAC(1)   = DP5 ! factor
+      PLABEL(1) = 'OVERLAP'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+      PNAME     = 'Spin angmom.:  Z'
+      IPTYP     = 12  ! Sigma_z
+      NPCOMP    = 1   ! one component
+      PFAC(1)   = DP5 ! factor
+      PLABEL(1) = 'OVERLAP'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+      CALL OP1IND('ZSPINMOM',INDOP1,LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+C    Left-hand operators
+C
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+      PFAC(1)  = DM1
+      PFAC(2)  = DM1
+      NPCOMP   = 2
+C
+C     Irreps
+C
+      DO IREPO = 0, MAXREP
+C
+C       Atoms
+C
+        DO IATOM1 = 1, NUCIND
+        IF(DOATOM(IATOM1)) THEN
+          MXATM2 = NUCIND
+C
+C         Cartesian directions
+C
+          DO ICOOR1 = 1, 3
+            ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
+            IF (ISCOR1 .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_SPINRO1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR1 .GT. 0) THEN
+              IFIRST = ISCOR1/100
+              ISECND = MOD(ISCOR1,100)/10
+              ITHIRD = MOD(MOD(ISCOR1,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
+              IPTYP    = IOP(ICOOR1)
+              IC1      = MOD(ICOOR1+1,3) + 1
+              IC2      = MOD(ICOOR1  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_SPINRO: sym. error !',IATOM1,ICOOR1,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
+     &                      INDXPR,MAXLLR)
+            ENDIF
+          ENDDO
+        END IF
+        ENDDO
+      ENDDO
 
+      CALL QEXIT('DEF_SPINRO1')
+      RETURN
+      END

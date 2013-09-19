@@ -83,7 +83,7 @@ C
 !                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
 !                    33        34        35        36
-     &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
+     &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
 
@@ -389,6 +389,10 @@ C&&&& .C6 - evaluate C6 dispersion coefficients
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
+C&&&& SPIN-R - spin-rotation constant according to Aucar et al
+            DOEXP = .TRUE.
+            DOXLR = .TRUE.
+            SPINRO = .TRUE.
             GO TO 100
   135    CONTINUE 
 C&&&& BXLAO 
