@@ -1291,11 +1291,11 @@ C
       KFRSAV = KFREE
       CALL TITLER('Projection analysis','*',122)
 C
-C     If requested, polarize reference orbitals
-C     =========================================
+C     If requested, do Mayer polarization of reference orbitals
+C     =========================================================
 C
-      IF(POLREF) THEN
-        CALL POLARIZE_REF(WORK,KFREE,LFREE)
+      IF(MAYER) THEN
+        CALL MAYER_POLARIZE(WORK,KFREE,LFREE)
       ENDIF
 C
 C     Find total numbers of reference orbitals;
@@ -1573,7 +1573,6 @@ CMI           ... we want diagonal elements from the square matrix...
                 ENDDO
                 write(lupri,*)
                ENDIF
-
               IOFF = IOFF + NSTR(IFRP,0,I)
             ENDDO
             JOFF = JOFF + NSTR(IFRP,0,J)
@@ -1603,11 +1602,10 @@ C
 C     Add polarization contribution to expansion coefficients
 C
       CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZ)
-      CALL QGEMM(NFBAS(IFRP,0),NMOL,NREF,DM1,'N','N',IPQTOQ(1,0),
-     &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,
-     &           'N','N',IPQTOQ(1,0),
-     &           BVEC,NTOT,NMOL,NZ,D1,IPQTOQ(1,0),
-     &           WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ)
+      CALL QGEMM(NFBAS(IFRP,0),NMOL,NREF,DM1,
+     &       'N','N',IPQTOQ(1,0),WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,
+     &       'N','N',IPQTOQ(1,0),BVEC,NTOT,NMOL,NZ,
+     &       D1,IPQTOQ(1,0),WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ)
       IF(IPRPRJ.GE.5) THEN
         CALL HEADER('Polarization vectors',0)
         CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
@@ -3036,8 +3034,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck polarize_ref */
-      SUBROUTINE POLARIZE_REF(WORK,KFREE,LFREE)
+C/* Deck mayer_polarize */
+      SUBROUTINE MAYER_POLARIZE(WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Polarize reference orbitals
@@ -3087,7 +3085,7 @@ C
      &             1,NSTR(1,0),'DFCOEF',.FALSE.,1,IOPT,
      &             KVEC,WORK(KCMO),DUM,DUM,
      &             IOFF,WORK,KFREE,LFREE)
-      CALL MEMREL('POLARIZE_REF.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      CALL MEMREL('MAYERPOL.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Get overlap matrix packed on fermion ircops
 C
@@ -3103,14 +3101,14 @@ C
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
      &     'Fragment coefficient file ',REFFIL(IFRAG),' not present'
-           CALL QUIT('POLARIZE_REF: No fragment coefficients !')
+           CALL QUIT('MAYERPOL: No fragment coefficients !')
         ENDIF
-        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'OLD','POLARIZE_REF')
+        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'OLD','MAYERPOL')
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &       (NPSH_FRAG(I),NESH_FRAG(I),NFBAS_FRAG(I),I=1,NSYM),TOTERG
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
-     &   'POLARIZE_REF: Coefficients read from file ',REFFIL(IFRAG),
+     &   'MAYERPOL: Coefficients read from file ',REFFIL(IFRAG),
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
@@ -3157,7 +3155,7 @@ C.........Generate pointer array for from fragment basis to molecular basis
      &        'Number of basis functions for this fragment is:',NSBAS,
      &        'Number of basis functions in coefficient file:',
      &         NFBAS_FRAG(IFRP)
-           CALL QUIT('POLARIZE_REF: Error in cf.selection !')
+           CALL QUIT('MAYERPOL: Error in cf.selection !')
           ENDIF
 C.........Generate polaried fragment orbitals: restrict to posivite-energy orbitals
           IOFF2  = NPSH_FRAG(IFRP) 
@@ -3167,18 +3165,18 @@ C.........Generate polaried fragment orbitals: restrict to posivite-energy orbit
           CALL MEMGET('REAL',KSCOMP,NSCOMP,WORK,KFREE,LFREE)
           NCHUNK = NFBAS_FRAG(IFRP)*NVECS(IFRP)*NZ
           CALL MEMGET('REAL',KCHUNK,NCHUNK,WORK,KFREE,LFREE)
-          CALL POLFRAG(WORK(IC1),NFBAS(IFRP,0),NVECS(IFRP),
+          CALL MPOLFRAG(WORK(IC1),NFBAS(IFRP,0),NVECS(IFRP),
      &                 WORK(IC2),NFBAS_FRAG(IFRP),NORB2,IOFF2,NVEC2,
      &                 WORK(IS1),WORK(KSCOMP),WORK(KCHUNK),WORK(KBAS),
      &                 WORK,KFREE,LFREE,IPRPRJ)
           IC1 = IC1 + NQ(IFRP)
           IC2 = IC2 + NORB2*NFBAS_FRAG(IFRP)*NZ
           IS1 = IS1 + NFBAS(IFRP,0)*NFBAS(IFRP,0)
-          CALL MEMREL('POLARIZE_REF.if',WORK,KFRSAV,KBAS,KFREE,LFREE)
+          CALL MEMREL('MAYERPOL.if',WORK,KFRSAV,KBAS,KFREE,LFREE)
         ENDDO ! End loop over fermion irreps IFRP
 C.......Dump polarized coefficients to file
         REFFIL(IFRAG)(1:1)='P'
-        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'NEW','POLARIZE_REF')
+        CALL OPNFIL(LUCOEF,REFFIL(IFRAG),'NEW','MAYERPOL')
         CALL GTINFO(TEXT(51:74))
         WRITE (LUCOEF) TEXT,NSYM,
      &       (NPSH_FRAG(I),NESH_FRAG(I),NFBAS_FRAG(I),I=1,NSYM),TOTERG
@@ -3188,16 +3186,16 @@ C.......Dump polarized coefficients to file
         CLOSE(LUCOEF,STATUS='KEEP')
         INUC = INUC + NNUC
       ENDDO ! End loop over REFS
-      CALL MEMREL('POLARIZE_REF',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('MAYERPOL',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
  10   CONTINUE
-      CALL QUIT('POLARIZE_REF: END reading TEXT')
+      CALL QUIT('MAYERPOL: END reading TEXT')
  20   CONTINUE
-      CALL QUIT('POLARIZE_REF: ERROR reading TEXT')
+      CALL QUIT('MAYERPOL: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck polfrag */
-      SUBROUTINE POLFRAG(CMO1,NBAS1,NORB1,CMO2,NBAS2,NORB2,IOFF2,NVEC2,
+      SUBROUTINE MPOLFRAG(CMO1,NBAS1,NORB1,CMO2,NBAS2,NORB2,IOFF2,NVEC2,
      &                   SMAT1,SCOMP,CHUNK,IBAS,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -3331,7 +3329,7 @@ C.......Calculate overlap between free- and polarized fragment orbitals
      &              NZ,IPQTOQ(1,0),LUPRI)                
         ENDIF
       ENDIF
-      CALL MEMREL('POLFRAG',WORK,KFRSAV,KSMATC,KFREE,LFREE)
+      CALL MEMREL('MPOLFRAG',WORK,KFRSAV,KSMATC,KFREE,LFREE)
 C.....Calculate overlap between free- and polarized fragment orbitals
       CALL QTRANS('AOMO','S',D0,NBAS2,NBAS2,NVEC2,NEFF,
      &           WORK(KSMAT2),NBAS2,NBAS2,1,IPQTOQ(1,0),
@@ -3372,7 +3370,7 @@ C       Copy polarized orbitals into corresponding free orbital position
           CALL DCOPY(NBAS2,CHUNK(1,J,IZ),1,CMO2(1,IOFF2+ISEL,IZ),1)
         ENDDO
       ENDDO
-      CALL MEMREL('POLFRAG',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('MPOLFRAG',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
