@@ -29,6 +29,7 @@ option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
+option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
@@ -248,6 +249,9 @@ if(ENABLE_UTILITIES)
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_MEM_TEST) # 
+        compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
 
