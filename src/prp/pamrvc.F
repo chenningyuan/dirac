@@ -4165,8 +4165,8 @@ C
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_lintra_driver to get '//
-     &               'b-transformed electronic polarization charges.'
+           write(lupri,'(a)') '* Calling pcm_oit_asc to get '//
+     &          'One-Index Transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
            allocate(mep_oit_asc(ntbas(0), ntbas(0), nz))
