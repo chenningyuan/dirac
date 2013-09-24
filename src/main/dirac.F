@@ -97,6 +97,7 @@ C  /* Deck dirctl */
 
 C
       CALL QENTER('DIRCTL')
+      call xml_open_file('dirac.xml')
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
