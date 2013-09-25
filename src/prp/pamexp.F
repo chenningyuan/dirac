@@ -171,7 +171,6 @@ C
 C
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
-         call quit('code not working yet... stefan fixme')
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MCSCF')
@@ -184,19 +183,22 @@ C
 C
          CALL OPNFIL(LUCOEF,'KRMCSCF','OLD','PRPEXP')
          CALL REAKRMC(LUCOEF,'NEWORB  ',CMO,NCMOTQ)
+         CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
+!        total DV = DV_core + DV_act
+         CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
+         call dzero(WORK(KDC),N2ORBXQ)
+         CALL DCSCT(WORK(KDC))
+         IF (NASHT .GT. 0) THEN
+           CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
+           CALL DAXPY(N2ORBXQ,D1,WORK(KDC),1,DMAT(1+N2BBASXQ),1)
+         END IF
+         CALL MEMREL('PRPEX1.orbana',WORK,KWORK,KDC,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
-C
-         INQUIRE(FILE='KRMC_FOCK', EXIST=FILEX)
-C
-         IF (.NOT. FILEX) 
-     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
-     &        'file "KRMC_FOCK" not found!')
-C
-         CALL OPNFIL(LUCOEF,'KRMC_FOCK','OLD','PRPEXP')
-         CALL REAKRMC(LUCOEF,'DTMO    ',DMAT(1+N2BBASXQ),N2ORBXQ)
-         CLOSE(LUCOEF,STATUS='KEEP')
+
+         call dzero(dmat,N2ORBXQ)
 C
 C        Get AO density matrix.
+!        input: C == U+ A U
 C
          DO I = 1, NFSYM
             CALL QTRANS('MOAO','S',D0,

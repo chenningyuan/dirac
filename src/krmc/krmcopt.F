@@ -1081,25 +1081,6 @@ C
       END IF
 C
 C
-#ifdef CODE_not_working
-!
-!     the code below assumes an uncorrelated HF 1-p density matrix...???
-!     anyway, it is replaced now properly with code in psiop1...
-!
-C     As a temporary solution for calculating 1st order properties
-C     we save the total density matrix: DC + DV
-C
-      CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL DCSCT(WORK(KDC))
-      IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDV,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL DVSCT(DV,WORK(KDV))
-         CALL DAXPY(N2ORBXQ,D1,WORK(KDV),1,WORK(KDC),1)
-      END IF
-      CALL WRTKRMC(LUKRM3,'DTMO    ',WORK(KDC),N2ORBXQ)
-#endif
-
-C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
