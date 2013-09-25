@@ -776,17 +776,6 @@ C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
 C
-C     calculate 1-particle density to be exported on file - default
-      if(.not.no1pdens_save)then
-        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
-     &  ' matrix calculated for the converged MCSCF wave function'//
-     &  ' to file.'
-        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
-        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &             .false.,MOISNO,.true.,1,WORK,KFREE,LFREE)
-        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
-      end if
 C
 C
  3000 CONTINUE
@@ -794,6 +783,18 @@ C
       CPUTID = SECTID(CPUTOT2-CPUTOT1)
       WALLTID = SECTID(WALLTOT2-WALLTOT1)
       WRITE(LUPRI,9300) CPUTID,WALLTID
+
+C     calculate 1-particle density to be exported on file - default
+      if(.not.no1pdens_save)then
+        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
+     &  ' matrix calculated for the (converged) MCSCF wave function'//
+     &  ' to file.'
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &             .false.,MOISNO,.true.,1,WORK,KFREE,LFREE)
+        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
 C
  9300 FORMAT(/'>>> TOTAL CPU (WALL) TIME IN KR-MCSCF: ',A,'(',A,')')
 C
@@ -1080,6 +1081,11 @@ C
       END IF
 C
 C
+#ifdef CODE_not_working
+!
+!     the code below assumes an uncorrelated HF 1-p density matrix...???
+!     anyway, it is replaced now properly with code in psiop1...
+!
 C     As a temporary solution for calculating 1st order properties
 C     we save the total density matrix: DC + DV
 C
@@ -1091,6 +1097,8 @@ C
          CALL DAXPY(N2ORBXQ,D1,WORK(KDV),1,WORK(KDC),1)
       END IF
       CALL WRTKRMC(LUKRM3,'DTMO    ',WORK(KDC),N2ORBXQ)
+#endif
+
 C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C

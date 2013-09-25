@@ -171,6 +171,7 @@ C
 C
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
+         call quit('code not working yet... stefan fixme')
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MCSCF')
