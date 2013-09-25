@@ -181,18 +181,23 @@ C
      &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
      &        'file "KRMCSCF" not found!')
 C
-         CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
+         call dzero(dmat,N2BBASXQ*2)
 
          CALL OPNFIL(LUCOEF,'KRMCSCF','OLD','PRPEXP')
          CALL REAKRMC(LUCOEF,'NEWORB  ',CMO,NCMOTQ)
+         CLOSE(LUCOEF,STATUS='KEEP')
+
+         INQUIRE(FILE='MCDENS', EXIST=FILEX)
+C
+         IF (.NOT. FILEX) 
+     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
+     &        'file "MCDENS" not found!')
+         CALL OPNFIL(LUCOEF,'MCDENS','OLD','PRPEXP')
          CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
 !        total DV = DV_core + DV_act
-         call dzero(dmat,N2BBASXQ*2)
-         call dzero(WORK(KDC),N2ORBXQ)
-         CALL DCSCT(WORK(KDC))
+         CALL DCSCT(DMAT(1+N2BBASXQ))
          IF (NASHT .GT. 0) THEN
            CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
-           CALL DAXPY(N2ORBXQ,D1,WORK(KDC),1,DMAT(1+N2BBASXQ),1)
          END IF
          CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -215,8 +220,6 @@ C
 C        Result is scaled by 2 in PRPEX2...
 C
          CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
-
-         CALL MEMREL('PRPEX1.mcscf ',WORK,KWORK,KDC,KFREE,LFREE)
 C
       ELSE
          WRITE(LUPRI,'(1X,2A)')
