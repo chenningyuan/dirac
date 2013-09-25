@@ -181,21 +181,22 @@ C
      &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
      &        'file "KRMCSCF" not found!')
 C
+         CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
+
          CALL OPNFIL(LUCOEF,'KRMCSCF','OLD','PRPEXP')
          CALL REAKRMC(LUCOEF,'NEWORB  ',CMO,NCMOTQ)
          CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
 !        total DV = DV_core + DV_act
-         CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
+         call dzero(dmat,N2BBASXQ*2)
          call dzero(WORK(KDC),N2ORBXQ)
          CALL DCSCT(WORK(KDC))
          IF (NASHT .GT. 0) THEN
            CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
            CALL DAXPY(N2ORBXQ,D1,WORK(KDC),1,DMAT(1+N2BBASXQ),1)
          END IF
-         CALL MEMREL('PRPEX1.orbana',WORK,KWORK,KDC,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
 
-         call dzero(dmat,N2ORBXQ)
+         call dzero(dmat,N2BBASXQ)
 C
 C        Get AO density matrix.
 !        input: C == U+ A U
@@ -214,6 +215,8 @@ C
 C        Result is scaled by 2 in PRPEX2...
 C
          CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
+
+         CALL MEMREL('PRPEX1.mcscf ',WORK,KWORK,KDC,KFREE,LFREE)
 C
       ELSE
          WRITE(LUPRI,'(1X,2A)')
