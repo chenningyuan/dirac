@@ -3421,40 +3421,8 @@ C.....Generate depolarized MOs (stored in WORK(KBUF))
      &       'N','N',IPQTOQ(1,0),BVEC,NTOT,NMOL,NZ,
      &       D0,IPQTOQ(1,0),WORK(KBUF),NBAS,NMOL,NZ)
 C.....Orthogonalize depolarized MOs
-      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NMOL,NMOL,
-     &         SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
-     &         AMAT,NMOL,NMOL,NZ,IPQTOQ(1,0),
-     &         WORK(KBUF),NBAS,NTOT,NZ,IPQTOQ(1,0),
-     &         WORK(KBUF),NBAS,NTOT,NZ,IPQTOQ(1,0),
-     &         WORK(KFREE),LFREE,IPRINT)
-      IF(IPRINT.GE.2) THEN
-        WRITE(LUPRI,*) 
-     &     '* Overlap matrix in depolarized MOs'
-        CALL PRQMAT(AMAT,NMOL,NMOL,NMOL,NMOL,
-     &          NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      NDIM=NMOL*NMOL*NZ
-      CALL MEMGET('REAL',KEIG ,NMOL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVMAT,NDIM,WORK,KFREE,LFREE)
-      STOL=1.0D-2
-      CALL LOWGENQ(NZ,NMOL,NEFF,
-     &             AMAT       ,NMOL,NMOL,
-     &             WORK(KVMAT),NMOL,NMOL,
-     &             STOL,IPRINT,WORK(KEIG),IPQTOQ(1,0),
-     &             WORK(KFREE),LFREE)
-      IF(IPRINT.GE.2) THEN
-        WRITE(6,*) 'Eigenvalues of overlap matrix',NEFF
-        CALL OUTPUT(WORK(KEIG),1,NMOL,1,1,NMOL,1,-1,LUPRI)
-      ENDIF
-      WRITE(6,*) 'Number of polarized atomic orbitals: ',NEFF
-      NDIM=NBAS*NMOL*NZ
-      CALL MEMGET('REAL',KBUF2,NDIM,WORK,KFREE,LFREE)
-      CALL QGEMM(NBAS,NEFF,NMOL,D1,
-     &           'N','N',IPQTOQ(1,0),WORK(KBUF),NBAS,NMOL,NZ,
-     &           'N','N',IPQTOQ(1,0),WORK(KVMAT),NMOL,NMOL,NZ,
-     &           D0,IPQTOQ(1,0),WORK(KBUF2),NBAS,NMOL,NZ)
-      CALL DCOPY(NDIM,WORK(KBUF2),1,WORK(KBUF),1)
-      CALL MEMREL('KNIZIA.depol',WORK,KFRSAV,KEIG,KFREE,LFREE)
+      CALL ORTHO_SELVEC(WORK(KBUF),NBAS,NMOL,1,NMOL,NEFF,SMAT,AMAT,
+     &                  IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
 C
       IF(IPRINT.GE.2) THEN
         CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
@@ -3575,7 +3543,7 @@ C
       IVEC= 1
       DO IREF = 1,NREFS
         NVEC = NSTR(IFRP,0,IREF)
-        CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,SMAT,AMAT,
+        CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,NEFF,SMAT,AMAT,
      &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
         IVEC = IVEC + NVEC
       ENDDO
@@ -3595,7 +3563,7 @@ C.....Copy polarized fragment coefficients into CMO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Ortho_selvec */
-      SUBROUTINE ORTHO_SELVEC(CMO,NBAS,NVEC,ISEL,NSEL,
+      SUBROUTINE ORTHO_SELVEC(CMO,NBAS,NVEC,ISEL,NSEL,NEFF,
      &                    SMAT,AMAT,IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3620,32 +3588,40 @@ C
         WRITE(LUPRI,*) '* ORTHO_SELVEC: Overlap matrix'
         CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
       ENDIF
-      NDIM=NSEL*NSEL*NZ
-      CALL MEMGET('REAL',KEIG ,NSEL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVMAT,NDIM,WORK,KFREE,LFREE)
-      STOL=1.0D-2
-      CALL LOWGENQ(NZ,NSEL,NEFF,
+      IF(NSEL.EQ.1) THEN
+        NEFF = 1
+        FAC = D1/SQRT(AMAT(1,1,1))
+        DO IZ = 1,NZ
+          CALL DSCAL(NBAS,FAC,CMO(1,ISEL,IZ),1)
+        ENDDO
+      ELSE
+        NDIM=NSEL*NSEL*NZ
+        CALL MEMGET('REAL',KEIG ,NSEL,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVMAT,NDIM,WORK,KFREE,LFREE)
+        STOL=1.0D-2
+        CALL LOWGENQ(NZ,NSEL,NEFF,
      &             AMAT       ,NSEL,NSEL,
      &             WORK(KVMAT),NSEL,NSEL,
      &             STOL,IPRINT,WORK(KEIG),IPQ,
      &             WORK(KFREE),LFREE)
-      IF(IPRINT.GE.2) THEN
-        WRITE(6,*) 'ORTHO_SELVEC: Eigenvalues of overlap matrix',NEFF
-        CALL OUTPUT(WORK(KEIG),1,NSEL,1,1,NSEL,1,-1,LUPRI)
-        WRITE(6,*) 'ORTHO_SELVEC: Span of selected coefficients ',NEFF
+        IF(IPRINT.GE.2) THEN
+          WRITE(6,*) 'ORTHO_SELVEC: Eigenvalues of overlap matrix',NEFF
+          CALL OUTPUT(WORK(KEIG),1,NSEL,1,1,NSEL,1,-1,LUPRI)
+          WRITE(6,*) 'ORTHO_SELVEC: Span of selected coefficients ',NEFF
+        ENDIF
+        NDIM=NBAS*NSEL
+        CALL MEMGET('REAL',KBUF,NDIM*NZ,WORK,KFREE,LFREE)
+        IOFF = 0
+        DO IZ = 1,NZ
+          CALL DCOPY(NDIM,CMO(1,ISEL,IZ),1,WORK(KBUF+IOFF),1)
+          IOFF = IOFF + NDIM
+        ENDDO
+        CALL QGEMM(NBAS,NEFF,NSEL,D1,
+     &             'N','N',IPQ,WORK(KBUF),NBAS,NSEL,NZ,
+     &             'N','N',IPQ,WORK(KVMAT),NSEL,NSEL,NZ,
+     &             D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
+        CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
-      NDIM=NBAS*NSEL
-      CALL MEMGET('REAL',KBUF,NDIM*NZ,WORK,KFREE,LFREE)
-      IOFF = 0
-      DO IZ = 1,NZ
-        CALL DCOPY(NDIM,CMO(1,ISEL,IZ),1,WORK(KBUF+IOFF),1)
-        IOFF = IOFF + NDIM
-      ENDDO
-      CALL QGEMM(NBAS,NEFF,NSEL,D1,
-     &           'N','N',IPQ,WORK(KBUF),NBAS,NSEL,NZ,
-     &           'N','N',IPQ,WORK(KVMAT),NSEL,NSEL,NZ,
-     &           D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
-      CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
