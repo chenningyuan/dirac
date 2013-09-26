@@ -4002,7 +4002,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4030,7 +4030,6 @@ C     Default is to project all occupied vectors onto all fragment vectors
       POLREF = .FALSE.
       MAYER  = .FALSE.
       POLNRM = .FALSE.
-      REMREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -4115,8 +4114,6 @@ C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
-C&&& REMREF: Project out reference orbitals from polarized orbitals
-                  REMREF = .TRUE.
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4203,10 +4200,6 @@ C
             ENDIF
           ENDDO
         ENDDO
-        IF(REMREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Project out reference orbitals from polarized ones.'
-        ENDIF
       ELSE
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
