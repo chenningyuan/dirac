@@ -1510,20 +1510,21 @@ C
       DOPOP = NREFS.GT.1
       PTOL = PROTHR*DC
 C
-C     Get fragment expansion coefficients
-C
-      CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &            NFBAS(IFRP,0),NREFS,REFFIL,NSTR(1,1,1),
-     &            PTOL,IPRPRJ,WORK,KFREE,LFREE)
-C
 C     If requested, polarize reference using scheme of Knizia
 C
       IF(POLREF) THEN
+         CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
+     &               NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &               PTOL,0,WORK,KFREE,LFREE)
          CALL KNIZIA(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
      &               NFBAS(IFRP,0),IPRPRJ,WORK,KFREE,LFREE)
-         CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &               NFBAS(IFRP,0),PTOL,IPRPRJ,WORK,KFREE,LFREE)
       ENDIF
+C
+C     Get fragment expansion coefficients
+C
+      CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
+     &            NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &            PTOL,IPRPRJ,WORK,KFREE,LFREE)
 C
 C     Add polarization contribution to expansion coefficients
 C
@@ -1561,7 +1562,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRJAN2(CMO,BVEC,SMAT,AMAT,NTOT,NMOL,NBAS,
+      SUBROUTINE PRJAN2(CMO,BVEC,SMAT,AMAT,NTOT,NMOL,NBAS,IFRP,
      &                  NREFS,REFFIL,NSTR,PTOL,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3576,7 +3577,6 @@ C.....Assemble polarized fragment coefficients
         CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      STOP 'End of test'
       CALL MEMREL('KNIZIA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
