@@ -3569,6 +3569,16 @@ C.....Assemble polarized fragment coefficients
         IOFF = IOFF + NDIM
       ENDDO
       CALL MEMREL('KNIZIA.ass',WORK,KFRSAV,KV2,KFREE,LFREE)
+C
+C     Orthonormalization within each fragment
+C
+      IVEC= 1
+      DO IREF = 1,NREFS
+        NVEC = NSTR(IFRP,0,IREF)
+        CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,SMAT,AMAT,
+     &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
+        IVEC = IVEC + NVEC
+      ENDDO
 C.....Copy polarized fragment coefficients into CMO
       IOFF = 0
       DO IZ = 1,NZ
@@ -3581,6 +3591,61 @@ C.....Copy polarized fragment coefficients into CMO
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL MEMREL('KNIZIA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Ortho_selvec */
+      SUBROUTINE ORTHO_SELVEC(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                    SMAT,AMAT,IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Orthogonalize selected vectors
+C     Written by Trond Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),SMAT(NBAS,NBAS),
+     &          AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C
+      KFRSAV = KFREE
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '* ORTHO_SELVEC: Overlap matrix'
+        CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
+      ENDIF
+      NDIM=NSEL*NSEL*NZ
+      CALL MEMGET('REAL',KEIG ,NSEL,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVMAT,NDIM,WORK,KFREE,LFREE)
+      STOL=1.0D-2
+      CALL LOWGENQ(NZ,NSEL,NEFF,
+     &             AMAT       ,NSEL,NSEL,
+     &             WORK(KVMAT),NSEL,NSEL,
+     &             STOL,IPRINT,WORK(KEIG),IPQ,
+     &             WORK(KFREE),LFREE)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,*) 'ORTHO_SELVEC: Eigenvalues of overlap matrix',NEFF
+        CALL OUTPUT(WORK(KEIG),1,NSEL,1,1,NSEL,1,-1,LUPRI)
+        WRITE(6,*) 'ORTHO_SELVEC: Span of selected coefficients ',NEFF
+      ENDIF
+      NDIM=NBAS*NSEL
+      CALL MEMGET('REAL',KBUF,NDIM*NZ,WORK,KFREE,LFREE)
+      IOFF = 0
+      DO IZ = 1,NZ
+        CALL DCOPY(NDIM,CMO(1,ISEL,IZ),1,WORK(KBUF+IOFF),1)
+        IOFF = IOFF + NDIM
+      ENDDO
+      CALL QGEMM(NBAS,NEFF,NSEL,D1,
+     &           'N','N',IPQ,WORK(KBUF),NBAS,NSEL,NZ,
+     &           'N','N',IPQ,WORK(KVMAT),NSEL,NSEL,NZ,
+     &           D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
+      CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
