@@ -1,5 +1,5 @@
-C
-C
+!C
+!C
       COMMON /COMPL/ CARITH
       LOGICAL CARITH
       COMMON /COMPI/ IRW, RCW

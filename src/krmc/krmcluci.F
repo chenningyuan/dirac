@@ -535,7 +535,7 @@ C
       IF( CIRUN .eq. 'PROP1 ') THEN 
          CXPROPRUN = .TRUE.
          CALL XPROP_KRCI(F2,IHTYPE,WORK(KPROCLIST),WORK(KGROUPLIST),
-     &                   CIRUN)
+     &                   CIRUN,mz_num)
          GOTO 8888
       END IF
 C

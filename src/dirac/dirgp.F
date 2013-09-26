@@ -3376,24 +3376,10 @@ C       ---------------------------------------------------
 C.........these factors assure the correct normalized linear
 C.........combination of L and (L-2) for the modified solid harmonic
           L = LL - 1
-
-          ARGSQRT = (D2*dble(L)+D1)*(D2*dble(L)-D1)
-
-          IF (IPRINT.GE.8) THEN
-           write(lupri,*) 'L,dble(L)=',L,dble(L)
-           write(lupri,*) 'ARGSQRT=',ARGSQRT
-           CALL FLSHFO(LUPRI) 
-          ENDIF
-
-CMI       FACL   = D1/SQRT((D2*dble(L)+D1)*(D2*dble(L)-D1))
-          IF (ARGSQRT.GT.D0) THEN
-            FACL   = D1/SQRT(ARGSQRT)
+          IF(L.GT.0) THEN
+            FACL=D1/SQRT((D2*dble(L)+D1)*(D2*dble(L)-D1))
           ELSE
             FACL   = D0
-            IF (IPRINT.GE.2) THEN
-             WRITE(LUPRI,'(2X,A,D12.6)') 'RKBCA1: warning, ARGSQRT=',
-     &       ARGSQRT
-            ENDIF
           ENDIF
           FACLM2 = -D2*(D2*dble(L)-D1)*FACL
         ENDIF

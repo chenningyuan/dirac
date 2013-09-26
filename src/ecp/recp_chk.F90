@@ -33,6 +33,9 @@ SUBROUTINE RECP_CHK_MAIN
 ! check inconsistency in optimize options
   CALL RECP_CHK_OPT
 
+! linear symmetry is not working yet, switch it off
+  CALL RECP_CHK_SYM
+
 END SUBROUTINE RECP_CHK_MAIN
 
 
@@ -84,5 +87,19 @@ SUBROUTINE RECP_CHK_OPT
      ENDIF
   ENDIF
 END SUBROUTINE RECP_CHK_OPT
+
+SUBROUTINE RECP_CHK_SYM
+! switch off linear symmetry if this is active
+  IMPLICIT NONE
+#include "inc_print.h"
+#include "dcbham.h"
+#include "dgroup.h"
+  IF (LINEAR.AND.ECPCALC) THEN
+        WRITE(RECP_OUT,'(10X,A)')'>>> RECP incompatibility: '
+        WRITE(RECP_OUT,'(10X,A)')'Linear symmetry is switched off' 
+        LINEAR = .FALSE.
+  ENDIF
+       
+END SUBROUTINE RECP_CHK_SYM
 
 END MODULE RECP_CHK

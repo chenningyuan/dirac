@@ -60,7 +60,7 @@ C***********************************************************************
       real(8), allocatable :: WORK(:)
       character(100)       :: line
       integer, parameter   :: file_unit = 137
-      logical              :: file_exists, file_exists2
+      logical              :: inp_exists, mol_exists, xyz_exists
       logical              :: input_found
 
 C
@@ -72,8 +72,8 @@ C
       CALL PAMINI()
 
 !     print contents of input file to output
-      inquire(file = 'DIRAC.INP', exist = file_exists)
-      if (file_exists) then
+      inquire(file = 'DIRAC.INP', exist = inp_exists)
+      if (inp_exists) then
          open(file_unit,
      &        file   = 'DIRAC.INP',
      &        status = 'unknown',
@@ -93,8 +93,8 @@ C
       close(file_unit, status = 'keep')
 
 !     print contents of molecule file to output
-      inquire(file = 'MOLECULE.MOL', exist = file_exists)
-      if (file_exists) then
+      inquire(file = 'MOLECULE.MOL', exist = mol_exists)
+      if (mol_exists) then
          open(file_unit,
      &        file   = 'MOLECULE.MOL',
      &        status = 'unknown',
@@ -102,8 +102,8 @@ C
      &        access = 'sequential')
          rewind(file_unit)
       else
-         inquire(file = 'MOLECULE.XYZ', exist = file_exists2)
-         if (file_exists2) then
+         inquire(file = 'MOLECULE.XYZ', exist = xyz_exists)
+         if (xyz_exists) then
             open(file_unit,
      &           file   = 'MOLECULE.XYZ',
      &           status = 'unknown',
@@ -162,7 +162,11 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('program')
          call xml_begin('input')
          call xml_embed_formatted('DIRAC.INP','dirac-input')
-         call xml_embed_formatted('MOLECULE.MOL','dirac-molecule')
+         if (mol_exists) then
+            call xml_embed_formatted('MOLECULE.MOL','dirac-molecule')
+         else
+            call xml_embed_formatted('MOLECULE.XYZ','dirac-xyz')
+         end if
          call xml_end('input')
          call xml_begin('output') ! closed in dirac.F
       endif
@@ -249,11 +253,11 @@ C
 C
 C     Input of wave function analysis module
 C HJAaJ May 2002:
-C   more logical to move CALL PAMANA to PAMPSI, so it follows directly DHF/DFT in output
+C   more logical to move CALL PAMANA to PAMPSI, so it follows directly HF/DFT in output
 C   even if e.g. MP2 or RELCCSD is called, because .ANALYZE is currently an analysis
-C   of the DHF/DFT wave function, not of the following output.
-C   - in a way *ANALYZE ought to be changed to *DHF ANALYZE and
-C     .ANALYZE moved to *DHF INPUT ??
+C   of the HF/DFT wave function, not of the following output.
+C   - in a way *ANALYZE ought to be changed to *SCF ANALYZE and
+C     .ANALYZE moved to *SCF INPUT ??
 C   - one could use the analysis for other wave functions with some changes ?
 C
       IF(DOANA) THEN
@@ -684,10 +688,9 @@ C
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
+c     .XMLOUT can be removed after adapting the tests, is now always active
 C
       NOSFCRASH=.FALSE.
-c     no xml output unless .XMLOUT
-      LUXML = -1
 C
 C     Read menu file
 C     ==============
@@ -722,7 +725,7 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in JOBINP.')
   101    CONTINUE
-C&&&& TITLE: Title of DHF run
+C&&&& TITLE: Title of run
             READ(LUCMD,'(A50)') TITLE
             GO TO 100
   102    CONTINUE
@@ -774,10 +777,8 @@ C&&&& OPTIMIZE: Geometry optimization
 C&&&& MINIMIZE: Geometry optimization (tsaue: retained for backwards compatibility)
             GO TO 111
  113     CONTINUE
-C&&& XMLOUT  : Write output in xml format to separate file
-         call xml_open_file('dirac.xml')
+C&&& XMLOUT  : Retained for backwards compatibility (lv: is now always on)
          GOTO 100
-
 !       xxxxxx keyword
  114     continue
          goto 100
@@ -868,7 +869,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SCFINP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
 C
-C     Input section for DHF-module
+C     Input section for SCF module
 C
 CMI ... it's called always after the HAMINP
 C
@@ -990,8 +991,8 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-CTROND      NOQCDHF   = .FALSE.
-      NOQCDHF   = .TRUE.
+      NOQCDHF   = .FALSE.
+C      NOQCDHF   = .TRUE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
@@ -1085,7 +1086,7 @@ C     Process input for *SCF
 C     ========================
 
 
-      newdef = (word == '*SCF   ' .or. word == '*DHFCAL')
+      newdef = (word == '*SCF   ')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -1796,7 +1797,10 @@ C
          NFROT_DHF  = NFRO_DHF(1)  + NFRO_DHF(2)
          NELECT_DHF = NELEC_DHF(1) + NELEC_DHF(2)
       END IF
-      IF(NASHT_DHF.EQ.0) AOC = .FALSE.
+      IF(NASHT_DHF.EQ.0) THEN
+        AOC     = .FALSE.
+        NOQCDHF = .FALSE.
+      ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
@@ -2430,12 +2434,12 @@ C
 #include "dcbreo.h"
 #include "dcbrot.h"
 C
-      DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
+      DATA TABDIR /'*END OF','xxxxxxx','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  '/
-      DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
+      DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
@@ -2519,11 +2523,8 @@ C
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
 
-!        .DHF kept for backwards compatibility
   101    continue
-            WRITE(LUPRI,*)
-     &   'WARNING: .DHF is deprecated, please use .SCF instead'
-            go to 122
+            go to 100
 
 C&&&& MP2: Perform second-order Moller-Plesset calculation
   102    CONTINUE
@@ -2808,10 +2809,7 @@ C
          CALL QUIT('Program stopped in PSIINP, error in prompt.')
       END IF
 
-!*DHFCAL kept for backwards compatibility
     2 continue
-      print *, 'WARNING: *DHFCAL is deprecated, please use *SCF instead'
-      call SCFINP(word, .false., work, lwork)
       go to 200
 
     3 CONTINUE
@@ -3041,7 +3039,7 @@ C
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
-     &            '.DISTRT','xxxxxxx','.TRUNCF','.MEMFAC','XXXXXXX'/
+     &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -3200,7 +3198,7 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxxxxx:
+C&&& xxxxxx: 
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
@@ -3224,7 +3222,9 @@ C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
                   IMOKW(26) = 1
                GO TO 100
    27          CONTINUE
-C&&& xxxxxxxxx:
+C&&& CONVER: set convergence threshold
+                  READ(LUCMD,*) my_convergence
+                  IMOKW(27) = 1
                GO TO 100
    28          CONTINUE
 C&&& TRUNCFactor: truncation factor for residual vectors for next trial
@@ -4002,7 +4002,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.XXXXX','.POLNRM','.REMREF','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4028,7 +4028,6 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
-      POLTST = .FALSE.
       POLNRM = .FALSE.
       REMREF = .FALSE.
 C
@@ -4104,12 +4103,9 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  9             CONTINUE
-C&&& POLTST: Check if polarization contributions are spanned by
-C            polarizaed atomic orbitals
-                  POLTST = .TRUE.
-                  POLNRM = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
@@ -4199,13 +4195,8 @@ C
           WRITE(LUPRI,'(1X,A)')
      &      '* Project out reference orbitals from polarized ones.'
         ENDIF
-        IF(POLTST) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Test if polarization contributions are spanned by ',
-     &      ' polarized reference orbitals.'
-        ENDIF
       ELSE
-        IF(POLREF.OR.POLTST) THEN
+        IF(POLREF) THEN
           CALL QUIT
      &     ('ANAINP: Polarization only possible with SELOWN=T')
         ENDIF

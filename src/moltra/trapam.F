@@ -3053,29 +3053,125 @@ C     Get screening matrices
 C
       CALL MEMGET('REAL',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
 C
-C     Screening matrix for electron 1 ; vectors 3 and 4 !
+C     Screening matrix for electron 1 ; vectors 1 and 2 !
 C
       IOFF = KDRIJ
-      SAME = ISAME(3).EQ.ISAME(4)
+      SAME = ISAME(1).EQ.ISAME(2)
       CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
-     &                  Q3,NDMOQR(1,1,3),ICMOQR(1,3),NSTR(1,0,3),
-     &                  Q4,NDMOQR(1,1,4),ICMOQR(1,4),NSTR(1,0,4),
+     &                  Q1,NDMOQR(1,1,1),ICMOQR(1,1),NSTR(1,0,1),
+     &                  Q2,NDMOQR(1,1,2),ICMOQR(1,2),NSTR(1,0,2),
      &                  WORK,KFREE,LFREE)
 C
-C     Screening matrix for electron 2 ; vectors 1 and 2 !
+C     Screening matrix for electron 2 ; vectors 3 and 4 !
+C     Check for sameness relations
+C
+      IOFF = KDRIJ + NDRIJ
+      IF(ISAME(1).EQ.ISAME(3).AND.ISAME(2).EQ.ISAME(4)) THEN
+        CALL DCOPY(NDRIJ,WORK(KDRIJ),1,WORK(IOFF),1)
+      ELSE
+        SAME = ISAME(3).EQ.ISAME(4)
+        CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q3,NDMOQR(1,1,3),ICMOQR(1,3),NSTR(1,0,3),
+     &                  Q4,NDMOQR(1,1,3),ICMOQR(1,4),NSTR(1,0,4),
+     &                  WORK,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pr4sc2 */
+      SUBROUTINE PR4SC2(KDRIJ,WORK,KFREE,LFREE,GABAO,
+     &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
+     &                  ISAME,IPRINT)
+C***********************************************************************
+C
+C     Prepare for 4-index screening for integrals that are to be anti-symmetrized
+C     Fixes old screening bug in MP2
+C
+C     Written by L.Visscher 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+#include "dgroup.h"
+#include "blocks.h"
+C
+      LOGICAL SAME
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
+     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*)
+      DIMENSION GABAO(*)
+C
+C     Initialize
+C
+      N2GAB   = NSYMBL*NSYMBL
+      NDRIJ   = N2GAB*NFSYM
+      CALL MEMGET('REAL',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDRIJE,NDRIJ*2,WORK,KFREE,LFREE)
+C
+C     Get screening matrices for direct contribution
+C
+C     Screening matrix for electron 1 ; vectors 1 and 2 !
+C
+      IOFF = KDRIJ
+      SAME = ISAME(1).EQ.ISAME(2)
+      CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q1,NDMOQR(1,1,1),ICMOQR(1,1),NSTR(1,0,1),
+     &                  Q2,NDMOQR(1,1,2),ICMOQR(1,2),NSTR(1,0,2),
+     &                  WORK,KFREE,LFREE)
+C
+C     Screening matrix for electron 2 ; vectors 3 and 4 !
 C     Check for sameness relations
 C
       IOFF = KDRIJ + NDRIJ
       IF(ISAME(3).EQ.ISAME(1).AND.ISAME(4).EQ.ISAME(2)) THEN
         CALL DCOPY(NDRIJ,WORK(KDRIJ),1,WORK(IOFF),1)
       ELSE
-        SAME = ISAME(1).EQ.ISAME(2)
+        SAME = ISAME(3).EQ.ISAME(4)
         CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q3,NDMOQR(1,1,3),ICMOQR(1,3),NSTR(1,0,3),
+     &                  Q4,NDMOQR(1,1,4),ICMOQR(1,4),NSTR(1,0,4),
+     &                  WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Get screening matrices for exchange contribution
+C
+C
+C     Screening matrix for electron 1 ; vectors 1 and 4 !
+C
+      IOFF = KDRIJE
+      SAME = ISAME(1).EQ.ISAME(4)
+      CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
      &                  Q1,NDMOQR(1,1,1),ICMOQR(1,1),NSTR(1,0,1),
+     &                  Q4,NDMOQR(1,1,4),ICMOQR(1,4),NSTR(1,0,4),
+     &                  WORK,KFREE,LFREE)
+C
+C     Screening matrix for electron 2 ; vectors 3 and 2 !
+C     Check for sameness relations
+C
+      IOFF = KDRIJE + NDRIJ
+      IF(ISAME(3).EQ.ISAME(1).AND.ISAME(2).EQ.ISAME(4)) THEN
+        CALL DCOPY(NDRIJ,WORK(KDRIJE),1,WORK(IOFF),1)
+      ELSE
+        SAME = ISAME(3).EQ.ISAME(2)
+        CALL MKDRIJ(WORK(IOFF),SAME,IPRINT,
+     &                  Q3,NDMOQR(1,1,3),ICMOQR(1,3),NSTR(1,0,3),
      &                  Q2,NDMOQR(1,1,2),ICMOQR(1,2),NSTR(1,0,2),
      &                  WORK,KFREE,LFREE)
       ENDIF
 C
+C     Take maximum of the direct and exchange contributions
+C
+      DO I = 1, 2 * NDRIJ
+         WORK(KDRIJ+I-1) = MAX(WORK(KDRIJ+I-1),WORK(KDRIJE+I-1))
+      ENDDO
+C
+C     Clean up
+C
+      CALL MEMREL('PR4SC2',WORK,KDRIJE,KDRIJE,KFREE,LFREE)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

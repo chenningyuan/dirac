@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-#define MOD_UNRELEASED
-
 module fde_data
       
    use fde_types
