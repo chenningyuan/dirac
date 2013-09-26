@@ -1517,7 +1517,8 @@ C
      &               NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
      &               PTOL,0,WORK,KFREE,LFREE)
          CALL KNIZIA(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &               NFBAS(IFRP,0),IPRPRJ,WORK,KFREE,LFREE)
+     &               NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &               IPRPRJ,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Get fragment expansion coefficients
@@ -3381,8 +3382,8 @@ C       Copy polarized orbitals into corresponding free orbital position
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck knizia */
-      SUBROUTINE KNIZIA(CMO,BVEC,SMAT,AMAT,NTOT,NMOL,NBAS,
-     &                  IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE KNIZIA(CMO,BVEC,SMAT,AMAT,NTOT,NMOL,NBAS,IFRP,
+     &                  NREFS,REFFIL,NSTR,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Polarize fragment orbitals according to the intrinsic AO scheme
@@ -3396,8 +3397,9 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,DM1=-1.0D0,D1=1.0D0)
 C
 #include "dgroup.h"
+      CHARACTER*6 REFFIL(NREFS)
       DIMENSION CMO(NBAS,NTOT,NZ),BVEC(NTOT,NMOL,NZ),SMAT(NBAS,NBAS),
-     &          AMAT(NMOL,NMOL,NZ),WORK(*)
+     &          NSTR(2,0:2,NREFS),AMAT(NTOT,NTOT,NZ),WORK(*)
 C
       KFRSAV=KFREE
       NREF=NTOT-NMOL
@@ -3482,12 +3484,13 @@ C.....Projector onto depolarized space P'
      &           'N','N',IPQTOQ(1,0),WORK(KM2),NBAS,NBAS,NZ,
      &           'N','N',IPQTOQ(1,0),SMAT,NBAS,NBAS,1,
      &           D0,IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ)
+      CALL MEMREL('KNIZIA.proj1',WORK,KFRSAV,KM2,KFREE,LFREE)
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Projector onto depolarized space'
         CALL PRQMAT(WORK(KM1),NBAS,NBAS,NBAS,NBAS,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-C.....apply first projector to fragment coefficients: b11 = P'b0
+C.....apply first projector to fragment coefficients: b11 = P'b0; stored in V1
       CALL QGEMM(NBAS,NREF,NBAS,D1,
      &           'N','N',IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ,
      &           'N','N',IPQTOQ(1,0),CMO,NBAS,NTOT,NZ,
@@ -3497,79 +3500,79 @@ C.....apply first projector to fragment coefficients: b11 = P'b0
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-C.....construct orthogonal complement: b12 = b0 - b11; stored in CMO
-      IOFF = KV1
+C.....construct orthogonal complement: b12 = b0 - b11; stored in v2
+      CALL MEMGET('REAL',KV2,NVEC,WORK,KFREE,LFREE)
+      IOFF = 0
       DO IZ = 1,NZ
-        CALL DAXPY(NDIM,DM1,WORK(IOFF),1,CMO(1,1,IZ),1)
+        CALL DCOPY(NDIM,CMO(1,1,IZ),1,WORK(KV2+IOFF),1)
+        CALL DAXPY(NDIM,DM1,WORK(KV1+IOFF),1,WORK(KV2+IOFF),1)
         IOFF = IOFF + NDIM
       ENDDO
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Intermediate b12 '
-        CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
-     &          NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      IF(IPRINT.EQ.2) THEN
-        WRITE(LUPRI,*) '* Intermediate b11-new '
-        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
+        CALL PRQMAT(WORK(KV2),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....Projector onto starting MO space P     
+      CALL MEMGET('REAL',KM2,NMAT,WORK,KFREE,LFREE)
       CALL DENST1(WORK(KM2),NBAS,NBAS,NZ,D1,D0,
      &            CMO,NBAS,NTOT,IMOL,NMOL,NBAS)
       CALL QGEMM(NBAS,NBAS,NBAS,D1,
      &           'N','N',IPQTOQ(1,0),WORK(KM2),NBAS,NBAS,NZ,
      &           'N','N',IPQTOQ(1,0),SMAT,NBAS,NBAS,1,
      &           D0,IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ)
+      CALL MEMREL('KNIZIA.proj',WORK,KFRSAV,KM2,KFREE,LFREE)
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Projector onto starting MO space'
         CALL PRQMAT(WORK(KM1),NBAS,NBAS,NBAS,NBAS,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      CALL MEMREL('KNIZIA.proj',WORK,KFRSAV,KM2,KFREE,LFREE)
-      CALL MEMGET('REAL',KV2,NVEC,WORK,KFREE,LFREE)
-C.....apply: b21 = P*b12; stored in v2
+      CALL MEMGET('REAL',KV3,NVEC,WORK,KFREE,LFREE)
+C.....apply: b21 = P*b11; store in v3
       CALL QGEMM(NBAS,NREF,NBAS,D1,
      &           'N','N',IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ,
      &           'N','N',IPQTOQ(1,0),WORK(KV1),NBAS,NREF,NZ,
-     &           D0,IPQTOQ(1,0),WORK(KV2),NBAS,NREF,NZ)
+     &           D0,IPQTOQ(1,0),WORK(KV3),NBAS,NREF,NZ)
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Intermediate b21 '
-        CALL PRQMAT(WORK(KV2),NBAS,NREF,NBAS,NREF,
+        CALL PRQMAT(WORK(KV3),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-C.....apply: b4 = P*b2; stored in v1
-      CALL QGEMM(NBAS,NREF,NBAS,D1,
-     &           'N','N',IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ,
-     &           'N','N',IPQTOQ(1,0),CMO,NBAS,NTOT,NZ,
-     &           D0,IPQTOQ(1,0),WORK(KV1),NBAS,NREF,NZ)
-      IF(IPRINT.EQ.2) THEN
-        WRITE(LUPRI,*) '* Intermediate b4 '
-        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
-     &          NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-C.....construct orthogonal complement: b22 = b0 - b11; stored in CMO
-      IOFF = KV1
+C.....copy b12 to V1
+      IOFF = 0
       DO IZ = 1,NZ
-        CALL DAXPY(NDIM,DM1,WORK(IOFF),1,CMO(1,1,IZ),1)
+        CALL DCOPY(NDIM,WORK(KV2+IOFF),1,WORK(KV1+IOFF),1)
         IOFF = IOFF + NDIM
       ENDDO
+C.....subtract P*b12 from b12 -> v1
+      CALL QGEMM(NBAS,NREF,NBAS,DM1,
+     &           'N','N',IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ,
+     &           'N','N',IPQTOQ(1,0),WORK(KV2),NBAS,NREF,NZ,
+     &           D1,IPQTOQ(1,0),WORK(KV1),NBAS,NREF,NZ)
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Intermediate b22 '
-        CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
+        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients - p1'
-        CALL PRQMAT(WORK(KV2),NBAS,NREF,NBAS,NREF,
+        CALL PRQMAT(WORK(KV3),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,*) '* Polarized reference coefficients - p2'
-        CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
+        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....Assemble polarized fragment coefficients
-      IOFF = KV2
+      IOFF = 0
       DO IZ = 1,NZ
-        CALL DAXPY(NDIM,D1,WORK(IOFF),1,CMO(1,1,IZ),1)
+        CALL DAXPY(NDIM,D1,WORK(KV3+IOFF),1,WORK(KV1+IOFF),1)
+        IOFF = IOFF + NDIM
+      ENDDO
+      CALL MEMREL('KNIZIA.ass',WORK,KFRSAV,KV2,KFREE,LFREE)
+C.....Copy polarized fragment coefficients into CMO
+      IOFF = 0
+      DO IZ = 1,NZ
+        CALL DCOPY(NDIM,WORK(KV1+IOFF),1,CMO(1,1,IZ),1)
         IOFF = IOFF + NDIM
       ENDDO
       IF(IPRINT.EQ.2) THEN
