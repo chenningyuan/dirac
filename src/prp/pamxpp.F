@@ -693,9 +693,9 @@ C
       WRITE(LUPRI,'(A,I5)')
      &   ' * Max. size of reduced matrix :',MAXRM
       IF(XPP_SKIPEE) WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
-      IF(XPP_SKIPEP .AND. .NOT.(LEVYLE.OR.FREEPJ.OR.VEXTPJ))
-     &   WRITE(LUPRI,'(A)')
-     &   ' * NB!!! No rotations between electrons and positrons.'
+      IF(XPP_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
+     &     WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No rotations between electrons and positrons.'
       IF(QED) WRITE(LUPRI,'(A)')
      &  ' * QED: Rotations between positrons and all electron orbitals.'
       IF(.NOT.DOXPP) THEN
