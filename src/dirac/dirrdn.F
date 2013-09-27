@@ -688,10 +688,9 @@ C
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
+c     .XMLOUT can be removed after adapting the tests, is now always active
 C
       NOSFCRASH=.FALSE.
-c     no xml output unless .XMLOUT
-      LUXML = -1
 C
 C     Read menu file
 C     ==============
@@ -778,10 +777,8 @@ C&&&& OPTIMIZE: Geometry optimization
 C&&&& MINIMIZE: Geometry optimization (tsaue: retained for backwards compatibility)
             GO TO 111
  113     CONTINUE
-C&&& XMLOUT  : Write output in xml format to separate file
-         call xml_open_file('dirac.xml')
+C&&& XMLOUT  : Retained for backwards compatibility (lv: is now always on)
          GOTO 100
-
 !       xxxxxx keyword
  114     continue
          goto 100
@@ -4005,7 +4002,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.XXXXX','.POLNRM','.REMREF','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4031,7 +4028,6 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
-      POLTST = .FALSE.
       POLNRM = .FALSE.
       REMREF = .FALSE.
 C
@@ -4107,12 +4103,9 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  9             CONTINUE
-C&&& POLTST: Check if polarization contributions are spanned by
-C            polarizaed atomic orbitals
-                  POLTST = .TRUE.
-                  POLNRM = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
@@ -4202,13 +4195,8 @@ C
           WRITE(LUPRI,'(1X,A)')
      &      '* Project out reference orbitals from polarized ones.'
         ENDIF
-        IF(POLTST) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Test if polarization contributions are spanned by ',
-     &      ' polarized reference orbitals.'
-        ENDIF
       ELSE
-        IF(POLREF.OR.POLTST) THEN
+        IF(POLREF) THEN
           CALL QUIT
      &     ('ANAINP: Polarization only possible with SELOWN=T')
         ENDIF
