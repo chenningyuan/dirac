@@ -207,7 +207,7 @@
 !     ===================
 !
       CALL MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
-      CALL MODEDISS(OMEGA,WXE,ILOGG)
+!      CALL MODEDISS(OMEGA,WXE,ILOGG)
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&

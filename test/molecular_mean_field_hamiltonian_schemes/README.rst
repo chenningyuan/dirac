@@ -1,4 +1,4 @@
-Molecular mean-fiels Hamiltonian schemes
+Molecular mean-field Hamiltonian schemes
 ========================================
 
 This test calculates the spin-orbit splitting in the ground state of the FO molecule 

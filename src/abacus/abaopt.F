@@ -1296,22 +1296,12 @@ C
       TSTINP = .TRUE.
       IPRSAV = IPRUSR
       IPRUSR = -2
-CTROND      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL HERINP(WORK(IWOFF+2),LWORK-2)
-CTROND      CALL GPCLOSE(LUONEL,' ')
       TSTINP = TSTIN
       IPRUSR = IPRSAV
       HRINPC = .FALSE.
       WORK(IWOFF+1) = WRKDLM
 C
-      IF (DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
-         IF (NUCDEP .LE. 2) THEN ! do not use internal coordinates for diatomic molecules and atoms
-            DELINT = .FALSE.
-            REDINT = .FALSE.
-            INRDHS = .FALSE.
-            INMDHS = .FALSE.
-         END IF
-      END IF
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          KATARR = IWOFF  + 2
          KMTMP  = KATARR + 8*MXCENT

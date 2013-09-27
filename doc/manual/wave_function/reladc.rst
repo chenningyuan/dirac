@@ -239,8 +239,9 @@ interested in a few lowest IPs and the screen output suffices.
 keyword(SIPEIGV)
 --------
 
-Integer array of length 32. For each chosen symmetry given in SIPREPS
-you specify here the number of requested *long*
+Two-dimensional real array.
+For each chosen symmetry given in SIPREPS
+you specify here the energy range of requested *long*
 eigenvectors in the same order of symmetries. No long eigenvectors are
 calculated by default because the 1h components normally provide
 enough first information. The calculation of long eigenvectors invokes a second
@@ -251,7 +252,7 @@ Lanczos run and is therefore a bit time consuming.
 
 ::
 
-    SIPEIGV(1:32) = 0   (no eigenvectors calculated)
+    0.0 0.0   (no eigenvectors calculated)
 
 
 *Input example:*
@@ -259,8 +260,11 @@ Lanczos run and is therefore a bit time consuming.
 ::
 
     .SIPEIGV
-    5
-    20,20,30,30,10
+    4 # number of lines of ranges to follow
+    10.0 20.0
+    20.0 30.0
+    0.0 0.0
+    10.0 15.0
 
 If you have given explicit symmetries in SIPREPS according to
 
@@ -270,8 +274,9 @@ If you have given explicit symmetries in SIPREPS according to
     8
     1,3,5,7,17,19,21,23
 
-then 20 eigenvectors are calculated for irrep 1, 20 for 3, 30 for 5, 30 for 7,
-10 for 17 and none for the remaining symmetries.
+then eigenvectors in the energy range of 10.0 -- 20.0 eV are calculated for irrep 1,
+in range 20.0 -- 30-0 eV for 3, none for 5, in range 10.0 -- 15-0 eV for 7,
+and none for the remaining symmetries.
 
 
 keyword(DIPEIGV)

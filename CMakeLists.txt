@@ -22,12 +22,14 @@ option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                 
 option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
+option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
 option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
+option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
@@ -90,7 +92,6 @@ add_executable(
     gen_fortran_interface_h
     ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
-add_dependencies(gen_fortran_interface_h run_pamadm)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
@@ -134,9 +135,11 @@ if(ENABLE_PCMMOD)
 
     set(LIBS
         stdc++
+	interface
         solver
         green
         cavity
+	utils
         metal
         pedra
         pwl
@@ -217,6 +220,9 @@ add_library(
     ${GENERATED_FILES}
     )
 
+add_dependencies(dirac run_pamadm)
+add_dependencies(dirac generate_binary_info)
+
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     add_executable(
@@ -252,6 +258,9 @@ if(ENABLE_UTILITIES)
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
+    if(ENABLE_MEM_TEST) # 
+        compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
 
