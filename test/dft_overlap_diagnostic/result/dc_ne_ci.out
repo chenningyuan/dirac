@@ -158,8 +158,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | saue@dirac
- System                   | Linux-3.2.0-34-generic
+ Who compiled             | saue@lpqlx129
+ System                   | Linux-3.0.0-17-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
@@ -167,29 +167,27 @@ Binary information
  Fortran compiler         | /usr/bin/gfortran
  Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
  Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops -w
+                          | _MFDS -fno-range-check -O3 -funroll-all-loops
  C compiler               | /usr/bin/gcc
  C compiler version       | gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
  C flags                  | -g -O2 -Wno-unused
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- C++ flags                | -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -W
-                          | overloaded-virtual -Wwrite-strings -Wno-unused -Of
-                          | ast -march=native -DNDEBUG -Wno-unused
+ C++ flags                |  -O3 -DNDEBUG
  BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
                           | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
  LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
                           | las-base/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | a6ca496f635dbc586c15e0356e5d1efbd51f4b82
- Configuration time       | 2013-01-16 22:50:16.544399
+ Last Git revision        | 279a4413f5aecefbf478c95710af9f6c7a6e25b4
+ Configuration time       | 2013-01-20 21:08:45.770352
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Jul  5 00:30:45 2013
+     Date and time (Linux)  : Thu Sep 26 18:23:23 2013
      Host name              : not found                               
 
 
@@ -308,9 +306,6 @@ FINISH
                                                                           
 
   Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
- TEST..    9    3    0                                                                         
- TEST..    4    2    0                                                                         
- TEST..    1    1    0                                                                         
 
 
   Symmetry Operations
@@ -611,7 +606,9 @@ Ne     0.0000000000   0.0000000000   0.0000000000
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
- * No quadratic convergent Hartree-Fock
+ * Quadratic convergent Hartree-Fock
+   - Maximum number of macro iterations: 25
+   - Maximum number of micro iterations: 25
  * DHF occupation is allowed to change during SCF cycles.
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
@@ -710,7 +707,7 @@ Total no. of orbitals      (NORB):    16      12      28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Jul  5 00:30:45 2013
+########## START ITERATION NO.   1 ##########   Thu Sep 26 18:23:23 2013
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -719,15 +716,15 @@ Total no. of orbitals      (NORB):    16      12      28
        2 orbitals in Fermion irrep 1 and    3 orbitals in Fermion irrep 2
 
 => Calculating sum of orbital energies
-It.    1    -71.11318827179      0.00D+00  0.00D+00  0.00D+00               0.01600100s   Scr. nuclei    Fri Jul  5
+It.    1    -71.11318827179      0.00D+00  0.00D+00  0.00D+00               0.01200000s   Scr. nuclei    Thu Sep 26
 
-########## START ITERATION NO.   2 ##########   Fri Jul  5 00:30:45 2013
+########## START ITERATION NO.   2 ##########   Thu Sep 26 18:23:23 2013
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   63.91%   25.14%    0.00%    0.00%   0.00400099s
-SOfock:SL  1.00D-12   50.14%   35.64%    0.00%    0.00%   0.01600100s
+SOfock:LL  1.00D-12   63.91%   25.14%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12   50.14%   35.64%    0.00%    0.00%   0.01200100s
 
 
  ********************************************************************************
@@ -753,7 +750,7 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    Number of grid points in quadrature:     19492 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.16 seconds
+ >>>> Time used in DFTGRD:   0.11 seconds
 
 
  DFT integration
@@ -762,22 +759,22 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    DFT exchange-correlation energy:               =       -12.4297891973501144
    number of electrons from numerical integration =         9.9999999999993801
 
-   time spent in DFT integration                  =   0.27 seconds
+   time spent in DFT integration                  =   0.20 seconds
    number of processors                           =         1
 
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.58403701s
+>>> Total CPU time : 0.42002600s
 
-########## END ITERATION NO.   2 ##########   Fri Jul  5 00:30:45 2013
+########## END ITERATION NO.   2 ##########   Thu Sep 26 18:23:23 2013
 
-It.    2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.58403701s   LL SL          Fri Jul  5
+It.    2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.42002600s   LL SL          Thu Sep 26
 
-########## START ITERATION NO.   3 ##########   Fri Jul  5 00:30:45 2013
+########## START ITERATION NO.   3 ##########   Thu Sep 26 18:23:23 2013
 
     3 *** Differential density matrix. DCOVLP     = 0.6530
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   63.91%   25.14%    0.00%    0.00%   0.00400001s
-SOfock:SL  1.00D-12   50.14%   35.67%    0.00%    0.00%   0.01600099s
+SOfock:SL  1.00D-12   50.14%   35.67%    0.00%    0.00%   0.01200098s
 
  DFT integration
 
@@ -785,22 +782,22 @@ SOfock:SL  1.00D-12   50.14%   35.67%    0.00%    0.00%   0.01600099s
    DFT exchange-correlation energy:               =       -11.4577356939095552
    number of electrons from numerical integration =        10.0000000000002842
 
-   time spent in DFT integration                  =   0.27 seconds
+   time spent in DFT integration                  =   0.20 seconds
    number of processors                           =         1
 
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.35602093s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.26001602s
 
-########## END ITERATION NO.   3 ##########   Fri Jul  5 00:30:45 2013
+########## END ITERATION NO.   3 ##########   Thu Sep 26 18:23:23 2013
 
-It.    3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.35602093s   LL SL          Fri Jul  5
+It.    3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.26001602s   LL SL          Thu Sep 26
 
-########## START ITERATION NO.   4 ##########   Fri Jul  5 00:30:46 2013
+########## START ITERATION NO.   4 ##########   Thu Sep 26 18:23:23 2013
 
     4 *** Differential density matrix. DCOVLP     = 1.1933
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   63.91%   25.14%    0.00%    0.00%   0.00400102s
-SOfock:SL  1.00D-12   50.14%   35.68%    0.00%    0.00%   0.01600099s
+SOfock:LL  1.00D-12   63.91%   25.14%    0.00%    0.00%   0.00400096s
+SOfock:SL  1.00D-12   50.14%   35.68%    0.00%    0.00%   0.00800002s
 
  DFT integration
 
@@ -808,15 +805,15 @@ SOfock:SL  1.00D-12   50.14%   35.68%    0.00%    0.00%   0.01600099s
    DFT exchange-correlation energy:               =       -12.0042498482840987
    number of electrons from numerical integration =         9.9999999999998064
 
-   time spent in DFT integration                  =   0.27 seconds
+   time spent in DFT integration                  =   0.19 seconds
    number of processors                           =         1
 
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.35202301s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 0.24801695s
 
-########## END ITERATION NO.   4 ##########   Fri Jul  5 00:30:46 2013
+########## END ITERATION NO.   4 ##########   Thu Sep 26 18:23:23 2013
 
-It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.35202301s   LL SL          Fri Jul  5
+It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.24801695s   LL SL          Thu Sep 26
 
 
                                    SCF - CYCLE
@@ -832,10 +829,10 @@ It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.35
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -71.11318827179      0.00D+00  0.00D+00  0.00D+00               0.01600100s   Scr. nuclei    Fri Jul  5
-It.    2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.58403701s   LL SL          Fri Jul  5
-It.    3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.35602093s   LL SL          Fri Jul  5
-It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.35202301s   LL SL          Fri Jul  5
+It.    1    -71.11318827179      0.00D+00  0.00D+00  0.00D+00               0.01200000s   Scr. nuclei    Thu Sep 26
+It.    2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.42002600s   LL SL          Thu Sep 26
+It.    3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.26001602s   LL SL          Thu Sep 26
+It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.24801695s   LL SL          Thu Sep 26
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    4 iterations.
 * Average elapsed time per iteration: 
@@ -928,7 +925,7 @@ It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.35
     - Secondary orbitals :      4..     6                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -134.088029369114679
-* Heading :DIRAC: No title specified !!!                     Fri Jul  5 00:30:46 2013
+* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:23:23 2013
 
 
 
@@ -938,7 +935,7 @@ It.    4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.35
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul  5 00:30:46 2013
+* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:23:23 2013
 
 
  ********************************************************************************
@@ -964,7 +961,7 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    Number of grid points in quadrature:     19492 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.18 seconds
+ >>>> Time used in DFTGRD:   0.13 seconds
 
 
  DFT integration
@@ -973,19 +970,19 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    DFT exchange-correlation energy:               =       -12.0042498482840987
    number of electrons from numerical integration =         9.9999999999998064
 
-   time spent in DFT integration                  =   0.52 seconds
+   time spent in DFT integration                  =   0.30 seconds
    number of processors                           =         1
 
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul  5 00:30:45 2013
+* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:23:23 2013
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.69D-04
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.90D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Jul  5 00:30:47 2013
+########## START MICROITERATION NO.   1 ##########   Thu Sep 26 18:23:24 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.69D-04   68.97%   22.76%    0.00%    0.00%   0.00399995s
@@ -996,7 +993,7 @@ SOfock:SL  1.69D-04   66.25%   28.64%    0.09%    0.00%   0.01200104s
    number of grid points                          =     19492
    number of electrons from numerical integration =         9.9999999999998064
 
-   time spent in DFT integration                  =   2.96 seconds
+   time spent in DFT integration                  =   2.20 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E+:  8  E-:  8
@@ -1019,7 +1016,7 @@ SOfock:SL  1.69D-04   66.25%   28.64%    0.09%    0.00%   0.01200104s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   3.21620226s  (LL SL    )     [  8]     [  8]
+* It.  1   2.39215016s  (LL SL    )     [  8]     [  8]
 --------------------------------------------------------
             1.467379 :   8.71D-02 |   2.07D-04  8.71D-02
             1.467379 :   8.71D-02 |   7.19D-05  8.71D-02
@@ -1178,8 +1175,8 @@ SOfock:SL  1.69D-04   66.25%   28.64%    0.09%    0.00%   0.01200104s
       27       0.00000000     0.00000000     1.00000000     0.88254100
       28       0.00000000     0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
- trace (should be nr of orbitals):   28.000000000053792     
- trace/nr of orbitals (should be very close to 1):   1.0000000000019211     
+ trace(should be nr of orbitals):   28.000000000053785     
+ trace/nr of orbitals (should be very close to 1):   1.0000000000019209     
 
     * Orbital classes:
     Fermion ircop:E1g
@@ -1282,11 +1279,11 @@ SOfock:SL  1.69D-04   66.25%   28.64%    0.09%    0.00%   0.01200104s
 
 
  
-     Date and time (Linux)  : Fri Jul  5 00:30:50 2013
+     Date and time (Linux)  : Thu Sep 26 18:23:27 2013
      Host name              : not found                               
 
->>>> Node 0, utime: 5, stime: 0, minflt: 9236, majflt: 0, nvcsw: 2, nivcsw: 540, maxrss: 22092
->>>> Total WALL time used in DIRAC: 5s
+>>>> Node 0, utime: 3, stime: 0, minflt: 8864, majflt: 0, nvcsw: 2, nivcsw: 525, maxrss: 22124
+>>>> Total WALL time used in DIRAC: 4s
   
   Dynamical Memory Usage Summary
   
