@@ -107,6 +107,7 @@ C
       CHARACTER WF*4
       INTEGER   GETIOPEN
       LOGICAL FNDLAB
+      
 C
 #include "cbihr1.h"
 #include "dgroup.h"
@@ -194,14 +195,15 @@ C
      &        'file "MCDENS" not found!')
          CALL OPNFIL(LUCOEF,'MCDENS','OLD','PRPEXP')
          CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
-!        total DV = DV_core + DV_act
-         CALL DCSCT(DMAT(1+N2BBASXQ))
-         IF (NASHT .GT. 0) THEN
+!        total DV = DV_act + DV_core
+         IF (NASHT .GT. 0) THEN ! DV_act
            CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
          END IF
+         call dzero(pmat,N2BBASXQ)
+         CALL DCSCT(pmat) ! DV_core
+         call daxpy(N2BBASXQ,1.0d0,pmat,1,DMAT(1+N2BBASXQ),1)
+         call dzero(pmat,N2BBASXQ)
          CLOSE(LUCOEF,STATUS='KEEP')
-
-         call dzero(dmat,N2BBASXQ)
 C
 C        Get AO density matrix.
 !        input: C == U+ A U
@@ -219,7 +221,11 @@ C
 C
 C        Result is scaled by 2 in PRPEX2...
 C
-         CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
+         CALL DSCAL(N2BBASXQ,0.5d0,DMAT,1)
+
+!        WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX1: DMAT of IZ=',1
+!        CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
+!    &               NTBAS(0),NTBAS(0),1,LUPRI)
 C
       ELSE
          WRITE(LUPRI,'(1X,2A)')
@@ -612,7 +618,7 @@ C
       IREP = IPRPSYM(INDXPR)-1
       ITIM = IPRPTIM(INDXPR)
 
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/A,A16)')
      & 'PRPEX3: Entering total SA-AO matrix of property ',PRPNAM(INDXPR)
         write(lupri,*) '   proerty operator IREP=',IREP,' ITIM=',ITIM
