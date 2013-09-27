@@ -164,6 +164,7 @@ def main():
     list_of_tests.append('lucita_large')
     list_of_tests.append('lucita_short')
     list_of_tests.append('mcscf_energy')
+    list_of_tests.append('mcscf_properties')
     list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
     list_of_tests.append('mp2_energy')
     list_of_tests.append('mp2_properties')
