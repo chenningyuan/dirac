@@ -3411,7 +3411,7 @@ C
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Overlap matrix'
         CALL PRQMAT(SMAT,NBAS,NBAS,NBAS,NBAS,
-     &          NZ,IPQTOQ(1,0),LUPRI)
+     &          1,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....Generate depolarized MOs (stored in WORK(KBUF))
       NDIM=NBAS*NMOL*NZ
@@ -3538,15 +3538,36 @@ C.....Assemble polarized fragment coefficients
       ENDDO
       CALL MEMREL('KNIZIA.ass',WORK,KFRSAV,KV2,KFREE,LFREE)
 C
-C     Orthonormalization within each fragment
+C     Orthonormalization and align within each fragment
 C
       IVEC= 1
       DO IREF = 1,NREFS
         NVEC = NSTR(IFRP,0,IREF)
         CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,NEFF,SMAT,AMAT,
      &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
+CTROND        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
+CTROND     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
+CTROND     &                    WORK,KFREE,LFREE)
         IVEC = IVEC + NVEC
       ENDDO
+      IF(IPRINT.EQ.2) THEN
+        WRITE(LUPRI,*) '* Polarized reference coefficients - ortho'
+        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
+     &          NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+      IVEC= 1
+      DO IREF = 1,NREFS
+        NVEC = NSTR(IFRP,0,IREF)
+        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
+     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
+     &                    WORK,KFREE,LFREE)
+        IVEC = IVEC + NVEC
+      ENDDO
+      IF(IPRINT.EQ.2) THEN
+        WRITE(LUPRI,*) '* Polarized reference coefficients - align'
+        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
+     &          NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
 C.....Copy polarized fragment coefficients into CMO
       IOFF = 0
       DO IZ = 1,NZ
@@ -3622,6 +3643,110 @@ C
      &             D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
         CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Align_selvec */
+      SUBROUTINE ALIGN_SELVEC(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                        CREF,NCOL,IREF,SMAT,AMAT,
+     &                        IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Align selected vectors of CMO with reference vectors CREF
+C     Written by Trond Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C
+      KFRSAV = KFREE
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '* ALIGN_SELVEC: Overlap matrix ref/sel'
+        CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
+      ENDIF
+      NBUF = NBAS*NSEL*NZ
+      CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+      CALL QGEMM(NSEL,NSEL,NSEL,D1,
+     &             'H','N',IPQ,AMAT,NSEL,NSEL,NZ,
+     &             'N','N',IPQ,AMAT,NSEL,NSEL,NZ,
+     &             D0,IPQ,WORK(KBUF),NSEL,NSEL,NZ)
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '* ALIGN_SELVEC: AMAT squared ...'
+        CALL PRQMAT(WORK(KBUF),NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
+      ENDIF
+C.....Scale matrix with -1 to get most overlapping orbitals first
+      CALL DSCAL(NBUF,DM1,WORK(KBUF),1)
+      CALL MEMGET('REAL',KEIG,NSEL,WORK,KFREE,LFREE)
+      CALL QDIAG(NZ,NSEL,WORK(KBUF),NSEL,NSEL,
+     &             WORK(KEIG),1,AMAT,NSEL,
+     &             NSEL,WORK(KFREE),LFREE,IERR)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,*) '* ALIGN_SELVEC: Eigenvalues of AMAT squared'
+        CALL OUTPUT(WORK(KEIG),1,NSEL,1,1,NSEL,1,-1,LUPRI)
+      ENDIF
+C.....Rotate selected orbitals
+      CALL QGEMM(NBAS,NSEL,NSEL,D1,
+     &           'N','N',IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ,
+     &           'N','N',IPQ,AMAT,NSEL,NSEL,NZ,
+     &           D0,IPQ,WORK(KBUF),NBAS,NSEL,NZ)
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         WORK(KBUF),NBAS,NSEL,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '* ALIGN_SELVEC: Overlap matrix ref/sel 2'
+        CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
+      ENDIF
+C.....Use overlap selection to put polarized orbitals in corresponding free position
+      DO J = 1, NSEL
+        DO I = 1,NSEL
+           AMAT(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NSEL
+          DO I = 1,NSEL
+             AMAT(I,J,1) = AMAT(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+      IMO  = ISEL - 1
+      NDIM = NBAS*NSEL
+      DO J = 1,NSEL
+        IMAX = IDAMAX(NSEL,AMAT(1,J,1),1)
+C       Zero out the selected overlap
+        CALL DCOPY(NSEL,D0,0,AMAT(IMAX,1,1),NSEL)
+C       Copy polarized orbitals into corresponding free orbital position
+        JOFF = KBUF + (J-1)*NBAS
+        DO IZ = 1,NZ
+          CALL DCOPY(NBAS,WORK(JOFF),1,CMO(1,IMO+IMAX,IZ),1)
+          JOFF = JOFF + NDIM
+        ENDDO
+      ENDDO
+      IF(IPRINT.GE.2) THEN
+        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+        WRITE(LUPRI,*) '* ALIGN_SELVEC: Overlap matrix ref/sel 3'
+        CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
+      ENDIF
+      CALL MEMREL('ALIGN_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
