@@ -3407,11 +3407,16 @@ C
         WRITE(LUPRI,*) '* Starting reference coefficients'
         CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
      &          NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      IF(IPRINT.EQ.2) THEN
-        WRITE(LUPRI,*) '* Overlap matrix'
-        CALL PRQMAT(SMAT,NBAS,NBAS,NBAS,NBAS,
-     &          1,IPQTOQ(1,0),LUPRI)
+        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &           AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+        WRITE(LUPRI,*) 
+     &     '* Overlap matrix of starting coefficients'
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,
+     &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....Generate depolarized MOs (stored in WORK(KBUF))
       NDIM=NBAS*NMOL*NZ
@@ -3423,7 +3428,6 @@ C.....Generate depolarized MOs (stored in WORK(KBUF))
 C.....Orthogonalize depolarized MOs
       CALL ORTHO_SELVEC(WORK(KBUF),NBAS,NMOL,1,NMOL,NEFF,SMAT,AMAT,
      &                  IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
-C
       IF(IPRINT.GE.2) THEN
         CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
      &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
@@ -3436,6 +3440,7 @@ C
         CALL PRQMAT(AMAT,NEFF,NEFF,NMOL,NMOL,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
+C
 C.....Construct projectors
 C     ====================
       IMOL=NREF+1
@@ -3530,13 +3535,28 @@ C.....subtract P*b12 from b12 -> v1
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-C.....Assemble polarized fragment coefficients
+C.....Assemble and normalize polarized fragment coefficients
       IOFF = 0
       DO IZ = 1,NZ
         CALL DAXPY(NDIM,D1,WORK(KV3+IOFF),1,WORK(KV1+IOFF),1)
         IOFF = IOFF + NDIM
       ENDDO
+CTROND      CALL NORM_SELVEC(WORK(KV1),NBAS,NREF,1,NREF,SMAT,AMAT,
+CTROND     &                 IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
       CALL MEMREL('KNIZIA.ass',WORK,KFRSAV,KV2,KFREE,LFREE)
+C
+C     Calculate overlap between original and polarized coefficients
+C
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &         SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &         AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &         CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &         WORK(KV1),NBAS,NREF,NZ,IPQTOQ(1,0),
+     &         WORK(KFREE),LFREE,IPRINT)
+      WRITE(LUPRI,*) 
+     &  '* Overlap between original and polarized orbitals',
+     &  ' before orthonormalization and alignment.'
+      CALL PRQMAT(AMAT,NREF,NREF,NMOL,NMOL,NZ,IPQTOQ(1,0),LUPRI)
 C
 C     Orthonormalization and align within each fragment
 C
@@ -3545,24 +3565,22 @@ C
         NVEC = NSTR(IFRP,0,IREF)
         CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,NEFF,SMAT,AMAT,
      &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
-CTROND        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
-CTROND     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
-CTROND     &                    WORK,KFREE,LFREE)
-        IVEC = IVEC + NVEC
-      ENDDO
-      IF(IPRINT.EQ.2) THEN
-        WRITE(LUPRI,*) '* Polarized reference coefficients - ortho'
-        CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
-     &          NZ,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      IVEC= 1
-      DO IREF = 1,NREFS
-        NVEC = NSTR(IFRP,0,IREF)
         CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
      &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
      &                    WORK,KFREE,LFREE)
         IVEC = IVEC + NVEC
       ENDDO
+C
+C     Calculate overlap between original and polarized coefficients
+C
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &         SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &         AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &         CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &         WORK(KV1),NBAS,NREF,NZ,IPQTOQ(1,0),
+     &         WORK(KFREE),LFREE,IPRINT)
+      WRITE(LUPRI,*) '* Overlap between original and polarized orbitals'
+      CALL PRQMAT(AMAT,NREF,NREF,NMOL,NMOL,NZ,IPQTOQ(1,0),LUPRI)
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients - align'
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
@@ -3577,6 +3595,16 @@ C.....Copy polarized fragment coefficients into CMO
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients'
         CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
+     &          NZ,IPQTOQ(1,0),LUPRI)
+        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &           AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+        WRITE(LUPRI,*) 
+     &     '* Overlap matrix of final coefficients'
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL MEMREL('KNIZIA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -3747,6 +3775,38 @@ C       Copy polarized orbitals into corresponding free orbital position
         CALL PRQMAT(AMAT,NSEL,NSEL,NSEL,NSEL,NZ,IPQ,LUPRI)
       ENDIF
       CALL MEMREL('ALIGN_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Norm_selvec */
+      SUBROUTINE NORM_SELVEC(CMO,NBAS,NVEC,ISEL,NSEL,SMAT,AMAT,
+     &                        IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Normalize selected vectors
+C     Written by Trond Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),
+     &          IPQ(NZ),WORK(*)
+C
+      KFRSAV = KFREE
+C.....Calculate overlap matrix
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      DO IVEC = ISEL,NSEL-1
+        FAC = D1/SQRT(AMAT(1,1,1))
+        DO IZ = 1,NZ
+          CALL DSCAL(NBAS,FAC,CMO(1,IVEC,IZ),1)
+        ENDDO
+      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
