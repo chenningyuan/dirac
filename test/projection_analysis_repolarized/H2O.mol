@@ -1,11 +1,11 @@
 INTGRL
-Water                                                                   
-cc-pVDZ basis (note that a tight p has NOT been added)
-C   2    2  X  Y
-        8.    1
-O      .0000000000        0.0000000000        -.2249058930
-LARGE BASIS STO-3G
-        1.    1
-H1     1.4523499293         .0000000000         .8996235720
-LARGE BASIS STO-3G
+Water molecule
+C2v symmetry specified
+C   2    2X  Y         .10D-15                                              
+       8.0    1
+O       .000000000000000    .000000000000000    -0.2249058930000       *
+LARGE BASIS DZ(Dunning)
+       1.0    1
+H1      1.452349929          .0000000000          0.8996235720          *
+LARGE BASIS DZ(Dunning)
 FINISH
