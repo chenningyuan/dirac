@@ -294,7 +294,9 @@ C         *************************************************
 C
           IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
+#if defined (PCM_MODULE)
      &         .NOT. dirac_cfg_pcm .AND.
+#endif
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
              CALL PSIOPT('SCF  ',WFCONV)
           END IF
