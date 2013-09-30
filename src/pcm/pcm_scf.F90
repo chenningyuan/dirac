@@ -78,22 +78,22 @@ module pcm_scf
       subroutine pcm_scf_finalize()
 
       if (.not. is_initialized) then
-         print *, 'Error: pcm_scf was never initialized.'
-         stop 1
-      end if
+         write(global_print_unit, *) 'pcm_scf has already been finalized.'
+      else
 ! Free the memory taken from the free store both in Fortran and in C++
-      deallocate(tess_cent)
-
-      call tear_down_pcm
-                                                                    
-      is_initialized = .false.
+         deallocate(tess_cent)                                          
+                                                                        
+         call tear_down_pcm
+                                                                       
+         is_initialized = .false.
+      end if
                                                                     
       end subroutine
                                                                     
       subroutine check_if_interface_is_initialized()
 
       if (.not. is_initialized) then
-         print *, 'Error: pcm_scf is not initialized.'
+         write(global_print_unit, *) 'Error: pcm_scf is not initialized.'
          stop 1
       end if
 

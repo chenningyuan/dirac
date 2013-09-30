@@ -2341,6 +2341,7 @@ C
 #include "dcbmp2.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
+#include "dgroup.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2435,9 +2436,8 @@ ckr#endif
         end if
 ! First finalize
         call pcm_scf_finalize
-        write(lupri, *), 'PCMSolver correctly finalized...'
         call pcm_scf_initialize(lupri)
-        write(lupri, *), '...and re-initialized.'
+        write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
       end if
 #endif
 
@@ -2456,7 +2456,9 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
+! If optimizing with PCM then the energy must include the
+! polarization contribution
          else if (dirac_cfg_pcm) then
             energy = dhferg
 #endif
@@ -2546,13 +2548,6 @@ C
 C
 C     Calculate gradient
 C
-#ifdef PCM_MODULE
-      if (dirac_cfg_pcm .and. .not.dongrd) then
-         write(lupri, *), 'Forcing numerical evaluation of molecular '// 
-     &   'gradient for PCM.'
-         dongrd = .true.
-      end if
-#endif
       IF(DONGRD) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE

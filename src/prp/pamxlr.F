@@ -201,7 +201,7 @@ C
 #if defined (PCM_MODULE)
       if (dirac_cfg_pcm) then
               call pcm_linear_response_initialize(lupri)
-        print *, 'PCMSolver initialized.'
+        write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
 C

@@ -127,7 +127,7 @@ C***********************************************************************
      & 'working with X2C Hamiltonian!')
         end if
         call pcm_scf_initialize(lupri)
-        print *, 'PCMSolver initialized.'
+        write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
 C
@@ -294,6 +294,7 @@ C         *************************************************
 C
           IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
+     &         .NOT. dirac_cfg_pcm .AND.
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
              CALL PSIOPT('SCF  ',WFCONV)
           END IF
