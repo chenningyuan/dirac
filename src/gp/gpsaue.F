@@ -3167,6 +3167,14 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
+#ifdef DEBUG
+      print*, 'QTRANS: The MO matrix'
+      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
