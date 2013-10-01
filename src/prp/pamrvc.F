@@ -3140,8 +3140,12 @@ C              a fraction (0.2) of convergence threshold.
                    ENDDO
                  ELSE
                    DO I = 1,NVPAR
-                     IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX .OR.
-     &                  D5*RNORM(I,IFREQ).LE.GPTNRM*THCXRS)
+CTROND
+                     WRITE(6,*) 'TEST..',I,RESFAC,RNORM(I,IFREQ),
+     &                          RNRMAX,GPTNRM,THCXRS
+                      IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX)
+C                     IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX .OR.
+C     &                  D5*RNORM(I,IFREQ).LE.GPTNRM*THCXRS)
      &                  IVECS(IFREQ,I) = 0
                    ENDDO
                  ENDIF

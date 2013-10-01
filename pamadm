@@ -171,6 +171,7 @@ def main():
     list_of_tests.append('mp2_srdft_energies')
     list_of_tests.append('open-shells')
     list_of_tests.append('projection_analysis')
+    list_of_tests.append('projection_analysis_repolarized')
     list_of_tests.append('pvc_scf')
     list_of_tests.append('reladc_sip')
     list_of_tests.append('reladc_sipeigv')
