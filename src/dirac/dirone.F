@@ -4078,6 +4078,66 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck sym_ortho */
+      SUBROUTINE SYM_ORTHO(NZ,N,NEFF,SMAT,LRS,LCS,VMAT,LRV,LCV,
+     &                   SSTOL,IPRINT,EIG,IPQ,WORK,LWORK)
+C*****************************************************************************
+C
+C     Generate S^{-1/2} matrix for symmetric orthonormalization
+C
+C     Linear dependence is removed by eliminating columns of V
+C     corresponding to eigenvalues of the overlap matrix below
+C     the given threshold.
+C
+C     Written by T. Saue Sep 2013
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dummy.h"
+      PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0=0.0D0)
+C
+      DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
+     &          WORK(LWORK)
+C
+#include "memint.h"
+      CALL QENTER('SYM_ORTHO')
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('SYM_ORTHO: Lowdin input (overlap) matrix:',-1)
+        CALL PRQMAT(SMAT,LRS,LCS,N,N,NZ,IPQ,LUPRI)
+      ENDIF
+C
+C     Diagonalize overlap matrix; scale with minus one to change order of eigenvalues
+C
+      NSDIM = LRS*LCS*NZ
+      CALL DSCAL(NSDIM,DM1,SMAT,1)
+      CALL QDIAG(NZ,N,SMAT,LRS,LCS,EIG,1,VMAT,LRV,LCV,
+     &           WORK,LWORK,IERR)
+      CALL DSCAL(N,DM1,EIG,1)
+!    ... ensure V_ij = U_ij/SQRT(s_j)
+      NEFF = 0
+      IF(EIG(1).LE.SSTOL) GOTO 10
+      ALPHA = D1/SQRT(EIG(1))
+      CALL DENST1(SMAT,LRS,LCS,NZ,ALPHA,D0,
+     &              VMAT,LRV,LCV,1,1,N)
+      DO I = 2,N
+        IF(EIG(I).LE.SSTOL) GOTO 10
+        NEFF  = NEFF + 1
+        ALPHA = D1/SQRT(EIG(I))
+        CALL DENST1(SMAT,LRS,LCS,NZ,ALPHA,D1,
+     &              VMAT,LRV,LCV,I,1,N)
+      ENDDO
+ 10   CONTINUE
+      DO IZ = 1,NZ
+        DO J = 1,NEFF
+          CALL DCOPY(N,SMAT(1,J,IZ),1,VMAT(1,J,IZ),1)
+        ENDDO
+      ENDDO
+      CALL QEXIT('SYM_ORTHO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tscorr */
       SUBROUTINE TSCORR(FMAT,WORK,LWORK,IPRINT)
 C*****************************************************************************
