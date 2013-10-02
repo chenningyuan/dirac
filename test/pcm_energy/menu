@@ -1,3 +1,6 @@
 nonrel.inp CH4.mol --put @pcmsolver.inp
 levy.inp   CH4.mol --put @pcmsolver.inp
 dc.inp     CH4.mol --put @pcmsolver.inp
+dc-skipss.inp CH4.mol --put @pcmsolver.inp
+dc-lda.inp CH4.mol --put @pcmsolver.inp
+levy-lda.inp CH4.mol --put @pcmsolver.inp

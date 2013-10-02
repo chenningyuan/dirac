@@ -1442,9 +1442,9 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOSS  ')) then
-!         Do not use precomputed small charges
-         pcmmod_doss = .true.
+      if (kw_matches(word, '.SKIPSS')) then
+!         Use precomputed small charges
+         pcmmod_skipss = .true.
       end if
 
       if (kw_matches(word, '.SEPARA')) then

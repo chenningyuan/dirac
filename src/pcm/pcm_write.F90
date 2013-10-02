@@ -29,11 +29,11 @@ module pcm_write
         write(print_here, *) '* Polarizable Continuum Model using PCMSolver external module:'
         write(print_here, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
       
-        if (pcmmod_doss) then
-           write(print_here, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
-        else
+        if (pcmmod_skipss) then
            write(print_here, *) '  2: Skip the SS block of the electrostatic potential matrix.', &
             ' Use a Simple Coulombic Correction.'
+        else
+           write(print_here, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
         end if
       
         if (pcmmod_separate) then
@@ -66,11 +66,11 @@ module pcm_write
         write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'
         write(*, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
       
-        if (pcmmod_doss) then
-           write(*, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
-        else
+        if (pcmmod_skipss) then
            write(*, *) '  2: Skip the SS block of the electrostatic potential matrix.', &
             ' Use a Simple Coulombic Correction.'
+        else
+           write(*, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
         end if
       
         if (pcmmod_separate) then

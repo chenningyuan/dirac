@@ -198,7 +198,7 @@ module pcm_scf
       asc = 0.0d0
       call get_surface_function(nr_points, asc, charge_name)
 ! Contraction of electrostatic potential integrals with polarization charges
-      call get_electronic_mep(nr_points, oper, tess_cent, asc, work, lwork, 0, .true.)
+      call get_electronic_mep(nr_points, oper, tess_cent, asc, work, lwork, 0, .true., pcmmod_skipss)
 ! Symmetrize Fock matrix contribution       
       do i = 1, ntbas(0)
         do j = 1, i
@@ -276,7 +276,7 @@ module pcm_scf
         potName = 'TotMEP'//char(0) 
         chgName = 'TotASC'//char(0)
 ! Calculate the (total) Molecular Electrostatic Potential
-        call get_mep(nr_points, tess_cent, mep, density_matrix, work, lfree, 0)
+        call get_mep(nr_points, tess_cent, mep, density_matrix, work, lfree, 0, pcmmod_skipss)
 ! Set a cavity surface function with the MEP
         call set_surface_function(nr_points, mep, potName)
 ! Compute polarization charges and set the proper surface function
@@ -315,7 +315,7 @@ module pcm_scf
 
         potName2 = 'EleMEP'//char(0)
         chgName2 = 'EleASC'//char(0)
-        call get_electronic_mep(nr_points, density_matrix, tess_cent, ele_pot, work, lfree, 0, .false.)
+        call get_electronic_mep(nr_points, density_matrix, tess_cent, ele_pot, work, lfree, 0, .false., pcmmod_skipss)
         call set_surface_function(nr_points, ele_pot, potName2)
         call comp_chg_pcm(potName2, chgName2)
         call get_surface_function(nr_points, ele_pol_chg, chgName2)
