@@ -430,6 +430,7 @@ Chj: MAXRM, MXLOAD
       MAXRM      = -1
       MXLOAD     = -1
       XPP_SKIPEP = .FALSE.
+      IF(X2C.OR.BSS.OR.LEVYLE.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
       XPP_SKIPEE = .FALSE.
       XPP_LSFG(1)= .TRUE.
       XPP_LSFG(2)= .TRUE.
@@ -652,10 +653,6 @@ C
 C        calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(NPSHT .EQ. 0) XPP_SKIPEP = .TRUE.
-C     ... no positronic orbitals
-      IF(LEVYLE.OR.BSS.OR.X2C.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
-C     ... no positronic orbitals for Levy-Leblond or no-pair
       IF (XPP_SKIPEE .AND. XPP_SKIPEP) THEN
          WRITE(LUPRI,'(/A)') 'INPUT ERROR: both SKIPEE and SKIPEP'
          INPERR = INPERR + 1
@@ -693,9 +690,9 @@ C
       WRITE(LUPRI,'(A,I5)')
      &   ' * Max. size of reduced matrix :',MAXRM
       IF(XPP_SKIPEE) WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
-      IF(XPP_SKIPEP .AND. .NOT.(LEVYLE.OR.FREEPJ.OR.VEXTPJ))
-     &   WRITE(LUPRI,'(A)')
-     &   ' * NB!!! No rotations between electrons and positrons.'
+      IF(XPP_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
+     &     WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No rotations between electrons and positrons.'
       IF(QED) WRITE(LUPRI,'(A)')
      &  ' * QED: Rotations between positrons and all electron orbitals.'
       IF(.NOT.DOXPP) THEN

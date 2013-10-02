@@ -3167,6 +3167,14 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
+#ifdef DEBUG
+      print*, 'QTRANS: The MO matrix'
+      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
@@ -6442,3 +6450,25 @@ C***********************************************************************
       SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cleanmat */
+      SUBROUTINE CLEANMAT(A,DTOL,N,LR,LC,NZ)
+C***********************************************************************
+C
+C     Subroutine CLEANMAT will set matrix elements below the given 
+C     threshold to zero
+C     Written by T. Saue Oct. 2 2013
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION A(LR,LC,NZ)
+      PARAMETER (D1=1.0D00, D0=0.0D00)
+      DO IZ = 1,NZ
+        DO J = 1,N
+          DO I = 1,N
+            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ)=D0
+          ENDDO
+        ENDDO
+      ENDDO
+      RETURN
+      END
+

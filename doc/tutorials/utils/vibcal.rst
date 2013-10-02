@@ -23,7 +23,8 @@ selected normal mode
 
 .. math::
 
-   P_{\nu}=\left<\nu\left|P(q)\right|\nu\right>_q = P^{[0]} + \frac{1}{2}\left(\frac{\hbar}{\mu\omega_e}\right)\left(\nu+\frac{1}{2}\right)
+   P_{\nu}=\left<\nu\left|P(q)\right|\nu\right>_q = P^{[0]} 
+   + \frac{1}{2}P^{[2]}\left(\frac{\hbar}{\mu\omega_e}\right)\left(\nu+\frac{1}{2}\right)
       -\frac{1}{2}P^{[1]}E^{[3]}\left(\frac{\hbar}{\mu\omega_e}\right)^2\frac{\left(\nu+\frac{1}{2}\right)}{\hbar\omega_e}+\ldots
 
 ..      -\frac{1}{16}P^{[2]}E^{[4]}\left(\frac{\hbar}{\mu\omega_e}\right)^3\frac{n^2+n+\frac{1}{2}}{\hbar\omega_e}
