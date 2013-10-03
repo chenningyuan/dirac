@@ -103,7 +103,7 @@
 
   ! open output file
   ilogg = 2
-  open(ilogg,file=potfil(1:i)//'.vib', &
+  open(ilogg,file=potfil(1:i)//'.vibcal', &
        status='unknown',form='formatted',access='sequential')
 
   !-----------------------------------------------------------------------------!
@@ -124,7 +124,7 @@
     write(ilogg,'(a)') '  ******************************'
     write(ilogg,'(a,i4,a)')'  We have ',npoints,' points'
   endif
-  write(lupri,'(a,i4,a)')'  We have ',npoints,' points'
+  write(lupri,'(a,i4,a)')'We have ',npoints,' points'
 
   ! allocate arrays
   allocate ( xcoor(npoints),stat=ier ); if(ier /= 0 ) stop 'Problem with xcoor  all.'
@@ -181,10 +181,10 @@
       errwng(i+nder,2) = derres(i,3)
     enddo
   elseif(keymeth==2)then
-    write(lupri,*) 'Select point for the calculation of derivatives'
-    read(lucmd,*)  xmin
     write(lupri,*) 'Give order of polynomial:'
     read(lucmd,*) norder
+    write(lupri,*) 'Select point for the calculation of derivatives'
+    read(lucmd,*)  xmin
     do while (npoints.le.norder) 
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
@@ -199,40 +199,42 @@
     allocate ( dvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with dvec  all.'
   ! polynomial fit of potential energy curve
     call polsvd(ndim,npoints,amat,bvec,xcoor,ecoor,cvec,dvec,chisq,iskip)
-    write(ilogg,'(72A1)') ('=',i=1,72)
-    write(ilogg,'(3X,A,I3)') '* POTENTIAL CURVE: Polynomial fit of order:',norder
-    write(ilogg,'(3X,A)') '* Coefficients:'
-    write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',           &
-       cvec(i),i=1,ndim)  
-    write(ilogg,'(A)') '        X          Predicted E         Actual E            Relative error'
-    do i = 1,npoints
-      yp = polval(norder,cvec,xcoor(I))
-      dev = (yp-ecoor(i))/ecoor(I)
-      write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,ecoor(i),dev
-    ENDDO
-    write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
-    write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
-    write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    if(nprint == 1)then
+      write(ilogg,'(72A1)') ('=',i=1,72)
+      write(ilogg,'(3X,A,I3)') '* POTENTIAL CURVE: Polynomial fit of order:',norder
+      write(ilogg,'(3X,A)') '* Coefficients:'
+      write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',cvec(i),i=1,ndim)  
+      write(ilogg,'(A)') '        X          Predicted E         Actual E            Relative error'
+      do i = 1,npoints
+        yp = polval(norder,cvec,xcoor(I))
+        dev = (yp-ecoor(i))/ecoor(I)
+        write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,ecoor(i),dev
+      enddo
+      write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
+      write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
+      write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    endif
   ! calculate energy derivatives
     v2 = polnder(norder,cvec,xmin,2)
     v3 = polnder(norder,cvec,xmin,3)
     v4 = polnder(norder,cvec,xmin,4)
   ! polynomial fit of property curve
     call polsvd(ndim,npoints,amat,bvec,xcoor,pcoor,cvec,dvec,chisq,iskip)
-    write(ilogg,'(72A1)') ('=',i=1,72)
-    write(ilogg,'(3X,A,I3)') '* PROPERTY CURVE: Polynomial fit of order:',norder
-    write(ilogg,'(3X,A)') '* Coefficients:'
-    write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',           &
-       cvec(i),i=1,ndim)  
-    write(ilogg,'(A)') '        X          Predicted P         Actual P            Relative error'
-    do i = 1,npoints
-      yp = polval(norder,cvec,xcoor(I))
-      dev = (yp-pcoor(i))/ecoor(I)
-      write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,pcoor(i),dev
-    ENDDO
-    write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
-    write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
-    write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    if(nprint == 1)then
+      write(ilogg,'(72A1)') ('=',i=1,72)
+      write(ilogg,'(3X,A,I3)') '* PROPERTY CURVE: Polynomial fit of order:',norder
+      write(ilogg,'(3X,A)') '* Coefficients:'
+      write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',cvec(i),i=1,ndim)  
+      write(ilogg,'(A)') '        X          Predicted P         Actual P            Relative error'
+      do i = 1,npoints
+        yp = polval(norder,cvec,xcoor(I))
+        dev = (yp-pcoor(i))/ecoor(I)
+        write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,pcoor(i),dev
+      enddo
+      write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
+      write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
+      write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    endif
   ! calculate property derivatives
     p0 = polval(norder,cvec,xmin)
     p1 = polnder(norder,cvec,xmin,1)
@@ -438,6 +440,9 @@
     if(itmp==0)write(ilogg,'(a)')'  ************  OK  ************'; write(ilogg,*)
 
   endif
+
+  i=lnblnk(potfil)
+  write(lupri,*) 'Results have been written to ',potfil(1:i)//'.vibcal'
 
   !-----------------------------------------------------------------------------!
   deallocate ( xcoor  )
