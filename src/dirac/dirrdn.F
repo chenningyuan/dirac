@@ -4002,7 +4002,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.XXXXX','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4028,8 +4028,8 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
+      MAYER  = .FALSE.
       POLNRM = .FALSE.
-      REMREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -4103,17 +4103,17 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
-                  OWNBAS = .TRUE.
                GO TO 100
  9             CONTINUE
+C&&& MAYER: Polarize reference orbitals according to Mayers scheme
+                  MAYER  = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
-C&&& REMREF: Project out reference orbitals from polarized orbitals
-                  REMREF = .TRUE.
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4165,6 +4165,19 @@ C
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
+      IF(POLREF) THEN
+          WRITE(LUPRI,'(1X,A)') '* Reference orbitals will be polarized'
+      ENDIF
+      IF(MAYER) THEN
+        IF(OWNBAS) THEN
+          CALL QUIT
+     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+        ENDIF
+      ELSE
+        WRITE(LUPRI,'(1X,A,A)')
+     &    '* Reference orbitals will be polarized according to ',
+     &    ' a modified Mayer scheme'
+      ENDIF
       IF(OWNBAS) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Fragments are calculated in their individual bases !',
@@ -4187,19 +4200,7 @@ C
             ENDIF
           ENDDO
         ENDDO
-        IF(POLREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Reference orbitals will be polarized'
-        ENDIF
-        IF(REMREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Project out reference orbitals from polarized ones.'
-        ENDIF
       ELSE
-        IF(POLREF) THEN
-          CALL QUIT
-     &     ('ANAINP: Polarization only possible with SELOWN=T')
-        ENDIF
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)

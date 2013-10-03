@@ -843,6 +843,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 *
       NTEST = 00
 *
+      print*,'NOP,IOP(1),NMOP',NOP,IOP(1),NMOP
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Welcome to OP_COMPARE '
         WRITE(6,*) ' Input Hamiltonian types '
