@@ -4172,11 +4172,11 @@ C
         IF(OWNBAS) THEN
           CALL QUIT
      &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+        ELSE
+          WRITE(LUPRI,'(1X,A,A)')
+     &      '* Reference orbitals will be polarized according to ',
+     &      ' a modified Mayer scheme'
         ENDIF
-      ELSE
-        WRITE(LUPRI,'(1X,A,A)')
-     &    '* Reference orbitals will be polarized according to ',
-     &    ' a modified Mayer scheme'
       ENDIF
       IF(OWNBAS) THEN
         WRITE(LUPRI,'(1X,A)')
