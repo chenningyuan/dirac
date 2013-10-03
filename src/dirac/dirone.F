@@ -4118,6 +4118,7 @@ C
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NEFF = 0
       IF(EIG(1).LE.SSTOL) GOTO 10
+      NEFF = NEFF + 1
       ALPHA = D1/SQRT(EIG(1))
       CALL DENST1(SMAT,LRS,LCS,NZ,ALPHA,D0,
      &              VMAT,LRV,LCV,1,1,N)
