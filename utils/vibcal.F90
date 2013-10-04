@@ -35,7 +35,7 @@
 
 #include "priunit.h"
 
-  character :: potfil*80, prpfil*80, reply*1, strkey*30
+  character :: potfil*100, prpfil*100, reply*1, strkey*30
 
   integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp, iang
   integer :: npoints, ipoint, itmp, nprint, dermeth, norder, ndim, iskip, keymeth
@@ -47,6 +47,7 @@
   real*8            :: err1, err2, err3, edifb, edifh
   real*8            :: chisq, yp, dev, xmin
   real*8            :: Rinf, Rinf3, Rinf4, dRinf, dRinf3, dRinf4, xmax
+  real*8            :: total_00, total_01, total_02, total_03 
 
   real*8, parameter :: dp5=0.5d0, d1=1.0d0, dp16=0.0625d0, xtcm=2.19474625d+05
   real*8, parameter :: engerr=1.0d-10
@@ -340,8 +341,8 @@
     write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
     write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
   write(ilogg,'(a)')'  Harmonic model:'
@@ -351,10 +352,24 @@
     write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
     write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
+!gosia: sum up; to be removed:
+  write(ilogg, *)
+  do n = 0,4
+    !write(ilogg, *) 'p(n) for n = ', n
+    v = n + dp5
+    w = n*n+n+dp5
+    total_00 = a0
+    total_01 = total_00 + a1*v
+    total_02 = total_01 + a2*v
+    total_03 = total_02 + a3*w
+    !write(ilogg, *) 'sum of first two terms =', total_01 
+    !write(ilogg, *) 'sum of first three terms =', total_02
+    write(ilogg, *) 'p(n) for n = ', n, '; sum of first four terms =', total_03, ' a.u. = ', total_03*xthz*1000.0d0, ' mHz'
+  end do
   !-----------------------------------------------------------------------------!
   !              Hint if the choice of points were correct                      !
   !        We assume that the potential curve is Morse potential                !
