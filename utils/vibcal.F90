@@ -196,7 +196,7 @@
     ndim = norder + 1
   ! allocate arrays
     allocate ( amat(npoints,ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with amat  all.'
-    allocate ( bvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with bvec  all.'
+    allocate ( bvec(npoints),stat=ier ); if(ier /= 0 ) stop 'Problem with bvec  all.'
     allocate ( cvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with cvec  all.'
     allocate ( dvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with dvec  all.'
   ! polynomial fit of potential energy curve
@@ -241,7 +241,7 @@
     p0 = polval(norder,cvec,xmin)
     p1 = polnder(norder,cvec,xmin,1)
     p2 = polnder(norder,cvec,xmin,2)
-  ! dellocate
+  ! deallocate
       deallocate ( amat )
       deallocate ( bvec )
       deallocate ( cvec )
