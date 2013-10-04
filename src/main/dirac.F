@@ -98,6 +98,7 @@ C  /* Deck dirctl */
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
+      call xml_begin('run','type="dirac-run"')
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
@@ -131,6 +132,7 @@ C***********************************************************************
       end if
 #endif
 C
+C
 C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
@@ -152,11 +154,9 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
+      call xml_end('run')
+      call xml_close_file
 
-      if (doxml) then
-         call xml_end('output')
-         call xml_end('run') ! started om dirrdn.F
-      endif
       CALL QEXIT('DIRCTL')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
