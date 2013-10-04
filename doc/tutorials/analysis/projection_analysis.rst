@@ -38,9 +38,9 @@ The expansion coefficients :math:`c^A_{pi}` are found by solving the equation
 
 obtained by projection.
 
------------------
-Example1: Methane
------------------
+------------------
+Example 1: Methane
+------------------
 
 Introduction
 ------------
@@ -259,3 +259,17 @@ and analogously for Kramers partner 2, from which we get the detailed decomposit
 orbital. We find that this molecular orbital is composed of the carbon :math:`2p_{1/2}` orbital and
 the hydrogen :math:`1s` orbitals.
 
+-----------------
+Example 2: Uranyl
+-----------------
+
+We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
+:math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
+running the projection analysis with no symmetry, following the procedure outlined in the methane 
+example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
+by introducing a ghost center. Our molecular input file then looks like
+
+.. literalinclude:: UO2.mol
+
+Now the oxygen atoms are no longer connected by symmetry and we can carry out the projection 
+analysis in :math:`C_{\infty v}` symmetry. 
