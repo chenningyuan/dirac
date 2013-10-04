@@ -35,7 +35,7 @@
 
 #include "priunit.h"
 
-  character :: potfil*30, prpfil*30, reply*1, strkey*30
+  character :: potfil*80, prpfil*80, reply*1, strkey*30
 
   integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp, iang
   integer :: npoints, ipoint, itmp, nprint, dermeth, norder, ndim, iskip, keymeth
@@ -337,8 +337,8 @@
   dif = b(1)-b(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
   else
     write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
     write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
@@ -348,8 +348,8 @@
   dif = h(1)-h(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
   else
     write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
     write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
