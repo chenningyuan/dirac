@@ -3546,16 +3546,13 @@ C.....Assemble and normalize polarized fragment coefficients
 C
 C     Calculate overlap between original and polarized coefficients
 C
-      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
-     &         SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
-     &         AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
-     &         CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
-     &         WORK(KV1),NBAS,NREF,NZ,IPQTOQ(1,0),
-     &         WORK(KFREE),LFREE,IPRINT)
+      CALL ABSOLUTE_OVERLAP(CMO,NBAS,NTOT,1,NREF,
+     &                      WORK(KV1),NREF,1,SMAT,AMAT,
+     &                      IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
       WRITE(LUPRI,*) 
-     &  '* Overlap between original and polarized orbitals',
-     &  ' before orthonormalization and alignment.'
-      CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,NZ,IPQTOQ(1,0),LUPRI)
+     &  '* Squared overlap between original and polarized orbitals',
+     &  ' before orthonormalization.'
+      CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,1,IPQTOQ(1,0),LUPRI)
 C
 C     Orthonormalization and align within each fragment
 C
@@ -3564,10 +3561,23 @@ C
         NVEC = NSTR(IFRP,0,IREF)
         CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,NEFF,SMAT,AMAT,
      &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
-        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
-     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
-     &                    WORK,KFREE,LFREE)
+CTROND        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
+CTROND     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
+CTROND     &                    WORK,KFREE,LFREE)
         IVEC = IVEC + NVEC
+      ENDDO
+      CALL ABSOLUTE_OVERLAP(CMO,NBAS,NTOT,1,NREF,
+     &                      WORK(KV1),NREF,1,SMAT,AMAT,
+     &                      IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
+      WRITE(LUPRI,*) 
+     &  '* Squared overlap between original and polarized orbitals',
+     &  ' after orthonormalization.'
+      CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,1,IPQTOQ(1,0),LUPRI)
+C.....Replace original polarization coefficients
+      IOFF = 0
+      DO IZ = 1,NZ
+        CALL DCOPY(NDIM,WORK(KV1+IOFF),1,CMO(1,1,IZ),1)
+        IOFF = IOFF + NDIM
       ENDDO
       IF(IPRINT.EQ.2) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients'
@@ -3641,6 +3651,16 @@ CTROND     &             WORK(KFREE),LFREE)
      &             'N','N',IPQ,WORK(KBUF),NBAS,NSEL,NZ,
      &             'N','N',IPQ,WORK(KVMAT),NSEL,NSEL,NZ,
      &             D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
+        IF(IPRINT.GE.2) THEN
+        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NEFF,NEFF,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+        WRITE(LUPRI,*) '* ORTHO_SELVEC: Overlap matrix after'
+        CALL PRQMAT(AMAT,NEFF,NEFF,NEFF,NEFF,NZ,IPQ,LUPRI)
+      ENDIF
         CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
       RETURN
