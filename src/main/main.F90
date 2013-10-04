@@ -176,7 +176,6 @@ program DIRAC12_PROGRAM
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
      call stopwatch(0,mytid)
-     if (doxml) call xml_close_file
      CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI

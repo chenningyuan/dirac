@@ -150,8 +150,6 @@ C
 
 C     Start the xml output and echo the input to the xml output
       if (doxml) then
-         ! Can't begin xml output earlier because we don't know if it's on or off
-         call xml_begin('run','type="dirac-run"') ! closed in dirac.F
          call xml_begin('program')
          call xml_begin('name')
          write(luxml,'(A)') 'dirac'
@@ -168,7 +166,6 @@ C     Start the xml output and echo the input to the xml output
             call xml_embed_formatted('MOLECULE.XYZ','dirac-xyz')
          end if
          call xml_end('input')
-         call xml_begin('output') ! closed in dirac.F
       endif
 
 C
