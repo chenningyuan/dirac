@@ -6465,10 +6465,50 @@ C***********************************************************************
       DO IZ = 1,NZ
         DO J = 1,N
           DO I = 1,N
-            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ)=D0
+            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ) = D0
           ENDDO
         ENDDO
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Absolute_Overlap */
+      SUBROUTINE ABSOLUTE_OVERLAP(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                            CREF,NCOL,IREF,SMAT,AMAT,
+     &                            IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate overlap between vector set; 
+C     for readability report square of overlap
+C
+C     Written by T. Saue Oct 3 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      DO J = 1, NSEL
+        DO I = 1,NSEL
+           AMAT(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NSEL
+          DO I = 1,NSEL
+             AMAT(I,J,1) = AMAT(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
       RETURN
       END
 

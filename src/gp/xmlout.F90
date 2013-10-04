@@ -218,7 +218,7 @@ module xmlout
          CALL QUIT('Error in opening file for xml embed!')
       ENDIF
       do while (.true.)
-         read(lu,*,end=666) linebuf
+         read(lu,'(A)',end=666) linebuf
          write(luxml,'(A)') trim(linebuf)
       enddo
 666   continue

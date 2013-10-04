@@ -96,7 +96,8 @@
   open(ipot,file=potfil,status='old',form='formatted',access='sequential',iostat=ier)
   if(ier /= 0)then
     write(0,*) ' ERROR in opening input file POTFIL:',potfil
-    write(ilogg,*) ' ERROR in opening input file POTFIL:',potfil
+!gosia: this would write to unopened file, fixme
+!    write(ilogg,*) ' ERROR in opening input file POTFIL:',potfil
     stop
   endif
   i=lnblnk(potfil)
@@ -180,6 +181,7 @@
       errwng(i+nder,1) = derres(i,2)
       errwng(i+nder,2) = derres(i,3)
     enddo
+
   elseif(keymeth==2)then
     write(lupri,*) 'Select point for the calculation of derivatives'
     read(lucmd,*)  xmin
@@ -444,5 +446,7 @@
   deallocate ( ecoor  )
   deallocate ( pcoor  )
 
+  close(ilogg, status='keep')
+  close(ipot, status='keep')
   !-----------------------------------------------------------------------------!
   end program
