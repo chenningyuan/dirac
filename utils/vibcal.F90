@@ -175,7 +175,7 @@
     call nddrv(nder,'CENTRAL',ipoint,nprint,ilogg,npoints,xcoor,pcoor,0.0d0,derres,ierrprp)
 
     ! store results
-    p0 = ecoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
+    p0 = pcoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
     do i=1,nder
       errder(i,2) = max(derres(i,2),derres(i,3))
       errwng(i+nder,1) = derres(i,2)
