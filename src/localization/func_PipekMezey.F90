@@ -80,7 +80,7 @@ contains
   ! Internal variables
 
   ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
-  integer, parameter :: maxref = 20
+  integer, parameter :: maxref = 40
 
   logical :: tobe, twocomp, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit
