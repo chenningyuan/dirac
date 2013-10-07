@@ -118,6 +118,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 C
       use interface_to_mpi
+      use xmlout
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -520,6 +521,11 @@ C
       WRITE(IW,6077) DIAG
       WRITE(IW,6078) RMS
       WRITE(IW,6079) NIT
+      if (doxml) then
+         call xml_quantity('CC iterations used',NIT)
+         call xml_quantity('CC convergence',RMS,' ')
+         call xml_quantity('T1 diagnostic',DIAG,' ')
+      end if
 C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector

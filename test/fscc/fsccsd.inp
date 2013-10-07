@@ -11,7 +11,7 @@ Magnesium atom. Fockspace test calculations.
 .RELCCSD
 *SCF
 .EVCCNV
-1.0E-10
+1.0E-10 1.0E-8
 .CNVINT
 0.01 0.0001
 .CLOSED SHELL
@@ -20,8 +20,32 @@ Magnesium atom. Fockspace test calculations.
 .ACTIVE
 energy -1000.0 1000.0 1.0
 energy -1000.0 1000.0 1.0
+**RELCC
+.FOCKSP
+#.ENERGY
+.PRINT
+1
+#.DEBUG
+*CCENER
+.MAXIT # maximum number of iterations for (0,0) sector
+55
+.NTOL
+9
+*CCFSPC
+.MAXIT # maximum number of iterations for sectors
+45
+.DOEA     #  (0,1) sector
+.DOEA2    #  (0,2) sector
+.DOIE     #  (1,0) sector
+.DOIE2    #  (2,0) sector
+.DOEXC    #  (1,1) sector
+.NACTH
+0 0 3 3
+.NACTP
+2 2 3 3
 *END OF
 
- &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END
- &CCFSPC MAXIT=50, NACTH=0,0,3,3, NACTP=2,2,3,3, FSSECT=1,1,1,1,1,1      &END
+ # deprecated input
+ &XRELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END
+ &XCCFSPC MAXIT=50, NACTH=0,0,3,3, NACTP=2,2,3,3, FSSECT=1,1,1,1,1,1      &END
 

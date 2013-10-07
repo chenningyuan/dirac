@@ -2192,6 +2192,31 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Extvec */
+      SUBROUTINE EXTVEC(AVEC,LDA,BVEC,LDB,NB,NVEC,IBR)
+C***********************************************************************
+C
+C     Extract elements of vectors A(LDA,NVEC) and
+C     insert into vector BVEC(LDB,NVEC) using 
+C     row array IBR.
+C
+C     Written by T.Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
+C
+      DO J = 1,NVEC
+        DO I = 1,NB
+          BVEC(I,J) = AVEC(IBR(I),J)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lmnrep */
       SUBROUTINE LMNREP(IREP,NHKTA,KHKTA,LVALUE,MVALUE,NVALUE)
 C***********************************************************************
@@ -3142,6 +3167,14 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
+#ifdef DEBUG
+      print*, 'QTRANS: The MO matrix'
+      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
@@ -6171,7 +6204,7 @@ C***********************************************************************
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
-      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
       TEMP=XDEV*XTANG
@@ -6502,4 +6535,65 @@ C***********************************************************************
          JSTACK=JSTACK-2
       ENDIF
       GOTO 1
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cleanmat */
+      SUBROUTINE CLEANMAT(A,DTOL,N,LR,LC,NZ)
+C***********************************************************************
+C
+C     Subroutine CLEANMAT will set matrix elements below the given 
+C     threshold to zero
+C     Written by T. Saue Oct. 2 2013
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION A(LR,LC,NZ)
+      PARAMETER (D1=1.0D00, D0=0.0D00)
+      DO IZ = 1,NZ
+        DO J = 1,N
+          DO I = 1,N
+            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ) = D0
+          ENDDO
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Absolute_Overlap */
+      SUBROUTINE ABSOLUTE_OVERLAP(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                            CREF,NCOL,IREF,SMAT,AMAT,
+     &                            IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate overlap between vector set; 
+C     for readability report square of overlap
+C
+C     Written by T. Saue Oct 3 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      DO J = 1, NSEL
+        DO I = 1,NSEL
+           AMAT(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NSEL
+          DO I = 1,NSEL
+             AMAT(I,J,1) = AMAT(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
       END

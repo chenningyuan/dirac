@@ -142,7 +142,7 @@ program DIRAC12_PROGRAM
      write(lupri, '(//a)') 'Binary information'
      write(lupri, '(a/)')  '------------------'
 
-     call print_binary_info()
+     call print_binary_info(lupri)
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
@@ -176,7 +176,6 @@ program DIRAC12_PROGRAM
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
      call stopwatch(0,mytid)
-     if (doxml) call xml_close_file
      CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI

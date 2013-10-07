@@ -381,8 +381,8 @@ Do not perform damping of the Fock matrix. Damping is activated by
 default, but DIIS takes precedence. In case all columns in the
 B-matrix is removed by linear dependency, damping is activated.
 
-Level shift
-===========
+Level shifts
+============
 
 keyword(LSHIFT)
 
@@ -394,6 +394,22 @@ keyword(OLEVEL)
 Activate level shift (for open-shell orbitals). Followed by a real
 argument (level shift), one line for each open shell {Please give
 example}.
+
+keyword(OPENFACTOR)
+
+Change the default factor on an open-shell diagonal contribution to the Fock matrix.
+The default factor of one corresponds to a Koopmans interpretation of the orbital energies,
+however, experience shows that one in many case get better convergence without this term,
+so if your open-shell calculation does not converge it can often help to try again with
+a factor of zero on this term (or even e.g. -0.20).
+
+*Default:*
+
+::
+
+    .OPENFAC
+     1.00
+
 
 State selection
 ===============

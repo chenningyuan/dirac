@@ -93,9 +93,9 @@
 *. Input file for CI-vectors
 *. restart from file 21 is assumed
 *. Input , two electron integrals - MOLCAS
-      LU2INT = 81
+      LUTINT = 81
 *. Input , one electron integrals - MOLCAS
-      LU1INT = 82
+      LUOINT = 82
 *. Input , property one-electron integral files
       LUPRP  = 83
 *. Sirius interface file

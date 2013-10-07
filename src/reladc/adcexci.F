@@ -31,10 +31,8 @@
 ! file names for the Lanczos
       CHARACTER*6                            :: NAMEMATFIL
       CHARACTER*6                            :: NAMECNFFIL
-      CHARACTER*7                            :: INFOFN
-      PARAMETER(INFOFN='MATINFO')
-      CHARACTER*5                            :: NMSPECF
-      PARAMETER(NMSPECF='XSPEC')
+      CHARACTER*5                            :: NAMESPCFIL
+      PARAMETER(NAMESPCFIL='XSPEC')
 
 ! variables for the lanczos
 
@@ -46,15 +44,16 @@
       integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
       real*8, allocatable     :: cc(:)   ! work space for diag_lanc
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 !
 !-----------------------interface section---------------------
 !
       interface
 
-        SUBROUTINE BUILD_X_MAIN (a,b,l)
-          real*8, dimension(:)  :: a
-          real*8, dimension(*)  :: b
-          integer               :: l
+        SUBROUTINE BUILD_X_MAIN (ra1,ra2,i1)
+          real*8, dimension(:)  :: ra1
+          real*8, dimension(*)  :: ra2
+          integer               :: i1
         END SUBROUTINE
 
         SUBROUTINE SOLVE_HPHP(ra1,i1,i2)
@@ -62,11 +61,11 @@
           integer               :: i1,i2
         END SUBROUTINE
 
-        SUBROUTINE BUILD_X_COUSAT_R(h,a,i1,i2,i3,i4,lo,r2,i5)
+        SUBROUTINE BUILD_X_COUSAT_R(h,a,i1,i2,i3,i4,l1,r2,i5)
           real*8, dimension(:)  :: h
           real*8, dimension(*)  :: a
           integer               :: i1,i2,i3,i4
-          logical               :: lo
+          logical               :: l1
           real*8                :: r2
           integer               :: i5
         END SUBROUTINE
@@ -98,23 +97,6 @@
         WRITE(IW,*) 'Doing strict ADC-2'
       ENDIF
 
-      IF(reladc_dofull) THEN
-        WRITE(IW,*) 'Full diagonalizer requested.'
-        WRITE(IW,*) 'Only executed for dim < 5000!'
-      ENDIF
-      
-      If(reladc_dolanc) Then
-        WRITE(IW,*) 'Lanzcos diagonalizer will be called.'
-        If(reladc_lancmem.eq.0) THEN
-          reladc_lancmem=50000000
-        Endif
-        WRITE(IW,*) 'Lancmem set to ',reladc_lancmem,' real words.'
-      Endif
-
-      If(reladc_dodavi) Then
-        WRITE(IW,*) 'Davidson diagonalizer will be called.'
-      Endif
-
       IF(reladc_adcthr.gt.0.0d0) THEN
         WRITE(IW,*) 'A threshold of',reladc_adcthr,' will be applied to'
         WRITE(IW,*) 'the PP ADC matrix.'
@@ -145,6 +127,19 @@
       endif
       write(iw,*)
 
+! This part makes no sense with the new input
+!      write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
+!      n=0
+!      do i=1,32
+!        n=n+reladc_exceigv(i)
+!      enddo
+!      if(n.eq.0) then
+!        write(IW,'(10X,A)') 'None.'
+!      else
+!        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=1,16)
+!        write(IW,'(10X,16I4)') (reladc_exceigv(i),i=17,32)
+!      endif
+
       INTBUF = 5*1024*1024     !we work with a 5 Megaword buffer.
 ! |
 ! |
@@ -163,10 +158,6 @@
 !   This chunk of memory stays allocated also during the calc.
 !   of the other blocks.
 !
-!   on exit of BUILD_X_MAIN the hp/hp block ist stored in the
-!   BKC convention <|<|,|>|>, corresponding to the generic
-!   VOVO storage mode.
-!
       n1 = ivovo(nrep+1) * rcw
       allocate(ciajb(n1),stat=ialloc)
       if(ialloc.ne.0) stop 'allocation problem CIAJB'
@@ -175,20 +166,25 @@
 !
       CALL BUILD_X_MAIN (CIAJB,EPS,N1)
 !
+!   on exit of BUILD_X_MAIN the hp/hp block ist stored in the
+!   BKC convention <|<|,|>|>, corresponding to the generic
+!   VOVO storage mode.
+!
       n2 = jvovo(nrep+1) * rcw
       allocate(daibj(n2),stat=ialloc)
       if(ialloc.ne.0) stop 'allocation problem AUX'
 !
 !   We do one SRT16 resort and store everything as C_ai,bj
 !   and not as C_ia,jb as written in the manuscript.
-!   SRT16: <aj||bi> -->  ai,bj with <||>,|><|  BKC
+!   SRT16: <aj||bi> -->  ai,bj with <||>,|><|  BKC, JVOVO structure
 !
       CALL SRT16(NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,
-     &            JJVO,JJVO,ciajb,daibj)
+     &              JJVO,JJVO,ciajb,daibj)
 !
 ! diagonalize main block for Davidson start vectors
 !
       CALL SOLVE_HPHP(daibj,n2,iobase)
+      write(*,*)  'HP block solved.'
 ! |
 ! |
 ! |_____________  E_N_D__BUILD HP-HP BLOCK  _________________________
@@ -203,10 +199,8 @@
 
       DO IRPLOOP = 1,NREP
 
-        open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
-     &     form='UNFORMATTED',status='unknown')
-
         IF(reladc_excreps(IRPLOOP).EQ.0) CYCLE
+
         IF(reladc_excreps(IRPLOOP).GT.NREP) THEN
            WRITE(IW,*) 'Chosen Symmetry',reladc_excreps(IRPLOOP),
      &     ' does not exist and is skipped!'
@@ -218,7 +212,7 @@
           WRITE(iw,*) 'No final states in symmetry',desrep,repna(desrep)
           CYCLE
         ENDIF
-        WRITE(IW,*)
+
         WRITE(IW,*)
         WRITE(IW,*)
         WRITE(IW,'(A)') '********************************************'
@@ -227,7 +221,10 @@
         WRITE(IW,'(A)') '********************************************'
         WRITE(IW,*)
         WRITE(IW,*)
-!       CALL PST('Computing COUPLING & SAT blocks+')
+
+        open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='NEW')
+
         IF(CARITH) THEN
           stop 'Complex arithm. for excitations not yet available.'
         ELSE
@@ -247,12 +244,12 @@
 ! file handle is reusable after call!
 !
         NAMECNFFIL='ADCXCF'
-!       WRITE(IW,*)
-!       WRITE(IW,*) 'Creating configuration information'
-!       WRITE(IW,*) 'For symmetry ',desrep
-!       WRITE(IW,*)
+        WRITE(IW,*)
+        WRITE(IW,*) 'Creating configuration information'
+        WRITE(IW,*) 'For symmetry ',desrep
+        WRITE(IW,*)
         CALL WCONDAT_X(iobase,namecnffil,irecl,desrep)
-!       WRITE(IW,*) 'Record length from WCONDAT_X:',IRECL
+        WRITE(IW,*) 'Record length from WCONDAT_X:',IRECL
 !
 !  write matrix control file and call corresponding diagonalizer
 !
@@ -287,24 +284,24 @@
 !
 !** setup matrix descriptor for Lanczos
 !
-          neigenv = reladc_exceigv(IRPLOOP)
 
-          reladc_md_iobase   = iobase
-          reladc_md_ionizl   = IONIZLEVEL
-          reladc_md_ioldnew  = 2
-          reladc_md_intbuf   = INTBUF
-          reladc_md_desrep   = DESREP
-          reladc_md_rcw      = RCW
-          reladc_md_lnzitr   = reladc_exciter
-          reladc_md_matdim   = LADC
-          reladc_md_irecl    = IRECL
-          reladc_md_nmain    = MVO(DESREP)
-          reladc_md_nbufs    = NBUFS
-          reladc_md_neigenv  = neigenv
-          reladc_md_fileadc  = NAMEMATFIL
-          reladc_md_filediag = '      '
-          reladc_md_filecnf  = NAMECNFFIL
-          reladc_md_nmspec   = NMSPECF
+          reladc_md_iobase      = iobase
+          reladc_md_ionizl      = IONIZLEVEL
+          reladc_md_ioldnew     = 2
+          reladc_md_intbuf      = INTBUF
+          reladc_md_desrep      = DESREP
+          reladc_md_rcw         = RCW
+          reladc_md_lnzitr      = reladc_exciter
+          reladc_md_matdim      = LADC
+          reladc_md_irecl       = IRECL
+          reladc_md_nmain       = MVO(DESREP)
+          reladc_md_nbufs       = NBUFS
+          reladc_md_eeigv_lower = reladc_md_exc_eeigv(IRPLOOP,1)/autoev
+          reladc_md_eeigv_upper = reladc_md_exc_eeigv(IRPLOOP,2)/autoev
+          reladc_md_fileadc     = NAMEMATFIL
+          reladc_md_filediag    = '      '
+          reladc_md_filecnf     = NAMECNFFIL
+          reladc_md_nmspec      = NAMESPCFIL
 
           allocate(CC(reladc_lancmem),stat=ialloc)
           if(ialloc.ne.0) stop 'Memory allocation problem.'
@@ -319,11 +316,11 @@
      &                KFREE,LFREE,.true.)
           CALL MEMREL('IDPT',CC,KFREEBASE,KFREEBASE,KFREE,LFREE)
 !
-!  open matinfo file and perform Lanczos
+!  perform Lanczos
 !
           CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
 !
-! free all memory needed for diagonalization
+! free all memory that was used for diagonalization
 !
           deallocate(CC)
         ENDIF
@@ -351,7 +348,7 @@
           reladc_md_convthr   = reladc_davconv
           reladc_md_fileadc   = NAMEMATFIL
           reladc_md_filecnf   = NAMECNFFIL
-          reladc_md_nmspec    = NMSPECF 
+          reladc_md_nmspec    = NAMESPCFIL 
 
           CALL DIAG_DAVI(IW)
         ENDIF
@@ -367,6 +364,9 @@
 ! |
 ! |
 ! |______________END___SYMMETRY + DIAGONALIZATION___LOOP_____________
+
+      deallocate(daibj)
+      deallocate(ciajb)
 
       RETURN
       END
@@ -422,7 +422,7 @@
       ELSE
         CALL PST('Building real HP/HP block+')
       ENDIF
-
+!
 !******************* preparations
 !
 !  we often need the v_ac,kl array which is V_ac,kl (VVOO)
@@ -524,10 +524,10 @@
       enddo
       if(carith) call conjuga(ic4,dij,1)
 !
-!  ----------------------------
-!  Calculate    TERM C(2)C    |
-!  result in buf3.            |
-!  ----------------------------
+!  ----------------------------------------
+!  Calculate TERM C(2)C (two contribs)    |
+!  result in buf3                         |
+!  ----------------------------------------
 !
 !  sort v_ac,ik    -->  v_ai,ck    (buf3)
 !  sort V*_bc,jk   -->  V*_bj,ck   (buf4)
@@ -539,23 +539,30 @@
      &              mvo,j2vovo,jjvo,jjvo,sb_vvoott,buf4)
       if(carith) call conjuga(ic1,sb_vvoott,1)
 !
+! debug  CONTRACT TEST
+! here CNTRCT is appropriate because both arrays have exactly
+! the same structure and comply to BKC
+! end debug  CONTRACT TEST
+!
+      CALL CNTRCT('N','T',MVO,MVO,MVO,A1,buf3,buf4,A0,buf5,NREP)
+!
 !  here again special contraction, with 'T' in XGEMM
 !  we end up as v_ai,ck * V*_bj,ck  -->  ai,bj intermediate (buf5)
 !  having BKC:  <| |>,|><|.  
 !
-      ioff1 = 1
-      ioff3 = 1
-      do irep = 1, nrep
-         jrep = multb(irep+nrep,1+nrep,2)
-         m = mvo(irep)
-         n = mvo(irep)
-         k = mvo(jrep)
-         ioff2 = j2vovo(jrep) * rcw + 1
-         call xgemm ('N','T',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
-     &               a0,buf5(ioff3),m)
-         ioff1 = ioff1 + m * k * rcw
-         ioff3 = ioff3 + m * n * rcw
-      enddo
+!     ioff1 = 1
+!     ioff3 = 1
+!     do irep = 1, nrep
+!        jrep = multb(irep+nrep,1+nrep,2)
+!        m = mvo(irep)
+!        n = mvo(irep)
+!        k = mvo(jrep)
+!        ioff2 = j2vovo(jrep) * rcw + 1
+!        call xgemm ('N','T',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
+!    &               a0,buf5(ioff3),m)
+!        ioff1 = ioff1 + m * k * rcw
+!        ioff3 = ioff3 + m * n * rcw
+!     enddo
 !
 !  We have to backsort in order to arrive at
 !  Y(1)_aj,bi order with <|<||>|>  BKC.
@@ -571,6 +578,7 @@
 !  We have to symmetrize according to A_aj,bi = Y(1)_aj,bi + Y(2)*_bi,aj
 !  Hereby we again interpret the Y(1)_aj,bi array as a two-dimensional matrix
 !  of NVO(i) * NVO(i) submatrices contiguously stored (VOVO storage scheme!)
+!
 !
       do krep=1,nrep
         ioff=ivovo(krep)*rcw + 1
@@ -595,10 +603,10 @@
       call getvovo(ciajb)
       call xnegate(dimciajb,ciajb,ciajb)
 !
-!  add -0.5 *  A_aj,bi array to it (VOVO storage)
-!  this is the C(2C) contribution
+!  add -0.5 *  buf3  to it (VOVO storage)
+!  this is the C(2C) contribution (both terms in the equations)
 !
-      call xaxpy  (ic6,-ap5,buf3,1,ciajb,1)
+       call xaxpy  (ic6,-ap5,buf3,1,ciajb,1)
 !
 !  'weave' into this array the C(0), the C(2A) and C(2B) contributions
 !  hereby C(0) is added, the C(2A) and C(2B) contributions are formed from
@@ -856,40 +864,29 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code--------------------------------------
 !
+      write(*,*) 'Diagonalizing HPHP block'
+      write(*,*) '             &'
       write(*,*) 'Generating Davidson start vectors.'
-
-!  MUTAB handling check
-!  we do it in the **COLUMN** index pair because we
-!  construct the matrix columnwise!
-!
-!  According to the notes, bj is the decisive pair.
-!
-      do desrep=1,nrep   !desrep is a bosonic loop (beta_col)
-        do jrep = 1,nrep
-          brep = multb(desrep+nrep,jrep,1)
-          trep = multb(jrep,brep,2)
-          if(desrep.ne.trep) STOP 'error in MUTAB handling!'
-        enddo
-      enddo
 !
 !  create local single configuration descriptor array
-!  remember: first index is virtual, second is occupied
+!  remember: first index is virtual^*, second is occupied
 !  this corresponds to the storage mode!
 !
-      icount = 0
       nx = jvoxx(nrep+1)
       allocate(cfield(nx))
 
+      icount = 0
       do desrep=1,nrep   !desrep is a bosonic loop
         do jrep = 1,nrep   !jrep,brep are fermionic
-          brep = multb(desrep+nrep,jrep,1)
+          brep = multb(desrep+nrep,jrep,2)
           do jfun = 1,NO(jrep)
           do bfun = 1,NV(brep)
             jabs=IO(jrep) + jfun
             babs=IO(nrep+1) + IV(brep) + bfun
             icount = icount + 1
-            write(cfield(icount),777) jabs,repna(jrep),babs,repna(brep)
-!           write(*,*) cfield(icount)
+            write(cfield(icount),777) jabs,repna(jrep),
+     &                                babs,repna(brep)
+            write(*,*) cfield(icount)
           enddo
           enddo
         enddo
@@ -899,6 +896,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          write(*,*) icount,jvoxx(nrep+1)
          stop 'conf array error!'
       endif
+      write(*,*) 'HP configuration counting successful'
 !
 !  diagonalize hphp submatrices
 !  and write corresponding orthogonal eigenvectors
@@ -950,11 +948,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  amat array has ph/ph structure and is transferred to LAPACK
 !
-!       write(*,*) 'Diagonalizing HP/HP in symmetry:',desrep
-!       write(*,*) 'Size of amat:',size(amat)
-!
-!  specific allocations and settings for entering LAPACK routine
-!
         lwork=5*nsiz
         allocate(evl(nsiz));allocate(work(lwork))
         CALL DSYEV('V','L',nsiz,amat,nsiz,evl,work,lwork,info)
@@ -968,12 +961,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  and the eigenvectors are only used as start vector for Davidson.
 !
 
-!       write(*,*)
-!       write(*,*) 'Eigenvalues of states in symm.',desrep,repna(desrep)
-!       write(*,*)
-!       do i=1,nsiz
-!         write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
-!    &             repna(desrep),'@X'
+        write(*,*)
+        write(*,*) 'Main block eigenvalues ',desrep,repna(desrep)
+        write(*,*)
+        do i=1,nsiz
+          write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
+     &             repna(desrep),'@X'
 !         write(*,'(5X,A)') '-----------------------------------------'
 !         do j=1,nsiz
 !           if(dabs(amat(j,i)).gt.0.1d0) then
@@ -982,7 +975,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !           endif
 !         enddo
 !         write(*,*)
-!       enddo
+        enddo
 !
 !  write out start vectors to specific file name.
 !
@@ -1015,6 +1008,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
       IMPLICIT INTEGER (A-Z)
+!     IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
 !
@@ -1036,19 +1030,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
+#include  "../relccsd/param.inc"
 !
 !---------------Local variables--------------------------------------
 !
       INTEGER              :: n1,irep
       INTEGER              :: jrep,brep,jfun,bfun
-      INTEGER              :: ialloc,mjcol,mjrow,nmvod
+      INTEGER              :: ialloc,mjcol,nmvod
 
       INTEGER              :: mxno,mxnv,ioff
       INTEGER, dimension (:,:,:), allocatable  :: oolt
       INTEGER, dimension (:,:,:), allocatable  :: vvlt
-!
-      REAL*8, dimension(:), allocatable :: voooz
-      REAL*8, dimension(:), allocatable :: vovvz
+
+      REAL*8, dimension(:), allocatable :: vooo1
+      REAL*8, dimension(:), allocatable :: vovv1
       REAL*8, dimension(:), allocatable :: bufcol,bufcolex
 !
 !  variables for writing out ADC matrix
@@ -1062,14 +1057,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       interface
 
+        SUBROUTINE XCOLDET(i1,i2)
+          INTEGER                         :: i1,i2
+        END SUBROUTINE XCOLDET
+
         SUBROUTINE XCOLMAKE(i1,i2,ra1,
      &                      i3,i4,i5,i6,
-     &                      i7,i8,i9,
+     &                      i7,i8,
      &                      ra2,ra3,ia1,ia2)
           INTEGER                         :: i1,i2
           REAL*8, dimension(:)            :: ra1
           INTEGER                         :: i3,i4,i5,i6
-          INTEGER                         :: i7,i8,i9
+          INTEGER                         :: i7,i8
           REAL*8, dimension(:)            :: ra2,ra3
           INTEGER, dimension(:,:,:)       :: ia1,ia2
         END SUBROUTINE XCOLMAKE
@@ -1081,12 +1080,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           INTEGER, dimension(:)           :: ia1,ia2
           INTEGER                         :: i2,i3,i4,i5,i6
         END SUBROUTINE XCOLWRIT
-
-        SUBROUTINE XCOLFLSH(i1,i2,i3,i4,ra1,ia1,ia2)
-          INTEGER                         :: i1,i2,i3,i4
-          REAL*8, dimension(:)            :: ra1
-          INTEGER, dimension(:)           :: ia1,ia2
-        END SUBROUTINE XCOLFLSH
 
         SUBROUTINE XSATMAKE(i1,i2,i3,i4,i5,r1,
      &              ra1,ia1,ia2,ra2,ia3,ia4,
@@ -1100,20 +1093,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           LOGICAL                   :: l1
         END SUBROUTINE XSATMAKE
 
+        SUBROUTINE XCOLFLSH(i1,i2,i3,i4,ra1,ia1,ia2)
+          INTEGER                         :: i1,i2,i3,i4
+          REAL*8, dimension(:)            :: ra1
+          INTEGER, dimension(:)           :: ia1,ia2
+        END SUBROUTINE XCOLFLSH
+
       end interface
 !
 !---------------Executable code--------------------------------------
 !
 !________________________________________________________
-!|     prepare ADC matrix write buffers
+!|     allocate ADC MATRIX WRITE BUFFERS and counters
 !|
 !|
       allocate(wbufr(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer could not be allocated.'
+      if(ialloc.ne.0) STOP 'data buffer 1 could not be allocated.'
       allocate(wbufi(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer could not be allocated.'
+      if(ialloc.ne.0) STOP 'data buffer 2 could not be allocated.'
       allocate(wbufj(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer could not be allocated.'
+      if(ialloc.ne.0) STOP 'data buffer 3 could not be allocated.'
       wbufr=0.0d0; wbufi = 0; wbufj = 0
       IBFP = 0   ! pointer to actual buffer level
       NBUFS = 0  ! counter for full buffers
@@ -1157,31 +1156,43 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|
 !|_______________________________________________________
 !
-!  make room for VOOO and VOVV integrals
-!  and read them into memory
 !
-      n1 = ivooot(nrep+1)
-      allocate(voooz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #1 in BUILD_X_COUSAT_R'
-      n1 = ivovvt(nrep+1)
-      allocate(vovvz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #2 in BUILD_X_COUSAT_R'
-      call getvooo(voooz)
-      call rdvovv(vovvz)
-!     write(*,*) 'breakpoint 1'
+!  Attention*** Some arrays that have to store *huge* numbers 
+!  Are defined as Integer*8 in symm.inc ! The generic sorters
+!  operate with unspecified INTEGER declarations. Transferring such
+!  an array as an argument to the SRT_xxx results in an erroneous
+!  behaviour of the sorting routine.
+!
+! fetch <VO||OO> integrals needed for coupling block 
+! 
+      n1=ivooot(nrep+1)
+      allocate(vooo1(n1),stat=ialloc)
+      if(ialloc.ne.0) STOP 'alloc error vooo1!'
+      call getvooo(vooo1)
+!
+! fetch <VO||VV> integrals needed for coupling block 
+! 
+      n1=ivovvt(nrep+1)
+      allocate(vovv1(n1),stat=ialloc)
+      if(ialloc.ne.0) STOP 'alloc error vovv1!'
+      call rdvovv (vovv1)
+!
+! length of main block:
+!
+      NMVOD = MVO(desrep)
 !
 ! determine actual length of coupling block
 ! and allocate column buffer
 !
-      NMVOD = MVO(desrep)
-      CALL XCOLTEST(desrep,lencouplbl)
+      CALL XCOLDET(desrep,lencouplbl)
+      WRITE(IW,*) 'Block length of main block:',NMVOD
+      WRITE(IW,*) 'Block length of coupling block:',lencouplbl
+      WRITE(IW,*) 'Matrix dimension: [',lencouplbl + NMVOD,' ]**2'
+
       ALLOCATE(BUFCOL(lencouplbl),stat=ialloc)
       if(ialloc.ne.0) STOP 'alloc error #3 in BUILD_X_COUSAT_R'
       ALLOCATE(BUFCOLEX(NMVOD + lencouplbl),stat=ialloc)
       if(ialloc.ne.0) STOP 'alloc error #4 in BUILD_X_COUSAT_R'
-!     WRITE(IW,*) 'Block length of main block:',NMVOD
-!     WRITE(IW,*) 'Block length of coupling block:',lencouplbl
-!     WRITE(IW,*) 'Matrix dimension:',lencouplbl + NMVOD
 !
 !  according to the SRT16 convention, 
 !  the columns also have DESREP symmetry. 
@@ -1191,25 +1202,31 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  components of the main block.
 !
       mjcol = 1
-      do jrep = 1,nrep   !jrep,brep are fermionic
-        brep = multb(desrep+nrep,jrep,1)
+      do jrep = 1,nrep
+
+        brep = multb(desrep+nrep,jrep,2)
+
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
 
+          bufcol   = 0.0d0
+          bufcolex = 0.0d0
+
           CALL XCOLMAKE(desrep,lencouplbl,bufcol,
      &                  jrep,brep,jfun,bfun,
-     &                  mxno,mxnv,nrep,
-     &                  voooz,vovvz,oolt,vvlt)
+     &                  mxno,mxnv,
+     &                  vooo1,vovv1,oolt,vvlt)
 !
 ! combine main block column with coupling block column
+! istart is the start address for picking the right main block
+! data to corresponding symetry DESREP.
 !
           istart = JVOVO(desrep) + (mjcol-1)*nmvod
           bufcolex(1:nmvod)=hphp_block(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
 !
-! write out this column, but only the i>=j part!
-! tridiagonal storage of matrix due to symmetry!
+! write out full column.
 !
           CALL XCOLWRIT(IOCH,wthr,bufcolex,wbufr,wbufi,wbufj,
      &                  IBFP,NBUFS,LENCOUPLBL+NMVOD,mjcol,INTBUF)
@@ -1224,7 +1241,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|
 !|
 !| from here the main and coupling block are written to
-!| the external file. We now build the SAT block.
+!| the external file. The SAT entries are also written to
+!| the same file.
 !| ATT**  we can release, and should release *all*
 !| memory which we do not need anymore.
 !| Due to the large size of the matrices we can not afford
@@ -1233,9 +1251,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|
 !|_______________________________________________________
 
-      deallocate(bufcolex)
-      deallocate(voooz)
-      deallocate(vovvz)
 
       CALL XSATMAKE(IOCH,IBFP,NBUFS,INTBUF,DESREP,WTHR,
      &              WBUFR,WBUFI,WBUFJ,EPS,OOLT,VVLT,
@@ -1256,7 +1271,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(*,*) '---- Number of buffers:',NBUFS
       write(*,*) '--------------------------------------------'
 
+      deallocate(bufcolex)
       deallocate(bufcol)
+      deallocate(vovv1)
+      deallocate(vooo1)
       deallocate(vvlt)
       deallocate(oolt)
 !
@@ -1269,42 +1287,30 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XCOLTEST (DESREP,LENCOL)
+      SUBROUTINE XCOLDET(desrep,lenbufcol)
 !
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
-! Loop through VVOO structure with DESREP as destination irrep
-! count corresponding number of elements and return it
-! ATT!! One gets more elements than there are contained in the
-! original VVOOTT array because there the overall direct product is
-! always of A symmetry. We therefore get the number IVVOOTT(nrep+1)
-! for DESREP=1. This reflecs the fact that the VVOO stream can be longer
-! in the ADC matrix than the ordinary VVOOTT stream.
+!  determines length of excitation coupling block (V>V O>O: desrep)
+!  att. Length is not related to entries in ivvoott(:) !
 !
-      INTEGER                   :: DESREP
-      INTEGER, intent(INOUT)      :: LENCOL
+!---------------Calling variables--------------------------------------
+!
+      INTEGER, INTENT(IN)           :: desrep
+      INTEGER, INTENT(OUT)          :: lenbufcol
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"
+#include "../relccsd/symm.inc"
 !
 !---------------Executable code--------------------------------------
 !
-!     write(*,*) 'In xcoltest...'
-      desrepkr=multb(desrep+nrep,1+nrep,2)
-      if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) then
-        stop 'Kramers partner wrongly determined!'
-      endif
-!     write(*,*) 'Kramers partner of:',desrep,' is',desrepkr
+      ICNT = 0
 
-      CDKL = 0
-      DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!     write(*,'(A,4I4)') 'µ: cdrep,klrep,cdrep*klrep*,desrepkr',
-!    &  cdrep,klrep,MULTB(CDREP+NREP,KLREP+NREP,2),desrepkr
+      DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -1312,10 +1318,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO K = KMIN, NO(KREP)
-!
-!  do the CD side...
-!  CDREP, KLREP and DESREP are bosonic!
-!
             DO 20 DREP = 1, NREP
               CREP = MULTB(DREP,CDREP+NREP,2)
               IF (CREP.LT.DREP) GOTO 20
@@ -1323,7 +1325,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                 CMIN = 1
                 IF (CREP.EQ.DREP) CMIN = D + 1
                 DO C = CMIN, NV(CREP)
-                   CDKL = CDKL + 1
+                  ICNT = ICNT + 1
                 ENDDO
               ENDDO
  20         CONTINUE
@@ -1331,14 +1333,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDDO
  10   CONTINUE
       ENDDO
-!
-      LENCOL = CDKL
+
+      lenbufcol = ICNT
+      write(*,*) 'XCOLDET: DESREP: LENBL:',desrep,icnt
+ 
       RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XCOLMAKE (desrep,lencouplbl,bufcol,
      &                     jrep,brep,J,B,
-     &                     mxno,mxnv,dimrep,
+     &                     mxno,mxnv,
      &                     voooz,vovvz,oolt,vvlt)
 !
       IMPLICIT INTEGER (A-Z)
@@ -1355,7 +1359,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER                          :: desrep,lencouplbl
       REAL*8, dimension(:)             :: bufcol
       INTEGER                          :: jrep,brep,J,B
-      INTEGER                          :: mxno,mxnv,dimrep
+      INTEGER                          :: mxno,mxnv
       REAL*8, dimension(:)             :: voooz,vovvz
       INTEGER, dimension(:,:,:)        :: oolt,vvlt
 !
@@ -1369,23 +1373,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code--------------------------------------
 !
-      desrepkr=multb(desrep+nrep,1+nrep,2)
-      if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) then
-        stop 'Kramers partner wrongly determined!'
-      endif
-
-      bufcol = 0.0d0
       CDKL = 0
-      if(dimrep.ne.nrep) STOP 'Internal error in XCOLMAKE!'
 !
 !  do the |>|> side...
 !
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-
-        CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!       write(*,'(A,4I4)') '¶: cdrep,klrep,cdrep*klrep*,desrep',
-!    &   cdrep,klrep,MULTB(CDREP+NREP,KLREP+NREP,2),desrepkr
-!
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -1394,7 +1387,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO K = KMIN, NO(KREP)
 !
-!  do the CD side...
+!  do the <|<| side...
 !
             DO 20 DREP = 1, NREP
               CREP = MULTB(DREP,CDREP+NREP,2)
@@ -1410,7 +1403,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! we have to abandon indentation here in order to fit some code
 ! on the line !
 !
-! we have to treat four delta cases. they are processed sequentially
+! treat the four delta cases.
 ! CDKL can be seen as the local column index here in this irrep!
 ! the offsets are *calculated* and not yielded via a lookup table
 ! again.
@@ -1421,15 +1414,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|  Case A:  < dj||kl > delta_bc, we calc a VOOO-offset.
 !|
       if(BREP.eq.CREP.and.B.eq.C) then
-        ZKLREP=MULTB(KREP,LREP,1)
-        if(zklrep.ne.klrep) stop 'internal error #44'
+        DJREP = MULTB(DREP,JREP,1)
+        IF(MULTB(DJREP+NREP,KLREP+NREP,2).ne.1) STOP 'IE #44'
         IF(KREP.EQ.LREP) THEN
-          if(oolt(k,l,krep).eq.0) stop'oolt 0!'
           IOFF=IIOOT(KREP,LREP) + OOLT(K,L,KREP) - 1
         ELSE
           IOFF=IIOOT(KREP,LREP) + (L-1)*NO(KREP) + K - 1
         ENDIF
-        IOFF=IOFF * NVO(ZKLREP) + IVOOOT(ZKLREP)
+        IOFF=IOFF * NVO(KLREP) + IVOOOT(KLREP)
         IOFF=IOFF + IIVO(DREP,JREP) + (J-1)*NV(DREP) + D
         if(ioff.gt.ivooot(nrep+1).or.ioff.lt.1) 
      &     stop 'intern. error #66!'
@@ -1439,15 +1431,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|  Case B:  < cj||kl > delta_bd, we calc a VOOO-offset.
 !|
       if(BREP.eq.DREP.and.B.eq.D) then
-        ZKLREP=MULTB(KREP,LREP,1)
-        if(zklrep.ne.klrep) stop 'internal error #45'
+        CJREP = MULTB(CREP,JREP,1)
+        IF(MULTB(CJREP+NREP,KLREP+NREP,2).ne.1) STOP 'IE #45'
         IF(KREP.EQ.LREP) THEN
-          if(oolt(k,l,krep).eq.0) stop'oolt 0!'
           IOFF=IIOOT(KREP,LREP) + OOLT(K,L,KREP) - 1
         ELSE
           IOFF=IIOOT(KREP,LREP) + (L-1)*NO(KREP) + K - 1
         ENDIF
-        IOFF=IOFF * NVO(ZKLREP) + IVOOOT(ZKLREP)
+        IOFF=IOFF * NVO(KLREP) + IVOOOT(KLREP)
         IOFF=IOFF + IIVO(CREP,JREP) + (J-1)*NV(CREP) + C
         if(ioff.gt.ivooot(nrep+1).or.ioff.lt.1)
      &     stop 'intern. error #67!'
@@ -1457,34 +1448,34 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|  Case C:  < bl||cd >* delta_jk, we calc a VOVV offset
 !|
       if(JREP.eq.KREP.and.J.eq.K) then
-        ZCDREP=MULTB(CREP,DREP,1)
-        if(zcdrep.ne.cdrep) stop 'internal error #46'
+        BLREP = MULTB(BREP,LREP,1)
+        IF(MULTB(BLREP+NREP,CDREP+NREP,2).ne.1) STOP 'IE #46'
         IF(CREP.EQ.DREP) THEN
-          if(vvlt(c,d,crep).eq.0) stop'vvlt 0!'
           IOFF=IIVVT(CREP,DREP) + VVLT(C,D,CREP) - 1
         ELSE
           IOFF=IIVVT(CREP,DREP) + (D-1)*NV(CREP) + C - 1
         ENDIF
-        IOFF=IOFF * NVO(ZCDREP) + IVOVVT(ZCDREP)
+        IOFF=IOFF * NVO(CDREP) + IVOVVT(CDREP)
         IOFF=IOFF + IIVO(BREP,LREP) + (L-1)*NV(BREP) + B
-        if(ioff.gt.ivovvt(nrep+1)) stop 'intern. error #68!'
+        if(ioff.gt.ivovvt(nrep+1).or.ioff.lt.1)
+     &     stop 'intern. error #68!'
         bufcol(cdkl) = bufcol(cdkl) - vovvz(ioff)
       endif
 !|
 !|  Case D:  < bk||cd >* delta_jl, we calc a VOVV offset
 !|
-      if(jrep.eq.lrep.and.J.eq.L) then
-        ZCDREP=MULTB(CREP,DREP,1)
-        if(zcdrep.ne.cdrep) stop 'internal error #47'
+      if(JREP.eq.LREP.and.J.eq.L) then
+        BKREP = MULTB(BREP,KREP,1)
+        IF(MULTB(BKREP+NREP,CDREP+NREP,2).ne.1) STOP 'IE #47'
         IF(CREP.EQ.DREP) THEN
-          if(vvlt(c,d,crep).eq.0) stop'vvlt 0!'
           IOFF=IIVVT(CREP,DREP) + VVLT(C,D,CREP) - 1
         ELSE
           IOFF=IIVVT(CREP,DREP) + (D-1)*NV(CREP) + C - 1
         ENDIF
-        IOFF=IOFF * NVO(ZCDREP) + IVOVVT(ZCDREP)
+        IOFF=IOFF * NVO(CDREP) + IVOVVT(CDREP)
         IOFF=IOFF + IIVO(BREP,KREP) + (K-1)*NV(BREP) + B
-        if(ioff.gt.ivovvt(nrep+1)) stop 'intern. error #69!'
+        if(ioff.gt.ivovvt(nrep+1).or.ioff.lt.1)
+     &     stop 'intern. error #69!'
         bufcol(cdkl) = bufcol(cdkl) + vovvz(ioff)
       endif
 !|
@@ -1517,9 +1508,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Description--------------------------------------------
 !
-!  writes out a column of the ADC matrix held in bufferin to the
-!  buckets provided by the caller. If the buckets are full, they 
-!  are emptied to the file in IOCH.
+!  writes out a complete column of the ADC matrix held in bufferin
+!  to the buckets provided by the caller. If the buckets are full,
+!  they are emptied to the file in IOCH.
 !
 !---------------Local variables ---------------------------------------
 !
@@ -1536,7 +1527,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           BUF(IB)=S
           IOI(IB)=i
           IOJ(IB)=mjcol
-!         write(*,'(A,2I4,F20.12)') 'Z-->',i,mjcol,S
+!         write(*,*) 'Matout:',i,mjcol,S
           IF(IB.EQ.INTBUF) THEN
             NBUFS = NBUFS + 1
             WRITE(IOCH) (BUF(IXX),IXX=1,INTBUF),
@@ -1606,13 +1597,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER                              :: JDUMMY
 !
 !---------------Start execution--------------------------------------
-!     write(*,*) 'XSATMAKE wthr:',WTHR
-!     write(*,*) 'In xsatmake...'
-      desrepkr=multb(desrep+nrep,1+nrep,2)
-      if(multb(desrepkr+nrep,desrep+nrep,1).ne.1) then
-        stop 'Kramers partner wrongly determined!'
-      endif
-!     write(*,*) 'Kramers partner of:',desrep,' is',desrepkr
+      write(*,*) 'In xsatmake...'
 
 !
 ! allocate space and read in integrals
@@ -1633,16 +1618,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       CALL GETOOOO(ooooz)
       CALL GETVOVO(vovoz)
 !
-! CDKL is the column counter, has column symmetry DESREP
-! ABIJ is the row counter has row symmetry DESREP* = KRP(DESREP)
 ! SAT elements are calculated only for the lower triangle which
 ! means that ABIJ >= CDKL !
-! At the moment we have to examine this condition by counting through
-! for we do not construct a lookup table (too big!)
+! no lookup table (too big!)
 !
       CDKL=0    !column counter
+
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -1666,8 +1649,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  no remedy at the moment.
 
       ABIJ=0     !row counter
-      DO IJREP = 1,NREP     ! KLREP (bosonic!) loops through
-      ABREP = MULTB(DESREP+NREP,IJREP+NREP,1)
+
+      DO IJREP = 1,NREP
+      ABREP = MULTB(DESREP+NREP,IJREP+NREP,2)
       DO 44 JREP = 1, NREP
       IREP = MULTB(JREP,IJREP+NREP,2)
       IF (IREP.LT.JREP) GOTO 44
@@ -1962,8 +1946,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          BUF(IBFP)=S
          IOI(IBFP)=ABIJ + MVO(DESREP)
          IOJ(IBFP)=CDKL + MVO(DESREP)
-!        write(*,'(A,2I4,F20.12)') 'Z-->',ABIJ + MVO(DESREP),
-!    &                             CDKL + MVO(DESREP),S
+!        write(*,*) 'Satmatout:',IOI(IBFP),IOJ(IBFP),S
          IF(IBFP.EQ.INTBUF) THEN
            NBUFS = NBUFS + 1
            WRITE(IOCH) (BUF(IXX),IXX=1,INTBUF),

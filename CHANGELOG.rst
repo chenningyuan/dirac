@@ -1,5 +1,41 @@
 
 
+13.0
+----
+
+- pam can handle full paths of files which are put/get to/from scratch directory,
+for example, pam ... --put  "/tmp/milias/testrun/DFCOEF_MI=DFCOEF  /tmp/milias/testrun/MRCONEE  /tmp/milias/testrun/MDCINT_MI=MDCINT"  --get "/tmp/milias/testrun/DFCOEF_MI=DFCOEF_ab"
+
+
+12.8
+----
+
+- Replaced hardcoded memory limit in the calculation of the electrostatic potential.
+- Bugfix for screening in MP2. Now you can use
+  screening in conjunction with batched processing (for large systems) by
+  specifying .IJTSK in input.
+
+
+12.7
+----
+
+- Bugfix for permanent dipole moment calculations with KRCI. Missing nuclear contribution term 
+  have been added and the correct sign for the dipole integrals (length gauge) has been introduced.
+- Bugfix for MP2-NO calculations. correct writing of 2-electron file MDCINT.
+- Workaround for memory allocator segmentation fault with gfortran can now be triggered with:
+  ./setup -D CPP="-DGFORTRAN_ALLOCATOR_WORKAROUND"
+- improved final state analysis for MCSCF wave functions: print natural orbital occupation numbers by default
+- Bugfix for parallel CC/MP2 calculations using the RELCCSD module and the new input style (the old Namelist input was
+  fine); thanks to Kirk Peterson for pointing it out.
+- DSO integrals can be limited by the .SELECT keyword. Previously DSO integral code
+  ignored .SELECT.
+- Extended addressing of DSO integrals up to 333 atom centers.
+- Compilation fix for 64bit integer Intel MKL.
+- DIRAC compiles using Portland group compilers.
+- Introduced block for any structure optimization runs using the xyz format.
+- Removed --force option from setup script.
+
+
 12.6
 ----
 
@@ -7,7 +43,7 @@
 - Make it possible to compile without XCFun.
 - Enable creation of static executables with older linkers.
 - Add --replace option to the pam script.
-- introduce keyword .THRECI in KR-CI input to allow the user to change the default CI energy convergence criterion,
+- Introduce keyword .THRECI in KR-CI input to allow the user to change the default CI energy convergence criterion,
   present default::
 
     .THRECI

@@ -22,11 +22,16 @@ Setting up DIRAC
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
-  :doc:`Running the test set <installation/testing>`
+  :doc:`Running the test set <installation/runtest>`
 
 * **Example installations and run scripts:**
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
+
+* **pam script:**
+  :doc:`How to set the scratch directory <pam/scratch>`
+  :doc:`Replacements of strings by pam <pam/replace>`
+
 
 
 Updates and patches
@@ -44,7 +49,8 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`   |
+  :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
@@ -59,6 +65,7 @@ Tutorials and walkthrus
 =======================
 
 * **Basis sets:**
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
@@ -68,6 +75,7 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
@@ -93,6 +101,8 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
+* **Analysis:**
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
@@ -110,6 +120,10 @@ Tutorials and walkthrus
 * **ECP:**
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **Utility programs:**
+  :doc:`TWOFIT <tutorials/utils/twofit>`
+  :doc:`VIBCAL <tutorials/utils/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -149,6 +163,7 @@ Developers
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
+  :doc:`How to add new tests <programmers/testing>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |

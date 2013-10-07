@@ -1,5 +1,3 @@
-#define MOD_UNRELEASED
-
 
 module fde_evaluators
 
