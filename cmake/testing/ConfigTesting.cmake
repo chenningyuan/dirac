@@ -1,6 +1,6 @@
 # set cdash buildname
 set(BUILDNAME
-    "BUILDNAME-not-set"
+    "${CMAKE_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_Fortran_COMPILER_ID}-${BLAS_TYPE}-${cmake_build_type_tolower}"
     CACHE STRING
     "Name of build on the dashboard"
     )
@@ -11,15 +11,6 @@ set(DART_TESTING_TIMEOUT
     CACHE STRING
     "Set default timeout in seconds for every single test"
     )
-
-# set number of CPU for test
-if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
-    set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
-endif()
-# set timeout (this is not DART_TESTING_TIMEOUT)
-if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-    set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
-endif()
 
 include(Tests)
 include(CTest)

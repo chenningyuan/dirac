@@ -1,7 +1,7 @@
 #################################
 **DIRAC
 .TITLE
- FO
+ FO molecule - X2C-mmf model
 .WAVE FUNCTION
 .ANALYZ
 #################################
@@ -15,9 +15,9 @@
 *READIN
 .UNCONTRACT
 **HAMILTONIAN
-.GAUNT
 .X2Cmmf
-.DOSSSS
+.GAUNT        ! include LSLS integrals in mmf
+.DOSSSS       ! include SSSS integrals in mmf
 #################################
 **WAVE FUNCTION
 .SCF

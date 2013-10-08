@@ -1,5 +1,7 @@
 module electrostatic_potential
 
+   use memory_allocator
+
    implicit none 
    
    public get_esp
@@ -32,9 +34,9 @@ module electrostatic_potential
 !  --------------------------------------------------------------------------
    logical                       :: nuc_part
    logical                       :: el_part
-   integer, parameter            :: lwork = 10000
    integer                       :: i
-   real(8)                       :: work(lwork)
+   integer                       :: lwork
+   real(8), allocatable          :: work(:)
 !  --------------------------------------------------------------------------
 
    nuc_part = .true.
@@ -47,7 +49,10 @@ module electrostatic_potential
       call get_nuclear_mep(nr_points, r, esp, 0)
    end if
    if (el_part) then
+      call legacy_lwork_get(lwork)
+      call alloc(work, lwork, id='temporary work array in electrostatic potential')
       call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0)
+      call dealloc(work)
    end if
 
    end subroutine
@@ -332,6 +337,16 @@ module electrostatic_potential
                   ader = 2.0d0 * ader
               end if
 ! We multiply by +2.0d0. The D matrix refers to the alpha part only.
+!     do ipoint = 1, nr_points
+!        print *, "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
+!        do ib = 1, kcktb
+!          do ia = 1, kckta
+!             print *, "ELEMENT", ia, ib
+!             print *, ader(ipoint, ia, ib)
+!        call output(ader(ipoint,:,:),1,kckta,1,kcktb,kckta,kcktb,2,6)
+!          enddo
+!        enddo
+!     enddo 
               do ipoint = 1, nr_points
               if (do_matrix) then
                  do ib = 1, kcktb
@@ -353,6 +368,10 @@ module electrostatic_potential
        idena = idena + khkta * multa
       end do
 
+
+!          do ipoint = 1, nr_points
+!            print *, "Electronic ESP @point", ipoint, vector(ipoint)
+!          end do
       if (iprint > 5) then
           do ipoint = 1, nr_points
             print *, "Electronic ESP @point", ipoint, vector(ipoint)

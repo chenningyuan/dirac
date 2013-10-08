@@ -1,23 +1,23 @@
-**DIRAC                                                                                             
-.TITLE                                                                                              
- Valence ionization of the HCN-molecule + long eigenvectors                                                  
-.WAVE FUNCTION                                                                                      
+**DIRAC
+.TITLE 
+ Valence ionization of the HCN-molecule + long eigenvectors        
+.WAVE FUNCTION        
 **INTEGRALS
 *READIN
 .UNCONTRACT
-**HAMILTONIAN                                                                                       
-.LVCORR                                                                                             
-**WAVE FUNCTIONS                                                                                    
-.SCF                                                                                                
-.RELADC                                                                                             
-*SCF                                                                                                
-.CLOSED SHELL                                                                                       
- 14                                                                                                 
-.FCKCNV                                                                                             
-5.0E-05                                                                                             
-**MOLTRA                                                                                            
-.ACTIVE                                                                                             
-energy  -2.0 2.5 0.1                                                                                
+**HAMILTONIAN         
+.LVCORR               
+**WAVE FUNCTIONS      
+.SCF                  
+.RELADC               
+*SCF                  
+.CLOSED SHELL         
+ 14                   
+.FCKCNV               
+5.0E-05               
+**MOLTRA              
+.ACTIVE               
+energy  -2.0 2.5 0.1  
 **RELADC
 .DOSIPS
 .ADCLEVEL
@@ -32,7 +32,7 @@ energy  -2.0 2.5 0.1
  20.0
 .SIPEIGV
  1
- 10
-*END OF                                                                                             
-                                                                                                    
-                                                                                                    
+ 0.0 20.0
+*END OF               
+                      
+                      

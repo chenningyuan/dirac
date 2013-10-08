@@ -2,3 +2,4 @@ regular
 HF.inp    HI_arep.mol
 HF.inp    HI_sorep.mol
 HF.inp    HI_ecplib.mol
+DFT.inp   Bi2.xyz

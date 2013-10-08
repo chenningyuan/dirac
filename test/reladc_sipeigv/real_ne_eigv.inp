@@ -1,24 +1,24 @@
-**DIRAC                                                                                             
-.TITLE                                                                                              
+**DIRAC
+.TITLE 
  Valence ionization of the Neon atom + long eigenvectors
-.WAVE FUNCTION                                                                                      
+.WAVE FUNCTION         
 **INTEGRALS
 *READIN
 .UNCONTRACT
-**HAMILTONIAN                                                                                       
-.LVCORR                                                                                             
-**WAVE FUNCTIONS                                                                                    
-.SCF                                                                                                
-.RELADC                                                                                             
-*SCF                                                                                                
-.CLOSED SHELL                                                                                       
- 4 6                                                                                                
-.FCKCNV                                                                                             
-5.0E-07                                                                                             
-**MOLTRA                                                                                            
-.ACTIVE                                                                                             
-energy  -2.0 2.5 0.1                                                                                
-energy  -2.0 2.5 0.1                                                                                
+**HAMILTONIAN          
+.LVCORR                
+**WAVE FUNCTIONS       
+.SCF                   
+.RELADC                
+*SCF                   
+.CLOSED SHELL          
+ 4 6                   
+.FCKCNV                
+5.0E-07                
+**MOLTRA               
+.ACTIVE                
+energy  -2.0 2.5 0.1   
+energy  -2.0 2.5 0.1   
 **RELADC
 .DOSIPS
 .SIPREPS
@@ -33,7 +33,7 @@ energy  -2.0 2.5 0.1
  30.0
 .SIPEIGV
  1
- 10
-*END OF                                                                                             
-                                                                                                    
-                                                                                                    
+ 20.0 50.0
+*END OF                
+                       
+                       

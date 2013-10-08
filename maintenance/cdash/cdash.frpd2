@@ -12,10 +12,17 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 # go to the local DIRAC directory
 cd $DIRAC
 
+export DIRTIMEOUT="10m"
+
 BUILD_GNU=build_ompi_gnu_ilp64_static
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
 # configure step
-./setup --fc=mpif90  --cc=mpicc  --cxx=mpiCC  --int64  -D BUILDNAME="frpd2.ompi_gnu_ilp64_static" -D RUNTEST_NR_PROC=2  --mpi --static  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=OFF --force $BUILD_GNU 
+export DIRAC_NUM_MPI_TASKS=3
+./setup --fc=mpif90  --cc=mpicc  --cxx=mpiCC  --int64  -D BUILDNAME="frpd2.ompi_gnu_ilp64_static" --mpi --static -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
 cd $BUILD_GNU
 make clean
 cmake ..
@@ -36,13 +43,17 @@ fi
 
 cd $DIRAC
 BUILD_INTEL=build_intel_mkl_ilp64_static_check
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
+fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
 # configure step
-./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intel_mkl_ilp64_static_CHECK" --static  -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_BOUNDS_CHECK=ON --force $BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intel_mkl_ilp64_static_CHECK" --static  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
+make ExperimentalUpdate
 make clean
 cmake ..
-make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
 make ExperimentalTest

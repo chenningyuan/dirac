@@ -1,7 +1,7 @@
 #################################
 **DIRAC
 .TITLE
- FO
+ FO molecule - X2C-AMFI model
 .WAVE FUNCTION
 .ANALYZ
 #################################
@@ -15,8 +15,8 @@
 *READIN
 .UNCONTRACT
 **HAMILTONIAN
-.GAUNT
-.X2C
+.GAUNT        ! activates spin-other-orbit in AMFI
+.X2C          ! nuclear X2C
 #################################
 **WAVE FUNCTION
 .SCF

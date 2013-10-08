@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-#define MOD_UNRELEASED
-
 module fde_cfg
 ! this module holds all options for the embedding code, and routines to set/access
 ! this information

@@ -11,7 +11,7 @@
      &            LCSBLK,
 ! Add idensi to input
      &            IDENSI,
-     &            MK2REF,MK2DEL,
+     &            MK2REF,MK2DEL,MK2INT,
 ! Set ISPINFREE or remove it
      &            ISPINFREE,
 ! For properties

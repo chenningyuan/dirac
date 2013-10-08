@@ -113,10 +113,12 @@ implicit none
           call rdbox_csv
         end if
       end if
+
       call t1sqr("t1c ","t1c ","tc  ","tcm ")
-      call ordvv_csv
-      call calvv0_csv
-      call pdiag_csv
+      call ordvv_csv ! sortig of diagrams
+      call calvv0_csv ! calculating preliminary diagr.
+      call pdiag_csv !
+
       iter=0
       ieof=0
       call tvinit_csv
@@ -138,6 +140,10 @@ implicit none
       write(6,2400) tmax,idec(itmax),t1max,idec(it1max)
       call t1sqr("t1v ","t1c ","tv  ","tm  ")
 
+      ! control print out of states after the diagonalization
+      write(LUPRI,'(/,2x,i3,a)') iter, '. preliminary print out of diagonalization'
+      egr0=0.d0; call eneru2 (egr0,1,3,max(1,iopt(1)))
+
 220   iter=iter+1
       call prtime("strt itr",iter,0)
       call flush (6)
@@ -145,10 +151,22 @@ implicit none
       if (iopt(17).ne.0) then
         call caltv3_csv
       end if
-      call caltv2_csv
-      call caltv1_csv
-      call ordtvb_csv
+      call caltv2_csv ! 2-el. diagrams
+      call caltv1_csv ! 1-el. diagrams
+
+      write(LUPRI,'(/,2x,i3,a)') iter, '. a1 preliminary print out of diagonalization'
+      egr0=0.d0; call eneru2 (egr0,1,3,max(1,iopt(1)))
+
+
+      call ordtvb_csv ! final sorting of T-arrays
+
+      write(LUPRI,'(/,2x,i3,a)') iter, '. a2 preliminary print out of diagonalization'
+      egr0=0.d0; call eneru2 (egr0,1,3,max(1,iopt(1)))
+
+
+
       if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
+      ! extrapolation of amplitudes from previous iterations
         fnew=max(dfloat(iopt(6)/100),1.d0)
         if (fnew.le.6.5d0) then
           fnew=1.d0/fnew
@@ -160,18 +178,21 @@ implicit none
         if (iopt(17).ne.0) then
           call add("t3nw",fnew/(1.d0+fnew),"t31 ",1.d0/(1.d0+fnew),"t3nw")
         end if
-        write (6,'('' t averaged with fnew '',f7.3)') fnew
+        write (6,'('' t averaged with fnew '',i3,f7.3)') iter,fnew
       endif
-      call fmax("tnew",tmax,itmax)
+      call fmax("tnew",tmax,itmax) ! find element of maximum value from 2-el.quantities
       call fmax("t1nw",t1max,it1max)
       if (iopt(17).ne.0) then
         call fmax6 ("t3nw",t3max,id3mx,ind3mx)
       end if
-      call diffmax("tv  ","tnew","s2  ",diff,idiff)
-      call diffmax("t1v ","t1nw","s2  ",diff1,idiff1)
+
+      ! find maximum differences between two subsequent set of amplitudes
+      call diffmax("tv  ","tnew","s2  ",diff,idiff) ! 2-el. T
+      call diffmax("t1v ","t1nw","s2  ",diff1,idiff1) ! 1-el. T
+
       df3 = 0.0d0 ! mi initialization
       if (iopt(17).ne.0) then
-        call dfmax3 ("t31 ","t3nw","s2  ",df3,iddf3,inddf3)
+        call dfmax3 ("t31 ","t3nw","s2  ",df3,iddf3,inddf3) ! 3-el. T
       end if
       write (6,*) ' '
       write (6,4321) iter,diff,idec(idiff),diff1,idec(idiff1)
@@ -180,18 +201,24 @@ implicit none
         write (6,2401) df3,idec(iddf3),idec(inddf3)
       end if
 2401  format (24x,e10.3,2x,i12,2x,i12)
+
+      ! idec(itmax) - unpacking decimal value i,j,k,l (or i,j)
       write (6,2400) tmax,idec(itmax),t1max,idec(it1max)
 2400  format(' max t, t1=',f15.9,2x,i12,f17.9,2x,i6)
+
       if (iopt(17).ne.0) then
         write (6,2402) t3max,idec(id3mx),idec(ind3mx)
       end if
+
 2402  format(' maxt3 =',f15.9,2x,i12,2x,i12)
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
         write (*,*) ' abort. tmax out of bounds'
         call abext('tmax    ')    
       endif
+
 ! diis
       if (iopt(4).lt.0) then
+        ! apply DIIS for both T1 and T2 amplitudes
         call diis(iter,icnvg,11,"t1nw","t1v ","tnew","tv  ")
         if(iter.gt.1) then
           call diffmax("tv  ","tnew","s2  ",diff,idiff)
@@ -201,17 +228,26 @@ implicit none
         endif
         if(icnvg.eq.1) go to 910
       endif
-      call move("tnew","tv  ")
-      call move("t1nw","t1v ")
+
+      call move("tnew","tv  ") ! move T2
+      call move("t1nw","t1v ") ! move T1 from previous iter
+
       if (iopt(17).ne.0) then
         call move ("t3nw","t31 ")    
       end if
+
+      ! create new, effective T2-tilde of T1 and T2, store it in "tm  "
       call t1sqr("t1v ","t1c ","tv  ","tm  ")
+
       call prt("tnew","new t   ",2)
       call prt("t1nw","new t1  ",2)
-      call prt("tvf ","new tf  ",2)
+      call prt("tvf ","new tf  ",2) ! print out part of T for Heff
+
 ! runtime check: The variable 'csv_$DF3' is being used without being defined
+
+      ! check the convergence
       if (max(abs(diff),abs(diff1),abs(df3)).lt.convrg) go to 910
+
       call wrtfile(52,0,"tv  ")
       call wrtfile(52,1,"t1v ")
       call wrtfile(52,2,"tvf ")
@@ -221,6 +257,11 @@ implicit none
           call wrtbox_csv
         end if
       end if
+
+      ! control print out of states after the diagonalization
+      write(LUPRI,'(/,2x,i3,a)') iter, '. === control print out of diagonalization ==='
+      egr0=0.d0; call eneru2 (egr0,1,3,max(1,iopt(1)))
+
       if (iopt(4).gt.0) go to 260
 !   no rle
       if (iter.ge.iopt(2)) go to 920
@@ -233,8 +274,11 @@ implicit none
       if (iopt(17).ne.0) then
         call wrtrle  ("t31 ",3,itr1+1)
       end if
+
       if (iter.ge.iopt(2)) go to 920
       if (itr1.lt.iopt(4)) go to 220
+
+
       if (iopt(17).eq.0) then
         call rle (itr1,1100,"t1v ","tv  ","dum3","dum4",ising)
       else
@@ -253,27 +297,37 @@ implicit none
           go to 220
         endif
       endif
-      ! construct tm from t1v(1el diag,01),t1c(1el diag,00) and tv(2el diag)
-      ! for comp. efficiency only we handle corresponding diagrams
+
+    ! construct tm from t1v(1el diag,01),t1c(1el diag,00) and tv(2el diag)
+    ! for comp. efficiency only we handle corresponding diagrams
       call t1sqr("t1v ","t1c ","tv  ","tm  ")
       call wrtrle ("t1v ",1,1)
       call wrtrle ("tv  ",2,1)
       if (iopt(17).ne.0) then
         call wrtrle ("t31 ",3,1)
       end if
-      go to 220
+
+! go to the beginnings of iterations 
+  go to 220
+
+
 !
 !  different endings
 910   write (6,'('' csv converged after iter '',i3)') iter
       go to 970
-920   write (6,*) ' iteration limit'
-      call abext('limit   ')       
+! error exit for reaching iteration limit !
+920   write (6,*) ' reaching iteration limit'
+      call abext('limit   ')
+
+! printing sequence of amplitudes
 970   call prt("tv  ","last t  ",0)
       call prt("t1v ","last t1 ",0)
       call prt("tvf ","last tf ",0)
       if (iopt(17).ne.0) then
         call prt6 ("t31 ","t31 ",0)
       end if
+
+! --- write converged quantities to their files --- !
       call wrtfile(52,0,"tv  ")
       call wrtfile(52,1,"t1v ")
       call wrtfile(52,2,"tvf ")
@@ -1031,6 +1085,8 @@ implicit none
 
       ! prepare Heff(0,1) (tvf) from T1 amplitudes (t1nw)
       call fold_ccsd("t1nw","tvf ")
+
+
       call heff1_csv ! correction of Heff for incomplete model space
 
       ! construct folded diagrams for T1

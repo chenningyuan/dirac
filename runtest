@@ -48,16 +48,6 @@ def kill_win(pid):
     return (0 != kernel32.TerminateProcess(handle, 0))
 
 #-------------------------------------------------------------------------------
-
-def extract_time(time_string):
-    # extract time (in seconds) from the entering time string "hh:mm:ss"
-    # returns time in secs
-    hours   = int(time_string.split(':')[0])
-    minutes = int(time_string.split(':')[1])
-    seconds = int(time_string.split(':')[2])
-    return seconds + 60*minutes + 60*60*hours
-
-#-------------------------------------------------------------------------------
 # parse input
 
 # define example usage
@@ -126,12 +116,6 @@ group.add_option('--giveup',
                  dest='giveup',
                  default=False,
                  help='give up after first failing test [default: %default]')
-group.add_option('--timeout',
-                 action='store',
-                 dest='timeout',
-                 default=None,
-                 help='time limit for runtest [default: %default]',
-                 metavar='"hh:mm:ss"')
 group.add_option('--backup',
                  action='store_true',
                  dest='backup',
@@ -513,17 +497,6 @@ class run:
              self.noref = False
              self.inp   = line.split()[0]
              self.mol   = line.split()[1]
-
-         if program_is_dirac:
-             # pretty please no timeout when executed interactively
-             if not executed_from_subdir:
-                # default timeouts for quick, regular and benchmark tests
-                if self.kind == 'q':
-                    launcher_flags +=  '--timeout=21m '
-                elif self.kind == 'r':
-                    launcher_flags +=  '--timeout=21m '
-                else:
-                    launcher_flags +=  '--timeout=1h '
 
          if len(line.split()) > 2:
              for i in range(2, len(line.split())):
@@ -947,13 +920,6 @@ def main(*args):
                 print('cowardly gave up after the first problem')
                 print('(fix your code or remove --giveup to continue)')
                 sys.exit(1)
-
-            if options.timeout:
-                timeout = extract_time(options.timeout)
-                if global_elapsed > timeout:
-                    error_message = '\n Giving up runtest. Total allowed time of %s seconds exceeded.\n' % timeout
-                    print(error_message)
-                    sys.exit(1)
 
     print('')
     print('summary: %5i ok'                     % nr_ok)

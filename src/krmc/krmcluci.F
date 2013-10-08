@@ -295,6 +295,7 @@ C***********************************************************************
 #include "../luciarel/ctcc.inc"
 C information for property run
 #include "krciprop.h"
+      COMMON/CECORER/ECORE
 CTF
       character*6 CIRUN
       CHARACTER*255 MACHINENAME
@@ -312,7 +313,8 @@ C*******************************************
       CALL QENTER('KRMC_LUCI2')
 C*******************************************
 C
-
+!     transfer core energy to common block
+      ECORE = ECORE_KRMC
 #ifdef LUCI_DEBUG
       if(myproc .eq. master) call print_ci_info()
 #endif
@@ -533,7 +535,7 @@ C
       IF( CIRUN .eq. 'PROP1 ') THEN 
          CXPROPRUN = .TRUE.
          CALL XPROP_KRCI(F2,IHTYPE,WORK(KPROCLIST),WORK(KGROUPLIST),
-     &                   CIRUN)
+     &                   CIRUN,mz_num)
          GOTO 8888
       END IF
 C

@@ -923,10 +923,6 @@ C
       IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
-      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
-     &  WRITE(LUPRI,'(A)')
-     &  ' * No rotations between electrons and positrons,'// 
-     &  ' which are expelled.'
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')

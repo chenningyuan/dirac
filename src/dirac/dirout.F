@@ -1244,8 +1244,8 @@ C
                 WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
      &              '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                 CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
-                IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
               END IF
+              IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
             END DO
 C...........Virtual eigenvalues: pick eigenvalues of symmetry ISYM
             CALL PCKEIG(EIG,IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
@@ -1861,7 +1861,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow4 */
+C/* Deck selowi */
       SUBROUTINE SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C

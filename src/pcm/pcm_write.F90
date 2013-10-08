@@ -9,6 +9,7 @@ module pcm_write
 
    public report_after_pcm_input
    public pcm_write_file
+   public pcm_write_file_separate
 
    private
   
@@ -37,12 +38,16 @@ module pcm_write
          write(*, *) '  3: Use total potentials and apparent charges.'
       end if
       
+      if (pcmmod_dospf) then
+         write(*, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
+      end if
+      
       if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-         write(*, *) '  4: Print potentials at tesserae representative points.'
+         write(*, *) '  5: Print potentials at tesserae representative points.'
       else if (pcmmod_print > 10) then
-         write(*, *) '  4: Print potentials and charges at tesserae representative points.'
+         write(*, *) '  5: Print potentials and charges at tesserae representative points.'
       else
-         write(*, *) '  4: Do not print potentials and charges.'
+         write(*, *) '  5: Do not print potentials and charges.'
       end if     
     
 
@@ -89,6 +94,48 @@ module pcm_write
          write(pcm_file_unit, *) '@point', ipoint, "MEP =", potentials(ipoint), "ASC =", charges(ipoint)
       end do
       write(pcm_file_unit, *) 'Number of tesserae', nr_points, 'Sum of apparent charges', tot_chg
+    
+   end subroutine 
+   
+   subroutine pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg)
+
+! Passed variables
+      integer, intent(in) :: nr_points
+      real(8), intent(in) :: nuc_pot(nr_points), ele_pot(nr_points)
+      real(8), intent(in) :: nuc_chg(nr_points), ele_chg(nr_points)
+ 
+! Local variables
+      real(8) :: tot_nuc_chg, tot_ele_chg
+      integer :: ipoint
+
+      inquire(file = pcm_file_name, exist = pcm_file_exists)
+      if (pcm_file_exists) then
+         open(pcm_file_unit, &
+              file = pcm_file_name, &
+              status = 'old', &
+              form = 'formatted', &
+              access = 'sequential')
+         close(pcm_file_unit, status = 'delete')
+      end if
+      open(pcm_file_unit, &
+           file = pcm_file_name, &
+           status = 'new', &
+           form = 'formatted', &
+           access = 'sequential')
+      rewind(pcm_file_unit)
+
+      tot_nuc_chg = 0.0d0
+      tot_ele_chg = 0.0d0
+      do ipoint = 1, nr_points
+         tot_nuc_chg = tot_nuc_chg + nuc_chg(ipoint)
+         tot_ele_chg = tot_ele_chg + ele_chg(ipoint)
+         write(pcm_file_unit, *) '@point', ipoint
+         write(pcm_file_unit, *) "NUC_MEP =", nuc_pot(ipoint), "NUC_ASC =", nuc_chg(ipoint)
+         write(pcm_file_unit, *) "ELE_MEP =", ele_pot(ipoint), "ELE_ASC =", ele_chg(ipoint)
+      end do
+      write(pcm_file_unit, *) 'Number of tesserae', nr_points 
+      write(pcm_file_unit, *) 'Sum of nuclear apparent charges', tot_nuc_chg, 'Sum of electronic apparent charges', tot_ele_chg
+      write(pcm_file_unit, *) 'Sum of apparent charges', tot_nuc_chg + tot_ele_chg
     
    end subroutine 
    

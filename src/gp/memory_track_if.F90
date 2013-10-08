@@ -136,10 +136,12 @@
          character(len=charArrayLength) :: trace_result
          character(len=charArrayLength) :: varLabel
 
+#ifndef GFORTRAN_ALLOCATOR_WORKAROUND
          trace_result = ' '
          call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
          call track_RegisterAllocation(size,kind,varAddr,varLabel,&
      &                                 trace_result,traceStackDepth) 
+#endif
 
       end subroutine allocator_registerAllocation
       
@@ -152,10 +154,12 @@
          character(len=charArrayLength) :: trace_result
          character(len=charArrayLength) :: varLabel
 
+#ifndef GFORTRAN_ALLOCATOR_WORKAROUND
          trace_result = ' '
          call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
          call track_RegisterDeallocation(varAddr,varLabel,&
      &                                   trace_result,traceStackDepth) 
+#endif
 
       end subroutine allocator_registerDeallocation
 !     
