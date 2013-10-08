@@ -2,5 +2,6 @@ $ERROR 1.E-10
 Nlines 8:Electronic energy
 
 $ERROR 1.E-5
+$IGNORE_BELOW 1.E-9
 From: --------------- STEX Final Output --------------
 ToI:   Sum of oscillator strengths
