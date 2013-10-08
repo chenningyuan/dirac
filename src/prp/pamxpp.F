@@ -1848,7 +1848,8 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0))
+      PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
+     &          D1=1.0D0,D0=0.0D0)
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
@@ -1962,16 +1963,6 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
         deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
-CTROND
-        WRITE(6,*) 'TEST'
-        DO JEXC = 2,NEXC
-          II = INDX(JEXC)
-          IEXC = IEERG(1,II)
-          ISYM = IEERG(2,II)
-          ILAB = ISSYM(IEXC,ISYM)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ILAB)
-        ENDDO
-CTROND
         deallocate(n_ev)
 C
 C     Spinfree case with high enough symmetry to distinguish singlets and triplets
@@ -2036,16 +2027,6 @@ C.......we include the ground state
         deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
-CTROND
-        WRITE(6,*) 'TEST'
-        DO JEXC = 2,NEXC
-          II = INDX(JEXC)
-          IEXC = IEERG(1,II)
-          ISYM = IEERG(2,II)
-          ILAB = ISSYM(IEXC,ISYM)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ILAB)
-        ENDDO
-CTROND
         deallocate(n_ev)
       ELSE
 C.....Default case
@@ -2070,15 +2051,6 @@ C.....Default case
         KEXCNV(1) = KEXCNV(1) + 1
         CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
      &              NEXC,INDX,IRPS,IND)
-CTROND
-        WRITE(6,*) 'TEST'
-        DO JEXC = 2,NEXC
-          II = INDX(JEXC)
-          IEXC = IEERG(1,II)
-          ISYM = IEERG(2,II)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),IEXC,SYMLAB(ISYM)
-        ENDDO
-CTROND
         KEXCNV(1) = KEXCNV(1) - 1
 C.......Make an extra empty symmetry label to use below
         MEXC= MAXEXC*NBSYM
@@ -2182,7 +2154,7 @@ C.......All crossterms
 C.......Isotropic contribution
         allocate(fval(MAXEXC,NBSYM))
         NDIM= MAXEXC*NBSYM
-        CALL DCOPY(NDIM,0.0D0,0,FVAL,1)
+        CALL DCOPY(NDIM,D0,0,FVAL,1)
         IOFF  = IEPOFF(IEVAL)
         DO IDEGA = 1,NDEG
           INDAP   = IOFF+IDEGA
@@ -2198,16 +2170,30 @@ C.......Isotropic contribution
           ENDDO
         ENDDO
         CALL DSCAL(NDIM,D2R3,FVAL,1)
-        WRITE(6,'(/A/)') '* ISOTROPIC OSCILLATOR STRENGTHS'
+        WRITE(6,'(/A)') '* ISOTROPIC DL-DL OSCILLATOR STRENGTHS (f)'
+        WRITE(LUPRI,'(80A1)') ('=',I=1,42)
+        WRITE(LUPRI,'(A)') 'DL = dipole length'
+        WRITE(LUPRI,'(A)') 'Rate = Dipole radiation rate (s-1)'
+        WRITE(LUPRI,'(A)') 
+     &      'Lifetime = corresponding radiation lifetime (s)'
+        WRITE(LUPRI,'(/A)')
+     &  'Level     Frequency     f             Rate           Lifetime'
+        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
         DO JEXC = 2,NEXC
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
           ISYM = IEERG(2,II)
-          ILAB = ISSYM(IEXC,ISYM)
-          WRITE(6,*) JEXC,OMEGA(IEXC,ISYM),FVAL(IEXC,ISYM),SYMLAB(ILAB)
+          OSCIL = FVAL(IEXC,ISYM)
+          IF(OSCIL .GT. 1.0D-8) THEN
+            ILAB = ISSYM(IEXC,ISYM)
+            RATE = D2*ALPHAC**3*OSCIL*OMEGA(IEXC,ISYM)**2/AUTIME
+            WRITE(6,'(I5,F17.10,F12.8,2(3X,E12.5),3X,A4)') 
+     &           JEXC,OMEGA(IEXC,ISYM),OSCIL,RATE,D1/RATE,SYMLAB(ILAB)
+          ENDIF
         ENDDO
+        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
         TOT = DSUM(NDIM,FVAL,1)
-        WRITE(6,*) 'Sum of oscillator strenghts: ',TOT
+        WRITE(6,'(A,F12.5)') 'Sum of oscillator strenghts: ',TOT
         deallocate(fval)
       ENDIF
  10   CONTINUE
