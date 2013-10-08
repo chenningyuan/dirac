@@ -45,8 +45,8 @@ type :: PipekMezey_variales
   integer :: maxref
   real*8  :: prothr
   logical :: ownbas
-  character*6  :: reffil(20)    ! reffil(maxref)    -->  see dcbprj.h
-  character*72 :: vecref(2,20)  ! vecref(2,maxref)  -->  see dcbprj.h
+  character*6  :: reffil(40)    ! reffil(maxref)    -->  see dcbprj.h
+  character*72 :: vecref(2,40)  ! vecref(2,maxref)  -->  see dcbprj.h
   character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
@@ -80,7 +80,7 @@ contains
   ! Internal variables
 
   ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
-  integer, parameter :: maxref = 20
+  integer, parameter :: maxref = 40
 
   logical :: tobe, twocomp, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit

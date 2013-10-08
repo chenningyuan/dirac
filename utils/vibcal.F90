@@ -356,20 +356,6 @@
     write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
-!gosia: sum up; to be removed:
-  write(ilogg, *)
-  do n = 0,4
-    !write(ilogg, *) 'p(n) for n = ', n
-    v = n + dp5
-    w = n*n+n+dp5
-    total_00 = a0
-    total_01 = total_00 + a1*v
-    total_02 = total_01 + a2*v
-    total_03 = total_02 + a3*w
-    !write(ilogg, *) 'sum of first two terms =', total_01 
-    !write(ilogg, *) 'sum of first three terms =', total_02
-    write(ilogg, *) 'p(n) for n = ', n, '; sum of first four terms =', total_03, ' a.u. = ', total_03*xthz*1000.0d0, ' mHz'
-  end do
   !-----------------------------------------------------------------------------!
   !              Hint if the choice of points were correct                      !
   !        We assume that the potential curve is Morse potential                !

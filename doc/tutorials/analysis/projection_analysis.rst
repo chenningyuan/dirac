@@ -263,6 +263,9 @@ the hydrogen :math:`1s` orbitals.
 Example 2: Uranyl
 -----------------
 
+Introduction
+------------
+
 We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
 :math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
 running the projection analysis with no symmetry, following the procedure outlined in the methane 
@@ -273,3 +276,162 @@ by introducing a ghost center. Our molecular input file then looks like
 
 Now the oxygen atoms are no longer connected by symmetry and we can carry out the projection 
 analysis in :math:`C_{\infty v}` symmetry. 
+
+Preparing the analysis
+----------------------
+
+Using the menu file ``HF.inp``
+
+.. literalinclude:: UO2_HF.inp
+
+we run 4-component Hartree-Fock::
+
+   pam --mw=120 --inp=HF --mol=UO2 --get "DFCOEF=cf.UO2"
+
+saving the coefficients. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
+
+   pam --inp=O --mol=O --get "DFCOEF cf.O"
+
+using molecule input ``O.mol``
+
+.. literalinclude:: O.mol
+
+and the menu file ``O.inp``
+
+.. literalinclude:: O.inp
+
+For the uranium we must be a bit more careful since the ground state configuration is an open-shell one: :math:`[Rn]5f^36d^17s^2`.
+Using the molecular input ``U.mol`` 
+
+.. literalinclude:: U.mol
+
+we first calculate the :math:`U^{3+}` cation with configuration :math:`[Rn]5f^3` ::
+
+   pam --inp=UIII --mol=U --outcmo
+
+which converges easily using the menu file ``UIII.inp``
+
+.. literalinclude:: UIII.inp
+
+Note that we ask for a Mulliken population analysis of all positive-energy orbitals. This is in order to find the *6d* and *7s* orbitals.
+Once identified, we bring them into correct position using reordering and keep them there using static overlap selection as shown in 
+the menu file ``U.inp``
+
+.. literalinclude:: U.inp
+
+Convergence is now straightforward ::
+
+   pam --incmo --inp=U --mol=U --get "DFCOEF=cf.U"
+
+and the correct configuration is confirmed by Mulliken population analysis. 
+
+Running the analysis
+--------------------
+
+We are now ready to do the projection analysis. We prepare the input file ``prj.inp``
+
+.. literalinclude:: prj_UO2.inp
+
+and prepare the coefficient files::
+
+   $ ln -s cf.O AFO1XX
+   $ ln -s cf.O AFO2XX
+   $ ln -s cf.U AFUXXX
+   $ cp cf.UO2 DFCOEF
+
+We run the projection analysis::
+
+   pam --incmo --inp=prj --mol=UO2lin --copy="AF*" --mw=120
+
+Interpreting the output
+-----------------------
+
+As in the methane case above we first look at the polarization contribution::
+
+   * Total gross contributions:
+      AFUXXX              89.0635   E -    89.0635   P -     0.0000
+      AFO1XX               8.3098   E -     8.3098   P -     0.0000
+      AFO2XX               8.3098   E -     8.3098   P -     0.0000
+      Polarization:     0.3169
+
+We see that it is more sizable than before. Later we shall see that we can eliminate it by polarization of the fragment orbitals.
+The atomic gross populations tell us that the oxygen atoms has a charge -0.32, whereas the uranium atom has charge +2.94, 
+considerably far from the formal oxidation state +VI.
+
+We next turn to the electron configuration of the atoms in the molecule by looking at the section::
+
+   * Total reference orbital contributions:
+       AFUXXX  E     1       2.00000     -0.42818128E+04   1s
+       AFUXXX  E     2       2.00000     -0.80663682E+03   2s
+       AFUXXX  E     3       2.00000     -0.77703498E+03   2p-
+       AFUXXX  E     4       2.00000     -0.63578312E+03   2p+
+       AFUXXX  E     5       2.00000     -0.63578312E+03   2p+
+       AFUXXX  E     6       2.00000     -0.20673001E+03   3s
+       AFUXXX  E     7       2.00000     -0.19325143E+03   3p-
+       AFUXXX  E     8       2.00000     -0.16037784E+03   3p+
+       AFUXXX  E     9       2.00000     -0.16037784E+03   3p+
+       AFUXXX  E    10       2.00000     -0.13906994E+03   3d-
+       AFUXXX  E    11       2.00000     -0.13906994E+03   3d-
+       AFUXXX  E    12       2.00000     -0.13242590E+03   3d+
+       AFUXXX  E    13       2.00000     -0.13242590E+03   3d+
+       AFUXXX  E    14       2.00000     -0.13242590E+03   3d+
+       AFUXXX  E    15       2.00000     -0.54355461E+02   4s
+       AFUXXX  E    16       2.00000     -0.48231971E+02   4p-
+       AFUXXX  E    17       2.00000     -0.39554187E+02   4p+
+       AFUXXX  E    18       2.00000     -0.39554187E+02   4p+
+       AFUXXX  E    19       2.00000     -0.29743891E+02   4d-
+       AFUXXX  E    20       2.00000     -0.29743891E+02   4d-
+       AFUXXX  E    21       2.00000     -0.28130201E+02   4d+
+       AFUXXX  E    22       2.00000     -0.28130201E+02   4d+
+       AFUXXX  E    23       2.00000     -0.28130201E+02   4d+
+       AFUXXX  E    24       2.00000     -0.15202067E+02   4f-
+       AFUXXX  E    25       2.00000     -0.15202067E+02   4f-
+       AFUXXX  E    26       2.00000     -0.15202067E+02   4f-
+       AFUXXX  E    27       2.00000     -0.14785575E+02   4f+
+       AFUXXX  E    28       2.00000     -0.14785575E+02   4f+
+       AFUXXX  E    29       2.00000     -0.14785575E+02   4f+
+       AFUXXX  E    30       2.00000     -0.14785575E+02   4f+
+       AFUXXX  E    31       2.00001     -0.12603340E+02   5s 
+       AFUXXX  E    32       1.99988     -0.10135890E+02   5p-
+       AFUXXX  E    33       1.99992     -0.80948982E+01   5p+
+       AFUXXX  E    34       1.99950     -0.80948982E+01   5p+
+       AFUXXX  E    35       1.99885     -0.43524477E+01   5d-
+       AFUXXX  E    36       1.99968     -0.43524477E+01   5d-
+       AFUXXX  E    37       1.99973     -0.40407150E+01   5d+
+       AFUXXX  E    38       1.99932     -0.40407150E+01   5d+
+       AFUXXX  E    39       1.99828     -0.40407150E+01   5d+
+       AFUXXX  E    40       1.98041     -0.21392050E+01   6s
+       AFUXXX  E    41       1.93129     -0.13442976E+01   6p-
+       AFUXXX  E    42       1.73850     -0.98481977E+00   6p+ ( 1/2)
+       AFUXXX  E    43       1.96897     -0.98481977E+00   6p+ ( 3/2)
+       AFUXXX  E    44       0.03884     -0.20241412E+00   7s
+       AFUXXX  E    45       0.82231     -0.34596371E+00   5f- ( 1/2)
+       AFUXXX  E    46       0.15542     -0.34596371E+00   5f- (-3/2)
+       AFUXXX  E    47       0.00000     -0.34596371E+00   5f- ( 5/2)
+       AFUXXX  E    48       0.00000     -0.31822326E+00   5f+ (-7/2)
+       AFUXXX  E    49       0.00000     -0.31822326E+00   5f+ ( 5/2)
+       AFUXXX  E    50       0.33671     -0.31822326E+00   5f+ (-3/2)
+       AFUXXX  E    51       0.93693     -0.31822326E+00   5f+ ( 1/2)
+       AFUXXX  E    52       0.41017     -0.19266767E+00   6d- ( 1/2)
+       AFUXXX  E    53       0.09354     -0.19266767E+00   6d- (-3/2)
+       AFUXXX  E    54       0.33147     -0.18309790E+00   6d+ ( 1/2)
+       AFUXXX  E    55       0.32364     -0.18309790E+00   6d+ (-3/2)
+       AFUXXX  E    56       0.00010     -0.18309790E+00   6d+ ( 5/2)
+       AFO1XX  E     1       2.00005     -0.20696087E+02   1s
+       AFO1XX  E     2       1.89559     -0.12503665E+01   2s
+       AFO1XX  E     3       1.47986     -0.61398417E+00   2p-
+       AFO1XX  E     4       1.41895     -0.61259798E+00   2p+
+       AFO1XX  E     5       1.51536     -0.61259798E+00   2p+
+       AFO2XX  E     1       2.00005     -0.20696087E+02   1s
+       AFO2XX  E     2       1.89559     -0.12503665E+01   2s
+       AFO2XX  E     3       1.47986     -0.61398417E+00   2p-
+       AFO2XX  E     4       1.41895     -0.61259798E+00   2p+
+       AFO2XX  E     5       1.51536     -0.61259798E+00   2p+
+
+We can to a large extent deduce the identity of the various atomic orbitals by just looking at orbital energies 
+and I have added it by hand to the above output in a hopefully obvious notation. Even more precise information, 
+such as :math:`m_j` value (indicated in parenthesis) can be obtained from looking at the Mulliken population analysis of each atom. 
+From this list of gross population we extract the atomic valence configuration :math:`5f^{2.25}6d^{1.16}7s^{0.98}` for 
+the uranium atom and :math:`2s^{1.90}2p^{4.41}` for oxygen. An interesting feature is that the uranium *6p* population 
+adds up to *5.64* and not six electrons. This is a manifestation of the so-called *6p-hole*, due to overlap with the oxygen ligands, 
+and mostly located to the :math:`6p_{3/2.1/2}` orbital.
