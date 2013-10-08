@@ -35,7 +35,7 @@
 
 #include "priunit.h"
 
-  character :: potfil*30, prpfil*30, reply*1, strkey*30
+  character :: potfil*100, prpfil*100, reply*1, strkey*30
 
   integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp, iang
   integer :: npoints, ipoint, itmp, nprint, dermeth, norder, ndim, iskip, keymeth
@@ -47,6 +47,7 @@
   real*8            :: err1, err2, err3, edifb, edifh
   real*8            :: chisq, yp, dev, xmin
   real*8            :: Rinf, Rinf3, Rinf4, dRinf, dRinf3, dRinf4, xmax
+  real*8            :: total_00, total_01, total_02, total_03 
 
   real*8, parameter :: dp5=0.5d0, d1=1.0d0, dp16=0.0625d0, xtcm=2.19474625d+05
   real*8, parameter :: engerr=1.0d-10
@@ -175,7 +176,7 @@
     call nddrv(nder,'CENTRAL',ipoint,nprint,ilogg,npoints,xcoor,pcoor,0.0d0,derres,ierrprp)
 
     ! store results
-    p0 = ecoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
+    p0 = pcoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
     do i=1,nder
       errder(i,2) = max(derres(i,2),derres(i,3))
       errwng(i+nder,1) = derres(i,2)
@@ -337,22 +338,22 @@
   dif = b(1)-b(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
   write(ilogg,'(a)')'  Harmonic model:'
   dif = h(1)-h(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
   !-----------------------------------------------------------------------------!
