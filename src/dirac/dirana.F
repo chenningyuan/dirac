@@ -1513,19 +1513,19 @@ C
 C     If requested, polarize reference using scheme of Knizia
 C
       IF(POLREF) THEN
-         CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &               NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
-     &               PTOL,0,WORK,KFREE,LFREE)
-         CALL KNIZIA(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &               NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
-     &               IPRPRJ,WORK,KFREE,LFREE)
+        CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
+     &                NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &                PTOL,0,WORK,KFREE,LFREE)
+        CALL KNIZIA(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
+     &              NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &              IPRPRJ,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Get fragment expansion coefficients
 C
       CALL PRJAN2(WORK(KQ(IFRP,1)),BVEC,SMAT,AMAT,NTOT,NMOL,
-     &            NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
-     &            PTOL,IPRPRJ,WORK,KFREE,LFREE)
+     &              NFBAS(IFRP,0),IFRP,NREFS,REFFIL,NSTR(1,1,1),
+     &              PTOL,IPRPRJ,WORK,KFREE,LFREE)
 C
 C     Add polarization contribution to expansion coefficients
 C
@@ -1596,63 +1596,65 @@ C
         WRITE(6,*) '* Projection vector BVEC: '
         CALL PRQMAT(BVEC,NREF,NMOL,NTOT,NMOL,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
+      IF(NREFS.GT.1) THEN
 C
-C     Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
+C       Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
 C
-      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
-     &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
-     &           AMAT,NTOT,NTOT,NZ,IPQTOQ(1,0),
-     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
-     &           CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRINT)
+        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &             SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &             AMAT,NTOT,NTOT,NZ,IPQTOQ(1,0),
+     &             CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &             CMO,NBAS,NTOT,NZ,IPQTOQ(1,0),
+     &             WORK(KFREE),LFREE,IPRINT)
 C
-C     Print overlaps
-C     ==============
+C       Print overlaps
+C       ==============
 C
-      IF(IPRINT.GE.1) THEN
-        JOFF = 1
-        DO J = 1,NREFS
-          IOFF = 1
-          DO I = 1,(J-1)
-            WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
-     &           REFFIL(I),REFFIL(J)
-            CALL PRQMAT(AMAT(IOFF,JOFF,1),
-     &           NSTR(IFRP,0,I),NSTR(IFRP,0,J),NTOT,NTOT,NZ,
-     &           IPQTOQ(1,0),LUPRI)
-            IF (NSTR(IFRP,0,I).EQ.NSTR(IFRP,0,J)) THEN
-              WRITE(LUPRI,'(/A,2(3X,A6))')
-     &         '*Overlaps - diagonal elements only :',
+        IF(IPRINT.GE.1) THEN
+          JOFF = 1
+          DO J = 1,NREFS
+            IOFF = 1
+            DO I = 1,(J-1)
+              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
      &             REFFIL(I),REFFIL(J)
-              DO II=1, NSTR(IFRP,0,I)
-                WRITE(lupri,*) II,'           ',
-     &          AMAT(IOFF+II-1,JOFF+II-1,1)
-              ENDDO
-              WRITE(LUPRI,*)
-            ENDIF
-            IOFF = IOFF + NSTR(IFRP,0,I)
+              CALL PRQMAT(AMAT(IOFF,JOFF,1),
+     &             NSTR(IFRP,0,I),NSTR(IFRP,0,J),NTOT,NTOT,NZ,
+     &             IPQTOQ(1,0),LUPRI)
+              IF (NSTR(IFRP,0,I).EQ.NSTR(IFRP,0,J)) THEN
+                WRITE(LUPRI,'(/A,2(3X,A6))')
+     &           '*Overlaps - diagonal elements only :',
+     &               REFFIL(I),REFFIL(J)
+                DO II=1, NSTR(IFRP,0,I)
+                  WRITE(lupri,*) II,'           ',
+     &            AMAT(IOFF+II-1,JOFF+II-1,1)
+                ENDDO
+                WRITE(LUPRI,*)
+              ENDIF
+              IOFF = IOFF + NSTR(IFRP,0,I)
+            ENDDO
+            JOFF = JOFF + NSTR(IFRP,0,J)
           ENDDO
-          JOFF = JOFF + NSTR(IFRP,0,J)
-        ENDDO
-      ENDIF
+        ENDIF
 C
-C     Solve linear system by Cholesky decomposition
-C     with full pivoting
+C       Solve linear system by Cholesky decomposition
+C       with full pivoting
 C
-      JOB = 1
-      KFRSAV = KFREE
-      CALL MEMGET('REAL',KB1,NREF,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KB2,NREF,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
-      CALL QCHOLD(AMAT,NREF,NZ,NTOT,NTOT,WORK(KB1),
-     &            PTOL,NEFF,JOB,WORK(KIPIV))
-      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NTOT,NTOT,WORK(KB1),BVEC,
-     &       NTOT,NMOL,BVEC,NTOT,NMOL,JOB,WORK(KIPIV),WORK(KB2))
-      CALL MEMREL('PRJAN2.chol',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-      IF(NEFF.LT.NREF) THEN
-        WRITE(LUPRI,'(A,A)') '* WARNING: ',
-     &   ' linear dependencies detected in Cholesky decomposition'
-        WRITE(LUPRI,'(11X,A,I5,A,I5)')
-     &   ' Reduced dimensionality: ',NREF,' --> ',NEFF
+        JOB = 1
+        KFRSAV = KFREE
+        CALL MEMGET('REAL',KB1,NREF,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KB2,NREF,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
+        CALL QCHOLD(AMAT,NREF,NZ,NTOT,NTOT,WORK(KB1),
+     &              PTOL,NEFF,JOB,WORK(KIPIV))
+        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NTOT,NTOT,WORK(KB1),BVEC,
+     &         NTOT,NMOL,BVEC,NTOT,NMOL,JOB,WORK(KIPIV),WORK(KB2))
+        CALL MEMREL('PRJAN2.chol',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+        IF(NEFF.LT.NREF) THEN
+          WRITE(LUPRI,'(A,A)') '* WARNING: ',
+     &     ' linear dependencies detected in Cholesky decomposition'
+          WRITE(LUPRI,'(11X,A,I5,A,I5)')
+     &     ' Reduced dimensionality: ',NREF,' --> ',NEFF
+        ENDIF
       ENDIF
 C
       RETURN
@@ -3783,6 +3785,7 @@ C
      &          KE(2,2),KQ(2,2),KI(2,2),KBV(2),GROSS(2,0:2,MAXREF),
      &          POL(2),WORK(*)
 C
+      CALL QENTER('ANAPR1')
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
       CALL GTOVLT(WORK(KSMAT),SSMTRC)
       IS = KSMAT
@@ -3796,7 +3799,7 @@ C.......ntot   = nmol + nref
         NTOT   = NVECS(IFRP,0)
         N2TOT  = NTOT*NTOT
         CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
-        IF(NREFS.GT.1) THEN
+        IF(NREFS.GT.1.OR.POLREF) THEN
           CALL MEMGET('REAL',KAMAT,N2TOT*NZ,WORK,KFREE,LFREE)
         ELSE
           KAMAT = KFREE
@@ -3831,6 +3834,7 @@ C
         WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POLT
       ENDIF
 C
+      CALL QEXIT('ANAPR1')
       RETURN
       END
 #ifdef ANALYZE_PROPERTY_GRADIENT
