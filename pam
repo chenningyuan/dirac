@@ -586,7 +586,7 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_mpi',
             default=None,
-            help='set number of cores in parallel run [default: %default]',
+            help='set number of MPI processes in parallel run [default: %default]',
             metavar='INTEGER',
             )
 
