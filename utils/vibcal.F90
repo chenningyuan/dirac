@@ -35,7 +35,7 @@
 
 #include "priunit.h"
 
-  character :: potfil*30, prpfil*30, reply*1, strkey*30
+  character :: potfil*100, prpfil*100, reply*1, strkey*30
 
   integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp, iang
   integer :: npoints, ipoint, itmp, nprint, dermeth, norder, ndim, iskip, keymeth
@@ -47,6 +47,7 @@
   real*8            :: err1, err2, err3, edifb, edifh
   real*8            :: chisq, yp, dev, xmin
   real*8            :: Rinf, Rinf3, Rinf4, dRinf, dRinf3, dRinf4, xmax
+  real*8            :: total_00, total_01, total_02, total_03 
 
   real*8, parameter :: dp5=0.5d0, d1=1.0d0, dp16=0.0625d0, xtcm=2.19474625d+05
   real*8, parameter :: engerr=1.0d-10
@@ -96,14 +97,15 @@
   open(ipot,file=potfil,status='old',form='formatted',access='sequential',iostat=ier)
   if(ier /= 0)then
     write(0,*) ' ERROR in opening input file POTFIL:',potfil
-    write(ilogg,*) ' ERROR in opening input file POTFIL:',potfil
+!gosia: this would write to unopened file, fixme
+!    write(ilogg,*) ' ERROR in opening input file POTFIL:',potfil
     stop
   endif
   i=lnblnk(potfil)
 
   ! open output file
   ilogg = 2
-  open(ilogg,file=potfil(1:i)//'.vib', &
+  open(ilogg,file=potfil(1:i)//'.vibcal', &
        status='unknown',form='formatted',access='sequential')
 
   !-----------------------------------------------------------------------------!
@@ -124,7 +126,7 @@
     write(ilogg,'(a)') '  ******************************'
     write(ilogg,'(a,i4,a)')'  We have ',npoints,' points'
   endif
-  write(lupri,'(a,i4,a)')'  We have ',npoints,' points'
+  write(lupri,'(a,i4,a)')'We have ',npoints,' points'
 
   ! allocate arrays
   allocate ( xcoor(npoints),stat=ier ); if(ier /= 0 ) stop 'Problem with xcoor  all.'
@@ -174,17 +176,18 @@
     call nddrv(nder,'CENTRAL',ipoint,nprint,ilogg,npoints,xcoor,pcoor,0.0d0,derres,ierrprp)
 
     ! store results
-    p0 = ecoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
+    p0 = pcoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
     do i=1,nder
       errder(i,2) = max(derres(i,2),derres(i,3))
       errwng(i+nder,1) = derres(i,2)
       errwng(i+nder,2) = derres(i,3)
     enddo
+
   elseif(keymeth==2)then
-    write(lupri,*) 'Select point for the calculation of derivatives'
-    read(lucmd,*)  xmin
     write(lupri,*) 'Give order of polynomial:'
     read(lucmd,*) norder
+    write(lupri,*) 'Select point for the calculation of derivatives'
+    read(lucmd,*)  xmin
     do while (npoints.le.norder) 
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
@@ -194,50 +197,52 @@
     ndim = norder + 1
   ! allocate arrays
     allocate ( amat(npoints,ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with amat  all.'
-    allocate ( bvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with bvec  all.'
+    allocate ( bvec(npoints),stat=ier ); if(ier /= 0 ) stop 'Problem with bvec  all.'
     allocate ( cvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with cvec  all.'
     allocate ( dvec(ndim),stat=ier ); if(ier /= 0 ) stop 'Problem with dvec  all.'
   ! polynomial fit of potential energy curve
     call polsvd(ndim,npoints,amat,bvec,xcoor,ecoor,cvec,dvec,chisq,iskip)
-    write(ilogg,'(72A1)') ('=',i=1,72)
-    write(ilogg,'(3X,A,I3)') '* POTENTIAL CURVE: Polynomial fit of order:',norder
-    write(ilogg,'(3X,A)') '* Coefficients:'
-    write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',           &
-       cvec(i),i=1,ndim)  
-    write(ilogg,'(A)') '        X          Predicted E         Actual E            Relative error'
-    do i = 1,npoints
-      yp = polval(norder,cvec,xcoor(I))
-      dev = (yp-ecoor(i))/ecoor(I)
-      write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,ecoor(i),dev
-    ENDDO
-    write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
-    write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
-    write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    if(nprint == 1)then
+      write(ilogg,'(72A1)') ('=',i=1,72)
+      write(ilogg,'(3X,A,I3)') '* POTENTIAL CURVE: Polynomial fit of order:',norder
+      write(ilogg,'(3X,A)') '* Coefficients:'
+      write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',cvec(i),i=1,ndim)  
+      write(ilogg,'(A)') '        X          Predicted E         Actual E            Relative error'
+      do i = 1,npoints
+        yp = polval(norder,cvec,xcoor(I))
+        dev = (yp-ecoor(i))/ecoor(I)
+        write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,ecoor(i),dev
+      enddo
+      write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
+      write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
+      write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    endif
   ! calculate energy derivatives
     v2 = polnder(norder,cvec,xmin,2)
     v3 = polnder(norder,cvec,xmin,3)
     v4 = polnder(norder,cvec,xmin,4)
   ! polynomial fit of property curve
     call polsvd(ndim,npoints,amat,bvec,xcoor,pcoor,cvec,dvec,chisq,iskip)
-    write(ilogg,'(72A1)') ('=',i=1,72)
-    write(ilogg,'(3X,A,I3)') '* PROPERTY CURVE: Polynomial fit of order:',norder
-    write(ilogg,'(3X,A)') '* Coefficients:'
-    write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',           &
-       cvec(i),i=1,ndim)  
-    write(ilogg,'(A)') '        X          Predicted P         Actual P            Relative error'
-    do i = 1,npoints
-      yp = polval(norder,cvec,xcoor(I))
-      dev = (yp-pcoor(i))/ecoor(I)
-      write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,pcoor(i),dev
-    ENDDO
-    write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
-    write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
-    write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    if(nprint == 1)then
+      write(ilogg,'(72A1)') ('=',i=1,72)
+      write(ilogg,'(3X,A,I3)') '* PROPERTY CURVE: Polynomial fit of order:',norder
+      write(ilogg,'(3X,A)') '* Coefficients:'
+      write(ilogg,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',cvec(i),i=1,ndim)  
+      write(ilogg,'(A)') '        X          Predicted P         Actual P            Relative error'
+      do i = 1,npoints
+        yp = polval(norder,cvec,xcoor(I))
+        dev = (yp-pcoor(i))/ecoor(I)
+        write(ilogg,'(3x,f6.3,4x,2e20.8,e16.4)') xcoor(I),yp,pcoor(i),dev
+      enddo
+      write(ilogg,'(3x,a,e9.4)') '* chi square :  ',chisq
+      write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
+      write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
+    endif
   ! calculate property derivatives
     p0 = polval(norder,cvec,xmin)
     p1 = polnder(norder,cvec,xmin,1)
     p2 = polnder(norder,cvec,xmin,2)
-  ! dellocate
+  ! deallocate
       deallocate ( amat )
       deallocate ( bvec )
       deallocate ( cvec )
@@ -333,22 +338,22 @@
   dif = b(1)-b(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
   write(ilogg,'(a)')'  Harmonic model:'
   dif = h(1)-h(0)
   dif2 = dif*xthz*1000.0d0
   if(keymeth == 1)then
-    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
-    write(ilogg,'(a,f12.3,a,f8.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
   else
-    write(ilogg,'(a,e16.8,a,f10.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
-    write(ilogg,'(a,f12.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+    write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',DIF, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
   endif
 
   !-----------------------------------------------------------------------------!
@@ -439,10 +444,15 @@
 
   endif
 
+  i=lnblnk(potfil)
+  write(lupri,*) 'Results have been written to ',potfil(1:i)//'.vibcal'
+
   !-----------------------------------------------------------------------------!
   deallocate ( xcoor  )
   deallocate ( ecoor  )
   deallocate ( pcoor  )
 
+  close(ilogg, status='keep')
+  close(ipot, status='keep')
   !-----------------------------------------------------------------------------!
   end program

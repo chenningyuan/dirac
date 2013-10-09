@@ -100,6 +100,8 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
+* **Analysis:**
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
