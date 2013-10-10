@@ -1,0 +1,10 @@
+macro(old_dirac_test _name)
+    add_test(${_name} python ${CMAKE_SOURCE_DIR}/runtest --showdiff --builddir=${PROJECT_BINARY_DIR} --verbose --tests=${_name})
+endmacro()
+
+macro(add_dirac_test _name)
+    add_test(new_${_name} python ${CMAKE_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name})
+#   if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "new")
+#   endif()
+endmacro()
