@@ -83,6 +83,10 @@ class _SingleFilter():
         self.ignore_sign  = kwargs.get('ignore_sign', False)
         self.ignore_below = kwargs.get('ignore_below', 1.0e-40)
         self.nr_lines     = kwargs.get('nr_lines', 0)
+        self.mask         = kwargs.get('mask', [])
+        self.use_mask     = False
+        if self.mask != []:
+            self.use_mask = True
 
         self.from_is_re = False
         from_re = kwargs.get('from_re', '')
@@ -95,14 +99,6 @@ class _SingleFilter():
         if to_re != '':
             self.to_string = to_re
             self.to_is_re = True
-
-        self._setup_mask(kwargs.get('mask', '[]'))
-
-    def _setup_mask(self, s):
-        self.mask = []
-        if s != '[]':
-            for i in s[1:-1].split(','):
-                self.mask.append(int(i))
 
 #-------------------------------------------------------------------------------
 class Filter():
@@ -131,8 +127,6 @@ class Filter():
             line_l     = self._extract(f, out, out_name, log_out)
             line_l_ref = self._extract(f, ref, ref_name, log_ref)
 
-            nr_of_floats = 0 # FIXME hardcoding
-
             numeric_const_pattern = r"""
             [-+]? # optional sign
             (?:
@@ -156,7 +150,7 @@ class Filter():
                     i = 0
                     for w in out[line].split():
                         i += 1
-                        if (nr_of_floats > 0) and (i > nr_of_floats): break
+                        if (f.use_mask) and (i not in f.mask): break
                         # do not consider words like TzB1g
                         # otherwise we would extract 1 later
                         if re.match(r'^[0-9\.eEdD\+\-]*$', w):
@@ -172,7 +166,7 @@ class Filter():
                     i = 0
                     for w in ref[line].split():
                         i += 1
-                        if (nr_of_floats > 0) and (i > nr_of_floats): break
+                        if (f.use_mask) and (i not in f.mask): break
                         if re.match(r'^[0-9\.eEdD\+\-]*$', w):
                             for m in p.findall(w):
                                  m = pd.sub('e', m)
