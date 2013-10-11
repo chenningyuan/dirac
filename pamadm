@@ -203,6 +203,7 @@ def main():
 
     list_of_new_tests = []
     list_of_new_tests.append('dft_ac')
+    list_of_new_tests.append('cisd_energy')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library

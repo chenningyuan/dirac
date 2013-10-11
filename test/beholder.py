@@ -75,14 +75,34 @@ class TestRun():
 #-------------------------------------------------------------------------------
 class _SingleFilter():
 
-    def __init__(self, *args, **kwargs):
-        self.from_string    = kwargs.get('from_string')
-        self.to_string      = kwargs.get('to_string')
-        self.tolerance      = kwargs.get('tolerance', 1.0e-5)
-        self.ignore_sign    = kwargs.get('ignore_sign', False)
-        self.ignore_below   = kwargs.get('ignore_below', 1.0e-30)
-        self.start_is_regex = kwargs.get('start_is_regex', False)
-        self.end_is_regex   = kwargs.get('end_is_regex', False)
+    def __init__(self, **kwargs):
+
+        self.from_string  = kwargs.get('from_string', '')
+        self.to_string    = kwargs.get('to_string', '')
+        self.tolerance    = kwargs.get('tolerance', 1.0e-5)
+        self.ignore_sign  = kwargs.get('ignore_sign', False)
+        self.ignore_below = kwargs.get('ignore_below', 1.0e-40)
+        self.nr_lines     = kwargs.get('nr_lines', 0)
+
+        self.from_is_re = False
+        from_re = kwargs.get('from_re', '')
+        if from_re != '':
+            self.from_string = from_re
+            self.from_is_re = True
+
+        self.to_is_re = False
+        to_re = kwargs.get('to_re', '')
+        if to_re != '':
+            self.to_string = to_re
+            self.to_is_re = True
+
+        self._setup_mask(kwargs.get('mask', '[]'))
+
+    def _setup_mask(self, s):
+        self.mask = []
+        if s != '[]':
+            for i in s[1:-1].split(','):
+                self.mask.append(int(i))
 
 #-------------------------------------------------------------------------------
 class Filter():
@@ -96,33 +116,21 @@ class Filter():
         self.filter_list.append(_SingleFilter(*args, **kwargs))
 
     #---------------------------------------------------------------------------
-    def check(self, work_dir, output_file, reference_file):
+    def check(self, work_dir, out_name, ref_name):
 
         os.chdir(work_dir)
 
-        log_diff      = open('%s.diff'      % output_file, 'w')
-        log_result    = open('%s.result'    % output_file, 'w')
-        log_reference = open('%s.reference' % output_file, 'w')
+        log_diff = open('%s.diff'      % out_name, 'w')
+        log_out  = open('%s.result'    % out_name, 'w')
+        log_ref  = open('%s.reference' % out_name, 'w')
 
-        output     = open(output_file).readlines()
-        output_ref = open(reference_file).readlines()
+        out = open(out_name).readlines()
+        ref = open(ref_name).readlines()
+
         for f in self.filter_list:
-            line_l     = self._find_from_to(output, output_file, f)
-            line_l_ref = self._find_from_to(output_ref, reference_file, f)
-            for x in line_l:
-                for line in x:
-                    log_result.write(output[line])
-            for x in line_l_ref:
-                for line in x:
-                    log_reference.write(output_ref[line])
+            line_l     = self._extract(f, out, out_name, log_out)
+            line_l_ref = self._extract(f, ref, ref_name, log_ref)
 
-            """
-            in:  output      a list of strings (= a file)
-                 output_ref  a list of strings (= a file)
-                 line_l      list of integers that correspond to line numbers in python numbering
-                 line_l_ref  list of integers that correspond to line numbers in python numbering
-            if nr_of_floats > 0 then it will only compare the first nr_of_floats in each line
-            """
             nr_of_floats = 0 # FIXME hardcoding
 
             numeric_const_pattern = r"""
@@ -146,7 +154,7 @@ class Filter():
             for x in line_l:
                 for line in x:
                     i = 0
-                    for w in output[line].split():
+                    for w in out[line].split():
                         i += 1
                         if (nr_of_floats > 0) and (i > nr_of_floats): break
                         # do not consider words like TzB1g
@@ -162,7 +170,7 @@ class Filter():
             for x in line_l_ref:
                 for line in x:
                     i = 0
-                    for w in output_ref[line].split():
+                    for w in ref[line].split():
                         i += 1
                         if (nr_of_floats > 0) and (i > nr_of_floats): break
                         if re.match(r'^[0-9\.eEdD\+\-]*$', w):
@@ -187,7 +195,7 @@ class Filter():
                         # calculate relative error only for significant ('nonzero') numbers
                         rel_error /= r_ref
                     if abs(rel_error) > f.tolerance:
-                        log_diff.write('line %i: %s' % (f_to_line[i]+1, output[f_to_line[i]]))
+                        log_diff.write('line %i: %s' % (f_to_line[i]+1, out[f_to_line[i]]))
                         log_diff.write('    rel error %7.4e > %7.4e\n\n' % (rel_error, f.tolerance))
             else:
                 log_diff.write('compare floats sizes do not match\n')
@@ -196,72 +204,65 @@ class Filter():
                 last_line_printed = -1
                 for i in range(len(f_l)):
                     if (f_to_line[i] != last_line_printed):
-                       log_diff.write('    %s' % output[f_to_line[i]])
+                       log_diff.write('    %s' % out[f_to_line[i]])
                        last_line_printed = f_to_line[i]
 
                 log_diff.write('refence gave %i floats:\n' % len(f_l_ref))
                 last_line_printed = -1
                 for i in range(len(f_l_ref)):
                     if (f_to_line_ref[i] != last_line_printed):
-                       log_diff.write('    %s' % output_ref[f_to_line_ref[i]])
+                       log_diff.write('    %s' % ref[f_to_line_ref[i]])
                        last_line_printed = f_to_line_ref[i]
         log_diff.close()
-        log_result.close()
-        log_reference.close()
-        if os.path.getsize('%s.diff' % output_file) != 0:
-            sys.stderr.write('ERROR: test %s failed\n' % output_file)
-            log_diff = open('%s.diff' % output_file, 'r')
+        log_out.close()
+        log_ref.close()
+        if os.path.getsize('%s.diff' % out_name) != 0:
+            sys.stderr.write('ERROR: test %s failed\n' % out_name)
+            log_diff = open('%s.diff' % out_name, 'r')
             for line in log_diff.readlines():
                 sys.stderr.write(line)
             log_diff.close()
             sys.exit(-1)
 
     #---------------------------------------------------------------------------
-    def _find_from_to(self, output, output_file, f):
+    def _extract(self, f, out, out_name, log):
 
-        if f.start_is_regex:
+        if f.from_is_re:
             ps = re.compile(r'.*%s' % f.from_string)
-        if f.end_is_regex:
-            pe = re.compile(r'.*%s' % f.to_string)
+        if f.nr_lines == 0:
+            if f.to_is_re:
+                pe = re.compile(r'.*%s' % f.to_string)
 
         line_l = []
-        for i in range(len(output)):
+        for i in range(len(out)):
             start_line_matches = False
-            if f.start_is_regex:
-                start_line_matches = ps.match(output[i])
+            if f.from_is_re:
+                start_line_matches = ps.match(out[i])
             else:
-                start_line_matches = (f.from_string in output[i])
+                start_line_matches = (f.from_string in out[i])
             if start_line_matches:
-                for j in range(i, len(output)):
-                    f.end_line_matches = False
-                    if f.end_is_regex:
-                        f.end_line_matches = pe.match(output[j])
-                    else:
-                        f.end_line_matches = (f.to_string in output[j])
-                    if f.end_line_matches:
-                        line_l.append(range(i, j))
-                        break
+                if f.nr_lines > 0:
+                    line_l.append(range(i, i+f.nr_lines))
+                else:
+                    for j in range(i, len(out)):
+                        f.end_line_matches = False
+                        if f.to_is_re:
+                            f.end_line_matches = pe.match(out[j])
+                        else:
+                            f.end_line_matches = (f.to_string in out[j])
+                        if f.end_line_matches:
+                            line_l.append(range(i, j+1))
+                            break
 
         if line_l == []:
-            sys.stderr.write('ERROR: filter did not extract anything from file %s\n' % output_file)
+            if f.nr_lines > 0:
+                sys.stderr.write('ERROR: filter [%i lines from "%s"] did not extract anything from file %s\n' % (f.nr_lines, f.from_string, out_name))
+            else:
+                sys.stderr.write('ERROR: filter ["%s" ... "%s"] did not extract anything from file %s\n' % (f.from_string, f.to_string, out_name))
             sys.exit(-1)
 
-        return line_l
-
-    #---------------------------------------------------------------------------
-    def _find_string_plus_nr_lines(self, output, start_string, n, start_is_regex=False):
-
-        if start_is_regex:
-            p = re.compile(r'.*%s' % start_string)
-
-        line_l = []
-        for i in range(len(output)):
-            start_line_matches = False
-            if start_is_regex:
-                start_line_matches = p.match(output[i])
-            else:
-                start_line_matches = (start_string in output[i])
-            if start_line_matches:
-                line_l.append(range(i, i+n))
+        for x in line_l:
+            for line in x:
+                log.write(out[line])
 
         return line_l

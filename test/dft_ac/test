@@ -15,6 +15,6 @@ f.add(from_string = '@   Elements of the electric dipole',
 f.add(from_string = ' *************************** Expectation values',
       to_string   = '    s0 = T : Expectation value')
 
-test_run.execute(['PBE0gracLB94', 'GLLBsaopLBalpha'], ['Ne'], f)
+test_run.execute(['PBE0gracLB94.inp', 'GLLBsaopLBalpha.inp'], ['Ne.mol'], f)
 
 sys.exit(0)

@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import glob
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Number of reference determinants',
+      nr_lines    = 2)
+f.add(from_re = 'CI Total Energy',
+      to_re   = 'Relative to reference')
+f.add(from_re = '.*CI-SD Energy',
+      to_re   = '.*CI-SD\+Q energy')
+
+inp_files = glob.glob(os.path.join(os.path.dirname(__file__), '*.inp'))
+test_run.execute(inp_files, ['F.mol'], f)
+
+sys.exit(0)
