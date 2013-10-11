@@ -5070,8 +5070,10 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
             READ(LUCMD,*) INI2C
             GO TO 100
   135     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
+#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5106,9 +5108,11 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& MIXVAC: Alternative definition of vacuum polarisation
              VACPOL = .TRUE.
              MIXVAC = .TRUE.
+#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5123,9 +5127,11 @@ C&&& NOVREF: Do not generate reference vacuum
              VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& POSVAC: Use positronic vacuum polarisation
              VACPOL = .TRUE.
              POSVAC = .TRUE.
+#endif
              GO TO 100
 
 !         .FDE
@@ -5692,6 +5698,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
+#ifdef MOD_UNRELEASED
       IF (VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
         IF(MIXVAC) THEN
@@ -5707,7 +5714,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
      &      '- no reference vacuum generated.'
         ENDIF
       ENDIF
-
+#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
