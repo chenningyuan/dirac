@@ -140,12 +140,14 @@ contains
 
 !    active fock matrix factors
      if(nr_2e_fock_matrices > 1)then 
-       allocate( aoo_dfopen(nr_2e_fock_matrices), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
+       if(.not.allocated(aoo_dfopen))    &
+       allocate(aoo_dfopen(nr_2e_fock_matrices), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
        aoo_dfopen(1:(nr_2e_fock_matrices-1)) = df(1:(nr_2e_fock_matrices-1))
      end if
 
     !> interface atomic/molecular data
-       allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
+       if(.not.allocated(atom))          &
+       allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: atom(:)'
        do i=1,size(atom)
          atom(i) = type_atom( charge(i), &
                               cord(1,i), &
@@ -153,8 +155,10 @@ contains
                               cord(3,i)  &   
                             )
        end do
-       allocate( aoo_nont(mxatom), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_nont(:)'
-       allocate( aoo_nucdeg(mxcent), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_nucdeg(:)'
+       if(.not.allocated(aoo_nont))      &
+       allocate( aoo_nont(mxatom), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: aoo_nont(:)'
+       if(.not.allocated(aoo_nucdeg))    &
+       allocate( aoo_nucdeg(mxcent), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: aoo_nucdeg(:)'
        aoo_mxatom           = mxatom
        aoo_mxcent           = mxcent
        aoo_nontyp           = nontyp

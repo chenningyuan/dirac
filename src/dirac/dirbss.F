@@ -8944,14 +8944,6 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
 
-       ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
-       if(icharge-iachnuc < 2)then
-         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
-     &                  ' or hydrogen-like 1e-systems.'//
-     &                  ' AMFI is skipped.'
-         cycle
-       end if
-
        if (IPRINT.GE.2) then
           write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
      &                 ' index=',INDXMINCH,
@@ -8974,6 +8966,13 @@ C ... now find out if all these (AMFI) nuclei are to be skipped...
          ENDDO
        ENDDO
        IF (IXC.EQ.NICHARGE) NOAMFC = .TRUE.
+       ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
+       if(icharge-iachnuc < 2)then
+         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
+     &                  ' or hydrogen-like 1e-systems.'//
+     &                  ' AMFI is skipped.'
+         NOAMFC = .TRUE.
+       end if
 
 C     ... file name for AMFI integrals of center
 !      FIXME: name tag of file cannot be charge otherwise we do not allow to have different basis sets 
