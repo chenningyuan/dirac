@@ -5,7 +5,8 @@ Nlines 1:ZZSECMOM
 
 $ERROR 1.E-4
 
-Nlines 1:Nonrel. sym.
+From: Energy eigenvalues in atomic units
+ToRe: Relative real eigenvalues in other units;
 
 $ERROR 1.E-7
 

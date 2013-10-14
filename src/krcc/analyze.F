@@ -387,3 +387,120 @@ C               END IF
 *
       RETURN
       END
+*
+      SUBROUTINE FIND_KRAMERS_PARTNER(WORK,KFREE,LFREE)
+*
+* Will identify the Kramers partner and print these
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "cgas.inc"
+#include "gasstr.inc"
+#include "ctcc.inc"
+#include "ctccp.inc"
+*
+      DIMENSION WORK(*)
+*
+      INTEGER IPARTNER(NSPOBEX_TPE)
+*
+      CALL FIND_PARTNER(NSPOBEX_TPE,WORK(KLSOBEX_CC),NGAS,IPARTNER,
+     &                  WORK,KFREE,LFREE)
+*
+      print*,'KLLSOBEX_CC',KLLSOBEX_CC
+      CALL PRINT_PARTNERS(NSPOBEX_TPE,WORK(KLSOBEX_CC),NGAS,IPARTNER,
+     &                    WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &                    WORK(KCC1))
+*
+      END
+*
+      SUBROUTINE PRINT_PARTNERS(NSPOBEX_TP,ISPOBEX_TP,NGAS,IPARTNER,
+     &                          LSPOBEX_TP,IBSPOBEX_TP,CCAMP)
+* LSPOBEX_TP block length,IBSPOBEX
+*
+#include "implicit.inc"
+*
+      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
+      INTEGER LSPOBEX_TP(NSPOBEX_TP),IBSPOBEX_TP(NSPOBEX_TP)
+      INTEGER IPARTNER(NSPOBEX_TP)
+      DIMENSION CCAMP(*)
+*
+      WRITE(6,*) ' WRITING KRAMERS PARTNERS '
+      DO I=1,NSPOBEX_TP
+        WRITE(6,*) ' Operator '
+        CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,I),1)
+        WRITE(6,*) ' Time reversed partner'
+        CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,IPARTNER(I)),1)
+      END DO
+      WRITE(6,*) ' LENGTH COMPARISON'
+        CALL IWRTMA(LSPOBEX_TP,1,NSPOBEX_TP,1,NSPOBEX_TP)
+      DO I=1,NSPOBEX_TP
+        WRITE(6,*) LSPOBEX_TP(I),LSPOBEX_TP(IPARTNER(I))
+      END DO
+      stop 'and see if okay'
+*
+      END
+*
+      SUBROUTINE FIND_PARTNER(NSPOBEX_TP,ISPOBEX_TP,NGAS,IPARTNER,
+     &                        WORK,KFREE,LFREE)
+*
+*
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "ctccp.inc"
+*
+      DIMENSION WORK(*)
+*
+      INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP), IPARTNER(NSPOBEX_TP)
+      INTEGER ITEMP(4*NGAS)
+*
+      NTEST = 100
+*
+      DO I = 1, NSPOBEX_TP
+*
+        CALL CONSTRUCT_PARTNER(ISPOBEX_TP(1,I),ITEMP,NGAS)
+*
+* H00 + T Special case                                             
+*                                                                  
+        IWAY = 2                                                     
+        CALL OP_COMPARE(IWAY,1,1,ISPOBEX_TP,      
+     &       NSPOBEX_TP,                                            
+     &       WORK(KT_IDXS),WORK(KT_IDXF),                            
+     &       MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX,                        
+     &       IPARTNER(I),ITEMP)
+*
+        IF(NTEST.GE.100) THEN
+          WRITE(6,*) ' Operator '
+          CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,I),1)
+          WRITE(6,*) ' Time reversed partner'
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          WRITE(6,*) ' matched operator '
+          CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,IPARTNER(I)),1)
+        END IF
+      END DO
+*
+      END
+*
+      SUBROUTINE CONSTRUCT_PARTNER(IIN,IOUT,NGAS)
+*
+#include "implicit.inc"
+*
+      INTEGER IIN(NGAS,4),IOUT(NGAS,4)
+*
+      DO I =1,NGAS
+        IOUT(I,1) = IIN(I,2)
+        IOUT(I,2) = IIN(I,1)
+        IOUT(I,3) = IIN(I,4)
+        IOUT(I,4) = IIN(I,3)
+      END DO
+*
+      END

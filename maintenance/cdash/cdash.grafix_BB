@@ -24,6 +24,7 @@ export DIRTIMEOUT="11m"
 
 # go to the local DIRAC directory
 cd $DIRAC
+git pull
 BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
 if [[ -d "$BUILD_GNU" ]]; then
    echo "Deleting previous buil ddirectory $BUILD_GNU."
@@ -34,12 +35,7 @@ fi
 export DIRAC_NUM_MPI_TASKS=2
 ./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK"  -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
 cd $BUILD_GNU
-make ExperimentalUpdate
-make ExperimentalConfigure
-python binary_info.py
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
+make Experimental
 
 cd $DIRAC
 # now the second buildup with serial ifort
@@ -53,12 +49,7 @@ export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_TASKS
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
-make ExperimentalUpdate
-make ExperimentalConfigure
-python binary_info.py
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
+make Experimental
 
 #
 # now do the nightly build

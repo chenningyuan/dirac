@@ -149,7 +149,9 @@ C
 C     If semiclassical QED, write density of bare vacuum to file
 C     ==========================================================
 C
+#ifdef MOD_UNRELEASED
       IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
+#endif
 C
 C     Prepare for two-electron integrals
 C     ==================================

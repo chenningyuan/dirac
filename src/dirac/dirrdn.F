@@ -150,8 +150,6 @@ C
 
 C     Start the xml output and echo the input to the xml output
       if (doxml) then
-         ! Can't begin xml output earlier because we don't know if it's on or off
-         call xml_begin('run','type="dirac-run"') ! closed in dirac.F
          call xml_begin('program')
          call xml_begin('name')
          write(luxml,'(A)') 'dirac'
@@ -168,7 +166,6 @@ C     Start the xml output and echo the input to the xml output
             call xml_embed_formatted('MOLECULE.XYZ','dirac-xyz')
          end if
          call xml_end('input')
-         call xml_begin('output') ! closed in dirac.F
       endif
 
 C
@@ -4002,7 +3999,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.XXXXX','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4028,8 +4025,8 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
+      MAYER  = .FALSE.
       POLNRM = .FALSE.
-      REMREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -4103,17 +4100,17 @@ C&&& PRJADJ: Phase adjustment according to selected reference orbital
     8          CONTINUE
 C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
-                  OWNBAS = .TRUE.
                GO TO 100
  9             CONTINUE
+C&&& MAYER: Polarize reference orbitals according to Mayers scheme
+                  MAYER  = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
-C&&& REMREF: Project out reference orbitals from polarized orbitals
-                  REMREF = .TRUE.
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4165,6 +4162,19 @@ C
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
+      IF(POLREF) THEN
+          WRITE(LUPRI,'(1X,A)') '* Reference orbitals will be polarized'
+      ENDIF
+      IF(MAYER) THEN
+        IF(OWNBAS) THEN
+          CALL QUIT
+     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+        ELSE
+          WRITE(LUPRI,'(1X,A,A)')
+     &      '* Reference orbitals will be polarized according to ',
+     &      ' a modified Mayer scheme'
+        ENDIF
+      ENDIF
       IF(OWNBAS) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Fragments are calculated in their individual bases !',
@@ -4187,19 +4197,7 @@ C
             ENDIF
           ENDDO
         ENDDO
-        IF(POLREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Reference orbitals will be polarized'
-        ENDIF
-        IF(REMREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Project out reference orbitals from polarized ones.'
-        ENDIF
       ELSE
-        IF(POLREF) THEN
-          CALL QUIT
-     &     ('ANAINP: Polarization only possible with SELOWN=T')
-        ENDIF
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
@@ -5072,8 +5070,10 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
             READ(LUCMD,*) INI2C
             GO TO 100
   135     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
+#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5108,9 +5108,11 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& MIXVAC: Alternative definition of vacuum polarisation
              VACPOL = .TRUE.
              MIXVAC = .TRUE.
+#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5125,9 +5127,11 @@ C&&& NOVREF: Do not generate reference vacuum
              VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& POSVAC: Use positronic vacuum polarisation
              VACPOL = .TRUE.
              POSVAC = .TRUE.
+#endif
              GO TO 100
 
 !         .FDE
@@ -5694,6 +5698,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
+#ifdef MOD_UNRELEASED
       IF (VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
         IF(MIXVAC) THEN
@@ -5709,7 +5714,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
      &      '- no reference vacuum generated.'
         ENDIF
       ENDIF
-
+#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
