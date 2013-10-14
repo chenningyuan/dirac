@@ -19,6 +19,11 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! FILE : krmc/krci_ctl.F
+!
+! Specific routines for .KRCI calculations
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_INP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
@@ -26,30 +31,22 @@ C
 C     CI optimization control input section.
 C
 C     Written by S. Knecht and Hans Joergen Aa. Jensen
-C     Last revision: 08.08.2008
 C
 C                    'old statements':
 C
-C                    Added CI keyword CIROOT. Timo Fleig
-C                    05.01.2005
+C                    Added CI keyword CIROOT. Timo Fleig    05.01.2005
 C                    Added CI keyword ANALYZ. Timo Fleig
-C                    Added CI keyword PARINT. Stefan Knecht
-C                    29.06.2007
-C                    Added CI keyword MEMFAC. Stefan Knecht
-C                    04.07.2007
-C                    Added CI keyword RDFOCK. Stefan Knecht
-C                    October 2007
+C                    Added CI keyword PARINT. Stefan Knecht 29.06.2007
+C                    Added CI keyword MEMFAC. Stefan Knecht 04.07.2007
+C                    Added CI keyword RDFOCK. Stefan Knecht October 2007
 C                    Added CI keyword WRTFCK. Stefan Knecht
-C                    October 2007
-C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
-C                    20.11.2007
+C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht 20.11.2007
 C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
-C                    20.11.2007
-C                    
+C
 C     Major revision by S. Knecht: Aug 2008
 C
-C                    All CI-related keywords have been moved to this new 
-C                    input section *KRCICALC. 
+C                    All CI-related keywords have been moved to this new
+C                    input section *KRCICALC.
 C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input and start-up --> "modularize"
 C
@@ -90,7 +87,7 @@ C
       DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
-     &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
+     &            '.PRINT ','.FCIDUM','.NATOCC','.XPSINT','.INTFLG',
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
@@ -143,6 +140,8 @@ C
       STATE_SELECT_KRCI = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       save_reordered_nos_krci = .false.
+      fcidump_krci      = .false.
+      XPSINTERFACE_KRCI = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -174,7 +173,7 @@ C
       DKRCI_CNVINT(1) = DUMMY
       DKRCI_CNVINT(2) = DUMMY
       DKRCI_THRPCI = 1.0D-3
-      DKRCI_THRGCI = 1.0d-8
+      DKRCI_THRECI = 1.0d-8
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -186,7 +185,7 @@ C
          NKRCIPSH(I) = 0
          NKRCIFRO(I) = 0
          IKRCI_SVRONO(i)  = 0
-         DO J = 1, MXMCGAS
+         DO J = 1, MXGAS
             NKRCIGSH(I,J) = 0
             NKRCIGSP(I,J) = 0
          END DO
@@ -223,7 +222,7 @@ C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
 C     some scratch
-      IKRCI_SYMSEL      = 0 
+      IKRCI_SYMSEL      = 0
       NOMEGASEL_KRCI    = 0
       NOMEGASEL_statenr = 1
 
@@ -235,17 +234,17 @@ C     some scratch
 
 !     krci_cfg
       krci_cfg_max_vec_block = -1
- 
+
 C
 C     Process input for *KRCICALC
 C     ===========================
 C
-      NEWDEF = (WORD .EQ. '*KRCICA')
+      NEWDEF = (WORD .EQ. '*KRCICA' .OR. WORD .EQ. '*KRCI  ')
       ICHANG = 0
       IF (NEWDEF) THEN
 
 !       initialize symmetry information irreps required for input
-!       processing. note, we assume 
+!       processing. note, we assume
 !       the # double group irreps here to be 128. FIXME: make it general in
 !       Dirac for higher linear symmetry double groups. "global Dirac post-HF symmetry module".
         if(linear)then
@@ -286,7 +285,7 @@ C&&& .MAX CI ITER...: maximum number of initial CI iterations.
                   READ(LUCMD,*) MAXCIT_KRCI
                GO TO 100
     2          CONTINUE
-C&&& .OPERATOR: define one-electron operator to use in 
+C&&& .OPERATOR: define one-electron operator to use in
 C               CI property calculation
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
      &                        WORK,LWORK,IPROPPRINT)
@@ -344,8 +343,8 @@ C              symmetry
                         gerade_mcci_wf = .true.
                       else if(ascii_lchar .eq. iachar('u'))then
                         gerade_mcci_wf = .false.
-                      else 
-                        write(lupri,'(/a,/a)') 
+                      else
+                        write(lupri,'(/a,/a)')
      & '  *** input error: Dinfh contains the inversion operation'//
      & ' as group element.',
      & '  please specify either g or u in addition to the mj value. ***'
@@ -355,7 +354,7 @@ C              symmetry
                     else
                       gerade_mcci_wf   = .true.
                       length_of_string = length_of_string + 1
-                      if(ascii_lchar .eq. iachar('g') 
+                      if(ascii_lchar .eq. iachar('g')
      &                   .or. ascii_lchar .eq. iachar('u'))then
                         call quit(' *** input error: Cinfv does not
      & have inversion as group element. ***')
@@ -363,7 +362,7 @@ C              symmetry
                     end if
 
 !                   b. get mij value in integer format
-                    read(tmp_symmetry_str(1:length_of_string-1), 
+                    read(tmp_symmetry_str(1:length_of_string-1),
      &              fmt='(i6)') tmp_mij_val
                     fermion_sym = 1
                     if(.not.gerade_mcci_wf) fermion_sym = 2
@@ -405,7 +404,7 @@ C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
                READ(LUCMD,*) IDOPARIO_KRCI
                IDOPARIO_KRCI = ABS(IDOPARIO_KRCI)
                IF( IDOPARIO_KRCI .ne. IDOPARIO_SAVE )THEN
-C                 we do not want to broadcast integrals if not 
+C                 we do not want to broadcast integrals if not
 C                 necessary! - SK- 20-03-2008
                   IDOPARIO_KRCI = IDOPARIO_SAVE
                END IF
@@ -413,7 +412,7 @@ C                 necessary! - SK- 20-03-2008
                IF( IDOPARIO_KRCI .ne. 0 ) THEN
                   WRITE(LUPRI,'(//3A,I6)')
      &                  '*** ERROR in KRCI_INP *** ',
-     &                  ' No slaves in sequential run, no integral 
+     &                  ' No slaves in sequential run, no integral
      &                    handling needed: ',
      &                   IDOPARIO_KRCI
                   IDOPARIO_KRCI = 0
@@ -422,7 +421,7 @@ C                 necessary! - SK- 20-03-2008
                IF( IDOPARIO_KRCI .gt. 1 ) THEN
                   WRITE(LUPRI,'(//3A,I6)')
      &                  '*** ERROR in KRCI_INP *** ',
-     &                  'Illegal integral handling option for 
+     &                  'Illegal integral handling option for
      &                   slaves in parallel run: ',
      &                   IDOPARIO_KRCI
                   IDOPARIO_KRCI = 0
@@ -444,20 +443,19 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
                END IF
                GO TO 100
    10          CONTINUE
-C&&& .NOOCCN: calculate natural orbitals occupation numbers with
-C             LUCIAREL
+C&&& .NOOCCN: calculate natural orbitals occupation numbers
                   NATOLCR_KRCI = .TRUE.
                GO TO 100
    11          CONTINUE
-C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts 
+C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts
                   CRDFO_MAT_KRCI = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&& .WRTFCK: write fock matrix in CI start guess module 
+C&&& .WRTFCK: write fock matrix in CI start guess module
                   CWRTFO_MAT_KRCI = .TRUE.
                GO TO 100
    13          CONTINUE
-C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
+C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
                   CSHMEMO_KRCI = .TRUE.
                   READ(LUCMD,*) ISHMEM_TYPE
 #if !defined (VAR_MPI2) && !defined (VAR_SHMEM)
@@ -476,9 +474,9 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
 #else
                IF( ISHMEM_TYPE .gt. 6 ) THEN
                   WRITE(LUPRI,'(//A)')
-     &               ' *** ERROR in KRCI_INP *** '  
+     &               ' *** ERROR in KRCI_INP *** '
                   WRITE(LUPRI,'(//A)')
-     &               ' unknown shared memory run-level! '  
+     &               ' unknown shared memory run-level! '
                   WRITE(LUPRI,'(A)')
      &               ' LEVEL 0: no shared memory in use'
                   WRITE(LUPRI,'(A)')
@@ -502,7 +500,7 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
                GO TO 100
    14          CONTINUE
 C&&& .IJKLRO: do GAS-scheme specific integral reordering resp. use
-C             reordered integrals  
+C             reordered integrals
                   CINT_REORD_KRCI = .TRUE.
 C             ... this requires the use of MPI-2 I/O handling
 #if !defined (VAR_MPI2)
@@ -523,18 +521,15 @@ C&&& PRINT : General print level in KRCI-module
                   READ(LUCMD,*) IPRKRCI
                GO TO 100
    17          CONTINUE
-C&&& .MAKE COFFEE:
-               WRITE(LUPRI,'(2A)')
-     &             ' *** Nice try: Ask your local coffee machine ***',
-     &             ' *** how to prepare coffee...'
+C&&& .FCIDUMP
+                  fcidump_krci = .true.
                GO TO 100
    18          CONTINUE
-C&&& CNVINT: Convergence thresholds for adding SL- and SS-integrals
-                  READ(LUCMD,*) DKRCI_CNVINT(1),DKRCI_CNVINT(2)
-               GO TO 100
+C&&& .NATOCC: synonym for .NOOCCN
+               GO TO 10
    19          CONTINUE
-C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
-                  READ(LUCMD,*) IKRCI_ITRINT(1),IKRCI_ITRINT(2)
+C&&& .XPSINTERFACE: interface information for Paul Bagus XPS system
+                  XPSINTERFACE_KRCI = .TRUE.
                GO TO 100
    20          CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
@@ -565,7 +560,7 @@ C&&& GASSH: GAS setup
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRCIGAS
-                  IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+                  IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
                      CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                         'illegal value of NKRCIGAS')
                   END IF
@@ -613,7 +608,7 @@ C&&&  CASSCF -- this defines a CAS space
                   READ(LUCMD,*) (NKRCIASH(I),I=1,NFSYM)
                   NKRCIGAS = 1
                   NKRCIGSP(1,NKRCIGAS) = NKRCIAELEC
-                  NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC 
+                  NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC
                GO TO 100
    32          CONTINUE
 C&&& .TRDM calculation of transition dipole moments and oscillator strenghts
@@ -621,50 +616,50 @@ C&&& .TRDM calculation of transition dipole moments and oscillator strenghts
                   DOOSCILLST  = .TRUE.
                GO TO 100
    33          CONTINUE
-C&&& OMEGA quantum number: calculate <CI state|j_z|CI state> expectation value
+C&&& .OMEGA quantum number: calculate <CI state|j_z|CI state> expectation value
 C                          using j_z = l_z + s_z
                   DOPROP_KRCI  = .TRUE.
                   DOJZEXP = .TRUE.
                GO TO 100
-!     THRECI:  energy convergence threshold
+C&&& .THRECI:  CI energy convergence threshold
    34          CONTINUE
-               read(lucmd,*) DKRCI_THRGCI
+               read(lucmd,*) DKRCI_THRECI
                GO TO 100
    35          CONTINUE
-C&&&  CHECKP:  write intermediate check point file that is readable by 
+C&&& .CHECKP:  write intermediate check point file that is readable by
 C              the MASTER - useful in parallel calculations
                CHCKPT_KRCI = .TRUE.
                GO TO 100
    36          CONTINUE
-C&&&  USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (ascii format)
+C&&& .USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (ascii format)
 C              to write/get connection matrix and resulting block
 C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
-C&&&  GENFOC:  transform positronic/inactive/virtual spinors to 
+C&&& .GENFOC:  transform positronic/inactive/virtual spinors to
 C              Fock-type spinors
                GENFOCK_KRCI = .TRUE.
                GO TO 100
    38          CONTINUE
-C&&&  TRA NO:  transform to natural CI spinors
+C&&& .TRA NO:  transform to natural CI spinors
                TRANATO_KRCI = .TRUE.
                GO TO 100
    39          CONTINUE
-C&&&  LOWSRT:  use memory-saving path in the integral sorting step 
+C&&& .LOWSRT:  use memory-saving path in the integral sorting step
 C              can only be used in combination with .IJKLRO
                LOWSORT_KRCI = .TRUE.
                GO TO 100
    40          CONTINUE
-C&&&  SEL ST:  select CI state(s) by <j_z> expectation value
+C&&& .SEL ST:  select CI state(s) by <j_z> expectation value
 C              the coefficients will be stored on the vector file
 C              KRCI_CVECS."$sym_tag".select
-C              this option may be used for "state-selection" in a 
+C              this option may be used for "state-selection" in a
 C              subsequent MCSCF...
                STATE_SELECT_KRCI = .TRUE.
                DOPROP_KRCI       = .TRUE.
                DOJZEXP           = .TRUE.
-               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI, 
+               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI,
      &                       NOMEGASEL_statenr
                IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
      &            IKRCI_SYMSEL .GT. 0) THEN
@@ -679,18 +674,18 @@ C              subsequent MCSCF...
                END IF
                GO TO 100
    41          CONTINUE
-C&&&  DIPMOM:  calculate permanent dipole moment of electronic ground
+C&&& .DIPMOM:  calculate permanent dipole moment of electronic ground
 C              and excited states.
                doprop_krci   = .true.
                dodipmom_krci = .true.
                GO TO 100
    42          CONTINUE
-!&&&  MCANA :  tell luciarel that this is a analyze run where the CI vector is to be read from the MCSCF file
+!&&& .MCANA :  tell luciarel that this is a analyze run where the CI vector is to be read from the MCSCF file
                domcana_krci  = .true.
                GO TO 100
    43          CONTINUE
 
-C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
+C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA)
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRCIGAS .GT. 0)THEN
                   CALL QUIT('*** ERROR in *KRCICALC *** ' //
@@ -700,7 +695,7 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRCIGAS
-               IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+               IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                     'illegal value of NKRCIGAS')
                END IF
@@ -712,42 +707,42 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
                  call upcase(input_line)
                  islash = index(input_line,'/')
 
-!                check for correct input format: 
+!                check for correct input format:
 !                min e- max e- / #orbs_fermion_irrep1 #orbs_fermion_irrep2
                  if(islash <= 1)then
 
-                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+                   write(lupri,'(/a,i2,a,i2/a/2a)')
      &             'ERROR for *KRCICALC .GAS SHELL shell no.',
      &             i,'/',NKRCIGAS,
      &             '- the defining input line does not contain a "/":',
      &             '- the bad line : ',input_line
 
-                   write(lupri,'(a)') 
+                   write(lupri,'(a)')
      &             '- Or the specification of the number of GAS-'//
      &             'shells might be wrong! Check the input.'
                    call quit('Input error for .GAS SHELL under'//
      &                       ' *KRCICALC')
                  end if
-                
+
 !                step 2: min max occupation
-                 read(input_line(1:islash-1),*,iostat=ios) 
+                 read(input_line(1:islash-1),*,iostat=ios)
      &           nkrcigsp(1,i), nkrcigsp(2,i)
 
                  if(ios /= 0)then
-                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+                   write(lupri,'(/a,i2,a,i2/a/2a)')
      &             'ERROR for *KRCICALC .GAS SHELL shell no.',
-     &             i,'/',NKRCIGAS, 
+     &             i,'/',NKRCIGAS,
      &             '- the input line does not contain correct'//
      &             ' min max electrons','- the bad line : ',input_line
                    call quit('Input error for .GAS SHELL under '//
      &                       '*KRCICALC')
                  end if
 !                step 3: GAS shell orbital occupation
-                 read(input_line(islash+1:),*,iostat=ios) 
+                 read(input_line(islash+1:),*,iostat=ios)
      &           (NKRCIGSH(j,i), j=1,nfsym)
 
                  if(ios /= 0)then
-                   write(lupri,'(/a,i2,a,i2/a,i2,a/2a)') 
+                   write(lupri,'(/a,i2,a,i2/a,i2,a/2a)')
      &             'ERROR for *KRCICALC .GAS SHELL shell no.',
      &             i,'/',NKRCIGAS,
      &             '- the input line does not contain',nfsym,
@@ -761,11 +756,11 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                GO TO 100
    44          CONTINUE
-C&&&  SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
+C&&& .SVRONO:  save reordered NOs rather than unsorted ones (the latter being the default)
                save_reordered_nos_krci = .true.
                GO TO 100
    45          CONTINUE
-C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+C&&& .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
                save_reordered_nos_krci = .true.
                READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
@@ -782,16 +777,16 @@ C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbit
 C
       IF (.NOT. NEWDEF) GOTO 400
 C
-!     warnings for options not implemented (yet)
+!     Warnings for options not implemented (yet)
 !     ------------------------------------------
       if(lvnew)then
-        write(lupri,'(/,a,/,a/)') 
+        write(lupri,'(/,a,/,a/)')
      & ' *** WARNING *** - (SS|SS)-integral approximation using LVNEW'//
      & ' is not implemented for KR-CI/KR-MCSCF/KR-CC.',
      & ' *** WARNING *** - Please use the LVCORR approximation.'
       end if
 C
-C     consistency checks
+C     Consistency checks
 C     ------------------
 C
 C     ... integral flags
@@ -804,12 +799,10 @@ C     ... integral flags
         ISSINT = 0
       ENDIF
       IKRCI_INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
-      IF(DKRCI_CNVINT(1).LT.DUMMY) IKRCI_ITRINT(1) = 1
-      IF(DKRCI_CNVINT(2).LT.DUMMY) IKRCI_ITRINT(2) = 1
 C
 C     ... calculating omega values only in linear symmetry
       if(doprop_krci.and.dojzexp)then
-        if(.not.linear) then 
+        if(.not.linear) then
           dojzexp = .false.
         write(lupri,'(/a)') '    *** WARNING: calculation of omega'//
      &    ' (<jz> expectation values) states turned off.***'
@@ -940,7 +933,7 @@ C
 C     set default
       IKRCI_SYMMETRY = NKRCI_MAX_SYM
       WRITE(LUPRI,'(A)')
-     & ' * optimization of wave function(s) in the following '//
+     & ' * Convergence of CI function(s) in the following '//
      &     'symmetries:'
       DO 202 IKRCI_SYMMETRY = 1, NKRCI_MAX_SYM
          IF( NKRCI_CIROOTS(IKRCI_SYMMETRY) .le. 0 ) GOTO 202
@@ -968,7 +961,7 @@ C     ... next symmetry
       ELSE
          if(linear)then
 !          store on common block in krciprop.h
-           xrepeig(ikrci_symmetry) = 
+           xrepeig(ikrci_symmetry) =
      &     nkrci_ciroots_symstr(ikrci_symmetry)
            if(mod(nkrciaelec, 2) .eq. 0)then
              ferm_lab = '  '
@@ -998,7 +991,7 @@ C            store on common block in krciprop.h
                 WRITE(LUPRI,'(/A//A,2I5)')
      &          ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
      &          ' is non-existent!',
-     &          ' Symmetry, max value of symmetry = ', 
+     &          ' Symmetry, max value of symmetry = ',
      &            NKRCI_MAX_SYM, NREP
                 CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
              END IF
@@ -1027,27 +1020,10 @@ C
 C
       WRITE(LUPRI,'(/A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
-      IF(LBIT(IKRCI_INTDEF,1)) THEN
-        WRITE(LUPRI,'(A)') '   LL-integrals.'
-      ENDIF
-      IF(LBIT(IKRCI_INTDEF,2)) THEN
-        IF(DKRCI_CNVINT(1).LT.DUMMY) THEN
-          WRITE(LUPRI,'(A,E8.1)')
-     &    '   SL-integrals  below KR-CI convergence ',DKRCI_CNVINT(1)
-        ELSE
-          WRITE(LUPRI,'(A,I4)')
-     &    '   SL-integrals from iteration ',IKRCI_ITRINT(1)
-        ENDIF
-      ENDIF
-      IF(LBIT(IKRCI_INTDEF,3)) THEN
-        IF(DKRCI_CNVINT(2).LT.DUMMY) THEN
-          WRITE(LUPRI,'(A,E8.1)')
-     &    '   SS-integrals below KR-CI convergence ',DKRCI_CNVINT(2)
-        ELSE
-          WRITE(LUPRI,'(A,I4)')
-     &    '   SS-integrals from iteration ',IKRCI_ITRINT(2)
-        ENDIF
-      ENDIF
+      IF(LBIT(IKRCI_INTDEF,1)) WRITE(LUPRI,'(A)') '   LL-integrals.'
+      IF(LBIT(IKRCI_INTDEF,2)) WRITE(LUPRI,'(A)') '   SL-integrals.'
+      IF(LBIT(IKRCI_INTDEF,3)) WRITE(LUPRI,'(A)') '   SS-integrals.'
+      IF(LBIT(IKRCI_INTDEF,4)) WRITE(LUPRI,'(A)') '   GT-integrals.'
       WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRCI
 C
 C     Print section
@@ -1058,16 +1034,14 @@ C
      &   ' Control parameters for KR-CI optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      write(lupri,'(a,1e18.12)')  
-     &     ' * Energy convergence threshold: ',
-     &     DKRCI_THRGCI
+      WRITE(LUPRI,'(A,1P,D10.2)')
+     &     ' * Energy convergence threshold: ', DKRCI_THRECI
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',
      &     MAXCIT_KRCI
       ELSE
-         WRITE(LUPRI,'(A)')
-     &     ' * Full CI '
+         WRITE(LUPRI,'(A)') ' * Full CI '
       END IF
 C
       IF (IRESTRK_KRCI.EQ.1) THEN
@@ -1085,7 +1059,7 @@ C
 C
       IF( IKRCI_MEMFAC .ne. 9 ) WRITE (LUPRI, '(A,I3)' )
      &     ' * Multiplier for memory guess: ',IKRCI_MEMFAC
-      
+
       IF( IDOPARIO_KRCI .eq. 1 )THEN
         WRITE(LUPRI,'(A)')
      &     ' * Integrals also for slaves assumed to be in place'
@@ -1093,46 +1067,46 @@ C
      &     '   No integral broadcast from MASTER to slaves.'
       ELSE
 #if defined (VAR_MPI)
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &     ' * Integrals on slave nodes provided by the MASTER'
 #endif
       END IF
-C     no shared memory mode for non MPI-2 executables 
+C     no shared memory mode for non MPI-2 executables
 #if !defined (VAR_MPI2)
       IF( CSHMEMO_KRCI ) CSHMEMO_KRCI = .FALSE.
 #endif
       IF( CSHMEMO_KRCI )THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &     ' * Running in parallel MPI-2 "shared memory" mode'
         IF( ISHMEM_TYPE .eq. 0) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 0: disabling shared memory usage'
         ELSE IF( ISHMEM_TYPE .eq. 1) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 1: sharing node-wise (ij|kl) '
         ELSE IF(  ISHMEM_TYPE .eq. 2 ) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 2: sharing node-wise |C> vector'
         ELSE IF(  ISHMEM_TYPE .eq. 3 ) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 3: sharing node-wise (ij|kl) + |C> vector'
         ELSE IF(  ISHMEM_TYPE .eq. 4 ) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 4: sharing global (ij|kl) + node-wise |C>'
         ELSE IF(  ISHMEM_TYPE .eq. 5 ) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 5: sharing global |C> + node-wise (ij|kl)'
         ELSE IF(  ISHMEM_TYPE .eq. 6 ) THEN
-          WRITE(LUPRI,'(A)') 
+          WRITE(LUPRI,'(A)')
      &     ' --> chosen level 6: sharing global (ij|kl) + |C> vector  '
         END IF
       END IF
       IF( CINT_REORD_KRCI )THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &     ' * GAS-scheme specific integral file  in use '
       END IF
       IF( CINT_SPLIT_KRCI )THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &     ' * Revised integral allocation scheme '
       END IF
 C     ... only natural orbitals occupation numbers
@@ -1144,11 +1118,11 @@ C     ... only natural orbitals occupation numbers
       if(dooscillst.or.dodipmom_krci.or.dojzexp) doprop_krci = .true.
 
       IF( DOPROP_KRCI ) THEN
-C       ... obtain operator symmetry in LUCIARELs double group 
+C       ... obtain operator symmetry in LUCIARELs double group
 C       subgroup notation
         DOSYMOPPRP = .TRUE.
         WRITE(LUPRI,'(A/)')
-     &     ' * Property calculation for the following'// 
+     &     ' * Property calculation for the following'//
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
@@ -1198,16 +1172,16 @@ C
         do 303 ikrci_symmetry = 1, max_nkrci_max_sym
           if(nkrci_selom(ikrci_symmetry) .gt. 0)then
             if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
-              call quit(' *** error in KRCI_INP: 
-     &                    CI root selection for inactive symmetry. ***')
+              call quit(' *** error in KRCI_INP: ' //
+     &                  ' CI root selection for inactive symmetry. ***')
             end if
-            if(nkrci_ciroots(ikrci_symmetry) .lt. 
+            if(nkrci_ciroots(ikrci_symmetry) .lt.
      &         NOMEGASEL_statenr)then
-              call quit(' *** error in KRCI_INP: 
-     &                    CI root selection for state > # of roots in'//
-     &                  ' in this symmetry. ***')
+              call quit(' *** error in KRCI_INP: '//
+     &                  ' CI root selection for state > # of roots in'//
+     &                  ' this symmetry. ***')
             end if
-            write(lupri,'(/a,a5,a,i4,a)') 
+            write(lupri,'(/a,a5,a,i4,a)')
      &      ' *** symmetry:',xrepeig(ikrci_symmetry),
      &      ' Omega value = ',nkrci_selom(ikrci_symmetry),
      &      '(/2 for fermionic systems)'
@@ -1215,14 +1189,17 @@ C
   303   continue
       end if
 C
-  400 if(linear) then 
-!       call quit('bla bla')
-        if(allocated(nkrci_ciroots_symstr)) 
+      IF ( XPSINTERFACE_KRCI ) THEN
+         WRITE (LUPRI,'(/A)')
+     &   " * Writing interface file to Paul Bagus' XPS programs"
+      END IF
+C
+  400 if(linear) then
+        if(allocated(nkrci_ciroots_symstr))
      &    deallocate(nkrci_ciroots_symstr)
-      end if 
+      end if
 
-!     call quit('bla bla... :)')
-
+      return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_CALC(WFTYP,WFCONV)
@@ -1323,6 +1300,15 @@ C
       else
         E_lvcorr_mc = 0.0d0
       end if
+
+!
+!     set convergence threshold for GASCIP CI calculations
+      opt_thrgrd = DKRCI_THRGCI
+
+      IF ( XPSINTERFACE_KRCI ) THEN
+      ! write headers to XPS interface files
+         CALL QUIT('Sorry, .XPSINTERFACE is not implemented yet')
+      END IF
 C
 C     ***************************************************
 C     *** Loop over symmetries for CI roots *************
@@ -1346,8 +1332,9 @@ C       *** Initialize configurational and orbital      ***
 C       *** parameters.                                 ***
 C       ***************************************************
 C
-        CALL RSETWOP(WORK,KFREE,LFREE)
+        CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
+        IF (NZCONF .LE. 0) GO TO 100
 C
 C       ***************************************************
 C       *** Memory allocation *****************************
@@ -1380,9 +1367,9 @@ C     ***************************************************
 C
       IF( DOPROP_KRCI ) THEN
 C
-C        check symmetry with non-zero CI roots which 
+C        check symmetry with non-zero CI roots which
 C        will also have NZCONF != 0.
-C        IOPT_SYMMETRY = 1  ! this fails for fermionic systems 
+C        IOPT_SYMMETRY = 1  ! this fails for fermionic systems
 C                             (ungerade number of electrons)
          DO ISYM_CHECK = 1, NKRCI_MAX_SYM
             NCIROOT_CHECK = NKRCI_CIROOTS(ISYM_CHECK)
@@ -1390,7 +1377,7 @@ C                             (ungerade number of electrons)
          END DO
 C        set run flag
          RUNXPROP = .TRUE.
-         CALL RSETWOP(WORK,KFREE,LFREE)
+         CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
          CALL KRCI_PROP(WORK(KCMO),WORK(KFREE),LFREE)
       END IF
 C
@@ -1402,8 +1389,7 @@ C
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='KEEP')
 C
 C     Save orbitals on file KRMCSCF if it does not exist.
-C     Other DIRAC modules may expect to find it, e.g., 
-C     MULLPOP.
+C     Other DIRAC modules may expect to find it, e.g., MULLPOP.
 C
       LUNI = -1
       INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
@@ -1421,13 +1407,6 @@ C
         CALL WRTKRMC(LUNI,'NEWORB  ',WORK(KCMO),NCMOTQ)
         CLOSE(LUNI,STATUS='KEEP')
       END IF
-C     INQUIRE(FILE ='KRMCSCF',EXIST=EX)
-C     IF( .NOT. EX ) THEN
-C       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','KRCI  ')
-C       CALL NEWLAB('*KRCI   ',LUKRMC,LUPRI)
-C       CALL WRTKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-C       CLOSE(LUKRMC,STATUS='KEEP')
-C     END IF
 C
 C
 C     ***************************************************
@@ -1490,16 +1469,15 @@ C
          IOPT_IHRMOP(I) = 1
       END DO
       JTRLVL = 0
-      ITMAC  = 0
       DO4INDEX = ( MCTYPE .GE. JMCMIN )
 C     ... MCTYPE .lt. JMCMIN is SCF
       EMCOLD = D0
       WFCONV = .FALSE.
 C
-      CALL DZERO(GNORM,5)
-C
 C     Integrals for KR-CI calculation.
 C
+      CALL DZERO(GNORM,5)
+      ITMAC  = 1
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 C
@@ -1519,16 +1497,15 @@ C
       write(LUPRI,*) '(1) iopt_itrint=',iopt_itrint
       write(LUPRI,*) '(1) opt_inttyp=',opt_inttyp
 #endif
-C     Do not write orbitals to file KRMCSCF in ROPTST.
-C     KRMCSCF may not be opened.
-      IWRT = 0
 C
 C     Read start orbitals and get CI vectors:
 C
+C     Do not write orbitals to file KRMCSCF in ROPTST.
+C     KRMCSCF may not be opened.
+      IWRT = 0
+
       CALL ROPTST(IOPTST,IWRT,CMO,CREF,IBEIG,IPROPT,WORK,KFREE,LFREE)
-C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
-C
-C     only 4-index integral transformation done
+C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C
       IF (KTRLVL.eq.5) GOTO 3000
 C
@@ -1699,6 +1676,100 @@ C
       REWIND LUKRM3
 C
       RETURN
+      END
+
+      SUBROUTINE fcidump_driver(CMO,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C     Generate FCI dump file
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION WORK(*), CMO(*)
+C
+      CALL QENTER('fcidump_driver')
+      CALL GETTIM(CPU0,WALL0)
+C
+      KFRSAV = KFREE
+C
+C     Calculate core Hamiltonian:
+C     ---------------------------
+C
+C     The core Hamiltonian is the active-active part of FC,
+C     a.k.a. FCAC.
+C
+      CALL MEMGET2('REAL','FCACM',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',  KFC,N2ORBXQ,WORK,KFREE,LFREE)
+C
+C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
+C
+      CALL rGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+C
+C     Get active-active part of FCmo:
+C
+      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
+C
+C     Transform quaternion FCACmo to molfdir type FCAC.
+C
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
+C
+      CALL MEMREL('fcidump_driver after rGETFC',WORK,1,KFCAC,
+     &            KFREE,LFREE)
+C
+C     Read two-electron integrals:
+C     ----------------------------
+C
+      CALL MEMGET2('REAL','MUUUU',KMUUUU,(2*NASHT)**4*NZ_in_CI,
+     &     WORK,KFREE,LFREE)
+C
+      LH2AC = NASHT*NASHT*NNASHX*NZ*3
+      CALL MEMGET2('REAL','H2AC',KH2AC,LH2AC,WORK,KFREE,LFREE)
+C
+C     read integrals from 4IND*: out --> work(kh2ac)
+C     ==============================================
+
+      call memget2('INTE','IBEIG',kibeig,norbt,work,kfree,lfree)
+
+      if(spinfr.or.levyle)then
+        call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+      else if(linear)then
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+      else
+        call izero(work(kibeig),norbt)
+      end if
+
+      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &            .true.,.true.,work(kfree),lfree)
+C
+C     Transform integrals to Molfdir format:
+C
+C     remove potential "garbage" from imaginary part...
+      IF (NZ_in_CI .gt. 1)
+     &   CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
+
+      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+
+      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+C
+      CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL GETTIM(CPU2,WALL2)
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &   "CPU and WALL times for generating the FCIDUMP file:",
+     &    CPU2-CPU0,WALL2-WALL0
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('fcidump_driver')
+C
       END
 C=======================================================================
 C     end of file krci_ctl.F

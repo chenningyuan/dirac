@@ -8,6 +8,8 @@
 **GENERAL
 .DIRECT
 1 1 1
+# employ Jacobi diagonalization
+.DOJACO
 **INTEGRALS
 .PRINT
 1

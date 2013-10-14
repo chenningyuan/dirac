@@ -182,7 +182,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-      integer :: verbose = 0
+      integer :: verbose        = 0
+      integer :: ncore_elec_adc = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -252,10 +253,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       readqkl  = reladc_readqkl 
       doconst  = reladc_doconst 
       doadcpop = reladc_doadcpop
-      dofull   = reladc_dofull  
       doxext   = reladc_doxext  
       vconv    = reladc_vconv   
       adcthr   = reladc_adcthr  
+
+
+      dofull   = reladc_dofull
+      dolanc   = reladc_dolanc
+      dodavi   = reladc_dodavi
 
       sipiter  = reladc_sipiter 
       dipiter  = reladc_dipiter 
@@ -270,155 +275,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       excprnt  = reladc_excprnt 
       doincore = reladc_doincore
       lancmem  = reladc_lancmem
+      do i=1,8
+        adcprint(i)=0    !fill print level array 
+      enddo
 !|
 !|
 !|___________________________________________________________
 !
 ! print overall job specification for the propagator run.
 !
-      write(IW,'(10X,A)') '****                                 ****' 
-      write(IW,'(10X,A)') '****                                 ****' 
-      write(IW,'(10X,A)') '****       JOB CONTROL FOR           ****'
-      write(IW,'(10X,A)') '****   Propagator and Lanczos run    ****'
-      write(IW,'(10X,A)') '****                                 ****' 
-      write(IW,'(10X,A)') '****                                 ****' 
       write(IW,*)
+      write(IW,'(T20,A)') 'Requested propagators:'
+      write(IW,'(T20,A)') '----------------------'
       write(IW,*)
+      if(dosips) write(IW,'(10X,A)') 'Single ionization.'
+      if(dodips) write(IW,'(10X,A)') 'Double ionization.'
+      if(doexci) write(IW,'(10X,A)') 'Excitation.'
       write(IW,*)
-      write(IW,'(10X,A)') 'Requested propagators:'
-      write(IW,'(10X,A,T50,L1)') 'Single ioniz. spectrum',dosips
-      write(IW,'(10X,A,T50,L1)') 'Double ioniz. spectrum',dodips
-      write(IW,'(10X,A,T50,L1)') 'Excitation    spectrum',doexci
-!
-!  print individual information for SIPS
-!
-      IF(dosips) then
-        write(IW,*)
-        write(IW,'(10X,A)') 'Control parameters for SIP:'
-        write(IW,*)
-        write(IW,'(10X,A,T50,I3)') 'Order of ADC treatment:',adclevel
-        write(IW,'(10X,A,T50,L1)') 'Read previous Qkl data:',readqkl
-        write(IW,'(10X,A,T50,L1)') 'Incl. constant diagrams:',doconst
-        write(IW,'(10X,A,T50,F18.6)') 'Convergence for CD:',vconv
-        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
-     &        sipprnt
-        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations',
-     &        sipiter
-        write(IW,'(10X,A)') 'Requested SIP symmetries (sipreps):'
-        n=0
-        do i=1,32
-          n=n+sipreps(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None. Program will do it automatically.'
-        else
-          write(IW,'(10X,16I4)') (sipreps(i),i=1,16)
-          write(IW,'(10X,16I4)') (sipreps(i),i=17,32)
-        endif
-        write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
-        write(IW,'(10X,A)') '(corresp. to valid entries in SIPREPS)'
-        n=0
-        do i=1,32
-          n=n+sipeigv(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None.'
-        else
-          write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
-          write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
-        endif
-      ENDIF
-!
-!  print individual information for DIPS
-!
-      IF(dodips) then
-        write(IW,*)
-        write(IW,'(10X,A)') 'Control parameters for DIP:'
-        write(IW,*)
-        write(IW,'(10X,A,T50,I3)') 'Order of DIP always ADC-2x !'
-        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
-     &        dipprnt
-        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations',
-     &        dipiter
-        write(IW,'(10X,A)') 'Requested DIP symmetries (dipreps):'
-        n=0
-        do i=1,32
-          n=n+dipreps(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None. Program will do it automatically.'
-        else
-          write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
-          write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
-        endif
-        write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
-        write(IW,'(10X,A)') '(corresp. to valid entries in DIPREPS)'
-        n=0
-        do i=1,32
-          n=n+dipeigv(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None.'
-        else
-          write(IW,'(10X,16I4)') (dipeigv(i),i=1,16)
-          write(IW,'(10X,16I4)') (dipeigv(i),i=17,32)
-        endif
-      ENDIF
-!
-!  print individual information for EXC
-!
-      IF(doexci) then
-        write(IW,*)
-        write(IW,'(10X,A)') 'Control parameters for EXC:'
-        write(IW,*)
-        if(doxext) then
-          write(IW,'(10X,A,T50,I3)') 'Order of EXC treatment: ADC(2-x)'
-        else
-          write(IW,'(10X,A,T50,I3)') 'Order of EXC treatment: ADC(2-s)'
-        endif
-        write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
-     &        excprnt
-        write(IW,'(10X,A,T50,I7)') 'Number of Lanczos iterations:',
-     &        exciter
-        write(IW,'(10X,A)') 'Requested EXC symmetries (excreps):'
-        n=0
-        do i=1,32
-          n=n+excreps(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None. Program will do it automatically.'
-        else
-          write(IW,'(10X,16I4)') (excreps(i),i=1,16)
-          write(IW,'(10X,16I4)') (excreps(i),i=17,32)
-        endif
-        write(IW,'(10X,A)') 'Requested EXC eigenvectors:'
-        write(IW,'(10X,A)') '(corresp. to valid entries in EXCREPS)'
-        n=0
-        do i=1,32
-          n=n+exceigv(i)
-        enddo
-        if(n.eq.0) then
-          write(IW,'(10X,A)') 'None.'
-        else
-          write(IW,'(10X,16I4)') (exceigv(i),i=1,16)
-          write(IW,'(10X,16I4)') (exceigv(i),i=17,32)
-        endif
-      ENDIF
-!
-!  print general information 
-!
+      write(IW,'(T20,A)') 'Requested diagonalizers:'
+      write(IW,'(T20,A)') '------------------------'
       write(IW,*)
-      write(IW,'(10X,A)') 'General parameters:'
-      write(IW,*)
-      write(IW,'(10X,A,T50,L1)') 'Do final state analysis.:',doadcpop
-      write(IW,'(10X,A,T50,L1)') 'Do full diag. (max. 5000):',dofull
-      write(IW,'(10X,A,T50,F18.6)') 'Thr. for DIP/EXC matrix elements:',
-     & adcthr
-      write(IW,'(10X,A,T50,L1)') 'Do incore Lanczos diag.:',doincore
-      write(IW,'(10X,A,T50,L1)') 'Memory limit for Lanczos:',lancmem
+      if(dofull) write(IW,'(10X,A)') 'Full (dim<5000!).'
+      if(dolanc) write(IW,'(10X,A)') 'Lanczos.'
+      if(dodavi) write(IW,'(10X,A)') 'Davidson.'
 !
-!  end of job control output
-!
+      WRITE (IW,*)
+      WRITE (IW,*)
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
 !
@@ -434,7 +316,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     call new mem alloc routines
 !
       WRITE (IW,1000) MAXCORE,MAXCORE / (128 * 1024)
-1000  FORMAT (/" Total memory provided:", T50,I15," Words ",
+1000  FORMAT (/" Total memory provided:", T30,I15," Words ",
      &  I10," MB")
       call allocator_get_available_mem(total_mem_new)
       maxcor = nint((total_mem_new/8.0d0),kind(8))
@@ -443,25 +325,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       MXCORR = 0
 !
 ! temporary solution:
-! unsettled issue wih the memory manager. We allow total maxcore for maxcor!
+! unsettled issue with memory manager. We allow total maxcore for maxcor!
+! will go away in the future.
 !
       MAXCOR = MAXCORE
-      WRITE (IW,*) 'temporary maxcor:',maxcor
-      WRITE (IW,*) '(Attributed due to static memory usage)'
+!     WRITE (IW,*) 'temporary maxcor:',maxcor
+!     WRITE (IW,*) '(Attributed due to static memory usage)'
       
 !
 !     Read symmetry information from MRCONEE
 !
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec_adc)
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN ADCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 !
-!     we now do no longer read in the NAMELIST RELADC/LANCZOS
-!
-!     CALL ADCINPT (IN,IW)
-
       IPRNT = 2   ! print orbital and recalc. orbital energies
 !
 !     Number of integer words for REAL*8 and 
@@ -477,9 +356,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  Report memory in megabytes
 !
-      if(maxcor .gt. 0) then
-        write(iw,*) 'Total avail. memory (MB):',MAXCOR/(128 * 1024)
-      else
+!     write(iw,*) 'Total avail. memory (MB):',MAXCOR/(128 * 1024)
+      if(maxcor .eq. 0) then
         write(iw,*) 'Total avail. memory has not been determined!'
       endif
 !
@@ -487,6 +365,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Symtab is required for the pure diagonalization also.
 !     The variables NELEC, NFROZ ... are defined in inpt.inc.
 !
+      write(iw,*)
+      write(iw,'(T10,A)') '--------------------------------------------'
+      write(iw,'(T10,A)') '     Resolving point group information:'
+      write(iw,'(T10,A)') '--------------------------------------------'
+      write(iw,*)
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
 !
@@ -518,7 +401,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDIF
 
       if(maxcor .gt. 0) then
-        write(iw,*) 'Memory limit (MWORD):',mword_limit
+!       write(iw,*) 'Memory limit (MWORD):',mword_limit
       else
         write(iw,*) 'MWORD not set in dirac but by the OS!'
       endif
@@ -651,6 +534,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Modules------------------------------------------------
 !
+      use adc_mat
       use adc_cfg
 C
       IMPLICIT INTEGER(A-Z)
@@ -674,6 +558,7 @@ C
       REAL*8 CC(*)
       INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
       REAL*8 EPS(*)
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -692,8 +577,6 @@ C
 
       CHARACTER*5 NMSPECF
       PARAMETER(NMSPECF='SSPEC')
-      CHARACTER*7 INFOFN
-      PARAMETER(INFOFN='MATINFO')
       CHARACTER*6 FILEN2,FILEN4,FILEN5
       PARAMETER(FILEN2='ADCCNF',FILEN4='ADCDIA',FILEN5='ADCMPK')
       CHARACTER*6 FILEN9
@@ -1012,7 +895,6 @@ c account for complex conjugation !
 
 c NDIMTV:  total remaining memory in 'REAL*8' words
 c IVMAX:   required memory for <VV|VV> resp. <VO|VV> class
-c VREMAIN: remaining space for further usage (not implemented)
 
         IVMAX=MAX0(IVVVVTT(NREP+1),2*IVOVVT(NREP+1))
         IVMAX=MAX0(IVMAX,2*JVVVO(NREP+1))
@@ -1040,24 +922,16 @@ C  when it comes to a real allocation.
 C
       IF(ICALC.EQ.1) THEN
         MXCORR=KFREE+IVMAX
-      ENDIF
 
-      WRITE(IW,*) '-------------------------------------------'
-      WRITE(IW,*) '-- ADC memory usage summary'
-      WRITE(IW,*) '-------------------------------------------'
-      WRITE(IW,*)
-      WRITE(IW,*) 'Allocation status:',ICALC
-      WRITE(IW,*) 'Static memory provided during calc:',MXCORR
-      WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
-      WRITE(IW,*) 'Words available:',LFREE - IVMAX
-      VREMAIN = LFREE - IVMAX
-      WRITE(IW,*)  'Available for buffering with integrals:',VREMAIN
-      WRITE(IW,*)  'Available for buffering without integrals:',LFREE
-C     WRITE(IW,*) 'MWORDS to be allocated for the VVVV/VOVV class:',
-C    &             IVMAX/(1024*1024)
-C     WRITE(IW,*) 'MWORDS available for additional buffering:',
-C    &             VREMAIN/(1024*1024)
-      IF(ICALC.EQ.1) THEN
+        WRITE(IW,*)
+        WRITE(IW,*) '-------------------------------------------'
+        WRITE(IW,*) '-- ADC memory usage summary'
+        WRITE(IW,*) '-------------------------------------------'
+        WRITE(IW,*)
+        WRITE(IW,*) 'Static memory provided during calc:',MXCORR
+        WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
+        WRITE(IW,*) 'Words available:',LFREE - IVMAX
+
         RETURN
       ENDIF
 C
@@ -1070,23 +944,53 @@ C
       CALL MEMCHK('ADC-memcheck after alloc',CC,KFRSAV)
 C
       WRITE(IW,*)
-      CALL PST('Parameters for the ADC run:+')
+      CALL PST('Parameters for the single ionization run:+')
       WRITE(IW,*)
-      WRITE(IW,165) CALTYP(ADCLEVEL),DOCONST,VCONV,
-     &              READQKL,NSP,
-     &              IVOVVT (NREP+1)*8*RCW/(1024*1024),
-     &              IVVVVTT(NREP+1)*8*RCW/(1024*1024) 
+c     WRITE(IW,165) CALTYP(ADCLEVEL),DOCONST,VCONV,
+c    &              READQKL,NSP,
+c    &              IVOVVT (NREP+1)*8*RCW/(1024*1024),
+c    &              IVVVVTT(NREP+1)*8*RCW/(1024*1024) 
 c    &              KFREE,LFREE,KFRSAV,KFRDYN
 c --------  corresponding format
- 165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
-     &         " Add constant diagrams (in ADC-3): ",T50,L1/
-     &         " up to a convergence of ",T50,E15.8/
-     &         " Read in constant diagrams (in ADC-3): ",T50,L1/
-     &         " Number of spinors:",T50,I5/
-     &         " Memory requirements (MB) for the VOVV ints:",T50,I6/
-     &         " Memory requirements (MB) for the VVVV ints:",T50,I6/)
+c165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
+c    &         " Add constant diagrams (in ADC-3): ",T50,L1/
+c    &         " up to a convergence of ",T50,E15.8/
+c    &         " Read in constant diagrams (in ADC-3): ",T50,L1/
+c    &         " Number of spinors:",T50,I5/
+c    &         " Memory requirements (MB) for the VOVV ints:",T50,I6/
+c    &         " Memory requirements (MB) for the VVVV ints:",T50,I6/)
 c    &         " Memory pointers KFREE,LFREE,KFRSAV,KFRDYN:",T50,4I12/)
 c --------  corresponding format end
+
+      write(IW,'(10X,A,T50,I8)') 'Number of spinors:',NSP
+      write(IW,'(10X,A,T50,A8)') 'ADC treatment:',CALTYP(adclevel)
+      write(IW,'(10X,A,T50,L1)') 'Read previous Qkl data:',readqkl
+      write(IW,'(10X,A,T50,L1)') 'Incl. constant diagrams:',doconst
+      write(IW,'(10X,A,T50,F18.6)') 'Convergence for CD:',vconv
+      write(IW,'(10X,A,T50,F18.6)') 'Threshold for screen output:',
+     &      sipprnt
+      write(IW,'(10X,A)') 'Requested SIP symmetries (sipreps):'
+      n=0
+      do i=1,32
+        n=n+sipreps(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None. Program will do it automatically.'
+      else
+        write(IW,'(10X,16I4)') (sipreps(i),i=1,16)
+        write(IW,'(10X,16I4)') (sipreps(i),i=17,32)
+      endif
+      write(IW,'(10X,A)') 'Requested SIP eigenvectors:'
+      n=0
+      do i=1,32
+        n=n+sipeigv(i)
+      enddo
+      if(n.eq.0) then
+        write(IW,'(10X,A)') 'None.'
+      else
+        write(IW,'(10X,16I4)') (sipeigv(i),i=1,16)
+        write(IW,'(10X,16I4)') (sipeigv(i),i=17,32)
+      endif
 C
 C
 C  next we check if user wants to read in previously calculated Q_kl
@@ -1145,7 +1049,7 @@ c  In case of spinfree or Levy-Leblond calculations we have
 c  bosonic irreps exclusively, therefore real arithmetic
 c  and an irrep step of 1 (GROUPTYPE = 8)
 c
-        WRITE(IW,*) 'Entering Qkl loop...'
+        CALL PST('Starting calculation of constant diagrams+')
         IF(NZ.eq.1) THEN
           IF(SPFR.eqv..FALSE.) THEN
             SYMMITER = 2
@@ -1154,7 +1058,7 @@ c
           ELSE
             SYMMITER = 1
             WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No information about Kramers skipping'
+            WRITE(IW,*) 'No Kramers skipping'
           ENDIF
         ELSE IF(NZ.eq.2) THEN
           IF(SPFR.eqv..FALSE.) THEN
@@ -1164,7 +1068,7 @@ c
           ELSE
             SYMMITER = 1
             WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No information about Kramers skipping'
+            WRITE(IW,*) 'No Kramers skipping'
           ENDIF
         ELSE IF(NZ.eq.4) THEN
           SYMMITER = 1
@@ -1671,41 +1575,52 @@ c
               CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
             ENDIF
           ENDIF
-c
-c  create general matrix information file MATINFO
-c  and transfer control to the diagonalizer.
-C  all necessary informations for the diagonalizer are contained there.
 C
 C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-          OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
-  
-          WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-          WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
-          WRITE(ITAPADC,'(I1)')  RCW                !RCW
-          N=1
-          WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
-          WRITE(ITAPADC,'(I12)') LADC               !LADC
-          WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
-          WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
-          WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
-          WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
-          WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
-          WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
-          WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
-          WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-          WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
-          WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
-       
-          CLOSE(ITAPADC)
+c     ...... old data written to infofile
+c
+c         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
+c         WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
+c         WRITE(ITAPADC,'(I1)')  RCW                !RCW
+c         N=1
+c         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
+c         WRITE(ITAPADC,'(I12)') LADC               !LADC
+c         WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
+c         WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
+c         WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
+c         WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
+c         WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
+c         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
+c         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
+c         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
+c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
+c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
+
+
+          reladc_md_iobase      = ITAPADC
+          reladc_md_ionizl      = IONIZLEVEL
+          reladc_md_ioldnew     = 1
+          reladc_md_intbuf      = INTBUF
+          reladc_md_desrep      = KREP
+          reladc_md_rcw         = RCW
+          reladc_md_lnzitr      = SIPITER
+          reladc_md_matdim      = LADC
+          reladc_md_irecl       = IRECL
+          reladc_md_nmain       = NO(KREP)
+          reladc_md_nbufs       = NBUFS
+          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
+          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
+          reladc_md_fileadc     = FILEN5
+          reladc_md_filediag    = FILEN4 
+          reladc_md_filecnf     = FILEN2
+          reladc_md_nmspec      = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
-        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
-        CALL DIAG_LANC(CC,KFREE,LFREE,ITAPADC,IW,DOINCORE)
-        CLOSE(ITAPADC,STATUS='DELETE')
+          CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
 c
           WRITE(IW,*)
           WRITE(IW,*) '       ------------------------------'
@@ -3252,22 +3167,22 @@ C  (will be implemented later)
 C  ionization/affinity part is output separately.
 C  For the subsequent treatment both contributions have to be added !
 C
-      IF(ADCPRINT(5).NE.0) THEN
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ Q_kl (real) in Symmetry:',KREP
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ h/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL MATOUT(QOO(JJOO(KREP,KREP)+1),NO(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL MATOUT(QVO(JJVO(KREP,KREP)+1),NV(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/p part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL MATOUT(QVV(JJVV(KREP,KREP)+1),NV(KREP),NV(KREP))
-      ENDIF
+c     IF(ADCPRINT(5).NE.0) THEN
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ Q_kl (real) in Symmetry:',KREP
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ h/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL MATOUT(QOO(JJOO(KREP,KREP)+1),NO(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL MATOUT(QVO(JJVO(KREP,KREP)+1),NV(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/p part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL MATOUT(QVV(JJVV(KREP,KREP)+1),NV(KREP),NV(KREP))
+c     ENDIF
       
       RETURN
       END
@@ -3416,22 +3331,22 @@ c  debug end
 C
 C  write out Q_kl matrices dependent on PRINT level
 C
-      IF(ADCPRINT(5).NE.0) THEN
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ Q_kl (complex) in Symmetry:',KREP
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ h/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QOO(JJOO(KREP,KREP) +1),NO(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVO(JJVO(KREP,KREP) +1),NV(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/p part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVV(JJVV(KREP,KREP) +1),NV(KREP),NV(KREP))
-      ENDIF
+c     IF(ADCPRINT(5).NE.0) THEN
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ Q_kl (complex) in Symmetry:',KREP
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ h/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QOO(JJOO(KREP,KREP) +1),NO(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVO(JJVO(KREP,KREP) +1),NV(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/p part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVV(JJVV(KREP,KREP) +1),NV(KREP),NV(KREP))
+c     ENDIF
 
       RETURN
       END
@@ -3699,7 +3614,7 @@ c     else
 c       write(*,*) 'boo/oo checksum(r):',ddot(moo(1),boo,1,boo,1)
 c     endif
 C
-C  sort the V_ai,bj integrals to V_ab,ij and contract wit Q_ab to b_ij
+C  sort the V_ai,bj integrals to V_ab,ij and contract with Q_ab to b_ij
 C  this contribution is symmetric and is added as b_oo/VV to the part
 C  from above.
 C
@@ -3719,12 +3634,6 @@ C
           WRITE(IW,*) '-------------------'
         ENDDO
       ENDIF
-c     if(carith) then
-c       write(*,*) 'boo final checksum(c):',zdotc(moo(1),boo,1,boo,1)
-c     else
-c       write(*,*) 'boo final checksum(r):',ddot(moo(1),boo,1,boo,1)
-c     endif
-c     write(iw,*) '   BOO finished'
 C
 C****************
 C***** b_vo

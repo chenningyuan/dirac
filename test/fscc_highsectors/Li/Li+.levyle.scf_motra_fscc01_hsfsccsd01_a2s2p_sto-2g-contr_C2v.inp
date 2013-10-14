@@ -41,7 +41,7 @@ hvvvv
   4
   3  1  1  0
   0  0  0  0
-9
+9 0 0 0
 **ANALYZE
 .MULPOP
 *MULPOP
@@ -53,6 +53,7 @@ all
 energy -1000.0  1000.0  1.0
 *END OF
 
+ # active shells for injection of elektron : 2s2p
  &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END
  &CCENER  NTOL=9  &END
  &CCFSPC MAXIT=50, NACTH=0,0,  NACTP=4,4,  FSSECT=1,1,0,0,0,0  &END

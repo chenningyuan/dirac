@@ -1,10 +1,8 @@
 find_package(Sphinx QUIET)
-
 if(SPHINX_FOUND)
     add_custom_target(
         html
-        COMMAND ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR};
-                sphinx-build -b html -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc _build/html
+        COMMAND ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 else()
@@ -15,8 +13,7 @@ else()
         )
 endif()
 
-set(Doxygen_FIND_QUIETLY TRUE)
-include(FindDoxygen)
+find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in

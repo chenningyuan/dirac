@@ -118,3 +118,29 @@ and this::
   $ sudo ln -s liblapack.so.3 liblapack.so
 
 With this the automatic detection of math libraries worked.
+
+Linking to the ACML library
+---------------------------
+
+The Core Math Library (ACML) is distributed for most used Fortran compilers, both for 4-byte and 8-byte integers, and as dynamic (shareable) and static, see the `ACML web-page <http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/>`_.
+
+The user has to make the MATH_ROOT variable pointing to the proper library directory. 
+For instance, here one wants to use 64-bit integer version of ACML, in connection with Intel compilers::
+
+  $ export MATH_ROOT='/home/milias/bin/acml5.3.1_ifort_int64/ifort64_int64/lib'
+
+The complete variety of compiler- and integer-specific ACML's clones can be found on the `dedicated web-page <http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/acml-downloads-resources//>`_.
+
+Notes
+~~~~~
+
+We report, however, that the gfortran generated ACML library can give these linking errors::
+
+ Linking Fortran executable dirac.x
+ /home/milias/bin/acml5.3.1_gnu_int64/gfortran64_int64/lib/libacml.so: undefined reference to `_gfortran_transfer_integer_write@GFORTRAN_1.4'
+ /home/milias/bin/acml5.3.1_gnu_int64/gfortran64_int64/lib/libacml.so: undefined reference to `_gfortran_transfer_character_write@GFORTRAN_1.4'
+ /home/milias/bin/acml5.3.1_gnu_int64/gfortran64_int64/lib/libacml.so: undefined reference to `_gfortran_transfer_real_write@GFORTRAN_1.4'
+ collect2: ld returned 1 exit status
+
+If this happens, we recommend user to prefer some non-gfortran ACML version.
+

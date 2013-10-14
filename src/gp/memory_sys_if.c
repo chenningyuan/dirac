@@ -172,3 +172,13 @@ void get_maximum_mwords_(size_t *maxmw, size_t *verbose)
    *maxmw = (size_t)(total_kbytes);
 #endif /* __linux */
 }
+
+void stop_as_failure_(void)
+{
+   exit(EXIT_FAILURE);
+}
+
+void stop_as_success_(void)
+{
+   exit(EXIT_SUCCESS);
+}

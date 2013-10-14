@@ -129,18 +129,7 @@ C     ===================
       ENDIF
  11   continue
 #ifdef MOD_CAP
-CMI ... check if CAP is not for everlap control
-CMI  ... call of F90 routine
-!        call TEST_OOF(WORK,LWORK)
-!        call StickMemory(WORK,LWORK)
-!        call TEST_OOF ! memmory was unsticked here
-!         call StickMemory(WORK,LWORK) ! stick again
-!         call cap_ovlp
-        IF (CAP)then
-          CALL CAP_STUFF(WORK,LWORK)
-        END IF
-!    .... independent tests
-!       call test_oof_basis_fu(WORK,LWORK)
+        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
 
       IF(DOHRM) THEN
@@ -169,7 +158,9 @@ C
 C     If semiclassical QED, write density of bare vacuum to file
 C     ==========================================================
 C
+#ifdef MOD_UNRELEASED
       IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
+#endif
 C
 C     Prepare for two-electron integrals
 C     ==================================

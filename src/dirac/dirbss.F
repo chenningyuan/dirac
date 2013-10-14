@@ -8595,7 +8595,7 @@ C
       CHARACTER*(*) LABINT(*)
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
-      CHARACTER*16 AFN
+      CHARACTER*18 AFN
 #include "amfi_if.h"
 c     logical dirbss_verbose
 
@@ -8636,7 +8636,7 @@ C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       end do
 
 C    .. make ready the IPTYPAO, INDXLM,IPNUC
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'AMFIIN: List of shells of the system:' 
       ENDIF
@@ -8663,7 +8663,7 @@ C        ... find out the nuclei
          ENDDO
 
          IF (IPRINT.GE.3) THEN
-          write(lupri,'(A,I2,A,I2,A,D12.6,A,I2,A,I2,A,I2,A,I3)')
+          write(lupri,'(A,I2,A,I2,A,D10.4,A,I2,A,I2,A,I2,A,I3)')
      &  'Shell L=',NHKT(ISHELL),
      &  ' ICENT=',NCENT(ISHELL),' charge:',CHARGE(ICENT),
      &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
@@ -8979,14 +8979,20 @@ C     ... file name for AMFI integrals of center
 !      FIXME: name tag of file cannot be charge otherwise we do not allow to have different basis sets 
 !      on atoms with the same charge (which will be assigned different atom types)
 !      sknecht - feb 2013
+!      mi/aug2013: oups,right ! fix is below
+       nuc_indx=icenter - icenter_tmp + 1
+       write(LUPRI,'(3x,a,i2)') 'unique nuclei index:',nuc_indx
+!mi: if necessary, check CHRNOS(nuc_indx) for large values of nuc_indx...
        IF (ICHARGE.LT.10) THEN
-        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)//'.'//CHRNOS(nuc_indx)
        ELSE IF (ICHARGE.LT.100) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/10)//CHRNOS(MOD(ICHARGE,10))
+     &                     //'.'//CHRNOS(nuc_indx)
        ELSE IF (ICHARGE.LT.1000) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
      &                       CHRNOS(MOD(ICHARGE,100)/10)//
      &                       CHRNOS(MOD( MOD(ICHARGE,100), 10) )
+     &                      //'.'//CHRNOS(nuc_indx)
        ELSE
         CALL QUIT('AMFIIN: nucl.charge > 1000! This is not supported!')
        ENDIF
@@ -8997,7 +9003,7 @@ C     ... file name for AMFI integrals of center
      &   ' Only pass (to read input basis) through the AMFI routine.'
        ELSE
          WRITE(LUPRI,'(2A)')
-     &   '  *** file for storage of AMFI integrals: ',AFN
+     &   '  *** file with AMFI integrals for this center: ',AFN
        ENDIF
 
 C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
@@ -9015,7 +9021,6 @@ C    &  '...this file does not exist, AMFI is utilized ! '
 C      ... find out the correct index of nuclear exponent
        EXPNUCL=D0
        IF (GAUNUC) THEN
-        
         
         IF( (icenter - icenter_tmp + 1) == 0 )THEN
          CALL QUIT('AMFIIN: atom type minimum index == 0')
@@ -9047,7 +9052,7 @@ C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       REWIND (LUMNFPRP)
 
       READ(LUMNFPRP) xa
-C    numballcart... total no of functions per centre...
+C    numballcart... total no of functions per unique center...
       READ(LUMNFPRP) numballcart
 
 C  ... allocate memmory for this AMFI center
@@ -9066,19 +9071,25 @@ C  ... allocate memmory for this AMFI center
      & 'AMFI order of (centre specific) basis function: '
       DO I = 1, numballcart
         READ(LUMNFPRP) IPTA(I),INDXLMA(I)
-        if (IPRINT.GE.3)
-     &    write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
+        if (IPRINT.GE.3) then
+          write(lupri,'(a,i3,a,a4,a,i3,a)')
+     &    ' amfi fu no:',I,' type(indx):',LABINT(IPTA(I)),
      &                '(',INDXLMA(I),')'
+       endif
       ENDDO
 
       READ(LUMNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
 
-      if (IPRINT.GE.3) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
-     &     (ncontrac(I),I=0,Lhigh)
+      if (IPRINT.GE.3) THEN
+        write(lupri,'(1x,a,i2,a,6i4)') 'Lhigh=',Lhigh,' ncontrac:',
+     &  (ncontrac(I),I=0,Lhigh)
+      endif
+
       iscontr=0
       DO I=0,Lhigh
        iscontr=iscontr+(ncontrac(I)*(I+I+1))
       ENDDO
+
       IF (iscontr.NE.numballcart) THEN
         write(lupri,*) 'iscontr,numballcart:',iscontr,numballcart
         CALL QUIT('AMFIIN: iscontr <> numballcart!!')
@@ -9094,20 +9105,35 @@ C       ... prepare the mapping array AMFI-H2C basis functions...
             ISONLIST=(IPTA(J).EQ.IPTYPAO(K)).AND.
      &             (INDXLMA(J).EQ.INDXLM(K)).AND.
      &              (IANUCS(I).EQ.IPNUC(K))
+
+           ! write(lupri,*) IPTA(J),IPTYPAO(K)
+           ! write(lupri,*) INDXLMA(J),INDXLM(K)
+           ! write(lupri,*) IANUCS(I),IPNUC(K)
+           ! write(lupri,*) 'ISONLIST=',ISONLIST
+
           IF (K.LT.NSPH.AND..NOT.ISONLIST) GOTO 23 
+
           IF (K.EQ.NSPH.AND..NOT.ISONLIST) THEN
-           CALL QUIT('AMFIIN: isonlist 1')
+            WRITE(LUPRI,*) 'I,J,K:',I,J,K
+            WRITE(LUPRI,*) 'NICHARGE,numballcart:',NICHARGE,numballcart
+            DO K1=1,NSPH
+              WRITE(LUPRI,'(1x,a,i3)') 'K1=',K1
+              WRITE(LUPRI,*) '   IPTA,IPTYPAO:',IPTA(K1),IPTYPAO(K1)
+              WRITE(LUPRI,*) 'INDXLMA, INDXLM:',INDXLMA(K1),INDXLM(K1)
+              WRITE(LUPRI,*) 'IANUCS(I),IPNUC:',IANUCS(I),IPNUC(K1)
+            ENDDO
+            CALL QUIT('AMFIIN: mapping failed ...')
           ELSE IF (ISONLIST.AND.K.LE.NSPH) THEN
             JI=J+(numballcart*(I-1))
             IAMFU(JI) = K 
           ELSE
-           CALL QUIT('AMFIIN: isonlist 2')
+           CALL QUIT('AMFIIN: mapping failed 2 ...')
           ENDIF
         ENDDO
         ENDDO
 
 C   ... write out mapping function correspondance....
-       IF (IPRINT.GE.3) THEN
+       IF (IPRINT.GE.2) THEN
         write(lupri,'(/A)')
      &  '***** Mapping spherical atomic basis'//
      &  ' functions "AMFI - H2c" *****'
@@ -9127,6 +9153,7 @@ C   ... write out mapping function correspondance....
      & ( IANUCS(I).NE.IPNUC(IAMFU(IX)) )                 .OR.
      & ( LABINT(IPTA(J)).NE.LABINT(IPTYPAO(IAMFU(IX))) ) .OR.
      & ( INDXLMA(J).NE.INDXLM(IAMFU(IX)) )   )  THEN
+         write(LUPRI,*) 'NICHARGE,numballcart=',NICHARGE,numballcart
          CALL QUIT(
      &   'AMFIIN: No compatibilities between H2cS_AO and AMFI !')
         ENDIF

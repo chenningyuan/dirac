@@ -448,6 +448,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
       IZERO = 0
       CALL ISTVC3(WORK(KLSOBEX_CC),(NSPOBEX_TPE-1)*4*NGAS+1,IZERO,
      &            4*NGAS)
+      NTEST = 5
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Extended list of spin-orbital excitations : '
         CALL WRT_SPOX_TP_CC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE)
@@ -511,6 +512,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
 *
       CALL MEMGET('INTE',KLLSOBEX_CC,NSPOBEX_TPE,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIBSOBEX_CC,NSPOBEX_TPE,WORK,KFREE,LFREE)
+      print*,'KLLSOBEX_CC',KLLSOBEX_CC
 *
 *
       IF(NTEST.GE.5) WRITE(6,*) ' LEN_T_VEC_MX = ', LEN_T_VEC_MX
@@ -546,6 +548,7 @@ C      print*,'NSPOBEX_TP_CC,NSPOBEX_TPE',NSPOBEX_TP_CC,NSPOBEX_TPE
      &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
      &     MX_SBSTR,
      &     IFTONE,IFTTWO,-1,N1ELINT,N2ELINT)
+!     CALL FIND_KRAMERS_PARTNER(WORK,KFREE,LFREE)
 *
       IF(NTEST.GE.100) WRITE(6,*) ' After IDIM_TCC section '
       MX_ST_TSOSO_MX =  MX_ST_TSOSO
@@ -603,6 +606,11 @@ C Now with automated restart. Lasse
 *. New optimizer
       CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),
      &                   ECC,WORK,KFREE,LFREE)
+      stop 'after optim'
+*
+* Check for Kramers partners
+*
+      CALL FIND_KRAMERS_PARTNER(WORK,KFREE,LFREE)
 *
 * ===========================
 * Calculate density matrices

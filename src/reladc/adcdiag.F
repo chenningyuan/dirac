@@ -632,23 +632,23 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,INFOHANDLE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+
+      use adc_mat      !obtain matrix parameters via descriptor file
+      use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
       REAL*8  CC(*)
       INTEGER KFREE,LFREE
-      INTEGER INFOHANDLE
       INTEGER IW
       LOGICAL DOINCORE
 C
 C---------------Description--------------------------------------------
 C
 C  This routine executes diagonalizer on any matrix (SIP/DIP) coming
-C  from the previous ADC code. All information comes from file MATINFO
-C  which is opened in the upper routine via infohandle.
 C  
-C  Infohandle is the file handle associated with the MATINFO file.
+C  Infohandle is the base file handle.
 C  the subsequent handles INFOHANDLE+1, +2 ... are available and
 C  can be used. The allocation is as follows:
 c
@@ -661,6 +661,7 @@ C
 C---------------Local variables--------------------------------------
 C
 c *** for infofile
+      INTEGER INFOHANDLE
       INTEGER IONIZLEVEL
       INTEGER INTBUF
       INTEGER KREP
@@ -694,48 +695,40 @@ C
 !     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
       KFRSAV=KFREE
       CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
-!     WRITE(IW,*) 'Memory check done.'
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
 c
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
 c
-c  read required information from info file
+c  transfer required parameters from matrix descriptor module
+c  to actual modules.
 c
-      READ(INFOHANDLE,'(I1)')    IONIZLEVEL
+      IONIZLEVEL = reladc_md_ionizl
       IF(IONIZLEVEL.eq.3) THEN
-        READ(INFOHANDLE,'(I12)')   INTBUF
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
-      ELSE
-        READ(INFOHANDLE,'(I2)')    KREP
-        READ(INFOHANDLE,'(I1)')    RCW
-        READ(INFOHANDLE,'(I1)')    IOLDNEW
-        READ(INFOHANDLE,'(I12)')   LADC
-        READ(INFOHANDLE,'(A6)')    FILEADC
-        READ(INFOHANDLE,'(A6)')    FILEDIA
-        READ(INFOHANDLE,'(A6)')    FILECNF
-        READ(INFOHANDLE,'(A5)')    NMSPEC
-        READ(INFOHANDLE,'(I9)')    IRECL
-        READ(INFOHANDLE,'(I9)')    NITER
-        READ(INFOHANDLE,'(I9)')    NOCC 
-        READ(INFOHANDLE,'(I9)')    NBUFS 
-        READ(INFOHANDLE,'(I9)')    NEIGENV 
-        READ(INFOHANDLE,'(F10.1)') EVLLIM 
+        INTBUF = reladc_md_intbuf
       ENDIF
+      INFOHANDLE   =  reladc_md_iobase
+      KREP         =  reladc_md_desrep
+      RCW          =  reladc_md_rcw
+      IOLDNEW      =  reladc_md_ioldnew
+      LADC         =  reladc_md_matdim
+      FILEADC      =  reladc_md_fileadc
+      FILEDIA      =  reladc_md_filediag
+      FILECNF      =  reladc_md_filecnf
+      NMSPEC       =  reladc_md_nmspec
+      IRECL        =  reladc_md_irecl
+      NITER        =  reladc_md_lnzitr
+      NOCC         =  reladc_md_nmain
+      NBUFS        =  reladc_md_nbufs    
+      NEIGENV      =  reladc_md_neigenv
+      IF (IONIZLEVEL.eq.1) THEN
+        EVLLIM     =  reladc_sipprnt
+      ELSE IF (IONIZLEVEL.eq.2) THEN
+        EVLLIM     =  reladc_dipprnt
+      ELSE IF (IONIZLEVEL.eq.3) THEN
+        EVLLIM     =  reladc_excprnt
+      END IF
 c
 c  open the ADC Matrix and configuration files and do diagonalization
 c
@@ -939,11 +932,11 @@ C
       CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
-        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
       ENDIF
@@ -2809,11 +2802,15 @@ c
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
+      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
+      use adc_mat
+      use memory_allocator
+
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IOUNIT,N,NP,LDAB
+      INTEGER NEIGENV
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -2844,6 +2841,11 @@ C
       CHARACTER*1 JOBZ,UPLO
       REAL*8 Y
       REAL*8 AUEV
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: nr_vecs
+      INTEGER                            :: j, k
+      REAL                               :: upper, lower
 
 C
 C---------------Executable code--------------------------------------
@@ -2896,25 +2898,48 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
+      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      nr_vecs = 0
+
+      upper = reladc_md_eeigv_upper
+      lower = reladc_md_eeigv_lower
+
+      DO j = 1, N
+        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
+        END IF
+      END DO
+
+      NEIGENV = nr_vecs
+
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
+      DO k = 1, nr_vecs
+        j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
+      END DO
       CLOSE(IOUNIT)
     
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
+      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
+      use adc_mat
+      use memory_allocator
+!
       IMPLICIT INTEGER (A-Z)
 
       INTEGER N,NP,LDAB
+      INTEGER NEIGENV
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
       DOUBLE PRECISION RWORK(6*N),EVL(N)
       
@@ -2937,6 +2962,10 @@ C
       CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
       REAL*8 AUEV
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: nr_vecs
+      INTEGER                            :: j, k
+      REAL                               :: upper, lower
 
 C
 C---------------Executable code--------------------------------------
@@ -2983,17 +3012,35 @@ c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
 c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
+      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      nr_vecs = 0
+
+      upper = reladc_md_eeigv_upper
+      lower = reladc_md_eeigv_lower
+
+      DO j = 1, N
+        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
+        END IF
+      END DO
+
+      NEIGENV = nr_vecs
 
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
+      DO k = 1, nr_vecs
+        j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
+      END DO
       CLOSE(IOUNIT)
     
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
@@ -3464,15 +3511,16 @@ c
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_DAVI(iobase,infofile,iw)
+      SUBROUTINE DIAG_DAVI(iw)
 
       use adc_cfg   !make input variables accessible here
 !                   !abandons the old adc_input common block.
+      use adc_mat   !contains matrix descriptor for the matrix
+                    !in the actual run. Abandons INFOFILE.
 
       IMPLICIT NONE
 
-      INTEGER                      :: iobase,iw
-      CHARACTER*7                  :: infofile
+      INTEGER                      :: iw
 !
 !---------------Description--------------------------------------------
 !
@@ -3480,6 +3528,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !
 ! *** variables for Matrix descriptor file
+      INTEGER         :: iobase
       INTEGER         :: intbuf,desrep,rcw
       INTEGER         :: ladc,irecl,nmain,nbufs
       CHARACTER*6     :: fileadc,filecnf
@@ -3516,24 +3565,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code----------------------------------------
 !
-      Call PST('Entering (real) Davidson diagonalizer+')
 
-      OPEN(iobase,FILE=infofile,FORM='FORMATTED',STATUS='OLD')
-      READ(iobase,'(I12)')      intbuf
-      READ(iobase,'(I2)')       desrep
-      READ(iobase,'(I1)')       rcw
-      READ(iobase,'(I12)')      ladc
-      READ(iobase,'(A6)')       fileadc
-      READ(iobase,'(A6)')       filecnf
-      READ(iobase,'(A5)')       nmspec
-      READ(iobase,'(I9)')       irecl
-      READ(iobase,'(I9)')       nmain
-      READ(iobase,'(I9)')       nbufs 
-      READ(iobase,'(I9)')       nroots
-      READ(iobase,'(I9)')       maxdavsp
-      READ(iobase,'(I9)')       maxdavit
-      READ(iobase,'(E10.5)')    convthr
-      CLOSE(iobase,status='DELETE')
+      Call PST('Entering (real) Davidson diagonalizer+')
+!
+!  fill current descriptor variables with transferred values
+!
+      iobase   =  reladc_md_iobase      !file handle for matrix handling
+      intbuf   =  reladc_md_intbuf      !buffer length in matrix
+      desrep   =  reladc_md_desrep      !current symmetry
+      rcw      =  reladc_md_rcw         !real/complex matrix
+      ladc     =  reladc_md_matdim      !matrix dimension
+      fileadc  =  reladc_md_fileadc     !file name of ADC matrix
+      filecnf  =  reladc_md_filecnf     !file name of configuration file
+      nmspec   =  reladc_md_nmspec      !file name of spectral output file
+      irecl    =  reladc_md_irecl       !record length of configuration data
+      nmain    =  reladc_md_nmain       !size of ADC matrix main block 
+      nbufs    =  reladc_md_nbufs       !number of buffers of len "intbuf"
+      nroots   =  reladc_md_davroots    !number of requested Davidson roots
+      maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
+      maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
+      convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
 !
 !  write out matrix  and Davidson parameters
 !
@@ -3627,7 +3678,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Do i=1,nroots
         Read(iobase) (bold(j,i),j=1,nsiz)
       Enddo
-      Close(iobase)
+      Close(iobase,status='delete')
 !|
 !|  end reading initial vectors and diagonal.
 !|___________________________________________________________
@@ -3640,7 +3691,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       orthoviolflag = .false.
 
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      Call XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag) 
+      Call XMATINI_R(iobase,intbuf,nbufs,ladc,adiag) 
 !__________________________________________________________
 !|
 !|
@@ -3689,17 +3740,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         Do i=j,locdim
           aij(i,j) = dot_product(bold(:,i),bnew(:,j))
           aij(j,i) = aij(i,j)   !symmetrize
-!         write(*,*) 'ööö',i,j,aij(i,j)
         Enddo
         Enddo
         CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
         If(INFO.NE.0) Then
           Call Quit('Error in DSYEV (diag_davi routine)')
         Endif
-!       Do i=1,locdim
-!         write(*,*) 'raw:',i,lambda(i)
-!         write(*,*) 'raw evc:',aij(:,i)
-!       Enddo
 !
 !  STEP B + C.  Form residual vector q_m for each eigenvalue k
 !
@@ -3755,9 +3801,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               xi(j)=qm(j)/a1
             endif
           Enddo
-!         Do j=1,20
-!           write(*,*) 'xi:',j,xi(j)
-!         Enddo
+!         write(*,*) '   @Norm of preconditioner xi:',
+!    &           sqrt(dot_product(xi(:),xi(:)))
 !
 !  STEP E. form  vector d_(M+1) for the kth eigenvalue
 !  orthogonalize to *all* previous b_i directions from xi
@@ -3769,7 +3814,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             dmp1(:) = dmp1(:) - a1*bold(:,i)
           Enddo
           a1 = sqrt(dot_product(dmp1,dmp1))
-!         write(*,*) '@Norm of preconditioner:',a1
+!         write(*,*) '   @Norm of preconditioner d(M+1):',a1
 !
 !  STEP F. form  vector b_(M+1): b_(M+1)=d_(M+1)/||d_(M+1)||
 !  this vector has to be included in the array of old vectors!
@@ -3780,7 +3825,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           bold(:,locdim+k)=dmp1(:)
           xi = bold(:,locdim+k)
           a2 = sqrt(dot_product(xi,xi))
-!         write(*,*) '@Norm of new vector:',a2
 !
 !  intermediate ortho check of new b vector.
 !
@@ -4019,7 +4063,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XFTCHDIA_R(iobase,intbuf,nbufs,ladc,adiag)
+      SUBROUTINE XMATINI_R(iobase,intbuf,nbufs,ladc,adiag)
 C
       IMPLICIT NONE
 !
@@ -4071,7 +4115,7 @@ c  .. read elements
 
       RETURN
 
- 889  CALL QUIT('Matrix read error in XFTCHDIA_R')
+ 889  CALL QUIT('Matrix read error in XMATINI_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4667,9 +4711,6 @@ C
 C open config file
 C
       IRECL = 56
-!     WRITE(IW,*) 'Writing EXC configs to ',FILENAME
-!     WRITE(IW,*) 'State symmetry: ',DESREP
-!     WRITE(IW,*) 'Record length: ',IRECL
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 C
@@ -4686,7 +4727,7 @@ C|
 C|
 
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
-        brep = multb(desrep+nrep,jrep,1)
+        brep = multb(desrep+nrep,jrep,2)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun
@@ -4720,7 +4761,7 @@ C|
 C|
 C|
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
