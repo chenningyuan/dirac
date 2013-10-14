@@ -312,7 +312,7 @@ C
      &                OMEGA(1,JSYMOP),WORK(KEVECR),ISSYM(1,JSYMOP),
      &                IORBCL,WORK(KEIG),WORK,KFREE,LFREE)
     
-          CALL XPPOUT(JSYMOP,ATMPPF,OMEGA,RCNV,WORK(KEIG),
+          CALL XPPOUT_OLD(JSYMOP,ATMPPF,OMEGA,RCNV,WORK(KEIG),
      &                ISSYM,WORK,KFREE,LFREE)
  20     CONTINUE
  10   CONTINUE
@@ -320,7 +320,7 @@ C
 C
 C     Final print section
 C
-      CALL XPPOUT(0,ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
+      CALL XPPOUT(ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -369,7 +369,7 @@ C
       DATA TABLE /'.PRINT ','.XXXXXX','.ANALYZ','.OPERAT',
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
-     &            '.EPOLE ','.MPOLE ','.INTFLG','-------',
+     &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
@@ -413,6 +413,7 @@ C
       ITRIPP(1)  = 1
       ITRIPP(2)  = 1
       NPPAPT     = 0
+      KVAL_OSC   = -1
       CALL IZERO(NPPAP,8)
       MAXEXC     = 0
       CALL IZERO(KEXCNV,8)
@@ -565,6 +566,47 @@ C&&&& INTFLG: specify what two-electron integrals to include
                   INTXPP = ILLINT + 2*ISLINT + 4*ISSINT
                GOTO 100
  16            CONTINUE
+C&&&& INTENS: ask for oscillator strengths to order k in the wave vector
+                 READ(LUCMD,*) KVAL_OSC
+                 IF(KVAL_OSC.EQ.0) THEN
+                   IEMAX = 1
+                   IMMAX = 0
+                   IMMAX = 0
+                 ELSE
+                   WRITE(6,*) 
+     &   '* User asked for oscillator strengths to order :',KVAL_OSC
+                   CALL QUIT('XPPINT: Not implemented yet !')
+                 ENDIF
+C................Electric multipoles
+                 DO IORDER = 1,IEMAX
+                   NDEG=(IORDER+2)*(IORDER+1)/2
+                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+                   ENDIF
+                   CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+                   IEPOFF(IORDER)=NPPAPT
+                   NPPAPT = NPPAPT + NDEG
+                 ENDDO
+C..................Magnetic multipoles
+                 IOFF = 1
+                 DO IORDER = 1,IMMAX
+                   NDEG=3*(IORDER+1)*IORDER/2
+                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+                   ENDIF
+                   CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+                   IMPOFF(IORDER)=NPPAPT
+                   NPPAPT = NPPAPT + NDEG
+                   IOFF   = IOFF   + NDEG
+                 ENDDO
                GOTO 100
  17            CONTINUE
 C&&&& OCCUP: String of inactive orbitals in XPP module
@@ -843,7 +885,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1,DUM,IDUM,IDUM)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -1228,8 +1270,8 @@ C
  1000 FORMAT(/A,I2,A,I2,A,F16.10,A,/3X,A2,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+C/* Deck XPPOUT_old */
+      SUBROUTINE XPPOUT_OLD(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1781,3 +1823,387 @@ C.....next the ones with negative metric
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck XPPOUT */
+      SUBROUTINE XPPOUT(ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C***********************************************************************
+         use codata
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbham.h"
+#include "dcbxpp.h"
+#include "dcbxlr.h"
+#include "symmet.h"
+C
+#include "dcbxrs.h"
+#include "dcbxpr.h"
+C
+      PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
+     &          D1=1.0D0,D0=0.0D0)
+      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
+     &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
+      character (len=4),  allocatable   :: symlab(:)
+      real(8), allocatable              :: excerg(:),excbuf(:),fval(:,:)
+      integer, allocatable              :: indx(:),irps(:),ind(:)
+      integer, allocatable              :: n_ev(:),ieerg(:,:),iebuf(:,:)
+      CHARACTER TTYP(-1:1)*2
+      DATA TTYP /'T-','T0','T+'/
+#include "ibtfun.h"
+      CALL HEADER('Linear response excitations; final output ',-1)
+C.....Find total number of excitations
+      NEXC = ISUM(NBSYM,KEXCNV,1)+1
+      allocate(EXCERG(NEXC))
+      allocate(INDX(NEXC))
+      allocate(IRPS(NEXC))
+      allocate(ieerg(2,NEXC))
+      NBF = NBSYM/NFSYM
+C
+C     E X C I T A T I O N    E N E R G I E S
+C     ======================================
+C
+C.....Linear symmetry
+C     ===============
+      IF(LINEAR) THEN
+        MAXJ = 0
+        DO ISYM = 1,NBSYM
+          MEXC=KEXCNV(ISYM)
+          DO IEXC = 1,MEXC
+            MAXJ = MAX(ABS(ISSYM(IEXC,ISYM)),MAXJ)
+          ENDDO
+        ENDDO
+        MAXJ = MAXJ/2
+        N_IRPS = (MAXJ+2)*NFSYM
+        allocate(SYMLAB(N_IRPS))
+        allocate(N_EV(N_IRPS))
+        allocate(IND(N_IRPS))
+        CALL ICOPY(N_IRPS,0,0,N_EV,1)
+        IF(NFSYM.EQ.1) THEN
+          SYMLAB(1) = ' 0+ ' ! totally symmetric 
+          SYMLAB(2) = ' 0- ' ! has the symmetry of R_z
+          IOFF = 2
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,2X)') I
+          ENDDO
+        ELSEIF(NFSYM.EQ.2) THEN
+          SYMLAB(1) = ' 0g+' ! totally symmetric 
+          SYMLAB(2) = ' 0g-' ! has the symmetry of R_z
+          IOFF = 2
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,A,X)') I,'g'
+          ENDDO
+          IOFF = MAXJ + 2
+          SYMLAB(1+IOFF) = ' 0u+' ! has the symmetry of z
+          SYMLAB(2+IOFF) = ' 0u-' ! has the symmetry of xyz
+          IOFF = MAXJ + 4
+          DO I = 1,MAXJ
+            WRITE(SYMLAB(I+IOFF),'(I2,A,X)') I,'u'
+          ENDDO
+        ENDIF
+C.......distribute excitation energies on linear symmetries
+        allocate(EXCBUF(NEXC))
+        allocate(iebuf(2,NEXC))
+C.......we include the ground state
+        EXCBUF(1) = 0.0D0        
+        IEBUF(1,1) = 1
+        IEBUF(2,1) = 1
+        N_EV(1)   = 1
+        IRPS(1)   = 1
+        ICNT = 1
+C
+        IOFF = 1
+        IREPP = 0
+        DO IFRP = 1,NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            IREP = ISYM - 1
+            MEXC=KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF+1),1)
+            DO IEXC = 1,MEXC
+              IEBUF(1,IOFF+IEXC) = IEXC
+              IEBUF(2,IOFF+IEXC) = ISYM
+              ICNT = ICNT + 1
+              JVAL = ABS(ISSYM(IEXC,ISYM))/2
+              IF(JVAL.EQ.0) THEN
+C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symmetry
+                ILAB = (IFRP-1)*(MAXJ+2)
+                IF(IREP.EQ.IREPP) THEN
+                  ILAB = ILAB + 1
+                ELSE
+                  ILAB = ILAB + 2
+                ENDIF
+              ELSE
+                ILAB = (IFRP-1)*(MAXJ+2)+JVAL+2
+              ENDIF
+              N_EV(ILAB) = N_EV(ILAB) + 1
+              IRPS(ICNT)  = ILAB
+              ISSYM(IEXC,ISYM) = ILAB
+            ENDDO
+            IOFF = IOFF + MEXC
+          ENDDO
+          IREPP = ISYMAX(3,1)
+        ENDDO
+        CALL INDEXI(NEXC,IRPS,INDX)
+        DO I = 1,NEXC
+          II = INDX(I)
+          EXCERG(I)  = EXCBUF(II)
+          IEERG(1,I) = IEBUF(1,II)
+          IEERG(2,I) = IEBUF(2,II)
+        ENDDO
+        deallocate(excbuf)
+        deallocate(iebuf)
+        CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        deallocate(n_ev)
+C
+C     Spinfree case with high enough symmetry to distinguish singlets and triplets
+C     ============================================================================
+      ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+        N_IRPS = 2*NBSYM
+        allocate(SYMLAB(N_IRPS))
+        allocate(N_EV(N_IRPS))
+        allocate(IND(N_IRPS))
+        CALL ICOPY(N_IRPS,0,0,N_EV,1)
+        IOFF = 1
+        DO IREP = 0,MAXREP
+          SYMLAB(IREP+IOFF)='1'//REP(IREP)     
+        ENDDO
+        IOFF = IOFF + NBSYM
+        DO IREP = 0,MAXREP
+          SYMLAB(IREP+IOFF)='3'//REP(IREP)     
+        ENDDO
+C.......distribute excitation energies on spinfree symmetries
+        allocate(EXCBUF(NEXC))
+        allocate(iebuf(2,NEXC))
+C.......we include the ground state
+        EXCBUF(1) = 0.0D0        
+        IEBUF(1,1) = 1
+        IEBUF(1,1) = 1
+        N_EV(1)   = 1
+        IRPS(1)   = 1
+        ICNT = 1
+        IOFF = 1
+        Do IFRP = 1,NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            IREP = ISYM - 1
+            MEXC = KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCBUF(IOFF+1),1)
+            DO IEXC = 1,MEXC
+              IEBUF(1,IOFF+IEXC) = IEXC
+              IEBUF(2,IOFF+IEXC) = ISYM
+              ICNT = ICNT + 1
+              ISPACE = ISSYM(IEXC,ISYM) 
+              ISPIN  = IBTXOR(ISPACE,IREP)
+              IF(ISPIN.EQ.0) THEN
+                ILAB = ISPACE + 1
+              ELSE
+                ILAB = ISPACE + NBSYM + 1
+              ENDIF
+              N_EV(ILAB) = N_EV(ILAB) + 1
+              IRPS(ICNT)  = ILAB
+              ISSYM(IEXC,ISYM) = ILAB
+            ENDDO
+            IOFF = IOFF + MEXC
+          ENDDO
+        ENDDO
+        CALL INDEXI(NEXC,IRPS,INDX)
+        DO I = 1,NEXC
+          II = INDX(I)
+          EXCERG(I)  = EXCBUF(II)
+          IEERG(1,I) = IEBUF(1,II)
+          IEERG(2,I) = IEBUF(2,II)
+        ENDDO
+        deallocate(excbuf)
+        deallocate(iebuf)
+        CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        deallocate(n_ev)
+      ELSE
+C.....Default case
+        IFOO = NBSYM
+        allocate(SYMLAB(IFOO))
+        allocate(IND(NBSYM))
+        IOFF = 1
+        DO IFRP = 1,NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IFRP)
+            SYMLAB(ISYM)=REP(ISYM-1)//' '
+            MEXC=KEXCNV(ISYM)
+            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
+            DO IEXC = 1,MEXC
+              IEERG(1,IOFF+IEXC) = IEXC
+              IEERG(2,IOFF+IEXC) = ISYM
+            ENDDO
+            IOFF = IOFF + MEXC
+          ENDDO
+        ENDDO
+        EXCERG(1) = 0.0D0
+        KEXCNV(1) = KEXCNV(1) + 1
+        CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
+     &              NEXC,INDX,IRPS,IND)
+        KEXCNV(1) = KEXCNV(1) - 1
+C.......Make an extra empty symmetry label to use below
+        MEXC= MAXEXC*NBSYM
+        SYMLAB(IFOO) = '    '
+        CALL ICOPY(MEXC,IFOO,0,ISSYM,1)
+      ENDIF
+C
+C     T R A N S I T I O N   M O M E N T S
+C     ===================================
+C
+      IF (NPPAPT .EQ. 0) GOTO 10
+      DO IFRP = 1,NFSYM
+        DO IBF = 1,NBF
+          ISYM = JFSYM(IBF,IFRP)
+          MEXC = KEXCNV(ISYM)
+          IF(MEXC.EQ.0) CYCLE
+          IREP = ISYM-1
+          NOPA   = NPPAP(ISYM) ! number of transition moment operators in this symmetry
+          JOPA   = JPPAP(ISYM) ! offset to complete list of transition moment operators
+          DO IOPA = 1,NOPA
+            INDAP  = LPPAPS(JOPA+IOPA)
+            INDPRA = LPPAPU(INDAP)
+            IREPA  = IPRPSYM(INDPRA)-1
+            ITIMA  = IPRPTIM(INDPRA)
+            NTMOM = 0
+            WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
+     &      '*** Transition moments of operator ',
+     &      PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA)
+            WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+            WRITE(LUPRI,'(3X,A,5X,A,10X,A)') 'eigenvalue (au)',
+     &        '<0|A|n>','Higher symmetry (if detected)'
+            DO IEXC = 1,MEXC
+            IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
+              NTMOM=NTMOM+1
+              ILAB = ISSYM(IEXC,ISYM)
+              WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+     &          OMEGA(IEXC,ISYM), ATMPPF(IEXC,INDAP,ISYM,1), 
+     &          SYMLAB(ILAB)
+            ENDIF
+            ENDDO
+            IF(NTMOM.EQ.0) THEN
+              WRITE(LUPRI,'(A,E9.4)')
+     &           '* No values above threshold : ',TTOL
+            ENDIF
+          ENDDO          
+        ENDDO
+      ENDDO    
+C
+C     O S C I L L A T O R    S T R E N G T H S
+C     ========================================
+C
+      IF(KVAL_OSC.LT.0) GOTO 10
+C.....Zeroth order in the wave vector
+C     ------------------------------
+      IF(KVAL_OSC.GE.0) THEN
+        IEVAL = 1
+        NDEG=(IEVAL+2)*(IEVAL+1)/2
+        IOFF  = IEPOFF(IEVAL)
+C.......All crossterms
+        DO IDEGA = 1,NDEG
+          INDAP   = IOFF+IDEGA
+          INDPRA  = LPPAPU(IOFF+IDEGA)
+          ISYM    = IPRPSYM(INDPRA)
+          IREP    = ISYM - 1
+          ITIMA   = IPRPTIM(INDPRA)
+          DO IDEGB = 1,IDEGA
+            INDBP   = IOFF+IDEGB
+            INDPRB  = LPPAPU(IOFF+IDEGB)
+            ISYM2   = IPRPSYM(INDPRB)
+            ITIMB   = IPRPTIM(INDPRB)
+            IF(ISYM2.EQ.ISYM) THEN
+              WRITE(LUPRI,'(/A,2(3X,A16,2X,A3,2X,A2))')
+     &        '*** Oscillator strengths of operators ',
+     &        PRPNAM(INDPRA),REP(IREP),TTYP(ITIMA),
+     &        PRPNAM(INDPRB),REP(IREP),TTYP(ITIMB)
+              WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+              WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
+     &        'f','Higher symmetry (if detected)'
+              NTMOM = 0
+              MEXC = KEXCNV(ISYM)
+              DO IEXC = 1,MEXC
+                AMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+                IF(ABS(AMOM).GT.TTOL) THEN
+                  BMOM = ATMPPF(IEXC,INDBP,ISYM,1)
+                  IF(ABS(BMOM).GT.TTOL) THEN
+                    NTMOM=NTMOM+1
+                    ILAB = ISSYM(IEXC,ISYM)
+                    OSCIL = D2*AMOM*BMOM*OMEGA(IEXC,ISYM)
+                    WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+     &              OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
+                  ENDIF
+                ENDIF
+              ENDDO
+              IF(NTMOM.EQ.0) THEN
+                WRITE(LUPRI,'(A,E9.4)')
+     &            '* No values above threshold : ',TTOL
+              ENDIF
+            ENDIF
+          ENDDO
+        ENDDO
+C.......Isotropic contribution
+        allocate(fval(MAXEXC,NBSYM))
+        NDIM= MAXEXC*NBSYM
+        CALL DCOPY(NDIM,D0,0,FVAL,1)
+        IOFF  = IEPOFF(IEVAL)
+        DO IDEGA = 1,NDEG
+          INDAP   = IOFF+IDEGA
+          INDPRA  = LPPAPU(IOFF+IDEGA)
+          ISYM    = IPRPSYM(INDPRA)
+          IREP    = ISYM - 1
+          ITIMA   = IPRPTIM(INDPRA)
+          MEXC=KEXCNV(ISYM)
+          DO IEXC = 1,MEXC
+            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+            FVAL(IEXC,ISYM) = FVAL(IEXC,ISYM) 
+     &                      + XMOM*XMOM*OMEGA(IEXC,ISYM)
+          ENDDO
+        ENDDO
+        CALL DSCAL(NDIM,D2R3,FVAL,1)
+        WRITE(6,'(/A)') '* ISOTROPIC DL-DL OSCILLATOR STRENGTHS (f)'
+        WRITE(LUPRI,'(80A1)') ('=',I=1,42)
+        WRITE(LUPRI,'(A)') 'DL = dipole length'
+        WRITE(LUPRI,'(A)') 'Rate = Dipole radiation rate (s-1)'
+        WRITE(LUPRI,'(A)') 
+     &      'Lifetime = corresponding radiation lifetime (s)'
+        WRITE(LUPRI,'(/A)')
+     &  'Level     Frequency     f             Rate           Lifetime'
+        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
+        DO JEXC = 2,NEXC
+          II = INDX(JEXC)
+          IEXC = IEERG(1,II)
+          ISYM = IEERG(2,II)
+          OSCIL = FVAL(IEXC,ISYM)
+          IF(OSCIL .GT. 1.0D-8) THEN
+            ILAB = ISSYM(IEXC,ISYM)
+            RATE = D2*ALPHAC**3*OSCIL*OMEGA(IEXC,ISYM)**2/AUTIME
+            WRITE(6,'(I5,F17.10,F12.8,2(3X,E12.5),3X,A4)') 
+     &           JEXC,OMEGA(IEXC,ISYM),OSCIL,RATE,D1/RATE,SYMLAB(ILAB)
+          ENDIF
+        ENDDO
+        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
+        TOT = DSUM(NDIM,FVAL,1)
+        WRITE(6,'(A,F12.5)') 'Sum of oscillator strenghts: ',TOT
+        deallocate(fval)
+      ENDIF
+ 10   CONTINUE
+      deallocate(symlab)
+      deallocate(excerg)
+      deallocate(indx)
+      deallocate(irps)
+      deallocate(ind)
+      deallocate(ieerg)
+C
+      RETURN
+      END
+

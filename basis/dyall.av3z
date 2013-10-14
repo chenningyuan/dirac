@@ -1,11 +1,13 @@
 $ 
 $ Elements Supported
+$ H  He
 $ B  C  N  O  F  Ne Al Si P  S  Cl Ar
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
 $ Uut Fl Uup Lv Uus Uuo
 $ 
 $  REFERENCE
 $ 
+$ 1s:    K.G. Dyall, unpublished.
 $ 2p-3p: K.G. Dyall, unpublished
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2002) 108:335;
 $        revision K.G. Dyall, Theor. Chem. Acc. (2006) 115:441
@@ -14,6 +16,54 @@ $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 $
 $ 
 $ 
+$ H 
+a 1
+$ s functions
+   10    0    0
+    9.01657212E+02
+    1.34649031E+02
+    3.05473364E+01
+    8.62453493E+00
+    2.80494579E+00
+    1.00896460E+00
+    3.91394822E-01
+    1.60426029E-01
+    6.71243724E-02
+    1.96180790E-02
+$ p functions
+    3    0    0
+    1.23551545E+00
+    2.93467565E-01
+    8.16556619E-02
+$ d functions
+    2    0    0
+    7.72511884E-01
+    2.10724152E-01
+
+$ He
+a 2
+$ s functions
+   10    0    0
+    2.40072588E+03
+    3.59090341E+02
+    8.16292739E+01
+    2.30932047E+01
+    7.51215959E+00
+    2.67601960E+00
+    1.00126018E+00
+    3.84736372E-01
+    1.49139365E-01
+    4.96762513E-02
+$ p functions
+    3    0    0
+    3.12853138E+00
+    7.43108867E-01
+    2.06765768E-01
+$ d functions
+    2    0    0
+    1.95612906E+00
+    5.33588733E-01
+
 $ B 
 a 5
 $ s functions
@@ -604,7 +654,7 @@ $ f functions
 $ Ge
 a 32
 $ s functions
-   23    0    0
+   24    0    0
     5.75343445E+07
     1.02023082E+07
     2.39819004E+06
@@ -628,6 +678,7 @@ $ s functions
     3.44413215E-01
     1.59544469E-01
     6.79702298E-02
+    2.47836180E-02
 $ p functions
    17    0    0
     1.07773854E+05
@@ -668,7 +719,7 @@ $ f functions
 $ As
 a 33
 $ s functions
-   23    0    0
+   24    0    0
     5.84037754E+07
     1.04741635E+07
     2.48021737E+06
@@ -692,6 +743,7 @@ $ s functions
     4.22412844E-01
     1.95986625E-01
     8.35217158E-02
+    3.12841610E-02
 $ p functions
    17    0    0
     1.25921678E+05
@@ -797,7 +849,7 @@ $ f functions
 $ Br
 a 35
 $ s functions
-   23    0    0
+   24    0    0
     6.15532200E+07
     1.14812366E+07
     2.79022382E+06
@@ -821,6 +873,7 @@ $ s functions
     5.95273831E-01
     2.76751762E-01
     1.17878343E-01
+    4.40655380E-02
 $ p functions
    17    0    0
     1.62032129E+05

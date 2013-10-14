@@ -187,7 +187,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Sep 26 17:37:00 2013
+     Date and time (Linux)  : Fri Oct 11 16:35:38 2013
      Host name              : not found                               
 
 
@@ -855,13 +855,13 @@ Total no. of orbitals           (NORB):     7
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Sep 26 17:37:00 2013
+########## START ITERATION NO.   1 ##########   Fri Oct 11 16:35:39 2013
 
 
 => Calculating sum of orbital energies
-It.    1    -32.39275871615      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Sep 26
+It.    1    -32.39275871615      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Oct 11
 
-########## START ITERATION NO.   2 ##########   Thu Sep 26 17:37:00 2013
+########## START ITERATION NO.   2 ##########   Fri Oct 11 16:35:39 2013
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -914,21 +914,21 @@ H       2   0.104E-04   0.126E+02   0.142E+00      85   13493
    DFT exchange-correlation energy:               =        -9.5475064001370349
    number of electrons from numerical integration =        10.0000005498076980
 
-   time spent in DFT integration                  =   0.17 seconds
+   time spent in DFT integration                  =   0.18 seconds
    number of processors                           =         1
 
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.63603901s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.64003997s
 
-########## END ITERATION NO.   2 ##########   Thu Sep 26 17:37:00 2013
+########## END ITERATION NO.   2 ##########   Fri Oct 11 16:35:39 2013
 
-It.    2    -75.88847790855      4.35D+01  8.13D-01  4.59D-01               0.63603901s   LL             Thu Sep 26
+It.    2    -75.88847790855      4.35D+01  8.13D-01  4.59D-01               0.64003997s   LL             Fri Oct 11
 
-########## START ITERATION NO.   3 ##########   Thu Sep 26 17:37:01 2013
+########## START ITERATION NO.   3 ##########   Fri Oct 11 16:35:39 2013
 
     3 *** Differential density matrix. DCOVLP     = 0.9760
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800002s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.01200002s
 
  FDE integration
 
@@ -950,17 +950,17 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800002s
    number of processors                           =         1
 
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 0.44802803s
+>>> Total CPU time : 0.45202804s
 
-########## END ITERATION NO.   3 ##########   Thu Sep 26 17:37:01 2013
+########## END ITERATION NO.   3 ##########   Fri Oct 11 16:35:39 2013
 
-It.    3    -75.87632594099     -1.22D-02 -4.67D-01  4.76D-01   DIIS   2    0.44802803s   LL             Thu Sep 26
+It.    3    -75.87632594099     -1.22D-02 -4.67D-01  4.76D-01   DIIS   2    0.45202804s   LL             Fri Oct 11
 
-########## START ITERATION NO.   4 ##########   Thu Sep 26 17:37:02 2013
+########## START ITERATION NO.   4 ##########   Fri Oct 11 16:35:40 2013
 
     4 *** Differential density matrix. DCOVLP     = 0.9787
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00799990s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800002s
 
  FDE integration
 
@@ -978,21 +978,21 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00799990s
    DFT exchange-correlation energy:               =        -9.4000702822506508
    number of electrons from numerical integration =        10.0000005857003824
 
-   time spent in DFT integration                  =   0.18 seconds
+   time spent in DFT integration                  =   0.17 seconds
    number of processors                           =         1
 
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.44402802s
+>>> Total CPU time : 0.44402790s
 
-########## END ITERATION NO.   4 ##########   Thu Sep 26 17:37:02 2013
+########## END ITERATION NO.   4 ##########   Fri Oct 11 16:35:40 2013
 
-It.    4    -75.95275423218      7.64D-02  2.55D-01  2.30D-02   DIIS   3    0.44402802s   LL             Thu Sep 26
+It.    4    -75.95275423218      7.64D-02  2.55D-01  2.30D-02   DIIS   3    0.44402790s   LL             Fri Oct 11
 
-########## START ITERATION NO.   5 ##########   Thu Sep 26 17:37:02 2013
+########## START ITERATION NO.   5 ##########   Fri Oct 11 16:35:40 2013
 
     5 *** Differential density matrix. DCOVLP     = 1.0006
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800085s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800097s
 
  FDE integration
 
@@ -1010,15 +1010,15 @@ SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800085s
    DFT exchange-correlation energy:               =        -9.3927807583155136
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.18 seconds
+   time spent in DFT integration                  =   0.17 seconds
    number of processors                           =         1
 
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.44802785s
+>>> Total wall time: 1.00000000s
+>>> Total CPU time : 0.44802809s
 
-########## END ITERATION NO.   5 ##########   Thu Sep 26 17:37:02 2013
+########## END ITERATION NO.   5 ##########   Fri Oct 11 16:35:40 2013
 
-It.    5    -75.95295037358      1.96D-04 -1.19D-02  8.25D-05   DIIS   3    0.44802785s   LL             Thu Sep 26
+It.    5    -75.95295037358      1.96D-04 -1.19D-02  8.25D-05   DIIS   3    0.44802809s   LL             Fri Oct 11
 
 
                                    SCF - CYCLE
@@ -1034,11 +1034,11 @@ It.    5    -75.95295037358      1.96D-04 -1.19D-02  8.25D-05   DIIS   3    0.44
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.39275871615      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Sep 26
-It.    2    -75.88847790855      4.35D+01  8.13D-01  4.59D-01               0.63603901s   LL             Thu Sep 26
-It.    3    -75.87632594099     -1.22D-02 -4.67D-01  4.76D-01   DIIS   2    0.44802803s   LL             Thu Sep 26
-It.    4    -75.95275423218      7.64D-02  2.55D-01  2.30D-02   DIIS   3    0.44402802s   LL             Thu Sep 26
-It.    5    -75.95295037358      1.96D-04 -1.19D-02  8.25D-05   DIIS   3    0.44802785s   LL             Thu Sep 26
+It.    1    -32.39275871615      0.00D+00  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Oct 11
+It.    2    -75.88847790855      4.35D+01  8.13D-01  4.59D-01               0.64003997s   LL             Fri Oct 11
+It.    3    -75.87632594099     -1.22D-02 -4.67D-01  4.76D-01   DIIS   2    0.45202804s   LL             Fri Oct 11
+It.    4    -75.95275423218      7.64D-02  2.55D-01  2.30D-02   DIIS   3    0.44402790s   LL             Fri Oct 11
+It.    5    -75.95295037358      1.96D-04 -1.19D-02  8.25D-05   DIIS   3    0.44802809s   LL             Fri Oct 11
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    5 iterations.
 * Average elapsed time per iteration: 
@@ -1161,7 +1161,7 @@ tot.num. of pos.erg shells:    4    1    2    0
     - Secondary orbitals :      6..     7                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.9527542321816327
-* Heading :electric properties for frozen density embedding  Thu Sep 26 17:37:02 2013
+* Heading :electric properties for frozen density embedding  Fri Oct 11 16:35:40 2013
 
 
 
@@ -1171,7 +1171,7 @@ tot.num. of pos.erg shells:    4    1    2    0
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :electric properties for frozen density embedding  Thu Sep 26 17:37:02 2013
+* Heading :electric properties for frozen density embedding  Fri Oct 11 16:35:40 2013
 
  DFT integration
 
@@ -1179,7 +1179,7 @@ tot.num. of pos.erg shells:    4    1    2    0
    DFT exchange-correlation energy:               =        -9.3927807583155136
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.18 seconds
+   time spent in DFT integration                  =   0.17 seconds
    number of processors                           =         1
 
 
@@ -1197,22 +1197,22 @@ tot.num. of pos.erg shells:    4    1    2    0
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :electric properties for frozen density embedding  Thu Sep 26 17:37:00 2013
+* Heading :electric properties for frozen density embedding  Fri Oct 11 16:35:39 2013
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 17:37:03 2013
+########## START MICROITERATION NO.   1 ##########   Fri Oct 11 16:35:41 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-08    0.00%    0.00%    8.19%    0.00%   0.00799990s
+SOfock:LL  1.49D-08    0.00%    0.00%    8.19%    0.00%   0.00800085s
 
  DFT integration
 
    number of grid points                          =     20729
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.40 seconds
+   time spent in DFT integration                  =   0.39 seconds
    number of processors                           =         1
 
  FDE response contributions not included
@@ -1240,7 +1240,7 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%    0.00%   0.00799990s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.52403307s  (LL       )     [ 10]     [ 10]
+* It.  1   0.52003288s  (LL       )     [ 10]     [ 10]
 --------------------------------------------------------
             0.321978 :   9.49D-17 |   6.86D-17  6.56D-17
             0.425028 :   6.71D-17 |   6.69D-18  6.68D-17
@@ -1302,10 +1302,10 @@ SOfock:LL  1.49D-08    0.00%    0.00%    8.19%    0.00%   0.00799990s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 17:37:03 2013
+########## START MICROITERATION NO.   1 ##########   Fri Oct 11 16:35:42 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-08    0.62%    0.72%    0.72%    0.00%   0.00800109s
+SOfock:LL  1.49D-08    0.62%    0.72%    0.72%    0.00%   0.00799990s
 
  DFT integration
 
@@ -1340,7 +1340,7 @@ SOfock:LL  1.49D-08    0.62%    0.72%    0.72%    0.00%   0.00800109s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.50803089s  (LL       )     [ 10]     [ 10]
+* It.  1   0.51203203s  (LL       )     [ 10]     [ 10]
 --------------------------------------------------------
             0.392685 :   3.61D-17 |   2.63D-17  2.47D-17
             0.410968 :   3.67D-15 |   2.01D-15  3.07D-15
@@ -1402,7 +1402,7 @@ SOfock:LL  1.49D-08    0.62%    0.72%    0.72%    0.00%   0.00800109s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 17:37:04 2013
+########## START MICROITERATION NO.   1 ##########   Fri Oct 11 16:35:42 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.49D-08    0.62%    0.00%    3.53%    0.00%   0.00799990s
@@ -1412,7 +1412,7 @@ SOfock:LL  1.49D-08    0.62%    0.00%    3.53%    0.00%   0.00799990s
    number of grid points                          =     20729
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.40 seconds
+   time spent in DFT integration                  =   0.39 seconds
    number of processors                           =         1
 
  FDE response contributions not included
@@ -1440,7 +1440,7 @@ SOfock:LL  1.49D-08    0.62%    0.00%    3.53%    0.00%   0.00799990s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.52403283s  (LL       )     [ 10]     [ 10]
+* It.  1   0.51203203s  (LL       )     [ 10]     [ 10]
 --------------------------------------------------------
             0.321978 :   9.49D-17 |   6.86D-17  6.56D-17
             0.410968 :   3.67D-15 |   2.01D-15  3.07D-15
@@ -1502,17 +1502,17 @@ SOfock:LL  1.49D-08    0.62%    0.00%    3.53%    0.00%   0.00799990s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.49D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 6.71D+02
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 17:37:05 2013
+########## START MICROITERATION NO.   1 ##########   Fri Oct 11 16:35:43 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.49D-08    0.62%    0.72%    0.29%    0.00%   0.00799990s
+SOfock:LL  1.49D-08    0.62%    0.72%    0.29%    0.00%   0.00800085s
 
  DFT integration
 
    number of grid points                          =     20729
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.40 seconds
+   time spent in DFT integration                  =   0.39 seconds
    number of processors                           =         1
 
  FDE response contributions not included
@@ -1540,7 +1540,7 @@ SOfock:LL  1.49D-08    0.62%    0.72%    0.29%    0.00%   0.00799990s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.52803421s  (LL       )     [ 10]     [ 10]
+* It.  1   0.50803089s  (LL       )     [ 10]     [ 10]
 --------------------------------------------------------
             0.321978 :   9.49D-17 |   6.86D-17  6.56D-17
             0.410968 :   3.67D-15 |   2.01D-15  3.07D-15
@@ -1598,143 +1598,66 @@ SOfock:LL  1.49D-08    0.62%    0.72%    0.29%    0.00%   0.00799990s
                     Linear response excitations; final output
                     -----------------------------------------
 
-================================================================================
 
- *** Excitations of boson symmetry 1 : A1 
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
 
---------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.32197795 a.u.    9.50E-17 (converged)
- Nonrel. sym.:   TyB1                         8.7615 eV
---------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.42502750 a.u.    6.71E-17 (converged)
- Nonrel. sym.:   TzA2                        11.5656 eV
---------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.50078925 a.u.    3.04E-15 (converged)
- Nonrel. sym.:   TxB2                        13.6272 eV
---------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     0.50464716 a.u.    2.92E-15 (converged)
- Nonrel. sym.:   S0A1                        13.7321 eV
---------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.61596978 a.u.    3.31E-15 (converged)
- Nonrel. sym.:   TxB2                        16.7614 eV
---------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     0.93987200 a.u.    1.78E-15 (converged)
- Nonrel. sym.:   S0A1                        25.5752 eV
---------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.18359705 a.u.    6.45E-16 (converged)
- Nonrel. sym.:   TxB2                        32.2073 eV
---------------------------------------------------------------------------------
- Excitation no.   8 excitation energy     1.31126956 a.u.    4.15E-15 (converged)
- Nonrel. sym.:   S0A1                        35.6815 eV
---------------------------------------------------------------------------------
- Excitation no.   9 excitation energy    19.02748821 a.u.    2.08E-14 (converged)
- Nonrel. sym.:   S0A1                       517.7643 eV
---------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    19.06478948 a.u.    2.47E-14 (converged)
- Nonrel. sym.:   TxB2                       518.7793 eV
-================================================================================
 
- *** Excitations of boson symmetry 2 : B1 
+ Energy eigenvalues in atomic units
 
---------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.39268536 a.u.    3.61E-17 (converged)
- Nonrel. sym.:   S0B1                        10.6855 eV
---------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.41096770 a.u.    3.67E-15 (converged)
- Nonrel. sym.:   TyA1                        11.1830 eV
---------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.42502750 a.u.    6.71E-17 (converged)
- Nonrel. sym.:   TxA2                        11.5656 eV
---------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     0.50078925 a.u.    3.04E-15 (converged)
- Nonrel. sym.:   TzB2                        13.6272 eV
---------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.61596978 a.u.    3.31E-15 (converged)
- Nonrel. sym.:   TzB2                        16.7614 eV
---------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     0.68741149 a.u.    1.77E-15 (converged)
- Nonrel. sym.:   TyA1                        18.7054 eV
---------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.07107172 a.u.    2.04E-15 (converged)
- Nonrel. sym.:   TyA1                        29.1453 eV
---------------------------------------------------------------------------------
- Excitation no.   8 excitation energy     1.18359705 a.u.    6.45E-16 (converged)
- Nonrel. sym.:   TzB2                        32.2073 eV
---------------------------------------------------------------------------------
- Excitation no.   9 excitation energy    18.96159268 a.u.    1.67E-14 (converged)
- Nonrel. sym.:   TyA1                       515.9712 eV
---------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    19.06478948 a.u.    2.47E-14 (converged)
- Nonrel. sym.:   TzB2                       518.7793 eV
-================================================================================
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
 
- *** Excitations of boson symmetry 3 : B2 
+    0     0.0000000000      0.000000000000      -75.952754232182 (   1 * )
+    1     0.3219779476      0.321977947608      -75.630776284574 (   3 * )
+    2     0.3926853583      0.392685358313      -75.560068873869 (   1 * )
+    3     0.4109677023      0.410967702263      -75.541786529919 (   3 * )
+    4     0.4250275033      0.425027503329      -75.527726728852 (   3 * )
+    5     0.4746895174      0.474689517400      -75.478064714782 (   1 * )
+    6     0.5007892473      0.500789247251      -75.451964984931 (   3 * )
+    7     0.5046471633      0.504647163340      -75.448107068841 (   1 * )
+    8     0.6159697776      0.615969777628      -75.336784454553 (   3 * )
+    9     0.6219925081      0.621992508105      -75.330761724077 (   1 * )
+   10     0.6874114931      0.687411493104      -75.265342739077 (   3 * )
+   11     0.7648692226      0.764869222648      -75.187885009533 (   1 * )
+   12     0.9398719971      0.939871997071      -75.012882235111 (   1 * )
+   13     1.0710717210      1.071071720969      -74.881682511213 (   3 * )
+   14     1.1835970465      1.183597046481      -74.769157185701 (   3 * )
+   15     1.2972240790      1.297224079013      -74.655530153169 (   1 * )
+   16     1.3112695607      1.311269560686      -74.641484671496 (   1 * )
+   17    18.9615926794     18.961592679355      -56.991161552826 (   3 * )
+   18    19.0274882142     19.027488214220      -56.925266017962 (   1 * )
+   19    19.0647894757     19.064789475653      -56.887964756529 (   3 * )
+   20    19.1080608475     19.108060847547      -56.844693384635 (   1 * )
 
---------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.32197795 a.u.    9.50E-17 (converged)
- Nonrel. sym.:   TzB1                         8.7615 eV
---------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.41096770 a.u.    3.67E-15 (converged)
- Nonrel. sym.:   TxA1                        11.1830 eV
---------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.42502750 a.u.    6.71E-17 (converged)
- Nonrel. sym.:   TyA2                        11.5656 eV
---------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     0.62199251 a.u.    2.04E-15 (converged)
- Nonrel. sym.:   S0B2                        16.9253 eV
---------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.68741149 a.u.    1.77E-15 (converged)
- Nonrel. sym.:   TxA1                        18.7054 eV
---------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     0.76486922 a.u.    9.70E-16 (converged)
- Nonrel. sym.:   S0B2                        20.8131 eV
---------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.07107172 a.u.    2.04E-15 (converged)
- Nonrel. sym.:   TxA1                        29.1453 eV
---------------------------------------------------------------------------------
- Excitation no.   8 excitation energy     1.29722408 a.u.    4.46E-15 (converged)
- Nonrel. sym.:   S0B2                        35.2993 eV
---------------------------------------------------------------------------------
- Excitation no.   9 excitation energy    18.96159268 a.u.    1.67E-14 (converged)
- Nonrel. sym.:   TxA1                       515.9712 eV
---------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    19.10806085 a.u.    2.50E-14 (converged)
- Nonrel. sym.:   S0B2                       519.9568 eV
-================================================================================
 
- *** Excitations of boson symmetry 4 : A2 
+ Total average:       -71.7046473481
 
---------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.32197795 a.u.    9.50E-17 (converged)
- Nonrel. sym.:   TxB1                         8.7615 eV
---------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.41096770 a.u.    3.67E-15 (converged)
- Nonrel. sym.:   TzA1                        11.1830 eV
---------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.47468952 a.u.    5.05E-17 (converged)
- Nonrel. sym.:   S0A2                        12.9170 eV
---------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     0.50078925 a.u.    3.04E-15 (converged)
- Nonrel. sym.:   TyB2                        13.6272 eV
---------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     0.61596978 a.u.    3.31E-15 (converged)
- Nonrel. sym.:   TyB2                        16.7614 eV
---------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     0.68741149 a.u.    1.77E-15 (converged)
- Nonrel. sym.:   TzA1                        18.7054 eV
---------------------------------------------------------------------------------
- Excitation no.   7 excitation energy     1.07107172 a.u.    2.04E-15 (converged)
- Nonrel. sym.:   TzA1                        29.1453 eV
---------------------------------------------------------------------------------
- Excitation no.   8 excitation energy     1.18359705 a.u.    6.45E-16 (converged)
- Nonrel. sym.:   TyB2                        32.2073 eV
---------------------------------------------------------------------------------
- Excitation no.   9 excitation energy    18.96159268 a.u.    1.67E-14 (converged)
- Nonrel. sym.:   TzA1                       515.9712 eV
---------------------------------------------------------------------------------
- Excitation no.  10 excitation energy    19.06478948 a.u.    2.47E-14 (converged)
- Nonrel. sym.:   TyB2                       518.7793 eV
-================================================================================
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)  1A1 |1B1 |1B2 |1A2 |3A1 |3B1 |3B2 |3A2 |
+
+    0        0.000000000          0.000000     1|   0|   0|   0|   0|   0|   0|   0|
+    1        8.761465391      70665.991332     0|   0|   0|   0|   0|   3|   0|   0|
+    2       10.685511855      86184.474225     0|   1|   0|   0|   0|   0|   0|   0|
+    3       11.182999727      90196.984922     0|   0|   0|   0|   3|   0|   0|   0|
+    4       11.565586365      93282.754577     0|   0|   0|   0|   0|   0|   0|   3|
+    5       12.916958472     104182.306804     0|   0|   0|   1|   0|   0|   0|   0|
+    6       13.627168228     109910.535390     0|   0|   0|   0|   0|   0|   3|   0|
+    7       13.732147462     110757.250101     1|   0|   0|   0|   0|   0|   0|   0|
+    8       16.761389805     135189.739825     0|   0|   0|   0|   0|   0|   3|   0|
+    9       16.925276633     136511.576376     0|   0|   1|   0|   0|   0|   0|   0|
+   10       18.705417718     150869.383987     0|   0|   0|   0|   3|   0|   0|   0|
+   11       20.813149697     167869.390619     0|   0|   1|   0|   0|   0|   0|   0|
+   12       25.575217295     206278.060008     1|   0|   0|   0|   0|   0|   0|   0|
+   13       29.145343289     235073.071035     0|   0|   0|   0|   3|   0|   0|   0|
+   14       32.207313068     259769.525361     0|   0|   0|   0|   0|   0|   3|   0|
+   15       35.299261819     284707.776430     0|   0|   1|   0|   0|   0|   0|   0|
+   16       35.681458806     287790.403341     1|   0|   0|   0|   0|   0|   0|   0|
+   17      515.971168989    4161588.561795     0|   0|   0|   0|   3|   0|   0|   0|
+   18      517.764277656    4176050.960012     1|   0|   0|   0|   0|   0|   0|   0|
+   19      518.779296583    4184237.640612     0|   0|   0|   0|   0|   0|   3|   0|
+   20      519.956770476    4193734.609003     0|   0|   1|   0|   0|   0|   0|   0|
 
 
                       Analysis of response solution vectors
@@ -2117,7 +2040,7 @@ SOfock:LL  1.49D-08    0.62%    0.72%    0.29%    0.00%   0.00799990s
     - Secondary orbitals :      6..     7                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.9527542321816327
-* Heading :electric properties for frozen density embedding  Thu Sep 26 17:37:02 2013
+* Heading :electric properties for frozen density embedding  Fri Oct 11 16:35:40 2013
 
 
 
@@ -2130,17 +2053,17 @@ YDIPLEN          - Symmetry: B2   T+
 * Screening threshold in LR solver scaled with norm of property vector:  2.2041D+00
   and changed to:  3.2868D-08
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 17:37:05 2013
+########## START MICROITERATION NO.   1 ##########   Fri Oct 11 16:35:43 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00800085s
+SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00800037s
 
  DFT integration
 
    number of grid points                          =     20729
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.29 seconds
+   time spent in DFT integration                  =   0.30 seconds
    number of processors                           =         1
 
  FDE response contributions not included
@@ -2151,17 +2074,17 @@ SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00800085s
      0.00000000  1.00E-05  3.58E-02  3.58E-02  0.00E+00
      0.10000000  1.00E-05  4.00E-02  3.74E-02  1.43E-02
 
-########## START MICROITERATION NO.   2 ##########   Thu Sep 26 17:37:05 2013
+########## START MICROITERATION NO.   2 ##########   Fri Oct 11 16:35:43 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00800133s
+SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00799990s
 
  DFT integration
 
    number of grid points                          =     20729
    number of electrons from numerical integration =        10.0000005864334351
 
-   time spent in DFT integration                  =   0.30 seconds
+   time spent in DFT integration                  =   0.29 seconds
    number of processors                           =         1
 
  FDE response contributions not included
@@ -2181,12 +2104,12 @@ SOfock:LL  3.29D-08    4.32%    0.00%    0.00%    0.00%   0.00800133s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.32002020s  (LL       )     [  2]     [  1]
+* It.  1   0.32002068s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.000000 :   3.58D-02 |   3.58D-02  0.00D+00
             0.100000 :   4.00D-02 |   3.74D-02  1.43D-02
 ========================================================
-* It.  2   0.32001972s  (LL       )     [  2]     [  1]
+* It.  2   0.32002020s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.000000 :   5.00D-16 |   5.00D-16  0.00D+00
             0.100000 :   1.97D-05 |   6.30D-16  1.97D-05
@@ -2230,11 +2153,11 @@ z         3.31771855 a.u.         -2.66482600 a.u.          0.65289255 a.u.
 
 
  
-     Date and time (Linux)  : Thu Sep 26 17:37:06 2013
+     Date and time (Linux)  : Fri Oct 11 16:35:44 2013
      Host name              : not found                               
 
->>>> Node 0, utime: 5, stime: 0, minflt: 10371, majflt: 0, nvcsw: 4, nivcsw: 474, maxrss: 24604
->>>> Total WALL time used in DIRAC: 6s
+>>>> Node 0, utime: 5, stime: 0, minflt: 10833, majflt: 1, nvcsw: 5, nivcsw: 461, maxrss: 24560
+>>>> Total WALL time used in DIRAC: 5s
   
   Dynamical Memory Usage Summary
   
