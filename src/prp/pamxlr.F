@@ -815,11 +815,10 @@ C specific complex response process section
       IF (FINTER) THEN
         NBFREQ = IFIX(0.5+SNGL((ENDFREQ-STARTFREQ)/STEPFREQ))+1
         IF (NBFREQ .GE. MAXFLR) THEN
-          NBFREQ = MAXFLR
-     	  WRITE(LUPRI,'( 2(/A),I3 )') 'Warning Number of frequencies'//
-     &	  ' is exceeding maximum numbers of frequencies allowed',
-     &    'maximum allowed (MAXFLR) is : ',MAXFLR
-        CALL QUIT('Too many frequencies specified!!!')
+     	  WRITE(LUPRI,'(2(A,I3/))') 
+     &    'WARNING: Too many frequencies specified : ',NBFREQ,
+     &    '         Maximum allowed (MAXFLR) is :    ',MAXFLR
+          CALL QUIT('Too many frequencies specified!!!')
         END IF
         BFREQ(1)=STARTFREQ
         DO IFREQ=1,NBFREQ-1
