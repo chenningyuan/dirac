@@ -36,13 +36,15 @@ atomic X2C error wrt to full molecular X2C for SF6 (mH == milliHartree):
     
     HF energy for molecular X2C + AMFI   SOC (3-21G basis set):
     -990.4072544134707 Hartree
-    
+
     HF energy for molecular X2C + atomic SOC (3-21G basis set):
-    -990.4074298180304 Hartree
+    -990.4072545831187 Hartree
+
+    HF energy for atomic X2C + AMFI   SOC (3-21G basis set):
+    -990.4074654559478 Hartree
     
     HF energy for atomic    X2C + atomic SOC (3-21G basis set):
-    -990.4076404414430 Hartree
-
+    -990.4074656255854 Hartree
 
 bug reports to dirac-users@googlegroups.com or stefan.knecht@phys.chem.ethz.ch
 =================== =================== =====================

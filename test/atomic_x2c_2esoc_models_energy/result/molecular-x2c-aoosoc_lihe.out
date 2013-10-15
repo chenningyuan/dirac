@@ -1,6 +1,6 @@
-DIRAC pam run in /Users/Stefanknecht/calc/test-scfmod/atomic-x2c/input-example
-DIRAC serial starts by allocating 125000000 words (953 MB) of memory
-             out of the allowed maximum of 225000000 words (1716 MB)
+DIRAC pam run in /Users/Stefanknecht/progs/dirac/dirac-repo/test/atomic_x2c_2esoc_models_energy
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
@@ -158,7 +158,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | Stefanknecht@stefans-mac-book-pro.local
+ Who compiled             | Stefanknecht@public-docking-hci-7-096.ethz.ch
  System                   | Darwin-11.4.2
  CMake generator          | Unix Makefiles
  Processor                | i386
@@ -180,8 +180,8 @@ Binary information
                           | ast -march=native -DNDEBUG -Wno-unused
  Explicit libs            | -L/usr/lib -llapack -lblas
  Static linking           | OFF
- Last Git revision        | 372cafdcd2e0de52978f6cee2fc2132da7e87639
- Configuration time       | 2013-03-08 14:00:01.388548
+ Last Git revision        | 3e57d319930f969832593196ebe8965a5fcb9a98
+ Configuration time       | 2013-04-24 13:05:08.167109
 
 
 Execution time and host
@@ -663,10 +663,10 @@ He z   0.0000000000   0.0000000000   1.2000000000
     M. Ilias and T. Saue:
     "Implementation of an infinite-order two-component relativistic Hamiltonian 
     by a simple one-step transformation." 
-    J. Chem. Phys., 126 (2007) 064102. 
-   additional reference for the new X2C module: 
+    J. Chem. Phys., 126 (2007) 064102.
+   additional reference for the new X2C module:
     S. Knecht and T. Saue:
-    manuscript in preparation, Strasbourg 2010. 
+    manuscript in preparation, Strasbourg 2010.
 
  * Running in two-component mode
  * Default integral flags passed to all modules
@@ -695,7 +695,10 @@ He z   0.0000000000   0.0000000000   1.2000000000
     ************************** Wave function module **************************
     **************************************************************************
 
- Jobs in this run (in execution order):
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
 ===========================================================================
  SCFINP: Set-up for Hartree-Fock calculation:
@@ -703,8 +706,10 @@ He z   0.0000000000   0.0000000000   1.2000000000
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with     4 electrons in    2 orbitals.
  * General print level   :   0
+
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
@@ -719,7 +724,9 @@ He z   0.0000000000   0.0000000000   1.2000000000
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
- * No quadratic convergent Hartree-Fock
+ * Quadratic convergent Hartree-Fock
+   - Maximum number of macro iterations: 25
+   - Maximum number of micro iterations: 25
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
     ---> this is default setting from Hamiltonian input
@@ -1276,27 +1283,26 @@ He z   0.0000000000   0.0000000000   1.2000000000
                    *********************************************************************
                    ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***
                    ***                                                               ***
-                   *** library version:  1.1 (January 2013)                          ***
+                   *** library version:  1.2 (August  2013)                          ***
                    ***                                                               ***
                    *** authors:          - Stefan Knecht                             ***
                    ***                   - Trond Saue                                ***
                    *** contributors:     - Hans Joergen Aagaard Jensen               ***
-                   ***                   - Miroslav Ilias                            ***
                    ***                   - Michal Repisky                            ***
+                   ***                   - Miroslav Ilias                            ***
                    *** features:         - X2C                                       ***
-                   ***                   - atomic/fragment X2C                       ***
+                   ***                   - X2C-atomic/fragment (X2C-LU)              ***
                    ***                   - X2C-spinfree                              ***
                    ***                   - X2C-molecular-mean-field (X2Cmmf)         ***
                    ***                                                               ***
-                   *** Universities of Odense, Toulouse, Banska Bystrica and Tromsoe ***
+                   ***                      Universities of                          ***
+                   ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
+                   ***                                                               ***
+                   *** contact: stefan.knecht@phys.chem.ethz.ch                      ***
                    *********************************************************************
 
 
-
-                                Output from MODHAM
-                                ------------------
-
- * Applied strict kinetic balance !
+                   *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
 
                    *********************************************************************
                    ***               X2C transformation ended properly.              ***
@@ -1333,86 +1339,86 @@ Total no. of orbitals           (NORB):    33
 
 
 => Calculating sum of orbital energies
-It.    1    -14.81458280017      0.00D+00  0.00D+00  0.00D+00               0.00116500s   Bare nuclei              
+It.    1    -14.81458280010      0.00D+00  0.00D+00  0.00D+00               0.00109600s   Bare nuclei              
 
 ########## START ITERATION NO.   2 ##########                           
 
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.10945500s
+>>> Total CPU time : 0.09754400s
 
 ########## END ITERATION NO.   2 ##########                           
 
-It.    2    -9.793268686018     -5.02D+00  4.45D+00  1.42D+00               0.10945500s   LL                       
+It.    2    -9.793268686042     -5.02D+00  4.45D+00  1.42D+00               0.09754400s   LL                       
 
 ########## START ITERATION NO.   3 ##########                           
 
     3 *** Differential density matrix. DCOVLP     = 0.7978
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.10055901s
+>>> Total CPU time : 0.08596900s
 
 ########## END ITERATION NO.   3 ##########                           
 
-It.    3    -10.05024232279      2.57D-01 -2.96D-01  1.18D-01   DIIS   2    0.10055901s   LL                       
+It.    3    -10.05024232278      2.57D-01 -2.96D-01  1.18D-01   DIIS   2    0.08596900s   LL                       
 
 ########## START ITERATION NO.   4 ##########                           
 
     4 *** Differential density matrix. DCOVLP     = 0.9744
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.09510699s
+>>> Total CPU time : 0.08286899s
 
 ########## END ITERATION NO.   4 ##########                           
 
-It.    4    -10.05326971325      3.03D-03 -2.45D-02  1.21D-02   DIIS   3    0.09510699s   LL                       
+It.    4    -10.05326971323      3.03D-03 -2.45D-02  1.21D-02   DIIS   3    0.08286899s   LL                       
 
 ########## START ITERATION NO.   5 ##########                           
 
     5 *** Differential density matrix. DCOVLP     = 0.9956
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.09933302s
+>>> Total CPU time : 0.08570099s
 
 ########## END ITERATION NO.   5 ##########                           
 
-It.    5    -10.05330441622      3.47D-05 -1.46D-03  1.06D-03   DIIS   4    0.09933302s   LL                       
+It.    5    -10.05330441620      3.47D-05 -1.46D-03  1.06D-03   DIIS   4    0.08570099s   LL                       
 
 ########## START ITERATION NO.   6 ##########                           
 
     6 *** Differential density matrix. DCOVLP     = 0.9997
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.09869403s
+>>> Total CPU time : 0.09233096s
 
 ########## END ITERATION NO.   6 ##########                           
 
-It.    6    -10.05330474007      3.24D-07 -7.65D-05  6.67D-05   DIIS   5    0.09869403s   LL                       
+It.    6    -10.05330474005      3.24D-07 -7.65D-05  6.67D-05   DIIS   5    0.09233096s   LL                       
 
 ########## START ITERATION NO.   7 ##########                           
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.09308100s
+>>> Total CPU time : 0.10255700s
 
 ########## END ITERATION NO.   7 ##########                           
 
-It.    7    -10.05330474116      1.09D-09  4.46D-06  2.82D-06   DIIS   6    0.09308100s   LL                       
+It.    7    -10.05330474114      1.09D-09  4.46D-06  2.82D-06   DIIS   6    0.10255700s   LL                       
 
 ########## START ITERATION NO.   8 ##########                           
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.08299899s
+>>> Total CPU time : 0.10948902s
 
 ########## END ITERATION NO.   8 ##########                           
 
-It.    8    -10.05330474116      2.28D-12 -2.97D-07  2.54D-07   DIIS   7    0.08299899s   LL                       
+It.    8    -10.05330474114      2.30D-12 -2.97D-07  2.54D-07   DIIS   7    0.10948902s   LL                       
 
 ########## START ITERATION NO.   9 ##########                           
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.08137399s
+>>> Total CPU time : 0.11348903s
 
 ########## END ITERATION NO.   9 ##########                           
 
-It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08137399s   LL                       
+It.    9    -10.05330474114      2.66D-14  2.70D-08  1.84D-08   DIIS   7    0.11348903s   LL                       
 
 
                                    SCF - CYCLE
@@ -1428,15 +1434,15 @@ It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -14.81458280017      0.00D+00  0.00D+00  0.00D+00               0.00116500s   Bare nuclei              
-It.    2    -9.793268686018     -5.02D+00  4.45D+00  1.42D+00               0.10945500s   LL                       
-It.    3    -10.05024232279      2.57D-01 -2.96D-01  1.18D-01   DIIS   2    0.10055901s   LL                       
-It.    4    -10.05326971325      3.03D-03 -2.45D-02  1.21D-02   DIIS   3    0.09510699s   LL                       
-It.    5    -10.05330441622      3.47D-05 -1.46D-03  1.06D-03   DIIS   4    0.09933302s   LL                       
-It.    6    -10.05330474007      3.24D-07 -7.65D-05  6.67D-05   DIIS   5    0.09869403s   LL                       
-It.    7    -10.05330474116      1.09D-09  4.46D-06  2.82D-06   DIIS   6    0.09308100s   LL                       
-It.    8    -10.05330474116      2.28D-12 -2.97D-07  2.54D-07   DIIS   7    0.08299899s   LL                       
-It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08137399s   LL                       
+It.    1    -14.81458280010      0.00D+00  0.00D+00  0.00D+00               0.00109600s   Bare nuclei              
+It.    2    -9.793268686042     -5.02D+00  4.45D+00  1.42D+00               0.09754400s   LL                       
+It.    3    -10.05024232278      2.57D-01 -2.96D-01  1.18D-01   DIIS   2    0.08596900s   LL                       
+It.    4    -10.05326971323      3.03D-03 -2.45D-02  1.21D-02   DIIS   3    0.08286899s   LL                       
+It.    5    -10.05330441620      3.47D-05 -1.46D-03  1.06D-03   DIIS   4    0.08570099s   LL                       
+It.    6    -10.05330474005      3.24D-07 -7.65D-05  6.67D-05   DIIS   5    0.09233096s   LL                       
+It.    7    -10.05330474114      1.09D-09  4.46D-06  2.82D-06   DIIS   6    0.10255700s   LL                       
+It.    8    -10.05330474114      2.30D-12 -2.97D-07  2.54D-07   DIIS   7    0.10948902s   LL                       
+It.    9    -10.05330474114      2.66D-14  2.70D-08  1.84D-08   DIIS   7    0.11348903s   LL                       
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
@@ -1447,13 +1453,13 @@ It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -12.699190782660940
+   Electronic energy                        :    -12.699190782641093
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      2.645886041500000
 
    Sum of all contributions to the energy
-   Total energy                             :    -10.053304741160940
+   Total energy                             :    -10.053304741141092
 
 
                                    Eigenvalues
@@ -1462,15 +1468,15 @@ It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -2.786345262712  ( 2)      -1.322888920020  ( 2)
+   -2.786345262739  ( 2)      -1.322888919991  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   -0.177182351390  ( 2)      -0.127428118768  ( 2)      -0.127424862445  ( 2)      -0.085907410586  ( 2)      -0.004100589484  ( 2)
-   -0.000367291234  ( 2)      -0.000362866509  ( 2)       0.089108076907  ( 2)       0.289494798231  ( 2)       0.289503324964  ( 2)
-    0.318214778427  ( 2)       0.318222172896  ( 2)       0.371467711090  ( 2)       0.803297681718  ( 2)       0.803344687071  ( 2)
-    0.899515508797  ( 2)       1.177389716459  ( 2)       1.320225692042  ( 2)       2.060762153985  ( 2)       2.060853012979  ( 2)
-    2.701022484878  ( 2)       5.148815491616  ( 2)       5.149331187696  ( 2)       5.442532753050  ( 2)       6.311811269616  ( 2)
-    8.516134583032  ( 2)      17.449630012634  ( 2)      51.386326225089  ( 2)      62.134337748726  ( 2)     202.176433197961  ( 2)
- 1173.357500512171  ( 2)
+   -0.177182351380  ( 2)      -0.127427867347  ( 2)      -0.127425113820  ( 2)      -0.085907410585  ( 2)      -0.004100589321  ( 2)
+   -0.000366914397  ( 2)      -0.000363243450  ( 2)       0.089108076937  ( 2)       0.289494885472  ( 2)       0.289503237766  ( 2)
+    0.318214936818  ( 2)       0.318222014468  ( 2)       0.371467711143  ( 2)       0.803303910824  ( 2)       0.803338462244  ( 2)
+    0.899515506284  ( 2)       1.177389716596  ( 2)       1.320225692141  ( 2)       2.060774087253  ( 2)       2.060841081525  ( 2)
+    2.701022483654  ( 2)       5.148848168496  ( 2)       5.149298602713  ( 2)       5.442532659066  ( 2)       6.311811268811  ( 2)
+    8.516134583064  ( 2)      17.449630012616  ( 2)      51.386326225065  ( 2)      62.134337748781  ( 2)     202.176433197934  ( 2)
+ 1173.357500512147  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :    -0.17718235 au (symmetry E1 )
@@ -1486,27 +1492,27 @@ It.    9    -10.05330474116      3.55D-15  2.70D-08  1.84D-08   DIIS   7    0.08
 
  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 2330, majflt: 0, nvcsw: 102, nivcsw: 461, maxrss: 8114176
+>>>> Node 0, utime: 0, stime: 0, minflt: 2187, majflt: 0, nvcsw: 104, nivcsw: 56, maxrss: 7561216
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :       440.23
+  Mean allocation size (Mb) :       139.57
   
   Largest          10  allocations
   
-      953.67 Mb at subroutine unknown                                    for WORK in PSIDHF                            
-      953.67 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
-      953.67 Mb at subroutine unknown                                    for WORK in GMOTRA - part 2                   
-      953.67 Mb at subroutine unknown                                    for WORK in GMOTRA                            
-      953.67 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
-      953.67 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+      488.28 Mb at subroutine unknown                                    for WORK in PSIDHF                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
         0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
         0.14 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
         0.14 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
         0.07 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
   
-  Peak memory usage    (Mb) :       954.00
+  Peak memory usage    (Mb) :       488.00
        reached at subroutine : unknown                                   
               for variable   : WORK in PSIDHF                            
   
