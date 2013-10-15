@@ -98,11 +98,9 @@ C
 #ifdef MOD_INTEREST
       IF(MDIRAC) call initialize_interest
 #endif
-#ifdef MOD_ECP
 C     Start RECP integral     
 C     ===================
       IF (ECPCALC) CALL RECP
-#endif
 
 #ifdef BUILD_GEN1INT
 !     test suite of gen1int interface
