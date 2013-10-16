@@ -4220,7 +4220,8 @@ C
               IPOS=IPOS+1
              ENDDO
              ENDDO
-             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,IDUMMY,.TRUE.,2)
+             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,
+     &                    IDUMMY,.TRUE.,IPRSCF)
               IPOS=0
               DO II=1,NBO
                 EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
