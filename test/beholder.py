@@ -1,6 +1,8 @@
 
 """
-    Beholder - lightweight regression testing
+    Beholder - regression test library for lazy people.
+
+    Version X.Y
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
@@ -28,20 +30,38 @@ class TestRun():
         os.chdir(self.work_dir)
 
     #---------------------------------------------------------------------------
-    def execute(self, command, success_message=''):
+    def execute(self,
+                command,
+                success_message='',
+                success_file_name='',
+                stdout_file_name='',
+                stderr_means_crash=True):
         try:
             process = subprocess.Popen(shlex.split(command),
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
             stdout, stderr = process.communicate()
-            if stderr != '':
-                sys.stderr.write('ERROR: crash during %s\n' % command)
-                sys.exit(-1)
-            if success_message != '':
-                if success_message not in stdout:
+            if stderr_means_crash:
+                # some codes write to stderr even if calculation is successful
+                if stderr != '':
                     sys.stderr.write('ERROR: crash during %s\n' % command)
                     sys.exit(-1)
+            if success_message != '':
+                if success_file_name == '':
+                    if success_message not in stdout:
+                        sys.stderr.write('ERROR: crash during %s\n' % command)
+                        sys.exit(-1)
+                else:
+                    f = open(success_file_name, 'r')
+                    if success_message not in f.read():
+                        sys.stderr.write('ERROR: crash during %s\n' % command)
+                        sys.exit(-1)
+                    f.close()
+            if stdout_file_name != '':
+                f = open(stdout_file_name, 'w')
+                f.write(stdout)
+                f.close()
         except OSError:
             sys.stderr.write('ERROR: could not execute command %s\n' % command)
             sys.exit(-1)

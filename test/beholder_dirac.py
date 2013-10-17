@@ -1,15 +1,5 @@
 
-"""
-    Beholder - lightweight regression testing
-
-    Copyright (c) 2013, Radovan Bast (lastname at kth.se)
-    Licensed under the GNU Lesser General Public License.
-
-    For documentation see https://github.com/rbast/beholder
-"""
-
 import os
-
 from beholder import TestRun
 
 class DiracTestRun(TestRun):
