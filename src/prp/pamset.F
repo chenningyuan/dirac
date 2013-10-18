@@ -317,7 +317,7 @@ CJTH check this
 ! so pcm_energy_driver is not called...
 ! fao is the AO density matrix
            call compute_mep_asc(fao, work(kfree), lfree)
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver to get '//
      &                    'J + X(D) contribution.'
            allocate(fock_pcm(ntbas(0), ntbas(0), nz))
            fock_pcm = 0.0d0

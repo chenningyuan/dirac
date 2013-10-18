@@ -45,13 +45,19 @@ module pcm_write
         if (pcmmod_dospf) then
           write(print_here, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
         end if
+
+        if (pcmmod_skipoit) then
+          write(print_here, *) '  5: Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
+        else
+          write(print_here, *) '  5: Form One-Index Transformed ASC in a Linear Response calculation.'
+        end if
       
         if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-          write(print_here, *) '  5: Print potentials at tesserae representative points.'
+          write(print_here, *) '  6: Print potentials at tesserae representative points.'
         else if (pcmmod_print > 10) then
-          write(print_here, *) '  5: Print potentials and charges at tesserae representative points.'
+          write(print_here, *) '  6: Print potentials and charges at tesserae representative points.'
         else
-          write(print_here, *) '  5: Do not print potentials and charges.'
+          write(print_here, *) '  6: Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
       
@@ -82,13 +88,19 @@ module pcm_write
         if (pcmmod_dospf) then
           write(*, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
         end if
+
+        if (pcmmod_skipoit) then
+          write(*, *) '  5: Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
+        else
+          write(*, *) '  5: Form One-Index Transformed ASC in a Linear Response calculation.'
+        end if
       
         if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-          write(*, *) '  5: Print potentials at tesserae representative points.'
+          write(*, *) '  6: Print potentials at tesserae representative points.'
         else if (pcmmod_print > 10) then
-          write(*, *) '  5: Print potentials and charges at tesserae representative points.'
+          write(*, *) '  6: Print potentials and charges at tesserae representative points.'
         else
-          write(*, *) '  5: Do not print potentials and charges.'
+          write(*, *) '  6: Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
       
