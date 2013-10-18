@@ -536,9 +536,9 @@ contains
 
 !     allocate saop density matrices
       if (dft_cfg_saop) then
-         allocate(dmat_saop_outer(mat_dim*mat_dim))
+         allocate(dmat_saop_outer(mat_dim*mat_dim*nr_quaternion_blocks))
          if (dft_cfg_saop_with_response_part) then
-            allocate(dmat_saop_resp(mat_dim*mat_dim))
+            allocate(dmat_saop_resp(mat_dim*mat_dim*nr_quaternion_blocks))
          end if
          if (mo_eigenvalues_available .and. mo_coef_available) then
             dft_cfg_saop_is_active = .true.
