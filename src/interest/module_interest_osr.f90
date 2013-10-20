@@ -1,35 +1,43 @@
-! -------------------------------------------------------------------------
+! ------------------------------------------------------------------------------------
+!
+! Program:      Dirac 
 !
 ! Library:      InteRest
 !
-! File:         module_interest_osr.f90 
+! Module:       module_interest_osr.f90 
 !
-! Licensing:    Copyright 2010 Michal Repisky, and Kenneth Ruud
+! Description:  InteRest library routine 
 !
-!               This file is part of InteRest.
+! Contains:     
 !
-!               InteRest is free software: you can redistribute it and/or modify
-!               it under the terms of the GNU Lesse General Public License as published by
-!               the Free Software Foundation, either version 3 of the License, or
-!               (at your option) any later version.
-!               
-!               InteRest is distributed in the hope that it will be useful,
-!               but WITHOUT ANY WARRANTY; without even the implied warranty of
-!               MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!               GNU Lesser General Public License for more details.
-!               
-!               You should have received a copy of the GNU Lesser General Public License
-!               along with InteRest.  If not, see <http://www.gnu.org/licenses/>.
-!
-! Description:  Performing integral calculations over normalized cartesian/spherical
-!               unbalanced, or kinetically/magnetically balanced gaussian type functions
+! Licensing:    dirac_copyright_start
+!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     All Rights Reserved.
+!                     
+!                     This source code is part of the DIRAC program package.
+!                     It is provided under a written license and may be used,
+!                     copied, transmitted, or stored only in accordance to the
+!                     conditions of that written license.
+!                     
+!                     In particular, no part of the source code or compiled modules may
+!                     be distributed outside the research group of the license holder.
+!                     This means also that persons (e.g. post-docs) leaving the research
+!                     group of the license holder may not take any part of Dirac,
+!                     including modified files, with him/her, unless that person has
+!                     obtained his/her own license.
+!                     
+!                     For information on how to get a license, as well as the
+!                     author list and the complete list of contributors to the
+!                     DIRAC program, see: http://dirac.chem.vu.nl
+!               dirac_copyright_end
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
-! Revision:     2.0   
+! Logs:         
 !
-! -------------------------------------------------------------------------
-
+! Comments:     
+!                            
+! ------------------------------------------------------------------------------------
 module module_interest_osr
   implicit none
 

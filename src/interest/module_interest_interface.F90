@@ -4,8 +4,7 @@
 !
 ! Module:       module_interest_interface.f90 
 !
-! Description:  - interfacing basic data between Dirac & InteRest program 
-!               - providing two- and four-center cartesian integrals over RKB/RMB balanced basis
+! Description:  - interfacing basic data between Dirac & InteRest programs 
 !
 ! Contains:     
 !
