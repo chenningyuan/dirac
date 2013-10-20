@@ -4310,7 +4310,8 @@ CMI   ... (quaternion) Jacobi diagonalization routine
           IPOS=IPOS+1
         ENDDO
         ENDDO
-        CALL QJACOBI(WORK(KSMAT),WORK(KVMAT),NS,1,0,IDUMMY,.TRUE.,2)
+        CALL QJACOBI(WORK(KSMAT),WORK(KVMAT),NS,1,0,IDUMMY,
+     &               .TRUE.,IPRINT)
         IPOS=0
         DO II=1,NS
           EIG(II)=WORK(KSMAT+(NS*(II-1)+II-1)) ! extract eigenvalues
@@ -6305,7 +6306,8 @@ C
             ENDIF
 #ifdef MOD_UNRELEASED
           ELSE
-            CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,IDUMMY,.TRUE.,2)
+            CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
+     &                   IDUMMY,.TRUE.,IPRHAM)
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
@@ -6358,7 +6360,8 @@ C
             ENDIF
 #ifdef MOD_UNRELEASED
           ELSE
-            CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,.TRUE.,2)
+            CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
+     &                   .TRUE.,IPRHAM)
             DO II=1,NS
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
