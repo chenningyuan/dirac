@@ -1,2 +1,8 @@
-interest.inp H2O.mol 
-hermit.inp   H2O.mol 
+regular
+
+hermit_ll.inp   H2O.mol 
+hermit_sl.inp   H2O.mol 
+hermit_ss.inp   H2O.mol 
+interest_ll.inp H2O.mol 
+interest_sl.inp H2O.mol 
+interest_ss.inp H2O.mol 
