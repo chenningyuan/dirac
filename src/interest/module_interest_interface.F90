@@ -102,7 +102,6 @@ MODULE MODULE_INTEREST_INTERFACE
      type type_gto
           integer :: index
           integer :: offset
-          integer :: worker
           integer :: lvalue
           integer :: origin
           integer :: sdegen 
@@ -175,7 +174,6 @@ CONTAINS
            i=i+1
            gto(i) = type_gto( ij,                      &
                               ij,                      &
-                              0,                       &
                               nhkt(i),                 &
                               ncent(i),                & 
                               (2*nhkt(i)-1),           &
@@ -190,10 +188,9 @@ CONTAINS
 
     !> temporary print ... 
        do i=1,size(gto)
-         write(6,'(1x,6(a,i3,3x),2(a,d15.5,3x))') ' i = ',i,                             &
+         write(6,'(1x,5(a,i3,3x),2(a,d15.5,3x))') ' i = ',i,                             &
                                                   ' index  = ',     gto(i)%index,        &
                                                   ' offset = ',     gto(i)%offset,       &
-                                                  ' worker = ',     gto(i)%worker,       &
                                                   ' lvalue = ',     gto(i)%lvalue,       &
                                                   ' origin = ',     gto(i)%origin,       &
                                                   ' exponent = ',   gto(i)%exponent(1),  &
@@ -269,7 +266,6 @@ CONTAINS
        do i=1,nr_shells
         call MPI_bcast( gto(i)%index,          1, MPI_integer, 0, MPI_comm_world, ier)
         call MPI_bcast( gto(i)%offset,         1, MPI_integer, 0, MPI_comm_world, ier)
-        call MPI_bcast( gto(i)%worker,         1, MPI_integer, 0, MPI_comm_world, ier)
         call MPI_bcast( gto(i)%lvalue,         1, MPI_integer, 0, MPI_comm_world, ier)
         call MPI_bcast( gto(i)%origin,         1, MPI_integer, 0, MPI_comm_world, ier)
         call MPI_bcast( gto(i)%sdegen,         1, MPI_integer, 0, MPI_comm_world, ier)
