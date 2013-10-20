@@ -45,20 +45,20 @@ MODULE MODULE_INTEREST_INTERFACE
 
   implicit none
 
+  public transfer_gto_info
   public initialize_interest 
   public initialize_interest_herd 
   public process_overlap_integrals_2comp 
   public process_overlap_integrals_4comp 
-  public process_two_electron_integrals_4comp
-  public process_two_electron_integrals_2comp
   public process_kinetic_energy_integrals_2comp 
   public process_kinetic_energy_integrals_4comp 
   public process_nuclear_attraction_integrals_2comp
   public process_nuclear_attraction_integrals_4comp
 
-  public process_two_electron_integrals_4comp_slaves
+  public process_two_electron_integrals_2comp
+  public process_two_electron_integrals_4comp
   public process_two_electron_integrals_2comp_slaves
-  public transfer_gto_info
+  public process_two_electron_integrals_4comp_slaves
 
   private
 
@@ -144,7 +144,7 @@ CONTAINS
     !> test if the large component basis is uncontracted
        if( nplrg.ne.nlarge )then
          write(6,*) ' Error: contracted basis set found => stop!'
-         write(6,*) ' Note:  uncontracted basis sets are only supported'
+         write(6,*) ' Note: .MDIRAC does not support contracted basis sets'
          stop
        endif
     !> end
@@ -187,15 +187,18 @@ CONTAINS
     !> end
 
     !> temporary print ... 
-       do i=1,size(gto)
-         write(6,'(1x,5(a,i3,3x),2(a,d15.5,3x))') ' i = ',i,                             &
-                                                  ' index  = ',     gto(i)%index,        &
-                                                  ' offset = ',     gto(i)%offset,       &
-                                                  ' lvalue = ',     gto(i)%lvalue,       &
-                                                  ' origin = ',     gto(i)%origin,       &
-                                                  ' exponent = ',   gto(i)%exponent(1),  &
-                                                  ' coefficient = ',gto(i)%coefficient(1)
-       enddo
+      !do i=1,size(gto)
+      !  write(6,'(1x,5(a,i3,3x),2(a,d15.5,3x))') ' i = ',i,                             &
+      !                                           ' index  = ',     gto(i)%index,        &
+      !                                           ' offset = ',     gto(i)%offset,       &
+      !                                           ' lvalue = ',     gto(i)%lvalue,       &
+      !                                           ' origin = ',     gto(i)%origin,       &
+      !                                           ' exponent = ',   gto(i)%exponent(1),  &
+      !                                           ' coefficient = ',gto(i)%coefficient(1)
+      !enddo
+
+       !> initialize InteRest integral package 
+       call interest_initialize(.true.)
 
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
@@ -232,13 +235,11 @@ CONTAINS
     integer(kind=mpi_address_kind) :: disp(9)                      !mpi_address_kind is always = 8
     integer                        :: blocklen(9), typex(9)
     integer                        :: newtype
-#endif
   
 
     !> initialize InteRest integral package 
-    call interest_initialize()
+    call interest_initialize(.false.)
 
-#ifdef VAR_MPI
     !> broadcast constants 
        !> define the local absolute address of each element within a derived data type
        call mpi_bcast(constant%alpha, 1, mpi_real8,0,mpi_comm_world,ier)
@@ -563,7 +564,7 @@ CONTAINS
       enddo
     enddo    
 
-  CONTAINS 
+    CONTAINS 
 
     subroutine store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
       !> input 
@@ -594,7 +595,7 @@ CONTAINS
 
 
 ! ------------------------------------------------------------------------------------
-!> note: on input,  G and P must be in the cartesian GTOs 
+!> note: on input, G and P must be in the cartesian GTOs 
   SUBROUTINE process_two_electron_integrals_2comp( Gmat, Pmat, intflg, hfxfac ) 
 
     !> input
@@ -609,9 +610,8 @@ CONTAINS
     real(8), intent(out) :: Gmat(nrow,nrow,4) 
 
     !> local
-    real(8) :: fll
-    integer :: i, j, ier
-
+    real(8)                 :: fll
+    integer                 :: i, j, ier
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
 
@@ -648,7 +648,7 @@ CONTAINS
 #endif
 
     !> call core InteRest routine (sequential part)
-    call process_two_electron_integrals_2comp_1x( dG, dP, hfxfac )
+    call two_electron_integrals_2comp_1x( dG, dP, hfxfac )
 
 #ifdef VAR_MPI
     !> collect the final two-electron Fock matrix
@@ -674,8 +674,44 @@ CONTAINS
 
   END SUBROUTINE
 
+
+
 ! ------------------------------------------------------------------------------------
-  SUBROUTINE process_two_electron_integrals_2comp_1x( dG, dP, hfxfac ) 
+!>
+  SUBROUTINE process_two_electron_integrals_2comp_slaves( ) 
+
+    !> slave local
+    integer :: ier, i
+    real(8) :: hfxfac
+    
+    complex(8), allocatable :: dP(:,:,:,:)
+    complex(8), allocatable :: dG(:,:,:,:)
+
+
+#ifdef VAR_MPI
+    allocate( dP(2,2,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
+    allocate( dG(2,2,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
+
+    !> receive the AO-density matrix
+    call mpi_bcast( hfxfac,    1,           mpi_real8,          0, mpi_comm_world, ier )
+    call mpi_bcast( dP,        4*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
+
+    !> call core InteRest routine (sequential part)
+    call two_electron_integrals_2comp_1x( dG, dP, hfxfac )
+
+    !> send the two-electron Fock matrix of a particular slave upwards to the master
+    call mpi_reduce( dG, mpi_in_place, 4*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
+
+    deallocate( dP )
+    deallocate( dG )
+#endif
+
+  END SUBROUTINE
+
+
+
+! ------------------------------------------------------------------------------------
+  SUBROUTINE two_electron_integrals_2comp_1x( dG, dP, hfxfac ) 
 
     use module_interest_eri
 
@@ -888,13 +924,11 @@ CONTAINS
     real(8), intent(out) :: Gmat(2*nrow,2*nrow,4) 
 
     !> local
-    integer :: i, j, ier
-    real(8) :: fll, fsl, fss 
-
+    integer                 :: i, j, ier
+    real(8)                 :: fll, fsl, fss 
+    character(len=4)        :: eri_class
     complex(8), allocatable :: dP(:,:,:,:)
     complex(8), allocatable :: dG(:,:,:,:)
-
-    character(len=4) :: eri_class = 'ssss'
 
 
     !> init for eri classes
@@ -946,8 +980,8 @@ CONTAINS
 #endif
 
     !> call core InteRest routine (sequential part)
-   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
-    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+   !call two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+    call two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
 
 #ifdef VAR_MPI
     !> collect the final two-electron Fock matrix
@@ -1012,8 +1046,8 @@ CONTAINS
     call mpi_bcast( dP,        16*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
 
     !> call core InteRest routine (sequential part)
-   !call process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
-    call process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
+   !call two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac )
+    call two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac )
 
     !> send the two-electron Fock matrix of a particular slave upwards to the master
     call mpi_reduce( dG, mpi_in_place, 16*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
@@ -1024,39 +1058,11 @@ CONTAINS
 
   END SUBROUTINE
 
-  SUBROUTINE process_two_electron_integrals_2comp_slaves( ) 
 
-    !> slave local
-    integer :: ier, i
-    real(8) :: hfxfac
-    
-    complex(8), allocatable :: dP(:,:,:,:)
-    complex(8), allocatable :: dG(:,:,:,:)
-
-
-#ifdef VAR_MPI
-    allocate( dP(2,2,nrow,nrow) ); dP = dcmplx( 0.0d0, 0.0d0 ) 
-    allocate( dG(2,2,nrow,nrow) ); dG = dcmplx( 0.0d0, 0.0d0 ) 
-
-    !> receive the AO-density matrix
-    call mpi_bcast( hfxfac,    1,           mpi_real8,          0, mpi_comm_world, ier )
-    call mpi_bcast( dP,        4*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
-
-    !> call core InteRest routine (sequential part)
-    call process_two_electron_integrals_2comp_1x( dG, dP, hfxfac )
-
-    !> send the two-electron Fock matrix of a particular slave upwards to the master
-    call mpi_reduce( dG, mpi_in_place, 4*nrow*nrow, mpi_double_complex, mpi_sum, 0, mpi_comm_world, ier )
-
-    deallocate( dP )
-    deallocate( dG )
-#endif
-
-  END SUBROUTINE
 
 ! ------------------------------------------------------------------------------------
 !>
-  SUBROUTINE process_two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac ) 
+  SUBROUTINE two_electron_integrals_4comp_1x( dG, dP, eri_class, hfxfac ) 
 
     use module_interest_eri
 
@@ -1608,7 +1614,7 @@ CONTAINS
 
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE process_two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac ) 
+  SUBROUTINE two_electron_integrals_4comp_4x( dG, dP, eri_class, hfxfac ) 
 
     use module_interest_eri
 
@@ -2936,7 +2942,7 @@ CONTAINS
 
     do i=1,size(gto)
       j = gto(i)%cdegen
-      cart2lval((1+gto(i)%offset):(j+gto(i)%offset))                                         = gto(i)%lvalue
+      cart2lval((1+gto(i)%offset):(j+gto(i)%offset)) = gto(i)%lvalue
     enddo
 
   END SUBROUTINE

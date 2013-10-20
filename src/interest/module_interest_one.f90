@@ -38,10 +38,12 @@
 ! Comments:     
 !                            
 ! ------------------------------------------------------------------------------------
-  subroutine interest_initialize()
+  subroutine interest_initialize( info )
 
     use module_interest_osr
     implicit none
+    !> input
+    logical :: info
 
     if( is_interest_initialized )then
       return
@@ -49,10 +51,12 @@
      !write(6,'(2x,a)')'Integral module InteRest was already initialized'
      !write(6,*)
     else
-      write(6,*)
-      write(6,'(2x,a)')'Integral module InteRest is initialized'
-      call print_interest_git_revision_info
-      write(6,*)
+      if( info )then
+        write(6,*)
+        write(6,'(2x,a)')'Integral module InteRest is initialized'
+        call print_interest_git_revision_info
+        write(6,*)
+      endif
       call interest_osr_initialize()
       is_interest_initialized = .true.
     endif
