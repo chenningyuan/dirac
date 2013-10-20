@@ -40,9 +40,11 @@ MODULE module_interest_eri
   public interest_eri_rkb
   public interest_eri_test
 
+  private
+
   interface interest_eri
-    module procedure interest_eri_old
-    module procedure interest_eri_new
+    module procedure interest_eri_4c_old
+    module procedure interest_eri_4c_new
   end interface
 
   interface interest_eri_rkb
@@ -52,138 +54,134 @@ MODULE module_interest_eri
 CONTAINS
 
 ! --------------------------------------------------------------------------
-!>on output: (5,c,d,5,a,b)
-  SUBROUTINE interest_eri_old(rkb,                                            &
-                              factor,fint,nint,                               &
-                              la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
-                              lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
+!>
+  SUBROUTINE interest_eri_4c_old(class,                     &
+                                 factor,fint,nint,          &
+                                 la,alpha,ca,ax,ay,az,anorm,&
+                                 lb,beta ,cb,bx,by,bz,bnorm,&
+                                 lc,gamma,cc,cx,cy,cz,cnorm,&
+                                 ld,delta,cd,dx,dy,dz,dnorm )
 
     !-- output --!
     integer, intent(out) :: nint
     real(8), intent(out) :: fint(*)
     !-- input --!
-    logical, intent(in) :: rkb 
-    real(8), intent(in) :: factor 
-    integer, intent(in) :: la,lb,lc,ld
-    real(8), intent(in) :: alpha,ax,ay,az,anorm
-    real(8), intent(in) :: beta, bx,by,bz,bnorm
-    real(8), intent(in) :: gamma,cx,cy,cz,cnorm
-    real(8), intent(in) :: delta,dx,dy,dz,dnorm
+    character(len=4), intent(in) :: class
+    real(8),          intent(in) :: factor 
+    integer,          intent(in) :: la,lb,lc,ld
+    integer,          intent(in) :: ca,cb,cc,cd
+    real(8),          intent(in) :: alpha,ax,ay,az,anorm
+    real(8),          intent(in) :: beta, bx,by,bz,bnorm
+    real(8),          intent(in) :: gamma,cx,cy,cz,cnorm
+    real(8),          intent(in) :: delta,dx,dy,dz,dnorm
     !-- local --!
     integer :: n1,n2,nab,ncd
-    real(8) :: rxab,ryab,rzab,rrab
-    real(8) :: rxcd,rycd,rzcd,rrcd
-    real(8) :: pexp,rexp,rxpa,rypa,rzpa
-    real(8) :: qexp,sexp,rxqc,ryqc,rzqc
-    real(8) :: px,py,pz,qx,qy,qz
-    real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
-    real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
-    real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 2.0d0*dsqrt(pi*pi*pi*pi*pi)
+    real(8) :: rxab,ryab,rzab
+    real(8) :: rxcd,rycd,rzcd
+    real(8) :: rxpa,rypa,rzpa
+    real(8) :: rxqc,ryqc,rzqc
+    real(8) :: rxwp,rywp,rzwp
+    real(8) :: rxwq,rywq,rzwq
+    real(8) :: fbra(5*441*441)
+    real(8) :: fket(5*441*441)
+    real(8) :: cntr,tval,fnbra,fdbra,fnket,fdket
+
+    call abcd(factor,                       &
+              alpha,ca,ax,ay,az,anorm,      &
+              beta, cb,bx,by,bz,bnorm,      &
+              gamma,cc,cx,cy,cz,cnorm,      &
+              delta,cd,dx,dy,dz,dnorm,      &
+              cntr,tval,                    &
+              fnbra,fdbra,fnket,fdket,      &
+              rxab,ryab,rzab,rxcd,rycd,rzcd,&
+              rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+              rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
 
 
-
-    !-- AB-pair --!
-    rxab = ax - bx
-    ryab = ay - by
-    rzab = az - bz
-    rrab = rxab*rxab + ryab*ryab + rzab*rzab
-
-    pexp = alpha + beta
-    if( rrab.lt.1.d-12 )then
-      px    = ax 
-      py    = ay
-      pz    = az
-      rxpa  = 0.0d0 
-      rypa  = 0.0d0
-      rzpa  = 0.0d0
-      rxab  = 0.0d0  
-      ryab  = 0.0d0  
-      rzab  = 0.0d0  
-      cntab = anorm*bnorm 
-    else
-      px    = ( alpha*ax + beta*bx )/pexp
-      py    = ( alpha*ay + beta*by )/pexp
-      pz    = ( alpha*az + beta*bz )/pexp
-      rxpa  = px - ax
-      rypa  = py - ay
-      rzpa  = pz - az
-      rexp  = alpha*beta/pexp
-      cntab = anorm*bnorm*dexp(-rexp*rrab)
-    endif
-
-
-    !-- CD-pair --!
-    rxcd = cx - dx
-    rycd = cy - dy
-    rzcd = cz - dz
-    rrcd = rxcd*rxcd + rycd*rycd + rzcd*rzcd
-
-    qexp = gamma + delta
-    if( rrcd.lt.1.d-12 )then
-      qx    = cx 
-      qy    = cy
-      qz    = cz
-      rxqc  = 0.0d0 
-      ryqc  = 0.0d0
-      rzqc  = 0.0d0
-      rxcd  = 0.0d0  
-      rycd  = 0.0d0  
-      rzcd  = 0.0d0  
-      cntcd = cnorm*dnorm 
-    else
-      qx    = ( gamma*cx + delta*dx )/qexp
-      qy    = ( gamma*cy + delta*dy )/qexp
-      qz    = ( gamma*cz + delta*dz )/qexp
-      rxqc  = qx - cx
-      ryqc  = qy - cy
-      rzqc  = qz - cz
-      sexp  = gamma*delta/qexp
-      cntcd = cnorm*dnorm*dexp(-sexp*rrcd)
-    endif
-
-
-    !-- ABCD --!
-    psq = pexp+qexp
-    ppq = pexp*qexp
-    rho = ppq/psq
-
-    rxpq = px - qx
-    rypq = py - qy
-    rzpq = pz - qz
-    tval = rho*((rxpq*rxpq)+(rypq*rypq)+(rzpq*rzpq))
-    cntr = pi52*(1.0d0/dsqrt(psq))*(1.0d0/ppq)*cntab*cntcd*factor
-
-    fnbra = qexp/psq
-    fnket = pexp/psq 
-    fdbra = 1.0d0/(2.0d0*pexp)
-    fdket = 1.0d0/(2.0d0*qexp)
-    rxwp  = ( pexp*px + qexp*qx )/psq - px
-    rywp  = ( pexp*py + qexp*qy )/psq - py
-    rzwp  = ( pexp*pz + qexp*qz )/psq - pz
-    rxwq  = ( pexp*px + qexp*qx )/psq - qx
-    rywq  = ( pexp*py + qexp*qy )/psq - qy
-    rzwq  = ( pexp*pz + qexp*qz )/psq - qz
-
-
-    if( .not.rkb )then
-      nab  = ncc(la)*ncc(lb)
-      ncd  = ncc(lc)*ncc(ld)
-      call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                         &
-                                     (la  ),(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
-                                     (lc  ),(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
-      call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
-      call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd) 
-    else
-      nab  = ncc(la)*ncc(lb)*5
-      ncd  = ncc(lc)*ncc(ld)*5
-      call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                         &
-                                     (la-1),(la+lb+1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
-                                     (lc-1),(lc+ld+1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
-      call interest_hrr_ket_rkb(fint,max(n2,ncd),max(n1,nab),la,lb,rxab,ryab,rzab,alpha,beta,n2)
-      call interest_hrr_bra_rkb(fint,max(n2,ncd),       nab ,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
-    endif
+    select case(class)
+      !> general => [LL|LL]
+      case('llll')
+          nab = ncc(la)*ncc(lb)
+          ncd = ncc(lc)*ncc(ld)
+          call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                     &
+                                         la,(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                         lc,(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+          call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
+          call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd   ) 
+      !> general => [LL|LL] + [LL|SS] + [SS|LL]
+      case('ssll')
+          nab  = ncc(la)*ncc(lb)
+          ncd  = ncc(lc)*ncc(ld)*5
+          call interest_osr_class_nuclear(n1,n2,fket,cntr,tval,                                         &
+                                         (la  ),(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                         (lc-1),(lc+ld+1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+          call interest_hrr_ket    (fket,max(n2,ncd),nab,la,lb,rxab,ryab,rzab,n2)
+          call interest_hrr_bra_rkb(fket,max(n2,ncd),nab,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
+          !>
+          nab  = ncc(la)*ncc(lb)*5
+          ncd  = ncc(lc)*ncc(ld)
+          call interest_osr_class_nuclear(n1,n2,fbra,cntr,tval,                                         &
+                                         (la-1),(la+lb+1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                         (lc  ),(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+          call interest_hrr_ket_rkb(fbra,ncd,max(n1,nab),la,lb,rxab,ryab,rzab,alpha,beta,n2)
+          call interest_hrr_bra    (fbra,ncd,       nab, lc,ld,rxcd,rycd,rzcd) 
+          call collect_braket(ncc(la)*ncc(lb),ncc(lc)*ncc(ld),fbra,fket,fint)
+      !> general => [LL|LL] + [LL|SS] + [SS|LL] + [SS|SS]
+      case('ssss')
+          nab  = ncc(la)*ncc(lb)*5
+          ncd  = ncc(lc)*ncc(ld)*5
+          call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                         &
+                                         (la-1),(la+lb+1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                         (lc-1),(lc+ld+1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+          call interest_hrr_ket_rkb(fint,max(n2,ncd),max(n1,nab),la,lb,rxab,ryab,rzab,alpha,beta,n2)
+          call interest_hrr_bra_rkb(fint,max(n2,ncd),       nab ,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
+      case default
+          write(6,*)'Error: unknown eri class => stop'; stop 
+    end select
     nint = nab*ncd 
+
+    CONTAINS
+
+    subroutine collect_braket(nab,ncd,fbra,fket,fint)
+      !> input
+      integer, intent(in) :: nab
+      integer, intent(in) :: ncd
+      real(8), intent(in) :: fbra(ncd,5,nab)
+      real(8), intent(in) :: fket(5,ncd,nab)
+      !> input/output
+      real(8), intent(inout) :: fint(5,ncd,5,nab)
+      !> local
+      integer :: i,j,k
+      !>
+      do j=1,nab
+        do k=2,5
+          do i=1,ncd
+            fint(1,i,k,j) = fbra(i,k,j) 
+          enddo
+        enddo
+      enddo
+      !>
+      do j=1,nab
+        do i=1,ncd
+          fint(1,i,1,j) = fket(1,i,j) 
+          fint(2,i,1,j) = fket(2,i,j) 
+          fint(3,i,1,j) = fket(3,i,j) 
+          fint(4,i,1,j) = fket(4,i,j) 
+          fint(5,i,1,j) = fket(5,i,j) 
+        enddo
+      enddo
+      !>
+      do j=1,nab
+        do k=2,5
+          do i=1,ncd
+            fint(2,i,k,j) = 0.0d0
+            fint(3,i,k,j) = 0.0d0
+            fint(4,i,k,j) = 0.0d0
+            fint(5,i,k,j) = 0.0d0
+          enddo
+        enddo
+      enddo
+    end subroutine
 
   END SUBROUTINE
 
@@ -210,7 +208,7 @@ CONTAINS
     !> local
     integer :: index
     integer :: la,lb,lc,ld
-    real(8) :: fint(441*441*25)      !fixme: this value should reconsidered!!!!!!
+    real(8) :: fint(nccx*nccx)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
@@ -224,7 +222,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 2.0d0*dsqrt(pi*pi*pi*pi*pi)
+    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2) 
 
 
     !> AB-pair indexation
@@ -491,11 +489,11 @@ CONTAINS
   END SUBROUTINE
 
 ! -------------------------------------------------------------------------
-  SUBROUTINE interest_eri_new(factor,fint_inp,                                &
-                              la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
-                              lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
-                              lc_inp,gamma_inp,cx_inp,cy_inp,cz_inp,cnorm_inp,&
-                              ld_inp,delta_inp,dx_inp,dy_inp,dz_inp,dnorm_inp )
+  SUBROUTINE interest_eri_4c_new(factor,fint_inp,                                &
+                                 la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
+                                 lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
+                                 lc_inp,gamma_inp,cx_inp,cy_inp,cz_inp,cnorm_inp,&
+                                 ld_inp,delta_inp,dx_inp,dy_inp,dz_inp,dnorm_inp )
 
     !> output
     real(8), intent(out) :: fint_inp(*)
@@ -509,7 +507,7 @@ CONTAINS
     !> local
     integer :: nint,index
     integer :: la,lb,lc,ld
-    real(8) :: fint(441*441)  !todo
+    real(8) :: fint(nccx*nccx)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
@@ -523,7 +521,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 34.986836655249725d0 
+    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2)
 
 
     !> AB-pair indexation
@@ -747,7 +745,7 @@ CONTAINS
     !> local
     integer :: index
     integer :: la,lb,lc,ld
-    real(8) :: fint(441*441*25)     !todo: fixme
+    real(8) :: fint(nccx*nccx)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
@@ -761,8 +759,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    !> pi52 = 2.0d0*dsqrt(pi*pi*pi*pi*pi)
-    real(8), parameter :: pi52 = 34.986836655249725d0 
+    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2)
 
 
     !> AB-pair indexation
@@ -1278,6 +1275,144 @@ CONTAINS
       enddo
     end subroutine
     
+  END SUBROUTINE
+
+! --------------------------------------------------------------------------
+!>
+  SUBROUTINE abcd(factor,                       &
+                  alpha,ca,ax,ay,az,anorm,      &
+                  beta, cb,bx,by,bz,bnorm,      &
+                  gamma,cc,cx,cy,cz,cnorm,      &
+                  delta,cd,dx,dy,dz,dnorm,      &
+                  cntr,tval,                    &
+                  fnbra,fdbra,fnket,fdket,      &
+                  rxab,ryab,rzab,rxcd,rycd,rzcd,&
+                  rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                  rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+
+    !-- input --!
+    real(8), intent(in) :: factor 
+    integer, intent(in) :: ca,cb,cc,cd
+    real(8), intent(in) :: alpha,ax,ay,az,anorm
+    real(8), intent(in) :: beta, bx,by,bz,bnorm
+    real(8), intent(in) :: gamma,cx,cy,cz,cnorm
+    real(8), intent(in) :: delta,dx,dy,dz,dnorm
+    !-- output --!
+    real(8), intent(out) :: rxab,ryab,rzab
+    real(8), intent(out) :: rxcd,rycd,rzcd
+    real(8), intent(out) :: rxpa,rypa,rzpa
+    real(8), intent(out) :: rxqc,ryqc,rzqc
+    real(8), intent(out) :: rxwp,rywp,rzwp
+    real(8), intent(out) :: rxwq,rywq,rzwq
+    real(8), intent(out) :: cntr,tval,fnbra,fdbra,fnket,fdket
+    !-- local --!
+    logical :: AeqB
+    logical :: CeqD
+    logical :: ABeqCD
+    real(8) :: pexp,rexp
+    real(8) :: qexp,sexp
+    real(8) :: cntab,cntcd
+    real(8) :: px,py,pz,qx,qy,qz
+    real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
+    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2) 
+
+
+    AeqB   = ( ca==cb )
+    CeqD   = ( cc==cd )
+    ABeqCD = ( AeqB .and. CeqD .and. ca==cc )
+
+    !-- AB-pair --!
+    pexp=alpha+beta
+    if( AeqB )then
+      px    = ax 
+      py    = ay
+      pz    = az
+      rxpa  = 0.0d0 
+      rypa  = 0.0d0
+      rzpa  = 0.0d0
+      rxab  = 0.0d0  
+      ryab  = 0.0d0  
+      rzab  = 0.0d0  
+      cntab = anorm*bnorm 
+      AeqB  = .true.
+    else
+      px    = ( alpha*ax + beta*bx )/pexp
+      py    = ( alpha*ay + beta*by )/pexp
+      pz    = ( alpha*az + beta*bz )/pexp
+      rxpa  = px - ax
+      rypa  = py - ay
+      rzpa  = pz - az
+      rxab  = ax - bx
+      ryab  = ay - by
+      rzab  = az - bz
+      rexp  = alpha*beta/pexp
+      cntab = anorm*bnorm*dexp(-rexp*(rxab*rxab+ryab*ryab+rzab*rzab))
+      AeqB  = .true.
+    endif
+
+
+    !-- CD-pair --!
+    qexp=gamma+delta
+    if( CeqD )then
+      qx    = cx 
+      qy    = cy
+      qz    = cz
+      rxqc  = 0.0d0 
+      ryqc  = 0.0d0
+      rzqc  = 0.0d0
+      rxcd  = 0.0d0  
+      rycd  = 0.0d0  
+      rzcd  = 0.0d0  
+      cntcd = cnorm*dnorm 
+    else
+      qx    = ( gamma*cx + delta*dx )/qexp
+      qy    = ( gamma*cy + delta*dy )/qexp
+      qz    = ( gamma*cz + delta*dz )/qexp
+      rxqc  = qx - cx
+      ryqc  = qy - cy
+      rzqc  = qz - cz
+      rxcd  = cx - dx
+      rycd  = cy - dy
+      rzcd  = cz - dz
+      sexp  = gamma*delta/qexp
+      cntcd = cnorm*dnorm*dexp(-sexp*(rxcd*rxcd+rycd*rycd+rzcd*rzcd))
+    endif
+
+
+    !-- ABCD --!
+    psq   = pexp+qexp
+    ppq   = pexp*qexp
+    rho   = ppq/psq
+    fnbra = qexp/psq
+    fnket = pexp/psq 
+    fdbra = 1.0d0/(2.0d0*pexp)
+    fdket = 1.0d0/(2.0d0*qexp)
+    if( ABeqCD )then
+      tval = 0.0d0 
+      rxwp = 0.0d0 
+      rywp = 0.0d0
+      rzwp = 0.0d0
+      rxwq = 0.0d0
+      rywq = 0.0d0
+      rzwq = 0.0d0
+      cntr = pi52*(1.0d0/dsqrt(psq))*(1.0d0/ppq)*cntab*cntcd*factor
+    else
+      rxpq = px - qx
+      rypq = py - qy
+      rzpq = pz - qz
+      tval = rho*((rxpq*rxpq)+(rypq*rypq)+(rzpq*rzpq))
+      cntr = pi52*(1.0d0/dsqrt(psq))*(1.0d0/ppq)*cntab*cntcd*factor
+      rxwq = ( pexp*px + qexp*qx )/psq
+      rywq = ( pexp*py + qexp*qy )/psq
+      rzwq = ( pexp*pz + qexp*qz )/psq
+      rxwp = rxwq - px
+      rywp = rywq - py
+      rzwp = rzwq - pz
+      rxwq = rxwq - qx
+      rywq = rywq - qy
+      rzwq = rzwq - qz
+    endif
+
   END SUBROUTINE
 ! -------------------------------------------------------------------------
 END MODULE

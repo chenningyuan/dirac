@@ -568,39 +568,32 @@ CONTAINS
       enddo
     enddo    
 
-  END SUBROUTINE
+  CONTAINS 
 
-
-
-! ------------------------------------------------------------------------------------
-!> Copy batch A -> matrix B 
-  SUBROUTINE store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
-
-    !> input 
-    integer :: nrkb
-    integer :: ioffset 
-    integer :: joffset 
-    integer :: ida, jda 
-    integer :: idb, jdb
-    real(8) :: A(5,ida,jda)
-
-    !> output
-    real(8) :: B(idb,jdb,nrkb)
-
-    !> local
-    integer :: i
-    integer :: j
-    integer :: k
-
-
-    do k=1,nrkb
-      do j=1,jda
-        do i=1,ida
-          B(ioffset+i,joffset+j,k) = A(k,i,j) 
+    subroutine store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
+      !> input 
+      integer :: nrkb
+      integer :: ioffset 
+      integer :: joffset 
+      integer :: ida, jda 
+      integer :: idb, jdb
+      real(8) :: A(5,ida,jda)
+      !> output
+      real(8) :: B(idb,jdb,nrkb)
+      !> local
+      integer :: i
+      integer :: j
+      integer :: k
+      !>
+      do k=1,nrkb
+        do j=1,jda
+          do i=1,ida
+            B(ioffset+i,joffset+j,k) = A(k,i,j) 
+          enddo
         enddo
       enddo
-    enddo
-     
+    end subroutine
+
   END SUBROUTINE
 
 
