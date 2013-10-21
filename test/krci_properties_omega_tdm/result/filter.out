@@ -1,6 +1,0 @@
-$ERROR 1.E-4
-$IGNORESIGN
-Nlines 7:   * state  1(0g  )         * state
-$ERROR 1.E-3
-$IGNORESIGN
-Nlines 1:1  * state  1(4u  )         * state
