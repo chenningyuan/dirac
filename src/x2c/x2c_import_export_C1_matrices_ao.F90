@@ -25,7 +25,6 @@
 ! written by sknecht feb 2011
 !
 module x2c_import_exportC1
-  use memory_allocator
   use x2cmod_cfg
   use x2c_fio
   use x2c_utils, only: print_x2cmat
@@ -91,7 +90,7 @@ contains
               access='sequential',action='readwrite',position='rewind')
          call dzero(h1_saao,nz*naosh_ls**2)
          i = 0
-         write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
+         write(flabel,'(a7,i4,i1)') 'h1_4cao',1,0
          call x2c_read(flabel,h1_saao,naosh_ls*naosh_ls*nz,fh)
        end if
 
@@ -124,7 +123,7 @@ contains
        end if
 
 !      allocate scratch matrix
-       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
+       allocate(scr1_mat(naosh_ls*naosh_ls*4))
        call dzero(scr1_mat,naosh_ls*naosh_ls*4)
 
 !      c. transform from SO-AO basis to AO-basis (nosym)
@@ -153,7 +152,7 @@ contains
          close(x2c_fh1dirty, status='keep')
        end if
 
-       call dealloc(scr1_mat)
+       deallocate(scr1_mat)
 
   end subroutine x2c_export_mat2C1
 
@@ -224,14 +223,14 @@ contains
        call setdc2(2)
 
 !      allocate pct-matrix
-       call alloc(pctmat,nr_ao_total_x2c*nr_ao_large_x2c*nr_quat, id='pctmat - original')
+       allocate(pctmat(nr_ao_total_x2c*nr_ao_large_x2c*nr_quat))
        pctmat = 0
 
 !      initialize offset
        ioff_pct_mat = 1
 
        do i = 1, nr_fsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',0,i
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),nr_ao_all(i)*nr_ao_l(i)*nr_quat,x2c_funit)
          ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
        end do
@@ -293,7 +292,7 @@ contains
 
 !      c. transform from SO-AO basis to AO-basis (nosym)
 !      -------------------------------------------------
-       call alloc(scrmat,nr_ao_total_x2c*nr_ao_large_x2c*4,id='scrmat for c1 export')
+       allocate(scrmat(nr_ao_total_x2c*nr_ao_large_x2c*4))
        i = x2c_bs_to_fs(0,1)
        do iz = 1, 4
          irepd = x2c_bs_irrep_mat(iz,0)
@@ -318,8 +317,8 @@ contains
 !      -------------------------------------------
        call x2c_write('pctmtaoNOSYM',scrmat,nr_ao_total_x2c*nr_ao_large_x2c*4,x2c_fh1dirty)
 
-       call dealloc(scrmat)
-       call dealloc(pctmat)
+       deallocate(scrmat)
+       deallocate(pctmat)
 
        close(x2c_fh1dirty, status='keep')
 

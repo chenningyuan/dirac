@@ -36,6 +36,9 @@ C***********************************************************************
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
+#ifdef MOD_INTEREST
+      use module_interest_interface
+#endif
 #ifdef MOD_CAP
       use memory
 #endif
@@ -63,7 +66,7 @@ C
 
       CALL QENTER('PAMSET')
       call legacy_lwork_get(LWORK)
-      call alloc(WORK,LWORK,id='WORK in PAMSET')
+      call alloc(WORK,LWORK,id='WORK in PAMSET - 1')
 
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
@@ -82,17 +85,19 @@ C
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
-        IPREAD = IPREAD - 5
+!       IPREAD = IPREAD - 5
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
-        IPREAD = IPREAD + 5
+!       IPREAD = IPREAD + 5
       ENDIF
 C
 C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-
+#ifdef MOD_INTEREST
+      IF(MDIRAC) call initialize_interest
+#endif
 C     Start RECP integral     
 C     ===================
       IF (ECPCALC) CALL RECP
@@ -137,9 +142,11 @@ C
 C     DO4C2C=T : after 4c SCF perform IOTC transformation
 C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
 C
-      CALL GMOTRA(GOFAST,WORK,LWORK)
+      call dealloc(work) ! release memory - particularly because of X2C...
+
+      CALL GMOTRA(GOFAST)
 C
- 10   CONTINUE
+      call alloc(WORK,LWORK,id='WORK in PAMSET - 2')
 C
 C     Set DCB common blocks - second time
 C     ===================================
@@ -149,7 +156,9 @@ C
 C     If semiclassical QED, write density of bare vacuum to file
 C     ==========================================================
 C
+#ifdef MOD_UNRELEASED
       IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
+#endif
 C
 C     Prepare for two-electron integrals
 C     ==================================
@@ -224,6 +233,7 @@ C***********************************************************************
 #include "mxcent.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -296,8 +306,12 @@ C
         DO IFRP = 1,NFSYM
           IBAS(IFRP)    = IBASI
           DO IC = 1,2
-C           IP is gerade(1)/ungerade(2) !
-            IP    = MOD(IFRP+IC,2) + 1
+            IF(MDIRAC) THEN
+              IP = IFRP
+            ELSE
+C             IP is gerade(1)/ungerade(2) !
+              IP    = MOD(IFRP+IC,2) + 1
+            ENDIF
             DO ISYM = 1,NBRP
               IBSYM           = JFSYM(ISYM,IP)
               IBREP           = IBSYM - 1
@@ -361,7 +375,8 @@ C
      &        'Max',MXBBAS
         WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
      &        'NNBBASX ',NNBBASX
-         WRITE(LUPRI,'(/A)') '* I2BBASX:'
+         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry',
+     &                       ' blocks (I2BBASX):'
          WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
      &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
      &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
