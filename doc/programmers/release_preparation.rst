@@ -13,9 +13,7 @@ moment on the release branch ideally only receives cosmetics and bugfixes, no
 major new features, no merges from master or other branches (except
 cherry-picks; more about it later).  You as developer are responsible to commit
 or merge the to-be-released code to master, before the release branch is
-created.  If your code is part of a pamadm module and you want to release it,
-make sure that it is part of pamadm --release. If you do not want to release
-your pamadm module, make sure it is not part of pamadm --release.
+created.
 
 
 Can I commit bleeding edge code to master after the feature freeze?
