@@ -1891,7 +1891,7 @@ def backup_file(some_file,upto):
     number "upto"
     """
     def do_copy_print(backup_file_name,backup_file_name_p1):
-        shutil.copy(backup_file_name,backup_file_name_p1)
+        shutil.copy2(backup_file_name,backup_file_name_p1)
         #         "file.n"  -->  "file.n+1"
         result=extract_path_file()
         result.get_path_file(backup_file_name)

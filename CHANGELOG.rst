@@ -14,6 +14,7 @@ for example, pam ... --put  "/tmp/milias/testrun/DFCOEF_MI=DFCOEF  /tmp/milias/t
 - Bugfix for screening in MP2. Now you can use
   screening in conjunction with batched processing (for large systems) by
   specifying .IJTSK in input.
+- Fixed out-of-bounds memory access in SAOP code.
 
 
 12.7

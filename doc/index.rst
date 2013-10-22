@@ -33,6 +33,7 @@ Setting up DIRAC
   :doc:`Replacements of strings by pam <pam/replace>`
 
 
+
 Updates and patches
 ===================
 

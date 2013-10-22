@@ -27,31 +27,37 @@ module pcm_write
         print_here = print_unit
         write(print_here, *) ' ===== Polarizable Continuum Model calculation set-up ====='
         write(print_here, *) '* Polarizable Continuum Model using PCMSolver external module:'
-        write(print_here, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
+        write(print_here, *) '  . Converged potentials and charges at tesserae representative points written on file.'
       
         if (pcmmod_skipss) then
-           write(print_here, *) '  2: Skip the SS block of the electrostatic potential matrix.', &
+           write(print_here, *) '  . Skip the SS block of the electrostatic potential matrix.', &
             ' Use a Simple Coulombic Correction.'
         else
-           write(print_here, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
+           write(print_here, *) '  . Calculate the SS block of the electrostatic potential matrix.'
         end if
       
         if (pcmmod_separate) then
-          write(print_here, *) '  3: Separate potentials and apparent charges in nuclear and electronic.'
+          write(print_here, *) '  . Separate potentials and apparent charges in nuclear and electronic.'
         else
-          write(print_here, *) '  3: Use total potentials and apparent charges.'
+          write(print_here, *) '  . Use total potentials and apparent charges.'
         end if
       
         if (pcmmod_dospf) then
-          write(print_here, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
+          write(print_here, *) '  . Perform elimination of spin-orbit dependent terms in the PCM operator.'
+        end if
+
+        if (pcmmod_skipoit) then
+          write(print_here, *) '  . Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
+        else
+          write(print_here, *) '  . Form One-Index Transformed ASC in a Linear Response calculation.'
         end if
       
         if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-          write(print_here, *) '  5: Print potentials at tesserae representative points.'
+          write(print_here, *) '  . Print potentials at tesserae representative points.'
         else if (pcmmod_print > 10) then
-          write(print_here, *) '  5: Print potentials and charges at tesserae representative points.'
+          write(print_here, *) '  . Print potentials and charges at tesserae representative points.'
         else
-          write(print_here, *) '  5: Do not print potentials and charges.'
+          write(print_here, *) '  . Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
       
@@ -64,31 +70,37 @@ module pcm_write
         print_here = 0
         write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='
         write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'
-        write(*, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
+        write(*, *) '  . Converged potentials and charges at tesserae representative points written on file.'
       
         if (pcmmod_skipss) then
-           write(*, *) '  2: Skip the SS block of the electrostatic potential matrix.', &
+           write(*, *) '  . Skip the SS block of the electrostatic potential matrix.', &
             ' Use a Simple Coulombic Correction.'
         else
-           write(*, *) '  2: Calculate the SS block of the electrostatic potential matrix.'
+           write(*, *) '  . Calculate the SS block of the electrostatic potential matrix.'
         end if
       
         if (pcmmod_separate) then
-          write(*, *) '  3: Separate potentials and apparent charges in nuclear and electronic.'
+          write(*, *) '  . Separate potentials and apparent charges in nuclear and electronic.'
         else
-          write(*, *) '  3: Use total potentials and apparent charges.'
+          write(*, *) '  . Use total potentials and apparent charges.'
         end if
       
         if (pcmmod_dospf) then
-          write(*, *) '  4: Perform elimination of spin-orbit dependent terms in the PCM operator.'
+          write(*, *) '  . Perform elimination of spin-orbit dependent terms in the PCM operator.'
+        end if
+
+        if (pcmmod_skipoit) then
+          write(*, *) '  . Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
+        else
+          write(*, *) '  . Form One-Index Transformed ASC in a Linear Response calculation.'
         end if
       
         if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-          write(*, *) '  5: Print potentials at tesserae representative points.'
+          write(*, *) '  . Print potentials at tesserae representative points.'
         else if (pcmmod_print > 10) then
-          write(*, *) '  5: Print potentials and charges at tesserae representative points.'
+          write(*, *) '  . Print potentials and charges at tesserae representative points.'
         else
-          write(*, *) '  5: Do not print potentials and charges.'
+          write(*, *) '  . Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
       

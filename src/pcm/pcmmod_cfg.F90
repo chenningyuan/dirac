@@ -29,6 +29,7 @@ module pcmmod_cfg
   logical, public :: pcmmod_skipss   =  .false.
   logical, public :: pcmmod_separate =  .false.
   logical, public :: pcmmod_dospf    =  .false.
+  logical, public :: pcmmod_skipoit  =  .false.
 ! printlevel
   integer, public :: pcmmod_print    = 0
 

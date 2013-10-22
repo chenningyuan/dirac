@@ -59,8 +59,6 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-# radovan: i don't think we need libstdc++
-# set(LIBS "stdc++")
 set(LIBS)
 
 include(ConfigVersion)
@@ -128,6 +126,7 @@ if(ENABLE_PCMMOD)
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
         -DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
+	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
     )
     

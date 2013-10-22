@@ -118,6 +118,8 @@ C
 C
 C     *** New parallel MP2 algorithm ***
 C
+CTROND
+         WRITE(6,*) 'TESTcall TR2MST..',MAXSHL
          KDRIJ = KFREE
          CALL MEMGET('INTE',KDSLST,MAXSHL*6,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTIMDS,MAXSHL,WORK,KFREE,LFREE)
@@ -1051,6 +1053,8 @@ C
      &     NSTR,ISPNR,JSPNR,IPRINT)
       CALL TIMEC('CONMP2',TIMSTR,TIMEND) 
       TIM1(5) = TIM1(5) + TIMEND - TIMSTR
+CTROND
+      WRITE(6,*) 'After CONMP2...'
 C
       CALL MEMREL('TD23V2',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TD23V2')
@@ -2631,8 +2635,12 @@ C
          CALL DZERO(TIMDIS,NDSLST)
          CALL SHLLST(NDSLST,IDSLST,INTFLG,WORK(KINDX),
      &               LFREE,IPRINT,SRTSHL)
+CTROND
+         WRITE(6,*) 'TESTa..',NDSLST,MAXTSK
          IF ((IPRINT .EQ. 0) .AND. (IJBTCH .EQ. 1))
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
+CTROND
+         WRITE(6,*) 'TESTb..',NDSLST,MAXTSK
          IBTNFO(1) = IJBTCH
          IBTNFO(2) = LENTSK
          call interface_mpi_BCAST(IBTNFO,2,MPARID,
@@ -2670,6 +2678,8 @@ C
          IF (CMMNFO) WRITE(LUPRI,'(2(A,I4))')
      &        ' <COMMINFO> Master received ', NODINT,
      &        ' from node #', NODE
+CTROND
+         WRITE(6,*) '*TEST...',NODE,NODINT,ITSKSD,NDSLST
 C
 C     Slave is idle and there's more tasks available:
 C        Send next task to slave
@@ -2808,6 +2818,8 @@ C
 #if defined (MPE)
          CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
+CTROND
+      WRITE(6,*) 'After2 CONMP2...'
 C
 C     Release memory after current batch
 C
@@ -2833,7 +2845,9 @@ C
       NTIM = 7*(NODES+1)
       CALL MEMGET('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KTIM),NTIM)
-        CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
+CTROND
+      WRITE(6,*) 'After3 CONMP2...',NODES
       DO INOD = 1,NODES
          call interface_mpi_RECV(WORK(KTIM+INOD*7),7,
      &        INOD,96,global_communicator)
@@ -2843,6 +2857,8 @@ C
      &          INOD,40,global_communicator)
           CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
       END DO
+CTROND
+      WRITE(6,*) 'After4 CONMP2...'
       CALL DIRAC_PARCTL( -1 )
 #if defined (VAR_PFS)
 C
@@ -2867,6 +2883,8 @@ C
      &                                      WORK(KTIM+INOD*7+3), LUPRI)
       END DO
 C
+CTROND
+      WRITE(6,*) 'After5 CONMP2...'
       CALL MEMREL('TR2MST',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TR2MST')
       RETURN
