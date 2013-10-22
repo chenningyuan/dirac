@@ -1,6 +1,6 @@
 
 """
-    Beholder - regression test library for lazy people.
+    Beholder - numerically tolerant test library.
 
     Version X.Y
 
@@ -35,13 +35,20 @@ class TestRun():
                 success_message='',
                 success_file_name='',
                 stdout_file_name='',
-                stderr_means_crash=True):
+                stderr_means_crash=True,
+                accepted_errors=[]):
         try:
             process = subprocess.Popen(shlex.split(command),
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
             stdout, stderr = process.communicate()
+            for error in accepted_errors:
+                if error in stderr:
+                    # we found an error that we expect/accept
+                    # in this case we do not mark test as red and exit with zero
+                    sys.stderr.write('found error which is expected/accepted: %s\n' % error)
+                    sys.exit(0)
             if stderr_means_crash:
                 # some codes write to stderr even if calculation is successful
                 if stderr != '':
