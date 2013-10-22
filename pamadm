@@ -157,7 +157,6 @@ def main():
     list_of_tests.append('linear_structures')
     list_of_tests.append('london_properties_symmetry')
     list_of_tests.append('lucita_large')
-    list_of_tests.append('lucita_short')
     list_of_tests.append('mcscf_energy')
     list_of_tests.append('mcscf_properties')
     list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
@@ -190,11 +189,12 @@ def main():
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
     list_of_tests.append('visual_frac_occupation')
-    list_of_tests.append('xyz_input')
-    list_of_tests.append('zora')
     list_of_tests.append('lao_shield_rearranged')
 
     list_of_new_tests = []
+    list_of_new_tests.append('lucita_short')
+    list_of_new_tests.append('xyz_input')
+    list_of_new_tests.append('zora')
     list_of_new_tests.append('dft_ac')
     list_of_new_tests.append('cisd_energy')
     list_of_new_tests.append('localization')
