@@ -1,5 +1,5 @@
-$ERROR 1.E-7
-nlines 15:Atoms and basis sets
+!stefan: error prone when basis set print format changes !!!$ERROR 1.E-7
+!stefan: error prone when basis set print format changes !!!nlines 15:Atoms and basis sets
 
 $ERROR 1.E-10
 nlines 12:TOTAL ENERGY

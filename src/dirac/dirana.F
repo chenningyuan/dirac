@@ -3787,7 +3787,7 @@ C
 C
       CALL QENTER('ANAPR1')
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,0)
       IS = KSMAT
       POLT = D0
       DO IFRP = 1,NFSYM
@@ -3835,6 +3835,124 @@ C
       ENDIF
 C
       CALL QEXIT('ANAPR1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Normpol */
+      SUBROUTINE NORMPOL(POLVEC,AMAT,BVEC,NBAS,NTOT,NMOL,IPRINT)
+C***********************************************************************
+C
+C     Normalize polarization contributions
+C     POLVEC contains
+C       NREF reference orbitals + NMOL polarization contributions
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+#include "dgroup.h"
+      DIMENSION POLVEC(NBAS,NTOT,NZ),AMAT(NTOT,NTOT,NZ),
+     &          BVEC(NTOT,NMOL,NZ)
+C
+      NREF = NTOT-NMOL
+      IF(IPRINT.GE.5) THEN
+        WRITE(6,*) '* NORMPOL: Overlaps..',NTOT,NMOL,NREF
+        CALL PRQMAT(AMAT,NTOT,NTOT,NTOT,NTOT,NZ,
+     &             IPQTOQ(1,0),LUPRI)
+      ENDIF
+      DO J = 1,NMOL
+        FAC = D1/SQRT(AMAT(NREF+J,NREF+J,1))
+        DO IZ = 1,NZ
+          CALL DSCAL(NBAS,FAC,POLVEC(1,NREF+J,IZ),1)
+        ENDDO
+        BVEC(NREF+J,J,1)=D1/FAC
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Remove_ref */
+      SUBROUTINE REMOVE_REF(CSEL,LCC,NREF,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Project out the original reference orbitals
+C     in order to better see polarization
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+      DIMENSION CSEL(*),NREF(2),LCC(2),WORK(*)
+C
+      KFRSAV = KFREE
+C
+      CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
+      READ(LUCOEF)
+      NCDIM = 0
+      DO IFRP = 1,NFSYM
+        READ(LUCOEF)
+        NCDIM    = NCDIM + NFBAS(IFRP,0)*LCC(IFRP)*NZ
+      ENDDO
+      CALL MEMGET('REAL',KCBUF,NCDIM,WORK,KFREE,LFREE)
+C.....Reference + polarization coefficients
+      CALL READT(LUCOEF,NCDIM,WORK(KCBUF))
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+      CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,0)
+      IS = KSMAT
+      IC = 0
+      DO IFRP = 1,NFSYM
+        N2TOT = NREF(IFRP)*NREF(IFRP)
+        CALL MEMGET('REAL',KAMAT,N2TOT*NZ,WORK,KFREE,LFREE)
+        CALL REMOVE_REF2(CSEL(IC+1),WORK(KCBUF+IC),WORK(IS),
+     &              NFBAS(IFRP,0),LCC(IFRP),NREF(IFRP),
+     &              WORK(KAMAT),IPRINT,WORK,KFREE,LFREE)
+        IS = IS + N2BAS(IFRP)
+        IC = IC + NFBAS(IFRP,0)*LCC(IFRP)*NZ
+        CALL MEMREL('REMOVE.loop',WORK,KAMAT,KAMAT,KFREE,LFREE)
+      ENDDO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck remref */
+      SUBROUTINE REMOVE_REF2(CREF,CORG,SMAT,NBAS,LCC,NREF,
+     &                  AMAT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0,D1=1.0D0,DM1=-1.0D0)
+C
+#include "dgroup.h"
+      DIMENSION CREF(NBAS,LCC,NZ),CORG(NBAS,LCC,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NBAS,NBAS,NZ),
+     &          WORK(*)
+C
+C     Calculate overlap between new and old vectors
+C
+C     Make overlap matrix AMAT = <\psi^org_j1\psi^new_i>
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NREF,NREF,
+     &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
+     &           AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &           CORG,NBAS,LCC,NZ,IPQTOQ(1,0),
+     &           CREF,NBAS,LCC,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,0)
+C
+C     Project out original solution
+C
+      CALL QGEMM(NBAS,NREF,NREF,DM1,
+     &           'N','N',IPQTOQ(1,0),CORG,NBAS,LCC,NZ,
+     &           'N','N',IPQTOQ(1,0),AMAT,NREF,NREF,NZ,
+     &                D1,IPQTOQ(1,0),CREF,NBAS,LCC,NZ)
+      IF(IPRINT.GE.5) THEN
+        WRITE(LUPRI,*) 'REMREF: Polarisation of fragment orbitals'
+        CALL PRIPOL(1,CREF,DUM,NREF,NBAS,LCC)
+      ENDIF
       RETURN
       END
 #ifdef ANALYZE_PROPERTY_GRADIENT

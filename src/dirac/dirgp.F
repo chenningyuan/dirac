@@ -4271,100 +4271,6 @@ C.....Approximate eigenvalue of UKB complement
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LABCOUNT(N,LIST,NBAS,ILAB,I1,I2,I3,I4)
-C***********************************************************************
-C
-C     Do statistics or make pointers using basis function labels
-C
-C     ILAB = 1: A)AO-labels
-C     ---------------------------------------------------------------------
-C     I1   ICLS  - Basis set class: large(1), small(2) ..
-C     I2   ICENT - index of center in list of symmetry-independent centers
-C     I3   IDEG  - for given symmetry-independent center, index of degeneracy
-C     I4   ITYP  - basis function type, e.g. s, px, dxy etc.
-C
-C     ILAB = 2: SO-labels
-C     ---------------------------------------------------------------------
-C     I1   IC    - Basis set class: large(1), small(2) ....
-C     I2   ICENT - index of center in list of symmetry-independent centers
-C     I3   IRP   - index of boson irrep
-C     I4   ITYP  - basis function type, e.g. s, px, dxy
-C
-C     T. Saue Mar 31 2011
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxorb.h"
-#include "dcblab.h"
-#include "dcbibt.h"
-      DIMENSION LIST(NBAS)
-C
-C.....Initialize index array
-      CALL ICOPY(NBAS,1,0,LIST,1)
-C.....If active, search first value
-      IF(I1.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = IGET(ITEMP)
-          IF(IVAL.NE.I1) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search second value
-      IF(I2.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = JGET(ITEMP)
-          IF(IVAL.NE.I2) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search third value
-      IF(I3.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = KGET(ITEMP)
-          IF(IVAL.NE.I3) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search third value
-      IF(I4.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = LGET(ITEMP)
-          IF(IVAL.NE.I4) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
 C***********************************************************************
@@ -4470,3 +4376,50 @@ C
       CALL QEXIT('GETACORD')
       RETURN
       END
+
+      subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,ifsym,
+     &                              nboson_orb,nz)
+      implicit none
+      real(8), intent(inout) :: tmat(nrow,ncol,nz)
+      real(8), intent(inout) :: vmat(nrow,ncol,nz)
+      integer, intent(in)    :: nrow
+      integer, intent(in)    :: ncol
+      integer, intent(in)    :: nz
+      integer, intent(in)    :: nboson_orb(4,2,0:2)
+      integer, intent(in)    :: ifsym
+      integer                :: i, j, k, l, nv
+      integer                :: nsym
+      integer                :: nvec(2)
+      integer                :: ioff(2)
+      integer                :: isum
+
+      call dzero(tmat,nrow*ncol*nz)
+      call izero(nvec,2)
+      call izero(ioff,2)
+
+      nsym = 4 / nz ! # of boson irreps in gerade/ungerade
+
+      ioff(1) = 0
+      ioff(2) = isum(nsym,nboson_orb(1,ifsym,1),1)
+
+      nv      = 0
+
+      do j = 1, nsym
+        do k = 2,1,-1
+          do l = 1, nboson_orb(j,ifsym,k)
+            nv = nv + 1
+            do i = 1, nz
+!                        copy from p1 p2 p3 p4 n1 n2 n3 n4 order (vmat)
+!                        copy to   n1 p1 n2 p2 n3 p3 n4 p4 order (tmat)
+!                        where n == negative energy shell
+!                        where p == positive energy shell
+!                        and   "1", "2", ... refer to boson irreps
+              call dcopy(nrow,
+     &                   vmat(1,ioff(k)+nvec(k)+l,i),1,
+     &                   tmat(1,nv,i),1)
+            end do
+          end do
+          nvec(k) = nvec(k) + nboson_orb(j,ifsym,k)
+        end do
+      end do
+      end

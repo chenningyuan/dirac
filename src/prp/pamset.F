@@ -232,14 +232,11 @@ C          Hermitian operator
       ENDIF
 
 
-
-
 !       construct xc contribution
 !       =========================
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       

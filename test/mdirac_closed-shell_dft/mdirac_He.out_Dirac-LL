@@ -1,0 +1,2342 @@
+DIRAC pam run in /home/repisky/devel/latest/dirac-git-repo/test/mdirac_closed-shell_dft
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe,            Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeing University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe,            Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ 
+ 
+Compilation info
+----------------
+ 
+ System                   | Linux-2.6.38-11-generic
+ Processor                | i686
+ Internal math            | OFF
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/ia32/ifort
+ Fortran compiler version | ifort (IFORT) 12.0.4 20110427
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2
+ C flags                  |   -O0 -g3
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_c
+                          | ore.so;/opt/intel/mkl/lib/ia32/libmkl_intel.so;/op
+                          | t/intel/mkl/lib/ia32/libmkl_sequential.so;-Wl,--en
+                          | d-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_l
+                          | apack95.a;-Wl,--end-group
+ Configuration time       | 2011-09-18 18:08:31.953493
+ Last commit rev          | 761858113b40f51ba60d2749eacd03153fd29a71
+ Last commit author       | Michal Repisky 
+ Last commit time         | Sun Sep 18 16:55:05 2011 +0200
+
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Fri Sep 23 15:01:08 2011
+     Host name              :                                         
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.WAVE F                                                                                             
+!.INPTES                                                                                            
+**GENERAL                                                                                           
+! We do not transform to spherical Cartesians                                                       
+.SPHTRA                                                                                             
+ 0 0                                                                                                
+**HAMILTONIAN                                                                                       
+!.ONESYS                                                                                            
+!.MDIRAC                                                                                            
+.LVCORR                                                                                             
+.PRINT                                                                                              
+5                                                                                                   
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONT                                                                                             
+.PRINT                                                                                              
+2                                                                                                   
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*DHFCAL                                                                                             
+.NOBNCR                                                                                             
+**END OF                                                                                            
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+He atom                                                                                             
+                                                                                                    
+C   1   0                                                                                           
+      2.    1                                                                                       
+He      0.0      0.0       0.0                                                                      
+LARGE BASIS 6-31G                                                                                   
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+ Print level in READIN:    2
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  He atom                                                                 
+                                                                          
+
+  Nuclear Gaussian exponent for atom of charge   2.000 :    1.1671538870D+09
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  He          1       2       4       4      L  - [4s|4s]                                                        
+                             12      12      S  - [4p|4p]                                                        
+  ----------------------------------------------------------------------
+                              4       4      L  - large components
+                             12      12      S  - small components
+  ----------------------------------------------------------------------
+  total:      1       2      16      16
+
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+                                Output from CAPOUT
+                                ------------------
+
+  Preparing formatted file "CAPINT.inp" for the CAP module.
+           1   38.4216340000000        1.00000000000000     
+           1   5.77803000000000        1.00000000000000     
+           1   1.24177400000000        1.00000000000000     
+           1  0.297964000000000        1.00000000000000     
+           1   38.4216340000000        1.00000000000000     
+           1   5.77803000000000        1.00000000000000     
+           1   1.24177400000000        1.00000000000000     
+           1  0.297964000000000        1.00000000000000     
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  CAPWRIBAS2: Contracted Orbitals again
+  -------------------------------------
+
+   1  He      s      1
+   2  He      s      2
+   3  He      s      3
+   4  He      s      4
+   5  He      px     5
+   6  He      py     9
+   7  He      pz    13
+   8  He      px     6
+   9  He      py    10
+  10  He      pz    14
+  11  He      px     7
+  12  He      py    11
+  13  He      pz    15
+  14  He      px     8
+  15  He      py    12
+  16  He      pz    16
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements                             References                                
+   --------                             ----------                                
+    H - He:  W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,         
+   Li - Ne:  2257 (1972). Note: Li and B come from J.D. Dill and J.A.             
+             Pople, J. Chem. Phys. 62, 2921 (1975).                               
+   Na - Ar:  M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon,      
+             D.J. DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982)          
+   K  - Zn:  V. Rassolov, J.A. Pople, M. Ratner and T.L. Windus, J. Chem. Phys.   
+             109, 1223 (1998)                                                     
+   **                                                                             
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   He       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    1
+ 
+He     0.0000000000   0.0000000000   0.0000000000
+  Nuclear repulsion energy :    0.000000000000
+
+
+                              Large Components Basis
+                              ----------------------
+
+
+
+  Orbital exponents and contraction coefficients
+  ----------------------------------------------
+
+
+  He     s      1  3.8421634000D+01    1.0000  0.0000  0.0000  0.0000
+   seg. cont.   2  5.7780300000D+00    0.0000  1.0000  0.0000  0.0000
+                3  1.2417740000D+00    0.0000  0.0000  1.0000  0.0000
+                4  2.9796400000D-01    0.0000  0.0000  0.0000  1.0000
+
+
+  Contracted Orbitals
+  -------------------
+
+   1  He      s      1
+   2  He      s      2
+   3  He      s      3
+   4  He      s      4
+
+
+
+
+                              Small Components Basis
+                              ----------------------
+
+
+
+  Orbital exponents and contraction coefficients
+  ----------------------------------------------
+
+
+  He     px     5  3.8421634000D+01    1.0000  0.0000  0.0000  0.0000
+   seg. cont.   6  5.7780300000D+00    0.0000  1.0000  0.0000  0.0000
+                7  1.2417740000D+00    0.0000  0.0000  1.0000  0.0000
+                8  2.9796400000D-01    0.0000  0.0000  0.0000  1.0000
+
+  He     py     9  3.8421634000D+01    1.0000  0.0000  0.0000  0.0000
+   seg. cont.  10  5.7780300000D+00    0.0000  1.0000  0.0000  0.0000
+               11  1.2417740000D+00    0.0000  0.0000  1.0000  0.0000
+               12  2.9796400000D-01    0.0000  0.0000  0.0000  1.0000
+
+  He     pz    13  3.8421634000D+01    1.0000  0.0000  0.0000  0.0000
+   seg. cont.  14  5.7780300000D+00    0.0000  1.0000  0.0000  0.0000
+               15  1.2417740000D+00    0.0000  0.0000  1.0000  0.0000
+               16  2.9796400000D-01    0.0000  0.0000  0.0000  1.0000
+
+
+  Contracted Orbitals
+  -------------------
+
+   5  He      px     5
+   6  He      py     9
+   7  He      pz    13
+   8  He      px     6
+   9  He      py    10
+  10  He      pz    14
+  11  He      px     7
+  12  He      py    11
+  13  He      pz    15
+  14  He      px     8
+  15  He      py    12
+  16  He      pz    16
+
+
+ debug: nbasiaux =           0
+
+
+ Copy of input to READIN
+ -----------------------
+
+INTGRL                                                                          
+He atom                                                                         
+                                                                                
+C   1   0                                                                       
+      2.    1                                                                   
+He      0.0      0.0       0.0                                                  
+LARGE BASIS 6-31G                                                               
+
+
+
+
+                            **************************
+                            *** Output from SETDC1 ***
+                            **************************
+
+   Irrep  NTBAS  NBASL  NBASS  IBASL  IBASS 
+   -----------------------------------------
+   1  A       16      4     12      0      4
+   -----------------------------------------
+   Frep 1     16      4     12
+   -----------------------------------------
+   Total      16      4     12    Max     12
+
+   NNBBAST =    136  NNBBASX    136
+
+* Matrix offsets to symmetry
+
+ blocks (I2BBASX):
+   A    A    L  L           0   A    A    S  L           4   A    A    L  S          64   A    A    S  S          68
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    1
+     1  L He  1 s   
+   * Small components:    3
+     2  S He  1 px       3  S He  1 py       4  S He  1 pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           16
+  Number of large orbitals in each symmetry:      4
+  Number of small orbitals in each symmetry:     12
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    He s   
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    He px  
+        4 functions:    He py  
+        4 functions:    He pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    5
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Non-standard RKB projection:
+   1: Cartesian large components
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+GETCLS called for LABINT=OVERLAP 
+        assigned  CLASLB=OVERLAP
+
+  ** XPLDE1 before PR1DIR calling
+  INTTYP=***
+ CLASLB=OVERLAP
+ PLABEL=OVERLAP 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+
+  *** XPLDE1 after PR1DIR calling ***
+  INTTYP=  1
+ CLASLB=OVERLAP
+ PLABEL=OVERLAP 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+ NOPTYP=           1
+ LABINT(1-NOPTYP):           1 OVERLAP 
+
+GETCLS called for LABINT=XDIPVEL 
+        assigned  CLASLB=DIPVEL 
+
+  ** XPLDE1 before PR1DIR calling
+  INTTYP=***
+ CLASLB=DIPVEL 
+ PLABEL=XDIPVEL 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+
+  *** XPLDE1 after PR1DIR calling ***
+  INTTYP=  3
+ CLASLB=DIPVEL 
+ PLABEL=XDIPVEL 
+ ANTI= T
+ SQUARE= F
+ TRIANG= T
+ NOPTYP=           3
+ LABINT(1-NOPTYP):           1 XDIPVEL 
+ LABINT(1-NOPTYP):           2 YDIPVEL 
+ LABINT(1-NOPTYP):           3 ZDIPVEL 
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+ WARNING: *DHFCAL is deprecated, please use *SCF instead
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =   2
+   Charge of molecule    =   0
+   i.e. no. of electrons =   2
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    2 electrons in
+       1 orbitals in Fermion irrep 1
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                            **************************
+                            *** Output from LOWDI1 ***
+                            **************************
+
+
+
+                         GTOVLT: Overlap (metric) matrix:
+                         --------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       1.00000000     0.55358366     0.20555297     0.07306400     0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.55358366     1.00000000     0.66669052     0.28384201     0.00000000     0.00000000     0.00000000     0.00000000
+       3       0.20555297     0.66669052     1.00000000     0.70231108     0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.07306400     0.28384201     0.70231108     1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.00000000     0.00000000     0.37322618
+       6       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.37322618     0.00000000     0.00000000     1.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.37322618     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.37322618     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000     0.07159339     0.00000000     0.00000000     0.50879223
+      12       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.07159339     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.07159339     0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.00000000     0.01276946     0.00000000     0.00000000     0.12259172
+      15       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.01276946     0.00000000     0.00000000
+      16       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.01276946     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       5       0.00000000     0.00000000     0.07159339     0.00000000     0.00000000     0.01276946     0.00000000     0.00000000
+       6       0.37322618     0.00000000     0.00000000     0.07159339     0.00000000     0.00000000     0.01276946     0.00000000
+       7       0.00000000     0.37322618     0.00000000     0.00000000     0.07159339     0.00000000     0.00000000     0.01276946
+       8       0.00000000     0.00000000     0.50879223     0.00000000     0.00000000     0.12259172     0.00000000     0.00000000
+       9       1.00000000     0.00000000     0.00000000     0.50879223     0.00000000     0.00000000     0.12259172     0.00000000
+      10       0.00000000     1.00000000     0.00000000     0.00000000     0.50879223     0.00000000     0.00000000     0.12259172
+      11       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000     0.55490146     0.00000000     0.00000000
+      12       0.50879223     0.00000000     0.00000000     1.00000000     0.00000000     0.00000000     0.55490146     0.00000000
+      13       0.00000000     0.50879223     0.00000000     0.00000000     1.00000000     0.00000000     0.00000000     0.55490146
+      14       0.00000000     0.00000000     0.55490146     0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+      15       0.12259172     0.00000000     0.00000000     0.55490146     0.00000000     0.00000000     1.00000000     0.00000000
+      16       0.00000000     0.12259172     0.00000000     0.00000000     0.55490146     0.00000000     0.00000000     1.00000000
+ ==== End of matrix output ====
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.4D-01
+
+
+                  LOWGEN: Eigenvalues in Lowdin diagonalization:
+                  ----------------------------------------------
+
+
+              Column   1
+       1       2.29898780
+       2       1.11101609
+       3       0.45454094
+       4       0.13545516
+ ==== End of matrix output ====
+   L   A     * Deleted:          0
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 2.8D-01
+
+
+                  LOWGEN: Eigenvalues in Lowdin diagonalization:
+                  ----------------------------------------------
+
+
+              Column   1
+       1       1.88939623
+       2       1.88939623
+       3       1.88939623
+       4       1.16892899
+       5       1.16892899
+       6       1.16892899
+       7       0.66216419
+       8       0.66216419
+       9       0.66216419
+      10       0.27951059
+      11       0.27951059
+      12       0.27951059
+ ==== End of matrix output ====
+   S   A     * Deleted:          0
+
+
+              LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks)
+              -----------------------------------------------------
+
+   *** fermion corep 1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.23528361    -0.66826385    -0.85153174     0.58897032     0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.36703957    -0.30719563     0.79723160    -1.47960564     0.00000000     0.00000000     0.00000000     0.00000000
+       3       0.39018317     0.27762681     0.40472865     1.90177232     0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.30439237     0.53108812    -0.82190755    -1.10890033     0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000    -0.20781600     0.01419455     0.00767336    -0.59161898
+       6       0.00000000     0.00000000     0.00000000     0.00000000    -0.01613585    -0.18281369    -0.09882633     0.27994827
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.09912378    -0.18336393    -0.01421250
+       8       0.00000000     0.00000000     0.00000000     0.00000000    -0.39584639     0.02703768     0.01461616    -0.32502765
+       9       0.00000000     0.00000000     0.00000000     0.00000000    -0.03073546    -0.34822218    -0.18824367     0.15379988
+      10       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.18881025    -0.34927027    -0.00780816
+      11       0.00000000     0.00000000     0.00000000     0.00000000    -0.45695749     0.03121178     0.01687262     0.21975098
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.03548042    -0.40198102    -0.21730489    -0.10398400
+      13       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.21795894    -0.40319091     0.00527909
+      14       0.00000000     0.00000000     0.00000000     0.00000000    -0.34264544     0.02340387     0.01265178     0.44124926
+      15       0.00000000     0.00000000     0.00000000     0.00000000    -0.02660467    -0.30142183    -0.16294411    -0.20879480
+      16       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.16343454    -0.30232906     0.01060016
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       5       0.27865060    -0.03044452    -0.06182405     0.66899775     0.33465112     0.11024575     0.02834717     0.37950784
+       6       0.59096789    -0.03117635    -0.67141007    -0.19766944     0.27112153    -0.36852503    -0.09064661     0.11382609
+       7       0.04119270     0.65321299     0.32978460    -0.27702053     0.61471401    -0.09496874     0.38466026    -0.00114392
+       8       0.15308696    -0.01672582     0.05340279    -0.57787133    -0.28906717    -0.27479224    -0.07065652    -0.94593951
+       9       0.32466995    -0.01712787     0.57995506     0.17074423    -0.23419116     0.91856440     0.22594056    -0.28371639
+      10       0.02263072     0.35886658    -0.28486354     0.23928664    -0.53098176     0.23671364    -0.95878214     0.00285128
+      11      -0.10350200     0.01130832     0.02316649    -0.25068442    -0.12539926     0.36523869     0.09391275     1.25729061
+      12      -0.21950914     0.01158014     0.25158836     0.07406998    -0.10159368    -1.22090512    -0.30030772     0.37710017
+      13      -0.01530062    -0.24262947    -0.12357570     0.10380413    -0.23034342    -0.31462672     1.27436033    -0.00378977
+      14      -0.20782696     0.02270655    -0.05509302     0.59616135     0.29821634    -0.23649481    -0.06080922    -0.81410517
+      15      -0.44076366     0.02325236    -0.59831103    -0.17614840     0.24160347     0.79054529     0.19445152    -0.24417521
+      16      -0.03072289    -0.48718814     0.29387966    -0.24686022     0.54778770     0.20372318    -0.82515794     0.00245390
+ ==== End of matrix output ====
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Beta matrix     
+ .... it is the LOWER TRIANGULAR matrix 
+Component nr.    1   BETAMAT 
+Factor:     -37557.7304875469563 and PDOINT:000+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Kinetic energy  
+ .... it is the LOWER TRIANGULAR matrix 
+Component nr.    1   XDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    4
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   YDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    3
+FIRST = T and IC(1 or 2): 2
+Component nr.    3   ZDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    2
+FIRST = T and IC(1 or 2): 2
+
+
+                  FREEM1:Unsorted total one-electron Fock matrix
+                  ----------------------------------------------
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       5     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -1.401753D+04
+       6     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00
+       7     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00
+       8     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00  -3.755773D+04
+       9     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00
+      10     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00
+      11     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -1.910908D+04
+      12     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00
+      13     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00
+      14     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00  -4.604267D+03
+      15     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00
+      16     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       5     0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00
+       6    -1.401753D+04   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00
+       7     0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02
+       8     0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03   0.000000D+00   0.000000D+00
+       9    -3.755773D+04   0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03   0.000000D+00
+      10     0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03
+      11     0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00
+      12    -1.910908D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00
+      13     0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04
+      14     0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00
+      15    -4.604267D+03   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00
+      16     0.000000D+00  -4.604267D+03   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000
+       7     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+      10     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      13      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      16      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000  -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463
+       2       0.00000000  -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270
+       3       0.00000000   -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345
+       4       0.00000000    -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000
+       6     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       9     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      12      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      15      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1    -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000
+       2    -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000
+       3     -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000
+       4      -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000  -317.02585775
+       2       0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000  -329.40073883
+       3       0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000   -77.69559927
+       4       0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000    -9.17017670
+       5     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       8     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      11      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      14      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000     0.00000000
+       2       0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000     0.00000000
+       3       0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000     0.00000000
+       4       0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+
+             FREEM1: One-electron (symm.blocked) free particle matrix
+             --------------------------------------------------------
+
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       5     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -1.401753D+04
+       6     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00
+       7     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00
+       8     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00  -3.755773D+04
+       9     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00
+      10     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.401753D+04   0.000000D+00
+      11     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -1.910908D+04
+      12     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00
+      13     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00
+      14     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00  -4.604267D+03
+      15     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00
+      16     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       5     0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00   0.000000D+00
+       6    -1.401753D+04   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02   0.000000D+00
+       7     0.000000D+00  -1.401753D+04   0.000000D+00   0.000000D+00  -2.688885D+03   0.000000D+00   0.000000D+00  -4.795918D+02
+       8     0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03   0.000000D+00   0.000000D+00
+       9    -3.755773D+04   0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03   0.000000D+00
+      10     0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -4.604267D+03
+      11     0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00
+      12    -1.910908D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00
+      13     0.000000D+00  -1.910908D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00  -2.084084D+04
+      14     0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00   0.000000D+00
+      15    -4.604267D+03   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04   0.000000D+00
+      16     0.000000D+00  -4.604267D+03   0.000000D+00   0.000000D+00  -2.084084D+04   0.000000D+00   0.000000D+00  -3.755773D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000
+       7     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+      10     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      13      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      16      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000  -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463
+       2       0.00000000  -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270
+       3       0.00000000   -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345
+       4       0.00000000    -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000
+       6     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       9     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      12      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      15      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1    -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000
+       2    -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000
+       3     -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000
+       4      -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000  -317.02585775
+       2       0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000  -329.40073883
+       3       0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000   -77.69559927
+       4       0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000    -9.17017670
+       5     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       8     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      11      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      14      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000     0.00000000
+       2       0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000     0.00000000
+       3       0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000     0.00000000
+       4       0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+
+                  MODHAM: Actual transformation matrix 4c AO->MO
+                  ----------------------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.23528361    -0.66826385    -0.85153174     0.58897032
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.36703957    -0.30719563     0.79723160    -1.47960564
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.39018317     0.27762681     0.40472865     1.90177232
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.30439237     0.53108812    -0.82190755    -1.10890033
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       7       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      13       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       6       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+       9      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       5       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+       8      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+
+                           ***  Output from SLSORT  ***
+                           ----------------------------
+
+ Going to resort the RKB transformation matrix to the S-L columns order; NZ=
+           4  NSYM=(4/NZ)=           1  and NFSYM=           1
+ ===============================================================================
+ ====
+    .....ifs=           1 /           1
+   S:           4
+   L:           4
+ S+L:           8
+
+
+        MODHAM: "SL" resorted transformation matrix 4c AO->MO, VMAT(ouput)
+        ------------------------------------------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.23528361    -0.66826385    -0.85153174     0.58897032
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.36703957    -0.30719563     0.79723160    -1.47960564
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.39018317     0.27762681     0.40472865     1.90177232
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.30439237     0.53108812    -0.82190755    -1.10890033
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       7       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      13       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       6       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+       9      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:  16   8  16   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       5       0.62110436    -0.10083348     0.03524227    -0.01682517     0.00000000     0.00000000     0.00000000     0.00000000
+       8      -0.17428012     0.70303662    -0.17418678     0.07686298     0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.04012437    -0.26096892     0.74719341    -0.24984312     0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00655355     0.04458155    -0.21562694     0.67840924     0.00000000     0.00000000     0.00000000     0.00000000
+ ==== End of matrix output ====
+ GMOTRA: branch MODHAM
+ NESH(IFRP),NPSH(IFRP)           4           4
+
+
+                           *** Output from MKSAOMO ***
+                           ---------------------------
+
+  NZ=4 >>>> Dirac uses NZT=4
+  TWOC=.false. => Used four-component mode
+  ifsym=1/1 NFBAS(I,0)= 16
+  >>>> NPSH(I)=  4 NESH(I)=  4 NTMO(I)=  8 - NORB(I)=  8>>> used NREF=  8
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):     4
+No. of negative energy orbitals (NPSH):     4
+Total no. of orbitals           (NORB):     8
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+
+ ONEFCK: One-electron Fock matrix from the Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)
+ -----------------------------------------------------------------------------------------
+
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Nuc. attraction 
+ .... it is the LOWER TRIANGULAR matrix 
+Component nr.    1   MOLFIELD
+Factor:      1.00000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Kinetic energy  
+ .... it is the LOWER TRIANGULAR matrix 
+Component nr.    1   XDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    4
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   YDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    3
+FIRST = T and IC(1 or 2): 2
+Component nr.    3   ZDIPVEL 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    2
+FIRST = T and IC(1 or 2): 2
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Beta matrix     
+ .... it is the LOWER TRIANGULAR matrix 
+Component nr.    1   BETAMAT 
+Factor:     -37557.7304875469563 and PDOINT:000+
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 1
+
+
+ ONEFCK: One-electron Fock matrix from the Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)
+ -----------------------------------------------------------------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -1.978281D+01  -8.305730D+00  -2.921486D+00  -1.026015D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       2    -8.305730D+00  -7.671671D+00  -3.986317D+00  -1.578957D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       3    -2.921486D+00  -3.986317D+00  -3.556488D+00  -1.966699D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       4    -1.026015D+00  -1.578957D+00  -1.966699D+00  -1.742136D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       5     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.757092D+04   0.000000D+00   0.000000D+00  -1.402126D+04
+       6     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.757092D+04   0.000000D+00   0.000000D+00
+       7     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -3.757092D+04   0.000000D+00
+       8     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.402126D+04   0.000000D+00   0.000000D+00  -3.756284D+04
+       9     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.402126D+04   0.000000D+00   0.000000D+00
+      10     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -1.402126D+04   0.000000D+00
+      11     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00   0.000000D+00  -1.911111D+04
+      12     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00   0.000000D+00
+      13     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00
+      14     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.797114D+02   0.000000D+00   0.000000D+00  -4.604721D+03
+      15     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.797114D+02   0.000000D+00   0.000000D+00
+      16     0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00  -4.797114D+02   0.000000D+00
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       5     0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00   0.000000D+00  -4.797114D+02   0.000000D+00   0.000000D+00
+       6    -1.402126D+04   0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00   0.000000D+00  -4.797114D+02   0.000000D+00
+       7     0.000000D+00  -1.402126D+04   0.000000D+00   0.000000D+00  -2.689564D+03   0.000000D+00   0.000000D+00  -4.797114D+02
+       8     0.000000D+00   0.000000D+00  -1.911111D+04   0.000000D+00   0.000000D+00  -4.604721D+03   0.000000D+00   0.000000D+00
+       9    -3.756284D+04   0.000000D+00   0.000000D+00  -1.911111D+04   0.000000D+00   0.000000D+00  -4.604721D+03   0.000000D+00
+      10     0.000000D+00  -3.756284D+04   0.000000D+00   0.000000D+00  -1.911111D+04   0.000000D+00   0.000000D+00  -4.604721D+03
+      11     0.000000D+00   0.000000D+00  -3.756010D+04   0.000000D+00   0.000000D+00  -2.084188D+04   0.000000D+00   0.000000D+00
+      12    -1.911111D+04   0.000000D+00   0.000000D+00  -3.756010D+04   0.000000D+00   0.000000D+00  -2.084188D+04   0.000000D+00
+      13     0.000000D+00  -1.911111D+04   0.000000D+00   0.000000D+00  -3.756010D+04   0.000000D+00   0.000000D+00  -2.084188D+04
+      14     0.000000D+00   0.000000D+00  -2.084188D+04   0.000000D+00   0.000000D+00  -3.755889D+04   0.000000D+00   0.000000D+00
+      15    -4.604721D+03   0.000000D+00   0.000000D+00  -2.084188D+04   0.000000D+00   0.000000D+00  -3.755889D+04   0.000000D+00
+      16     0.000000D+00  -4.604721D+03   0.000000D+00   0.000000D+00  -2.084188D+04   0.000000D+00   0.000000D+00  -3.755889D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000
+       7     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+      10     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      13      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      16      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000  -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463
+       2       0.00000000  -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270
+       3       0.00000000   -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345
+       4       0.00000000    -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000
+       6     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       9     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      12      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      15      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1    -317.02585775     0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000
+       2    -329.40073883     0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000
+       3     -77.69559927     0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000
+       4      -9.17017670     0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:  16  16  16  16
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000  -849.42020657     0.00000000     0.00000000  -317.02585775
+       2       0.00000000     0.00000000     0.00000000     0.00000000  -122.94097899     0.00000000     0.00000000  -329.40073883
+       3       0.00000000     0.00000000     0.00000000     0.00000000   -10.93273613     0.00000000     0.00000000   -77.69559927
+       4       0.00000000     0.00000000     0.00000000     0.00000000    -0.95518830     0.00000000     0.00000000    -9.17017670
+       5     849.42020657   122.94097899    10.93273613     0.95518830     0.00000000     0.00000000     0.00000000     0.00000000
+       8     317.02585775   329.40073883    77.69559927     9.17017670     0.00000000     0.00000000     0.00000000     0.00000000
+      11      60.81287003   167.59653510   152.70594818    41.50806015     0.00000000     0.00000000     0.00000000     0.00000000
+      14      10.84663463    40.38180270    84.73675345    74.80257886     0.00000000     0.00000000     0.00000000     0.00000000
+
+              Column   9    Column  10    Column  11    Column  12    Column  13    Column  14    Column  15    Column  16
+       1       0.00000000     0.00000000   -60.81287003     0.00000000     0.00000000   -10.84663463     0.00000000     0.00000000
+       2       0.00000000     0.00000000  -167.59653510     0.00000000     0.00000000   -40.38180270     0.00000000     0.00000000
+       3       0.00000000     0.00000000  -152.70594818     0.00000000     0.00000000   -84.73675345     0.00000000     0.00000000
+       4       0.00000000     0.00000000   -41.50806015     0.00000000     0.00000000   -74.80257886     0.00000000     0.00000000
+ ==== End of matrix output ====
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+
+########## START ITERATION NO.   1 ##########   Fri Sep 23 15:01:08 2011
+
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.757106D+04  -7.682102D-01  -3.446607D-01   9.288433D-02   3.618216D+02  -9.757959D+02  -1.153732D+03   7.186597D+02
+       2    -7.682102D-01  -3.756250D+04  -4.042813D-01  -1.611095D-01   3.005486D+02  -3.949168D+02   1.366697D+02  -4.681255D+02
+       3    -3.446607D-01  -4.042813D-01  -3.755986D+04  -1.363299D-01   1.914147D+02  -4.122985D+00   1.738489D+02   1.771268D+02
+       4     9.288433D-02  -1.611095D-01  -1.363299D-01  -3.755871D+04   7.814722D+01   7.377378D+01  -5.549493D+01  -2.826579D+01
+       5     3.618216D+02   3.005486D+02   1.914147D+02   7.814722D+01  -6.911195D+00   5.935288D+00   2.437077D+00  -8.399909D-01
+       6    -9.757959D+02  -3.949168D+02  -4.122985D+00   7.377378D+01   5.935288D+00  -1.130662D+01  -6.811951D+00   2.180059D+00
+       7    -1.153732D+03   1.366697D+02   1.738489D+02  -5.549493D+01   2.437077D+00  -6.811951D+00  -8.320297D+00   3.619544D+00
+       8     7.186597D+02  -4.681255D+02   1.771268D+02  -2.826579D+01  -8.399909D-01   2.180059D+00   3.619544D+00  -3.843330D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -7.068194D-28  -7.286454D-12   1.087802D-11   1.664772D-12   9.494630D-15  -5.203213D-14  -1.858544D-14  -6.949499D-14
+       2     7.286454D-12  -1.292470D-26  -5.975805D-12  -7.320730D-12  -7.661914D-15   8.265864D-14   1.026976D-13  -6.024509D-14
+       3    -1.087802D-11   5.975805D-12  -6.462349D-27   5.763102D-12   1.914456D-14  -1.124967D-13  -1.847691D-13   1.612025D-13
+       4    -1.664772D-12   7.320730D-12  -5.763102D-12   6.462349D-27   1.509971D-15   2.714380D-15  -4.375239D-14   8.672389D-14
+       5    -9.494630D-15   7.661914D-15  -1.914456D-14  -1.509971D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203213D-14  -8.265864D-14   1.124967D-13  -2.714380D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858544D-14  -1.026976D-13   1.847691D-13   4.375239D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949499D-14   6.024509D-14  -1.612025D-13  -8.672389D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     0.000000D+00  -5.891024D-13   3.945569D-13  -7.107250D-12   2.360982D-15   1.274232D-14  -9.319688D-16  -6.185667D-15
+       2     5.891024D-13   4.038968D-28   1.162507D-12  -2.289439D-12  -4.272605D-15   1.987784D-14   1.767599D-14  -1.951122D-14
+       3    -3.945569D-13  -1.162507D-12  -2.019484D-28   5.047831D-12   1.192293D-15  -1.442093D-14   5.630556D-15  -3.929731D-15
+       4     7.107250D-12   2.289439D-12  -5.047831D-12   0.000000D+00  -3.400359D-14   1.014117D-13   1.279971D-13  -5.411162D-14
+       5    -2.360982D-15   4.272605D-15  -1.192293D-15   3.400359D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274232D-14  -1.987784D-14   1.442093D-14  -1.014117D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319688D-16  -1.767599D-14  -5.630556D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185667D-15   1.951122D-14   3.929731D-15   5.411162D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     2.019484D-28  -2.178224D-12  -3.305929D-12   8.164565D-12  -9.565601D-16  -1.643706D-15   4.247802D-14  -8.259192D-15
+       2     2.178224D-12   4.038968D-28  -4.369727D-12  -6.531541D-12  -5.203666D-15   4.706553D-14   3.890425D-14  -2.294363D-14
+       3     3.305929D-12   4.369727D-12   8.077936D-28   1.183359D-11  -5.409604D-14   5.762591D-14   2.742380D-14   2.907833D-14
+       4    -8.164565D-12   6.531541D-12  -1.183359D-11   0.000000D+00   3.312881D-14  -3.780858D-14  -5.818061D-14   1.117785D-13
+       5     9.565601D-16   5.203666D-15   5.409604D-14  -3.312881D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643706D-15  -4.706553D-14  -5.762591D-14   3.780858D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247802D-14  -3.890425D-14  -2.742380D-14   5.818061D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259192D-15   2.294363D-14  -2.907833D-14  -1.117785D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9524462144
+    2        -37575.3963614510
+    3        -37562.4670876981
+    4        -37559.1187414059
+    5            -1.9943689856
+    6            -0.1476649943
+    7             6.3145606912
+    8            59.2399536378
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99890306    -0.01059999    -0.00365376    -0.00125928    -0.00141943     0.00099655     0.00347015     0.04528065
+       2      -0.01049936     0.99923600    -0.03152625     0.00896602    -0.00388950     0.00332166     0.01772896    -0.00155036
+       3      -0.00403307     0.03111095     0.99868699     0.03962959    -0.00548833     0.00584575    -0.00230951    -0.00012367
+       4       0.00100733     0.01021701     0.03933447    -0.99916788    -0.00239044    -0.00228326    -0.00009813    -0.00001699
+       5       0.00971038    -0.00807265    -0.00488425     0.00181744    -0.95361171     0.07546923     0.24194210     0.16188425
+       6      -0.02601837     0.01021292    -0.00039389     0.00202853    -0.28371180    -0.53352370    -0.60074223    -0.52266942
+       7      -0.03056654    -0.00408849    -0.00456187    -0.00173110    -0.06204545     0.71743796    -0.00354765    -0.69314191
+       8       0.01896328     0.01251345    -0.00500289    -0.00080298    -0.07892853     0.44146145    -0.76172732     0.46702430
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.452396D-14  -8.922760D-14   1.410238D-13  -3.449272D-14  -6.121030D-19   5.336474D-19  -1.808323D-18   4.887215D-19
+       2     9.905816D-14  -2.961466D-13  -4.676475D-13   6.397777D-13   5.905871D-19  -2.276803D-19   8.999448D-19   4.968721D-18
+       3    -1.243150D-13  -4.920865D-13  -1.536014D-12  -1.038555D-12  -2.446491D-19  -1.086472D-19   4.713266D-19  -6.290310D-18
+       4    -1.805698D-14  -4.462798D-13   1.700669D-12  -1.797910D-11  -2.200967D-20  -1.456445D-19   1.867440D-18  -4.349848D-19
+       5    -1.030859D-15   6.664611D-15   6.674059D-15   3.791586D-14  -5.246359D-20  -7.505198D-23  -1.988184D-20  -7.021517D-20
+       6     3.513878D-15  -4.607764D-15  -4.764613D-15   4.103308D-14  -1.435822D-20  -9.217860D-23   1.855995D-20   3.197366D-19
+       7     3.086336D-15  -4.362959D-17   1.565184D-14  -2.514478D-14  -3.506254D-21   2.074837D-22   1.371688D-20   3.053896D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.688765D-15  -9.642046D-15   1.234263D-15   7.113833D-14   3.139125D-19   1.745414D-19  -3.467012D-19  -2.020261D-19
+       2     8.361120D-15   2.488868D-14   5.136243D-14   2.652730D-13  -7.632264D-20   1.530834D-19   3.758846D-20  -1.563839D-19
+       3    -4.556496D-15   8.480272D-14   3.790158D-13  -1.147507D-12  -1.083886D-19  -1.515374D-19  -2.807897D-19  -3.762909D-19
+       4     7.916157D-14  -1.253144D-13   1.556052D-12  -9.777240D-12   2.314981D-19  -9.454063D-20   1.291755D-18   3.891530D-18
+       5    -3.011800D-16  -2.777572D-16  -5.592257D-15   2.338504D-14  -6.415197D-21  -1.749796D-22   4.493777D-22  -2.727735D-20
+       6     1.830384D-16   2.670169D-16  -2.442536D-15   2.371525D-14  -2.125263D-21   2.534335D-22  -6.149995D-21   1.255848D-20
+       7     4.044450D-16  -9.636468D-16   3.960390D-16  -7.917211D-15   1.076987D-21  -1.620374D-22   6.943247D-21   3.931016D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.172486D-15  -2.707690D-14  -2.490627D-14  -1.211072D-13   1.727003D-19  -4.676012D-19  -6.625705D-19  -7.704730D-19
+       2     2.953985D-14  -1.521303D-13  -3.897115D-13   7.550099D-13   7.320046D-19  -4.307610D-19   1.620618D-19   9.601892D-19
+       3     3.862581D-14  -3.542458D-13  -3.611366D-13  -2.357312D-12  -4.992958D-19  -3.068465D-19   4.744658D-19   2.615840D-18
+       4    -9.051293D-14  -3.881958D-13   3.556853D-12  -3.035372D-11   6.668409D-19  -6.746823D-19   1.612778D-18  -6.930225D-18
+       5    -3.037497D-16   4.090257D-15  -2.201900D-15   7.029861D-14  -8.834379D-20  -4.837519D-22  -1.851701D-20  -2.454028D-20
+       6     6.516536D-16  -1.578440D-15  -1.177005D-14   6.415628D-14  -2.726912D-20  -4.785468D-22   7.114013D-21   6.354701D-20
+       7    -2.309128D-16   7.882551D-16   7.579616D-15  -4.040524D-14   2.593118D-22   5.395374D-23  -2.914192D-21  -2.523205D-20
+ ==== End of matrix output ====
+It.   1    -3.988737971134      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Fri Sep 23
+
+########## START ITERATION NO.   2 ##########   Fri Sep 23 15:01:08 2011
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00400000s
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.756733D+04  -6.387783D-01  -3.336515D-01   8.089820D-02   3.618181D+02  -9.757946D+02  -1.153732D+03   7.186598D+02
+       2    -6.387783D-01  -3.755950D+04  -1.794635D-01  -9.782263D-02   3.005417D+02  -3.949164D+02   1.366677D+02  -4.681255D+02
+       3    -3.336515D-01  -1.794635D-01  -3.755794D+04  -8.338973D-03   1.914090D+02  -4.123953D+00   1.738478D+02   1.771260D+02
+       4     8.089820D-02  -9.782263D-02  -8.338973D-03  -3.755774D+04   7.814565D+01   7.377343D+01  -5.549516D+01  -2.826593D+01
+       5     3.618181D+02   3.005417D+02   1.914090D+02   7.814565D+01  -5.345465D+00   5.154554D+00   2.408066D+00  -8.991597D-01
+       6    -9.757946D+02  -3.949164D+02  -4.123953D+00   7.377343D+01   5.154554D+00  -8.691621D+00  -6.019898D+00   2.263535D+00
+       7    -1.153732D+03   1.366677D+02   1.738478D+02  -5.549516D+01   2.408066D+00  -6.019898D+00  -5.881966D+00   2.868268D+00
+       8     7.186598D+02  -4.681255D+02   1.771260D+02  -2.826593D+01  -8.991597D-01   2.263535D+00   2.868268D+00  -1.878370D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.058452D-28  -7.285842D-12   1.087723D-11   1.664626D-12   9.495053D-15  -5.203206D-14  -1.858545D-14  -6.949489D-14
+       2     7.285842D-12   3.231174D-27  -5.975388D-12  -7.320358D-12  -7.662473D-15   8.265843D-14   1.026975D-13  -6.024517D-14
+       3    -1.087723D-11   5.975388D-12   0.000000D+00   5.762887D-12   1.914489D-14  -1.124965D-13  -1.847689D-13   1.612025D-13
+       4    -1.664626D-12   7.320358D-12  -5.762887D-12   3.231174D-27   1.510015D-15   2.714319D-15  -4.375230D-14   8.672384D-14
+       5    -9.495053D-15   7.662473D-15  -1.914489D-14  -1.510015D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203206D-14  -8.265843D-14   1.124965D-13  -2.714319D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858545D-14  -1.026975D-13   1.847689D-13   4.375230D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949489D-14   6.024517D-14  -1.612025D-13  -8.672384D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     0.000000D+00  -5.890385D-13   3.945406D-13  -7.106786D-12   2.360714D-15   1.274235D-14  -9.319999D-16  -6.185671D-15
+       2     5.890385D-13   0.000000D+00   1.162438D-12  -2.289347D-12  -4.272540D-15   1.987783D-14   1.767600D-14  -1.951122D-14
+       3    -3.945406D-13  -1.162438D-12   4.038968D-28   5.047657D-12   1.192280D-15  -1.442090D-14   5.630536D-15  -3.929719D-15
+       4     7.106786D-12   2.289347D-12  -5.047657D-12  -8.077936D-28  -3.400342D-14   1.014115D-13   1.279971D-13  -5.411168D-14
+       5    -2.360714D-15   4.272540D-15  -1.192280D-15   3.400342D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274235D-14  -1.987783D-14   1.442090D-14  -1.014115D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319999D-16  -1.767600D-14  -5.630536D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185671D-15   1.951122D-14   3.929719D-15   5.411168D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     4.038968D-28  -2.178019D-12  -3.305710D-12   8.164186D-12  -9.568793D-16  -1.643679D-15   4.247793D-14  -8.259209D-15
+       2     2.178019D-12  -2.019484D-28  -4.369368D-12  -6.531267D-12  -5.204098D-15   4.706543D-14   3.890414D-14  -2.294367D-14
+       3     3.305710D-12   4.369368D-12   8.077936D-28   1.183313D-11  -5.409485D-14   5.762593D-14   2.742407D-14   2.907837D-14
+       4    -8.164186D-12   6.531267D-12  -1.183313D-11   8.077936D-28   3.312805D-14  -3.780870D-14  -5.818068D-14   1.117784D-13
+       5     9.568793D-16   5.204098D-15   5.409485D-14  -3.312805D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643679D-15  -4.706543D-14  -5.762593D-14   3.780870D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247793D-14  -3.890414D-14  -2.742407D-14   5.818068D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259209D-15   2.294367D-14  -2.907837D-14  -1.117784D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37645.2141702328
+    2        -37572.3860818759
+    3        -37560.5504336398
+    4        -37558.1533342436
+    5            -0.7993293447
+    6             1.2005071957
+    7             8.8414614704
+    8            62.7540830919
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99891967    -0.00886008    -0.00382106    -0.00098926    -0.00118957     0.00103338     0.00328904     0.04530015
+       2      -0.00881593     0.99965370    -0.01498633     0.00687625    -0.00306592     0.00283711     0.01798167    -0.00144752
+       3      -0.00396010     0.01493290     0.99984104     0.00309629    -0.00458025     0.00672412    -0.00185248    -0.00013908
+       4       0.00091736     0.00693141     0.00299679    -0.99996560    -0.00270845    -0.00189053    -0.00016476    -0.00001588
+       5       0.00969684    -0.00800340    -0.00494521     0.00201941    -0.92739942     0.20331300     0.26774887     0.16345662
+       6      -0.02600089     0.01026718    -0.00015276     0.00201110    -0.37037051    -0.44999251    -0.61890620    -0.52583459
+       7      -0.03057376    -0.00396654    -0.00468622    -0.00154727     0.04659656     0.71707311     0.04118675    -0.69351548
+       8       0.01898448     0.01255939    -0.00482640    -0.00066252    -0.02335889     0.49185244    -0.73704253     0.46234400
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.604568D-14  -9.296878D-14   1.419660D-13  -4.158275D-14  -5.529271D-19   7.229491D-19  -1.764185D-18   4.772171D-19
+       2     1.002865D-13  -3.101076D-13  -5.130616D-13   7.348517D-13   5.645071D-19  -3.608927D-19   8.423917D-19   4.972932D-18
+       3    -1.273280D-13  -5.241711D-13  -1.545572D-12  -2.330938D-12  -2.521148D-19  -1.031108D-19   5.070549D-19  -6.286108D-18
+       4    -1.864278D-14  -5.111696D-13   2.416595D-12  -2.783167D-11  -1.457160D-20  -2.485222D-19   1.858961D-18  -4.237887D-19
+       5    -1.038744D-15   7.110804D-15   5.587327D-15   6.431061D-14  -8.208668D-20   7.649722D-22  -2.586876D-20  -7.547556D-20
+       6     3.567063D-15  -4.727743D-15  -6.625011D-15   6.105849D-14  -3.240478D-20   9.859451D-22   2.675863D-20   3.346860D-19
+       7     3.141621D-15  -5.501431D-17   1.694792D-14  -3.428404D-14   4.135521D-21  -2.074757D-21   1.738756D-20   3.167776D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.846310D-15  -9.554213D-15   3.972398D-15   7.242280D-14   3.311029D-19   1.451614D-19  -3.429733D-19  -2.042714D-19
+       2     8.373158D-15   3.044395D-14   7.172868D-14   2.944782D-13  -5.182527D-20   1.602478D-19   4.864975D-20  -1.563013D-19
+       3    -4.767946D-15   9.506296D-14   5.143518D-13  -2.081556D-12  -1.344790D-19  -1.174608D-19  -2.836925D-19  -3.777809D-19
+       4     8.163503D-14  -1.507724D-13   2.136387D-12  -1.608116D-11   2.355980D-19  -1.991901D-19   1.255806D-18   3.898228D-18
+       5    -3.068593D-16  -3.223673D-16  -7.678805D-15   4.101617D-14  -1.183210D-20   1.483690D-21   1.045246D-21  -2.787271D-20
+       6     1.823716D-16   3.788335D-16  -3.282271D-15   3.633478D-14  -4.736948D-21  -1.362445D-21  -7.052022D-21   1.338814D-20
+       7     4.138654D-16  -1.066259D-15   6.370652D-16  -1.297524D-14   1.406325D-21   8.096245D-22   8.361015D-21   4.046558D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.006655D-15  -2.717364D-14  -2.984993D-14  -1.256693D-13   8.965146D-20  -4.498628D-19  -6.866698D-19  -7.742427D-19
+       2     2.977737D-14  -1.570647D-13  -4.081114D-13   8.489670D-13   6.612896D-19  -5.433011D-19   1.148053D-19   9.609028D-19
+       3     3.943559D-14  -3.771789D-13  -1.675319D-13  -4.798541D-12  -5.319508D-19  -2.534596D-19   4.534716D-19   2.618464D-18
+       4    -9.357986D-14  -4.526363D-13   4.948995D-12  -4.732240D-11   5.812408D-19  -8.643999D-19   1.597132D-18  -6.919572D-18
+       5    -3.017989D-16   4.381592D-15  -5.890502D-15   1.173397D-13  -1.330612D-19   3.751948D-21  -2.243854D-20  -2.614558D-20
+       6     6.559643D-16  -1.508805D-15  -1.480495D-14   9.808649D-14  -5.338595D-20   3.655888D-21   1.040403D-20   6.665925D-20
+       7    -2.451375D-16   8.141840D-16   8.655613D-15  -5.465973D-14   9.181559D-21  -4.782143D-22  -3.231199D-21  -2.485615D-20
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00400000s
+
+########## END ITERATION NO.   2 ##########   Fri Sep 23 15:01:08 2011
+
+It.   2    -2.743318197099     -1.25D+00  3.74D+00  7.52D-01               0.00400000s   LL SL          Fri Sep 23
+
+########## START ITERATION NO.   3 ##########   Fri Sep 23 15:01:08 2011
+
+    3 *** Differential density matrix. DCOVLP     = 0.8671
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00000000s
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.756785D+04  -6.720821D-01  -3.388093D-01   8.378072D-02   3.618191D+02  -9.757951D+02  -1.153732D+03   7.186598D+02
+       2    -6.720821D-01  -3.755984D+04  -2.215817D-01  -1.130064D-01   3.005437D+02  -3.949168D+02   1.366685D+02  -4.681255D+02
+       3    -3.388093D-01  -2.215817D-01  -3.755805D+04  -1.644210D-02   1.914103D+02  -4.124129D+00   1.738484D+02   1.771262D+02
+       4     8.378072D-02  -1.130064D-01  -1.644210D-02  -3.755775D+04   7.814565D+01   7.377325D+01  -5.549497D+01  -2.826588D+01
+       5     3.618191D+02   3.005437D+02   1.914103D+02   7.814565D+01  -5.474125D+00   5.221147D+00   2.485744D+00  -8.768282D-01
+       6    -9.757951D+02  -3.949168D+02  -4.124129D+00   7.377325D+01   5.221147D+00  -9.014050D+00  -6.167825D+00   2.272435D+00
+       7    -1.153732D+03   1.366685D+02   1.738484D+02  -5.549497D+01   2.485744D+00  -6.167825D+00  -6.129872D+00   3.001680D+00
+       8     7.186598D+02  -4.681255D+02   1.771262D+02  -2.826588D+01  -8.768282D-01   2.272435D+00   3.001680D+00  -2.034370D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     2.855598D-28  -7.285917D-12   1.087731D-11   1.664642D-12   9.495023D-15  -5.203204D-14  -1.858547D-14  -6.949492D-14
+       2     7.285917D-12   6.647551D-27  -5.975426D-12  -7.320387D-12  -7.662418D-15   8.265843D-14   1.026975D-13  -6.024515D-14
+       3    -1.087731D-11   5.975426D-12   1.366551D-26   5.762894D-12   1.914484D-14  -1.124965D-13  -1.847690D-13   1.612025D-13
+       4    -1.664642D-12   7.320387D-12  -5.762894D-12  -1.852027D-28   1.509963D-15   2.714321D-15  -4.375232D-14   8.672385D-14
+       5    -9.495023D-15   7.662418D-15  -1.914484D-14  -1.509963D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203204D-14  -8.265843D-14   1.124965D-13  -2.714321D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858547D-14  -1.026975D-13   1.847690D-13   4.375232D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949492D-14   6.024515D-14  -1.612025D-13  -8.672385D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     4.270471D-28  -5.890482D-13   3.945428D-13  -7.106840D-12   2.360702D-15   1.274232D-14  -9.319852D-16  -6.185668D-15
+       2     5.890482D-13  -8.540942D-28   1.162444D-12  -2.289354D-12  -4.272578D-15   1.987783D-14   1.767600D-14  -1.951122D-14
+       3    -3.945428D-13  -1.162444D-12   6.174203D-28   5.047662D-12   1.192329D-15  -1.442089D-14   5.630538D-15  -3.929722D-15
+       4     7.106840D-12   2.289354D-12  -5.047662D-12  -8.077936D-28  -3.400347D-14   1.014115D-13   1.279971D-13  -5.411166D-14
+       5    -2.360702D-15   4.272578D-15  -1.192329D-15   3.400347D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274232D-14  -1.987783D-14   1.442089D-14  -1.014115D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319852D-16  -1.767600D-14  -5.630538D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185668D-15   1.951122D-14   3.929722D-15   5.411166D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     1.044467D-27  -2.178046D-12  -3.305734D-12   8.164220D-12  -9.567095D-16  -1.643689D-15   4.247796D-14  -8.259207D-15
+       2     2.178046D-12   1.157517D-29  -4.369408D-12  -6.531283D-12  -5.204058D-15   4.706541D-14   3.890419D-14  -2.294366D-14
+       3     3.305734D-12   4.369408D-12   1.661888D-27   1.183315D-11  -5.409507D-14   5.762603D-14   2.742395D-14   2.907836D-14
+       4    -8.164220D-12   6.531283D-12  -1.183315D-11  -9.003949D-28   3.312819D-14  -3.780874D-14  -5.818062D-14   1.117785D-13
+       5     9.567095D-16   5.204058D-15   5.409507D-14  -3.312819D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643689D-15  -4.706541D-14  -5.762603D-14   3.780874D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247796D-14  -3.890419D-14  -2.742395D-14   5.818062D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259207D-15   2.294366D-14  -2.907836D-14  -1.117785D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37645.7407138727
+    2        -37572.7211043227
+    3        -37560.6572611680
+    4        -37558.1613300791
+    5            -0.9103726177
+    6             1.1654663029
+    7             8.6020993910
+    8            62.2844961741
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99891554    -0.00930678    -0.00382806    -0.00103684    -0.00117788     0.00107254     0.00334005     0.04529577
+       2      -0.00925113     0.99959004    -0.01821393     0.00771547    -0.00302683     0.00300122     0.01795973    -0.00147081
+       3      -0.00400656     0.01813365     0.99977452     0.00603109    -0.00447307     0.00678336    -0.00189805    -0.00013690
+       4       0.00094234     0.00783433     0.00589380    -0.99994603    -0.00273786    -0.00184864    -0.00015378    -0.00001592
+       5       0.00970048    -0.00801679    -0.00492502     0.00199816    -0.92418366     0.21962563     0.26623130     0.16304422
+       6      -0.02600542     0.01025349    -0.00019259     0.00201898    -0.37716478    -0.44808089    -0.61682787    -0.52507913
+       7      -0.03057176    -0.00399350    -0.00467011    -0.00156534     0.05793422     0.71651127     0.03568723    -0.69354654
+       8       0.01897915     0.01255269    -0.00486399    -0.00066497    -0.01539004     0.48738087    -0.73961704     0.46330098
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.568188D-14  -9.211908D-14   1.417374D-13  -4.196025D-14  -5.409707D-19   7.201533D-19  -1.768411D-18   4.795314D-19
+       2     9.998696D-14  -3.066267D-13  -5.025278D-13   7.435735D-13   5.578993D-19  -3.643713D-19   8.513857D-19   4.972006D-18
+       3    -1.266219D-13  -5.164772D-13  -1.531795D-12  -2.164052D-12  -2.536203D-19  -9.575659D-20   4.994960D-19  -6.286934D-18
+       4    -1.849670D-14  -4.990175D-13   2.322719D-12  -2.694010D-11  -1.924091D-20  -2.362384D-19   1.859991D-18  -4.262066D-19
+       5    -1.036752D-15   7.010296D-15   5.630382D-15   6.153891D-14  -1.334773D-19   5.586670D-22  -2.539421D-20  -7.477796D-20
+       6     3.554272D-15  -4.692113D-15  -6.334262D-15   5.940765D-14  -5.400049D-20   1.031699D-21   2.615656D-20   3.329887D-19
+       7     3.128501D-15  -5.925485D-17   1.670015D-14  -3.378246D-14   8.386094D-21  -2.152279D-21   1.703271D-20   3.157885D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.818940D-15  -9.599204D-15   3.811231D-15   7.149684D-14   3.334707D-19   1.377092D-19  -3.440152D-19  -2.037941D-19
+       2     8.370528D-15   2.925168D-14   6.655684D-14   3.042116D-13  -4.932845D-20   1.613571D-19   4.739276D-20  -1.563538D-19
+       3    -4.739619D-15   9.286033D-14   4.885958D-13  -1.956250D-12  -1.362320D-19  -1.171542D-19  -2.834789D-19  -3.774353D-19
+       4     8.116163D-14  -1.459758D-13   2.056549D-12  -1.548075D-11   2.316626D-19  -1.948176D-19   1.262211D-18   3.896729D-18
+       5    -3.057348D-16  -3.111506D-16  -7.338501D-15   3.905934D-14  -2.116811D-20   1.445815D-21   1.094709D-21  -2.778314D-20
+       6     1.825667D-16   3.554670D-16  -3.186859D-15   3.524762D-14  -8.608834D-21  -1.399207D-21  -7.049911D-21   1.330326D-20
+       7     4.122048D-16  -1.046022D-15   6.521757D-16  -1.273189D-14   2.208734D-21   8.607995D-22   8.335686D-21   4.034476D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.024414D-15  -2.709003D-14  -2.910899D-14  -1.266273D-13   8.274038D-20  -4.556387D-19  -6.847047D-19  -7.733493D-19
+       2     2.970517D-14  -1.555780D-13  -4.053128D-13   8.757827D-13   6.522599D-19  -5.529246D-19   1.198480D-19   9.608296D-19
+       3     3.926685D-14  -3.716440D-13  -1.935366D-13  -4.478008D-12  -5.366393D-19  -2.421602D-19   4.582512D-19   2.617880D-18
+       4    -9.299142D-14  -4.404503D-13   4.758557D-12  -4.578251D-11   5.673034D-19  -8.630134D-19   1.594029D-18  -6.921706D-18
+       5    -3.017570D-16   4.315340D-15  -5.391241D-15   1.122969D-13  -2.167861D-19   3.265580D-21  -2.238404D-20  -2.607394D-20
+       6     6.544912D-16  -1.514327D-15  -1.438511D-14   9.535437D-14  -8.883095D-20   3.699380D-21   1.043135D-20   6.635424D-20
+       7    -2.426806D-16   8.037290D-16   8.507160D-15  -5.399504D-14   1.627084D-20  -6.174141D-22  -3.476872D-21  -2.499560D-20
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   3 ##########   Fri Sep 23 15:01:08 2011
+
+It.   3    -2.854243595786      1.11D-01 -4.97D-01  6.31D-02   DIIS   2    0.00000000s   LL SL          Fri Sep 23
+
+########## START ITERATION NO.   4 ##########   Fri Sep 23 15:01:08 2011
+
+    4 *** Differential density matrix. DCOVLP     = 1.0030
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00000000s
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.756787D+04  -6.727075D-01  -3.387583D-01   8.387431D-02   3.618191D+02  -9.757951D+02  -1.153732D+03   7.186598D+02
+       2    -6.727075D-01  -3.755985D+04  -2.234251D-01  -1.135637D-01   3.005437D+02  -3.949168D+02   1.366685D+02  -4.681255D+02
+       3    -3.387583D-01  -2.234251D-01  -3.755805D+04  -1.702291D-02   1.914103D+02  -4.124112D+00   1.738484D+02   1.771263D+02
+       4     8.387431D-02  -1.135637D-01  -1.702291D-02  -3.755775D+04   7.814565D+01   7.377325D+01  -5.549497D+01  -2.826587D+01
+       5     3.618191D+02   3.005437D+02   1.914103D+02   7.814565D+01  -5.479877D+00   5.225663D+00   2.488388D+00  -8.736557D-01
+       6    -9.757951D+02  -3.949168D+02  -4.124112D+00   7.377325D+01   5.225663D+00  -9.026798D+00  -6.171365D+00   2.272595D+00
+       7    -1.153732D+03   1.366685D+02   1.738484D+02  -5.549497D+01   2.488388D+00  -6.171365D+00  -6.140411D+00   3.006710D+00
+       8     7.186598D+02  -4.681255D+02   1.771263D+02  -2.826587D+01  -8.736557D-01   2.272595D+00   3.006710D+00  -2.041473D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     1.335077D-27  -7.285920D-12   1.087732D-11   1.664643D-12   9.495008D-15  -5.203204D-14  -1.858547D-14  -6.949492D-14
+       2     7.285920D-12  -1.186913D-26  -5.975428D-12  -7.320389D-12  -7.662411D-15   8.265843D-14   1.026975D-13  -6.024515D-14
+       3    -1.087732D-11   5.975428D-12  -9.148412D-27   5.762895D-12   1.914484D-14  -1.124965D-13  -1.847690D-13   1.612025D-13
+       4    -1.664643D-12   7.320389D-12  -5.762895D-12  -3.634007D-27   1.509969D-15   2.714322D-15  -4.375232D-14   8.672386D-14
+       5    -9.495008D-15   7.662411D-15  -1.914484D-14  -1.509969D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203204D-14  -8.265843D-14   1.124965D-13  -2.714322D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858547D-14  -1.026975D-13   1.847690D-13   4.375232D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949492D-14   6.024515D-14  -1.612025D-13  -8.672386D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -9.723092D-28  -5.890485D-13   3.945429D-13  -7.106842D-12   2.360701D-15   1.274232D-14  -9.319840D-16  -6.185668D-15
+       2     5.890485D-13   5.717757D-28   1.162445D-12  -2.289354D-12  -4.272579D-15   1.987783D-14   1.767600D-14  -1.951122D-14
+       3    -3.945429D-13  -1.162445D-12  -3.110649D-28   5.047663D-12   1.192330D-15  -1.442089D-14   5.630537D-15  -3.929723D-15
+       4     7.106842D-12   2.289354D-12  -5.047663D-12   1.074349D-28  -3.400346D-14   1.014115D-13   1.279971D-13  -5.411166D-14
+       5    -2.360701D-15   4.272579D-15  -1.192330D-15   3.400346D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274232D-14  -1.987783D-14   1.442089D-14  -1.014115D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319840D-16  -1.767600D-14  -5.630537D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185668D-15   1.951122D-14   3.929723D-15   5.411166D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     3.182757D-28  -2.178047D-12  -3.305735D-12   8.164221D-12  -9.567045D-16  -1.643687D-15   4.247796D-14  -8.259207D-15
+       2     2.178047D-12  -1.681654D-30  -4.369409D-12  -6.531284D-12  -5.204054D-15   4.706541D-14   3.890419D-14  -2.294366D-14
+       3     3.305735D-12   4.369409D-12   1.608861D-27   1.183315D-11  -5.409507D-14   5.762603D-14   2.742395D-14   2.907836D-14
+       4    -8.164221D-12   6.531284D-12  -1.183315D-11   1.208881D-28   3.312821D-14  -3.780873D-14  -5.818062D-14   1.117785D-13
+       5     9.567045D-16   5.204054D-15   5.409507D-14  -3.312821D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643687D-15  -4.706541D-14  -5.762603D-14   3.780873D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247796D-14  -3.890419D-14  -2.742395D-14   5.818062D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259207D-15   2.294366D-14  -2.907836D-14  -1.117785D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37645.7587871222
+    2        -37572.7360129131
+    3        -37560.6640761641
+    4        -37558.1619469005
+    5            -0.9140354139
+    6             1.1618703361
+    7             8.5902933306
+    8            62.2674174521
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99891547    -0.00931551    -0.00382546    -0.00103876    -0.00117809     0.00107496     0.00334095     0.04529564
+       2      -0.00925938     0.99958715    -0.01835654     0.00774231    -0.00302891     0.00301189     0.01795753    -0.00147149
+       3      -0.00400564     0.01827446     0.99977068     0.00623988    -0.00446627     0.00678668    -0.00190224    -0.00013684
+       4       0.00094312     0.00786586     0.00610097    -0.99994454    -0.00273953    -0.00184617    -0.00015371    -0.00001594
+       5       0.00970054    -0.00801747    -0.00492432     0.00199689    -0.92405290     0.22059832     0.26589029     0.16302869
+       6      -0.02600550     0.01025318    -0.00019443     0.00201923    -0.37740923    -0.44799956    -0.61675370    -0.52506000
+       7      -0.03057173    -0.00399436    -0.00466919    -0.00156646     0.05859352     0.71647490     0.03536347    -0.69354531
+       8       0.01897904     0.01255218    -0.00486565    -0.00066559    -0.01474079     0.48706960    -0.73981712     0.46332997
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.567292D-14  -9.209312D-14   1.417306D-13  -4.193477D-14  -5.398346D-19   7.198784D-19  -1.768854D-18   4.795990D-19
+       2     9.998019D-14  -3.065214D-13  -5.021438D-13   7.433430D-13   5.572766D-19  -3.645306D-19   8.518838D-19   4.971982D-18
+       3    -1.266028D-13  -5.162220D-13  -1.531676D-12  -2.153352D-12  -2.538295D-19  -9.528419D-20   4.992340D-19  -6.286960D-18
+       4    -1.849257D-14  -4.985033D-13   2.316932D-12  -2.686859D-11  -1.997945D-20  -2.354047D-19   1.860074D-18  -4.262777D-19
+       5    -1.036718D-15   7.006833D-15   5.638811D-15   6.133718D-14  -1.394180D-19   5.481885D-22  -2.537049D-20  -7.473700D-20
+       6     3.553963D-15  -4.691313D-15  -6.319022D-15   5.926661D-14  -5.646614D-20   1.034127D-21   2.612518D-20   3.329247D-19
+       7     3.128168D-15  -5.926306D-17   1.668944D-14  -3.372471D-14   8.862316D-21  -2.154049D-21   1.701458D-20   3.157511D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.818152D-15  -9.600449D-15   3.797972D-15   7.147833D-14   3.336915D-19   1.372499D-19  -3.439923D-19  -2.037783D-19
+       2     8.370728D-15   2.920787D-14   6.637220D-14   3.042721D-13  -4.919402D-20   1.614238D-19   4.730297D-20  -1.563550D-19
+       3    -4.738430D-15   9.278168D-14   4.873864D-13  -1.948344D-12  -1.362658D-19  -1.171511D-19  -2.834789D-19  -3.774262D-19
+       4     8.114577D-14  -1.457749D-13   2.051692D-12  -1.543268D-11   2.311100D-19  -1.944911D-19   1.262506D-18   3.896687D-18
+       5    -3.057019D-16  -3.108053D-16  -7.320627D-15   3.891872D-14  -2.218057D-20   1.442798D-21   1.095416D-21  -2.777822D-20
+       6     1.825796D-16   3.545708D-16  -3.179738D-15   3.515422D-14  -9.026266D-21  -1.397929D-21  -7.048481D-21   1.329818D-20
+       7     4.121510D-16  -1.045240D-15   6.508614D-16  -1.269824D-14   2.289562D-21   8.614682D-22   8.331004D-21   4.033773D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.025852D-15  -2.709165D-14  -2.907896D-14  -1.266278D-13   8.249581D-20  -4.560129D-19  -6.845113D-19  -7.733239D-19
+       2     2.970436D-14  -1.555453D-13  -4.052041D-13   8.758968D-13   6.516741D-19  -5.534800D-19   1.203036D-19   9.608293D-19
+       3     3.926202D-14  -3.714676D-13  -1.952133D-13  -4.457686D-12  -5.370534D-19  -2.414708D-19   4.583105D-19   2.617861D-18
+       4    -9.297173D-14  -4.399283D-13   4.747013D-12  -4.565708D-11   5.660873D-19  -8.628203D-19   1.594302D-18  -6.921769D-18
+       5    -3.017807D-16   4.313109D-15  -5.359836D-15   1.119314D-13  -2.268930D-19   3.243283D-21  -2.237967D-20  -2.606714D-20
+       6     6.544808D-16  -1.515031D-15  -1.436070D-14   9.511142D-14  -9.303858D-20   3.694847D-21   1.042198D-20   6.633753D-20
+       7    -2.425821D-16   8.035155D-16   8.498392D-15  -5.390420D-14   1.707997D-20  -6.224761D-22  -3.484797D-21  -2.500035D-20
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   4 ##########   Fri Sep 23 15:01:08 2011
+
+It.   4    -2.855280339970      1.04D-03 -4.48D-02  5.76D-03   DIIS   3    0.00000000s   LL SL          Fri Sep 23
+
+########## START ITERATION NO.   5 ##########   Fri Sep 23 15:01:08 2011
+
+    5 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00000000s
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.756787D+04  -6.727175D-01  -3.387610D-01   8.387498D-02   3.618191D+02  -9.757951D+02  -1.153732D+03   7.186598D+02
+       2    -6.727175D-01  -3.755985D+04  -2.234306D-01  -1.135666D-01   3.005437D+02  -3.949168D+02   1.366685D+02  -4.681255D+02
+       3    -3.387610D-01  -2.234306D-01  -3.755805D+04  -1.702020D-02   1.914103D+02  -4.124112D+00   1.738484D+02   1.771263D+02
+       4     8.387498D-02  -1.135666D-01  -1.702020D-02  -3.755775D+04   7.814565D+01   7.377325D+01  -5.549497D+01  -2.826587D+01
+       5     3.618191D+02   3.005437D+02   1.914103D+02   7.814565D+01  -5.479970D+00   5.225604D+00   2.488445D+00  -8.736342D-01
+       6    -9.757951D+02  -3.949168D+02  -4.124112D+00   7.377325D+01   5.225604D+00  -9.026816D+00  -6.171433D+00   2.272600D+00
+       7    -1.153732D+03   1.366685D+02   1.738484D+02  -5.549497D+01   2.488445D+00  -6.171433D+00  -6.140388D+00   3.006747D+00
+       8     7.186598D+02  -4.681255D+02   1.771263D+02  -2.826587D+01  -8.736342D-01   2.272600D+00   3.006747D+00  -2.041467D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.227765D-28  -7.285920D-12   1.087732D-11   1.664643D-12   9.495008D-15  -5.203204D-14  -1.858547D-14  -6.949492D-14
+       2     7.285920D-12   3.406606D-27  -5.975428D-12  -7.320389D-12  -7.662411D-15   8.265843D-14   1.026975D-13  -6.024515D-14
+       3    -1.087732D-11   5.975428D-12  -6.447408D-27   5.762895D-12   1.914484D-14  -1.124965D-13  -1.847690D-13   1.612025D-13
+       4    -1.664643D-12   7.320389D-12  -5.762895D-12  -6.501283D-27   1.509969D-15   2.714323D-15  -4.375232D-14   8.672386D-14
+       5    -9.495008D-15   7.662411D-15  -1.914484D-14  -1.509969D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203204D-14  -8.265843D-14   1.124965D-13  -2.714323D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858547D-14  -1.026975D-13   1.847690D-13   4.375232D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949492D-14   6.024515D-14  -1.612025D-13  -8.672386D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     4.201384D-28  -5.890485D-13   3.945429D-13  -7.106842D-12   2.360701D-15   1.274232D-14  -9.319840D-16  -6.185668D-15
+       2     5.890485D-13  -4.150609D-28   1.162445D-12  -2.289354D-12  -4.272579D-15   1.987783D-14   1.767600D-14  -1.951122D-14
+       3    -3.945429D-13  -1.162445D-12  -6.103692D-28   5.047663D-12   1.192330D-15  -1.442089D-14   5.630538D-15  -3.929723D-15
+       4     7.106842D-12   2.289354D-12  -5.047663D-12   8.174517D-28  -3.400346D-14   1.014115D-13   1.279971D-13  -5.411166D-14
+       5    -2.360701D-15   4.272579D-15  -1.192330D-15   3.400346D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274232D-14  -1.987783D-14   1.442089D-14  -1.014115D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319840D-16  -1.767600D-14  -5.630538D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185668D-15   1.951122D-14   3.929723D-15   5.411166D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.088885D-28  -2.178047D-12  -3.305735D-12   8.164221D-12  -9.567044D-16  -1.643687D-15   4.247796D-14  -8.259207D-15
+       2     2.178047D-12  -2.044871D-28  -4.369409D-12  -6.531284D-12  -5.204054D-15   4.706541D-14   3.890419D-14  -2.294366D-14
+       3     3.305735D-12   4.369409D-12  -2.038523D-29   1.183315D-11  -5.409507D-14   5.762603D-14   2.742395D-14   2.907836D-14
+       4    -8.164221D-12   6.531284D-12  -1.183315D-11   8.173008D-28   3.312821D-14  -3.780873D-14  -5.818062D-14   1.117785D-13
+       5     9.567044D-16   5.204054D-15   5.409507D-14  -3.312821D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643687D-15  -4.706541D-14  -5.762603D-14   3.780873D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247796D-14  -3.890419D-14  -2.742395D-14   5.818062D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259207D-15   2.294366D-14  -2.907836D-14  -1.117785D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37645.7588779943
+    2        -37572.7360395540
+    3        -37560.6640596624
+    4        -37558.1619428153
+    5            -0.9141608939
+    6             1.1619772395
+    7             8.5903010086
+    8            62.2673468926
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99891546    -0.00931564    -0.00382549    -0.00103876    -0.00117808     0.00107497     0.00334097     0.04529564
+       2      -0.00925951     0.99958714    -0.01835692     0.00774251    -0.00302888     0.00301188     0.01795754    -0.00147149
+       3      -0.00400567     0.01827485     0.99977068     0.00623880    -0.00446617     0.00678675    -0.00190222    -0.00013684
+       4       0.00094312     0.00786604     0.00609988    -0.99994454    -0.00273956    -0.00184613    -0.00015372    -0.00001594
+       5       0.00970054    -0.00801747    -0.00492431     0.00199690    -0.92405003     0.22061044     0.26589026     0.16302863
+       6      -0.02600550     0.01025318    -0.00019443     0.00201923    -0.37741501    -0.44799216    -0.61675573    -0.52505979
+       7      -0.03057173    -0.00399437    -0.00466919    -0.00156646     0.05860356     0.71647392     0.03536577    -0.69354536
+       8       0.01897903     0.01255218    -0.00486565    -0.00066558    -0.01473325     0.48707236    -0.73981533     0.46333017
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.567282D-14  -9.209293D-14   1.417305D-13  -4.193540D-14  -5.398230D-19   7.198921D-19  -1.768852D-18   4.795995D-19
+       2     9.998010D-14  -3.065206D-13  -5.021416D-13   7.433519D-13   5.572705D-19  -3.645412D-19   8.518846D-19   4.971982D-18
+       3    -1.266026D-13  -5.162204D-13  -1.531668D-12  -2.153391D-12  -2.538320D-19  -9.528261D-20   4.992316D-19  -6.286960D-18
+       4    -1.849254D-14  -4.985021D-13   2.316946D-12  -2.686899D-11  -1.998473D-20  -2.354108D-19   1.860073D-18  -4.262782D-19
+       5    -1.036717D-15   7.006814D-15   5.638723D-15   6.133815D-14  -1.395069D-19   5.479452D-22  -2.537035D-20  -7.473695D-20
+       6     3.553959D-15  -4.691302D-15  -6.319027D-15   5.926748D-14  -5.650352D-20   1.034170D-21   2.612545D-20   3.329245D-19
+       7     3.128165D-15  -5.926592D-17   1.668942D-14  -3.372518D-14   8.869620D-21  -2.154368D-21   1.701445D-20   3.157512D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.818146D-15  -9.600461D-15   3.798075D-15   7.147796D-14   3.336938D-19   1.372464D-19  -3.439916D-19  -2.037782D-19
+       2     8.370725D-15   2.920768D-14   6.637136D-14   3.042776D-13  -4.919177D-20   1.614243D-19   4.730343D-20  -1.563550D-19
+       3    -4.738428D-15   9.278131D-14   4.873854D-13  -1.948370D-12  -1.362672D-19  -1.171482D-19  -2.834796D-19  -3.774261D-19
+       4     8.114568D-14  -1.457744D-13   2.051702D-12  -1.543294D-11   2.311063D-19  -1.944985D-19   1.262506D-18   3.896687D-18
+       5    -3.057016D-16  -3.108029D-16  -7.320637D-15   3.891935D-14  -2.217287D-20   1.443700D-21   1.095698D-21  -2.777811D-20
+       6     1.825796D-16   3.545675D-16  -3.179764D-15   3.515478D-14  -9.022622D-21  -1.397784D-21  -7.048583D-21   1.329816D-20
+       7     4.121507D-16  -1.045237D-15   6.508872D-16  -1.269854D-14   2.288735D-21   8.615123D-22   8.331100D-21   4.033772D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.025848D-15  -2.709160D-14  -2.907893D-14  -1.266285D-13   8.248985D-20  -4.560118D-19  -6.845131D-19  -7.733236D-19
+       2     2.970433D-14  -1.555449D-13  -4.052034D-13   8.759129D-13   6.516660D-19  -5.534895D-19   1.203025D-19   9.608292D-19
+       3     3.926198D-14  -3.714664D-13  -1.952078D-13  -4.457755D-12  -5.370575D-19  -2.414647D-19   4.583100D-19   2.617860D-18
+       4    -9.297163D-14  -4.399270D-13   4.747038D-12  -4.565780D-11   5.660732D-19  -8.628340D-19   1.594298D-18  -6.921769D-18
+       5    -3.017805D-16   4.313096D-15  -5.359921D-15   1.119331D-13  -2.269901D-19   3.244416D-21  -2.237940D-20  -2.606722D-20
+       6     6.544802D-16  -1.515027D-15  -1.436074D-14   9.511297D-14  -9.307888D-20   3.695795D-21   1.042256D-20   6.633761D-20
+       7    -2.425818D-16   8.035115D-16   8.498400D-15  -5.390501D-14   1.708759D-20  -6.227430D-22  -3.485050D-21  -2.500048D-20
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   5 ##########   Fri Sep 23 15:01:08 2011
+
+It.   5    -2.855284818135      4.48D-06 -1.86D-03  5.36D-05   DIIS   4    0.00000000s   LL SL          Fri Sep 23
+
+########## START ITERATION NO.   6 ##########   Fri Sep 23 15:01:08 2011
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00000000s
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -3.756787D+04  -6.727174D-01  -3.387610D-01   8.387498D-02   3.618191D+02  -9.757951D+02  -1.153732D+03   7.186598D+02
+       2    -6.727174D-01  -3.755985D+04  -2.234307D-01  -1.135666D-01   3.005437D+02  -3.949168D+02   1.366685D+02  -4.681255D+02
+       3    -3.387610D-01  -2.234307D-01  -3.755805D+04  -1.702027D-02   1.914103D+02  -4.124112D+00   1.738484D+02   1.771263D+02
+       4     8.387498D-02  -1.135666D-01  -1.702027D-02  -3.755775D+04   7.814565D+01   7.377325D+01  -5.549497D+01  -2.826587D+01
+       5     3.618191D+02   3.005437D+02   1.914103D+02   7.814565D+01  -5.479969D+00   5.225605D+00   2.488444D+00  -8.736342D-01
+       6    -9.757951D+02  -3.949168D+02  -4.124112D+00   7.377325D+01   5.225605D+00  -9.026816D+00  -6.171432D+00   2.272600D+00
+       7    -1.153732D+03   1.366685D+02   1.738484D+02  -5.549497D+01   2.488444D+00  -6.171432D+00  -6.140389D+00   3.006747D+00
+       8     7.186598D+02  -4.681255D+02   1.771263D+02  -2.826587D+01  -8.736342D-01   2.272600D+00   3.006747D+00  -2.041467D+00
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     3.245368D-30  -7.285920D-12   1.087732D-11   1.664643D-12   9.495008D-15  -5.203204D-14  -1.858547D-14  -6.949492D-14
+       2     7.285920D-12  -9.833245D-27  -5.975428D-12  -7.320389D-12  -7.662411D-15   8.265843D-14   1.026975D-13  -6.024515D-14
+       3    -1.087732D-11   5.975428D-12   6.602885D-27   5.762895D-12   1.914484D-14  -1.124965D-13  -1.847690D-13   1.612025D-13
+       4    -1.664643D-12   7.320389D-12  -5.762895D-12  -3.196121D-27   1.509969D-15   2.714323D-15  -4.375232D-14   8.672386D-14
+       5    -9.495008D-15   7.662411D-15  -1.914484D-14  -1.509969D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     5.203204D-14  -8.265843D-14   1.124965D-13  -2.714323D-15   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     1.858547D-14  -1.026975D-13   1.847690D-13   4.375232D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.949492D-14   6.024515D-14  -1.612025D-13  -8.672386D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -8.208977D-28  -5.890485D-13   3.945429D-13  -7.106842D-12   2.360701D-15   1.274232D-14  -9.319840D-16  -6.185668D-15
+       2     5.890485D-13   1.229183D-27   1.162445D-12  -2.289354D-12  -4.272579D-15   1.987783D-14   1.767600D-14  -1.951122D-14
+       3    -3.945429D-13  -1.162445D-12   4.148576D-28   5.047663D-12   1.192330D-15  -1.442089D-14   5.630538D-15  -3.929723D-15
+       4     7.106842D-12   2.289354D-12  -5.047663D-12  -8.253201D-28  -3.400346D-14   1.014115D-13   1.279971D-13  -5.411166D-14
+       5    -2.360701D-15   4.272579D-15  -1.192330D-15   3.400346D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6    -1.274232D-14  -1.987783D-14   1.442089D-14  -1.014115D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7     9.319840D-16  -1.767600D-14  -5.630538D-15  -1.279971D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     6.185668D-15   1.951122D-14   3.929723D-15   5.411166D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.058587D-28  -2.178047D-12  -3.305735D-12   8.164221D-12  -9.567044D-16  -1.643687D-15   4.247796D-14  -8.259207D-15
+       2     2.178047D-12   2.187375D-30  -4.369409D-12  -6.531284D-12  -5.204054D-15   4.706541D-14   3.890419D-14  -2.294366D-14
+       3     3.305735D-12   4.369409D-12   1.633086D-27   1.183315D-11  -5.409507D-14   5.762603D-14   2.742395D-14   2.907836D-14
+       4    -8.164221D-12   6.531284D-12  -1.183315D-11  -8.253198D-28   3.312821D-14  -3.780873D-14  -5.818062D-14   1.117785D-13
+       5     9.567044D-16   5.204054D-15   5.409507D-14  -3.312821D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       6     1.643687D-15  -4.706541D-14  -5.762603D-14   3.780873D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       7    -4.247796D-14  -3.890419D-14  -2.742395D-14   5.818062D-14   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+       8     8.259207D-15   2.294366D-14  -2.907836D-14  -1.117785D-13   0.000000D+00   0.000000D+00   0.000000D+00   0.000000D+00
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37645.7588781273
+    2        -37572.7360401097
+    3        -37560.6640602879
+    4        -37558.1619429050
+    5            -0.9141596536
+    6             1.1619757494
+    7             8.5903002239
+    8            62.2673466414
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1      -0.99891546    -0.00931564    -0.00382549    -0.00103876    -0.00117808     0.00107497     0.00334097     0.04529564
+       2      -0.00925950     0.99958714    -0.01835692     0.00774251    -0.00302888     0.00301188     0.01795754    -0.00147149
+       3      -0.00400567     0.01827485     0.99977068     0.00623882    -0.00446617     0.00678674    -0.00190222    -0.00013684
+       4       0.00094312     0.00786604     0.00609990    -0.99994454    -0.00273956    -0.00184613    -0.00015372    -0.00001594
+       5       0.00970054    -0.00801747    -0.00492431     0.00199690    -0.92405006     0.22061035     0.26589023     0.16302863
+       6      -0.02600550     0.01025318    -0.00019443     0.00201923    -0.37741495    -0.44799224    -0.61675570    -0.52505979
+       7      -0.03057173    -0.00399437    -0.00466919    -0.00156646     0.05860347     0.71647393     0.03536572    -0.69354536
+       8       0.01897903     0.01255218    -0.00486565    -0.00066558    -0.01473329     0.48707231    -0.73981537     0.46333017
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.567282D-14  -9.209293D-14   1.417305D-13  -4.193539D-14  -5.398230D-19   7.198919D-19  -1.768852D-18   4.795995D-19
+       2     9.998010D-14  -3.065206D-13  -5.021416D-13   7.433517D-13   5.572707D-19  -3.645411D-19   8.518846D-19   4.971982D-18
+       3    -1.266026D-13  -5.162204D-13  -1.531668D-12  -2.153390D-12  -2.538317D-19  -9.528259D-20   4.992316D-19  -6.286960D-18
+       4    -1.849254D-14  -4.985020D-13   2.316945D-12  -2.686898D-11  -1.998454D-20  -2.354107D-19   1.860073D-18  -4.262782D-19
+       5    -1.036717D-15   7.006814D-15   5.638724D-15   6.133813D-14  -1.394475D-19   5.502989D-22  -2.536996D-20  -7.473694D-20
+       6     3.553959D-15  -4.691302D-15  -6.319026D-15   5.926746D-14  -5.647752D-20   1.035200D-21   2.612561D-20   3.329245D-19
+       7     3.128165D-15  -5.926587D-17   1.668941D-14  -3.372517D-14   8.863938D-21  -2.154591D-21   1.701441D-20   3.157512D-19
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     9.818146D-15  -9.600461D-15   3.798073D-15   7.147797D-14   3.336938D-19   1.372464D-19  -3.439916D-19  -2.037782D-19
+       2     8.370725D-15   2.920768D-14   6.637136D-14   3.042775D-13  -4.919181D-20   1.614243D-19   4.730342D-20  -1.563550D-19
+       3    -4.738428D-15   9.278131D-14   4.873854D-13  -1.948369D-12  -1.362672D-19  -1.171483D-19  -2.834795D-19  -3.774261D-19
+       4     8.114568D-14  -1.457744D-13   2.051702D-12  -1.543293D-11   2.311063D-19  -1.944984D-19   1.262506D-18   3.896687D-18
+       5    -3.057016D-16  -3.108029D-16  -7.320636D-15   3.891934D-14  -2.217712D-20   1.443525D-21   1.095668D-21  -2.777812D-20
+       6     1.825796D-16   3.545675D-16  -3.179763D-15   3.515477D-14  -9.024483D-21  -1.397859D-21  -7.048595D-21   1.329815D-20
+       7     4.121507D-16  -1.045237D-15   6.508868D-16  -1.269853D-14   2.289141D-21   8.615286D-22   8.331102D-21   4.033772D-20
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     6.025848D-15  -2.709160D-14  -2.907893D-14  -1.266285D-13   8.249000D-20  -4.560118D-19  -6.845130D-19  -7.733236D-19
+       2     2.970433D-14  -1.555449D-13  -4.052034D-13   8.759127D-13   6.516662D-19  -5.534894D-19   1.203026D-19   9.608292D-19
+       3     3.926198D-14  -3.714664D-13  -1.952079D-13  -4.457753D-12  -5.370572D-19  -2.414647D-19   4.583100D-19   2.617860D-18
+       4    -9.297163D-14  -4.399270D-13   4.747037D-12  -4.565778D-11   5.660735D-19  -8.628338D-19   1.594298D-18  -6.921769D-18
+       5    -3.017805D-16   4.313096D-15  -5.359918D-15   1.119331D-13  -2.269175D-19   3.247294D-21  -2.237893D-20  -2.606720D-20
+       6     6.544802D-16  -1.515027D-15  -1.436074D-14   9.511294D-14  -9.304713D-20   3.697048D-21   1.042276D-20   6.633761D-20
+       7    -2.425818D-16   8.035116D-16   8.498400D-15  -5.390500D-14   1.708065D-20  -6.230163D-22  -3.485093D-21  -2.500048D-20
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   6 ##########   Fri Sep 23 15:01:08 2011
+
+It.   6    -2.855284818872      7.37D-10 -3.89D-05  5.23D-07   DIIS   5    0.00000000s   LL SL          Fri Sep 23
+
+########## START ITERATION NO.   7 ##########   Fri Sep 23 15:01:08 2011
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   61.54%    0.00%    9.62%   0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00400000s
+
+########## END ITERATION NO.   7 ##########   Fri Sep 23 15:01:08 2011
+
+It.   7    -2.855284818872      5.46D-14  3.78D-07  2.65D-09   DIIS   5    0.00400000s   LL SL          Fri Sep 23
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -3.988737971134      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Fri Sep 23
+It.   2    -2.743318197099     -1.25D+00  3.74D+00  7.52D-01               0.00400000s   LL SL          Fri Sep 23
+It.   3    -2.854243595786      1.11D-01 -4.97D-01  6.31D-02   DIIS   2    0.00000000s   LL SL          Fri Sep 23
+It.   4    -2.855280339970      1.04D-03 -4.48D-02  5.76D-03   DIIS   3    0.00000000s   LL SL          Fri Sep 23
+It.   5    -2.855284818135      4.48D-06 -1.86D-03  5.36D-05   DIIS   4    0.00000000s   LL SL          Fri Sep 23
+It.   6    -2.855284818872      7.37D-10 -3.89D-05  5.23D-07   DIIS   5    0.00000000s   LL SL          Fri Sep 23
+It.   7    -2.855284818872      5.46D-14  3.78D-07  2.65D-09   DIIS   5    0.00400000s   LL SL          Fri Sep 23
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    7 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL        :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -2.8552848188715765
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     0.0000000000000000
+   SS Coulombic correction                  :     0.0000000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -2.8552848188715765
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+ -0.91415965364240  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+  1.16197574944925  ( 2)     8.59030022385150  ( 2)    62.26734664143753  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     1.16197575 au (symmetry E1 )
+  - E(HOMO) :    -0.91415965 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     2.07613540 au
+
+
+ 
+     Date and time (Linux)  : Fri Sep 23 15:01:08 2011
+     Host name              :                                         
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :        97.60
+  
+  Largest           5  allocations
+  
+      488.28 Mb at subroutine                                            for work array at main                        
+        0.00 Mb at subroutine                                            for buf in butobs                             
+        0.00 Mb at subroutine                                            for unnamed variable                          
+        0.00 Mb at subroutine                                            for unnamed variable                          
+        0.00 Mb at subroutine                                            for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       488.00
+       reached at subroutine :                                           
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:     0.08 MB
+
+*****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 2112, majflt: 0, nvcsw: 0, nivcsw: 5, maxrss: 7892
+>>>> Total WALL time used in DIRAC: 0s
