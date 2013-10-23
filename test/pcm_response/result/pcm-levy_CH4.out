@@ -192,7 +192,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Oct 22 20:38:54 2013
+     Date and time (Linux)  : Wed Oct 23 17:09:01 2013
      Host name              : not found                               
 
 
@@ -200,18 +200,12 @@ Contents of the input file
 --------------------------
 
 **DIRAC                                                                                             
-.WAVE FUNCTION                                                                                      
 .PROPERTIES                                                                                         
 **HAMILTONIAN                                                                                       
 .LEVY-LEBLOND                                                                                       
-*PCM                                                                                                
-.PRINT                                                                                              
- 1                                                                                                  
+.PCM                                                                                                
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
-*SCF                                                                                                
-.PRINT                                                                                              
- 1                                                                                                  
 **PROPERTIES                                                                                        
 .POLARIZABILITY                                                                                     
 *END OF                                                                                             
@@ -241,7 +235,6 @@ FINISH
     *************************************************************************
 
  Jobs in this run:
-   * Wave function
    * Properties
 
 
@@ -577,7 +570,7 @@ H     -0.3333229788   0.3333229788  -0.3333229788
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with    10 electrons in    5 orbitals.
  * Bare nucleus screening correction used for start guess
- * General print level   :   1
+ * General print level   :   0
 
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
@@ -716,343 +709,6 @@ PCMSolver initialized.
 
 
 
-   ****************************************************************************
-   ************************* Hartree-Fock calculation *************************
-   ****************************************************************************
-
-
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
-             Improved by an estimate of the electronic screening (Slater's rules).
-
-
-########## START ITERATION NO.   1 ##########   Tue Oct 22 20:38:54 2013
-
-
-  BNCORR: SS contribution to the bare nuclei omitted !
-
-     *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
-         X=L,S ; G(a,r_C)=exp(-a*r_C^2)
-
-               Nucleus    Charge=(-Zeff)   Exponent(a)
-              -----------------------------------------
-              -- Subshell n = 0, l = 0
-                C             -1.00           0.40
-                H             -1.00           0.40
-                H             -1.00           0.40
-                H             -1.00           0.40
-                H             -1.00           0.40
-              -- Subshell n = 1, l = 0
-                C             -1.00          17.30
-              -- Subshell n = 2, l = 0,1
-                C             -4.00           0.53
-              -----------------------------------------
-
-
-=> Calculating sum of orbital energies
-
-
-                                Output from ONEERG
-                                ------------------
-
-Electronic energy         :   -29.303791473883024
-Nuclear potential energy  :    25.365934555796475
-Total energy              :    -3.937856918086549
-   * Quaternion diagonalization(CPU): 0.00000000s
-   * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400001s   Scr. nuclei    Tue Oct 22
-
-########## START ITERATION NO.   2 ##########   Tue Oct 22 20:38:54 2013
-
-
-* GETGAB: label "GABAO1XX" not found; calling GABGEN.
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02000001s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.456445422913418
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.001260837320758
-Total energy                       :   -37.091771704437704
-* Calling pcm_oper_ao_driver
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:         1
-* B matrix dimension:         2
-* B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.04800001s
-   * PCM Fock matrix contribution  (CPU): 0.01199999s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.09999999s
-
-########## END ITERATION NO.   2 ##########   Tue Oct 22 20:38:54 2013
-
-It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.09999999s   LL             Tue Oct 22
-
-########## START ITERATION NO.   3 ##########   Tue Oct 22 20:38:54 2013
-
-    3 *** Differential density matrix. DCOVLP     = 0.8103
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02000001s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.564643386727269
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.000264341589628
-Total energy                       :   -37.198973172520425
-* Calling pcm_oper_ao_driver
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:         2
-* B matrix dimension:         3
-* B matrix condition: 8.147D-02
-
-* DIIS coefficients. Sum:1.000D+00
-
-     lambda     1.824D-03
-         2     -1.621D-01
-         3      1.162D+00
-   * Two-electron Fock matrix  (CPU): 0.02000001s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06400001s
-
-########## END ITERATION NO.   3 ##########   Tue Oct 22 20:38:54 2013
-
-It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.06400001s   LL             Tue Oct 22
-
-########## START ITERATION NO.   4 ##########   Tue Oct 22 20:38:54 2013
-
-    4 *** Differential density matrix. DCOVLP     = 0.9900
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02400002s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.567430689779350
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.000173501286316
-Total energy                       :   -37.201669635269191
-* Calling pcm_oper_ao_driver
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:         3
-* B matrix dimension:         4
-* B matrix condition: 2.051D-04
-
-* DIIS coefficients. Sum:1.000D+00
-
-     lambda     3.302D-06
-         2      1.618D-02
-         3     -1.323D-01
-         4      1.116D+00
-   * Two-electron Fock matrix  (CPU): 0.02400002s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06799999s
-
-########## END ITERATION NO.   4 ##########   Tue Oct 22 20:38:54 2013
-
-It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.06799999s   LL             Tue Oct 22
-
-########## START ITERATION NO.   5 ##########   Tue Oct 22 20:38:54 2013
-
-    5 *** Differential density matrix. DCOVLP     = 1.0002
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02400002s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.567437406868031
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.000171687237424
-Total energy                       :   -37.201674538308978
-* Calling pcm_oper_ao_driver
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:         4
-* B matrix dimension:         5
-* B matrix condition: 3.084D-07
-
-* DIIS coefficients. Sum:1.000D+00
-
-     lambda     7.146D-12
-         2     -1.053D-03
-         3      8.682D-03
-         4     -9.598D-02
-         5      1.088D+00
-   * Two-electron Fock matrix  (CPU): 0.02800003s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.07200000s
-
-########## END ITERATION NO.   5 ##########   Tue Oct 22 20:38:54 2013
-
-It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.07200000s   LL             Tue Oct 22
-
-########## START ITERATION NO.   6 ##########   Tue Oct 22 20:38:54 2013
-
-    6 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01999998s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.567437448062705
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.000171651801395
-Total energy                       :   -37.201674544067629
-* Calling pcm_oper_ao_driver
-
-
-                               Output from DIISD1:
-                               -------------------
-
-* DIIS iteration no.:         5
-* B matrix dimension:         6
-* B matrix condition: 6.454D-13
-
-* DIIS coefficients. Sum:1.000D+00
-
-     lambda     2.019D-28
-         2     -2.209D-08
-         3      3.616D-06
-         4      1.679D-04
-         5     -5.009D-03
-         6      1.005D+00
-   * Two-electron Fock matrix  (CPU): 0.02399999s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06400001s
-
-########## END ITERATION NO.   6 ##########   Tue Oct 22 20:38:54 2013
-
-It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.06400001s   LL             Tue Oct 22
-
-########## START ITERATION NO.   7 ##########   Tue Oct 22 20:38:54 2013
-
-    7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.02800000s
-
-
-                                Output from ERGCAL
-                                ------------------
-
-Total electronic energy            :   -62.567437447656140
-Nuclear potential energy           :    25.365934555796475
-Polarization energy                :    -0.000171652208011
-Total energy                       :   -37.201674544067671
-* Calling pcm_oper_ao_driver
-   * Two-electron Fock matrix  (CPU): 0.02800000s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
-   * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06800002s
-
-########## END ITERATION NO.   7 ##########   Tue Oct 22 20:38:54 2013
-
-It.    7    -37.20167454407      4.26D-14  1.57D-07  7.23D-11   DIIS   5    0.06800002s   LL             Tue Oct 22
-
-
-                                   SCF - CYCLE
-                                   -----------
-
-* Convergence on norm of error vector (gradient).
-  Desired convergence:1.000D-07
-  Allowed convergence:1.000D-06
-
-* ERGVAL - convergence in total energy
-* FCKVAL - convergence in maximum change in total Fock matrix
-* EVCVAL - convergence in error vector (gradient)
---------------------------------------------------------------------------------------------------------------------------------
-           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
---------------------------------------------------------------------------------------------------------------------------------
-It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400001s   Scr. nuclei    Tue Oct 22
-It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.09999999s   LL             Tue Oct 22
-It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.06400001s   LL             Tue Oct 22
-It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.06799999s   LL             Tue Oct 22
-It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.07200000s   LL             Tue Oct 22
-It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.06400001s   LL             Tue Oct 22
-It.    7    -37.20167454407      4.26D-14  1.57D-07  7.23D-11   DIIS   5    0.06800002s   LL             Tue Oct 22
---------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    7 iterations.
-* Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL           :    0.00000000s
-
-
-                                   TOTAL ENERGY
-                                   ------------
-
-   Electronic energy                        :    -62.567437447656140
-
-   Other contributions to the total energy
-   Nuclear repulsion energy                 :     25.365934555796475
-   Solvation energy                         :     -0.000171652208011
-
-   Sum of all contributions to the energy
-   Total energy                             :    -37.201674544067671
-
-
-                                   Eigenvalues
-                                   -----------
-
-
-* Boson symmetry A  
-  * Closed shell, f = 1.0000
--11.54290726917213  ( 2)    -1.30209821104110  ( 2)    -0.85875610793265  ( 6)
-  * Virtual eigenvalues, f = 0.0000
-  1.39437844255619  ( 6)     2.22396159135810  ( 2)
-
-* Occupation of subblocks
-                       E1 :  A                                                                              
-  closed shells (f=1.0000):    5
- virtual shells (f=0.0000):    4
-tot.num. of pos.erg shells:    9
-
-
-* HOMO - LUMO gap:
-
-    E(LUMO) :     1.39437844 au (symmetry A  )
-  - E(HOMO) :    -0.85875611 au (symmetry A  )
-  ------------------------------------------
-    gap     :     2.25313455 au
-
-
-
-PCMSolver interface correctly finalized
-
-
-
        *******************************************************************
        ************************* Property module *************************
        *******************************************************************
@@ -1120,7 +776,7 @@ Permittivity = 78.39
     - Secondary orbitals :      6..     9                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -37.2016745440676289
-* Heading :DIRAC: No title specified !!!                     Tue Oct 22 20:38:54 2013
+* Heading :DIRAC: No title specified !!!                     Wed Oct 23 17:09:01 2013
 
 
 PCMSolver initialized.
@@ -1132,26 +788,24 @@ PCMSolver initialized.
 X-Dipole length  - Symmetry: A    T+
 
 
-* GETFCK: reading old two-electron Fock matrix
+*** WARNING *** GETFCK: No 2-Fock found. Regenerating with .INTFLG = 1 0 0 0
 
-* REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Oct 22 20:38:54 2013
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%   69.95%   0.01999998s
 * Calling pcm_oper_ao_driver to get J + X(D) contribution.
 
-* GETFCK: reading old one-electron Fock matrix
-
-* REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Oct 22 20:38:54 2013
+*** WARNING *** GETFCK: No 1-Fock found. Regenerating.
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.19D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 8.40D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.8817D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Tue Oct 22 20:38:54 2013
+########## START MICROITERATION NO.   1 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02000001s
 * Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
 * Trial vectors in this micro iteration:  E+:  1
 
@@ -1159,29 +813,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
   Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  7.66E-02  7.66E-02
 
-########## START MICROITERATION NO.   2 ##########   Tue Oct 22 20:38:54 2013
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02000004s
-* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  4.89E-03  4.89E-03
-
-########## START MICROITERATION NO.   3 ##########   Tue Oct 22 20:38:55 2013
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02000004s
-* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  9.14E-05  9.14E-05
-
-########## START MICROITERATION NO.   4 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   2 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1190,7 +822,29 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  1.08E-12  1.08E-12
+     0.00000000  1.00E-05  4.89E-03  4.89E-03
+
+########## START MICROITERATION NO.   3 ##########   Wed Oct 23 17:09:02 2013
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01599997s
+* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  9.14E-05  9.14E-05
+
+########## START MICROITERATION NO.   4 ##########   Wed Oct 23 17:09:02 2013
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01600003s
+* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.12E-12  1.12E-12
 
 
                              Final output from XRSCTL
@@ -1201,21 +855,21 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 
             Freq.(au)   Total norm    E+ norm 
 ==============================================
-* It.  1   0.04000002s  (LL       )     [  1]
+* It.  1   0.04399997s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.66D-02 |   7.66D-02
 ==============================================
-* It.  2   0.03600001s  (LL       )     [  1]
+* It.  2   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.89D-03 |   4.89D-03
 ==============================================
-* It.  3   0.03599995s  (LL       )     [  1]
+* It.  3   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.14D-05 |   9.14D-05
 ==============================================
-* It.  4   0.04000002s  (LL       )     [  1]
+* It.  4   0.03999996s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   1.08D-12 |   1.08D-12
+            0.000000 :   1.12D-12 |   1.12D-12
 ==============================================
 
 
@@ -1229,7 +883,18 @@ Y-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  1.8817D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   1 ##########   Wed Oct 23 17:09:02 2013
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02000004s
+* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  7.66E-02  7.66E-02
+
+########## START MICROITERATION NO.   2 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1238,20 +903,9 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  7.66E-02  7.66E-02
-
-########## START MICROITERATION NO.   2 ##########   Tue Oct 22 20:38:55 2013
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02000010s
-* Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  4.89E-03  4.89E-03
 
-########## START MICROITERATION NO.   3 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   3 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1262,16 +916,16 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
   Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  9.14E-05  9.14E-05
 
-########## START MICROITERATION NO.   4 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   4 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01599991s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 * Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
 * Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  5.74E-13  5.74E-13
+     0.00000000  1.00E-05  1.53E-12  1.53E-12
 
 
                              Final output from XRSCTL
@@ -1282,21 +936,21 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01599991s
 
             Freq.(au)   Total norm    E+ norm 
 ==============================================
-* It.  1   0.03600001s  (LL       )     [  1]
+* It.  1   0.03999996s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.66D-02 |   7.66D-02
 ==============================================
-* It.  2   0.03999996s  (LL       )     [  1]
+* It.  2   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.89D-03 |   4.89D-03
 ==============================================
-* It.  3   0.03600001s  (LL       )     [  1]
+* It.  3   0.04399997s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.14D-05 |   9.14D-05
 ==============================================
-* It.  4   0.03600001s  (LL       )     [  1]
+* It.  4   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   5.74D-13 |   5.74D-13
+            0.000000 :   1.53D-12 |   1.53D-12
 ==============================================
 
 
@@ -1310,7 +964,7 @@ Z-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  1.8817D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   1 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1321,10 +975,10 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
   Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  7.66E-02  7.66E-02
 
-########## START MICROITERATION NO.   2 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   2 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.02399999s
 * Calling pcm_oit_asc to get One-Index Transformed electronic polarization charges.
 * Trial vectors in this micro iteration:  E+:  1
 
@@ -1332,7 +986,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
   Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  4.89E-03  4.89E-03
 
-########## START MICROITERATION NO.   3 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   3 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1343,7 +997,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
   Frequency      Threshold Total     E+ part 
      0.00000000  1.00E-05  9.14E-05  9.14E-05
 
-########## START MICROITERATION NO.   4 ##########   Tue Oct 22 20:38:55 2013
+########## START MICROITERATION NO.   4 ##########   Wed Oct 23 17:09:02 2013
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
@@ -1352,7 +1006,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part 
-     0.00000000  1.00E-05  5.84E-12  5.84E-12
+     0.00000000  1.00E-05  6.67E-12  6.67E-12
 
 
                              Final output from XRSCTL
@@ -1367,17 +1021,17 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 ----------------------------------------------
             0.000000 :   7.66D-02 |   7.66D-02
 ==============================================
-* It.  2   0.03599989s  (LL       )     [  1]
+* It.  2   0.04799998s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.89D-03 |   4.89D-03
 ==============================================
-* It.  3   0.04000008s  (LL       )     [  1]
+* It.  3   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.14D-05 |   9.14D-05
 ==============================================
-* It.  4   0.03600001s  (LL       )     [  1]
+* It.  4   0.04000002s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   5.84D-12 |   5.84D-12
+            0.000000 :   6.67D-12 |   6.67D-12
 ==============================================
 
 
@@ -1392,7 +1046,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.766887429050 a.u.                       5.73E-13   (converged)
+  0.00000000 a.u.   -1.766887429050 a.u.                       5.94E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -1402,7 +1056,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.35242642D-13 a.u.                       3.05E-13   (converged)
+  0.00000000 a.u.   -0.12642665D-13 a.u.                       8.15E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -1412,7 +1066,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.36151637D-14 a.u.                       3.11E-12   (converged)
+  0.00000000 a.u.   -0.13655743D-13 a.u.                       3.54E-12   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 1)>> - linear response function (real):
@@ -1422,7 +1076,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.36144698D-13 a.u.                       5.73E-13   (converged)
+  0.00000000 a.u.   -0.14946377D-13 a.u.                       5.94E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -1432,7 +1086,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.766887429050 a.u.                       3.05E-13   (converged)
+  0.00000000 a.u.   -1.766887429050 a.u.                       8.15E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -1442,7 +1096,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.10658141D-13 a.u.                       3.11E-12   (converged)
+  0.00000000 a.u.    0.79380946D-14 a.u.                       3.54E-12   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -1452,7 +1106,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.33514858D-14 a.u.                       5.73E-13   (converged)
+  0.00000000 a.u.   -0.15099033D-13 a.u.                       5.94E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -1462,7 +1116,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.10325074D-13 a.u.                       3.05E-13   (converged)
+  0.00000000 a.u.    0.10269563D-13 a.u.                       8.15E-13   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -1472,7 +1126,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.766887429050 a.u.                       3.11E-12   (converged)
+  0.00000000 a.u.   -1.766887429050 a.u.                       3.54E-12   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -1510,20 +1164,19 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
 
 
  
-     Date and time (Linux)  : Tue Oct 22 20:38:55 2013
+     Date and time (Linux)  : Wed Oct 23 17:09:02 2013
      Host name              : not found                               
 
->>>> Node 0, utime: 1, stime: 0, minflt: 9581, majflt: 0, nvcsw: 88, nivcsw: 146, maxrss: 17956
+>>>> Node 0, utime: 0, stime: 0, minflt: 6880, majflt: 0, nvcsw: 56, nivcsw: 130, maxrss: 16716
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        68.16
+  Mean allocation size (Mb) :        58.17
   
   Largest          10  allocations
   
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSIDHF                            
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
@@ -1532,6 +1185,7 @@ SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   69.39%   0.01999998s
         0.05 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
         0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
   
   Peak memory usage    (Mb) :       488.00
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
