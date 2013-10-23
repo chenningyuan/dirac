@@ -160,40 +160,39 @@ Binary information
 
  Who compiled             | roberto
  Host                     | manchot
- System                   | Linux-3.8.0-31-generic
+ System                   | Linux-3.8.0-32-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /opt/intel/composer_xe_2013.2.146/bin/intel64/ifor
-                          | t
- Fortran compiler version | ifort (IFORT) 13.1.0 20130121
- C compiler               | /opt/intel/composer_xe_2013.2.146/bin/intel64/icc
- C compiler version       | icc (ICC) 13.1.0 20130121
- C++ compiler             | /opt/intel/composer_xe_2013.2.146/bin/intel64/icpc
- C++ compiler version     | icpc (ICC) 13.1.0 20130121
- BLAS                     | -Wl,--start-group;/opt/intel/composer_xe_2013.2.14
-                          | 6/mkl/lib/intel64/libmkl_core.so;/opt/intel/compos
-                          | er_xe_2013.2.146/mkl/lib/intel64/libmkl_intel_lp64
-                          | .so;/opt/intel/composer_xe_2013.2.146/mkl/lib/inte
-                          | l64/libmkl_intel_thread.so;/usr/lib/x86_64-linux-g
-                          | nu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so
-                          | ;-openmp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/opt/intel/composer_xe_2013.2.14
-                          | 6/mkl/lib/intel64/libmkl_lapack95_lp64.a;/opt/inte
-                          | l/composer_xe_2013.2.146/mkl/lib/intel64/libmkl_in
-                          | tel_lp64.so;-openmp;-Wl,--end-group
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu/Linaro 4.7.3-1ubuntu1) 4.7.3
+ BLAS                     | -Wl,--start-group;/opt/intel/composer_xe_2013_sp1.
+                          | 0.080/mkl/lib/intel64/libmkl_core.so;/opt/intel/co
+                          | mposer_xe_2013_sp1.0.080/mkl/lib/intel64/libmkl_gf
+                          | _lp64.so;/opt/intel/composer_xe_2013_sp1.0.080/mkl
+                          | /lib/intel64/libmkl_gnu_thread.so;/usr/lib/x86_64-
+                          | linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/
+                          | libm.so;-fopenmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/composer_xe_2013_sp1.
+                          | 0.080/mkl/lib/intel64/libmkl_lapack95_lp64.a;/opt/
+                          | intel/composer_xe_2013_sp1.0.080/mkl/lib/intel64/l
+                          | ibmkl_gf_lp64.so;-fopenmp;-Wl,--end-group
  Static linking           | OFF
- Last Git revision        | 7097d7a3d787658166cba1bcf6497270f32e4542
+ Last Git revision        | a74b9ca6a5f6836457276639dd12c8a4a271d6ee
  Git status               | # On branch pcm
- Configuration time       | 2013-10-02 12:05:24.078437
+ Configuration time       | 2013-10-22 18:19:04.914349
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct  2 12:16:09 2013
+     Date and time (Linux)  : Tue Oct 22 20:16:48 2013
      Host name              : not found                               
 
 
@@ -350,7 +349,6 @@ Point group: C1
                               0       0      S  - No small component basis functions attached                    
   ----------------------------------------------------------------------
                              27       9      L  - large components
-                              0       0      S  - small components
   ----------------------------------------------------------------------
   total:      5      10      27       9
 
@@ -405,7 +403,7 @@ Point group: C1
   -------------------------------------------
 
     5
- 
+
 C      0.0000000000   0.0000000000   0.0000000000
 H      0.3333229788   0.3333229788   0.3333229788
 H     -0.3333229788  -0.3333229788   0.3333229788
@@ -502,11 +500,11 @@ H     -0.3333229788   0.3333229788  -0.3333229788
    - contracted large component basis set
   ===== Polarizable Continuum Model calculation set-up =====
  * Polarizable Continuum Model using PCMSolver external module:
-   1: Converged potentials and charges at tesserae representative points written
-  on file.
-   2: Calculate the SS block of the electrostatic potential matrix.
-   3: Use total potentials and apparent charges.
-   5: Print potentials at tesserae representative points.
+   . Converged potentials and charges at tesserae representative points written on file.
+   . Calculate the SS block of the electrostatic potential matrix.
+   . Use total potentials and apparent charges.
+   . Form One-Index Transformed ASC in a Linear Response calculation.
+   . Print potentials at tesserae representative points.
  * References: 
    - J. Tomasi, B. Mennucci and R. Cammi:
     "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
@@ -603,9 +601,6 @@ H     -0.3333229788   0.3333229788  -0.3333229788
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):     9
-No. of negative energy orbitals (NPSH):     0
-Total no. of orbitals           (NORB):     9
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 ========== Cavity 
 Cavity type: GePol
@@ -629,6 +624,9 @@ Green's function type: uniform dielectric
 Permittivity = 78.39
 
 
+No. of positive energy orbitals (NESH):     9
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):     9
 
 
 PCMSolver initialized.
@@ -644,7 +642,7 @@ PCMSolver initialized.
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Oct  2 12:16:09 2013
+########## START ITERATION NO.   1 ##########   Tue Oct 22 20:16:48 2013
 
 
      *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
@@ -671,19 +669,19 @@ PCMSolver initialized.
                                 Output from ONEERG
                                 ------------------
 
-Electronic energy         :   -29.303791473883042
+Electronic energy         :   -29.303791473883020
 Nuclear potential energy  :    25.365934555796475
-Total energy              :    -3.937856918086567
+Total energy              :    -3.937856918086545
    * Real diagonalization      (CPU): 0.00000000s
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400000s   Scr. nuclei    Wed Oct  2
+It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400001s   Scr. nuclei    Tue Oct 22
 
-########## START ITERATION NO.   2 ##########   Wed Oct  2 12:16:09 2013
+########## START ITERATION NO.   2 ##########   Tue Oct 22 20:16:48 2013
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.02400000s
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.01600000s
                     MEP and ASC at iteration           1
 Finite element #          Total MEP                          Total ASC
      1                     0.013503782034                    -0.003804695021
@@ -771,10 +769,10 @@ Finite element #          Total MEP                          Total ASC
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.456445422913333
+Total electronic energy            :   -62.456445422913312
 Nuclear potential energy           :    25.365934555796475
 Polarization energy                :    -0.001260837320758
-Total energy                       :   -37.091771704437619
+Total energy                       :   -37.091771704437591
 * Calling pcm_oper_ao_driver
 
 
@@ -784,17 +782,17 @@ Total energy                       :   -37.091771704437619
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.02800000s
-   * PCM Fock matrix contribution  (CPU): 0.01199999s
+   * Two-electron Fock matrix  (CPU): 0.02000001s
+   * PCM Fock matrix contribution  (CPU): 0.00400001s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 1.00000000s
->>> Total CPU time : 0.04400000s
+>>> Total CPU time : 0.02800000s
 
-########## END ITERATION NO.   2 ##########   Wed Oct  2 12:16:09 2013
+########## END ITERATION NO.   2 ##########   Tue Oct 22 20:16:48 2013
 
-It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.04400000s   LL             Wed Oct  2
+It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.02800000s   LL             Tue Oct 22
 
-########## START ITERATION NO.   3 ##########   Wed Oct  2 12:16:10 2013
+########## START ITERATION NO.   3 ##########   Tue Oct 22 20:16:49 2013
 
     3 *** Differential density matrix. DCOVLP     = 0.8103
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -906,20 +904,20 @@ Total energy                       :   -37.198973172520382
          2     -1.621D-01
          3      1.162D+00
    * Two-electron Fock matrix  (CPU): 0.02000000s
-   * PCM Fock matrix contribution  (CPU): 0.01199999s
+   * PCM Fock matrix contribution  (CPU): 0.01200001s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.03600000s
+>>> Total CPU time : 0.03999998s
 
-########## END ITERATION NO.   3 ##########   Wed Oct  2 12:16:10 2013
+########## END ITERATION NO.   3 ##########   Tue Oct 22 20:16:49 2013
 
-It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.03600000s   LL             Wed Oct  2
+It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.03999998s   LL             Tue Oct 22
 
-########## START ITERATION NO.   4 ##########   Wed Oct  2 12:16:10 2013
+########## START ITERATION NO.   4 ##########   Tue Oct 22 20:16:49 2013
 
     4 *** Differential density matrix. DCOVLP     = 0.9900
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.02000000s
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.01999998s
                     MEP and ASC at iteration           3
 Finite element #          Total MEP                          Total ASC
      1                     0.008736181113                    -0.001778533377
@@ -1027,21 +1025,21 @@ Total energy                       :   -37.201669635269312
          2      1.618D-02
          3     -1.323D-01
          4      1.116D+00
-   * Two-electron Fock matrix  (CPU): 0.02000000s
+   * Two-electron Fock matrix  (CPU): 0.01999998s
    * PCM Fock matrix contribution  (CPU): 0.00400001s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.03600000s
+>>> Total CPU time : 0.02800003s
 
-########## END ITERATION NO.   4 ##########   Wed Oct  2 12:16:10 2013
+########## END ITERATION NO.   4 ##########   Tue Oct 22 20:16:49 2013
 
-It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.03600000s   LL             Wed Oct  2
+It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.02800003s   LL             Tue Oct 22
 
-########## START ITERATION NO.   5 ##########   Wed Oct  2 12:16:10 2013
+########## START ITERATION NO.   5 ##########   Tue Oct 22 20:16:49 2013
 
     5 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.02000000s
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.01999998s
                     MEP and ASC at iteration           4
 Finite element #          Total MEP                          Total ASC
      1                     0.008715660115                    -0.001771204459
@@ -1129,10 +1127,10 @@ Finite element #          Total MEP                          Total ASC
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.567437406868052
+Total electronic energy            :   -62.567437406868109
 Nuclear potential energy           :    25.365934555796475
 Polarization energy                :    -0.000171687237424
-Total energy                       :   -37.201674538309007
+Total energy                       :   -37.201674538309064
 * Calling pcm_oper_ao_driver
 
 
@@ -1150,21 +1148,21 @@ Total energy                       :   -37.201674538309007
          3      8.682D-03
          4     -9.598D-02
          5      1.088D+00
-   * Two-electron Fock matrix  (CPU): 0.02000000s
-   * PCM Fock matrix contribution  (CPU): 0.00400001s
+   * Two-electron Fock matrix  (CPU): 0.01999998s
+   * PCM Fock matrix contribution  (CPU): 0.01199999s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.03200001s
+>>> Total CPU time : 0.03599998s
 
-########## END ITERATION NO.   5 ##########   Wed Oct  2 12:16:10 2013
+########## END ITERATION NO.   5 ##########   Tue Oct 22 20:16:49 2013
 
-It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.03200001s   LL             Wed Oct  2
+It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.03599998s   LL             Tue Oct 22
 
-########## START ITERATION NO.   6 ##########   Wed Oct  2 12:16:10 2013
+########## START ITERATION NO.   6 ##########   Tue Oct 22 20:16:49 2013
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.02000000s
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.92%   0.01600000s
                     MEP and ASC at iteration           5
 Finite element #          Total MEP                          Total ASC
      1                     0.008715178647                    -0.001771056300
@@ -1252,10 +1250,10 @@ Finite element #          Total MEP                          Total ASC
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.567437448062677
+Total electronic energy            :   -62.567437448062648
 Nuclear potential energy           :    25.365934555796475
 Polarization energy                :    -0.000171651801395
-Total energy                       :   -37.201674544067600
+Total energy                       :   -37.201674544067572
 * Calling pcm_oper_ao_driver
 
 
@@ -1268,23 +1266,23 @@ Total energy                       :   -37.201674544067600
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.029D-28
+     lambda    -1.010D-28
          2     -2.210D-08
          3      3.616D-06
          4      1.679D-04
          5     -5.009D-03
          6      1.005D+00
-   * Two-electron Fock matrix  (CPU): 0.02000000s
+   * Two-electron Fock matrix  (CPU): 0.01600000s
    * PCM Fock matrix contribution  (CPU): 0.00399998s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.03199999s
+>>> Total CPU time : 0.02399999s
 
-########## END ITERATION NO.   6 ##########   Wed Oct  2 12:16:10 2013
+########## END ITERATION NO.   6 ##########   Tue Oct 22 20:16:49 2013
 
-It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.03199999s   LL             Wed Oct  2
+It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.02399999s   LL             Tue Oct 22
 
-########## START ITERATION NO.   7 ##########   Wed Oct  2 12:16:10 2013
+########## START ITERATION NO.   7 ##########   Tue Oct 22 20:16:49 2013
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -1376,20 +1374,20 @@ Finite element #          Total MEP                          Total ASC
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -62.567437447656090
+Total electronic energy            :   -62.567437447656104
 Nuclear potential energy           :    25.365934555796475
 Polarization energy                :    -0.000171652208011
-Total energy                       :   -37.201674544067629
+Total energy                       :   -37.201674544067643
 * Calling pcm_oper_ao_driver
    * Two-electron Fock matrix  (CPU): 0.02000001s
-   * PCM Fock matrix contribution  (CPU): 0.00800002s
+   * PCM Fock matrix contribution  (CPU): 0.00399998s
    * Real diagonalization      (CPU): 0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.03600001s
+>>> Total CPU time : 0.02800000s
 
-########## END ITERATION NO.   7 ##########   Wed Oct  2 12:16:10 2013
+########## END ITERATION NO.   7 ##########   Tue Oct 22 20:16:49 2013
 
-It.    7    -37.20167454407      2.84D-14  1.57D-07  7.23D-11   DIIS   5    0.03600001s   LL             Wed Oct  2
+It.    7    -37.20167454407      7.11D-14  1.57D-07  7.23D-11   DIIS   5    0.02800000s   LL             Tue Oct 22
 
 
                                    SCF - CYCLE
@@ -1405,13 +1403,13 @@ It.    7    -37.20167454407      2.84D-14  1.57D-07  7.23D-11   DIIS   5    0.03
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400000s   Scr. nuclei    Wed Oct  2
-It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.04400000s   LL             Wed Oct  2
-It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.03600000s   LL             Wed Oct  2
-It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.03600000s   LL             Wed Oct  2
-It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.03200001s   LL             Wed Oct  2
-It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.03199999s   LL             Wed Oct  2
-It.    7    -37.20167454407      2.84D-14  1.57D-07  7.23D-11   DIIS   5    0.03600001s   LL             Wed Oct  2
+It.    1    -3.937856918087      0.00D+00  0.00D+00  0.00D+00               0.00400001s   Scr. nuclei    Tue Oct 22
+It.    2    -37.09177170444      3.32D+01  4.83D-01  6.66D-01               0.02800000s   LL             Tue Oct 22
+It.    3    -37.19897317252      1.07D-01 -1.79D-01  1.02D-01   DIIS   2    0.03999998s   LL             Tue Oct 22
+It.    4    -37.20166963527      2.70D-03 -3.05D-02  4.98D-03   DIIS   3    0.02800003s   LL             Tue Oct 22
+It.    5    -37.20167453831      4.90D-06 -6.60D-04  1.76D-04   DIIS   4    0.03599998s   LL             Tue Oct 22
+It.    6    -37.20167454407      5.76D-09 -1.28D-05  7.46D-07   DIIS   5    0.02399999s   LL             Tue Oct 22
+It.    7    -37.20167454407      7.11D-14  1.57D-07  7.23D-11   DIIS   5    0.02800000s   LL             Tue Oct 22
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
@@ -1422,14 +1420,14 @@ It.    7    -37.20167454407      2.84D-14  1.57D-07  7.23D-11   DIIS   5    0.03
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -62.567437447656090
+   Electronic energy                        :    -62.567437447656104
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     25.365934555796475
    Solvation energy                         :     -0.000171652208011
 
    Sum of all contributions to the energy
-   Total energy                             :    -37.201674544067629
+   Total energy                             :    -37.201674544067643
 
 
                                    Eigenvalues
@@ -1438,9 +1436,9 @@ It.    7    -37.20167454407      2.84D-14  1.57D-07  7.23D-11   DIIS   5    0.03
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
--11.54290726917213  ( 2)    -1.30209821104110  ( 2)    -0.85875610793266  ( 6)
+-11.54290726917215  ( 2)    -1.30209821104110  ( 2)    -0.85875610793265  ( 6)
   * Virtual eigenvalues, f = 0.0000
-  1.39437844255618  ( 6)     2.22396159135847  ( 2)
+  1.39437844255618  ( 6)     2.22396159135792  ( 2)
 
 * Boson symmetry C1 
   * No eigenvalues.
@@ -1476,33 +1474,33 @@ PCMSolver interface correctly finalized
 
 
  
-     Date and time (Linux)  : Wed Oct  2 12:16:10 2013
+     Date and time (Linux)  : Tue Oct 22 20:16:49 2013
      Host name              : not found                               
 
+>>>> Node 0, utime: 0, stime: 0, minflt: 5383, majflt: 0, nvcsw: 6, nivcsw: 34, maxrss: 15496
+>>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        98.20
+  Mean allocation size (Mb) :       174.43
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine psidhf_+0xb0                               for WORK in PSIDHF                            
-      488.28 Mb at subroutine pamset_+0x87                               for WORK in PAMSET                            
-      488.28 Mb at subroutine MAIN__+0x937                               for test allocation of work array in DIRAC mai
-        7.63 Mb at subroutine readin_+0x87                               for WORK in READIN                            
-        0.76 Mb at subroutine paminp_+0x76                               for PAMINP WORK array                         
-        0.02 Mb at subroutine xpldef_+0x216                              for INTADR in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x1ed                              for INTREP in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x216                              for INTADR in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x1ed                              for INTREP in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x216                              for INTADR in XPLDEF                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSIDHF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
   
   Peak memory usage    (Mb) :       488.00
-       reached at subroutine : gtovlt_+0xdf                              
-              for variable   : unnamed variable                          
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 6697, majflt: 0, nvcsw: 6, nivcsw: 34, maxrss: 19624
->>>> Total WALL time used in DIRAC: 1s
