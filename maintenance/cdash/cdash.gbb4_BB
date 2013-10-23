@@ -49,7 +49,7 @@ cd $DIRAC
 export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
 
 BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
-export DIRAC_NUM_MPI_TASKS=4
+export DIRAC_NUM_MPI_PROCS=4
 export DIRTIMEOUT="12m"
 
 ./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" --int64 --check -D DART_TESTING_TIMEOUT=99999  $BUILD
