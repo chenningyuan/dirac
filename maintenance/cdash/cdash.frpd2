@@ -21,7 +21,7 @@ if [[ -d "$BUILD_GNU" ]]; then
 fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
 # configure step
-export DIRAC_NUM_MPI_TASKS=3
+export DIRAC_NUM_MPI_PROCS=3
 ./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64"  -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
 cd $BUILD_GNU
 make clean

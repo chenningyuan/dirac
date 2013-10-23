@@ -42,7 +42,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 ./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
-export DIRAC_NUM_MPI_TASKS=8
+export DIRAC_NUM_MPI_PROCS=8
 export DIRTIMEOUT="12m"
 ./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
 cd $BUILD
