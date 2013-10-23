@@ -431,10 +431,13 @@ class pam_enviroment:
         f = open(self.output_file_full)
         if 'E N D   of   D I R A C  output' in f.read():
             print '  exit           : normal'
+            return_code = 0
         else:
             print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
+            return_code = 1
         f.close()
         sys.stdout.flush()
+        return return_code
 
     def get_rc_arguments(self):
         """
@@ -1418,7 +1421,7 @@ Options are also read from ~/.diracrc"""
             self.stderr_message()
             # clean the working directory and exit
             self.remove_scratch_dir()
-            self.exit_function()
+            return_code = self.exit_function()
         sys.exit()
 
     def stderr_message(self):
@@ -1698,13 +1701,15 @@ class pam_run(pam_enviroment):
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
-        self.pam_variables.exit_function()
+        return_code = self.pam_variables.exit_function()
         self.pam_variables.grep_for_warnings()
+        return return_code
 
 # short definition of the script's main function
 def main():
     dirac_run = pam_run()
-    dirac_run.perform()
+    return_code = dirac_run.perform()
+    sys.exit(return_code)
 
 #
 #  common (general purpose) functionalities for pam
