@@ -104,7 +104,7 @@ if [[ -d "$BUILD" ]]; then
 fi
 echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
 ./pamadm -a --builddir=$BUILD
-export DIRAC_NUM_MPI_TASKS=$NPROCS_PBS
+export DIRAC_NUM_MPI_PROCS=$NPROCS_PBS
 unset MKL_NUM_THREADS
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
 cd $BUILD
@@ -125,7 +125,7 @@ if [[ -d "$BUILD_STATIC" ]]; then
   /bin/rm -rf $BUILD_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_STATIC
-export DIRAC_NUM_MPI_TASKS=$NPROCS_PBS
+export DIRAC_NUM_MPI_PROCS=$NPROCS_PBS
 unset MKL_NUM_THREADS
 ./setup --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_STATIC
 cd $BUILD_STATIC
