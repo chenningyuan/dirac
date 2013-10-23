@@ -24,7 +24,7 @@
 #          XLFRTEOPTS - put there some specific string for IBM architecture
 #          DIRPAR - put there "1", if parallel run
 #          DIRNOD - put there maximum memory for nodes, if  parallel run
-#          DIRAC_NUM_MPI_TASKS - number of MPI threads in parallel run
+#          DIRAC_NUM_MPI_PROCS - number of MPI threads in parallel run
 #          GLBSCR - put "1" for global scratch disk, otherwise put "0" - only if parallel run
 #          MKL_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
 #          MKL_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
@@ -831,7 +831,7 @@ Options are also read from ~/.diracrc"""
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
         else:
-            nr_tasks = os.environ.get('DIRAC_NUM_MPI_TASKS')
+            nr_tasks = os.environ.get('DIRAC_NUM_MPI_PROCS')
             if nr_tasks != None:
                 if nr_tasks > 1:
                     self.nr_proc = nr_tasks
@@ -1891,7 +1891,7 @@ def backup_file(some_file,upto):
     number "upto"
     """
     def do_copy_print(backup_file_name,backup_file_name_p1):
-        shutil.copy(backup_file_name,backup_file_name_p1)
+        shutil.copy2(backup_file_name,backup_file_name_p1)
         #         "file.n"  -->  "file.n+1"
         result=extract_path_file()
         result.get_path_file(backup_file_name)

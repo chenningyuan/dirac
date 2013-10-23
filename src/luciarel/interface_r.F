@@ -1334,6 +1334,7 @@ C
 !     NTESTL = 5000
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT/1000)
+      NTEST = 0
  
 !     constant
       is_zero = 0
@@ -1910,8 +1911,10 @@ C    &             ' at ',ICOUNT_I8
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):
+!#ifdef BLUBB
                             IF(.NOT. NOINT_FILE )
      &                         write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
+!#endif
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),

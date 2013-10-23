@@ -2620,7 +2620,7 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
       CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRINT)
 
-      CALL GTOVLT(TBUF,D0)
+      CALL GTOVLT(TBUF,D0,IPRINT)
 
       CVAL2 = CVAL*CVAL
 
@@ -2768,7 +2768,7 @@ C
 #include "memint.h"
 
 C     Get AO_LL overlap matrix , S(LL), WITH SS part ZEROED, into VMAT
-      CALL GTOVLT(VMAT,D0)
+      CALL GTOVLT(VMAT,D0,IPRINT)
 
       IOFF = 1
       JOFFESH = 0
@@ -8068,9 +8068,9 @@ C#include "dcbham.h"
 
 C ... get full S matrix into TMAT
       IF (.NOT.Le) THEN
-        CALL GTOVLT(TMAT,D1)
+        CALL GTOVLT(TMAT,D1,IPRINT)
       ELSE
-        CALL GTOVLT(TMAT,D0)
+        CALL GTOVLT(TMAT,D0,IPRINT)
       ENDIF
 
 C ...  transform S to the MO's          :   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
@@ -8940,13 +8940,14 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
        IF (INDXMINCH > NUCDEP) THEN
         CALL QUIT('AMFIIN: atom type index out of bounds!')
        ENDIF 
+
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
 
-       if (IPRINT.GE.1) then
-          write(lupri,'(2x,a,i3,a,i4,a,i2)')
-     &     'The AMFI unique nuclei Z=',ICHARGE,' index=',INDXMINCH,
-     &     ' is degenerate: ',NICHARGE
+       if (IPRINT.GE.2) then
+          write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
+     &                 ' index=',INDXMINCH,
+     &                 ' is degenerate: ',NICHARGE
           write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
           write(lupri,*) ' partial charge is (round int):',IACHNUC
           CALL FLSHFO(LUPRI)
@@ -8965,6 +8966,13 @@ C ... now find out if all these (AMFI) nuclei are to be skipped...
          ENDDO
        ENDDO
        IF (IXC.EQ.NICHARGE) NOAMFC = .TRUE.
+       ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
+       if(icharge-iachnuc < 2)then
+         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
+     &                  ' or hydrogen-like 1e-systems.'//
+     &                  ' AMFI is skipped.'
+         NOAMFC = .TRUE.
+       end if
 
 C     ... file name for AMFI integrals of center
 !      FIXME: name tag of file cannot be charge otherwise we do not allow to have different basis sets 
@@ -9191,7 +9199,9 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
        ISREMOVED = 0
        DO K=1,NAMFA
-         IF (IANUCS(IANUC).EQ.IAMFA(K)) ISREMOVED = 1 
+         IF (IANUCS(IANUC).EQ.IAMFA(K))then
+          ISREMOVED = 1 
+         end if
        ENDDO
 
        IF (ISREMOVED.NE.0) THEN
@@ -9205,7 +9215,7 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
         IX = 0
         DO  I = 1, numballcart
-        DO  J = 1, I
+        DO 111 J = 1, I
 C       ... get SO integrals from AMFI  
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
@@ -9219,24 +9229,34 @@ C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
 
+       if((DABS(SOXINT) < THRNULL).and.
+     &    (DABS(SOYINT) < THRNULL).and.
+     &    (DABS(SOZINT) < THRNULL))then
+         ix = ix + 1
+         goto 111
+       end if
+
+       if(iprint >= 5) write(lupri,*) ' hamiltonian indices 1 and 2',
+     &                                  i1,j1
+
 C      ... print out AMFI integrals
        IF (IPRINT.GE.3) THEN
         IF (DABS(SOXINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'X amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|X|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOXINT
         ENDIF
 
         IF (DABS(SOYINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Y amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOYINT
         ENDIF
 
         IF (DABS(SOZINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Z amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOZINT
@@ -9349,7 +9369,7 @@ C  ==================================================
         H2SAO(J1,I1,IXPOS) = H2SAO(J1,I1,IXPOS) - SOXINT 
        ENDIF
        IX = IX + 1
-      ENDDO
+ 111  continue
       ENDDO
       ENDIF
       if (IPRINT.GE.3) 

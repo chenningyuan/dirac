@@ -33,7 +33,7 @@ if [[ -d "$BUILD_OMPI_GNU_STATIC" ]]; then
   /bin/rm -rf $BUILD_OMPI_GNU_STATIC
 fi
 pamadm -a --builddir=$BUILD_OMPI_GNU_STATIC
-export DIRAC_NUM_MPI_TASKS=2
+export DIRAC_NUM_MPI_PROCS=2
 ./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --mpi --static  -D DART_TESTING_TIMEOUT=99999 $BUILD_OMPI_GNU_STATIC
 cd $BUILD_OMPI_GNU_STATIC
 make ExperimentalUpdate
