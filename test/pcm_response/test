@@ -26,5 +26,6 @@ f.add(from_string  = '@   average',
 
 test_run.execute(['pcm-levy.inp'], ['CH4.mol', 'H2O.mol'], f, args='--put @pcmsolver.inp')
 test_run.execute(['pcm-dc.inp'], ['CH4.mol', 'H2O.mol'], args='--put @pcmsolver.inp')
+test_run.execute(['pcm-dc-skipoit.inp'], ['CH4.mol', 'H2O.mol'], args='--put @pcmsolver.inp')
 
 sys.exit(0)
