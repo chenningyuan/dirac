@@ -256,8 +256,12 @@ contains
           stop 'response_order_mo > max_response_order_mo'
       end if
 
+#ifdef MOD_UNRELEASED
       use_gga_qr = (fun_is_gga(fde_xcf))
       use_gga_qi = (fun_is_gga(fde_kef))
+#else
+      call quit('fde_xcf and fde_kef cannot be accessed in this version')
+#endif
 
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
@@ -268,15 +272,6 @@ contains
          use_gga = .true.
       end if
 
-if (.false.) then      
-      write (6,*) 'debug, in integrate_fde: use_gga ',use_gga
-      write (6,*) '       fun_is_lda(fxc)       ',fun_is_lda(fde_xcf)
-      write (6,*) '       fun_is_gga(fxc)       ',fun_is_gga(fde_xcf)
-      write (6,*) '       fun_is_lda(fke)       ',fun_is_lda(fde_kef)
-      write (6,*) '       fun_is_gga(fke)       ',fun_is_gga(fde_kef)
-      write (6,*) '       is fde alda ?         ',is_fdersp_alda
-endif
-      
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
 !     therefore i quit here if the user wants qr
@@ -596,6 +591,7 @@ endif
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
 !
+#ifdef MOD_UNRELEASED
                call get_xcke_fun_derv(max_fun_derv, & 
                                       bllen,        &
                                       w,            &
@@ -609,6 +605,9 @@ endif
                                       n_0,          &
                                       gnn_0,        &
                                       derv_active)
+#else
+               call quit('get_xcke_fun_derv and get_xcke_fun_derv inaccessible')
+#endif
 
                time_derv = time_derv + second() - time_derv_start
 
