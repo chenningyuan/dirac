@@ -629,6 +629,7 @@ contains
          call labcount(ncols_frag,aooso_info,nr_ao_L,1,-1,center_total,1,-1)
          nrows_frag = ncols_frag
 
+#ifdef MOD_AOOSOC
          call put_atomic_oo_order_so_correction(                &
                                                 scr1_mat,       &
                                                 nr_ao_L,        &
@@ -640,6 +641,9 @@ contains
                                                 nuclei_totnum,  &
                                                 print_lvl       &
                                                )
+#else
+         call quit('call put_atomic_oo_order_so_correction inaccessible')
+#endif
        end do
 
 !      debug print
