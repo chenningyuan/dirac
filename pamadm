@@ -182,9 +182,6 @@ def main():
     list_of_tests.append('symmetry_recognition')
     list_of_tests.append('symmetry_scf_energy')
     list_of_tests.append('visual_div_rot')
-    list_of_tests.append('visual_elf')
-    list_of_tests.append('visual_gamma5')
-    list_of_tests.append('visual_general')
     list_of_tests.append('visual_lao_current')
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
@@ -201,6 +198,9 @@ def main():
     list_of_new_tests.append('reladc_sip')
     list_of_new_tests.append('stex')
     list_of_new_tests.append('krci_properties_omega_tdm')
+    list_of_new_tests.append('visual_elf')
+    list_of_new_tests.append('visual_gamma5')
+    list_of_new_tests.append('visual_general')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library

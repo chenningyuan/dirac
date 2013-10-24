@@ -24,4 +24,6 @@ class DiracTestRun(TestRun):
                                 accepted_errors = accepted_errors)
                 if f != None:
                     f.check(self.work_dir, '%s' % out, 'result/%s' % out)
-                sys.stdout.write('passed\n')
+                    sys.stdout.write('passed\n')
+                else:
+                    sys.stdout.write('finished (no reference)\n')
