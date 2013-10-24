@@ -3242,8 +3242,8 @@ C
           call interface_ao_write()
 ! stefan test
 
-        else if(aoomod)then 
 #ifdef MOD_AOOSOC
+        else if(aoomod)then 
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !
