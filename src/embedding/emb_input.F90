@@ -110,7 +110,11 @@ module fde_input
 
       if (itmp%im_frozen) then
          call fde_import_frozen
+#ifdef MOD_UNRELEASED
          call fde_initialize_nadd_functionals         
+#else
+         call quit('call fde_initialize_nadd_functionals not accessible')
+#endif
       endif
 
       if (etmp%do_grid_out) then
@@ -144,7 +148,11 @@ module fde_input
          write(unit,*)
          write(unit,'(A,I5)')  ' * Print level                  : ',pl
 
+#ifdef MOD_UNRELEASED
          if (itmp%im_frozen) call fde_print_nadd_functionals(unit)
+#else
+         call quit('call fde_print_nadd_functionals(unit) inaccessible')
+#endif
 
          if (itmp%im_vemb) then
             string = ftmp%embpot%name
