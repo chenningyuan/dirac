@@ -82,7 +82,6 @@ module fde_input_dirac
               read(lucmd,*) pl
               call fde_set_print_level(pl)
 
-#ifdef MOD_UNRELEASED
             CASE ('.FRDENS')
                read(lucmd,'(A60)') ftmp%frozen%name
                itmp%im_frozen   = .true.
@@ -115,6 +114,7 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
+#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
