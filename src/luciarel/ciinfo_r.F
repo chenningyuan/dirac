@@ -618,7 +618,6 @@ C
         mjorb_vec = 0
         luxxx = -1
         INQUIRE(FILE='KRMCSCF',opened=EX_open,number=luxxx)
-        print *, 'ex, ex_open is ...',ex, ex_open, luxxx
         IF( .not. EX_open)THEN
           luxxx = 98
           CALL OPNFIL(luxxx,'KRMCSCF','UNKNOWN','ana mj')

@@ -21,8 +21,9 @@ class DiracTestRun(TestRun):
                 sys.stdout.write('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
                 TestRun.execute(self,
                                 command = launcher + ' --inp=%s --mol=%s' % (inp, mol),
-                                success_message = 'exit           : normal',
                                 accepted_errors = accepted_errors)
                 if f != None:
                     f.check(self.work_dir, '%s' % out, 'result/%s' % out)
-                sys.stdout.write('passed\n')
+                    sys.stdout.write('passed\n')
+                else:
+                    sys.stdout.write('finished (no reference)\n')
