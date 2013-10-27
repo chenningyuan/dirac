@@ -14,7 +14,7 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set (CMAKE_CXX_FLAGS "-Wno-unknown-pragmas")
     set (CMAKE_CXX_FLAGS_DEBUG "-O0 -debug -DDEBUG")
-    set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
+    set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG -xHost")
     set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
 endif()
 
