@@ -4109,7 +4109,6 @@ C
 
         end if
 
-#ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde_response .and. itmp%im_frozen) then
 
@@ -4119,16 +4118,8 @@ C
               call genden(work(kbuf), cmo, 1, iprxrs)
            endif
 
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
           call fde_dirac_set_isymop(isymop)
           call fde_dirac_set_ihrmop(ihrmop)
-!         call fde_calculate_emb_linrsp_mat(ntbas(0),
-!    &                                      work(kbuf),
-!    &                                      ndmat,
-!    &                                      fmo,
-!    &                                      fao)
           call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
@@ -4148,7 +4139,6 @@ C
         else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
           write (*,*) 'FDE response contributions not included'
         endif
-#endif
 C
 C     Add solvent contributions
 C     -------------------------

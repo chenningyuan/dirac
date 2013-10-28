@@ -165,7 +165,7 @@ C            module) calculation
                GO TO 100
     7          CONTINUE
 C&&& SEL NO: Select min NO for subsequent correlation calculation
-                  READ(LUCMD,*) (VECNOSEL(I),I=1,NFSYM)
+                  READ(LUCMD,'(a72)') (VECNOSEL(I),I=1,NFSYM)
                GO TO 100
     8          CONTINUE
 C&&& MULPOP: do Mulliken population analysis for MP2 NOs ('all' or 'active')
@@ -201,8 +201,8 @@ C
         WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &  '- spinors in fermion ircop ',FREP(I),' :',VECMP2NO(I)
       ENDDO
-      WRITE(LUPRI,'(A)') ' * allowed range of NO spinors in 
-     & correlation run:'
+      WRITE(LUPRI,'(A)') ' * allowed range of NO spinors in'//
+     &                   ' correlation run:'
       DO I = 1,NFSYM
         WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &  '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)

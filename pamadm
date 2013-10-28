@@ -148,7 +148,6 @@ def main():
     list_of_tests.append('frozen_orbitals')
     list_of_tests.append('fscc')
     list_of_tests.append('fscc_highspin')
-    list_of_tests.append('fscc_intensities')
     list_of_tests.append('gaunt')
     list_of_tests.append('geo_opt')
     list_of_tests.append('geo_opt_saddle')
@@ -283,7 +282,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_INTEREST')
     dirac_modules[this_module].add_directory('src/interest')
     dirac_modules[this_module].add_test('mdirac_closed-shell_dft')
-    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'krcc'
     dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
@@ -374,6 +372,7 @@ def main():
     dirac_modules[this_module].add_test('cosci_energy_blockd')
     dirac_modules[this_module].add_test('fde_export_density')
     dirac_modules[this_module].add_test('weak_interactions')
+    dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'pcm'
@@ -391,7 +390,6 @@ def main():
     dirac_modules[this_module].add_directory('src/aoosoc')
     dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
     dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
-    dirac_modules[this_module].take_out_of_release()
     # define input options
 
     parser = OptionParser()
