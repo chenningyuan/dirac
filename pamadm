@@ -148,7 +148,6 @@ def main():
     list_of_tests.append('frozen_orbitals')
     list_of_tests.append('fscc')
     list_of_tests.append('fscc_highspin')
-    list_of_tests.append('fscc_intensities')
     list_of_tests.append('gaunt')
     list_of_tests.append('geo_opt')
     list_of_tests.append('geo_opt_saddle')
@@ -374,6 +373,7 @@ def main():
     dirac_modules[this_module].add_test('cosci_energy_blockd')
     dirac_modules[this_module].add_test('fde_export_density')
     dirac_modules[this_module].add_test('weak_interactions')
+    dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'pcm'
