@@ -282,7 +282,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_INTEREST')
     dirac_modules[this_module].add_directory('src/interest')
     dirac_modules[this_module].add_test('mdirac_closed-shell_dft')
-    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'krcc'
     dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
@@ -391,7 +390,6 @@ def main():
     dirac_modules[this_module].add_directory('src/aoosoc')
     dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
     dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
-    dirac_modules[this_module].take_out_of_release()
     # define input options
 
     parser = OptionParser()

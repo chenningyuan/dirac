@@ -35,6 +35,7 @@ module module_aoosoc_init
   implicit none
 
   public aoosoc_init
+  public aoosoc_finalize
 
   private
 
@@ -146,7 +147,6 @@ contains
      end if
 
     !> interface atomic/molecular data
-       if(.not.allocated(atom))          &
        allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: atom(:)'
        do i=1,size(atom)
          atom(i) = type_atom( charge(i), &
@@ -155,9 +155,7 @@ contains
                               cord(3,i)  &   
                             )
        end do
-       if(.not.allocated(aoo_nont))      &
        allocate( aoo_nont(mxatom), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: aoo_nont(:)'
-       if(.not.allocated(aoo_nucdeg))    &
        allocate( aoo_nucdeg(mxcent), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: aoo_nucdeg(:)'
        aoo_mxatom           = mxatom
        aoo_mxcent           = mxcent
@@ -168,6 +166,15 @@ contains
 
 ! 
   end subroutine
+!**********************************************************************
+
+  subroutine aoosoc_finalize()
+
+     deallocate(atom)
+     deallocate(aoo_nont)
+     deallocate(aoo_nucdeg)
+
+  end subroutine aoosoc_finalize
 !**********************************************************************
 
 end module
