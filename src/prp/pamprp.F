@@ -8883,7 +8883,7 @@ C
       LM = L-1
       II = 0
       DO IA = 0,LM
-        NX = L - IA
+        NX = LM - IA
         DO IB = 0,IA
           NY = IA - IB
           NZ = IB
