@@ -33,7 +33,7 @@ option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocat
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 
 set(CMAKE_MODULE_PATH
