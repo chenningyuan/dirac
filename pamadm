@@ -125,7 +125,6 @@ def main():
     list_of_tests.append('cosci_methods')
     list_of_tests.append('cosci_tmom')
     list_of_tests.append('density_at_nuclei')
-    list_of_tests.append('dft_alda')
     list_of_tests.append('dft_alda_xcfun')
     list_of_tests.append('dft_ao_eval')
     list_of_tests.append('dft_betasigma')
@@ -201,6 +200,7 @@ def main():
     list_of_new_tests.append('visual_elf')
     list_of_new_tests.append('visual_gamma5')
     list_of_new_tests.append('visual_general')
+    list_of_new_tests.append('dft_alda')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
