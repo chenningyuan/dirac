@@ -125,7 +125,6 @@ def main():
     list_of_tests.append('cosci_methods')
     list_of_tests.append('cosci_tmom')
     list_of_tests.append('density_at_nuclei')
-    list_of_tests.append('dft_alda')
     list_of_tests.append('dft_alda_xcfun')
     list_of_tests.append('dft_ao_eval')
     list_of_tests.append('dft_betasigma')
@@ -167,8 +166,6 @@ def main():
     list_of_tests.append('projection_analysis')
     list_of_tests.append('projection_analysis_repolarized')
     list_of_tests.append('pvc_scf')
-    list_of_tests.append('reladc_sipeigv')
-    list_of_tests.append('reladc_dip')
     list_of_tests.append('response_C6')
     list_of_tests.append('response_excitation_energies')
     list_of_tests.append('response_hf_polarizability')
@@ -196,11 +193,14 @@ def main():
     list_of_new_tests.append('cisd_energy')
     list_of_new_tests.append('localization')
     list_of_new_tests.append('reladc_sip')
+    list_of_new_tests.append('reladc_sipeigv')
+    list_of_new_tests.append('reladc_dip')
     list_of_new_tests.append('stex')
     list_of_new_tests.append('krci_properties_omega_tdm')
     list_of_new_tests.append('visual_elf')
     list_of_new_tests.append('visual_gamma5')
     list_of_new_tests.append('visual_general')
+    list_of_new_tests.append('dft_alda')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
