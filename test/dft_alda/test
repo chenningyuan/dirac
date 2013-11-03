@@ -13,8 +13,8 @@ f = Filter()
 f.add(from_string = 'Electronic energy',
       nr_lines    = 1,
       tolerance   = 1.0e-7)
-f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = ' Relative real eigenvalues in other units;',
+f.add(from_string = ' Nonrel. sym.:',
+      nr_lines    = 1,
       tolerance   = 1.0e-4)
 
 test_run.execute(['pbe0_alda+.inp', 'pbe0_alda-.inp', 'pbe0_alda.inp', 'pbe0_xalda+.inp', 'pbe0_xalda-.inp', 'pbe0_xalda.inp'], ['zn.mol'], f)
