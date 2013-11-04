@@ -2608,8 +2608,7 @@ C*****************************************************************************
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
       use module_aoosoc_pfg
-      use module_aoosoc_init, only:
-     &    aoosoc_init
+      use module_aoosoc_init
       use atomic_oo_order_so_correction, only:
      &    get_atomic_oo_order_so_correction
 #endif
@@ -2935,7 +2934,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
 #ifdef MOD_AOOSOC
 !           initialize atomic oo-order 2e-SOC module
-            call aoosoc_init()
+            if(aoomod) call aoosoc_init()
 #endif
 !           optimized x2c module
             call x2c_main()
@@ -3242,8 +3241,8 @@ C
           call interface_ao_write()
 ! stefan test
 
-        else if(aoomod)then 
 #ifdef MOD_AOOSOC
+        else if(aoomod)then 
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !
@@ -3350,6 +3349,10 @@ C     Memory deallocation
       end if
 
  10   CONTINUE
+
+#ifdef MOD_AOOSOC
+      if(aoomod) call aoosoc_finalize()  
+#endif
 
       CALL QEXIT('GMOTRA')
 

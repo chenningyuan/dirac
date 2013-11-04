@@ -125,7 +125,6 @@ def main():
     list_of_tests.append('cosci_methods')
     list_of_tests.append('cosci_tmom')
     list_of_tests.append('density_at_nuclei')
-    list_of_tests.append('dft_alda')
     list_of_tests.append('dft_alda_xcfun')
     list_of_tests.append('dft_ao_eval')
     list_of_tests.append('dft_betasigma')
@@ -143,11 +142,11 @@ def main():
     list_of_tests.append('ecp')
     list_of_tests.append('electrostatic_potential')
     list_of_tests.append('fde_static-vemb_dipole')
+    list_of_tests.append('fde_response_autodiff')
     list_of_tests.append('free-particle_projection')
     list_of_tests.append('frozen_orbitals')
     list_of_tests.append('fscc')
     list_of_tests.append('fscc_highspin')
-    list_of_tests.append('fscc_intensities')
     list_of_tests.append('gaunt')
     list_of_tests.append('geo_opt')
     list_of_tests.append('geo_opt_saddle')
@@ -167,8 +166,6 @@ def main():
     list_of_tests.append('projection_analysis')
     list_of_tests.append('projection_analysis_repolarized')
     list_of_tests.append('pvc_scf')
-    list_of_tests.append('reladc_sipeigv')
-    list_of_tests.append('reladc_dip')
     list_of_tests.append('response_C6')
     list_of_tests.append('response_excitation_energies')
     list_of_tests.append('response_hf_polarizability')
@@ -182,9 +179,6 @@ def main():
     list_of_tests.append('symmetry_recognition')
     list_of_tests.append('symmetry_scf_energy')
     list_of_tests.append('visual_div_rot')
-    list_of_tests.append('visual_elf')
-    list_of_tests.append('visual_gamma5')
-    list_of_tests.append('visual_general')
     list_of_tests.append('visual_lao_current')
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
@@ -199,8 +193,14 @@ def main():
     list_of_new_tests.append('cisd_energy')
     list_of_new_tests.append('localization')
     list_of_new_tests.append('reladc_sip')
+    list_of_new_tests.append('reladc_sipeigv')
+    list_of_new_tests.append('reladc_dip')
     list_of_new_tests.append('stex')
     list_of_new_tests.append('krci_properties_omega_tdm')
+    list_of_new_tests.append('visual_elf')
+    list_of_new_tests.append('visual_gamma5')
+    list_of_new_tests.append('visual_general')
+    list_of_new_tests.append('dft_alda')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -282,7 +282,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_INTEREST')
     dirac_modules[this_module].add_directory('src/interest')
     dirac_modules[this_module].add_test('mdirac_closed-shell_dft')
-    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'krcc'
     dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
@@ -371,9 +370,9 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
     dirac_modules[this_module].add_test('blockd_twocomp')
     dirac_modules[this_module].add_test('cosci_energy_blockd')
-    dirac_modules[this_module].add_test('fde_response_autodiff')
     dirac_modules[this_module].add_test('fde_export_density')
     dirac_modules[this_module].add_test('weak_interactions')
+    dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'pcm'
@@ -383,6 +382,7 @@ def main():
     dirac_modules[this_module].add_test('pcm_energy')
     dirac_modules[this_module].add_test('pcm_response')
     dirac_modules[this_module].take_out_of_adm()
+    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'aoosoc'
     dirac_modules[this_module] = dirac_module('aoosoc', 'atomic oo-order spin-orbit correction module')
@@ -390,7 +390,6 @@ def main():
     dirac_modules[this_module].add_directory('src/aoosoc')
     dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
     dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
-    dirac_modules[this_module].take_out_of_release()
     # define input options
 
     parser = OptionParser()

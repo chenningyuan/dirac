@@ -13,10 +13,10 @@
 import re
 import os
 import sys
-import argparse
 import subprocess
 import shlex
 import shutil
+from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
 class TestRun():
@@ -32,10 +32,7 @@ class TestRun():
     #---------------------------------------------------------------------------
     def execute(self,
                 command,
-                success_message='',
-                success_file_name='',
                 stdout_file_name='',
-                stderr_means_crash=True,
                 accepted_errors=[]):
         try:
             process = subprocess.Popen(shlex.split(command),
@@ -49,28 +46,17 @@ class TestRun():
                     # in this case we do not mark test as red and exit with zero
                     sys.stderr.write('found error which is expected/accepted: %s\n' % error)
                     sys.exit(0)
-            if stderr_means_crash:
-                # some codes write to stderr even if calculation is successful
-                if stderr != '':
-                    sys.stderr.write('ERROR: crash during %s\n' % command)
-                    sys.exit(-1)
-            if success_message != '':
-                if success_file_name == '':
-                    if success_message not in stdout:
-                        sys.stderr.write('ERROR: crash during %s\n' % command)
-                        sys.exit(-1)
-                else:
-                    f = open(success_file_name, 'r')
-                    if success_message not in f.read():
-                        sys.stderr.write('ERROR: crash during %s\n' % command)
-                        sys.exit(-1)
-                    f.close()
+            if process.returncode != 0:
+                sys.stderr.write('ERROR: crash during %s\n' % command)
+                sys.exit(-1)
             if stdout_file_name != '':
                 f = open(stdout_file_name, 'w')
                 f.write(stdout)
                 f.close()
         except OSError:
             sys.stderr.write('ERROR: could not execute command %s\n' % command)
+            sys.stderr.write('       have you set the correct --binary-dir?\n')
+            sys.stderr.write('       try also --help\n')
             sys.exit(-1)
 
     #---------------------------------------------------------------------------
@@ -87,17 +73,17 @@ class TestRun():
 
     #---------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = argparse.ArgumentParser(description='Beholder - lightweight regression testing.')
-        parser.add_argument('--binary-dir',
-                           action='store',
-                           default=input_dir,
-                           help='directory containing the binary/launcher [default: %(default)s]')
-        parser.add_argument('--work-dir',
-                           action='store',
-                           default=input_dir,
-                           help='working directory [default: %(default)s]')
-        args = parser.parse_args(args=argv[1:])
-        return (args.binary_dir, args.work_dir)
+        parser = OptionParser(description='Beholder - numerically tolerant test library.')
+        parser.add_option('--binary-dir',
+                          action='store',
+                          default=input_dir,
+                          help='directory containing the binary/launcher [default: %(default)s]')
+        parser.add_option('--work-dir',
+                          action='store',
+                          default=input_dir,
+                          help='working directory [default: %(default)s]')
+        (options, args) = parser.parse_args(args=argv[1:])
+        return (options.binary_dir, options.work_dir)
 
 #-------------------------------------------------------------------------------
 class _SingleFilter():
