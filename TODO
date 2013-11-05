@@ -15,3 +15,6 @@
   plus document it                                               
 - if time permits switch to BigMPI                                Radovan
 - allow and test creation of binary release                       Radovan                           30%
+
+
+when you solve a problem, please remove the line
