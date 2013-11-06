@@ -5,8 +5,8 @@ if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)
         execute_process(
-            COMMAND          ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
-            OUTPUT_VARIABLE  GIT_REVISION
+            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            OUTPUT_VARIABLE GIT_REVISION
             ERROR_QUIET
             )
         if(NOT ${GIT_REVISION} STREQUAL "")
@@ -14,15 +14,12 @@ if(DEVELOPMENT_CODE)
         endif()
 
         execute_process(
-            COMMAND     ${GIT_EXECUTABLE} status -uno
-            OUTPUT_FILE ${PROJECT_BINARY_DIR}/GIT_STATUS_AT_BUILD
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            OUTPUT_VARIABLE GIT_BRANCH
             ERROR_QUIET
             )
-        if(EXISTS "${PROJECT_BINARY_DIR}/GIT_STATUS_AT_BUILD")
-            file(STRINGS ${PROJECT_BINARY_DIR}/GIT_STATUS_AT_BUILD GIT_STATUS LIMIT_COUNT 1)
-            if(NOT ${GIT_STATUS} STREQUAL "")
-                string(STRIP ${GIT_STATUS} GIT_STATUS)
-            endif()
+        if(NOT ${GIT_BRANCH} STREQUAL "")
+            string(STRIP ${GIT_BRANCH} GIT_BRANCH)
         endif()
     endif()
 endif()

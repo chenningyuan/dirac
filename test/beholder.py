@@ -134,6 +134,10 @@ class Filter():
         log_ref  = open('%s.reference' % out_name, 'w')
 
         out = open(out_name).readlines()
+
+        if not os.path.exists(ref_name):
+            sys.stderr.write('ERROR: reference output %s not found\n' % ref_name)
+            sys.exit(-1)
         ref = open(ref_name).readlines()
 
         for f in self.filter_list:

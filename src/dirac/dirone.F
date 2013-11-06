@@ -2738,6 +2738,11 @@ C     ==============================================
        call dealloc(work)
       end if
 
+#ifdef MOD_AOOSOC
+!     initialize atomic oo-order 2e-SOC module if enabled
+      if(aoomod) call aoosoc_init()
+#endif
+
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
 C
@@ -2932,10 +2937,6 @@ C.........reset NEWPRP to re-initialize AOPROPER
               NTMO(IFRP)  = NORB(IFRP)
             END DO
 
-#ifdef MOD_AOOSOC
-!           initialize atomic oo-order 2e-SOC module
-            if(aoomod) call aoosoc_init()
-#endif
 !           optimized x2c module
             call x2c_main()
 

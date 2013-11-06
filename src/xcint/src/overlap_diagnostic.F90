@@ -135,7 +135,7 @@ contains
 !                 fixme check this carefully
                   if (ao_fermion_corep(irep, ic) == 1) then
                      nr_g_ao_blocks(ic) = nr_g_ao_blocks(ic) + 1
-!avijit:separating small and large component            
+!                 separating small and large component            
                      g_ao_start(nr_g_ao_blocks(ic),ic) = ao_off(irep, ic) + 1
                      g_ao_end(nr_g_ao_blocks(ic),ic)   = ao_off(irep, ic) + ao_nr(irep, ic)
                   else
@@ -282,8 +282,6 @@ contains
       integer                :: iz, iq
       integer, external      :: iqfrompq
       real(8)                :: q_norm
-!      real(8),dimension(block_length,nr_mo)    ::q
-
       real(8),dimension(:,:),allocatable::q
 
 !     --------------------------------------------------------------------------
@@ -365,7 +363,7 @@ contains
       q=0.0d0 
 !     construct the modulus of spinor s in point k
       do ic = 1,nc
-        do iq = 1,4 !nr_quaternion_blocks ! be alerted
+        do iq = 1,4 !nr_quaternion_blocks 
           do s=1,nr_mo
             do k=1,block_length
                q(k, s)= q(k, s)+ spinor(k, s, iq, ic)*spinor(k, s, iq, ic)
@@ -381,7 +379,6 @@ contains
 !     combine moduli of spinors s and t to overlap diagnostic matrix
       do s = 1, nr_mo
          do t = s, nr_mo
-!Avijit: separating large and small component
             q_norm = 0.0d0
             do k = 1, block_length
               q_norm = q_norm + w(k)*q(k, s)*q(k, t)
