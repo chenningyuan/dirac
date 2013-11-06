@@ -12,5 +12,6 @@
 - if time permits switch to BigMPI                                Radovan                            0%
 - allow and test creation of binary release                       Radovan                           30%
 - deactivate overlap diagnostic                                   Radovan                            0%
+- remove cruft from XCint directory                               Radovan                            0%
 
 when you solve a problem, please remove the line
