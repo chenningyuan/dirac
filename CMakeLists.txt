@@ -36,6 +36,11 @@ option(ENABLE_XCFUN           "Enable XCFun library"                            
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 
+option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
+option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -76,6 +81,13 @@ include(ConfigSafeGuards)
 include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo) # has to come after ConfigVersion
+
+if(USE_BUILTIN_BLAS)
+    add_definitions(-DUSE_BUILTIN_BLAS)
+endif()
+if(USE_BUILTIN_LAPACK)
+    add_definitions(-DUSE_BUILTIN_LAPACK)
+endif()
 
 add_custom_command(
     OUTPUT

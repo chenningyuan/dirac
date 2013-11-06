@@ -1,12 +1,12 @@
-#ifdef USE_OWN_LAPACK
-#define USE_OWN_ZLAPACK
+#ifdef USE_BUILTIN_LAPACK
+#define USE_BUILTIN_ZLAPACK
 #endif
 
 ! ESSL LAPACK la(pa)cks almost everything
 ! switch on own LAPACK until better solution is found
-#ifndef USE_OWN_LAPACK
+#ifndef USE_BUILTIN_LAPACK
 #ifdef HAVE_ESSL_LAPACK
-#define USE_OWN_ZLAPACK
+#define USE_BUILTIN_ZLAPACK
 #endif
 #endif
 
@@ -20,7 +20,7 @@
 !
 ! $Id$
 !
-#ifdef USE_OWN_ZLAPACK
+#ifdef USE_BUILTIN_ZLAPACK
       SUBROUTINE ZBDSQR( UPLO, N, NCVT, NRU, NCC, D, E, VT, LDVT, U,
      $                   LDU, C, LDC, RWORK, INFO )
 *
@@ -190065,7 +190065,7 @@ C                    SLARRF needs LWORK = 2*N
 *     End of CUPMTR
 *
       END
-#endif /* USE_OWN_ZLAPACK */
+#endif /* USE_BUILTIN_ZLAPACK */
 
       ! dummy routine to avoid empty file
       subroutine dummy_dirac_zlapack()

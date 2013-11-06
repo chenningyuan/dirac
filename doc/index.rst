@@ -5,7 +5,8 @@ Setting up DIRAC
 
 * **Installation:**
   :doc:`Supported platforms <installation/platforms>` |
-  :doc:`Linux, Unix, Mac <installation/installation>` |
+  :doc:`Linux, Unix, Mac <installation/general>` |
+  :doc:`Expert options <installation/expert>` |
   :doc:`Windows <installation/windows>`
 
 * **Math libraries:**
