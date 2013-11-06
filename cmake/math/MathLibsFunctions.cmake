@@ -180,8 +180,8 @@ macro(config_math_service _SERVICE)
         unset(EXTRA_LIBS)
 
         find_package_message(${_SERVICE} "Found ${_SERVICE}: ${${_SERVICE}_TYPE}" "[${${_SERVICE}_LIBRARIES}]")
-        set(LIBS
-            ${LIBS}
+        set(EXTERNAL_LIBS
+            ${EXTERNAL_LIBS}
             ${${_SERVICE}_LIBRARIES}
             )
     else()

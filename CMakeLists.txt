@@ -59,7 +59,7 @@ if(ENABLE_STATIC_LINKING)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-set(LIBS)
+set(EXTERNAL_LIBS)
 
 include(ConfigVersion)
 include(ConfigArchitecture)
@@ -115,7 +115,7 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
-    set(LIBS xcfun ${LIBS})
+    set(EXTERNAL_LIBS xcfun ${EXTERNAL_LIBS})
 else()
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
@@ -137,7 +137,7 @@ if(ENABLE_PCMMOD)
     
     add_external(pcmsolver)
 
-    set(LIBS
+    set(EXTERNAL_LIBS
         stdc++
 	interface
         solver
@@ -150,13 +150,13 @@ if(ENABLE_PCMMOD)
         wem
         wavcav
         getkw
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
 endif()
 
-#miro: to enable proper linking for pgCC we need the libstdc++ library
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    set(LIBS stdc++ ${LIBS})
+    # to enable proper linking for pgCC we need the libstdc++ library
+    set(EXTERNAL_LIBS stdc++ ${EXTERNAL_LIBS})
 endif()
 
 file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
@@ -281,7 +281,7 @@ foreach(
     target_link_libraries(
         ${EXECUTABLE}
         dirac
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
@@ -308,7 +308,7 @@ if(ENABLE_TESTS)
     # set unit test libs
     set(UNIT_TEST_LIBS
         dirac
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
     include(ConfigUnitTesting)
 endif()
