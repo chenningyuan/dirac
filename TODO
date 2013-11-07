@@ -10,6 +10,14 @@
 - documentation of new features (in particular MDIRAC)
 - convert tests to new framework                                  Radovan                           20%
 - if time permits switch to BigMPI                                Radovan                            0%
+- no MPI routines should be called when running on one processor  Stefan
+  (the communicator may not be available then)
+- create a list of new features (doc/features.rst)                everybody                 
+- documentation of new features (in particular MDIRAC)
+- convert tests to new framework                                  Radovan                           20%
+- update setup/cmake and sync with improvements in Dalton         Radovan
+  plus document it                                               
+- if time permits switch to BigMPI                                Radovan, Stefan
 - allow and test creation of binary release                       Radovan                           30%
 - deactivate overlap diagnostic                                   Radovan                            0%
 - remove cruft from XCint directory                               Radovan                            0%
