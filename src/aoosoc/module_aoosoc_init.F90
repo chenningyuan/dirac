@@ -170,6 +170,7 @@ contains
 
   subroutine aoosoc_finalize()
 
+     if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
      deallocate(atom)
      deallocate(aoo_nont)
      deallocate(aoo_nucdeg)
