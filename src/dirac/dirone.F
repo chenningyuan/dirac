@@ -2925,11 +2925,11 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
 !           todo: put in an interface routine to be called inside x2c_driver
             if(mdirac)then
-              NZT         = 1
-              NPSH(IFRP)  = NFORB(IFRP,2) ! check!!!
+              NZT            = 1
+              NPSH(1:nfsym)  = NFORB(1:nfsym,2) ! check!!!
             else
-              NZT         = NZ
-              NPSH(IFRP)  = NFORB(IFRP,1) ! check!!!
+              NZT            = NZ
+              NPSH(1:nfsym)  = NFORB(1:nfsym,1) ! check!!!
             end if
             DO IFRP = 1,NFSYM
               NESH(IFRP)  = NFORB(IFRP,1)
