@@ -19,10 +19,11 @@ export DIRTIMEOUT="15m"
 
 # go to the local DIRAC directory
 cd $DIRAC
-git pull origin release-13
+git pull 
 git checkout release-13
+git status
 
-cd $DIRAC
+unset BUILD_INTEL_CHECK
 BUILD_INTEL_CHECK=build_intelmkl_i8_check
 if [[ -d "$BUILD_INTEL_CHECK" ]]; then
    echo "Deleting previous build ddirectory $BUILD_INTEL_CHECK."
@@ -35,6 +36,7 @@ unset DIRAC_NUM_MPI_PROCS
 cd $BUILD_INTEL_CHECK
 make Experimental
 
+unset BUILD_INTEL
 BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
    echo "Deleting previous build directory $BUILD_INTEL."
