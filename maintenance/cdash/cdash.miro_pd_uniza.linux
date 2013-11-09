@@ -4,10 +4,12 @@
 # 10 00 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cmake buildup at "$timestamp ; DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.miro_pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64 > $DIRAC/maintenance/log_out.cdash_$timestamp 2>&1 || {echo "cront initiated cdash buildup failed at "$timestamp}
 
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
+source /opt/intel/bin/compilervars.sh intel64
 
 echo "PATH=$PATH"
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
-echo "ifort ? \c"; which ifort
+
+echo -e "ifort : \c"; which ifort
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
