@@ -211,8 +211,10 @@ CONTAINS
             END IF
           END DO
         END DO
-!        WRITE(iw,*) 'Vector with total sorted matrix'
-!        WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+!        IF (channel == 2) THEN
+!          WRITE(iw,*) 'Vector with total sorted matrix'
+!          WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+!        END IF
       
 !
 ! Now we have the initial state vector multiplied with the sorted ADC matrix.
@@ -222,15 +224,17 @@ CONTAINS
           vec2 = 0
           counter = counter + 1
           vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
-          !WRITE(iw,*) 'Final state vector'
-          !WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
+          !IF (j == 1) THEN
+          !  WRITE(iw,*) 'Final state vector'
+          !  WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
+          !END IF
           e2h1p(counter) = fin_energies(j)
           ! This part is ony necessary, when the initial and final states
           ! are non-orthogonal, which they are not at the moment!
           !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
           !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
           t_mom(counter) = DOT_PRODUCT(vec1,vec2)
-          WRITE(iw,*) 't_mom: ', t_mom(counter)
+!          WRITE(iw,*) 't_mom: ', t_mom(counter)
         END DO
         
         WRITE(iw,*)
@@ -244,6 +248,12 @@ CONTAINS
         WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
         WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
         WRITE(iw,*)
+
+!
+! This procedure only makes sense, when those final vectors not
+! associated with the chosen final states are not considered in
+! the calculation of the transition moments.
+!
 !
 ! To be removed as soon as Dirac has its own Stieltjes routine
 !
