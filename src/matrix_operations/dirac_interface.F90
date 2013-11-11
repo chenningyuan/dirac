@@ -618,6 +618,7 @@ contains
 
     real(8), pointer   :: work(:)
     integer                      :: lwork
+    integer                      :: iprint
 
     if (.not. isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
@@ -633,6 +634,7 @@ contains
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
 
+    iprint = 0
     call twofck((/G%irep + 1/),  &
 !               (/G%ih_sym/),    &
                 (/0/),           &
@@ -642,7 +644,7 @@ contains
                   1,             &
                   npos,          &
                   integral_flag, &
-                  0,             &
+                  iprint,        &
                   work,          &
                   lwork)
 
@@ -815,7 +817,6 @@ contains
     if (.not. isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-!   call gtovlt(S%elms, ssmtrc)
     call gtovlx(S%elms, ssmtrc)
 
   end subroutine

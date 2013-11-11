@@ -1,9 +1,10 @@
 Perturbation operators with the KU-CCSD(T) method
 ==================================================
 
-With the keyword ADD_FINITE_FIELD and having operator
-previously transformed in PRPTRA the user can add 
-multiple operators to the Kramers unrestricted Fock matrix.
+With the RELCCSD keyword ADD_FINITE_FIELD and having operator
+previously transformed in the PRPTRA module the user can add 
+multiple one-electron operators to the (Kramers unrestricted) Fock matrix and
+do the perturbed Kramers unrestricted Coupled Cluster procedure with. 
 
 If operator is antisymmetric (what means imaginary), you have to include it
 with the imaginary field strength to keep the Fock matrix Hermitian.
@@ -20,13 +21,13 @@ giving different energies for C1 and C2 symmetries (C2v is here only for compari
    C1:  -192.357413401593305
 
 
-ZDIPVEL:
+ZDIPVEL (as real paerturb):
            CCSD(T)                 CCSD
    C2v: -192.357277468035534   -192.357277468035534
     C2: -192.357277507880099   -192.357277507880099
     C1: -192.357277538249690   -192.357277538249690
 
-Z betasigma oper:
+Z betasigma operator (as imaginary perturb):
               CCSD(T)
   C2v:   -192.357277468035591
    C2:   -192.357277468035477

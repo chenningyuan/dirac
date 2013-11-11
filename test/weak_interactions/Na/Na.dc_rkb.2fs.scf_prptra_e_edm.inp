@@ -8,16 +8,19 @@
 **GENERAL
 .DIRECT
 1 1 1
+# employ Jacobi diagonalization
+#.DOJACO
+.QJACO
 **INTEGRALS
 .PRINT
-1
+0
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN
 .UNCONTRACTED
 **HAMILTONIAN
 .PRINT
-2
+0
 !.ONESYS
 .INTFLG
 1 1 0

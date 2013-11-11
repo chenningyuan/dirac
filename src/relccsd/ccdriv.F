@@ -909,12 +909,12 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1000  FORMAT (/" Total memory available :",T50,I15," MB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
+     &        T50,I15," 8-byte words")
 1002  FORMAT (" Not enough memory, increase to at least",
-     &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
+     &        T50,I15," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
@@ -2090,7 +2090,7 @@ C
       call dealloc(a_VTA , id="vta" )
 C
       RETURN
-1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
@@ -2443,7 +2443,7 @@ C
       call dealloc(a_S2  , id="s2")
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Energy calculations"
      &        /" MP2 module active :",T44,L1
      &        /" CCSD module active :",T44,L1
@@ -2843,7 +2843,7 @@ C
 
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Gradient calculations with the old MP2 module"
      &        //" Z-vector equations are done in MO basis:"
      &        /" Maximum number of iterations :",T40,I5
@@ -3019,7 +3019,7 @@ C
       call dealloc( a_CBUF , id="cbuf"  )
 
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Propagator (RPA) module"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
@@ -3170,7 +3170,7 @@ C
       call dealloc( a_BUF2  , id="buf2"  )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Excitation energy module (RPA)"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of reduced space :",T40,I5

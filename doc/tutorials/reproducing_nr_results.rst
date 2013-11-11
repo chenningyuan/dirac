@@ -55,3 +55,40 @@ Recommended method of choice is the closed shell Hartree-Fock SCF, which can be 
 by the CCSD(T) correlation method. In this case you are to check the occupied shells, and
 active space, respectively.
 
+An example using DALTON
+=======================
+
+Apart from specifying a nonrelativistic Hamiltonian and a point charge nuclear model 
+in the DIRAC input, the user should be aware of the fact that DIRAC uses Cartesian 
+Gaussian functions, while DALTON uses Spherical Gaussian functions.
+
+One route is to force DALTON to use Cartesian Gaussian functions (refer
+to the DALTON manual) and the following DIRAC input file::
+
+  **DIRAC
+  [...]
+  **GENERAL
+  .SPHTRA
+   0 0
+  **INTEGRALS
+  .NUCMOD
+  1
+  **HAMILTONIAN
+  .LEVY-LEBLOND
+  *END OF
+
+A second route is to use DALTON defaults regarding basis functions and the
+following DIRAC input file::
+
+  **DIRAC
+  [...]
+  **INTEGRALS
+  .NUCMOD
+  1
+  **HAMILTONIAN
+  .LEVY-LEBLOND
+  *END OF
+
+The user should make sure that the geometry is specified in atomic units
+as the conversion factor from Angstrom to AU may be different in the two
+programs.

@@ -605,7 +605,6 @@ C
        ENDIF
 
       ENDDO
-
       IF (NEW.NE.0) THEN
         IF (IRCW.EQ.1) THEN
           WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
@@ -663,7 +662,6 @@ CMI  ... printout with symmetry classification ...real energies only...
         ENDIF
 
  140    CONTINUE
-
       IF (NEW.NE.0) THEN
 
          WRITE(LUPRI,1030) ILEVEL,

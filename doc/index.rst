@@ -5,7 +5,8 @@ Setting up DIRAC
 
 * **Installation:**
   :doc:`Supported platforms <installation/platforms>` |
-  :doc:`Linux, Unix, Mac <installation/installation>` |
+  :doc:`Linux, Unix, Mac <installation/general>` |
+  :doc:`Expert options <installation/expert>` |
   :doc:`Windows <installation/windows>`
 
 * **Math libraries:**
@@ -22,7 +23,7 @@ Setting up DIRAC
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
-  :doc:`Running the test set <installation/testing>`
+  :doc:`Running the test set <installation/runtest>`
 
 * **Example installations and run scripts:**
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
@@ -31,6 +32,7 @@ Setting up DIRAC
 * **pam script:**
   :doc:`How to set the scratch directory <pam/scratch>`
   :doc:`Replacements of strings by pam <pam/replace>`
+
 
 
 Updates and patches
@@ -100,6 +102,8 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
 
+* **Analysis:**
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
@@ -119,7 +123,8 @@ Tutorials and walkthrus
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
 * **Utility programs:**
-  :doc:`VIBCAL <tutorials/vibcal/vibcal>` 
+  :doc:`TWOFIT <tutorials/utils/twofit>`
+  :doc:`VIBCAL <tutorials/utils/vibcal>` 
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -159,6 +164,7 @@ Developers
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
+  :doc:`How to add new tests <programmers/testing>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
