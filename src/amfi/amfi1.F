@@ -1547,13 +1547,18 @@ c     write(6,*) 'end  trans '
 CMI .. modified according to the 'amfi_wizard' !!
       subroutine transcon(contold,idim1,idim2,ovlp,contnew,nprim,ncont,
      *ovlpcont)
-#include "implicit.h"
-#include "priunit.h"
-CMI#include "para.h"
-CMI#include "param.h"
-      dimension contold(idim1,idim2),contnew(nprim,ncont),
-     *ovlp(idim1,idim1),ovlpcont(idim2,idim2)
-c     write(6,*) 'begin transcon nprim,ncont ',nprim,ncont 
+      implicit none
+
+      integer :: idim1, idim2, nprim, ncont
+      real(8) :: contold(idim1,idim2)
+      real(8) :: contnew(nprim,ncont)
+      real(8) :: ovlp(idim1,idim1)
+      real(8) :: ovlpcont(idim2,idim2)
+
+      integer :: iprim1, iprim2, icont, icont1, icont2
+      integer :: irun, jrun
+      real(8) :: xnorm, s, f
+
 cbs   copy old contraction coefficients in dense form to common block 
       do Jrun=1,ncont
       do Irun=1,nprim
@@ -1567,20 +1572,14 @@ cbs   ensure normalization
         do Irun=1,nprim
           xnorm=xnorm+contnew(Irun,ICONT)*contnew(Jrun,ICONT)
      *   *ovlp(Irun,Jrun)
-c       write(6,*) 'Icont,jrun,irun,xnorm ',
-c    *  icont,jrun,irun,xnorm 
         enddo 
         enddo 
-c       write(6,*) 'ICONT ',ICONT,xnorm   
         xnorm=1d0/dsqrt(xnorm)
 cbs   scale with normalization factor 
         do Irun=1,nprim
         contnew(Irun,ICONT)=xnorm*contnew(Irun,ICONT)
         enddo 
       enddo 
-c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont 
-CMI
-CMI This piece of the code added from 'amfi_wizard'
 cbs   calculate overlap of contracted functions
       do irun=1,ncont
       do jrun=1,ncont
@@ -1588,17 +1587,19 @@ cbs   calculate overlap of contracted functions
       enddo
       enddo
       do icont2=1,ncont
-      do icont1=1,ncont
-      do iprim2=1,nprim
-      do iprim1=1,nprim
-      ovlpcont(icont1,icont2)=ovlpcont(icont1,icont2)+
-     *contnew(iprim1,icont1)*contnew(iprim2,icont2)*
-     *ovlp(iprim1,iprim2)
+         do icont1=1,ncont
+            s = 0.0d0
+            do iprim2=1,nprim
+               do iprim1=1,nprim
+               f = contnew(iprim1,icont1)
+               f = f*contnew(iprim2,icont2)
+               f = f*ovlp(iprim1,iprim2)
+               s = s + f
+               enddo
+            enddo
+            ovlpcont(icont1,icont2) = ovlpcont(icont1,icont2) + s
+         enddo
       enddo
-      enddo
-      enddo
-      enddo
-c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont     
       return 
       end 
 

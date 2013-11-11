@@ -1,0 +1,558 @@
+! ------------------------------------------------------------------------------------
+!
+! Program:      Dirac 
+!
+! Library:      InteRest
+!
+! Module:       module_interest_one.f90 
+!
+! Description:  InteRest library routine 
+!
+! Contains:     
+!
+! Licensing:    dirac_copyright_start
+!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     All Rights Reserved.
+!                     
+!                     This source code is part of the DIRAC program package.
+!                     It is provided under a written license and may be used,
+!                     copied, transmitted, or stored only in accordance to the
+!                     conditions of that written license.
+!                     
+!                     In particular, no part of the source code or compiled modules may
+!                     be distributed outside the research group of the license holder.
+!                     This means also that persons (e.g. post-docs) leaving the research
+!                     group of the license holder may not take any part of Dirac,
+!                     including modified files, with him/her, unless that person has
+!                     obtained his/her own license.
+!                     
+!                     For information on how to get a license, as well as the
+!                     author list and the complete list of contributors to the
+!                     DIRAC program, see: http://dirac.chem.vu.nl
+!               dirac_copyright_end
+!
+! Author:       Michal Repisky (michal.repisky@uit.no)
+!
+! Logs:         
+!
+! Comments:     
+!                            
+! ------------------------------------------------------------------------------------
+  subroutine interest_initialize( info )
+
+    use module_interest_osr
+    implicit none
+    !> input
+    logical :: info
+
+    if( is_interest_initialized )then
+      return
+     !write(6,*)
+     !write(6,'(2x,a)')'Integral module InteRest was already initialized'
+     !write(6,*)
+    else
+      if( info )then
+        write(6,*)
+        write(6,'(2x,a)')'Integral module InteRest is initialized'
+        call print_interest_git_revision_info
+        write(6,*)
+      endif
+      call interest_osr_initialize()
+      is_interest_initialized = .true.
+    endif
+
+  end subroutine
+
+! -------------------------------------------------------------------------
+  subroutine interest_overlap(rkb,                                            &
+                              fint_inp,na,nb,nrkb,                            &
+                              la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
+                              lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
+                              ncentr,atomic_data                              )
+    use module_interest_osr
+    use module_interest_hrr
+    implicit none
+
+    !-- output --!
+    integer, intent(out) :: na
+    integer, intent(out) :: nb
+    integer, intent(out) :: nrkb
+    real(8), intent(out) :: fint_inp(*)
+    !-- input --!
+    logical, intent(in) :: rkb
+    integer, intent(in) :: ncentr 
+    integer, intent(in) :: la_inp,lb_inp
+    real(8), intent(in) :: atomic_data(ncentr,5)
+    real(8), intent(in) :: alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp
+    real(8), intent(in) :: beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp
+    !-- local --!
+    integer :: n1
+    integer :: nint
+    integer :: index
+    integer :: la,lb
+    real(8) :: fint(nccx)
+    real(8) :: rxab,ryab,rzab,rrab
+    real(8) :: alpha,ax,ay,az,anorm
+    real(8) :: beta, bx,by,bz,bnorm
+    real(8) :: pexp,rexp,rxpa,rypa,rzpa,cntr
+
+
+    !> AB-pair indexation
+    if( la_inp >= lb_inp )then
+      la = la_inp    
+      lb = lb_inp   
+      ax = ax_inp   
+      ay = ay_inp   
+      az = az_inp    
+      bx = bx_inp   
+      by = by_inp   
+      bz = bz_inp   
+      index = 12
+      alpha = alpha_inp
+      anorm = anorm_inp
+      beta  = beta_inp  
+      bnorm = bnorm_inp
+    else
+      la = lb_inp    
+      lb = la_inp   
+      ax = bx_inp   
+      ay = by_inp   
+      az = bz_inp    
+      bx = ax_inp   
+      by = ay_inp   
+      bz = az_inp   
+      index = 21
+      alpha = beta_inp
+      anorm = bnorm_inp
+      beta  = alpha_inp  
+      bnorm = anorm_inp
+    endif
+
+
+    rxab = ax - bx
+    ryab = ay - by
+    rzab = az - bz
+    rrab = rxab*rxab + ryab*ryab + rzab*rzab
+
+    pexp = alpha + beta
+    if( rrab.lt.1.d-12 )then
+      rxpa = 0.0d0 
+      rypa = 0.0d0
+      rzpa = 0.0d0
+      rxab = 0.0d0  
+      ryab = 0.0d0  
+      rzab = 0.0d0  
+      cntr = anorm*bnorm 
+    else
+      rxpa = ( alpha*ax + beta*bx )/pexp - ax
+      rypa = ( alpha*ay + beta*by )/pexp - ay
+      rzpa = ( alpha*az + beta*bz )/pexp - az
+      rexp = alpha*beta/pexp
+      cntr = anorm*bnorm*dexp(-rexp*rrab)
+    endif
+
+    na = ncc(la)
+    nb = ncc(lb)
+    if( .not. rkb )then
+      nrkb = 1
+      nint = na*nb
+      call interest_osr_class_overlap(n1,fint,cntr,(la  ),(la+lb-1),pexp,rxpa,rypa,rzpa)
+      call interest_hrr_bra(fint,nint,1,la,lb,rxab,ryab,rzab)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    else
+      nrkb = 2
+      nint = 5*na*nb
+      call interest_osr_class_overlap(n1,fint,cntr,(la-1),(la+lb+1),pexp,rxpa,rypa,rzpa)
+      call interest_hrr_bra_rkb(fint,max(n1,nint),1,la,lb,rxab,ryab,rzab,alpha,beta)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab_rkb( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    endif
+
+  end subroutine
+
+! -------------------------------------------------------------------------
+  subroutine interest_nuclear_attraction_point_nucleus(rkb,                                            &
+                                                       fint_inp,na,nb,nrkb,                            &
+                                                       la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
+                                                       lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
+                                                       ncentr,atomic_data                              )
+    use module_interest_osr
+    use module_interest_hrr
+    implicit none
+
+    !-- output --!
+    integer, intent(out) :: na
+    integer, intent(out) :: nb
+    integer, intent(out) :: nrkb
+    real(8), intent(out) :: fint_inp(*)
+    !-- input --!
+    logical, intent(in) :: rkb
+    integer, intent(in) :: ncentr 
+    integer, intent(in) :: la_inp,lb_inp
+    real(8), intent(in) :: atomic_data(ncentr,5)
+    real(8), intent(in) :: alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp
+    real(8), intent(in) :: beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp
+    !-- local --!
+    integer :: nint
+    integer :: index
+    integer :: la,lb
+    integer :: n1,n2,iat
+    real(8) :: fint(nccx)
+    real(8) :: rxab,ryab,rzab,rrab
+    real(8) :: alpha,ax,ay,az,anorm
+    real(8) :: beta, bx,by,bz,bnorm
+    real(8) :: pexp,rexp,rxpa,rypa,rzpa
+    real(8) :: cntr1,cntr,tval,fnbra,fdbra
+    real(8) :: cx,cy,cz,px,py,pz,rxcp,rycp,rzcp
+    real(8), dimension(ncc2) :: fintl
+
+
+    !> AB-pair indexation
+    if( la_inp >= lb_inp )then
+      la = la_inp    
+      lb = lb_inp   
+      ax = ax_inp   
+      ay = ay_inp   
+      az = az_inp    
+      bx = bx_inp   
+      by = by_inp   
+      bz = bz_inp   
+      index = 12
+      alpha = alpha_inp
+      anorm = anorm_inp
+      beta  = beta_inp  
+      bnorm = bnorm_inp
+    else
+      la = lb_inp    
+      lb = la_inp   
+      ax = bx_inp   
+      ay = by_inp   
+      az = bz_inp    
+      bx = ax_inp   
+      by = ay_inp   
+      bz = az_inp   
+      index = 21
+      alpha = beta_inp
+      anorm = bnorm_inp
+      beta  = alpha_inp  
+      bnorm = anorm_inp
+    endif
+
+
+    rxab = ax - bx
+    ryab = ay - by
+    rzab = az - bz
+    rrab = rxab*rxab + ryab*ryab + rzab*rzab
+
+    pexp = alpha + beta
+    if( rrab.lt.1.d-12 )then
+      px    = ax 
+      py    = ay
+      pz    = az
+      rxpa  = 0.0d0 
+      rypa  = 0.0d0
+      rzpa  = 0.0d0
+      rxab  = 0.0d0  
+      ryab  = 0.0d0  
+      rzab  = 0.0d0  
+      cntr1 = 2.0d0*(pi/pexp)*anorm*bnorm 
+    else
+      px    = ( alpha*ax + beta*bx )/pexp
+      py    = ( alpha*ay + beta*by )/pexp
+      pz    = ( alpha*az + beta*bz )/pexp
+      rxpa  = px - ax
+      rypa  = py - ay
+      rzpa  = pz - az
+      rexp  = alpha*beta/pexp
+      cntr1 = 2.0d0*(pi/pexp)*anorm*bnorm*dexp(-rexp*rrab)
+    endif
+
+    na    = ncc(la)
+    nb    = ncc(lb)
+    fnbra = 1.0d0 
+    fdbra = 1.0d0/(2.0d0*pexp)  
+
+    do iat=1,ncentr
+      cx= atomic_data(iat,2)
+      cy= atomic_data(iat,3)
+      cz= atomic_data(iat,4)
+      rxcp = cx - px
+      rycp = cy - py
+      rzcp = cz - pz
+      cntr = atomic_data(iat,1)*cntr1 
+      tval = pexp*(rxcp*rxcp + rycp*rycp + rzcp*rzcp)
+      if( .not.rkb )then
+        call interest_osr_class_nuclear(n1,n2,fintl,cntr,tval,(la  ),(la+lb-1),       &
+                                        1,fnbra,fdbra,rxpa,rypa,rzpa,rxcp,rycp,rzcp,  &
+                                        1,1,1,0.0d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+      else
+        call interest_osr_class_nuclear(n1,n2,fintl,cntr,tval,(la-1),(la+lb+1),       &
+                                        1,fnbra,fdbra,rxpa,rypa,rzpa,rxcp,rycp,rzcp,  &
+                                        1,1,1,0.0d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
+      endif
+      if( iat==1 ) fint(1:n1) = 0.0d0
+      fint(1:n1) = fint(1:n1) - fintl(1:n1)                 
+    enddo  
+
+    if( .not.rkb )then
+      nrkb = 1
+      nint = na*nb
+      call interest_hrr_bra(fint,nint,1,la,lb,rxab,ryab,rzab)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    else
+      nrkb = 5
+      nint = 5*na*nb
+      call interest_hrr_bra_rkb(fint,max(n1,nint),1,la,lb,rxab,ryab,rzab,alpha,beta)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab_rkb( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    endif
+
+  end subroutine
+
+! -------------------------------------------------------------------------
+  subroutine interest_nuclear_attraction_gauss_nucleus(rkb,                                            &
+                                                       fint_inp,na,nb,nrkb,                            &
+                                                       la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
+                                                       lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
+                                                       ncentr,atomic_data                              )
+    use module_interest_osr
+    use module_interest_hrr
+    implicit none
+
+    !-- output --!
+    integer, intent(out) :: na
+    integer, intent(out) :: nb
+    integer, intent(out) :: nrkb
+    real(8), intent(out) :: fint_inp(*)
+    !-- input --!
+    logical, intent(in) :: rkb
+    integer, intent(in) :: ncentr 
+    integer, intent(in) :: la_inp,lb_inp
+    real(8), intent(in) :: atomic_data(ncentr,5)
+    real(8), intent(in) :: alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp
+    real(8), intent(in) :: beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp
+    !-- local --!
+    integer :: nint
+    integer :: index
+    integer :: la,lb
+    integer :: n1,n2,iat
+    real(8) :: fint(nccx)
+    real(8) :: rxab,ryab,rzab,rrab
+    real(8) :: alpha,ax,ay,az,anorm
+    real(8) :: beta, bx,by,bz,bnorm
+    real(8) :: pexp,rexp,rxpa,rypa,rzpa
+    real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
+    real(8) :: cx,cy,cz,px,py,pz
+    real(8) :: gamma,rxwp,rywp,rzwp,cntr,cntab,cnorm,tval,fnbra,fdbra
+    real(8), dimension(ncc2) :: fintl
+    real(8), parameter :: pi52     = 34.986836655249725d0 !2*pow(pi,5/2) 
+    real(8), parameter :: pow_pi_3 = 31.006276680299816d0 !  pow(pi,3) 
+    real(8), parameter :: b2fm     = 52917.720859d0       !GreenBook 3'rd edition 
+
+
+    !> AB-pair indexation
+    if( la_inp >= lb_inp )then
+      la = la_inp    
+      lb = lb_inp   
+      ax = ax_inp   
+      ay = ay_inp   
+      az = az_inp    
+      bx = bx_inp   
+      by = by_inp   
+      bz = bz_inp   
+      index = 12
+      alpha = alpha_inp
+      anorm = anorm_inp
+      beta  = beta_inp  
+      bnorm = bnorm_inp
+    else
+      la = lb_inp    
+      lb = la_inp   
+      ax = bx_inp   
+      ay = by_inp   
+      az = bz_inp    
+      bx = ax_inp   
+      by = ay_inp   
+      bz = az_inp   
+      index = 21
+      alpha = beta_inp
+      anorm = bnorm_inp
+      beta  = alpha_inp  
+      bnorm = anorm_inp
+    endif
+
+
+    !-- AB-pair --!
+    pexp = alpha + beta
+
+    rxab = ax - bx
+    ryab = ay - by
+    rzab = az - bz
+    rrab = rxab*rxab + ryab*ryab + rzab*rzab
+
+    if( rrab.lt.1.d-12 )then
+      px    = ax 
+      py    = ay
+      pz    = az
+      rxpa  = 0.0d0 
+      rypa  = 0.0d0
+      rzpa  = 0.0d0
+      rxab  = 0.0d0  
+      ryab  = 0.0d0  
+      rzab  = 0.0d0  
+      cntab = anorm*bnorm 
+    else
+      px    = ( alpha*ax + beta*bx )/pexp
+      py    = ( alpha*ay + beta*by )/pexp
+      pz    = ( alpha*az + beta*bz )/pexp
+      rxpa  = px - ax
+      rypa  = py - ay
+      rzpa  = pz - az
+      rexp  = alpha*beta/pexp
+      cntab = anorm*bnorm*dexp(-rexp*rrab)
+    endif
+
+
+    !-- ABC --!
+    na = ncc(la)
+    nb = ncc(lb)
+    fint(:) = 0.0d0
+
+    do iat=1,ncentr
+      if( atomic_data(iat,1) <= 0.0d0 )cycle
+      cx= atomic_data(iat,2)
+      cy= atomic_data(iat,3)
+      cz= atomic_data(iat,4)
+
+      gamma = 0.570d0 + 0.836d0*( (atomic_data(iat,5))**(1.0d0/3.0d0) )
+      gamma = gamma/b2fm
+      gamma = gamma*gamma
+      gamma = 1.5d0/gamma
+      cnorm = gamma*gamma*gamma/(pow_pi_3)
+      cnorm = atomic_data(iat,1)*dsqrt(cnorm)
+
+      psq  = pexp+gamma
+      ppq  = pexp*gamma
+      rho  = ppq/psq
+      rxpq = px - cx
+      rypq = py - cy
+      rzpq = pz - cz
+
+      tval = rho*((rxpq*rxpq)+(rypq*rypq)+(rzpq*rzpq))
+      cntr = pi52*(1.0d0/dsqrt(psq))*(1.0d0/ppq)*cntab*cnorm
+
+      fnbra = gamma/psq
+      fdbra = 1.0d0/(2.0d0*pexp)
+      rxwp  = ( pexp*px + gamma*cx )/psq - px
+      rywp  = ( pexp*py + gamma*cy )/psq - py
+      rzwp  = ( pexp*pz + gamma*cz )/psq - pz
+
+      if( .not.rkb )then
+        call interest_osr_class_nuclear(n1,n2,fintl,cntr,tval,(la  ),(la+lb-1),          &
+                                            1,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp, &
+                                        1,1,1,0.0d0,0.0d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0  )
+      else
+        call interest_osr_class_nuclear(n1,n2,fintl,cntr,tval,(la-1),(la+lb+1),          &
+                                            1,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp, &
+                                        1,1,1,0.0d0,0.0d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0  )
+      endif
+      fint(1:n1) = fint(1:n1) - fintl(1:n1)                 
+    enddo  
+
+    if( .not.rkb )then
+      nrkb = 1
+      nint = na*nb
+      call interest_hrr_bra(fint,nint,1,la,lb,rxab,ryab,rzab)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    else
+      nrkb = 5
+      nint = 5*na*nb
+      call interest_hrr_bra_rkb(fint,max(n1,nint),1,la,lb,rxab,ryab,rzab,alpha,beta)
+      select case( index )
+        case( 12 )
+                  fint_inp(1:nint)=fint(1:nint) 
+        case( 21 )
+                  na = ncc(lb)
+                  nb = ncc(la)
+                  call transpose_ab_rkb( fint, fint_inp, ncc(la), ncc(lb) ) 
+      end select 
+    endif
+
+  end subroutine
+
+! -------------------------------------------------------------------------
+!>
+  subroutine transpose_ab( A, B, na, nb ) 
+    implicit none
+    !> input
+    integer, intent(in) :: na, nb
+    real(8), intent(in) :: A(na,nb)
+    !> output
+    real(8), intent(out) :: B(nb,na)
+    !> local
+    integer :: i,j
+    !> 
+    do j=1,nb
+      do i=1,na
+        B(j,i) = A(i,j) 
+      enddo
+    enddo
+  end subroutine
+
+! -------------------------------------------------------------------------
+!>
+  subroutine transpose_ab_rkb( A, B, na, nb ) 
+    implicit none
+    !> input
+    integer, intent(in) :: na, nb
+    real(8), intent(in) :: A(5,na,nb)
+    !> output
+    real(8), intent(out) :: B(5,nb,na)
+    !> local
+    integer :: i,j
+    !> 
+    do j=1,nb
+      do i=1,na
+        B(1,j,i) =  A(1,i,j) 
+        B(2,j,i) =  A(2,i,j) 
+        B(3,j,i) = -A(3,i,j) 
+        B(4,j,i) = -A(4,i,j) 
+        B(5,j,i) = -A(5,i,j) 
+      enddo
+    enddo
+  end subroutine
+
+! -------------------------------------------------------------------------

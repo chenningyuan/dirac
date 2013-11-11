@@ -815,11 +815,10 @@ C specific complex response process section
       IF (FINTER) THEN
         NBFREQ = IFIX(0.5+SNGL((ENDFREQ-STARTFREQ)/STEPFREQ))+1
         IF (NBFREQ .GE. MAXFLR) THEN
-          NBFREQ = MAXFLR
-     	  WRITE(LUPRI,'( 2(/A),I3 )') 'Warning Number of frequencies'//
-     &	  ' is exceeding maximum numbers of frequencies allowed',
-     &    'maximum allowed (MAXFLR) is : ',MAXFLR
-        CALL QUIT('Too many frequencies specified!!!')
+     	  WRITE(LUPRI,'(2(A,I3/))') 
+     &    'WARNING: Too many frequencies specified : ',NBFREQ,
+     &    '         Maximum allowed (MAXFLR) is :    ',MAXFLR
+          CALL QUIT('Too many frequencies specified!!!')
         END IF
         BFREQ(1)=STARTFREQ
         DO IFREQ=1,NBFREQ-1
@@ -924,10 +923,6 @@ C
       IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
-      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
-     &  WRITE(LUPRI,'(A)')
-     &  ' * No rotations between electrons and positrons,'// 
-     &  ' which are expelled.'
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')
