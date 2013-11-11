@@ -461,7 +461,7 @@ C*****************************************************************************
 #include "dcborb.h"
 C
 CTROND
-      CALL DZERO(DMAT,N2BBASXQ) 
+      CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
         CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,

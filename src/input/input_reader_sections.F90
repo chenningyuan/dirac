@@ -31,6 +31,9 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
+        case ('*aooSOC')
+           call read_input_aoosoc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
@@ -1395,6 +1398,7 @@
    subroutine read_input_x2c(word, kw_section)
 
       use x2cmod_cfg
+      use fragment_x2c_cfg
       use input_reader
 
       implicit none
@@ -1406,9 +1410,15 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.FGMx2c')) then
-!        x2cmod_fragment_x2c = .true.
-         x2cmod_fragment_x2c = .false.
+      if (kw_matches(word, '.fragx2')) then
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+      end if
+
+      if (kw_matches(word, '.fragmo')) then
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+         fragment_x2c_info%fragment_approach_ismolecule = .true.
       end if
 
       if (kw_matches(word, '.DEBUG ')) then
@@ -1424,16 +1434,53 @@
          x2c_free_part_mtx_defh1 = .true.
       end if
 
-!     use DIRACs in-house AMFI
-!     (full keyword: .diramfi)
-      if (kw_matches(word, '.diramf')) then
-         x2c_add_amfi = 2
-      end if
       if (kw_matches(word, '.fockao')) then
          x2c_fock_saao_basis = .true.
       end if
 
+!     completely skip any PCT of property operators in restart X2C energy calcs
+      if (kw_matches(word, '.skippc')) then
+         x2cmod_skip_op_pct = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_aoosoc(word, kw_section)
+
+      use x2cmod_cfg
+      use input_reader
+#ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
+#endif
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+#ifdef MOD_AOOSOC
+      call reset_available_kw_list()
+
+
+      if (kw_matches(word, '.DEBUG ')) then
+         aoomod_debug = .true.
+         aoomod       = .true.
+         x2c_add_amfi = 2
+      end if
+      if (kw_matches(word, '.atomic')) then
+         aoomod       = .true.
+         x2c_add_amfi = 2
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+#else
+      call quit('Atomic oo-order spin-orbit correction not included in this version')
+#endif
 
    end subroutine
 

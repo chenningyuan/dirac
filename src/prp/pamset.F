@@ -231,14 +231,11 @@ C          Hermitian operator
       ENDIF
 
 
-
-
 !       construct xc contribution
 !       =========================
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
@@ -265,8 +262,6 @@ C          Hermitian operator
            deallocate(xc_matrix)
         end if
 
-#ifdef MOD_UNRELEASED
-!!!!!!
         call fde_get_import_info(itmp)
 !
 ! here we should not skip the following call, even if we don't
@@ -283,20 +278,11 @@ C          Hermitian operator
 
 !         call fde_set_nz(nz)
           call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
-!         call integrate_fde(fde_mat_dim            = ntbas(0),
-!    &                       fde_nz                 = nz,
-!    &                       fde_dmat_0             = fao, 
-!    &                       fde_nr_dmat            = 0,
-!    &                       fde_nr_fmat            = 1,
-!    &                       fde_fmat               = fmo,
-!    &                       fde_do_potential       = .true.)
 
          write (*,*) 'FDE Fock matrix contributions (re)calculated'
         else if (itmp%im_vemb) then
          write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
-!!!!!
-#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

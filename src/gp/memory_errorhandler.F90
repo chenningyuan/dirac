@@ -191,12 +191,12 @@
 
                      write (InfoMessage(4),'(a,i7,a)')                                                &
      &                  'to the          Current dynamical memory usage                  :',          &
-     &                  nint(mbytesMax),                                                              &
+     &                  nint(mbytesInUse),                                                            &
      &                  ' Mb'
 
                      write (InfoMessage(5),'(a,i7,a)')                                                &
      &                  'will exceed the User-defined dynamically allocated memory limit :',          &
-     &                  nint(mbytesInUse),                                                            &
+     &                  nint(mbytesMax),                                                              &
      &                  ' Mb' 
 
                      write (InfoMessage(6),'(a)') ' '                                                  

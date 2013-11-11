@@ -2254,7 +2254,10 @@ C
          IF (ISHELA.NE.0) THEN
              NINSH = II
          ELSE
-            IF (NTBAS(0).NE.II) CALL QUIT (' Counting error in NINSH')
+            IF (NTBAS(0).NE.II) THEN
+               write(lupri, *)'ERROR in NINSH; ntbas(0), II',ntbas(0),II
+               CALL QUIT (' Counting error in NINSH')
+            END IF
             NINSH = MXINSH
          ENDIF
       ENDIF

@@ -27,7 +27,6 @@
 !
 module x2c_pct_mo_coefficients
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
@@ -102,11 +101,9 @@ contains
      real(8), allocatable            :: scratch4(:)
      integer, allocatable            :: scratch5(:)
      integer                         :: i, j, k, l
-     integer                         :: is_fragment_tot
 !**********************************************************************
 
 !      initialize the fragment value - in the mmf-case it has (by definition) to be zero.
-       is_fragment_tot = 0
        j               = 0
        k               = 0
        l               = 0
@@ -121,11 +118,11 @@ contains
        l = max(naosh_ls*naosh_ls*nz,k*4*nz+8) ! see rsjaco and qdiag memory requests 
                                               ! for further explanation of this odd dimensioning
 
-       call alloc(scratch1,dimension_for_2mat)
-       call alloc(scratch2,j)
-       call alloc(scratch3,l)
-       call alloc(scratch4,k)
-       call alloc(scratch5,k)
+       allocate(scratch1(dimension_for_2mat))
+       allocate(scratch2(j)                 )
+       allocate(scratch3(l)                 )
+       allocate(scratch4(k)                 )
+       allocate(scratch5(k)                 )
        scratch1 = 0       
        scratch2 = 0
        scratch3 = 0
@@ -138,34 +135,11 @@ contains
 
 !        path 1: directly picture-change transform the MO-coefficients
 !        -------------------------------------------------------------
-!        this branch is currently inactive as there seems to be a problem with the 
-!        current implementation scheme. stefan - june 2011
-!        objects handled inside this routine:
-!        in:
-!            - 4c-MO coefficients residing on DFCOEF
-!            - picture-change-transformation matrix U in SA-AO basis
-!        out:
-!            - 2c-MO coefficients residing on DFCOEF
-         call x2c_pctrafo_4cto2c_mo_coefficients(mo_coeff_file_name,           &
-                                                 scratch1,                     &
-                                                 scratch2,                     &
-                                                 scratch3,                     &
-                                                 scratch4,                     &
-                                                 scratch5,                     &
-                                                 nr_cmo_q,                     &
-                                                 naosh_ls,                     &
-                                                 nr_ao_L,                      &
-                                                 naosh_all,                    &
-                                                 naosh_L,                      &
-                                                 norb_dim,                     &
-                                                 nesh_dim,                     &
-                                                 npsh_dim,                     &
-                                                 nfsym,                        &
-                                                 nz,                           &
-                                                 ipq_off_in,                   &
-                                                 x2c_file_glb,                 &
-                                                 is_fragment_tot,              &
-                                                 print_lvl)   
+!        this branch has been deleted after 
+!        commit 866d6b5728b7eda3afa270465a67b4c58f03437f 
+!        as there seemed to be a problem with the implementation scheme. stefan - jan 2013
+           call quit('path for direct picture-change transformation of the MO-coefficients has been deleted')
+
          case(2) 
 
 !        path 2: diagonalize the picture-change transformed 2c-Fock operator to obtain the pc-transformed MO-coefficients 
@@ -195,288 +169,19 @@ contains
                                                     ipq_off_in,                   &
                                                     l,                            &
                                                     x2c_file_glb,                 &
-                                                    is_fragment_tot,              &
                                                     linear_sym,                   &
                                                     print_lvl)   
-!                                                   3)   
        end select
 
 !      step 2: release memory
 !      ----------------------
-       call dealloc(scratch5)
-       call dealloc(scratch4)
-       call dealloc(scratch3)
-       call dealloc(scratch2)
-       call dealloc(scratch1)
+       deallocate(scratch5)
+       deallocate(scratch4)
+       deallocate(scratch3)
+       deallocate(scratch2)
+       deallocate(scratch1)
 
   end subroutine x2c_pctrafo_mo_coefficients_driver
-
-!**********************************************************************
-  subroutine x2c_pctrafo_4cto2c_mo_coefficients(mo_coeff_file_name,          &
-                                                pctmat,                      &
-                                                mo_coeff_4c,                 &
-                                                mo_coeff_2c,                 &
-                                                eigen_values,                &
-                                                boson_irreps_jz_eigenvalues, &
-                                                nr_cmo_q,                    &
-                                                naosh_ls,                    &
-                                                nr_ao_L,                     &
-                                                naosh_all,                   &
-                                                naosh_L,                     &
-                                                norb_dim,                    &
-                                                nesh_dim,                    &
-                                                npsh_dim,                    &
-                                                nfsym,                       &
-                                                nz,                          &
-                                                ipq_off_in,                  &
-                                                x2c_file_glb,                &
-                                                is_fragment,                 &
-                                                print_lvl)   
-!**********************************************************************
-!
-!    purpose: 
-!
-!             equation: mo_coeff_2c^LL = U+ * mo_coeff_4c * U
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)         :: eigen_values(*)
-     real(8), intent(inout)         :: mo_coeff_2c(*)
-     real(8), intent(inout)         :: mo_coeff_4c(*)
-     real(8), intent(inout)         :: pctmat(*)
-     integer, intent(inout)         :: boson_irreps_jz_eigenvalues(*)
-     integer, intent(in)            :: nr_cmo_q
-     integer, intent(in)            :: nfsym
-     integer, intent(in)            :: nz
-     integer, intent(in)            :: naosh_ls
-     integer, intent(in)            :: nr_ao_L
-     integer, intent(in)            :: naosh_all(nfsym)
-     integer, intent(in)            :: naosh_L(nfsym)
-     integer, intent(in)            :: norb_dim(nfsym)
-     integer, intent(in)            :: nesh_dim(nfsym)
-     integer, intent(in)            :: npsh_dim(nfsym)
-     integer, intent(in)            :: ipq_off_in(4,0:7)
-     integer, intent(in)            :: is_fragment
-     integer, intent(in)            :: x2c_file_glb
-     integer, intent(in)            :: print_lvl
-     character (len= 6), intent(in) :: mo_coeff_file_name
-!----------------------------------------------------------------------
-     integer                        :: i, j
-     integer                        :: ioff_pct_mat
-     integer                        :: norb1_f
-     integer                        :: n1esh_f
-     integer                        :: n1psh_f
-     integer                        :: nbasL_f
-     integer                        :: nbas1_f
-     integer                        :: ioff_mo_coeff_4c
-     integer                        :: ioff_mo_coeff_2c
-     integer                        :: offset_4c      
-     integer                        :: offset_2c
-     integer                        :: ndim_2c_mo
-     integer                        :: ndim_2c_ev
-     integer                        :: ndim_2c_bj
-     integer                        :: fh
-     real(8)                        :: total_energy
-     character (len=12)             :: flabel
-     character (len=24)             :: fdate
-     character (len=74)             :: info_text
-     integer, allocatable           :: dimension_info(:,:)
-!**********************************************************************
-
-!      initialize offset
-       ioff_pct_mat = 1
-
-!      step 1: read picture-change transformation matrix U in SA-AO basis from global file
-!      ---------------------------------------------------------------------------------
-
-       do i = 1, nfsym
-         write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
-         call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
-         ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
-       end do
-
-!      debug print
-       if(print_lvl > 2)then
-         ioff_pct_mat = 1
-         do i = 1, nfsym
-           write(info_text,'(a27,i1)') 'x2c - pctmat_saao - xcmo - ',i
-           call print_x2cmat(pctmat(ioff_pct_mat),naosh_all(i),naosh_L(i),nz,ipq_off_in,info_text,6)
-           ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
-         end do
-       end if
-
-!      read MO coefficients
-       fh = 99
-       open(fh,file=mo_coeff_file_name,status='old',form='unformatted',access='sequential',position='rewind') 
-       call reacmo_no_work(fh,mo_coeff_file_name,mo_coeff_4c,eigen_values,boson_irreps_jz_eigenvalues,total_energy,15)
-       close(fh,status='delete')
-
-!      step 3: perform pct of MO coefficients: MO_coeff_2c^++ == U+ * MO_coeff_4c
-!      --------------------------------------------------------------------------
-       ioff_pct_mat     = 1
-       ioff_mo_coeff_4c = 1
-       ioff_mo_coeff_2c = 1
-
-       do i = 1, nfsym
-
-         norb1_f          = norb_dim(i)
-         n1psh_f          = npsh_dim(i)
-         n1esh_f          = nesh_dim(i)
-         nbas1_f          = naosh_all(i)
-         nbasL_f          = naosh_L(i)
-         ioff_mo_coeff_4c = ioff_mo_coeff_4c + nbas1_f*n1psh_f*nz
-
-         if(nesh_dim(i) > 0)then
-           call qgemm(nbasL_f,                                  &
-                      n1esh_f,                                  &
-                      nbas1_f,                                  &
-                      val_d1,                                   &
-                      'H','N',                                  &
-                      ipq_off_in,                               &
-                      pctmat(ioff_pct_mat),                     &
-                      nbas1_f,                                  &
-                      nbasL_f,                                  &
-                      nz,                                       &
-                      'N','N',                                  &
-                      ipq_off_in,                               &
-                      mo_coeff_4c(ioff_mo_coeff_4c),            &
-                      nbas1_f,                                  &
-                      n1esh_f,                                  &
-                      nz,                                       &
-                      val_d0,                                   &
-                      ipq_off_in,                               &
-                      mo_coeff_2c(ioff_mo_coeff_2c),            &
-!                     nbasL_f,                                  &
-                      nbas1_f,                                  &
-                      n1esh_f,                                  &
-                      nz)
-
-!          zero LS part of coefficients
-           do j = 1, n1esh_f
-             call dzero(mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbas1_f+nbasL_f)),nbas1_f-nbasL_f)
-           end do
-           if(print_lvl > 2)then
-             print *, 'dimensions: nbas1_f, nbasL_f, n1esh_f, n1psh_f: ',nbas1_f, nbasL_f, n1esh_f, n1psh_f
-             print *, '4c-MO coefficients (all) ==> '
-             write(info_text,'(a27,i1)') 'x2c - 4c-MO (all) - xcmo - ',i
-             call print_x2cmat(mo_coeff_4c,nbas1_f,norb1_f,nz,ipq_off_in,info_text,6)
-       
-             print *, '2c-MO coefficients ==> '
-             write(info_text,'(a27,i1)') 'x2c - 2c-MO (all) - xcmo - ',i
-             call print_x2cmat(mo_coeff_2c(ioff_mo_coeff_2c),nbas1_f,n1esh_f,nz,ipq_off_in,info_text,6)
-!            call print_x2cmat(mo_coeff_2c(ioff_mo_coeff_2c),nbasL_f,n1esh_f,nz,ipq_off_in,info_text,6)
-           end if
-         end if
-
-!        set new offsets in matrices
-         ioff_mo_coeff_2c =  ioff_mo_coeff_2c + nbas1_f*n1esh_f*nz
-!        ioff_mo_coeff_2c =  ioff_mo_coeff_2c + nbasL_f*n1esh_f*nz
-         ioff_mo_coeff_4c =  ioff_mo_coeff_4c + nbas1_f*n1esh_f*nz
-         ioff_pct_mat     =  ioff_pct_mat     + nbas1_f*nbasL_f*nz
-       end do
-
-!      step 4: write 2c MO coefficients back to file
-!      ---------------------------------------------
- 
-       call alloc(dimension_info,3,nfsym)
-!      if(.false.)then
-       if(.true.)then
-       print *, 'compress...'
-!      4a. compress arrays to large-components
-       offset_4c        = 1
-       offset_2c        = 1
-       ioff_mo_coeff_2c = 1
-       do i = 1, nfsym
-
-         nbas1_f = naosh_all(i)
-         nbasL_f = naosh_L(i)
-
-         call dcopy(nesh_dim(i),eigen_values(offset_4c+npsh_dim(i)),1,mo_coeff_4c,1)
-         call dcopy(nesh_dim(i),mo_coeff_4c,1,eigen_values(offset_2c),1)
-         call icopy(nesh_dim(i),boson_irreps_jz_eigenvalues(offset_4c+npsh_dim(i)),1,  &
-                                boson_irreps_jz_eigenvalues(offset_2c),1)
-         ioff_mo_coeff_4c = 1
-
-!        do j = 1, nesh_dim(i)
-!          call dcopy(nbasL_f,mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbas1_f)),1,         &
-!                             mo_coeff_4c(ioff_mo_coeff_4c+((j-1)*nbasL_f)),1)
-!          call dcopy(nbasL_f,mo_coeff_4c(ioff_mo_coeff_4c+((j-1)*nbasL_f)),1,         &
-!                             mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbasL_f)),1)
-!        end do
-
-         offset_2c           = offset_2c + nesh_dim(i)
-         offset_4c           = offset_4c + norb_dim(i)
-         ioff_mo_coeff_2c    = ioff_mo_coeff_2c + nbas1_f*nesh_dim(i)*nz
-
-         dimension_info(1,i) = 0
-         dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = naosh_all(i)
-!        dimension_info(3,i) = naosh_L(i)
-       end do
-       ndim_2c_mo = ioff_mo_coeff_2c - 1
-       ndim_2c_ev = 0
-       ndim_2c_bj = 0
-       do i = 1, nfsym
-         ndim_2c_ev = ndim_2c_ev + nesh_dim(i) 
-         ndim_2c_bj = ndim_2c_bj + nesh_dim(i)
-       end do
-       print *, 'compress done...'
-       else
-       print *, 'compress...'
-!      4a. compress arrays to large-components
-       offset_4c        = 1
-       offset_2c        = 1
-       ioff_mo_coeff_2c = 1
-       do i = 1, nfsym
-
-         nbas1_f = naosh_all(i)
-         nbasL_f = naosh_L(i)
-
-         call dcopy(nesh_dim(i),eigen_values(offset_4c+npsh_dim(i)),1,mo_coeff_4c,1)
-         call dcopy(nesh_dim(i),mo_coeff_4c,1,eigen_values(offset_2c),1)
-         call icopy(nesh_dim(i),boson_irreps_jz_eigenvalues(offset_4c+npsh_dim(i)),1,  &
-                                boson_irreps_jz_eigenvalues(offset_2c),1)
-         ioff_mo_coeff_4c = 1
-
-!        do j = 1, nesh_dim(i)
-!          call dcopy(nbasL_f,mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbas1_f)),1,         &
-!                             mo_coeff_4c(ioff_mo_coeff_4c+((j-1)*nbasL_f)),1)
-!          call dcopy(nbasL_f,mo_coeff_4c(ioff_mo_coeff_4c+((j-1)*nbasL_f)),1,         &
-!                             mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbasL_f)),1)
-!        end do
-
-         offset_2c           = offset_2c + nesh_dim(i)
-         offset_4c           = offset_4c + norb_dim(i)
-         ioff_mo_coeff_2c    = ioff_mo_coeff_2c + nbasL_f*nesh_dim(i)*nz
-
-         dimension_info(1,i) = 0
-         dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = naosh_L(i)
-       end do
-         ndim_2c_mo = ioff_mo_coeff_2c - 1
-         ndim_2c_ev = 0
-         ndim_2c_bj = 0
-         do i = 1, nfsym
-           ndim_2c_ev = ndim_2c_ev + nesh_dim(i) 
-           ndim_2c_bj = ndim_2c_bj + nesh_dim(i)
-         end do
-       print *, 'ndim_2c_mo is: ',ndim_2c_mo
-       end if
-       print *, 'compress done...'
-
-       fh = 99
-       open(fh,file=mo_coeff_file_name,status='new',form='unformatted',access='sequential',position='rewind') 
-
-       info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       info_text(51:74) = fdate()
-       write(fh) info_text,nfsym,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
-       write(fh) (mo_coeff_2c(i),i=1,ndim_2c_mo)
-       write(fh) (eigen_values(i),i=1,ndim_2c_ev)
-       write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
-
-       close(fh,status='keep')
-       call dealloc(dimension_info)
-
-  end subroutine x2c_pctrafo_4cto2c_mo_coefficients
 !**********************************************************************
 
   subroutine x2c_diagonalize_2c_fock_operator_onmo(xmat,                     &
@@ -496,7 +201,6 @@ contains
                                                    ipq_off_in,               &
                                                    lwork,                    &
                                                    x2c_file_glb,             &
-                                                   is_fragment,              &
                                                    linear_sym,               &
                                                    print_lvl)   
 !**********************************************************************
@@ -520,7 +224,6 @@ contains
      integer, intent(in)            :: nesh_dim(nfsym)
      integer, intent(in)            :: ipq_off_in(4,0:7)
      integer, intent(inout)         :: lwork
-     integer, intent(in)            :: is_fragment
      integer, intent(in)            :: x2c_file_glb
      integer, intent(in)            :: print_lvl
      logical, intent(in)            :: linear_sym
@@ -642,10 +345,10 @@ contains
        do i = 1, nfsym
          l = l + norb_dim(i)
        end do
-       call alloc(original_eigen_values,l)
+       allocate(original_eigen_values(l))
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
 !      call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
-       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,15)
+       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
        close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
@@ -724,7 +427,7 @@ contains
          offset_2  = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
        end do
 
-       call dealloc(original_eigen_values)
+       deallocate(original_eigen_values)
        
   end subroutine x2c_diagonalize_2c_fock_operator_onmo
 !**********************************************************************
@@ -738,6 +441,7 @@ contains
                                           icmoq,                            &
                                           ntmo,                             &
                                           nfbas,                            &
+                                          naosh_L,                          &
                                           nesh_dim,                         &
                                           nz,                               &
                                           nzt,                              &
@@ -766,6 +470,7 @@ contains
      integer, intent(in)         :: icmoq(nfsym)
      integer, intent(in)         :: ntmo(nfsym)
      integer, intent(in)         :: nfbas(nfsym,0:2)
+     integer, intent(in)         :: naosh_L(nfsym)
      integer, intent(in)         :: nesh_dim(nfsym)
      integer, intent(in)         :: nz
      integer, intent(in)         :: nzt
@@ -774,7 +479,7 @@ contains
      integer, intent(in)         :: print_lvl
 !----------------------------------------------------------------------
      real(8)                     :: total_energy
-     integer                     :: i, j
+     integer                     :: i, j, iz, k
      integer                     :: ndim_2c_mo_ao
      integer                     :: ndim_2c_ev
      integer                     :: ndim_2c_bj
@@ -789,8 +494,8 @@ contains
      integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
 !----------------------------------------------------------------------
 
-       call alloc(dimension_info,3,nfsym)
-       call alloc(boson_irreps_jz_eigenvalues,nesh_dim_total)
+       allocate(dimension_info(3,nfsym))
+       allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
@@ -831,7 +536,7 @@ contains
 !        write dimension info for the new DFCOEF
          dimension_info(1,i) = 0
          dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = nfbas(i,0)
+         dimension_info(3,i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
@@ -841,30 +546,40 @@ contains
 
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call REACMO_no_work(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
+       call reacmo_no_work(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
        close(fh,status='keep')
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
+       offset_2      = 1
        do i = 1, nfsym
-         call bcktr1(mo_coeff_2c_ao(icmoq(i)+1),             &
-                     nfbas(i,0),                             &
+!        print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
+         call bcktr1(mo_coeff_2c_ao(offset_2),               &
+                     naosh_L(i),                             &
                      nesh_dim(i),                            &
                      xmat(i2tmot(i)+1),                      &
                      ntmo(i),                                &
                      ntmo(i),                                &
                      ntmo(i),                                &
                      nz,                                     &
-                     ntmo(i),                                &
+                     nesh_dim(i),                            &
                      1,                                      &
-                     nfbas(i,0),                             &
+                     naosh_L(i),                             &
                      transformation_matrix_mo2ao(i2tmt(i)+1),&
                      nfbas(i,0),                             &
                      ntmo(i),                                &
                      nzt,                                    &
                      print_lvl)
-         ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,0) * nesh_dim(i) * nz
+
+!        debug print
+         if(print_lvl > 2)then
+           call print_x2cmat(mo_coeff_2c_ao(offset_2),naosh_L(i),nesh_dim(i),nz,ipq_off_in,'x2c - 2c MO coeff',6)
+         end if
+
+         offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
+         ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
+!      print *, 'dimension...',dimension_info
 
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
@@ -876,8 +591,8 @@ contains
        write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
        close(fh,status='keep')
 
-       call dealloc(boson_irreps_jz_eigenvalues)
-       call dealloc(dimension_info)
+       deallocate(boson_irreps_jz_eigenvalues)
+       deallocate(dimension_info)
 
   end subroutine x2c_molecular_mean_field_mos
 

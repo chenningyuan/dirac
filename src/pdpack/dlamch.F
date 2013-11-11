@@ -1,12 +1,12 @@
-#ifdef USE_OWN_LAPACK
-#define USE_OWN_DLAMCH
+#ifdef USE_BUILTIN_LAPACK
+#define USE_BUILTIN_DLAMCH
 #endif
 
 ! ESSL LAPACK la(pa)cks almost everything
 ! switch on own LAPACK until better solution is found
-#ifndef USE_OWN_LAPACK
+#ifndef USE_BUILTIN_LAPACK
 #ifdef HAVE_ESSL_LAPACK
-#define USE_OWN_DLAMCH
+#define USE_BUILTIN_DLAMCH
 #endif
 #endif
 
@@ -17,7 +17,7 @@ C     without optimization (ifort, gfortran and more),
 C     otherwise the function will hang forever for certain CMACH.
 C     ulfek June 2008 
 C
-#ifdef USE_OWN_DLAMCH
+#ifdef USE_BUILTIN_DLAMCH
       DOUBLE PRECISION FUNCTION DLAMCH( CMACH )
 *
 *  -- LAPACK auxiliary routine (version 3.0) --
@@ -961,7 +961,7 @@ C
 *     End of LSAME
 *
       END
-#endif /* USE_OWN_DLAMCH */
+#endif /* USE_BUILTIN_DLAMCH */
 
       ! dummy routine to avoid empty file
       subroutine dummy_dirac_dlamch()
