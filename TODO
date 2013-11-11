@@ -15,5 +15,7 @@
 - allow and test creation of binary release                       Radovan                           30%
 - deactivate overlap diagnostic                                   Radovan                            0%
 - remove cruft from XCint directory                               Radovan                            0%
+- gen fortran interface does not always work
+  a better solution would be to use iso_c_binding                 Radovan
 
 when you solve a problem, please remove the line
