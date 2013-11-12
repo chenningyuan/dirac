@@ -112,6 +112,7 @@ CONTAINS
           jcol   = ioj(j)
           buffer = buf(j)
 !          WRITE(iw,*) 'buffer = ', buffer
+          !WRITE(iw,*) 'irow = ', irow, ' jcol = ', jcol
 
           vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
           vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
@@ -170,7 +171,7 @@ CONTAINS
     WRITE(iw,*)
 
     DO i = 1, nr_in_evecs
-      last = 0
+      last = nr_in
       vec_start(1:nr_in) = in_evecs(1:nr_in,i)
 !      WRITE(iw,*) 'starting vector'
 !      WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
@@ -180,6 +181,7 @@ CONTAINS
         vec1  = 0
         first = last + 1
         last  = first + nr2h1p(channel) - 1
+        !WRITE(iw,*) 'first = ', first, ' last = ', last
 
         REWIND(fhmat)
 
@@ -203,10 +205,8 @@ CONTAINS
             buffer = buf(j)
 !            WRITE(iw,*) 'buffer = ', buffer
 
-            IF (first <= jcol .AND. jcol <= last) THEN
-              vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
-            END IF
             IF (first <= irow .AND. irow <= last) THEN
+              vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
               vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
             END IF
           END DO
