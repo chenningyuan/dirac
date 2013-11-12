@@ -190,6 +190,7 @@ def main():
     list_of_new_tests.append('xyz_input')
     list_of_new_tests.append('zora')
     list_of_new_tests.append('dft_ac')
+    list_of_new_tests.append('dft_grid_export_import')
     list_of_new_tests.append('cisd_energy')
     list_of_new_tests.append('localization')
     list_of_new_tests.append('reladc_sip')
