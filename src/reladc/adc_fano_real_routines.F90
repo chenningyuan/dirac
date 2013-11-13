@@ -906,5 +906,61 @@ CONTAINS
       END FUNCTION     
 
 
+!
+!------------------------------------------------
+!
+  SUBROUTINE fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
+! Purpose: calculate overlap between the pre diagonalized matrix
+!          of the final states with the diagonalized final states
+!          to assign each diagonalized final state to a 2h contribution
+!          and hence a channel
+!
+
+    use adc_fano_exchange
+    use memory_allocator
+
+!
+!  Calling variables
+!
+    INTEGER, INTENT(IN)                               :: nr_fin
+    INTEGER, ALLOCATABLE, INTENT(OUT), DIMENSION(:)   :: assign_fin_channel
+    LOGICAL, INTENT(INOUT)                            :: do_partial
+    INTEGER, INTENT(IN)                               :: iw
+
+!
+!  Local variables
+!
+    REAL(8), DIMENSION(nr_fin)        :: vec_unnorm
+    REAL(8)                           :: norm_vec
+    REAL(8), DIMENSION(nr_fin,nr_fin) :: overlapm
+
+    INTEGER                           :: irow,jcol
+    INTEGER                           :: ixx
+
+!
+!  Code
+!
+    WRITE(iw,*) 'final states undiagonalized'
+
+    DO jcol = 1, nr_fin
+      vec_unnorm(1:nr_fin) = fin_ndiag(1:nr_fin,jcol)
+      norm_vec = SQRT(SUM(vec_unnorm**2))
+      !WRITE(iw,*) (vec_unnorm(ixx), ixx = 1, nr_fin)
+!      WRITE(iw,*) 'norm = ', norm_vec
+      fin_ndiag(1:nr_fin,jcol) = vec_unnorm(1:nr_fin) / norm_vec
+!      WRITE(iw,*) (fin_ndiag(ixx,jcol), ixx = 1,nr_fin)
+    END DO
+
+    fin_ndiag = transpose(fin_ndiag)
+    overlapm = matmul(fin_evecs,fin_ndiag)
+!    DO irow = 1, nr_fin
+!      WRITE(iw,*) 'irow = ', irow
+!      WRITE(iw,*) (overlapm(ixx,irow), ixx=1,nr_fin)
+!    END DO
+
+    !CALL alloc(assign_fin_channel,nr_fin)
+
+
+  END SUBROUTINE fano_det_channel
 
 END MODULE adc_fano_real_routines
