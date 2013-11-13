@@ -906,5 +906,128 @@ CONTAINS
       END FUNCTION     
 
 
+!
+!------------------------------------------------
+!
+  SUBROUTINE fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
+! Purpose: calculate overlap between the pre diagonalized matrix
+!          of the final states with the diagonalized final states
+!          to assign each diagonalized final state to a 2h contribution
+!          and hence a channel
+!
+
+    use adc_fano_exchange
+    use memory_allocator
+    use adc_cfg
+
+!
+!  Calling variables
+!
+    INTEGER, INTENT(IN)                               :: nr_fin
+    INTEGER, ALLOCATABLE, INTENT(OUT), DIMENSION(:)   :: assign_fin_channel
+    LOGICAL, INTENT(INOUT)                            :: do_partial
+    INTEGER, INTENT(IN)                               :: iw
+
+!
+!  Local variables
+!
+    REAL(8), DIMENSION(nr_fin)        :: vec_unnorm
+    REAL(8)                           :: norm_vec
+    REAL(8), DIMENSION(nr_fin,nr_fin) :: overlapm
+    REAL(8), DIMENSION(nr_fin,nr_fin) :: tr_evecs
+
+    REAL(8)                           :: ovl
+    REAL(8)                           :: thresh=0.20
+
+    INTEGER                           :: agree
+    INTEGER                           :: channel
+    INTEGER                           :: first, last
+    INTEGER                           :: ch1, ch2
+
+    INTEGER                           :: finvec
+    INTEGER                           :: irow,jcol
+    INTEGER                           :: ixx
+
+!
+!  Code
+!
+    WRITE(iw,*) 'final states undiagonalized'
+
+    DO jcol = 1, nr_fin
+      vec_unnorm(1:nr_fin) = fin_ndiag(1:nr_fin,jcol)
+      norm_vec = SQRT(SUM(vec_unnorm**2))
+      !WRITE(iw,*) (vec_unnorm(ixx), ixx = 1, nr_fin)
+!      WRITE(iw,*) 'norm = ', norm_vec
+      fin_ndiag(1:nr_fin,jcol) = vec_unnorm(1:nr_fin) / norm_vec
+!      WRITE(iw,*) (fin_ndiag(ixx,jcol), ixx = 1,nr_fin)
+    END DO
+
+    tr_evecs = transpose(fin_evecs)
+    overlapm = matmul(tr_evecs,fin_ndiag)
+    DO irow = 1, nr_fin
+      WRITE(iw,*) 'irow = ', irow
+      WRITE(iw,*) (overlapm(irow,ixx), ixx=1,nr_fin)
+    END DO
+
+    CALL alloc(assign_fin_channel,nr_fin)
+    assign_fin_channel = 0
+
+    assign_vec:DO finvec = 1, nr_fin
+      WRITE(iw,*) 'finvec = ', finvec
+      ch2 = 0
+      DO jcol = 1, nr_fin
+        ovl = abs(overlapm(finvec,jcol))
+        IF (ovl >= thresh) THEN
+          agree = jcol
+          last  = 0
+          WRITE(iw,*) 'ovl = ', ovl
+
+          compare:DO channel = 1, reladc_fano_nrgroups
+            first = last + 1
+            last  = first + nr2h1p(channel) - 1
+            ch1 = 0
+            IF (first <= agree .AND. agree <= last) THEN
+              ch1 = channel
+              WRITE(iw,*) 'ch1 = ', ch1
+              EXIT compare
+            END IF
+          END DO compare
+          
+          IF (ch2 == 0) THEN
+            ch2 = ch1
+            WRITE(iw,*) 'ch2 = ', ch2
+          ELSE
+            IF (ch2 /= ch1) THEN
+              do_partial = .false.
+              WRITE(iw,*)
+              WRITE(iw,*) 'Warning: no disambiguate assignment to'
+              WRITE(iw,*) '         2h configuration possible for'
+              WRITE(iw,*) '         final state number  ', finvec
+              WRITE(iw,*)
+              WRITE(iw,*) '   --->  Skipping calculation of partial pseudo-spectra'
+              WRITE(iw,*)
+              EXIT assign_vec
+            END IF
+          END IF
+
+        END IF
+      END DO
+!
+!  In case of unambigous assignment, write assignment to array
+!
+      assign_fin_channel(finvec) = ch2
+
+    END DO assign_vec
+
+    CALL dealloc(fin_ndiag)
+
+    WRITE(iw,*) 'Channel assignment'
+    WRITE(iw,*) 'Vector # ', 'Channel'
+    DO finvec = 1, nr_fin
+      WRITE(iw,*) finvec, '    ', assign_fin_channel(finvec)
+    END DO
+
+
+  END SUBROUTINE fano_det_channel
 
 END MODULE adc_fano_real_routines

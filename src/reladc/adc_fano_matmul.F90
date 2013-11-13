@@ -3,7 +3,8 @@ MODULE adc_fano_matmul
 CONTAINS
 
   SUBROUTINE fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
-                               fhmat,fhdiag,intbuf,e2h1p,t_mom,nbufs,iw)
+                               fhmat,fhdiag,intbuf,e2h1p,t_mom,nbufs, &
+                               do_partial,iw)
 !
 ! Purpose: Do the final multiplication of the initial wave function
 !          with the coupling block and the final state wavefunctions.
@@ -27,6 +28,7 @@ CONTAINS
     REAL(8), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: e2h1p
     REAL(8), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: t_mom
     INTEGER, INTENT(IN)                             :: nbufs
+    LOGICAL, INTENT(IN)                             :: do_partial
     INTEGER, INTENT(IN)                             :: iw
 
 !
@@ -112,6 +114,7 @@ CONTAINS
           jcol   = ioj(j)
           buffer = buf(j)
 !          WRITE(iw,*) 'buffer = ', buffer
+          !WRITE(iw,*) 'irow = ', irow, ' jcol = ', jcol
 
           vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
           vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
@@ -165,105 +168,107 @@ CONTAINS
 !
 !
 
-    WRITE(iw,*) 
-    WRITE(iw,*) ' Starting creation of partial decay width pseudo-spectra'
-    WRITE(iw,*)
+    IF (do_partial) THEN
+      WRITE(iw,*) 
+      WRITE(iw,*) ' Starting creation of partial decay width pseudo-spectra'
+      WRITE(iw,*)
 
-    DO i = 1, nr_in_evecs
-      last = 0
-      vec_start(1:nr_in) = in_evecs(1:nr_in,i)
-!      WRITE(iw,*) 'starting vector'
-!      WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
+      DO i = 1, nr_in_evecs
+        last = nr_in
+        vec_start(1:nr_in) = in_evecs(1:nr_in,i)
+!        WRITE(iw,*) 'starting vector'
+!        WRITE(iw,'(1X,ES14.7)') (vec_start(ixx), ixx=1,ladc)
 
-      DO channel = 1, reladc_fano_nrgroups
-        counter = 0
-        vec1  = 0
-        first = last + 1
-        last  = first + nr2h1p(channel) - 1
+        DO channel = 1, reladc_fano_nrgroups
+          counter = 0
+          vec1  = 0
+          first = last + 1
+          last  = first + nr2h1p(channel) - 1
+          !WRITE(iw,*) 'first = ', first, ' last = ', last
 
-        REWIND(fhmat)
+          REWIND(fhmat)
 
-! Choose file name of the pseudo-spectrum
-        IF(i.GT.9) THEN
-          WRITE(fn_trans,'(a3,a1,i2,a1,a4)') nmspec,'.',i,'.',reladc_fano_labels(channel)
-        ELSE
-          WRITE(fn_trans,'(a3,a2,i1,a1,a4)') nmspec,'.0',i,'.',reladc_fano_labels(channel)
-        END IF
+! Ch  oose file name of the pseudo-spectrum
+          IF(i.GT.9) THEN
+            WRITE(fn_trans,'(a3,a1,i2,a1,a4)') nmspec,'.',i,'.',reladc_fano_labels(channel)
+          ELSE
+            WRITE(fn_trans,'(a3,a2,i1,a1,a4)') nmspec,'.0',i,'.',reladc_fano_labels(channel)
+          END IF
 
 
-        DO k = 1, nbufs
-          READ(fhmat) (buf(ixx),ixx=1,intbuf), &
-                      (ioi(ixx),ixx=1,intbuf), &
-                      (ioj(ixx),ixx=1,intbuf), &
-                      nact, idummy
-!          WRITE(iw,*) 'nact = ', nact
-          DO j = 1, nact
-            irow   = ioi(j)
-            jcol   = ioj(j)
-            buffer = buf(j)
-!            WRITE(iw,*) 'buffer = ', buffer
+          DO k = 1, nbufs
+            READ(fhmat) (buf(ixx),ixx=1,intbuf), &
+                        (ioi(ixx),ixx=1,intbuf), &
+                        (ioj(ixx),ixx=1,intbuf), &
+                        nact, idummy
+!            WRITE(iw,*) 'nact = ', nact
+            DO j = 1, nact
+              irow   = ioi(j)
+              jcol   = ioj(j)
+              buffer = buf(j)
+!              WRITE(iw,*) 'buffer = ', buffer
 
-            IF (first <= jcol .AND. jcol <= last) THEN
-              vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
-            END IF
-            IF (first <= irow .AND. irow <= last) THEN
-              vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
-            END IF
+              IF (first <= irow .AND. irow <= last) THEN
+                vec1(irow) = vec1(irow) + buffer * vec_start(jcol)
+                vec1(jcol) = vec1(jcol) + buffer * vec_start(irow)
+              END IF
+            END DO
           END DO
-        END DO
-!        IF (channel == 2) THEN
-!          WRITE(iw,*) 'Vector with total sorted matrix'
-!          WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
-!        END IF
-      
-!
-! Now we have the initial state vector multiplied with the sorted ADC matrix.
-! We will further multiply this vector to each and every final state vector.
-!
-        DO j = 1, nr_fin
-          vec2 = 0
-          counter = counter + 1
-          vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
-          !IF (j == 1) THEN
-          !  WRITE(iw,*) 'Final state vector'
-          !  WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
-          !END IF
-          e2h1p(counter) = fin_energies(j)
-          ! This part is ony necessary, when the initial and final states
-          ! are non-orthogonal, which they are not at the moment!
-          !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
-          !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
-          t_mom(counter) = DOT_PRODUCT(vec1,vec2)
-!          WRITE(iw,*) 't_mom: ', t_mom(counter)
-        END DO
+!          IF (channel == 2) THEN
+!            WRITE(iw,*) 'Vector with total sorted matrix'
+!            WRITE(iw,'(1X,ES14.7)') (vec1(ixx), ixx=1,ladc)
+!          END IF
         
-        WRITE(iw,*)
-        WRITE(iw,*) 'name: ', fn_trans
-        WRITE(iw,*) '-------------------------------------------------------------'
-        WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
-        WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
-                                                'eV', 'polestrength: ', in_energy(2,i)
-        WRITE(iw,*) '-------------------------------------------------------------'
-        WRITE(iw,*)
-        WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-        WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-        WRITE(iw,*)
+!
+! No  w we have the initial state vector multiplied with the sorted ADC matrix.
+! We   will further multiply this vector to each and every final state vector.
+!
+          DO j = 1, nr_fin
+            vec2 = 0
+            counter = counter + 1
+            vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
+            !IF (j == 1) THEN
+            !  WRITE(iw,*) 'Final state vector'
+            !  WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
+            !END IF
+            e2h1p(counter) = fin_energies(j)
+            ! This part is ony necessary, when the initial and final states
+            ! are non-orthogonal, which they are not at the moment!
+            !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
+            !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
+            t_mom(counter) = DOT_PRODUCT(vec1,vec2)
+!            WRITE(iw,*) 't_mom: ', t_mom(counter)
+          END DO
+          
+          WRITE(iw,*)
+          WRITE(iw,*) 'name: ', fn_trans
+          WRITE(iw,*) '-------------------------------------------------------------'
+          WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
+          WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+                                                  'eV', 'polestrength: ', in_energy(2,i)
+          WRITE(iw,*) '-------------------------------------------------------------'
+          WRITE(iw,*)
+          WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
+          WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          WRITE(iw,*)
 
 !
-! This procedure only makes sense, when those final vectors not
-! associated with the chosen final states are not considered in
-! the calculation of the transition moments.
+! Th  is procedure only makes sense, when those final vectors not
+! as  sociated with the chosen final states are not considered in
+! th  e calculation of the transition moments.
 !
 !
-! To be removed as soon as Dirac has its own Stieltjes routine
+! To   be removed as soon as Dirac has its own Stieltjes routine
 !
-        OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-             ACTION='WRITE',iostat=ierror)
-        WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-        CLOSE(fh_trans)
+          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+               ACTION='WRITE',iostat=ierror)
+          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          CLOSE(fh_trans)
 
-      END DO ! end of loop over channels
-    END DO   ! end of loop over initial states
+        END DO ! end of loop over channels
+      END DO   ! end of loop over initial states
+
+    END IF
 
     CALL dealloc(buf)
     CALL dealloc(ioi)
