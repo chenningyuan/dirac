@@ -4,7 +4,7 @@ CONTAINS
 
   SUBROUTINE fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
                                fhmat,fhdiag,intbuf,e2h1p,t_mom,nbufs, &
-                               do_partial,iw)
+                               do_partial,assign_fin_channel,iw)
 !
 ! Purpose: Do the final multiplication of the initial wave function
 !          with the coupling block and the final state wavefunctions.
@@ -29,6 +29,7 @@ CONTAINS
     REAL(8), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: t_mom
     INTEGER, INTENT(IN)                             :: nbufs
     LOGICAL, INTENT(IN)                             :: do_partial
+    INTEGER, INTENT(IN), DIMENSION(nr_fin)          :: assign_fin_channel
     INTEGER, INTENT(IN)                             :: iw
 
 !
@@ -223,22 +224,24 @@ CONTAINS
 ! No  w we have the initial state vector multiplied with the sorted ADC matrix.
 ! We   will further multiply this vector to each and every final state vector.
 !
-          DO j = 1, nr_fin
-            vec2 = 0
-            counter = counter + 1
-            vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
-            !IF (j == 1) THEN
-            !  WRITE(iw,*) 'Final state vector'
-            !  WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
-            !END IF
-            e2h1p(counter) = fin_energies(j)
-            ! This part is ony necessary, when the initial and final states
-            ! are non-orthogonal, which they are not at the moment!
-            !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
-            !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
-            t_mom(counter) = DOT_PRODUCT(vec1,vec2)
-!            WRITE(iw,*) 't_mom: ', t_mom(counter)
-          END DO
+          mul_fin:DO j = 1, nr_fin
+            IF (channel == assign_fin_channel(j)) THEN
+              vec2 = 0
+              counter = counter + 1
+              vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
+              !IF (j == 1) THEN
+              !  WRITE(iw,*) 'Final state vector'
+              !  WRITE(iw,'(1X,ES14.7)') (vec2(ixx), ixx=1,ladc)
+              !END IF
+              e2h1p(counter) = fin_energies(j)
+              ! This part is ony necessary, when the initial and final states
+              ! are non-orthogonal, which they are not at the moment!
+              !t_mom(counter) = DOT_PRODUCT(vec1,vec2) &
+              !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
+              t_mom(counter) = DOT_PRODUCT(vec1,vec2)
+!              WRITE(iw,*) 't_mom: ', t_mom(counter)
+            END IF
+          END DO mul_fin
           
           WRITE(iw,*)
           WRITE(iw,*) 'name: ', fn_trans

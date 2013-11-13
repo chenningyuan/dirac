@@ -211,7 +211,7 @@ CONTAINS
 
     CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
                            adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs, &
-                           do_partial,iw)
+                           do_partial,assign_fin_channel,iw)
 
   END SUBROUTINE fanoadcr
 
