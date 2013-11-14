@@ -3322,6 +3322,8 @@ C End Lasse
          WRITE(6,*) ' ICISPC = ', ICISPC
       END IF
 *. Largest and smallest accumulated occupations
+      print*,'ICMBSPC(1,ICISPC),ICISPC',ICMBSPC(1,ICISPC),ICISPC
+      print*,'LCMBSPC(ICISPC)',LCMBSPC(ICISPC)
       DO IGAS = 1, NGAS
         KMIN = IGSOCCX(IGAS,1,ICMBSPC(1,ICISPC))
         KMAX = IGSOCCX(IGAS,2,ICMBSPC(1,ICISPC))
@@ -3590,7 +3592,7 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
                 IF(IVIRT.NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
 * Eliminate the core to virtuals (Done by not storing it)
                   IF(NTEST.GE.100) THEN
-                    WRITE(6,*) 'Eliminated a core virtual'
+                    WRITE(6,*) ' Eliminated a core virtual '
                     WRITE(6,*) ' Creation part,  Annihilation  part '
                     WRITE(6,*) ' ==================================='
                     WRITE(6,'(16I4,16I4)')
@@ -3603,7 +3605,7 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
                   IF(ICREA(3).NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
 * Eliminate the core to valence (Done by not storing it)
                     IF(NTEST.GE.100) THEN
-                      WRITE(6,*) 'Eliminated a core valence'
+                      WRITE(6,*) ' Eliminated a core valence '
                       WRITE(6,*) ' Creation part,  Annihilation  part '
                       WRITE(6,*) ' ==================================='
                       WRITE(6,'(16I4,16I4)')
@@ -4535,7 +4537,7 @@ C       CALL MEMCHK_KRCC(WORK)
       IP = 1
       IH = 0
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-      IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+MK2DEL,MX_EXC_LEVEL)
 C Set it to this value for all. Since we cannot have intermediates of 
 C higher particle rank than T it does not matter that NACTEL is too 
 C large since there will be no operators for this.

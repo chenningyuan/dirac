@@ -46,7 +46,8 @@ MODULE adc_fano_real_routines
 
 CONTAINS
 
-  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+  SUBROUTINE fano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw, &
+                            finalpos)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -87,12 +88,14 @@ CONTAINS
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
     INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
     INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+    INTEGER, INTENT(IN), DIMENSION(fin_max)              :: finalpos
 
 !
 !  Data dictionary: Local Variables
 !
     REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
     REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
+    REAL(8)                            :: temp
     INTEGER                            :: temp_row     !row of temp_array
     INTEGER                            :: finrow       !row of final states
     INTEGER                            :: k, ixx, fincount ! counters
@@ -157,6 +160,7 @@ CONTAINS
 !  write out h/h and h/2h1p buffers                                     
 !
     nok  = no(crep)
+    WRITE(iw,*) 'nok = ', nok
     najl = nvoot(crep)
 
     inib  = 0
@@ -172,19 +176,13 @@ CONTAINS
       off2   = off2 + nok
       CALL XCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc
+      rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
-        !inrow = adcrow
-        IF (adcrow-nok > 0) THEN
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'nok    = ', nok
-          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-                               is_coupl,is_fin,1)
+        IF (ANY(finalpos + nok == adcrow)) THEN
+          !WRITE(iw,*) 'adcrow hhp = ', adcrow
+          CYCLE rowloop
+
         ELSE
-          is_in = .TRUE.
-        END IF
-        is_initial:IF (is_in) THEN
           inrow = inrow + 1
           !WRITE(iw,*) 'inrow = ', inrow
           IF (single_col(adcrow) /= 0.0D0) THEN
@@ -198,43 +196,25 @@ CONTAINS
               CALL rwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
                                   innbufs,inib,infh)
             END IF
-            ! We write out the sorted ADC matrix
-            ! We skip that since we only need interaction block
-            !adcib  = adcib + 1
-            !adcbuf(adcib) = single_col(adcrow)
-            !adcioi(adcib) = inrow
-            !adcioj(adcib) = adccol
-            !IF (adcib == fano_intbuf) THEN
-            !  CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-            !                      adcnbufs,adcib,adcfh)
-            !END IF
           END IF
-        ELSE is_initial
-          !WRITE(iw,*) 'inrow = ', inrow
-          !WRITE(iw,*) 'adcrow     : ', adcrow
-          finrow = finrow + 1
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            fincount = fincount + 1
-            temp_array(fincount,1) = single_col(adcrow)
-            temp_array(fincount,2) = finrow
-            temp_array(fincount,3) = adccol
-            !WRITE(iw,*) 'adcrow     : ', adcrow
-            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
-          END IF
-        END IF is_initial
-      END DO
+        END IF
+      END DO rowloop
 !
 !  One column has been processed, now the final states are added to
 !  the end of the corresponding column
 !
-      DO temp_row = 1, fincount
-        adcib = adcib + 1
-        adcbuf(adcib) = temp_array(temp_row,1)
-        adcioi(adcib) = temp_array(temp_row,2) + inrow
-        adcioj(adcib) = temp_array(temp_row,3)
-        IF (adcib == fano_intbuf) THEN
-          CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
-                adcib,adcfh)
+      DO temp_row = 1, fin_max
+        temp = single_col(finalpos(temp_row) + nok)
+        !WRITE(iw,*) 'processing: ', finalpos(temp_row)
+        IF (temp /= 0.0D0) THEN
+          adcib = adcib + 1
+          adcbuf(adcib) = temp
+          adcioi(adcib) = temp_row + inrow
+          adcioj(adcib) = adccol
+          IF (adcib == fano_intbuf) THEN
+            CALL rwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                  adcib,adcfh)
+          END IF
         END IF
       END DO 
 
@@ -361,16 +341,17 @@ CONTAINS
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
-      DO fincount = 1, fin_max
-        temp = finalpos(fincount)
-        IF (temp == k) THEN
-          temp_fin(fincount) = eajl(k)
-          CYCLE diag_2h1p
-        END IF  
-      END DO
+      IF (ANY(finalpos == k)) THEN
+        CYCLE diag_2h1p
+      END IF  
       counter = counter + 1
       tempe(counter) = eajl(k)
     END DO diag_2h1p
+
+    DO fincount = 1, fin_max
+      temp = finalpos(fincount)
+      temp_fin(fincount) = eajl(temp)
+    END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
 
@@ -412,8 +393,9 @@ CONTAINS
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-        temp = finalpos(fincol)
-        IF (temp == jcol) THEN
+        IF (ANY(finalpos == jcol)) THEN
+        !temp = finalpos(fincol)
+        !IF (temp == jcol) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
@@ -424,7 +406,13 @@ CONTAINS
 
             s = fano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
 
-            couprow = ladc - fin_max + fincol
+            det_row:DO i = 1, fin_max
+              IF (finalpos(i) == jcol) THEN
+                couprow = ladc - fin_max + i
+                EXIT det_row
+              END IF
+            END DO det_row
+            !couprow = ladc - fin_max + fincol
             coupcol = coupcol + 1
 
             IF (s /= 0.0D0) THEN
@@ -809,23 +797,32 @@ CONTAINS
       INTEGER :: AREP,ASREP,KREP,KSREP,LREP,LSREP
       INTEGER :: ASKREP, ASLREP, KLREP
       INTEGER :: IOFF
+      INTEGER :: tcol, trow
 !
 !---------------Executable code--------------------------------------
 !
-      AS    = ICRA(1,JCOL)
-      ASREP = ICRA(2,JCOL)
-      KS    = ICRA(3,JCOL)
-      KSREP = ICRA(4,JCOL)
-      LS    = ICRA(5,JCOL)
-      LSREP = ICRA(6,JCOL)
+      IF (irow < jcol) THEN
+        tcol = irow
+        trow = jcol
+      ELSE
+        tcol = jcol
+        trow = irow
+      END IF
+
+      AS    = ICRA(1,TCOL)
+      ASREP = ICRA(2,TCOL)
+      KS    = ICRA(3,TCOL)
+      KSREP = ICRA(4,TCOL)
+      LS    = ICRA(5,TCOL)
+      LSREP = ICRA(6,TCOL)
 
 
-      A     = ICRA(1,IROW)                                        
-      AREP  = ICRA(2,IROW)
-      K     = ICRA(3,IROW)
-      KREP  = ICRA(4,IROW)                                        
-      L     = ICRA(5,IROW)                                        
-      LREP  = ICRA(6,IROW)                                        
+      A     = ICRA(1,TROW)                                        
+      AREP  = ICRA(2,TROW)
+      K     = ICRA(3,TROW)
+      KREP  = ICRA(4,TROW)                                        
+      L     = ICRA(5,TROW)                                        
+      LREP  = ICRA(6,TROW)                                        
                                                                   
       S=0.0D0                                                     
                                                                   
@@ -909,5 +906,128 @@ CONTAINS
       END FUNCTION     
 
 
+!
+!------------------------------------------------
+!
+  SUBROUTINE fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
+! Purpose: calculate overlap between the pre diagonalized matrix
+!          of the final states with the diagonalized final states
+!          to assign each diagonalized final state to a 2h contribution
+!          and hence a channel
+!
+
+    use adc_fano_exchange
+    use memory_allocator
+    use adc_cfg
+
+!
+!  Calling variables
+!
+    INTEGER, INTENT(IN)                               :: nr_fin
+    INTEGER, ALLOCATABLE, INTENT(OUT), DIMENSION(:)   :: assign_fin_channel
+    LOGICAL, INTENT(INOUT)                            :: do_partial
+    INTEGER, INTENT(IN)                               :: iw
+
+!
+!  Local variables
+!
+    REAL(8), DIMENSION(nr_fin)        :: vec_unnorm
+    REAL(8)                           :: norm_vec
+    REAL(8), DIMENSION(nr_fin,nr_fin) :: overlapm
+    REAL(8), DIMENSION(nr_fin,nr_fin) :: tr_evecs
+
+    REAL(8)                           :: ovl
+    REAL(8)                           :: thresh=0.20
+
+    INTEGER                           :: agree
+    INTEGER                           :: channel
+    INTEGER                           :: first, last
+    INTEGER                           :: ch1, ch2
+
+    INTEGER                           :: finvec
+    INTEGER                           :: irow,jcol
+    INTEGER                           :: ixx
+
+!
+!  Code
+!
+    WRITE(iw,*) 'final states undiagonalized'
+
+    DO jcol = 1, nr_fin
+      vec_unnorm(1:nr_fin) = fin_ndiag(1:nr_fin,jcol)
+      norm_vec = SQRT(SUM(vec_unnorm**2))
+      !WRITE(iw,*) (vec_unnorm(ixx), ixx = 1, nr_fin)
+!      WRITE(iw,*) 'norm = ', norm_vec
+      fin_ndiag(1:nr_fin,jcol) = vec_unnorm(1:nr_fin) / norm_vec
+!      WRITE(iw,*) (fin_ndiag(ixx,jcol), ixx = 1,nr_fin)
+    END DO
+
+    tr_evecs = transpose(fin_evecs)
+    overlapm = matmul(tr_evecs,fin_ndiag)
+    DO irow = 1, nr_fin
+      WRITE(iw,*) 'irow = ', irow
+      WRITE(iw,*) (overlapm(irow,ixx), ixx=1,nr_fin)
+    END DO
+
+    CALL alloc(assign_fin_channel,nr_fin)
+    assign_fin_channel = 0
+
+    assign_vec:DO finvec = 1, nr_fin
+      WRITE(iw,*) 'finvec = ', finvec
+      ch2 = 0
+      DO jcol = 1, nr_fin
+        ovl = abs(overlapm(finvec,jcol))
+        IF (ovl >= thresh) THEN
+          agree = jcol
+          last  = 0
+          WRITE(iw,*) 'ovl = ', ovl
+
+          compare:DO channel = 1, reladc_fano_nrgroups
+            first = last + 1
+            last  = first + nr2h1p(channel) - 1
+            ch1 = 0
+            IF (first <= agree .AND. agree <= last) THEN
+              ch1 = channel
+              WRITE(iw,*) 'ch1 = ', ch1
+              EXIT compare
+            END IF
+          END DO compare
+          
+          IF (ch2 == 0) THEN
+            ch2 = ch1
+            WRITE(iw,*) 'ch2 = ', ch2
+          ELSE
+            IF (ch2 /= ch1) THEN
+              do_partial = .false.
+              WRITE(iw,*)
+              WRITE(iw,*) 'Warning: no disambiguate assignment to'
+              WRITE(iw,*) '         2h configuration possible for'
+              WRITE(iw,*) '         final state number  ', finvec
+              WRITE(iw,*)
+              WRITE(iw,*) '   --->  Skipping calculation of partial pseudo-spectra'
+              WRITE(iw,*)
+              EXIT assign_vec
+            END IF
+          END IF
+
+        END IF
+      END DO
+!
+!  In case of unambigous assignment, write assignment to array
+!
+      assign_fin_channel(finvec) = ch2
+
+    END DO assign_vec
+
+    CALL dealloc(fin_ndiag)
+
+    WRITE(iw,*) 'Channel assignment'
+    WRITE(iw,*) 'Vector # ', 'Channel'
+    DO finvec = 1, nr_fin
+      WRITE(iw,*) finvec, '    ', assign_fin_channel(finvec)
+    END DO
+
+
+  END SUBROUTINE fano_det_channel
 
 END MODULE adc_fano_real_routines

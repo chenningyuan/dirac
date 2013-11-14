@@ -55,6 +55,9 @@ CONTAINS
     INTEGER                               :: idpt
     INTEGER                               :: ixx
 
+    LOGICAL                               :: do_partial
+    INTEGER, ALLOCATABLE, DIMENSION(:)    :: assign_fin_channel
+
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: e2h1p, t_mom
 
 !
@@ -104,13 +107,13 @@ CONTAINS
     WRITE(iw,*) 'Number of initial state configurations: ', nr_in
     WRITE(iw,*) 'Number of  final  state configurations: ', nr_fin
 
-    ! Create sorted h/2h1p block
-    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
-                             itapadc,iw)
-
     ! Create an array of final state positions in the 2h1p part
     CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
     CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+
+    ! Create sorted h/2h1p block
+    CALL fano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
+                             itapadc,iw,finalpos)
 
     ! Create the sorted 2h1p/2h1p block
     CALL fano_makehphp(ckks,eajl,oooo,vovo,bigicra,ladc,krep,  &
@@ -135,7 +138,15 @@ CONTAINS
 
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     reladc_md_isfano   = .true.
+    CALL alloc(fin_ndiag,nr_fin,nr_fin,id='non-diagonalized final vectors')
     CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
+
+    IF (reladc_fano_nrgroups == 1) THEN
+      do_partial = .false.
+    ELSE
+      do_partial = .true.
+      CALL fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
+    END IF
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
@@ -199,7 +210,8 @@ CONTAINS
     WRITE(iw,*)
 
     CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
-                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs,iw)
+                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs, &
+                           do_partial,assign_fin_channel,iw)
 
   END SUBROUTINE fanoadcr
 
@@ -258,6 +270,8 @@ CONTAINS
     INTEGER                               :: kfree, lfree, kfreebase
     INTEGER                               :: idpt
     INTEGER                               :: ixx
+
+    LOGICAL                               :: do_partial
 
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: ckks
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: bufhp

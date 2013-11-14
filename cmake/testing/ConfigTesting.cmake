@@ -1,6 +1,6 @@
 # set cdash buildname
 set(BUILDNAME
-    "BUILDNAME-not-set"
+    "${CMAKE_SYSTEM_NAME}-${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_Fortran_COMPILER_ID}-${BLAS_TYPE}-${cmake_build_type_tolower}"
     CACHE STRING
     "Name of build on the dashboard"
     )

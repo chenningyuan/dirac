@@ -81,8 +81,11 @@ module adc_cfg
   logical, public                  :: reladc_fano_ovl_in  = .false.
   integer, public                  :: reladc_fano_inrep   = 0
   integer, public                  :: reladc_fano_inrelsp = 0
+  integer, public                  :: reladc_fano_nrgroups = 0
   integer, public                  :: reladc_fano_nrchannels = 0
-  integer, public, allocatable, dimension(:,:)     :: reladc_fano_channels
+  integer, public, allocatable, dimension(:)    :: reladc_fano_groups
+  integer, public, allocatable, dimension(:,:)    :: reladc_fano_channels
+  character(4), public, allocatable, dimension(:) :: reladc_fano_labels
   logical, public                  :: reladc_fano_checkfin= .false.
   
 end module
