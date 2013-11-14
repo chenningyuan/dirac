@@ -19,11 +19,12 @@ set BUILD_I32LP64_CHECK=build_MinGW64_i32lp64_serial_check
 
 set OUT=%DIRAC%\build.log
 
-echo "Hello, building up DIRAC on Windows 7 server Urpin FPV-UMB" 1> %OUT% 2>&1
-
 rem go to the local DIRAC directory
 cd %DIRAC%
 
+C:\Git\bin\git.exe clean -f
+
+echo "Hello, building up DIRAC on Windows 7 server Urpin FPV-UMB" 1> %OUT% 2>&1
 echo %cd%  1>>  %OUT% 2>&1
 
 rem initialize GIT_SSH to make PuTTy keyring work - 
@@ -42,17 +43,16 @@ rem check the server connectivity:
 plink -agent git@repo.ctcc.no 1>> %OUT% 2>&1 
 
 rem download fresh Dirac - MUST HAVE full path of git
-rem C:\Git\bin\git.exe pull origin release-12
+C:\Git\bin\git.exe checkout release-13 1>> %OUT% 2>&1
 C:\Git\bin\git.exe pull 1>> %OUT% 2>&1
 
-
-rem python pamadm -a --builddir=%BUILD%
-C:\Git\bin\git.exe clean -f 1>> %OUT% 2>&1
 rem show very last commit...
 C:\Git\bin\git.exe log -1 1>> %OUT% 2>&1
 
+rem remove previously generated build-directory
 rmdir \S \Q %BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-master"   --generator="MinGW Makefiles" --int64 %BUILD% 1>> %OUT% 2>&1
+python pamadm -a --builddir=%BUILD%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD% 1>> %OUT% 2>&1
 cd %BUILD%
 rem cmake ..                    1>> %OUT% 2>&1
 rem mingw32-make clean          1>> %OUT% 2>&1

@@ -148,10 +148,6 @@ contains
                                   aoo_fsoc                    &
                                  )
 
-      if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
-!     release memory for atom type
-      if(allocated(atom))         deallocate(atom)
-
       call goodbye_aoosoc()
 
   end subroutine get_atomic_oo_order_so_correction
@@ -237,13 +233,6 @@ contains
 !     update counter
       center_total = center_total + aoo_nont(center_id)
 !     print *, 'center_total,  aoo_nont(center_id)',center_total,  aoo_nont(center_id)
-
-!     release memory when last type has been added
-      if(center_total > max_center)then
-        deallocate(atom)
-        deallocate(aoo_nont)
-        deallocate(aoo_nucdeg)
-      end if
 
   end subroutine put_atomic_oo_order_so_correction
 !----------------------------------------------------------------------

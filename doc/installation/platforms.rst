@@ -8,17 +8,30 @@ run on a unix-like operating system, and uses MPI for parallel calculations.
 Optionally DIRAC can (and should) be linked to platform specific BLAS and
 LAPACK libraries.
 
-We have tested DIRAC |version| on the following platforms:
 
--  Linux i386
--  Linux x86\_64
--  Mac OSX
--  Windows
+Tested on the following platforms
+---------------------------------
 
-We have tested DIRAC |version| with the following compilers:
+* CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
+* Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
+* Ubuntu 12.04, Intel 14.0.0, MKL 11.0, OpenMPI 1.6.5
 
--  gfortran/gcc (minimum gfortran version 4.3.6)
--  ifort/icc
--  xlf/xlc
 
-Please write us about your experiences with other platforms.
+Compiles but does not pass all tests
+------------------------------------
+
+* None?
+
+
+Compiles but untested on the following environments
+---------------------------------------------------
+
+* Ubuntu 12.04, Intel 14.0.0, MKL 11.0
+* SGI Altix ICE 8200, Intel 11.1
+* Cray XE6, Intel 12.1.5
+
+
+Currently does not compile
+--------------------------
+
+* IBM AIX, XL 7.1
