@@ -160,7 +160,15 @@ module fde_input
 
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
-            write(unit,'(A)') ' ' 
+            write(unit,*)
+            write(unit,'(3X,2A,/3X,2A,/3X,2A)') &
+            'Embedding potential (and response ',       &
+            'contributions) included according to:',    &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 136 (2012) 044104.',       &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 139 (2013) 104106.' 
+            write(unit,*)
             call fde_test_frozen_density
          endif
 
