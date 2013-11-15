@@ -379,9 +379,9 @@ CONTAINS
             is_fin = .FALSE.
           END IF
 
-          IF (is_fin .EQV. .TRUE.) THEN
-            CYCLE each_channel
-          END IF
+          !IF (is_fin .EQV. .TRUE.) THEN
+          !  CYCLE each_channel
+          !END IF
         END DO 
       END DO each_channel
 
