@@ -18,6 +18,6 @@ f.add(from_string = ' Final energy',
 test_run.execute(['He.inp'],
                  ['He.mol'],
                  f,
-                 accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4'])
+                 accepted_errors=['memory off-set too big for INTEGER*4', 'FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4'])
 
 sys.exit(0)
