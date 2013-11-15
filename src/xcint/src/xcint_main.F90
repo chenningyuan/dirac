@@ -1701,9 +1701,7 @@ contains
       if (xc_mpi_is_master()) then
          interface_file_open = .false. 
          open(interface_file_unit,       &
-! aspg debug
              file   = 'numerical_grid', &
-!            file   = 'ADFGRID',        &
               status = 'unknown',        &
               form   = 'formatted',      &
               access = 'sequential')

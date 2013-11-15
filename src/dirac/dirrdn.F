@@ -6398,8 +6398,8 @@ C        MI/Febr 2006 Added nonrelativistic kinetic
 C                     energy integrals (TWOCOMP=.true)
 C
 C***********************************************************************
-
-      use dirac_cfg
+      use fde_types
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -6411,6 +6411,7 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
       logical is_2c_rel_run
+      type(fde_import) :: itmp
 
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
@@ -6459,7 +6460,8 @@ C     (static) embedding pontential
 C     =============================
 C
 C
-      IF (dirac_cfg_fde) THEN
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          PNAME            = 'static emb. potential '
          IPTYP            = 1
          NPCOMP           = 1
