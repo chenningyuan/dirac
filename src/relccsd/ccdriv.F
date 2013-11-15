@@ -219,7 +219,7 @@ C
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-C     
+
 C     Note that reading this namelist may override the Dirac style input. Leave 
 C     this at the discretion of the user for the moment.
       READ (IN,RELCCSD,END=2,ERR=1)
@@ -529,6 +529,12 @@ C
 C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
+
+      if (DOENER.AND.DOFSPC) then
+         relcc_do_energy = .false.
+         DOENER = .FALSE.
+      endif
+
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE
