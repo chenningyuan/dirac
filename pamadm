@@ -183,7 +183,6 @@ def main():
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
     list_of_tests.append('visual_frac_occupation')
-    list_of_tests.append('lao_shield_rearranged')
 
     list_of_new_tests = []
     list_of_new_tests.append('lucita_short')
@@ -353,6 +352,12 @@ def main():
     dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
     dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
     dirac_modules[this_module].add_test('response_lao_magnetiz')
+    dirac_modules[this_module].take_out_of_release()
+
+    this_module = 'lao_rearranged'
+    dirac_modules[this_module] = dirac_module('lao_rearranged', 'LAO properties without connection matrices')
+    dirac_modules[this_module].add_cppflag('MOD_LAO_REARRANGED')
+    dirac_modules[this_module].add_test('lao_shield_rearranged')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'srdft'
