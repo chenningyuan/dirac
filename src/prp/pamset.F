@@ -236,14 +236,18 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
            call generate_num_grid(fao)
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif

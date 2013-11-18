@@ -9,7 +9,6 @@ module extra
    public timtxt
    public reacmo_no_work
    public qtrans90
-   public indexx
 
    private
 
@@ -276,94 +275,6 @@ contains
  80   CONTINUE
       call my_quit('REACMO: ERROR reading irrep identification')
       end subroutine
-      SUBROUTINE INDEXX(N,ARR,INDX)
-!***********************************************************************
-!
-!     This subroutine goes through array ARR and returns the ordering
-!     index array INDX giving indices from smallest to largest
-!
-!     The array ARR is not touched.
-!
-!***********************************************************************
-      INTEGER N,INDX(N),M,NSTACK
-      REAL*8 ARR(N)
-      PARAMETER (M=7,NSTACK=50)
-      INTEGER I,INDXT,IR,ITEMP,J,JSTACK,K,L,ISTACK(NSTACK)
-      REAL*8 A
-      DO J=1,N
-         INDX(J)=J
-      END DO
-      JSTACK=0
-      L=1
-      IR=N
- 1    IF(IR-L.GE.M)THEN
-         K=(L+IR)/2
-         ITEMP=INDX(K)
-         INDX(K)=INDX(L+1)
-         INDX(L+1)=ITEMP
-         IF(ARR(INDX(L+1)).GT.ARR(INDX(IR)))THEN
-            ITEMP=INDX(L+1)
-            INDX(L+1)=INDX(IR)
-            INDX(IR)=ITEMP
-         ENDIF
-         IF(ARR(INDX(L)).GT.ARR(INDX(IR)))THEN
-            ITEMP=INDX(L)
-            INDX(L)=INDX(IR)
-            INDX(IR)=ITEMP
-         ENDIF
-         IF(ARR(INDX(L+1)).GT.ARR(INDX(L)))THEN
-            ITEMP=INDX(L+1)
-            INDX(L+1)=INDX(L)
-            INDX(L)=ITEMP
-         ENDIF
-         I=L+1
-         J=IR
-         INDXT=INDX(L)
-         A=ARR(INDXT)
- 3       CONTINUE
-         I=I+1
-         IF(ARR(INDX(I)).LT.A)GOTO 3
- 4       CONTINUE
-         J=J-1
-         IF(ARR(INDX(J)).GT.A)GOTO 4
-         IF(J.LT.I)GOTO 5
-         ITEMP=INDX(I)
-         INDX(I)=INDX(J)
-         INDX(J)=ITEMP
-         GOTO 3
- 5       INDX(L)=INDX(J)
-         INDX(J)=INDXT
-         JSTACK=JSTACK+2
-         IF(JSTACK.GT.NSTACK) &
-     &        call my_quit('NSTACK TOO SMALL IN INDEXX')
-         IF(IR-I+1.GE.J-L)THEN
-            ISTACK(JSTACK)=IR
-            ISTACK(JSTACK-1)=I
-            IR=J-1
-         ELSE
-            ISTACK(JSTACK)=J-1
-            ISTACK(JSTACK-1)=L
-            L=I
-         ENDIF
-      ELSE
-         DO J=L+1,IR
-            INDXT=INDX(J)
-            A=ARR(INDXT)
-            DO I=J-1,1,-1
-               IF(ARR(INDX(I)).LE.A)GOTO 2
-               INDX(I+1)=INDX(I)
-            END DO
-            I=0
- 2          INDX(I+1)=INDXT
-         END DO
-         IF(JSTACK.EQ.0)RETURN
-         IR=ISTACK(JSTACK)
-         L=ISTACK(JSTACK-1)
-         JSTACK=JSTACK-2
-      ENDIF
-      GOTO 1
-      end subroutine
-
 
       SUBROUTINE READT (IT,N,X)
       CHARACTER*30 STRING

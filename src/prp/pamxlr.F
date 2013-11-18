@@ -1941,9 +1941,11 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
+#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
+#endif
 
 C
 C     Check if file of solution vectors is present
@@ -2342,6 +2344,7 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
+#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2364,6 +2367,7 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
+#endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
       ENDDO
