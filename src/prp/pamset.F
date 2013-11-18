@@ -266,26 +266,26 @@ C          Hermitian operator
            deallocate(xc_matrix)
         end if
 
-        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
 !
 ! here we should not skip the following call, even if we don't
 ! want the fde contributions to response, since it will be
 ! necessary to start by adding the contributions from the potential 
 ! to the fmat
 !
-!       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-        if (itmp%im_frozen.and.itmp%im_update_vemb) then
+           if (itmp%im_frozen.and.itmp%im_update_vemb) then
+              if (.not.dirac_cfg_dft_calculation) then
+                 call genden(fao, cmo, 1, iprint)
+              endif
 
-           if (.not.dirac_cfg_dft_calculation) then
-              call genden(fao, cmo, 1, iprint)
+!             call fde_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
+
+              write (*,*) 'FDE Fock contributions (re)calculated'
+           else if (itmp%im_vemb) then
+              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
            endif
-
-!         call fde_set_nz(nz)
-          call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
-
-         write (*,*) 'FDE Fock matrix contributions (re)calculated'
-        else if (itmp%im_vemb) then
-         write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
 C
 C     3a. Solvent: get solvent contribution
