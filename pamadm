@@ -100,7 +100,7 @@ def main():
     vital_directories.append('src/xcfun')
     vital_directories.append('src/xcfun/fortran')
     vital_directories.append('src/cfun')
-    vital_directories.append('src/xcint/src')
+    vital_directories.append('src/xcint')
 
     vital_directories.append('utils')
     vital_directories.append('basis')
@@ -228,8 +228,6 @@ def main():
     files_never_compiled.append('src/xcfun/fortran/example.F90')
     files_never_compiled.append('src/interest/selftest/module_interest_selftest.f90')
     files_never_compiled.append('src/interest/selftest/main_interest_selftest.f90')
-    files_never_compiled.append('src/xcint/src/test_driver.F90')
-    files_never_compiled.append('src/xcint/src/fake_input.F90')
 
     directories_never_compiled = []
     directories_never_compiled.append('utils')
