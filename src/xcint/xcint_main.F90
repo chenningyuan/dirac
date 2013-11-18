@@ -569,12 +569,15 @@ contains
       fmat = 0.0d0
 #endif
 
+#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
+#endif
 
       call loop_over_batches()
 
+#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -585,6 +588,7 @@ contains
             call o_matrix_to_disc()
          end if
       end if
+#endif /* MOD_UNRELEASED */
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -967,9 +971,11 @@ contains
                                     xc_energy                 &
                                    )
 
+#ifdef MOD_UNRELEASED
          if (do_overlap_diagnostic) then
             call integrate_o_matrix(block_length, rw(ipoint), ao)
          end if
+#endif
 
          deallocate(ao)
          deallocate(buffer)
