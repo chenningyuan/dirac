@@ -199,10 +199,10 @@ CONTAINS
           END IF
         END IF
       END DO rowloop
-!
-!  One column has been processed, now the final states are added to
-!  the end of the corresponding column
-!
+!!
+!!  One column has been processed, now the final states are added to
+!!  the end of the corresponding column
+!!
       DO temp_row = 1, fin_max
         temp = single_col(finalpos(temp_row) + nok)
         !WRITE(iw,*) 'processing: ', finalpos(temp_row)
@@ -937,7 +937,7 @@ CONTAINS
     REAL(8), DIMENSION(nr_fin,nr_fin) :: tr_evecs
 
     REAL(8)                           :: ovl
-    REAL(8)                           :: thresh=0.20
+    REAL(8)                           :: thresh=0.45
 
     INTEGER                           :: agree
     INTEGER                           :: channel
@@ -965,8 +965,8 @@ CONTAINS
     tr_evecs = transpose(fin_evecs)
     overlapm = matmul(tr_evecs,fin_ndiag)
     DO irow = 1, nr_fin
-      WRITE(iw,*) 'irow = ', irow
-      WRITE(iw,*) (overlapm(irow,ixx), ixx=1,nr_fin)
+    !  WRITE(iw,*) 'irow = ', irow
+    !  WRITE(iw,*) (overlapm(irow,ixx), ixx=1,nr_fin)
     END DO
 
     CALL alloc(assign_fin_channel,nr_fin)
@@ -1018,8 +1018,6 @@ CONTAINS
       assign_fin_channel(finvec) = ch2
 
     END DO assign_vec
-
-    CALL dealloc(fin_ndiag)
 
     WRITE(iw,*) 'Channel assignment'
     WRITE(iw,*) 'Vector # ', 'Channel'

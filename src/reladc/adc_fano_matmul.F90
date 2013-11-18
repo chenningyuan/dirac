@@ -286,7 +286,6 @@ CONTAINS
     CALL dealloc(fin_evecs)
     CALL dealloc(fin_energies)
 
-
     CALL dealloc(e2h1p)
     CALL dealloc(t_mom)
 

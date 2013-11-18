@@ -145,8 +145,10 @@ CONTAINS
       do_partial = .false.
     ELSE
       do_partial = .true.
+      WRITE(iw,*) 'Determine the channel of each final state'
       CALL fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
     END IF
+    CALL dealloc(fin_ndiag)
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
