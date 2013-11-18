@@ -99,7 +99,7 @@ def main():
     vital_directories.append('src/x2c')
     vital_directories.append('src/xcfun')
     vital_directories.append('src/xcfun/fortran')
-    vital_directories.append('src/xcint/cfun')
+    vital_directories.append('src/cfun')
     vital_directories.append('src/xcint/src')
 
     vital_directories.append('utils')
@@ -218,7 +218,7 @@ def main():
     files_never_compiled.append('src/densfit/denfit_noddy.F')
     files_never_compiled.append('src/lucita/unused.F')
     files_never_compiled.append('src/eri/eriprg.F')
-    files_never_compiled.append('src/xcint/cfun/fun-tester.c')
+    files_never_compiled.append('src/cfun/fun-tester.c')
     files_never_compiled.append('src/relccsd/ccmain.F')
     files_never_compiled.append('src/relccsd/quit.F')
     files_never_compiled.append('src/cc_external/hsmrcc/hsmrmain.c')
