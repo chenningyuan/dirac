@@ -35,7 +35,7 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip -xHost")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
     if(DEFINED MKL_FLAG)
