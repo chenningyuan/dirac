@@ -36,8 +36,7 @@ module xc_blas3
 
    private
 
-   integer, allocatable :: ao_sort_index(:)
-   integer, allocatable :: ao_sort_index_reverse(:)
+   integer, allocatable :: ao_compress_index(:)
 
 contains
 
@@ -96,9 +95,9 @@ contains
       real(8)                :: nr_electrons_integrated
       real(8)                :: xc_energy
 !     --------------------------------------------------------------------------
-      real(8), allocatable   :: ao_sorted(:, :)
+      real(8), allocatable   :: ao_compressed(:, :)
       integer                :: irep, imat
-      integer                :: i, j, k
+      integer                :: i, j, k, jcount
       integer                :: ixyz, jxyz
       integer                :: ikoff, jkoff, ijoff
       integer, parameter     :: max_nr_blocks = 16
@@ -120,9 +119,8 @@ contains
       real(8), allocatable   :: gnn(:, :, :)
 !     --------------------------------------------------------------------------
 
-      allocate(ao_sort_index(mat_dim))
-      allocate(ao_sort_index_reverse(mat_dim))
-      allocate(ao_sorted(max_block_length*mat_dim, 0:4))
+      allocate(ao_compress_index(mat_dim))
+      allocate(ao_compressed(max_block_length*mat_dim, 0:4))
       allocate(n(block_length, 0:nr_dmat))
       allocate(n_saop_outer(block_length))
       allocate(n_saop_resp(block_length))
@@ -163,11 +161,12 @@ contains
          irep = 0
       end if
 
+      jcount = 0
       do iblock = 1, nr_ao_blocks
          st1 = ao_block_start(iblock)
          nr1 = ao_block_nr(iblock)
 
-!        get buffer for sorting
+!        get buffer for compressing
 !        and get number of functions above block_threshold
          do i = 1, nr1
             buffer(i) = 0.0d0
@@ -179,6 +178,8 @@ contains
                end if
             end do
             if (buffer(i) > block_threshold) then
+               jcount = jcount + 1
+               ao_compress_index(jcount) = is
                nr_above_threshold(iblock) = nr_above_threshold(iblock) + 1
             end if
          end do
@@ -196,23 +197,17 @@ contains
             iksoff(jblock) = isoff(jblock)*block_length
          end do
 
-!        get sorting index
-         call indexx(nr1, buffer, ao_sort_index_reverse)
+!        compress ao matrix
          do i = 1, nr_above_threshold(iblock)
-            ao_sort_index(isoff(iblock) + i) = ao_sort_index_reverse(nr1 - i + 1) + st1 - 1
-         end do
-
-!        sort ao matrix
-         do i = 1, nr_above_threshold(iblock)
-            is = ao_sort_index(isoff(iblock) + i)
+            is = ao_compress_index(isoff(iblock) + i)
             ikoff = (i - 1)*block_length
             do k = 1, block_length
-               ao_sorted(iksoff(iblock) + ikoff + k, 0) = ao_block(k, is)
+               ao_compressed(iksoff(iblock) + ikoff + k, 0) = ao_block(k, is)
             end do
             if (is_gga) then
                do ixyz = 1, 3
                   do k = 1, block_length
-                     ao_sorted(iksoff(iblock) + ikoff + k, ixyz) = ao_block(k, is + nr_ao_cartesian*ixyz)
+                     ao_compressed(iksoff(iblock) + ikoff + k, ixyz) = ao_block(k, is + nr_ao_cartesian*ixyz)
                   end do
                end do
             end if
@@ -228,7 +223,7 @@ contains
                                   block_length,               &
                                   mat_dim,                    &
                                   nz,                         &
-                                  ao_sorted,                  &
+                                  ao_compressed,                  &
                                   dmat_0,                     &
                                   nr_above_threshold(iblock), &
                                   nr_above_threshold(iblock), &
@@ -246,7 +241,7 @@ contains
                                      block_length,               &
                                      mat_dim,                    &
                                      nz,                         &
-                                     ao_sorted,                  &
+                                     ao_compressed,                  &
                                      dmat_0_saop_outer,          &
                                      nr_above_threshold(iblock), &
                                      nr_above_threshold(iblock), &
@@ -263,7 +258,7 @@ contains
                                         block_length,               &
                                         mat_dim,                    &
                                         nz,                         &
-                                        ao_sorted,                  &
+                                        ao_compressed,                  &
                                         dmat_0_saop_resp,           &
                                         nr_above_threshold(iblock), &
                                         nr_above_threshold(iblock), &
@@ -339,7 +334,7 @@ contains
                                              mat_dim,                    &
                                              nz,                         &
                                              fmat(1, 1, 1, imat),        &
-                                             ao_sorted,                  &
+                                             ao_compressed,                  &
                                              nr_above_threshold(iblock), &
                                              isoff(iblock),              &
                                              iksoff(iblock),             &
@@ -384,7 +379,7 @@ contains
                                               block_length,                 &
                                               mat_dim,                      &
                                               nz,                           &
-                                              ao_sorted,                    &
+                                              ao_compressed,                    &
                                               dmat_p(1, 1, iq(jxyz), imat), &
                                               nr_above_threshold(iblock),   &
                                               nr_above_threshold(jblock),   &
@@ -430,7 +425,7 @@ contains
                                                    mat_dim,                    &
                                                    nz,                         &
                                                    fmat(1, 1, iq(jxyz), imat), &
-                                                   ao_sorted,                  &
+                                                   ao_compressed,                  &
                                                    nr_above_threshold(iblock), &
                                                    isoff(iblock),              &
                                                    iksoff(iblock),             &
@@ -467,7 +462,7 @@ contains
                                               block_length,                 &
                                               mat_dim,                      &
                                               nz,                           &
-                                              ao_sorted,                    &
+                                              ao_compressed,                    &
                                               dmat_p(1, 1, iq(jxyz), imat), &
                                               nr_above_threshold(iblock),   &
                                               nr_above_threshold(jblock),   &
@@ -513,7 +508,7 @@ contains
                                                    mat_dim,                    &
                                                    nz,                         &
                                                    fmat(1, 1, iq(jxyz), imat), &
-                                                   ao_sorted,                  &
+                                                   ao_compressed,                  &
                                                    nr_above_threshold(iblock), &
                                                    isoff(iblock),              &
                                                    iksoff(iblock),             &
@@ -530,9 +525,8 @@ contains
          end do
       end if
 
-      deallocate(ao_sort_index)
-      deallocate(ao_sort_index_reverse)
-      deallocate(ao_sorted)
+      deallocate(ao_compress_index)
+      deallocate(ao_compressed)
       deallocate(s)
       deallocate(v)
       deallocate(n)
@@ -550,7 +544,7 @@ contains
                                     mat_dim,              &
                                     nz,                   &
                                     fmat,                 &
-                                    ao_sorted,            &
+                                    ao_compressed,            &
                                     nr_above_threshold_l, &
                                     isoff_l,              &
                                     iksoff_l,             &
@@ -567,7 +561,7 @@ contains
       integer                :: block_length
       integer                :: mat_dim
       integer                :: nz
-      real(8)                :: ao_sorted(max_block_length*mat_dim, 0:4)
+      real(8)                :: ao_compressed(max_block_length*mat_dim, 0:4)
       real(8), intent(inout) :: fmat(mat_dim, mat_dim)
       integer                :: nr_above_threshold_l
       integer                :: isoff_l
@@ -590,12 +584,12 @@ contains
       do i = 1, nr_above_threshold_l
          ikoff = (i - 1)*block_length
          do k = 1, block_length
-            tmat(ikoff + k) = f*ao_sorted(iksoff_l + ikoff + k, 0)*s(k)
+            tmat(ikoff + k) = f*ao_compressed(iksoff_l + ikoff + k, 0)*s(k)
          end do
          if (is_gga) then
             do ixyz = 1, 3
                do k = 1, block_length
-                  tmat(ikoff + k) = tmat(ikoff + k) + f*2.0d0*ao_sorted(iksoff_l + ikoff + k, ixyz)*v(k, ixyz)
+                  tmat(ikoff + k) = tmat(ikoff + k) + f*2.0d0*ao_compressed(iksoff_l + ikoff + k, ixyz)*v(k, ixyz)
                end do
             end do
          end if
@@ -607,7 +601,7 @@ contains
                      nr_above_threshold_l,       & !n    
                      block_length,               & !k    
                      1.0d0,                      & !alpha
-                     ao_sorted(iksoff_l + 1, 0), & !a    
+                     ao_compressed(iksoff_l + 1, 0), & !a    
                      block_length,               & !lda  
                      tmat,                       & !b    
                      block_length,               & !ldb  
@@ -621,7 +615,7 @@ contains
                     nr_above_threshold_l,        & !n      
                     block_length,                & !k      
                     2.0d0,                       & !alpha  
-                    ao_sorted(iksoff_r + 1, 0),  & !a    
+                    ao_compressed(iksoff_r + 1, 0),  & !a    
                     block_length,                & !lda    
                     tmat,                        & !b      
                     block_length,                & !ldb    
@@ -630,25 +624,25 @@ contains
                     nr_above_threshold_r)          !ldc     
       end if
       
-!     unsort onto fmat
+!     uncompress onto fmat
       if (iksoff_l == iksoff_r) then !diagonal block
          do i = 1, nr_above_threshold_l
-            is = ao_sort_index(isoff_l + i)
+            is = ao_compress_index(isoff_l + i)
             ijoff = (i - 1)*nr_above_threshold_l
 !           diagonal
             fmat(is, is) = fmat(is, is) + 0.5d0*xmat(ijoff + i)
             do j = 1, i - 1
-               js = ao_sort_index(isoff_l + j)
+               js = ao_compress_index(isoff_l + j)
 !              upper triangle
                fmat(js, is) = fmat(js, is) + xmat(ijoff + j)
             end do
          end do
       else !off-diagonal block
          do i = 1, nr_above_threshold_l
-            is = ao_sort_index(isoff_l + i)
+            is = ao_compress_index(isoff_l + i)
             ijoff = (i - 1)*nr_above_threshold_r
             do j = 1, nr_above_threshold_r
-               js = ao_sort_index(isoff_r + j)
+               js = ao_compress_index(isoff_r + j)
                fmat(js, is) = fmat(js, is) + 0.5d0*xmat(ijoff + j)
             end do
          end do
@@ -665,7 +659,7 @@ contains
                                block_length,         &
                                mat_dim,              &
                                nz,                   &
-                               ao_sorted,            &
+                               ao_compressed,            &
                                dmat,                 &
                                nr_above_threshold_l, &
                                nr_above_threshold_r, &
@@ -683,7 +677,7 @@ contains
       integer, intent(in)              :: block_length
       integer, intent(in)              :: mat_dim
       integer, intent(in)              :: nz
-      real(8), intent(in)              :: ao_sorted(max_block_length*mat_dim, 0:4)
+      real(8), intent(in)              :: ao_compressed(max_block_length*mat_dim, 0:4)
       real(8), intent(in)              :: dmat(mat_dim, mat_dim, nz)
       integer, intent(in)              :: nr_above_threshold_l
       integer, intent(in)              :: nr_above_threshold_r
@@ -695,18 +689,18 @@ contains
       real(8), intent(inout), optional :: n_g(block_length, 3)
 !     --------------------------------------------------------------------------
       integer                          :: ixyz
-      real(8), allocatable             :: dmat_sorted(:)
+      real(8), allocatable             :: dmat_compressed(:)
       real(8), allocatable             :: xmat(:)
 !     --------------------------------------------------------------------------
 
       allocate(xmat(mat_dim*max_block_length))
 
-      allocate(dmat_sorted(nr_above_threshold_l*nr_above_threshold_r))
+      allocate(dmat_compressed(nr_above_threshold_l*nr_above_threshold_r))
 
-      call sort_mat(                      &
+      call compress_mat(                      &
                     mat_dim,              &
                     dmat,                 &
-                    dmat_sorted,          &
+                    dmat_compressed,          &
                     nr_above_threshold_l, &
                     nr_above_threshold_r, &
                     isoff_l,              &
@@ -720,9 +714,9 @@ contains
                     block_length,               & !m      
                     nr_above_threshold_l,       & !n      
                     1.0d0,                      & !alpha  
-                    dmat_sorted,                & !a      
+                    dmat_compressed,                & !a      
                     nr_above_threshold_l,       & !lda    
-                    ao_sorted(iksoff_l + 1, 0), & !b      
+                    ao_compressed(iksoff_l + 1, 0), & !b      
                     block_length,               & !ldb    
                     0.0d0,                      & !beta   
                     xmat,                       & !c      
@@ -736,9 +730,9 @@ contains
                     nr_above_threshold_r,       & !n      
                     nr_above_threshold_l,       & !k      
                     1.0d0,                      & !alpha  
-                    ao_sorted(iksoff_l + 1, 0), & !a      
+                    ao_compressed(iksoff_l + 1, 0), & !a      
                     block_length,               & !lda    
-                    dmat_sorted,                & !b    
+                    dmat_compressed,                & !b    
                     nr_above_threshold_l,       & !ldb
                     0.0d0,                      & !beta   
                     xmat,                       & !c       
@@ -752,7 +746,7 @@ contains
                                  nr_above_threshold_r, &
                                  iksoff_r,             &
                                  xmat,                 &
-                                 ao_sorted(1, 0),      &
+                                 ao_compressed(1, 0),      &
                                  n                     &
                                 )
       if (is_gga) then
@@ -763,13 +757,13 @@ contains
                                        nr_above_threshold_r, &
                                        iksoff_r,             &
                                        xmat,                 &
-                                       ao_sorted(1, ixyz),   &
+                                       ao_compressed(1, ixyz),   &
                                        n_g(1, ixyz)          &
                                       )
          end do
       end if
 
-      deallocate(dmat_sorted)
+      deallocate(dmat_compressed)
       deallocate(xmat)
 
    end subroutine
@@ -812,10 +806,10 @@ contains
 
    end function
 
-   subroutine sort_mat(                      &
+   subroutine compress_mat(                      &
                        mat_dim,              &
                        mat,                  &
-                       mat_sorted,           &
+                       mat_compressed,           &
                        nr_above_threshold_l, &
                        nr_above_threshold_r, &
                        isoff_l,              &
@@ -825,7 +819,7 @@ contains
 !     --------------------------------------------------------------------------
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: mat(*)
-      real(8), intent(out) :: mat_sorted(*)
+      real(8), intent(out) :: mat_compressed(*)
       integer, intent(in)  :: nr_above_threshold_l
       integer, intent(in)  :: nr_above_threshold_r
       integer, intent(in)  :: isoff_l
@@ -837,11 +831,11 @@ contains
 !     --------------------------------------------------------------------------
 
       do i = 1, nr_above_threshold_r
-         is = ao_sort_index(isoff_r + i)
+         is = ao_compress_index(isoff_r + i)
          ijoff = (i - 1)*nr_above_threshold_l
          do j = 1, nr_above_threshold_l
-            js = ao_sort_index(isoff_l + j)
-            mat_sorted(ijoff + j) = mat(mat_dim*(is - 1) + js)
+            js = ao_compress_index(isoff_l + j)
+            mat_compressed(ijoff + j) = mat(mat_dim*(is - 1) + js)
          end do
       end do
 
@@ -853,7 +847,7 @@ contains
                                     nr_above_threshold, &
                                     iksoff,             &
                                     xmat,               &
-                                    ao_sorted,          &
+                                    ao_compressed,          &
                                     density             &
                                    )
 
@@ -863,7 +857,7 @@ contains
       integer, intent(in)    :: nr_above_threshold
       integer, intent(in)    :: iksoff
       real(8), intent(in)    :: xmat(*)
-      real(8), intent(in)    :: ao_sorted(*)
+      real(8), intent(in)    :: ao_compressed(*)
       real(8), intent(inout) :: density(*)
 !     --------------------------------------------------------------------------
       integer                :: i, k, ikoff
@@ -872,7 +866,7 @@ contains
       do i = 1, nr_above_threshold
          ikoff = (i - 1)*block_length
          do k = 1, block_length
-            density(k) = density(k) + f*xmat(ikoff + k)*ao_sorted(iksoff + ikoff + k)
+            density(k) = density(k) + f*xmat(ikoff + k)*ao_compressed(iksoff + ikoff + k)
          end do
       end do
 
