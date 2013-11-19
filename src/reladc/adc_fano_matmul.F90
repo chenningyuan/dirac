@@ -225,7 +225,6 @@ CONTAINS
 ! We   will further multiply this vector to each and every final state vector.
 !
           mul_fin:DO j = 1, nr_fin
-            IF (channel == assign_fin_channel(j)) THEN
               vec2 = 0
               counter = counter + 1
               vec2(ladc-nr_fin+1:ladc) = fin_evecs(1:nr_fin,j)
@@ -240,8 +239,11 @@ CONTAINS
               !                 - DOT_PRODUCT(vec_start,vec2) * in_energy(i)
               t_mom(counter) = DOT_PRODUCT(vec1,vec2)
 !              WRITE(iw,*) 't_mom: ', t_mom(counter)
-            END IF
           END DO mul_fin
+
+! This if clause has to be out around the multiplication of final
+! states in case of an selection of final states
+!            IF (channel == assign_fin_channel(j)) THEN
           
           WRITE(iw,*)
           WRITE(iw,*) 'name: ', fn_trans

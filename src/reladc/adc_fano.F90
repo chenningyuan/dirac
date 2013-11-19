@@ -145,8 +145,8 @@ CONTAINS
       do_partial = .false.
     ELSE
       do_partial = .true.
-      WRITE(iw,*) 'Determine the channel of each final state'
-      CALL fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
+!      WRITE(iw,*) 'Determine the channel of each final state'
+!      CALL fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
     END IF
     CALL dealloc(fin_ndiag)
 
