@@ -133,7 +133,6 @@ def main():
     list_of_tests.append('dft_geo_opt')
     list_of_tests.append('dft_london_mag_prop')
     list_of_tests.append('dft_minnesota')
-    list_of_tests.append('dft_overlap_diagnostic')
     list_of_tests.append('dft_pp86')
     list_of_tests.append('dft_response')
     list_of_tests.append('dft_response_symmetry')
@@ -372,6 +371,7 @@ def main():
     dirac_modules[this_module].add_test('fde_export_density')
     dirac_modules[this_module].add_test('weak_interactions')
     dirac_modules[this_module].add_test('fscc_intensities')
+    dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'pcm'
