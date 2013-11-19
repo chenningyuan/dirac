@@ -1286,6 +1286,10 @@
          reladc_fanoonly   = .true.
       end if
 
+      if (kw_matches(word, '.FANOFOVL')) then
+         call kw_read(word, reladc_fano_fovl)
+      end if
+
       if (kw_matches(word, '.FANOFCHK')) then
          reladc_fano_checkfin = .true.
       end if

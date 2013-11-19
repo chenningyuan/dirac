@@ -87,5 +87,6 @@ module adc_cfg
   integer, public, allocatable, dimension(:,:)    :: reladc_fano_channels
   character(4), public, allocatable, dimension(:) :: reladc_fano_labels
   logical, public                  :: reladc_fano_checkfin= .false.
+  real(8), public                  :: reladc_fano_fovl = 0.2
   
 end module

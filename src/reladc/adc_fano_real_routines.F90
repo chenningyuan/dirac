@@ -937,7 +937,8 @@ CONTAINS
     REAL(8), DIMENSION(nr_fin,nr_fin) :: tr_evecs
 
     REAL(8)                           :: ovl
-    REAL(8)                           :: thresh=0.45
+!    REAL(8)                           :: thresh=0.45
+    REAL(8)                           :: thresh
 
     INTEGER                           :: agree
     INTEGER                           :: channel
@@ -951,6 +952,8 @@ CONTAINS
 !
 !  Code
 !
+    thresh = reladc_fano_fovl
+
     WRITE(iw,*) 'final states undiagonalized'
 
     DO jcol = 1, nr_fin
