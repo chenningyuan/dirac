@@ -1420,12 +1420,9 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
-            !fixme: michal for InteRest                            
-            call dzero(fock,N2BBASXQ*nfmat)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
-            call dzero(dmat,N2BBASXQ*nfmat)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
             IF (NISHT .GT. 0)
