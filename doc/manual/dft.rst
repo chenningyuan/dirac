@@ -236,3 +236,4 @@ keyword(OVLDIAG)
 
 Activate the overlap diagnostic for TD-DFT calculations of excitation energies
 according to [Peach2008]_.
+This is only available in the development version.
