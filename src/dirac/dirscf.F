@@ -1332,7 +1332,6 @@ C
       CALL FLSHFO(LUPRI)
 
       DO 10 ITER = 2,MAXITR
-
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -1427,11 +1426,11 @@ C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
             !fixme: michal for InteRest                            
-            call dzero(fock,N2BBASXQ*nopen)
+            call dzero(fock,N2BBASXQ*nfmat)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
-            call dzero(dmat,N2BBASXQ*nopen)
+            call dzero(dmat,N2BBASXQ*nfmat)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
             IF (NISHT .GT. 0)
@@ -1472,10 +1471,9 @@ C
            call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
            tdfde = second() - tdfde
         endif
-
-        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           tdxc = second()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1496,7 +1494,6 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
- 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
@@ -1515,7 +1512,6 @@ C        Calculate total energy
 C        ======================
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_fock_driver'
