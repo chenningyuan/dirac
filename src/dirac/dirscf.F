@@ -387,7 +387,6 @@ C*****************************************************************************
 
       use dirac_cfg
       use interface_mo_specific
-      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
@@ -595,18 +594,15 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDfde = SECOND()
-        TDF2 = TDfde - TDF2
-
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-
-           tdfde =  second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde = SECOND()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde =  second() - tdfde
+           endif
         endif
 
         tdxc = second()
@@ -1268,7 +1264,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1459,17 +1454,15 @@ C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
-!       mi - variable initialization (otherwise runtime-check failure)
-
-        tdfde= second()
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-           tdfde = second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde= second()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde = second() - tdfde
+           endif
         endif
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
@@ -1683,7 +1676,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_mod
 #ifdef PCM_MODULE
       use pcm_interface
 #endif
@@ -1713,7 +1705,6 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-      real(kind=8) :: fde_energy
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
@@ -1815,12 +1806,6 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
-
-!     if (dirac_cfg_fde) then
-!        call fde_export_write_data_to_memory('DHF') 
-!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-!        write (*,*) 'FDE energy: ',fde_energy
-!     endif
 
       DHFERG = DHFERG + ELERGY
 C
