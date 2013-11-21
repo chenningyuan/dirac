@@ -2706,6 +2706,7 @@ C     ====================================
      &           ' (PSTOR1) Read orbitals from' //
      &                   ' label MCCINATO on file KRMCSCF'
 !           read CI/MCSCF natural orbitals and occupancies
+            REWIND LUKRMC
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,4,LUKRMC)
             CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
@@ -2716,8 +2717,11 @@ C     ====================================
      &                   ' label NEWNATOB on file KRMCSCF'
 !           read MP2 natural orbitals and occupancies
             JRDMO = -1
+            REWIND LUKRMC
             CALL RREADMO(CMO,JRDMO,3,LUKRMC)
-            CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+!FIXME!!!   CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+!           ... set to zero
+            CALL DZERO(EIG,NORBT)
           end if
         END IF
 
