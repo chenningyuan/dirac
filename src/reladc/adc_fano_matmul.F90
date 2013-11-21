@@ -161,6 +161,7 @@ CONTAINS
     fh_trans = fhdiag
     OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
          ACTION='WRITE',iostat=ierror)
+    WRITE(fh_trans,*) in_energy(1,i)
     WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
     CLOSE(fh_trans)
 
@@ -267,6 +268,7 @@ CONTAINS
 !
           OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
                ACTION='WRITE',iostat=ierror)
+          WRITE(fh_trans,*) in_energy(1,i)
           WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
           CLOSE(fh_trans)
 
