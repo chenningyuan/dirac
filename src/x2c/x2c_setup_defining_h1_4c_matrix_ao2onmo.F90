@@ -127,7 +127,6 @@ contains
      logical                :: skip_step1 = .false.
      logical                :: fndlab12
      integer, allocatable   :: boson_info(:)
-#include "dummy.h"
 !**********************************************************************
 
 !     step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
@@ -165,7 +164,6 @@ contains
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
       mz = nz
-!#ifdef x2c_spinfree_before_4c_to_2c
       if(spinfree)then
         if (nfsym == 2) then
           allocate(boson_info(norb_dim(1)+norb_dim(2)))
@@ -177,8 +175,9 @@ contains
                                   norb_dim,    &
                                   print_lvl)
         mz = 1
+      else
+        allocate(boson_info(2))
       end if
-!#endif
 
 !     initialize matrix offsets
       ioff_osh1      = 1
@@ -246,9 +245,7 @@ contains
 
       end do
 
-!#ifdef x2c_spinfree_before_4c_to_2c
-      if(spinfree) deallocate(boson_info)
-!#endif
+      deallocate(boson_info)
 
   end subroutine x2c_get_h1_defining_mat
 

@@ -114,7 +114,6 @@ contains
      integer                :: mz
      character (len=12)     :: flabel
      integer, allocatable   :: boson_info(:)
-#include "dummy.h"
 !**********************************************************************
 
 !      step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat
@@ -148,7 +147,6 @@ contains
 !      ------------------------------------------------------------------------------
 
        mz = nz
-!#ifdef x2c_spinfree_test_debug
        if(spinfree)then
          if (nfsym == 2) then
            allocate(boson_info(norb_dim(1)+norb_dim(2)))
@@ -160,8 +158,9 @@ contains
                                    norb_dim,    &
                                    print_lvl)
          mz = 1
+       else
+         allocate(boson_info(2))
        end if
-!#endif
 
 !      initialize matrix offsets
        ioff_osh1      = 1
@@ -192,7 +191,6 @@ contains
                               'x2c - h1_4c-basic-saao',6)
            end if
 
-           if (allocated(boson_info)) then
            call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
                                    h1_saao_bas(ioff_ao_ao_sh1),       &
                                    tra_mat_4cAOMO(ioff_ao_o_sh1),     &
@@ -206,22 +204,6 @@ contains
                                    spinfree,                          &
                                    boson_info(ioff_osh2),             &
                                    print_lvl)
-           else
-           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
-                                   h1_saao_bas(ioff_ao_ao_sh1),       &
-                                   tra_mat_4cAOMO(ioff_ao_o_sh1),     &
-                                   ndim_ao,                           &
-                                   nbas1_f,                           &
-                                   norb1_f,                           &
-                                   nz,                                &
-                                   mz,                                &
-                                   nzt,                               &
-                                   ipq_off_in,                        &
-                                   spinfree,                          &
-                                   IDUMMYARR,                         &
-                                   print_lvl)
-           endif
-
          end if
 
 !        store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
@@ -236,9 +218,7 @@ contains
 
        end do
 
-!#ifdef x2c_spinfree_test_debug
-       if(spinfree) deallocate(boson_info)
-!#endif
+       deallocate(boson_info)
 
   end subroutine x2c_get_h1_mat_base
 
