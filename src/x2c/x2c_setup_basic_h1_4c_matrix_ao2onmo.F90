@@ -147,19 +147,17 @@ contains
 !      ------------------------------------------------------------------------------
 
        mz = nz
+       if (nfsym == 2) then
+         allocate(boson_info(norb_dim(1)+norb_dim(2)))
+       else
+         allocate(boson_info(norb_dim(1)))
+       endif
        if(spinfree)then
-         if (nfsym == 2) then
-           allocate(boson_info(norb_dim(1)+norb_dim(2)))
-         else
-           allocate(boson_info(norb_dim(1)))
-         endif
          call get_boson_irrep_info(boson_info,  &
                                    nfsym,       &
                                    norb_dim,    &
                                    print_lvl)
          mz = 1
-       else
-         allocate(boson_info(2))
        end if
 
 !      initialize matrix offsets

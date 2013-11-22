@@ -164,19 +164,17 @@ contains
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
       mz = nz
+      if (nfsym == 2) then
+        allocate(boson_info(norb_dim(1)+norb_dim(2)))
+      else
+        allocate(boson_info(norb_dim(1)))
+      endif
       if(spinfree)then
-        if (nfsym == 2) then
-          allocate(boson_info(norb_dim(1)+norb_dim(2)))
-        else
-          allocate(boson_info(norb_dim(1)))
-        endif
         call get_boson_irrep_info(boson_info,  &
                                   nfsym,       &
                                   norb_dim,    &
                                   print_lvl)
         mz = 1
-      else
-        allocate(boson_info(2))
       end if
 
 !     initialize matrix offsets
@@ -203,7 +201,6 @@ contains
 
         if( norb_dim(i) > 0 )then
 
-          if (allocated(boson_info)) then
           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
                                   h1_saao_bas(ioff_ao_ao_sh1),       &
                                   tra_mat_4cAOMO(ioff_ao_o_sh1),     &
@@ -217,23 +214,6 @@ contains
                                   spinfree,                          &
                                   boson_info(ioff_osh2),             &
                                   print_lvl)
-          else
-          call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
-                                  h1_saao_bas(ioff_ao_ao_sh1),       &
-                                  tra_mat_4cAOMO(ioff_ao_o_sh1),     &
-                                  ndim_ao,                           &
-                                  nbas1_f,                           &
-                                  norb1_f,                           &
-                                  nz,                                &
-                                  mz,                                &
-                                  nzt,                               &
-                                  ipq_off_in,                        &
-                                  spinfree,                          &
-                                  IDUMMYARR,                         &
-                                  print_lvl)
-
-          endif
-
         end if
 !       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
