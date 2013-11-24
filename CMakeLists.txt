@@ -105,6 +105,7 @@ add_executable(
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     ${PROJECT_BINARY_DIR}/unit-tests

@@ -352,7 +352,7 @@
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
 !     RECP integral is capable less than D2h symmetry
-      IF (SYMTXT(1:2).EQ.'  ') GOTO 8000 
+CTROND      IF (SYMTXT(1:2).EQ.'  ') GOTO 8000 
       IF (SYMTXT(1:1).EQ.'D' ) GOTO 8000
       IF (SYMTXT(1:1).EQ.'C' ) GOTO 8000
 

@@ -160,7 +160,14 @@ module fde_input
 
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
-            write(unit,'(A)') ' ' 
+            write(unit,*)
+            write(unit,'(3X,2A,/3X,2A,/3X,2A)') &
+            'Embedding potential included according to:',    &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 136 (2012) 044104.',       &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 139 (2013) 104106.' 
+            write(unit,*)
             call fde_test_frozen_density
          endif
 
@@ -168,6 +175,15 @@ module fde_input
             string = ftmp%frozen%name
             write(unit,'(A,A60)') &
                 ' * Density (and gradient) from frozen subsystems read from file: ',string
+            write(unit,*)
+            write(unit,'(3X,2A,/3X,2A,/3X,2A)') &
+            'Response contributions to the active subsystem,', &
+            'when included, are calculated according to:', &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 136 (2012) 044104.',       &
+            'S. Hofener, A.S.P. Gomes and L. Visscher,',&
+            ' J. Chem. Phys. 139 (2013) 104106.' 
+            write(unit,*)
          endif
 
          if (etmp%do_grid_out) then

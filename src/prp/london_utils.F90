@@ -1,3 +1,4 @@
+#ifdef MOD_LAO_REARRANGED
 module london_utils
 
   use memory_allocator 
@@ -823,3 +824,4 @@ contains
   end subroutine
 
 end module
+#endif

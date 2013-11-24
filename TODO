@@ -5,14 +5,15 @@
 - fix tests (http://repo.ctcc.no/CDash/index.php?project=DIRAC)   everybody                 
 - fix tickets (https://repo.ctcc.no/projects/dirac/issues)        everybody
 - geometry optimization allocates the work array twice                                      
-- MPI dirac.x should be able run without mpirun on one processor,                                                    
-  no MPI routines should be called when running on one processor
-  (the communicator may not be available then)
+- MPI dirac.x should be able run without mpirun on one processor  Stefan
 - create a list of new features (doc/features.rst)                everybody                 
 - documentation of new features (in particular MDIRAC)
 - convert tests to new framework                                  Radovan                           20%
-- if time permits switch to BigMPI                                Radovan
+- update setup/cmake and sync with improvements in Dalton         Radovan
+  plus document it                                               
+- if time permits switch to BigMPI                                Radovan, Stefan
 - allow and test creation of binary release                       Radovan                           30%
-
+- gen fortran interface does not always work
+  a better solution would be to use iso_c_binding                 Radovan
 
 when you solve a problem, please remove the line

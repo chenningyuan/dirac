@@ -135,7 +135,9 @@ C
 C***********************************************************************
       use london_direct_hb
       use london_reorth_hb
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
       use memory_allocator
       use orbital_rotation_indices
       use dirac_cfg
@@ -389,7 +391,9 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -795,7 +799,9 @@ C&&& FREQ INTERVAL: specify frequencies with start, end, step values
                GO TO 100
  39            CONTINUE
 C&&& LAOMOD: rearrange LR equations with LAOs, so connection matrices are not needed
+#ifdef MOD_LAO_REARRANGED
                call set_london_keywords('laomod')
+#endif
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1489,8 +1495,10 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils 
+#endif
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -1588,10 +1596,12 @@ C
 
 !gosia:
 ! if shielding_rearrange then here form: \kappa = \kappa - T:
+#ifdef MOD_LAO_REARRANGED
       if (shielding_rearrange) then
         nlength=nxpar*ndamp*nfreq
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
+#endif
 C
 C     Print section
 C     -------------
@@ -1943,9 +1953,11 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
+#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
+#endif
 
 C
 C     Check if file of solution vectors is present
@@ -2344,6 +2356,7 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
+#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2366,6 +2379,7 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
+#endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
       ENDDO
