@@ -4,6 +4,3 @@
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = git@repo.ctcc.no:pcmsolver.git
-[submodule "external/stieltjes"]
-	path = external/stieltjes
-	url = elke@cluster-pci.urz.uni-heidelberg.de:/home/elke/programme/stieltjes
