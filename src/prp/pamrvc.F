@@ -3979,11 +3979,12 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
         use london_helper
+#endif
         use dirac_cfg
         use dft_cfg
         use xcint_main
-!       use fde_mod, only: fde_set_isymop, fde_set_ihrmop,fde_calculate_emb_linrsp_mat 
         use fde_mod
         use fde_dirac_matrices_integration
         use num_grid_gen
@@ -4104,18 +4105,19 @@ C
 
         end if
 
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+        if (dirac_cfg_fde_response) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_frozen) then
 
-           if (.not.dirac_cfg_dft_calculation) then
+              if (.not.dirac_cfg_dft_calculation) then
 !         generate standard density matrix
-              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
-              call genden(work(kbuf), cmo, 1, iprxrs)
-           endif
+                 call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+                 call genden(work(kbuf), cmo, 1, iprxrs)
+              endif
 
-          call fde_dirac_set_isymop(isymop)
-          call fde_dirac_set_ihrmop(ihrmop)
-          call fde_dirac_emb_matrices_via_integration(       
+              call fde_dirac_set_isymop(isymop)
+              call fde_dirac_set_ihrmop(ihrmop)
+              call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
      &                       fde_dmat_0             = work(kbuf),
@@ -4128,11 +4130,12 @@ C
      &                       fde_dmat_ih_sym        = ihrmop,
      &                       fde_response_order_mo = 1)
 
-          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+              call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-          write (*,*) 'FDE response contributions included'
-        else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
-          write (*,*) 'FDE response contributions not included'
+              write (*,*) 'FDE response contributions included'
+           else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
+              write (*,*) 'FDE response contributions not included'
+           endif
         endif
 C
 C     Add solvent contributions

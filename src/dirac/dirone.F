@@ -37,7 +37,6 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
-       use fde_types
        use fde_mod
 
 #include "implicit.h"
@@ -876,7 +875,6 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
-      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -923,18 +921,19 @@ CMI     ... dcbham.h is needed
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
 
+      if (dirac_cfg_fde) then
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-
-      call fde_get_import_info(itmp)
-      if (dirac_cfg_fde .and. itmp%im_vemb) then
-         IOP = IPVEMB0
-         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &          OP1INT,FIRST,IPRHAM)
+         call fde_get_import_info(itmp)
+         if (itmp%im_vemb) then
+            IOP = IPVEMB0
+            CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
+     &                  OP1INT,FIRST,IPRHAM)
+         endif
       ENDIF
 
 C

@@ -99,8 +99,8 @@ def main():
     vital_directories.append('src/x2c')
     vital_directories.append('src/xcfun')
     vital_directories.append('src/xcfun/fortran')
-    vital_directories.append('src/xcint/cfun')
-    vital_directories.append('src/xcint/src')
+    vital_directories.append('src/cfun')
+    vital_directories.append('src/xcint')
 
     vital_directories.append('utils')
     vital_directories.append('basis')
@@ -133,7 +133,6 @@ def main():
     list_of_tests.append('dft_geo_opt')
     list_of_tests.append('dft_london_mag_prop')
     list_of_tests.append('dft_minnesota')
-    list_of_tests.append('dft_overlap_diagnostic')
     list_of_tests.append('dft_pp86')
     list_of_tests.append('dft_response')
     list_of_tests.append('dft_response_symmetry')
@@ -183,7 +182,6 @@ def main():
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
     list_of_tests.append('visual_frac_occupation')
-    list_of_tests.append('lao_shield_rearranged')
 
     list_of_new_tests = []
     list_of_new_tests.append('lucita_short')
@@ -218,7 +216,7 @@ def main():
     files_never_compiled.append('src/densfit/denfit_noddy.F')
     files_never_compiled.append('src/lucita/unused.F')
     files_never_compiled.append('src/eri/eriprg.F')
-    files_never_compiled.append('src/xcint/cfun/fun-tester.c')
+    files_never_compiled.append('src/cfun/fun-tester.c')
     files_never_compiled.append('src/relccsd/ccmain.F')
     files_never_compiled.append('src/relccsd/quit.F')
     files_never_compiled.append('src/cc_external/hsmrcc/hsmrmain.c')
@@ -228,8 +226,6 @@ def main():
     files_never_compiled.append('src/xcfun/fortran/example.F90')
     files_never_compiled.append('src/interest/selftest/module_interest_selftest.f90')
     files_never_compiled.append('src/interest/selftest/main_interest_selftest.f90')
-    files_never_compiled.append('src/xcint/src/test_driver.F90')
-    files_never_compiled.append('src/xcint/src/fake_input.F90')
 
     directories_never_compiled = []
     directories_never_compiled.append('utils')
@@ -355,6 +351,12 @@ def main():
     dirac_modules[this_module].add_test('response_lao_magnetiz')
     dirac_modules[this_module].take_out_of_release()
 
+    this_module = 'lao_rearranged'
+    dirac_modules[this_module] = dirac_module('lao_rearranged', 'LAO properties without connection matrices')
+    dirac_modules[this_module].add_cppflag('MOD_LAO_REARRANGED')
+    dirac_modules[this_module].add_test('lao_shield_rearranged')
+    dirac_modules[this_module].take_out_of_release()
+
     this_module = 'srdft'
     dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
     dirac_modules[this_module].add_cppflag('MOD_SRDFT')
@@ -374,6 +376,7 @@ def main():
     dirac_modules[this_module].add_test('fde_export_density')
     dirac_modules[this_module].add_test('weak_interactions')
     dirac_modules[this_module].add_test('fscc_intensities')
+    dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'pcm'

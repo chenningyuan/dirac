@@ -49,4 +49,6 @@ unset DIRAC_NUM_MPI_PROCS
 cd $BUILD_INTEL
 make Experimental
 
+/bin/rm -rf /tmp/milias/*
+
 exit 0
