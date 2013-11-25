@@ -820,6 +820,9 @@ C
         call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
      &                  ICISTR,IRC)
+        call q_correction(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                  WORK(KPCBLTP),LUSC61,LUSC37,
+     &                  ICISTR,IRC)
       end do
       call REWINE(LUC,-1) 
       NPTESTVAR = 00

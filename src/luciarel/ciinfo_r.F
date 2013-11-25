@@ -474,6 +474,9 @@ CTEMP     ISM2(3,5) = 1
 *
 *
 *. Occupation of strings of given sym and supergroup
+
+	write(6,*) 'call ##########'
+
           CALL GASANAS_REL(C,LUSCR,NBL_C,WORK(KNSTSO(IACTP)),
      &                     WORK(KNSTSO2(IBCTP)),
      &                     NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
@@ -488,6 +491,9 @@ CTEMP     ISM2(3,5) = 1
      &                     ICISTR,NTOOB,mj_statistics,inv_symbol,
      &                     IPRWFC)
 *
+
+	write(6,*) 'call after ##########'
+
           call dealloc(mat2)
           call dealloc(mat1)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
@@ -871,6 +877,9 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &                      C(IDET),
      &                  '  Corresponding alpha- and beta-strings'
                        if(linear)then
+
+	write(6,*) 'if lin ############'
+
                          do IEL = 1, NAEL
                            write(stringa(iel),'(I4,a1,a4,a1)') 
      &                     imosp_luci2dirac1(ireots(iastr(iel,ia))),
@@ -878,6 +887,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                          end do
                          WRITE(6,'("  alpha",20(a))')
      &                       (stringa(iel), IEL = 1, NAEL )
+
+	write(6,*) 'alpha 20(a) #############'
+
+
                          do IEL = 1, NbEL
                            write(stringb(iel),'(I4,a1,a4,a1)') 
      &                     imosp_luci2dirac2(ireots2(ibstr(iel,ib))),
@@ -904,6 +917,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                        WRITE(6,'("  alpha",20I4)')
      &                      (imosp_luci2dirac1(ireots (iastr(iel,ia))),
      &                       IEL = 1, NAEL )
+
+	write(6,*) 'alpha 20i4 ####'
+
+
                        WRITE(6,'("   beta",20I4)')
      &                      (imosp_luci2dirac2(ireots2(ibstr(iel,ib))),
      &                       IEL = 1, NBEL )
@@ -923,6 +940,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       WRITE(6,'(/A,E15.8/)')
      &     '  Norm of printed CI vector .. ', CNORM
+
+
+	write(6,*) 'cnorm ########'
+
 *
 *.Size of CI coefficients
 *
