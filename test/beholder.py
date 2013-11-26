@@ -48,6 +48,7 @@ class TestRun():
                     sys.exit(0)
             if process.returncode != 0:
                 sys.stderr.write('ERROR: crash during %s\n' % command)
+                sys.stderr.write(stderr)
                 sys.exit(-1)
             if stdout_file_name != '':
                 f = open(stdout_file_name, 'w')

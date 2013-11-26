@@ -485,7 +485,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "../xcint/cfun/functionals.h"
+#include "functionals.h"
       
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),

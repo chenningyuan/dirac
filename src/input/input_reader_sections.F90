@@ -1668,10 +1668,11 @@
          dft_cfg_pointwise = .true.
       end if
 
-!radovan: not documented on wiki, code not perfectly tested
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
+#endif
 
       call check_whether_kw_found(word, kw_section)
 

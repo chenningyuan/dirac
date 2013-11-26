@@ -140,8 +140,8 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
 
-      write(*, '(a)') '* Using the automatic differentiation xc functional:'
-      write(*, '(a)') '   (weight: functional)'
+!     write(*, '(a)') '* Using the automatic differentiation xc functional:'
+!     write(*, '(a)') '   (weight: functional)'
 
       hfx_out  = 0.0d0
       mu_out   = 0.0d0
@@ -230,7 +230,7 @@ contains
 
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbe'
+!         write(*, '(f10.6, a)') w, ': pbe'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
@@ -272,13 +272,13 @@ contains
 
         w = get_weight(word_array(i), 'kin_pw91')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': kin_pw91'
+!         write(*, '(f10.6, a)') w, ': kin_pw91'
           f%w(XC_PW91K) = f%w(XC_PW91K) + w
         end if
 
         w = get_weight(word_array(i), 'kin_tf')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': kin_tf'
+!         write(*, '(f10.6, a)') w, ': kin_tf'
           f%w(XC_TFK) = f%w(XC_TFK) + w
         end if
 
@@ -289,13 +289,13 @@ contains
 
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbex'
+!         write(*, '(f10.6, a)') w, ': pbex'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
 
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbec'
+!         write(*, '(f10.6, a)') w, ': pbec'
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
 
@@ -359,7 +359,7 @@ contains
 
       deallocate(word_array)
 
-      write(*, '(a)')
+!     write(*, '(a)')
 
 !     check that not all weights are zero
       h = 0.0d0
