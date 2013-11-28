@@ -41,6 +41,8 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
+option(ENABLE_STIELTJES "Enable stieltjes library" ON)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -105,6 +107,7 @@ add_executable(
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     ${PROJECT_BINARY_DIR}/unit-tests
@@ -130,6 +133,30 @@ if(ENABLE_XCFUN)
     set(EXTERNAL_LIBS xcfun ${EXTERNAL_LIBS})
 else()
     add_definitions(-DEXCLUDE_XCFUN)
+endif()
+
+if(ENABLE_STIELTJES)
+
+    # we will be using f90 modules
+    set(CMAKE_Fortran_MODULE_DIRECTORY
+        ${PROJECT_BINARY_DIR}/external/stieltjes-build
+        ${CMAKE_Fortran_MODULE_DIRECTORY}
+        )
+
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    )
+
+    add_external(stieltjes)
+
+    set(EXTERNAL_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
+        ${EXTERNAL_LIBS}
+        )
 endif()
 
 if(ENABLE_PCMMOD)
@@ -238,6 +265,10 @@ add_library(
 
 add_dependencies(dirac run_pamadm)
 add_dependencies(dirac generate_binary_info)
+
+if(ENABLE_STIELTJES)
+    add_dependencies(dirac stieltjes)
+endif()
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)

@@ -1286,6 +1286,10 @@
          reladc_fanoonly   = .true.
       end if
 
+      if (kw_matches(word, '.FANOFOVL')) then
+         call kw_read(word, reladc_fano_fovl)
+      end if
+
       if (kw_matches(word, '.FANOFCHK')) then
          reladc_fano_checkfin = .true.
       end if
@@ -1686,10 +1690,11 @@
          dft_cfg_pointwise = .true.
       end if
 
-!radovan: not documented on wiki, code not perfectly tested
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
+#endif
 
       call check_whether_kw_found(word, kw_section)
 

@@ -1,3 +1,4 @@
+#ifdef MOD_LAO_REARRANGED
 module london_helper
 
   implicit none
@@ -33,3 +34,4 @@ contains
 
 
 end module
+#endif

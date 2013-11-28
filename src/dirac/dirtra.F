@@ -52,7 +52,6 @@ C
 C
 #include "dcbibt.h"
       CALL QENTER('GETLAB')
-#include "memint.h"
       CLS(1) = 'L'
       CLS(2) = 'S'
 C

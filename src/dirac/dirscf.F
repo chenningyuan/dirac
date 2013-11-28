@@ -387,7 +387,6 @@ C*****************************************************************************
 
       use dirac_cfg
       use interface_mo_specific
-      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
@@ -595,18 +594,15 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDfde = SECOND()
-        TDF2 = TDfde - TDF2
-
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-
-           tdfde =  second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde = SECOND()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde =  second() - tdfde
+           endif
         endif
 
         tdxc = second()
@@ -1268,7 +1264,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1332,7 +1327,6 @@ C
       CALL FLSHFO(LUPRI)
 
       DO 10 ITER = 2,MAXITR
-
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -1426,12 +1420,9 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
-            !fixme: michal for InteRest                            
-            call dzero(fock,N2BBASXQ*nopen)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
-            call dzero(dmat,N2BBASXQ*nopen)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
             IF (NISHT .GT. 0)
@@ -1460,22 +1451,19 @@ C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
-!       mi - variable initialization (otherwise runtime-check failure)
-
-        tdfde= second()
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-           tdfde = second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde= second()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde = second() - tdfde
+           endif
         endif
-
-        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           tdxc = second()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1496,7 +1484,6 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
- 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
@@ -1515,7 +1502,6 @@ C        Calculate total energy
 C        ======================
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_fock_driver'
@@ -1687,7 +1673,6 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_mod
 #ifdef PCM_MODULE
       use pcm_interface
 #endif
@@ -1717,7 +1702,6 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-      real(kind=8) :: fde_energy
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
@@ -1819,12 +1803,6 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
-
-!     if (dirac_cfg_fde) then
-!        call fde_export_write_data_to_memory('DHF') 
-!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-!        write (*,*) 'FDE energy: ',fde_energy
-!     endif
 
       DHFERG = DHFERG + ELERGY
 C
