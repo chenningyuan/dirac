@@ -12,7 +12,9 @@
 - update setup/cmake and sync with improvements in Dalton         Radovan
   plus document it                                               
 - if time permits switch to BigMPI                                Radovan, Stefan
+- update map                                                      Radovan                            0%
 - allow and test creation of binary release                       Radovan                           30%
+- implement Dalton-style update.py                                Radovan
 - gen fortran interface does not always work
   a better solution would be to use iso_c_binding                 Radovan
 

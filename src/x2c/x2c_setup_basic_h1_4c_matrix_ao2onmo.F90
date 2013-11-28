@@ -147,16 +147,18 @@ contains
 !      ------------------------------------------------------------------------------
 
        mz = nz
-!#ifdef x2c_spinfree_test_debug
-       if(spinfree)then
+       if (nfsym == 2) then
          allocate(boson_info(norb_dim(1)+norb_dim(2)))
+       else
+         allocate(boson_info(norb_dim(1)))
+       endif
+       if(spinfree)then
          call get_boson_irrep_info(boson_info,  &
                                    nfsym,       &
                                    norb_dim,    &
                                    print_lvl)
          mz = 1
        end if
-!#endif
 
 !      initialize matrix offsets
        ioff_osh1      = 1
@@ -200,7 +202,6 @@ contains
                                    spinfree,                          &
                                    boson_info(ioff_osh2),             &
                                    print_lvl)
-
          end if
 
 !        store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
@@ -215,9 +216,7 @@ contains
 
        end do
 
-!#ifdef x2c_spinfree_test_debug
-       if(spinfree) deallocate(boson_info)
-!#endif
+       deallocate(boson_info)
 
   end subroutine x2c_get_h1_mat_base
 
