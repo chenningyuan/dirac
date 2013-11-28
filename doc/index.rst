@@ -165,6 +165,7 @@ Developers
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
