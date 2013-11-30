@@ -10,6 +10,8 @@ class DiracTestRun(TestRun):
 
     def execute(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
         launcher = os.path.join(self.binary_dir, 'pam')
+		#miro: simple adaptation for Windows
+        launcher = 'python ' + "'" + launcher + "'"
         launcher += ' --noarch --nobackup'
         if args != '':
             launcher += ' %s' % args
