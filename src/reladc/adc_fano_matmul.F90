@@ -14,6 +14,7 @@ CONTAINS
     use memory_allocator
     use codata
     use adc_cfg
+    use stieltjesmod
 
     IMPLICIT NONE
 
@@ -55,6 +56,8 @@ CONTAINS
     INTEGER                               :: ierror
     INTEGER                               :: channel
     INTEGER                               :: first, last, off
+
+    REAL(8)                               :: gammae !result from stieltjes
 
 
 !
@@ -152,18 +155,26 @@ CONTAINS
       WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
       WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
 
-    END DO
+      FORALL (ixx = 1:counter)
+        t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
+      END FORALL
 
+      CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
+                     gammae,2004,2)
 
+      WRITE(iw,*) 'Gamma = ', gammae
 !
 ! To be removed as soon as Dirac has its own Stieltjes routine
 !
-    fh_trans = fhdiag
-    OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-         ACTION='WRITE',iostat=ierror)
-    WRITE(fh_trans,*) in_energy(1,i)
-    WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-    CLOSE(fh_trans)
+      fh_trans = fhdiag
+      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+           ACTION='WRITE',iostat=ierror)
+      WRITE(fh_trans,*) in_energy(1,i)
+      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+      CLOSE(fh_trans)
+
+    END DO !loop over intial states
+
 
 !
 ! Starting the partial decay widths
