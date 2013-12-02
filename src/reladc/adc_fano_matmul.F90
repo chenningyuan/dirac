@@ -37,6 +37,7 @@ CONTAINS
 ! Local Variables
 !
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: diag
+    REAL(8)                               :: autoev  = 27.2113957d0
     INTEGER                               :: ixx
 !    INTEGER                               :: nbufs
     INTEGER                               :: nact
@@ -148,7 +149,7 @@ CONTAINS
       WRITE(iw,*)
       WRITE(iw,*) '-------------------------------------------------------------'
       WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
-      WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+      WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i)*autoev,&
                                               'eV', 'polestrength: ', in_energy(2,i)
       WRITE(iw,*) '-------------------------------------------------------------'
       WRITE(iw,*)
@@ -163,10 +164,15 @@ CONTAINS
         t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
       END FORALL
 
+      WRITE(iw,*) 'Calling Stieltjes'
+      WRITE(iw,*)
       CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
                      gammae,2004,2)
+!
+! printflag 1 for no external output(dirac.out), 2 for output
+!
 
-      WRITE(iw,*) 'Gamma = ', gammae
+      WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
 !
 ! To be removed as soon as Dirac has its own Stieltjes routine
 !
@@ -265,7 +271,7 @@ CONTAINS
           WRITE(iw,*) 'name: ', fn_trans
           WRITE(iw,*) '-------------------------------------------------------------'
           WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
-          WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+          WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i)*autoev,&
                                                   'eV', 'polestrength: ', in_energy(2,i)
           WRITE(iw,*) '-------------------------------------------------------------'
           WRITE(iw,*)
@@ -278,12 +284,26 @@ CONTAINS
           WRITE(iw,*)
 
 !
-! Th  is procedure only makes sense, when those final vectors not
-! as  sociated with the chosen final states are not considered in
-! th  e calculation of the transition moments.
+! This procedure only makes sense, when those final vectors not
+! associated with the chosen final states are not considered in
+! the calculation of the transition moments.
 !
+          FORALL (ixx = 1:counter)
+            t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
+          END FORALL
+
+          WRITE(iw,*) 'Channel #', channel
+          WRITE(iw,*)
+          WRITE(iw,*) 'Calling Stieltjes'
+          WRITE(iw,*)
+          CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
+                         gammae,1000+channel,2)
 !
-! To   be removed as soon as Dirac has its own Stieltjes routine
+! printflag 1 for no external output(dirac.out), 2 for output
+!
+          WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+!
+! To be removed as soon as Dirac has its own Stieltjes routine
 !
           OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
                ACTION='WRITE',iostat=ierror)
