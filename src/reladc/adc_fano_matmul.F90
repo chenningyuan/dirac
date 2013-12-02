@@ -153,7 +153,11 @@ CONTAINS
       WRITE(iw,*) '-------------------------------------------------------------'
       WRITE(iw,*)
       WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-      WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+      IF (counter > 20) THEN
+        WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+      ELSE
+        WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+      END IF
 
       FORALL (ixx = 1:counter)
         t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
@@ -266,7 +270,11 @@ CONTAINS
           WRITE(iw,*) '-------------------------------------------------------------'
           WRITE(iw,*)
           WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-          WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+          IF (counter > 20) THEN
+            WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+          ELSE
+            WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          END IF
           WRITE(iw,*)
 
 !
