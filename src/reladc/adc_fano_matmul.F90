@@ -76,6 +76,8 @@ CONTAINS
     CALL alloc(e2h1p,nr_in_evecs*nr_fin)
     CALL alloc(t_mom,nr_in_evecs*nr_fin)
 
+    WRITE(iw,*) 'Number of Initial States: ', nr_in_evecs
+
     vec_start = 0
 
     OPEN(fhmat,FILE=fn_adcmat,FORM='unformatted',STATUS='unknown')
