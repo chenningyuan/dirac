@@ -164,10 +164,10 @@ CONTAINS
         t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
       END FORALL
 
-      WRITE(iw,*) 'Calling Stieltjes'
       WRITE(iw,*)
+      WRITE(iw,*) 'Calling Stieltjes.'
       CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
-                     gammae,2004,2)
+                     gammae,2004,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
@@ -294,10 +294,11 @@ CONTAINS
 
           WRITE(iw,*) 'Channel #', channel
           WRITE(iw,*)
-          WRITE(iw,*) 'Calling Stieltjes'
+          WRITE(iw,*) 'Calling Stieltjes.'
+          WRITE(iw,*)
           WRITE(iw,*)
           CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
-                         gammae,1000+channel,2)
+                         gammae,1000+channel,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
