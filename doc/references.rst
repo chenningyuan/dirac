@@ -589,3 +589,23 @@ or popular Google-Books web-space.
    *"A new hybrid exchange–correlation functional using the Coulomb-attenuating method (CAM-B3LYP)*,
    Chem. Phys. Lett. **393**, 51 (2004)
    `[web] <http://dx.doi.org/10.1016/j.cplett.2004.06.011>`_
+
+.. [Gomes2012a] André Severo Pereira Gomes and Christoph R. Jacob,  
+   *Quantum-chemical embedding methods for treating local electronic excitations in complex chemical systems*,
+   Annu. Rep. Prog. Chem., Sect. C: Phys. Chem., **108**, 222-277 (2012)
+   `[web] <http://dx.doi.org/10.1039/C2PC90007F>`_ 
+
+.. [Gomes2008] André Severo Pereira Gomes, Christoph R. Jacob and Lucas Visscher, 
+   *Calculation of local excitations in large systems by embedding wave-function theory in density-functional theory*,
+   Phys. Chem. Chem. Phys., **10**, 5353-5362 (2008)
+   `[web] <http://dx.doi.org/10.1039/B805739G>`_
+
+.. [Hofener2012] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
+   *Molecular properties via a subsystem density functional theory formulation: A common framework for electronic embedding*,
+   J. Chem. Phys., **136**, 044104 (2012)
+   `[web] <http://dx.doi.org/10.1063/1.3675845>`_
+
+.. [Hofener2013] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
+   *Solvatochromic shifts from coupled-cluster theory embedded in density functional theory*,
+   J. Chem. Phys., **139**, 104016 (2013)
+   `[web] <http://dx.doi.org/10.1063/1.4820488>`_
