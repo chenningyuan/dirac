@@ -1,7 +1,7 @@
 ***********************************************************************
 
-      SUBROUTINE Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,
-     &                        LUSCR,ICISTR,IRC)
+      SUBROUTINE Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,       ! C, LUSCR, ICISTR raus 
+     &                        LUSCR,ICISTR,IRC,WORK)
 *
 *
 * Analyze CI vector
@@ -26,31 +26,27 @@
 !         ICISTR: 2
 !         IRC: 1 (real) 2 (complex)
 *
-      use memory_allocator
+!      use memory_allocator  ! call alloc -> allocate
       use symmetry_setup_krci
       use mospinor_info
+      use qcorr_cfg
+      use qcorr_interface
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+#include "ipoist8.inc"      ! coerr geth gegen -Infinity          
 * =====
 *.Input
 * =====
 *
 #include "mxpdim.inc"
 #include "strbas.inc"
-#include "cicisp.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "cprnt.inc"
-#include "cands.inc"
-#include "parluci.h"
-#include "dgroup.h"
 *
       DIMENSION IBLOCK(8,NBLOCK),IBLTP(*)
-      dimension C(*)
+      dimension C(*), WORK(*)
       integer               :: mj_statistics(-32:32)
       integer, allocatable  :: mat1(:,:)
       integer, allocatable  :: astring(:,:)
@@ -61,14 +57,18 @@
       character (len=1)     :: inv_symbol
       character (len=200), allocatable   :: ref_wavefunction(:,:)
       real(8), allocatable  :: ref_wavefunction_coeff(:)
-      real(8), allocatable  :: ref_wavefunction_coeff_i(:)       ! coeff von der ersten ci_iteration!!!
-      integer :: nref = 1 ! for HF nref = 1, TODO: input parameter!!!
-      integer :: nstates_ci
-      real(8), allocatable :: e_corr(:), e_tot(:)
-      real(8) :: q_corr, edci
-      real(8) :: N = 8.0D0
+      real(8), allocatable  :: ref_wavefunction_coeff_i(:)         ! coeff von der ersten ci_iteration!!!
+      integer               :: nref = 1                            ! for HF nref = 1, TODO: input parameter!!!
+      integer               :: nstates_ci
+      real(8), allocatable  :: e_corr(:), e_tot(:)
+      real(8)               :: q_corr, edci
+      real(8)               :: N = 8.0D0
 *
       CALL QENTER('ANACI')
+
+!     initialize
+!     call qcorr_init()
+
       allocate(ref_wavefunction(10,2))
       allocate(ref_wavefunction_coeff(10))
       allocate(ref_wavefunction_coeff_i(10))
@@ -82,7 +82,7 @@
 ** Specifications of internal space
 *
       NTEST = 000
-      NTEST = MAX(NTEST,IPRWFC)
+      NTEST = MAX(NTEST,IPRWFC)   !TODO
 *
       LBLK = -1
       IBOFF = 0
@@ -100,35 +100,35 @@
 *. Skip EOV mark between real and imaginary part
           call IFRMDS(IONEM,1,-1,LUC)
         end if
-        do IMK2_R = 1,NMS2VAL,1
-          MK2_R = MS2VAL(IMK2_R)
-          IACTP = IST_FOR_DT(1,IMK2_R)
-          IBCTP = IST_FOR_DT(2,IMK2_R)
+        do IMK2_R = 1,NMS2VAL_q,1
+          MK2_R = MS2VAL_q(IMK2_R)
+          IACTP = IST_FOR_DT_q(1,IMK2_R)
+          IBCTP = IST_FOR_DT_q(2,IMK2_R)
 *
 *  Offset for IBLOCK(sym,type) information
           if (IMK2_R.eq.1) then
             IBOFF = 1
           else
-            IBOFF = IBOFF + NBLK_MS2(IMK2_R-1)
+            IBOFF = IBOFF + NBLK_MS2_q(IMK2_R-1)
           end if
 *
           call REWINE(LUSCR,-1)
-          NBL_C = NBLK_MS2(IMK2_R)
+          NBL_C = NBLK_MS2_q(IMK2_R)
           CALL COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
           CALL ITODS(-1,1,-1,LUSCR)
 !     &         ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR,
 !     &         ' ----------------------------------------------'
-          NAEL = NELEC(IACTP)
-          NBEL = NELEC(IBCTP)
-          call alloc(astring,NAEL,MXNSTR, id='astring')
-          call alloc(bstring,NBEL,MXNSTR, id='bstring')
+          NAEL = NELEC_q(IACTP)
+          NBEL = NELEC_q(IBCTP)
+          allocate(astring(NAEL,MXNSTR_q))
+          allocate(bstring(NBEL,MXNSTR_q))
 
 *
-          NOCTPA   = NOCTYP(IACTP)
-          NOCTPB   = NOCTYP(IBCTP)
+          NOCTPA   = NOCTYP_q(IACTP)
+          NOCTPB   = NOCTYP_q(IBCTP)
 *
-          IOCTPA   = IBSPGPFTP(IACTP)
-          IOCTPB   = IBSPGPFTP(IBCTP)
+          IOCTPA   = IBSPGPFTP_q(IACTP)
+          IOCTPB   = IBSPGPFTP_q(IBCTP)
 *
           IASPGPTP = IACTP
           IBSPGPTP = IBCTP
@@ -136,41 +136,43 @@
 *. Number of occupation classes
           IWAY = 1
           NEL = NAEL + NBEL
-          CALL OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS,
-     &                  IGSOCC(1,1),IGSOCC(1,2))
+          CALL OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
+     &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
 *
 *. and then the occupation classes
-          call alloc(occupation_class,ngas,noccls,id='occ_class')
-          call alloc(mat1,10,NOCCLS, id='mat1')
-          call alloc(mat2,10,NOCCLS, id='mat2')
+          allocate(occupation_class(NGAS_q,NOCCLS))
+          allocate(mat1(10,NOCCLS))
+          allocate(mat2(10,NOCCLS))
           IWAY = 2
-          CALL OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS,
-     &                   IGSOCC(1,1),IGSOCC(1,2))
+          CALL OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
+     &                   IGSOCC_q(1,1),IGSOCC_q(1,2))
 
 *
 *. Occupation of strings of given sym and supergroup
-          CALL get_Q_correction(C,LUSCR,NBL_C,WORK(KNSTSO(IACTP)),
-     &                     WORK(KNSTSO2(IBCTP)),
+          CALL get_Q_correction(C,LUSCR,NBL_C,WORK(KNSTSO_q(IACTP)),
+     &                     WORK(KNSTSO2_q(IBCTP)),
      &                     NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
      &                     NBLOCK,IBLOCK(1,IBOFF),
      &                     THRES,MAXTRM,NAEL,NBEL,
      &                     astring, bstring,
      &                     IBLTP,NSMST,
      &                     mat1, mat2,
-     &                     NELFSPGP,
-     &                     NOCCLS,NGAS,occupation_class,
+     &                     NELFSPGP_q,
+     &                     NOCCLS,NGAS_q,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                     ICISTR,mj_statistics,inv_symbol,
      &                     IPRWFC, ref_wavefunction, 
      &                     ref_wavefunction_coeff,nref,
      &                     ref_wavefunction_coeff_i,N)
 *
-          call dealloc(mat2)
-          call dealloc(mat1)
+          deallocate(mat2)
+          deallocate(mat1)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
-          if(allocated(bstring)) call dealloc(bstring)
-          if(allocated(astring)) call dealloc(astring)
-          call dealloc(occupation_class)
+          if(allocated(bstring)) deallocate(bstring)
+          if(allocated(astring)) deallocate(astring)
+!          deallocate(bstring)
+!          deallocate(astring)
+          deallocate(occupation_class)
         end do
       end do
 
@@ -186,7 +188,7 @@
 
       print *,"coefficient of reference wf #",i," == ",
      &         ref_wavefunction_coeff(i)
-      print *,"coefficient of HF reference wf == ",
+      print *,"coefficient of HF reference wf             ==",
      &         ref_wavefunction_coeff_i(1)
       end do
 
@@ -204,27 +206,79 @@
 
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
-!        q_corr    = edc(e_corr(i),ref_wavefunction_coeff,
-!     &                  nref)
         
         CALL E_Q(e_corr,ref_wavefunction_coeff,nref,
      &           ref_wavefunction_coeff_i,N,Edc_1,
-     &           Edrc_1, Epc_1)
+     &           Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
+     &           Epc_2, Emc_2)
 
-        write(6,"(/A,1f10.6,/A,1f10.6/)") " original ecorr = ",
-     &        e_corr(i), " +Q correction Edc = ",Edc_1
-        print *, "final energies: original ",e_tot(i), 
-     &           "+Q corrected =",e_tot(i) + Edc_1
+      ! output of the q-correction       
+        write(6,"(/Af10.6)")  " Energie corrections: "
+        write(6,'(A)')        " ==================== "
+
+        write(6,"(/A,f10.6)") "Edc_1:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction= ",Edc_1
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Edc_1
  
-        print *, "original ecorr =",e_corr(i), "+Q correction Edrc_1=",
-     &           Edrc_1
-        print *, "final energies: original ",e_tot(i), 
-     &           "+Q corrected =",e_tot(i) + Edrc_1
+
+        write(6,"(/A,f10.6)") "Edrc_1:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Edrc_1
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Edrc_1
+
+
+        write(6,"(/A,f10.6)") "Epc_1:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Epc_1
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Epc_1
+
+
+        write(6,"(/A,f10.6)") "Emc_1:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Emc_1
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Emc_1
+
+
+        write(6,"(/A,f10.6)") "Edc_2:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction= ",Edc_2
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Edc_2
  
-        print *, "original ecorr =",e_corr(i), "+Q correction Epc_1=",
-     &           Epc_1
-        print *, "final energies: original ",e_tot(i), 
-     &           "+Q corrected =",e_tot(i) + Epc_1 
+
+        write(6,"(/A,f10.6)") "Edrc_2:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Edrc_2
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Edrc_2
+
+
+        write(6,"(/A,f10.6)") "Epc_2:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Epc_2
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Epc_2
+
+
+        write(6,"(/A,f10.6)") "Emc_2:"
+        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
+     &        e_corr(i), " +Q correction = ",Emc_2
+        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
+     &        " final energies: original ", e_tot(i), ", +Q corrected ="
+     &        ,e_tot(i) + Emc_2
+
       end do
 
 
@@ -239,7 +293,7 @@
  
       CALL QEXIT('ANACI')
 *
-      END
+      END SUBROUTINE Q_correction
 ***********************************************************************
 
       SUBROUTINE get_Q_correction(C,LUC,NBL_C,NSSOA,NSSOB,
@@ -247,27 +301,27 @@
      &                       MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
      &                       THRES,MAXTRM,NAEL,NBEL,
      &                       IASTR,IBSTR,IBLTP,NSMST,
-     &                       NCPMT,WCPMT,NELFSPGP,NOCCLS,
-     &                       NGAS,IOCCLS,
+     &                       NCPMT,WCPMT,NELFSPGP_q,NOCCLS,
+     &                       NGAS_q,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                       ICISTR,mj_statistics,inv_symbol,
      &                       IPRNT, ref_wavefunction,
      &                       ref_wavefunction_coeff,nref,
      &                       ref_wavefunction_coeff_i,N)
 *
 ***********************************************************************
 *
-      use mospinor_info
+!      use mospinor_info
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+!#include "ipoist8.inc"     ! ohne fehler
       DIMENSION C(*)
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION IBLTP(*)
-      DIMENSION NELFSPGP(MXPNGAS,*)
-      DIMENSION IOCCLS(NGAS,NOCCLS)
+      DIMENSION NELFSPGP_q(MXPNGAS,*)
+      DIMENSION IOCCLS(NGAS_q,NOCCLS)
 *. Specific input
       DIMENSION IBLOCK(8,NBL_C)
       character(len=200), intent(in)  :: ref_wavefunction(10,2)
@@ -277,13 +331,7 @@
       DIMENSION WCPMT(10,NOCCLS)
       real(8) , intent(inout) :: ref_wavefunction_coeff(10)
       real(8) , intent(inout) :: ref_wavefunction_coeff_i(10)       ! coeff von der ersten ci_iteration!!!
-#include "dcborb.h"
-#include "dgroup.h"
-#include "maxash.h"
-C
-#include "maxorb.h"
-#include "dcbidx.h"
-!     scratch
+     
       integer, allocatable              :: mjorb_vec(:)
       integer, intent(inout)            :: mj_statistics(-32:32)
       character (len=1) , intent(inout) :: inv_symbol
@@ -438,9 +486,9 @@ C
          JOCCLS = 0
          DO JJOCCLS = 1, NOCCLS
             IM_THE_ONE = 1
-            DO IGAS = 1, NGAS
-               IF(NELFSPGP(IGAS,IATP-1+IOCTPA)+
-     &          NELFSPGP(IGAS,IBTP-1+IOCTPB).NE.IOCCLS(IGAS,JJOCCLS))
+            DO IGAS = 1, NGAS_q
+               IF(NELFSPGP_q(IGAS,IATP-1+IOCTPA)+
+     &          NELFSPGP_q(IGAS,IBTP-1+IOCTPB).NE.IOCCLS(IGAS,JJOCCLS))
      &          IM_THE_ONE = 0
             END DO
             IF(IM_THE_ONE .EQ. 1 ) JOCCLS = JJOCCLS
@@ -486,14 +534,27 @@ C
 *     ^ End of loop over blocks
 *
 
-      END
+      END !SUBROUTINE get_Q_correction
 
 ***********************************************************************
 
       SUBROUTINE E_Q(e_corr,ref_wavefunction_coeff,nref,
      &               ref_wavefunction_coeff_i,N,Edc_1,
-     &               Edrc_1, Epc_1)
+     &               Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
+     &               Epc_2, Emc_2)
 *
+*
+* Davidson Correction
+*
+* Equations from: Chemical Reviews 2012, 112 page 216-218
+*
+* Edc  = eq. 34 p. 116
+* Edrc = eq. 36 p. 116
+* Epc  = eq. 38 p. 116
+* Emc  = eq. 41 p. 116
+*
+* c01  = eq. 43 p. 117
+* c02  = eq. 44 p. 117
 *
 ***********************************************************************
 *
@@ -502,40 +563,54 @@ C
       REAL*8,  intent(in)  :: e_corr
       real*8,  intent(in)  :: ref_wavefunction_coeff(nref)
       real*8,  intent(in)  :: ref_wavefunction_coeff_i(nref)
-      real*8,  intent(out) :: Edc_1, Edrc_1, Epc_1
-      real(8), intent(in)  :: N
+      real*8,  intent(out) :: Edc_1, Edrc_1, Epc_1, Emc_1
+      real*8,  intent(out) :: Edc_2, Edrc_2, Epc_2, Emc_2
+      real*8,  intent(in)  :: N
       integer, intent(in)  :: nref
 
-      REAL*8  :: c01 = 0         ! c01 = sum ( cp ) **2
-      REAL*8  :: c02 = 0         ! co2 = (sum ( cref * cp )) **2
-      REAL*8  :: c02_2 = 0
-      real*8  :: Edc_2, Edrc_2, Epc_2
+      REAL*8  :: c01 = 0         ! c01    = sum ( cp ) **2
+      REAL*8  :: c02 = 0         ! c02    = (sum ( cref * cp )) **2
+      REAL*8  :: c02_2 = 0       ! c02_2  = c02 * c02 entspricht c01
+      REAL*8  :: teta_1 = 0      ! teta_1 = arccos( sqrt(c01) )
+      REAL*8  :: teta_2 = 0      ! teta_2 = arccos( sqrt(c02_2))
       integer :: i
-      integer :: j
       
 
       do i = 1, nref
       c01 = c01 + ref_wavefunction_coeff(i) ** 2
       end do
 
-      do j = 1, nref
-      c02 = c02 + ref_wavefunction_coeff(j)*ref_wavefunction_coeff_i(j)
+      teta_1 = acos(sqrt(c01))
+
+      do i = 1, nref
+      c02 = c02 + ref_wavefunction_coeff(i)*ref_wavefunction_coeff_i(i)
       end do
 
-      c02_2 = c02 * c02
-      print *, "c02_2 is ",c02_2
-     
-      Edc_1  = (1 - c01) * e_corr           ! TODO: Epc nicht pc', Emc, E_2, doc, 
-      Edrc_1 = ((1-c01) / c01) * e_corr
-      Epc_1  = (1 - (2/N)) * ((1 - c01) / c01) * e_corr    
+      c02_2  = c02 * c02
+      teta_2 = acos(sqrt(c02_2))
 
-!     if(N > 3.0d0) Emc = ...    
+!      write(6,*) "c01",   c01
+!      write(6,*) "sqrt (c01)",  sqrt(c01)
+!      write(6,*) "c02",   c02
+!      write(6,*) "c02_2", c02_2
+     
+      Edc_1  = (1 - c01) * e_corr            
+      Edrc_1 = ((1-c01) / c01) * e_corr
+      Epc_1  = (sqrt(N **2 + 2*N * (tan(2*teta_1))**2) - N) / 
+     &         (2*(1/(2*teta_1)) - 1) * e_corr
+
+      if(N > 3.0d0) Emc_1 = ((N - 2) * (N - 3) / (N * (N - 1))) *
+     &                      ((1 - c01 **2) / c01 **2) * e_corr  
 
       Edc_2  = (1 - c02_2) * e_corr
       Edrc_2 = ((1-c02_2) / c02_2) * e_corr
-      Epc_2  = (1 - (2/N)) * ((1 - c02_2) / c02_2) * e_corr
+      Epc_2  = (sqrt(N **2 + 2*N * (tan(2*teta_2))**2) - N) / 
+     &         (2*(1/(2*teta_2)) - 1) * e_corr
 
-      end
+      if(N > 3.0d0) Emc_2 = ((N - 2) * (N - 3) / (N * (N - 1))) *
+     &                      ((1 - c02_2 **2) / c02_2 **2) * e_corr  
+      
+      END SUBROUTINE E_Q
 
 
 
