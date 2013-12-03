@@ -173,16 +173,16 @@ CONTAINS
 !
 
       WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+!!
+!! To be removed as soon as Dirac has its own Stieltjes routine
+!!
+!      fh_trans = fhdiag
+!      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+!           ACTION='WRITE',iostat=ierror)
+!      WRITE(fh_trans,*) in_energy(1,i)
+!      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+!      CLOSE(fh_trans)
 !
-! To be removed as soon as Dirac has its own Stieltjes routine
-!
-      fh_trans = fhdiag
-      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-           ACTION='WRITE',iostat=ierror)
-      WRITE(fh_trans,*) in_energy(1,i)
-      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-      CLOSE(fh_trans)
-
     END DO !loop over intial states
 
 
@@ -302,15 +302,15 @@ CONTAINS
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
           WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+!!
+!! To be removed as soon as Dirac has its own Stieltjes routine
+!!
+!          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+!               ACTION='WRITE',iostat=ierror)
+!          WRITE(fh_trans,*) in_energy(1,i)
+!          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+!          CLOSE(fh_trans)
 !
-! To be removed as soon as Dirac has its own Stieltjes routine
-!
-          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-               ACTION='WRITE',iostat=ierror)
-          WRITE(fh_trans,*) in_energy(1,i)
-          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-          CLOSE(fh_trans)
-
         END DO ! end of loop over channels
       END DO   ! end of loop over initial states
 
