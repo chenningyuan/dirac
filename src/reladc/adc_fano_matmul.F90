@@ -58,6 +58,7 @@ CONTAINS
     INTEGER                               :: channel
     INTEGER                               :: first, last, off
 
+    REAL(8)                               :: e_init
     REAL(8)                               :: gammae !result from stieltjes
 
 
@@ -171,7 +172,9 @@ CONTAINS
 
       WRITE(iw,*)
       WRITE(iw,*) 'Calling Stieltjes.'
-      CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
+      !e_init = in_energy(1,i)
+      e_init = 0.0
+      CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
                      gammae,2004,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
@@ -303,7 +306,9 @@ CONTAINS
           WRITE(iw,*) 'Calling Stieltjes.'
           WRITE(iw,*)
           WRITE(iw,*)
-          CALL stieltjes(counter,e2h1p,t_mom,in_energy(1,i),fn_trans,&
+          !e_init = in_energy(1,i)
+          e_init = 0.0
+          CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
                          gammae,1000+channel,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
