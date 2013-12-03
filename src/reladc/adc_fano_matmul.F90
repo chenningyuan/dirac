@@ -160,7 +160,10 @@ CONTAINS
         WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
       END IF
 
+      WRITE(iw,*)
+      WRITE(iw,*) 'Shifting pseudo-spectrum'
       FORALL (ixx = 1:counter)
+        e2h1p(ixx) = e2h1p(ixx) - in_energy(1,i)
         t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
       END FORALL
 
@@ -289,6 +292,7 @@ CONTAINS
 ! the calculation of the transition moments.
 !
           FORALL (ixx = 1:counter)
+            e2h1p(ixx) = e2h1p(ixx) - in_energy(1,i)
             t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
           END FORALL
 
