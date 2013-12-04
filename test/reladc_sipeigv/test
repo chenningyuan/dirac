@@ -11,7 +11,7 @@ test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '  eigenvectors are stored in LONGEVC',
-      nr_lines    = 4,
+      num_lines    = 4,
       tolerance   = 1.0e-4)
 
 test_run.execute(['real_ne_eigv.inp'], ['ne_d2h.mol'], f, accepted_errors=['RELADC not parallelized'])
