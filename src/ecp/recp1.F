@@ -59,7 +59,6 @@
 
 ! ------------------------------------------------
 
-
       SUBROUTINE RECP_1E 
 !  read the user input and compute the 1-e integrals.
       USE RECP_CSO_TABLE
@@ -94,15 +93,13 @@
       integer
      & lcr(msup),       lls(msup),      nkcrl(6,msup), nkcru(6,msup),
      & nklsl(4,msup),   nklsu(4,msup),  mcrs(msup),    nir(kaordp),
-     & maords(mgcsup),  icxsv1(mgcsup), nd(mstup),     nso(mstup),
+     & maords(mgcsup),  nd(mstup),     nso(mstup),
      & nsopr(mstup),    nblpr(mstup),   nopir(mstup),  ilxyz(3,mstup),
      & la(mrup,kaordp), ncr(mcrup),     nct(msfup),    mgcs(msfup),
      & lb(msfrup),      ms(msfrup),     mnl(msfrup),   mau(mnrup),
-     & mics(mnrup),     mjcs(mnrup),    icxast(mnsfup),
-     & icxsv2(mgcsup,mgcsup),           idp(mstup,mstup,mstup),
-     & lmn1u,           ncru,           lproju,        ndfac,
-     & lmax
-      integer mgcsu,CX_TEMP,i,n,INT_AREP
+     & icxast(mnsfup),
+     & idp(mstup,mstup,mstup),lmn1u,ncru,lproju,ndfac,lmax
+      integer mgcsu,MAXCX,i,n,INT_AREP
       real*8 chg(msup), zcr(mcrup), ccr(mcrup), eps
       character*3 ityp(mstup), mtype(msup)
 
@@ -117,17 +114,14 @@
      &     mcrs,mgcs,mnl,ms,mtype,nblpr,nc,
      &     ncon,ncr,ncru,nct,nd,nf,nir,
      &     nkcrl,nkcru,nklsl,nklsu,nrcr,nso,nsopr,
-     &     nt,ntl,ntu,x,y,z,zcr,zet,CX_TEMP)
+     &     nt,ntl,ntu,x,y,z,zcr,zet,MAXCX)
 
       ALLOCATE(IPT_IL(nnbft))  !allocate space for il(*)
 
 !     Compute symmetry coefficient products.
-      CALL RECP_SOCFPD_MAIN(mgcsu,icxast,icxst,
-     &     icxsv1,icxsv2,idp,iprst,la,
-     &     lb,maords,mau,mcons,mgcs,mics,
-     &     mjcs,nblpr,nc,nd,nf,nir,
-     &     npair,nprir,nrcr,nsopr,nt,ntl,
-     &     ntu,CX_TEMP)
+      CALL RECP_SOCFPD_MAIN(icxast,icxst,idp,iprst,la,
+     &     lb,maords,mau,mcons,mgcs,nblpr,nc,nd,nf,nir,
+     &     npair,nprir,nrcr,nsopr,nt,ntl,ntu,MAXCX)
 
 !     Allocate variables
       eps = 1.0d-12
