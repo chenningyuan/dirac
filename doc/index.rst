@@ -160,7 +160,7 @@ Developers
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
   :doc:`Beta testing <programmers/beta_testing>` |
-  :doc:`Where to commit after the release is out <programmers/commit_policy>`
+  :doc:`Where to commit after the release is out <programmers/commit_policy> ` 
 
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
@@ -169,6 +169,7 @@ Developers
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
+  :doc:`Dirac on Windows <installation/windows-devel>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
