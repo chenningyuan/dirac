@@ -59,7 +59,11 @@ CONTAINS
     INTEGER                               :: first, last, off
 
     REAL(8)                               :: e_init
+    REAL(8), ALLOCATABLE, DIMENSION(:)    :: total_gamma
+    REAL(8), ALLOCATABLE, DIMENSION(:,:)  :: partial_gamma
     REAL(8)                               :: gammae !result from stieltjes
+    REAL(8)                               :: sum_partial
+    REAL(8)                               :: norm
 
 
 !
@@ -76,6 +80,9 @@ CONTAINS
 
     CALL alloc(e2h1p,nr_in_evecs*nr_fin)
     CALL alloc(t_mom,nr_in_evecs*nr_fin)
+
+    CALL alloc(total_gamma,nr_in_evecs)
+    CALL alloc(partial_gamma,reladc_fano_nrgroups,nr_in_evecs)
 
     WRITE(iw,*) 'Number of Initial States: ', nr_in_evecs
 
@@ -181,6 +188,7 @@ CONTAINS
 !
 
       WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+      total_gamma(i) = gammae * autoev
 !!
 !! To be removed as soon as Dirac has its own Stieltjes routine
 !!
@@ -314,6 +322,7 @@ CONTAINS
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
           WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+          partial_gamma(channel,i) = gammae*autoev
 !!
 !! To be removed as soon as Dirac has its own Stieltjes routine
 !!
@@ -337,12 +346,46 @@ CONTAINS
     CALL dealloc(vec2)
 
     CALL dealloc(in_evecs)
-    CALL dealloc(in_energy)
     CALL dealloc(fin_evecs)
     CALL dealloc(fin_energies)
 
     CALL dealloc(e2h1p)
     CALL dealloc(t_mom)
+
+!
+! Beautiful Summary of the calculated decay widths
+!
+
+    WRITE(iw,*)
+    WRITE(iw,*)
+
+    DO i = 1, nr_in_evecs
+      sum_partial = 0.0
+      DO j = 1, reladc_fano_nrgroups
+        sum_partial = sum_partial + partial_gamma(j,i)
+      END DO
+      norm = sum_partial / total_gamma(i)
+      partial_gamma(1:reladc_fano_nrgroups,i) = partial_gamma(1:reladc_fano_nrgroups,i) &
+                                                / norm
+      WRITE(iw,149) 'Initial state # ', i, 'energy: ', in_energy(1,i)*autoev, 'eV', &
+                  'polestr.: ', in_energy(2,i)
+      WRITE(iw,*) '--------------------------------------------------------------'
+      WRITE(iw,*) 'Total decay width: ', total_gamma(i), 'eV'
+      WRITE(iw,*) 'Sum of partial decay widths: ', sum_partial, 'eV'
+      WRITE(iw,*) 'Renormalized partial decay widths in eV:'
+      WRITE(iw,*) '--------------------------------------------------------------'
+      DO channel = 1, reladc_fano_nrgroups
+        WRITE(iw,150) 'Channel #', channel, partial_gamma(channel,i)
+      END DO
+      WRITE(iw,*) '--------------------------------------------------------------'
+    END DO
+
+    149 FORMAT(' ',A16,2X,I3,3X,A8,2X,F14.5,1X,A2,3X,A10,2X,F7.5)
+    150 FORMAT(' ',A9,2X,I3,3X,ES14.5)
+
+    CALL dealloc(total_gamma)
+    CALL dealloc(partial_gamma)
+    CALL dealloc(in_energy)
 
   END SUBROUTINE fano_create_t_mom
 
