@@ -9,7 +9,7 @@ which has almost all necessary Linux substitutes.
 Though many desktop computers are sold with preinstalled Windows operating system, it is worth to adapt the DIRAC software   
 for the Windows environment. Also, the Windows operating system has great potential for the
 `high-performance computing <http://www.microsoft.com/education/en-au/solutions/Pages/high-performance-computing.aspx>`_.
-This is exactly the motivation for investing efforts for adaptation of DIRAC for the MS Windows  operating system.
+This is the motivation for investing efforts in the adaptation of DIRAC for the MS Windows operating system.
 
 Thanks to the modern  *CMake* buildup system and related Windows supported software you can fully set up the DIRAC software
 under the Microsoft Windows operating system. 
@@ -26,8 +26,8 @@ The user has to equip his Windows Desktop machine with this software:
 
 2. The MinGW program suite ("Minimalist GNU for Windows"), containing  GNU compilers and various Linux commands. 
    For 32-bit  Windows operating systems, use www.mingw.org, for 64-bit Windows, employ MinGW64 - http://tdm-gcc.tdragon.net.
-   If you want to use  the MinGW64 suite, check that "C:\MinGW64\bin" is before the 32-bit version, "C:\MinGW\bin", 
-   in the PATH environmental variable.
+   If you want to use  the MinGW64 suite, check that *"C:\\MinGW64\\bin"* is before the 32-bit version, *"C:\\MinGW\\bin"*, 
+   in the %PATH% environmental variable.
 
 3. The Python programming language of version at least 2.7 (www.python.org).
 
@@ -38,12 +38,12 @@ In addtion, DIRAC developpers have to install :
 5. The Sphinx documentation generator, see below.
 
 Important: The CMake suite can not be used when the shell command (sh.exe) from other package is found in Windows %PATH% enviromental variable.
-Please avoid having "...\\Git\\bin" and "...\\MinGW\\msys\\1.0\\bin" (associated with the installation of 32-bit MinGW)
-in your %PATH% as these are causing conflict with CMake !
+Please avoid having *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
+in your %PATH% as these are causing conflict with CMake programs!
 
 The MinGW(64) compilers and related Linux-like tools are reachable through the system %PATH% variable
-(you find strings like "...\\MinGW\\bin", or "...\\MinGW64\\bin" in %PATH% and this gives no conflict with CMake),
-the same holds for the Python script and the CMake systen. See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
+(you find strings like *"...\\MinGW\\bin"*, or *"...\\MinGW64\\bin"* in the %PATH% environmental variable and this gives no conflict with CMake).
+The same holds for the Python script and the CMake systen. See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
 
 Documentation tool (developpers)
 --------------------------------
@@ -55,8 +55,8 @@ We recommend to install the 32-bit version of Python also on 64-bit machines
 as you will also need additional packages  *matplotlib* (http://matplotlib.sourceforge.net/)
 and *numpy* (http://numpy.scipy.org/) which might not be at disposal in 64-bit versions.
 
-Check that the *%Path%* Windows environmental variable points to both Python and its scripts,
-is has to contain string like "...C:\\Python27;C:\\Python27\\Scripts;...".
+Check that the %Path% Windows environmental variable points to both Python and its scripts,
+is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
 
 Git & PuTTy (developpers)
 --------------------------
@@ -70,7 +70,7 @@ with the PuTTyGen generator which writes private key in wanted ppk-format.
 
 Since the Git program runs under Windows, ensure that during Git installation the %PATH% system variable in not modified !
 Due to this issue you have to type the full path for running "git.exe" in DOS-type window. We propose to install
-the Git package on the "C:" disk drive so that you have to type the shortest path for launching, "C:\\Git\\bin\\git.exe".
+the Git package on the "C:" disk drive so that you have to type the shortest path for launching, *"C:\\Git\\bin\\git.exe"*.
 
 For dowloading/uploading from/to the DIRAC repository you have to have the *PuTTy "Pageant"* authentication agent 
 active with loaded private key, while the public key has to be placed in the DIRAC git repository user space.
