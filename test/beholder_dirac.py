@@ -9,7 +9,7 @@ class DiracTestRun(TestRun):
         TestRun.__init__(self, _file, argv)
 
     def execute(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
-        launcher = os.path.join(self.binary_dir, 'pam')
+        launcher = 'python %s' % os.path.join(self.binary_dir, 'pam')
         launcher += ' --noarch --nobackup'
         if args != '':
             launcher += ' %s' % args
