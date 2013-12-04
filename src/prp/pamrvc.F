@@ -3979,7 +3979,9 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
         use london_helper
+#endif
         use dirac_cfg
         use dft_cfg
         use xcint_main

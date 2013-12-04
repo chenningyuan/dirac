@@ -135,7 +135,9 @@ C
 C***********************************************************************
       use london_direct_hb
       use london_reorth_hb
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
       use memory_allocator
       use orbital_rotation_indices
 
@@ -377,7 +379,9 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -783,7 +787,9 @@ C&&& FREQ INTERVAL: specify frequencies with start, end, step values
                GO TO 100
  39            CONTINUE
 C&&& LAOMOD: rearrange LR equations with LAOs, so connection matrices are not needed
+#ifdef MOD_LAO_REARRANGED
                call set_london_keywords('laomod')
+#endif
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1477,8 +1483,10 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils 
+#endif
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -1576,10 +1584,12 @@ C
 
 !gosia:
 ! if shielding_rearrange then here form: \kappa = \kappa - T:
+#ifdef MOD_LAO_REARRANGED
       if (shielding_rearrange) then
         nlength=nxpar*ndamp*nfreq
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
+#endif
 C
 C     Print section
 C     -------------
