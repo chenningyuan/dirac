@@ -10,10 +10,8 @@ from beholder_dirac import DiracTestRun
 test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Number of determinants/combinations',
-      nr_lines    = 1)
-f.add(from_string = ' Final energy',
-      nr_lines    = 1)
+f.add(string = 'Number of determinants/combinations',
+f.add(string = ' Final energy',
 
 test_run.execute(['He.inp'],
                  ['He.mol'],

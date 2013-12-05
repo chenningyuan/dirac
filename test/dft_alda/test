@@ -10,12 +10,10 @@ from beholder_dirac import DiracTestRun
 test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Electronic energy',
-      nr_lines    = 1,
-      tolerance   = 1.0e-7)
-f.add(from_string = ' Nonrel. sym.:',
-      nr_lines    = 1,
-      tolerance   = 1.0e-4)
+f.add(string = 'Electronic energy',
+      tolerance = 1.0e-7)
+f.add(string = ' Nonrel. sym.:',
+      tolerance = 1.0e-4)
 
 test_run.execute(['pbe0_alda+.inp', 'pbe0_alda-.inp', 'pbe0_alda.inp', 'pbe0_xalda+.inp', 'pbe0_xalda-.inp', 'pbe0_xalda.inp'], ['zn.mol'], f)
 
