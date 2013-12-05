@@ -20,7 +20,7 @@ Tested on the following platforms
 Compiles but does not pass all tests
 ------------------------------------
 
-* None?
+* Windows 7/8 (please more info Miro)
 
 
 Compiles but untested on the following environments

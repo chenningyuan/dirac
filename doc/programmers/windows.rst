@@ -2,9 +2,6 @@
 DIRAC on Windows - developers section
 =====================================
 
-After finishing the explanation about DIRAC on the Microsoft Windows platform for users (see :ref:`DiracWin`) 
-we continue this manual for the developers.
-
 Dependencies
 ------------
 
