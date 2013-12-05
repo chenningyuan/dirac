@@ -168,7 +168,7 @@ Developers
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
-  :doc:`Dirac on Windows <installation/windows-devel>` |
+  :doc:`Dirac on Windows <programmers/windows>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
