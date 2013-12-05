@@ -9,7 +9,6 @@
 - create a list of new features (doc/features.rst)                everybody                 
 - documentation of new features (in particular MDIRAC)
 - convert tests to new framework                                  Radovan                           20%
-- if time permits switch to BigMPI                                Radovan, Stefan
 - update map                                                      Radovan                            0%
 - implement Dalton-style update.py                                Radovan
 - gen fortran interface does not always work
