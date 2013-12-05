@@ -9,9 +9,12 @@ class DiracTestRun(TestRun):
         TestRun.__init__(self, _file, argv)
 
     def execute(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
-        launcher = os.path.join(self.binary_dir, 'pam')
-		#miro: simple adaptation for Windows
-        launcher = 'python ' + "'" + launcher + "'"
+        pam_script = os.path.normpath(os.path.join(self.binary_dir, 'pam'))
+        if not os.path.exists(pam_script):
+            sys.stderr.write('ERROR: pam script not found in %s\n' % pam_script)
+            sys.stderr.write('       run %s --help\n' % sys.argv[0])
+            sys.exit(-1)
+        launcher = 'python "%s"' % pam_script
         launcher += ' --noarch --nobackup'
         if args != '':
             launcher += ' %s' % args

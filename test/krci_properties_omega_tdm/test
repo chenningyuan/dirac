@@ -11,13 +11,11 @@ test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '   * state  1(0g  )         * state',
-      nr_lines    = 7,
+      num_lines    = 7,
       ignore_sign = True)
-f.add(from_string = '1        0g',
-      nr_lines    = 1,
+f.add(string = '1        0g',
       ignore_sign = True)
-f.add(from_string = '1        4u',
-      nr_lines    = 1,
+f.add(string = '1        4u',
       ignore_sign = True)
 
 test_run.execute(['h2.inp'], ['H2.mol'], f)
