@@ -108,8 +108,8 @@ Windows new name         Previous file name
 6-31G-star-star          6-31G** 
 ==================       ==================
 
-On non-Windows operating systems (Linux, Unix, Mac) the cmake system renames these problematic basis set files
-to their original names as they do not cause any harm for their platforms. 
+The solution is that the basis set reader automatically translates "*" basis set names
+to the "star" filenames.
 
 CygWin
 ~~~~~~
