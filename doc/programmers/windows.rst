@@ -2,9 +2,6 @@
 DIRAC on Windows - developers section
 =====================================
 
-After finishing the explanation about DIRAC on the Microsoft Windows platform for users (see :ref:`DiracWin`) 
-we continue this manual for the developers.
-
 Dependencies
 ------------
 
@@ -111,8 +108,8 @@ Windows new name         Previous file name
 6-31G-star-star          6-31G** 
 ==================       ==================
 
-On non-Windows operating systems (Linux, Unix, Mac) the cmake system renames these problematic basis set files
-to their original names as they do not cause any harm for their platforms. 
+The solution is that the basis set reader automatically translates "*" basis set names
+to the "star" filenames.
 
 CygWin
 ~~~~~~
@@ -135,3 +132,24 @@ There is the Intel-MKL library at hand, but costs some money ;). For sure we sho
 Another topic are CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". On Windows we employ the 
 "MinGW Makefiles", what is part of the GNU MinGW suite. However, there are many more generators worth to try, 
 like NMake, MSYS Makefile, Visual Studio, Codeblocks...
+
+
+Testing
+-------
+
+Run specific tests: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -V -D ExperimentalTest -R fscc; ctest -D ExperimentalSubmit
+
+Perform the complete CDash buildup in one step: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+
+Make the CDash buildup in separate steps:  ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalUpdate
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalConfigure
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalBuild
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
