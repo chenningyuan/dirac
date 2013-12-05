@@ -40,25 +40,18 @@ Build examples
 
 For specifying one or more parameters for Python scripts (either in the
 ".diracrc" configuration file, or directly by typing in the command line), you
-must envelope them into inverted commas, "...".  For example: :: 
+must envelope them into inverted commas, "...".  For example::
 
- --scratch="C:\Users\<username>\tmp"
+  --scratch="C:\Users\<username>\tmp"
 
-Select modules and build directory: ::
+Configure DIRAC::
 
- C:\Users\<username>\Documents\Work\Dirac_git\trunk>python pamadm -a --builddir=%YOUR_BUILD_DIR%
+  C:\Users\<username>\dirac>python setup --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles"
 
-Configure DIRAC: ::
+Compile the executable::
 
- C:\Users\<username>\Documents\Work\Dirac_git\trunk>python setup -D BUILDNAME="Urpin-Win7-MinGW-ILP64" -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on  %YOUR_BUILD_DIR%
- python setup -D VERBOSE_OUTPUT=ON --int64=off --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" %YOUR_BUILD_DIR%
+  C:\Users\<username>dirac\build>mingw32-make dirac.x
 
-Compile the executable:  ::
+Run the test set::
 
- C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>cmake ..
- C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make VERBOSE=1 dirac.x
-
-Run specific tests: ::
-
- C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
- C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -V -D ExperimentalTest -R fscc; ctest -D ExperimentalSubmit
+  C:\Users\<username>\dirac\build>ctest
