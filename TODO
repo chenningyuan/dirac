@@ -9,8 +9,6 @@
 - create a list of new features (doc/features.rst)                everybody                 
 - documentation of new features (in particular MDIRAC)
 - convert tests to new framework                                  Radovan                           20%
-- update setup/cmake and sync with improvements in Dalton         Radovan
-  plus document it                                               
 - if time permits switch to BigMPI                                Radovan, Stefan
 - update map                                                      Radovan                            0%
 - allow and test creation of binary release                       Radovan                           30%
