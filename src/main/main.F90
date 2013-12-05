@@ -21,7 +21,7 @@
 
 ! this file by ulfek march 2008
 
-program DIRAC12_PROGRAM
+program dirac_program
 
   use os_utils
   use dft_cfg
@@ -193,5 +193,4 @@ program DIRAC12_PROGRAM
    call interface_ao_clear()
    call interface_mo_clear()
 
-end program DIRAC12_PROGRAM
-!  -- end of main/main.F90 for dirac --
+end program
