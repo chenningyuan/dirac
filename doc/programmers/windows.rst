@@ -132,3 +132,24 @@ There is the Intel-MKL library at hand, but costs some money ;). For sure we sho
 Another topic are CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". On Windows we employ the 
 "MinGW Makefiles", what is part of the GNU MinGW suite. However, there are many more generators worth to try, 
 like NMake, MSYS Makefile, Visual Studio, Codeblocks...
+
+
+Testing
+-------
+
+Run specific tests: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -V -D ExperimentalTest -R fscc; ctest -D ExperimentalSubmit
+
+Perform the complete CDash buildup in one step: ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
+
+Make the CDash buildup in separate steps:  ::
+
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalUpdate
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalConfigure
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalBuild
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
