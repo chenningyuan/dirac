@@ -21,22 +21,6 @@
  */
 /* dirac_copyright_end */
 
-/*
- *
- * FILE    : gpc.c
- *
- * frac2i:
- *
- * Take string with a fraction (e.g. either 1/2 or 0.5)
- * Written by J. Thyssen - Jan 28 1998
- *
- *
- * sysinf:
- *
- * Print info about system to stdout
- * Written by J. Thyssen - Feb 9 1998
- *
- */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -226,23 +210,6 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 }
 
 
-/*
-  Workaround for buggy fortran SYSTEM() on some
-  platforms (intel fortran 8.x-9.x)
-*/
-int csystem_(const char *cmd, fortran_int_t cmdlen)
-{
-  int i;
-  char *s;
-  s = malloc(cmdlen+1);
-  for (i=0;i<cmdlen;i++)
-    s[i] = cmd[i];
-  s[cmdlen] = 0;
-  i = system(cmd);
-  free(s);
-  return i;
-}
-
 #ifdef VAR_IFORT
  /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
@@ -254,15 +221,6 @@ int csystem_(const char *cmd, fortran_int_t cmdlen)
 #include <sys/times.h>
 #include <time.h>
 #include <unistd.h>
-
-void unlink_(char * fname, fortran_int_t len)
-{
-  int i;
-  for(i=len; i>0 && !isspace(fname[i]); i--)
-    ;
-  fname[i] = '\0';
-  unlink(fname);
-}
 
 void getenv_(const char* str, char* val, fortran_int_t strl, fortran_int_t vall)
 {
@@ -291,11 +249,6 @@ void system_(char* str, fortran_int_t len)
     buf[len] = 0;
     strncpy(buf,str,len);
     printf("VAR_IFORT defined. Ignoring call system(%s)\n",buf);
-}
-
-void flush_(fortran_int_t* lu)
-{
-  /* no flushing */
 }
 
 float etime_(float* et)
@@ -379,14 +332,3 @@ int high_water_mark_(void)
 {
   return mem_high - mem_start;
 }
-
-/* 
-Make break of given amount of seconds. Call if no Fortran SLEEP() intrinsic.
-*/
-void make_pause_(int *sec)
-{
-  printf("making pause of %d seconds\n",*sec);
- // sleep(*sec);
-  return;
-}
-
