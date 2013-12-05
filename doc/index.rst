@@ -30,9 +30,8 @@ Setting up DIRAC
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>`
-  :doc:`Replacements of strings by pam <pam/replace>`
-
+  :doc:`How to set the scratch directory <pam/scratch>` |
+  :doc:`String replacement <pam/replace>`
 
 
 Updates and patches
