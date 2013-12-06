@@ -20,7 +20,7 @@ Tested on the following platforms
 Compiles but does not pass all tests
 ------------------------------------
 
-* None?
+* Windows 7/8, system native BLAS/LAPACK, GNU MinGW32/64, only tiny portion of tests fails
 
 
 Compiles but untested on the following environments

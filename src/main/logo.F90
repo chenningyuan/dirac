@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -163,7 +163,7 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC12 (2012),                                                  *'
+print *, '*    Release DIRAC13 (2013),                                                  *'
 print *, '*    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,            *'
