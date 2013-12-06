@@ -1,4 +1,6 @@
 ﻿
+.. _windows_users:
+
 
 DIRAC on Windows
 ================
