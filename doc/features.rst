@@ -20,8 +20,9 @@ New features in DIRAC13
 * PCM (check with Roberto)
 * Pol embedding (to see with Erik)
 * Dyall basis sets redefined to reduce linear dependence
-* Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall *2z, Dyall *3z sets and for 2p, 3s, 3p for Dyall *4z basis sets.
-* Dyall ae*z (all-electron)  basis sets added, with correlating functions for all shells.
+* Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
+* Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall 2z, Dyall 3z sets and for 2p, 3s, 3p for Dyall 4z basis sets.
+* Dyall aenz (all-electron)  basis sets added, with correlating functions for all shells.
 
 New defaults
 ------------
