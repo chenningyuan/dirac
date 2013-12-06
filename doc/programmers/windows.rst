@@ -2,6 +2,22 @@
 DIRAC on Windows - developers section
 =====================================
 
+Motivation
+----------
+
+DIRAC is beeing developed and works mainly on machines with Linux/Unix/Mac operating systems.
+Though many desktop computers are sold with preinstalled Windows operating system, it is worth to adapt the DIRAC software   
+for the Windows environment. Also, the Windows operating system has great potential for the
+`high-performance computing <http://www.microsoft.com/education/en-au/solutions/Pages/high-performance-computing.aspx>`_.
+This is the motivation for investing efforts in the code's adaptation for the Microsoft (MS)  Windows operating system.
+
+Thanks to the modern, platform-universal  *CMake* buildup system and related Windows supported software 
+you can fully set up the DIRAC software under the MS Windows operating system.
+
+We have tested the DIRAC downloading from its git-repositories, configuration, compilation and tests running, 
+all in the framework of the Windows 7/8 operating systems.
+
+
 Dependencies
 ------------
 
