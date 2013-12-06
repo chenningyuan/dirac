@@ -944,7 +944,7 @@ C
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
-     &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
+     &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
@@ -1022,8 +1022,7 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-      NOQCDHF   = .FALSE.
-C      NOQCDHF   = .TRUE.
+      NOQCDHF   = .TRUE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
@@ -1527,8 +1526,8 @@ C&&& MAX MICRO ITERATIONS: Maximum number of micro iterations for QC-DHF
                   READ(LUCMD,*) MXMICRO
                GO TO 100
    34          CONTINUE
-C&&& NOQCDHF: No QC DHF
-                  NOQCDHF = .TRUE.
+C&&& 2NDOPT: activate second-order optimization if regular SCF does not converge
+                  NOQCDHF = .FALSE.
                GO TO 100
    35          CONTINUE
 C&&& SKIPEE: no e-e rotations in 2nd order optimization
@@ -1830,7 +1829,6 @@ C
       END IF
       IF(NASHT_DHF.EQ.0) THEN
         AOC     = .FALSE.
-        NOQCDHF = .FALSE.
       ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
