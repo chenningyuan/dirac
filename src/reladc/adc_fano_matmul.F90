@@ -378,6 +378,8 @@ CONTAINS
         WRITE(iw,150) 'Channel #', channel, partial_gamma(channel,i)
       END DO
       WRITE(iw,*) '--------------------------------------------------------------'
+      WRITE(iw,*)
+      WRITE(iw,*)
     END DO
 
     149 FORMAT(' ',A16,2X,I3,3X,A8,2X,F14.5,1X,A2,3X,A10,2X,F7.5)
