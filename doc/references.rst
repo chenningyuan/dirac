@@ -609,3 +609,10 @@ or popular Google-Books web-space.
    *Solvatochromic shifts from coupled-cluster theory embedded in density functional theory*,
    J. Chem. Phys., **139**, 104016 (2013)
    `[web] <http://dx.doi.org/10.1063/1.4820488>`_
+
+.. [Jacob2013] Christoph R. Jacob and Johannes Neugebauer,
+   *Subsystem density-functional theory*,
+   Wiley Interdisciplinary Reviews: Computational Molecular Science,
+   `[web] <http://dx.doi.org/10.1002/wcms.1175>`_   
+
+
