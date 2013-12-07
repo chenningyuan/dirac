@@ -95,9 +95,16 @@ SUBROUTINE RECP_CHK_SYM
 #include "dcbham.h"
 #include "dgroup.h"
   IF (LINEAR.AND.ECPCALC) THEN
-        WRITE(RECP_OUT,'(10X,A)')'>>> RECP incompatibility: '
-        WRITE(RECP_OUT,'(10X,A)')'Linear symmetry is switched off' 
-        LINEAR = .FALSE.
+!       * Switch off linear symmetry
+!       WRITE(RECP_OUT,'(10X,A)')'>>> RECP incompatibility: '
+!       WRITE(RECP_OUT,'(10X,A)')'Linear symmetry is switched off' 
+!       LINEAR = .FALSE.
+
+!       * Keep linear symmetry and show warning (for auto-symmetry/Dinfh/Cinfv)
+        WRITE(RECP_OUT,'(X,A,A)')'* Warning: Symmetries higher than D2h in RECP integral ', &
+                                 'is not fully tested.'
+        WRITE(RECP_OUT,'(X,A)')  '           The calculation results can be erroneous.'
+        WRITE(RECP_OUT,'(X,A)')  '           Use auto-symmetry with care.'
   ENDIF
        
 END SUBROUTINE RECP_CHK_SYM

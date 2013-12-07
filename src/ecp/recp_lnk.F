@@ -301,33 +301,6 @@
          ENDDO
       ENDDO
  
-!      IF (ndptag.EQ.0) THEN
-!!        --------------------
-!!        C1,Ci,Cs,C2 symmetry
-!!        --------------------
-!         WRITE(RECPIN1,1001) ndptag
-!
-!      ELSEIF (ndptag.EQ.1) THEN
-!!        -------------------
-!!        D2,C2v,C2h symmetry
-!!        -------------------
-!         WRITE(RECPIN1,1001) ndptag
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4)
-!
-!      ELSEIF (ndptag.EQ.7) THEN
-!!        ------------
-!!        D2h symmetry
-!!        ------------
-!         WRITE(RECPIN1,1001) ndptag
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4) !B1g*B2g=B3g 2*3=4
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(5),IRREP(6) !B1g*Au =B1u 2*5=6
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(7),IRREP(8) !B1g*B2u=B3u 2*7=8
-!         WRITE(RECPIN1,1002) IRREP(3),IRREP(5),IRREP(7) !B2g*Au =B2u 3*5=7
-!         WRITE(RECPIN1,1002) IRREP(3),IRREP(6),IRREP(8) !B2g*B1u=B3u 3*6=8
-!         WRITE(RECPIN1,1002) IRREP(4),IRREP(5),IRREP(8) !B3g*Au =B3u 4*5=8
-!         WRITE(RECPIN1,1002) IRREP(4),IRREP(6),IRREP(7) !B3g*B1u=B2u 4*6=7
-!      ENDIF
-
  9000 CONTINUE
       END SUBROUTINE RECP_LNK_IRREP
 
@@ -350,10 +323,8 @@
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
-!     RECP integral is capable less than D2h symmetry
-CTROND      IF (SYMTXT(1:2).EQ.'  ') GOTO 8000 
-      IF (SYMTXT(1:1).EQ.'D' ) GOTO 8000
-      IF (SYMTXT(1:1).EQ.'C' ) GOTO 8000
+!     IF (SYMTXT(1:1).EQ.'D' ) GOTO 8000
+!     IF (SYMTXT(1:1).EQ.'C' ) GOTO 8000
 
       CALL RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
       CALL RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
@@ -430,10 +401,11 @@ CTROND      IF (SYMTXT(1:2).EQ.'  ') GOTO 8000
 
 !     Error message
 !     =============
- 8000 CONTINUE
-      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
-      WRITE(LUPRI,'(A)')   'Maximum symmetry of RECP integral is D2h' 
-      CALL QUIT('Error in geometry reading')
+!8000 CONTINUE
+!     WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+!     WRITE(LUPRI,'(X,A,A)') 'RECP integral is not allowed to ',
+!    &                       'calculate linear symmetries.'
+!     CALL QUIT('RECP_LNK: No linear symmetries are allowed')
  9000 CONTINUE
       END
 
