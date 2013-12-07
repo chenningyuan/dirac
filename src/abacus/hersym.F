@@ -1788,7 +1788,7 @@ C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
-C ::: and we chosse to skip their determination.              :::
+C ::: and we choose to skip their determination.              :::
          IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
             CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
          ELSE
