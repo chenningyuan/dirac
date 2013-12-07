@@ -13,7 +13,6 @@ New features in DIRAC13
 * correction of overlap diagnostic
 * enhancements to FDE
 * polarization propagator for 4-C excitations (ADC2 extended)
-* Fano ADC (perhaps)
 * improved X2C (reduced memory cost) + local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry; other double groups perhaps)
 * atomic spin-orbit code (spin-same orbit) replacing AMFI
 * commutator-based CC (to be discussed with Timo and Mickael)
