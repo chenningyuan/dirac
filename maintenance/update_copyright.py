@@ -10,7 +10,7 @@ dirac_copyright_fortran_start = '!dirac_copyright_start'
 dirac_copyright_fortran_end   = '!dirac_copyright_end'
 
 dirac_copyright_fortran = '''
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -35,7 +35,7 @@ dirac_copyright_c_end   = '/\* dirac_copyright_end \*/'
 
 dirac_copyright_c = '''
 /*
- *     Copyright (c) 2012 by the authors of DIRAC.
+ *     Copyright (c) 2013 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -60,12 +60,12 @@ dalton_copyright_fortran_start = '!dalton_copyright_start'
 dalton_copyright_fortran_end   = '!dalton_copyright_end'
 
 dalton_copyright_fortran = '''
-!      Copyright (c) 2011 by the authors of Dalton (see below).
+!      Copyright (c) 2013 by the authors of Dalton (see below).
 !      All Rights Reserved.
 !   
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2011 (2011), see http://daltonprogram.org"
+!       Release DALTON2013 (2013), see http://daltonprogram.org"
 !   
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
@@ -87,12 +87,12 @@ dalton_copyright_c_end   = '/\* dalton_copyright_end \*/'
 
 dalton_copyright_c = '''
 /*
- *     Copyright (c) 2011 by the authors of Dalton (see below).
+ *     Copyright (c) 2013 by the authors of Dalton (see below).
  *     All Rights Reserved.
  *  
  *     The source code in this file is part of
  *     "Dalton, a molecular electronic structure program,
- *      Release DALTON2011 (2011), see http://daltonprogram.org"
+ *      Release DALTON2013 (2013), see http://daltonprogram.org"
  *  
  *     This source code is provided under a written licence and may be
  *     used, copied, transmitted, or stored only in accord with that

@@ -27,12 +27,11 @@ Setting up DIRAC
 
 * **Example installations and run scripts:**
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
-  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` |
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>`
-  :doc:`Replacements of strings by pam <pam/replace>`
-
+  :doc:`How to set the scratch directory <pam/scratch>` |
+  :doc:`String replacement <pam/replace>`
 
 
 Updates and patches
@@ -165,9 +164,11 @@ Developers
 * **Programming:**
   :doc:`Programmers' manual <programmers/programmers_manual>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
+  :doc:`Dirac on Windows <programmers/windows>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
   :doc:`Further development <programmers/further_development>` |
