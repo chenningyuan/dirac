@@ -2,3 +2,7 @@ was disconnected from testing, more doc than testing:
 
   response_lao_magnetiz
   response_lao_shield   
+
+has no reference outputs and no filter, never run:
+
+  projection_analysis_repolarized
