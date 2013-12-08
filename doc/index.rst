@@ -23,7 +23,7 @@ Setting up DIRAC
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
-  :doc:`Running the test set <installation/runtest>`
+  :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
   :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |

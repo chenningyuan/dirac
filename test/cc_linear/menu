@@ -1,6 +1,0 @@
-regular   
-cc.inp N2.ccpVDZ.mol --mw=110 --aw=120 
-
-benchmark
-cc.inp N2.ccpVQZ.mol --mw=130 --aw=140  
-cc.inp N2.ccpV5Z.mol --mw=140 --aw=150  
