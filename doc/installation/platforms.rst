@@ -29,9 +29,4 @@ Compiles but untested on the following environments
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200, Intel 11.1
 * Cray XE6, Intel 12.1.5
-
-
-Currently does not compile
---------------------------
-
-* IBM AIX, XL 7.1
+* IBM AIX, XL Fortran V13.1, XL C V11.1, g++, builtin math
