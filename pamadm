@@ -111,6 +111,19 @@ def main():
     # these tests are always packaged
 
     list_of_tests = []
+    list_of_tests.append('reladc_sip')
+    list_of_tests.append('reladc_sipeigv')
+    list_of_tests.append('reladc_dip')
+    list_of_tests.append('dft_alda_xcfun')
+    list_of_tests.append('dft_alda')
+    list_of_tests.append('stex')
+    list_of_tests.append('geo_opt')
+    list_of_tests.append('lao_shield_rearranged')
+    list_of_tests.append('london_properties_symmetry')
+    list_of_tests.append('response_pv_nmr')
+    list_of_tests.append('krci_energy')
+    list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
+    list_of_tests.append('electrostatic_potential')
     list_of_tests.append('acmoin')
     list_of_tests.append('atomic_start')
     list_of_tests.append('basis_automatic_augmentation')
@@ -125,7 +138,6 @@ def main():
     list_of_tests.append('cosci_methods')
     list_of_tests.append('cosci_tmom')
     list_of_tests.append('density_at_nuclei')
-    list_of_tests.append('dft_alda_xcfun')
     list_of_tests.append('dft_ao_eval')
     list_of_tests.append('dft_betasigma')
     list_of_tests.append('dft_cam')
@@ -139,7 +151,6 @@ def main():
     list_of_tests.append('dft_response_xcfun')
     list_of_tests.append('efg')
     list_of_tests.append('ecp')
-    list_of_tests.append('electrostatic_potential')
     list_of_tests.append('fde_static-vemb_dipole')
     list_of_tests.append('fde_response_autodiff')
     list_of_tests.append('free-particle_projection')
@@ -147,23 +158,19 @@ def main():
     list_of_tests.append('fscc')
     list_of_tests.append('fscc_highspin')
     list_of_tests.append('gaunt')
-    list_of_tests.append('geo_opt')
     list_of_tests.append('geo_opt_saddle')
-    list_of_tests.append('kallay_mrcc_interface')
-    list_of_tests.append('krci_energy')
+#   radovan: this cannot run on most installations
+#   list_of_tests.append('kallay_mrcc_interface')
     list_of_tests.append('krci_properties_perm_dipmom')
     list_of_tests.append('linear_structures')
-    list_of_tests.append('london_properties_symmetry')
     list_of_tests.append('lucita_large')
     list_of_tests.append('mcscf_energy')
     list_of_tests.append('mcscf_properties')
-    list_of_tests.append('molecular_mean_field_hamiltonian_schemes')
     list_of_tests.append('mp2_energy')
     list_of_tests.append('mp2_properties')
     list_of_tests.append('mp2_srdft_energies')
     list_of_tests.append('open-shells')
     list_of_tests.append('projection_analysis')
-    list_of_tests.append('projection_analysis_repolarized')
     list_of_tests.append('pvc_scf')
     list_of_tests.append('response_C6')
     list_of_tests.append('response_excitation_energies')
@@ -171,35 +178,30 @@ def main():
     list_of_tests.append('response_lao_shield')
     list_of_tests.append('response_nmr_levy-leblond')
     list_of_tests.append('response_nmr_spin-spin')
-    list_of_tests.append('response_pv_nmr')
     list_of_tests.append('response_qr')
     list_of_tests.append('response_rkbimp_shield')
     list_of_tests.append('scf_levelshift')
     list_of_tests.append('symmetry_recognition')
-    list_of_tests.append('symmetry_scf_energy')
     list_of_tests.append('visual_div_rot')
     list_of_tests.append('visual_lao_current')
     list_of_tests.append('visual_lao_shielding')
     list_of_tests.append('visual_lao_symmetry')
     list_of_tests.append('visual_frac_occupation')
-
-    list_of_new_tests = []
-    list_of_new_tests.append('lucita_short')
-    list_of_new_tests.append('xyz_input')
-    list_of_new_tests.append('zora')
-    list_of_new_tests.append('dft_ac')
-    list_of_new_tests.append('dft_grid_export_import')
-    list_of_new_tests.append('cisd_energy')
-    list_of_new_tests.append('localization')
-    list_of_new_tests.append('reladc_sip')
-    list_of_new_tests.append('reladc_sipeigv')
-    list_of_new_tests.append('reladc_dip')
-    list_of_new_tests.append('stex')
-    list_of_new_tests.append('krci_properties_omega_tdm')
-    list_of_new_tests.append('visual_elf')
-    list_of_new_tests.append('visual_gamma5')
-    list_of_new_tests.append('visual_general')
-    list_of_new_tests.append('dft_alda')
+    list_of_tests.append('lucita_short')
+    list_of_tests.append('xyz_input')
+    list_of_tests.append('zora')
+    list_of_tests.append('dft_ac')
+    list_of_tests.append('dft_grid_export_import')
+    list_of_tests.append('localization')
+    list_of_tests.append('krci_properties_omega_tdm')
+    list_of_tests.append('visual_elf')
+    list_of_tests.append('visual_gamma5')
+    list_of_tests.append('visual_general')
+    list_of_tests.append('symmetry_scf_energy')
+    list_of_tests.append('scf_levelshift')
+    list_of_tests.append('response_complex')
+    list_of_tests.append('response_nonrel')
+    list_of_tests.append('cosci_energy')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -245,6 +247,13 @@ def main():
     # definition of modules
 
     dirac_modules = {}
+
+    this_module = 'aoosoc'
+    dirac_modules[this_module] = dirac_module('aoosoc', 'atomic oo-order spin-orbit correction module')
+    dirac_modules[this_module].add_cppflag('MOD_AOOSOC')
+    dirac_modules[this_module].add_directory('src/aoosoc')
+    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
+    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
 
     this_module = 'eri'
     dirac_modules[this_module] = dirac_module('eri', 'ERI integral routines')
@@ -388,12 +397,6 @@ def main():
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
-    this_module = 'aoosoc'
-    dirac_modules[this_module] = dirac_module('aoosoc', 'atomic oo-order spin-orbit correction module')
-    dirac_modules[this_module].add_cppflag('MOD_AOOSOC')
-    dirac_modules[this_module].add_directory('src/aoosoc')
-    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
-    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
     # define input options
 
     parser = OptionParser()
@@ -571,7 +574,9 @@ def main():
     for module in dirac_modules:
         if dirac_modules[module].is_included:
             for test in dirac_modules[module].tests:
-                list_of_tests.append(test)
+              # list_of_tests.append(test)
+              # radovan: we don't put at the end but at the start to have slow tests from modules at the start
+                list_of_tests.insert(0, test)
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'list_of_tests'), 'w')
     for test in list_of_tests:
         f.write(test + '\n')
@@ -583,9 +588,7 @@ def main():
     f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
     f.write('include(TestMacros)\n')
     for test in list_of_tests:
-        f.write('old_dirac_test(%s)\n' % test)
-    for test in list_of_new_tests:
-        f.write('add_dirac_test(%s)\n' % test)
+        f.write('dirac_test(%s)\n' % test)
     f.close()
 
     # write pamadm flags to file

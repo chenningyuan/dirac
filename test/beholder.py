@@ -2,7 +2,7 @@
 """
     Beholder - numerically tolerant test library.
 
-    Version 0.0
+    Version 0.0.0
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
@@ -98,11 +98,16 @@ class _SingleFilter():
         self.tolerance    = kwargs.get('tolerance', 1.0e-5)
         self.ignore_sign  = kwargs.get('ignore_sign', False)
         self.ignore_below = kwargs.get('ignore_below', 1.0e-40)
-        self.num_lines     = kwargs.get('num_lines', 0)
+        self.num_lines    = kwargs.get('num_lines', 0)
         self.mask         = kwargs.get('mask', [])
         self.use_mask     = False
         if self.mask != []:
             self.use_mask = True
+
+        if self.to_string != '':
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: to_string and num_lines incompatible\n')
+                sys.exit(-1)
 
         self.from_is_re = False
         from_re = kwargs.get('from_re', '')
@@ -115,10 +120,16 @@ class _SingleFilter():
         if to_re != '':
             self.to_string = to_re
             self.to_is_re = True
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: to_re and num_lines incompatible\n')
+                sys.exit(-1)
 
         only_string = kwargs.get('string', '')
         if only_string != '':
             self.from_string = only_string
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: string and num_lines incompatible\n')
+                sys.exit(-1)
             self.num_lines = 1
 
         only_re = kwargs.get('re', '')
