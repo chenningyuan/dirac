@@ -7,3 +7,4 @@ was disconnected from testing, more doc than testing:
 has no reference outputs and no filter, never run:
 
   projection_analysis_repolarized
+  mcscf_dev
