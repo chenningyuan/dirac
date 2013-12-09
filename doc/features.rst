@@ -16,7 +16,6 @@ New features in DIRAC13
 * improved X2C (reduced memory cost) + local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry; other double groups perhaps)
 * atomic spin-orbit code (spin-same orbit) replacing AMFI
 * commutator-based CC (to be discussed with Timo and Mickael)
-* PCM (check with Roberto)
 * Pol embedding (to see with Erik)
 * Dyall basis sets redefined to reduce linear dependence
 * Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
