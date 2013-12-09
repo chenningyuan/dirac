@@ -86,7 +86,9 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
+#if defined (PCM_MODULE)
       use pcm_scf
+#endif
 
       implicit none
 
