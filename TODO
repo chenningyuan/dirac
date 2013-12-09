@@ -6,6 +6,7 @@
 - fix tickets (https://repo.ctcc.no/projects/dirac/issues)          everybody
 - create a list of new features (doc/features.rst)                  everybody          
 - edit list of supported platforms: doc/installation/platforms.rst  everybody
+- update citation                                                   everybody
 
 - geometry optimization allocates the work array twice              ?
 
