@@ -24,7 +24,6 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
-option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
@@ -323,7 +322,7 @@ if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 # build unit tests
-if(ENABLE_TESTS)
+if(ENABLE_UNIT_TESTS)
     # set unit test libs
     set(UNIT_TEST_LIBS
         dirac

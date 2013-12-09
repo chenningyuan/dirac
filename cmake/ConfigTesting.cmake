@@ -12,6 +12,13 @@ set(DART_TESTING_TIMEOUT
     "Set default timeout in seconds for every single test"
     )
 
+macro(dirac_test _name _labels)
+    add_test(${_name} python ${CMAKE_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 include(Tests)
 include(CTest)
 enable_testing()
