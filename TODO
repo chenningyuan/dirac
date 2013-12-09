@@ -6,7 +6,6 @@ Release blockers
 - create a list of new features (doc/features.rst)                  everybody          
 - update citation                                                   everybody
 - get license site and emailing ready                               HJJ
-- implement Dalton-style update.py                                  Radovan
 
 
 Important
@@ -25,3 +24,4 @@ Final steps after everything else is done
 
 - clean up changelog, sync with features                            Radovan
 - get web site ready                                                Radovan
+- create final tarball as clone from read-only update repo          Radovan
