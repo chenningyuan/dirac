@@ -14,6 +14,7 @@ f.add(string = 'Number of determinants/combinations')
 f.add(string = ' Final energy')
 
 test_run.execute(['HBr.inp'], ['HBr.mol'], f, args='--mw=60',
-                 accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4'])
+                 accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4',
+                                  'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4'])
 
 sys.exit(0)

@@ -23,6 +23,7 @@ f.add(string      = 'Final energy',
       tolerance   = 1.0e-5)
 
 test_run.execute(['HF.bss_sfb.cc_cisd.inp', 'HF.dk2_sfb.pnuc.cc_cisd.inp'], ['Z80H.lsym.dir.mol'], f,
-                 accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4'])
+                 accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4',
+                                  'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4'])
 
 sys.exit(0)
