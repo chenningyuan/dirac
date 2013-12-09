@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3389,7 +3389,10 @@ C/* Deck knizia */
 C***********************************************************************
 C
 C     Polarize fragment orbitals according to the intrinsic AO scheme
-C     propozed by Knizia
+C     propozed by Knizia, see
+C
+C     G. Knizia , J. Chem. Theory Comp. 
+C     "Intrinsic Atomic Orbitals: An Unbiased Bridge between Quantum Theory and Chemical Concepts
 C
 C     Written by T. Saue - September 2013
 C
@@ -3432,6 +3435,10 @@ C.....Generate depolarized MOs (stored in WORK(KBUF))
 C.....Orthogonalize depolarized MOs
       CALL ORTHO_SELVEC(WORK(KBUF),NBAS,NMOL,1,NMOL,NEFF,SMAT,AMAT,
      &                  IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
+      IF(NEFF.NE.NMOL) THEN
+        WRITE(6,*) '* WARNING ! KNIZIA: Linear dependencies removed ',
+     &    'in depolarized MOs. NMOL = ',NMOL,' NEFF = ',NEFF
+      ENDIF
       IF(IPRINT.GE.5) THEN
         CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
      &           SMAT,NBAS,NBAS,1,IPQTOQ(1,0),
@@ -3453,9 +3460,9 @@ C     ====================
       CALL MEMGET('REAL',KM1,NMAT,WORK,KFREE,LFREE)            
       CALL MEMGET('REAL',KV1,NVEC,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KM2,NMAT,WORK,KFREE,LFREE)
-C.....Projector onto depolarized space P'
+C.....Projector onto depolarized space P' = D'S -> store in M1
       CALL DENST1(WORK(KM2),NBAS,NBAS,NZ,D1,D0,
-     &            WORK(KBUF),NBAS,NMOL,1,NMOL,NBAS)
+     &            WORK(KBUF),NBAS,NMOL,1,NEFF,NBAS)
       CALL QGEMM(NBAS,NBAS,NBAS,D1,
      &           'N','N',IPQTOQ(1,0),WORK(KM2),NBAS,NBAS,NZ,
      &           'N','N',IPQTOQ(1,0),SMAT,NBAS,NBAS,1,
@@ -3481,15 +3488,15 @@ C.....construct orthogonal complement: b12 = b0 - b11; stored in v2
       IOFF = 0
       DO IZ = 1,NZ
         CALL DCOPY(NDIM,CMO(1,1,IZ),1,WORK(KV2+IOFF),1)
-        CALL DAXPY(NDIM,DM1,WORK(KV1+IOFF),1,WORK(KV2+IOFF),1)
         IOFF = IOFF + NDIM
       ENDDO
+      CALL DAXPY(NDIM*NZ,DM1,WORK(KV1),1,WORK(KV2),1)
       IF(IPRINT.EQ.8) THEN
         WRITE(LUPRI,*) '* Intermediate b12 '
         CALL PRQMAT(WORK(KV2),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-C.....Projector onto starting MO space P     
+C.....Projector onto starting MO space P = DS -> store in M1
       CALL MEMGET('REAL',KM2,NMAT,WORK,KFREE,LFREE)
       CALL DENST1(WORK(KM2),NBAS,NBAS,NZ,D1,D0,
      &            CMO,NBAS,NTOT,IMOL,NMOL,NBAS)
@@ -3515,11 +3522,7 @@ C.....apply: b21 = P*b11; store in v3
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....copy b12 to V1
-      IOFF = 0
-      DO IZ = 1,NZ
-        CALL DCOPY(NDIM,WORK(KV2+IOFF),1,WORK(KV1+IOFF),1)
-        IOFF = IOFF + NDIM
-      ENDDO
+      CALL DCOPY(NDIM*NZ,WORK(KV2),1,WORK(KV1),1)
 C.....subtract P*b12 from b12 -> v1
       CALL QGEMM(NBAS,NREF,NBAS,DM1,
      &           'N','N',IPQTOQ(1,0),WORK(KM1),NBAS,NBAS,NZ,
@@ -3531,19 +3534,15 @@ C.....subtract P*b12 from b12 -> v1
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
       IF(IPRINT.EQ.5) THEN
-        WRITE(LUPRI,*) '* Polarized reference coefficients - p1'
+        WRITE(LUPRI,*) '* Polarized reference coefficients - P'
         CALL PRQMAT(WORK(KV3),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
-        WRITE(LUPRI,*) '* Polarized reference coefficients - p2'
+        WRITE(LUPRI,*) '* Polarized reference coefficients - Q'
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C.....Assemble and normalize polarized fragment coefficients
-      IOFF = 0
-      DO IZ = 1,NZ
-        CALL DAXPY(NDIM,D1,WORK(KV3+IOFF),1,WORK(KV1+IOFF),1)
-        IOFF = IOFF + NDIM
-      ENDDO
+      CALL DAXPY(NDIM*NZ,D1,WORK(KV3),1,WORK(KV1),1)
       CALL MEMREL('KNIZIA.ass',WORK,KFRSAV,KV2,KFREE,LFREE)
 C
 C     Calculate overlap between original and polarized coefficients
@@ -3563,9 +3562,6 @@ C
         NVEC = NSTR(IFRP,0,IREF)
         CALL ORTHO_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,NEFF,SMAT,AMAT,
      &                    IPQTOQ(1,0),NZ,IPRINT,WORK,KFREE,LFREE)
-CTROND        CALL ALIGN_SELVEC(WORK(KV1),NBAS,NREF,IVEC,NVEC,CMO,NTOT,IVEC,
-CTROND     &                    SMAT,AMAT,IPQTOQ(1,0),NZ,IPRINT,
-CTROND     &                    WORK,KFREE,LFREE)
         IVEC = IVEC + NVEC
       ENDDO
       CALL ABSOLUTE_OVERLAP(CMO,NBAS,NTOT,1,NREF,
@@ -3654,15 +3650,15 @@ CTROND     &             WORK(KFREE),LFREE)
      &             'N','N',IPQ,WORK(KVMAT),NSEL,NSEL,NZ,
      &             D0,IPQ,CMO(1,ISEL,1),NBAS,NVEC,NZ)
         IF(IPRINT.GE.2) THEN
-        CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
+          CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NEFF,NEFF,
      &         SMAT,NBAS,NBAS,1,IPQ,
      &         AMAT,NEFF,NEFF,NZ,IPQ,
      &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
      &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
      &         WORK(KFREE),LFREE,IPRINT)
-        WRITE(LUPRI,*) '* ORTHO_SELVEC: Overlap matrix after'
-        CALL PRQMAT(AMAT,NEFF,NEFF,NEFF,NEFF,NZ,IPQ,LUPRI)
-      ENDIF
+          WRITE(LUPRI,*) '* ORTHO_SELVEC: Overlap matrix after'
+          CALL PRQMAT(AMAT,NEFF,NEFF,NEFF,NEFF,NZ,IPQ,LUPRI)
+        ENDIF
         CALL MEMREL('ORTHO_SELVEC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
       RETURN

@@ -1,5 +1,0 @@
-$ERROR 1.E-7
-Nlines 1:Electronic energy
-
-$ERROR 1.E-5
-Nlines 7:r_x           r_y           r_z            scalar

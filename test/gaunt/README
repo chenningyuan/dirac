@@ -2,7 +2,7 @@
 ! This test calculates the energy of the CO molecule using the full Dirac-Coulomb-Gaunt Hamiltonian
 ! In addition we also compute some properties of this molecule.
 !
-! The test is meant to check the implementation of the Gaun interaction for energies and
+! The test is meant to check the implementation of the Gaunt interaction for energies and
 ! properties for Hartree-Fock and DFT hybrid functionals. 
 !
 ! At the moment of making this test only the so-called AOFOCK build option can be used and

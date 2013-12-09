@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string    = '@ gamma',
+      tolerance = 1.0e-6)
+f.add(string    = '@ averaged gamma',
+      tolerance = 1.0e-6)
+
+test_run.execute(['levy.inp'], ['mol.mol'], f)
+
+sys.exit(0)

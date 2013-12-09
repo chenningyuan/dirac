@@ -13,15 +13,15 @@ New features in DIRAC13
 * correction of overlap diagnostic
 * enhancements to FDE
 * polarization propagator for 4-C excitations (ADC2 extended)
-* Fano ADC (perhaps)
 * improved X2C (reduced memory cost) + local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry; other double groups perhaps)
 * atomic spin-orbit code (spin-same orbit) replacing AMFI
 * commutator-based CC (to be discussed with Timo and Mickael)
 * PCM (check with Roberto)
 * Pol embedding (to see with Erik)
 * Dyall basis sets redefined to reduce linear dependence
-* Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall *2z, Dyall *3z sets and for 2p, 3s, 3p for Dyall *4z basis sets.
-* Dyall ae*z (all-electron)  basis sets added, with correlating functions for all shells.
+* Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
+* Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall 2z, Dyall 3z sets and for 2p, 3s, 3p for Dyall 4z basis sets.
+* Dyall aenz (all-electron)  basis sets added, with correlating functions for all shells.
 
 New defaults
 ------------

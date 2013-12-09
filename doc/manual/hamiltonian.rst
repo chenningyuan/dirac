@@ -371,10 +371,12 @@ in terms of a truncated multipolar expansion.
 keyword(FDE)
 
 Activates the frozen density embedding (FDE) functionality. Options can
-be specified under the \*FDE menu.
+be specified under the :ref:`\*FDE` menu.
 
-In order to use FDE, the user must generated an embedding potential with
-the ADF code (see the developer's website http://www.scm.com
+In order to use FDE the user must have generated an embedding potential
+and/or frozen densities for the environment, either directly with the 
+ADF code (see the developer's website http://www.scm.com for further information) 
+or via the PyADF scripting framework (see the developer's website http://pyadf.org 
 for further information).
 
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -612,6 +612,7 @@ C
         tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1476,6 +1477,7 @@ C
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
            tdxc = second()
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)

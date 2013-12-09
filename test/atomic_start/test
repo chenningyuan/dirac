@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = ' Output from ERGCAL',
+      num_lines   = 6,
+      tolerance   = 1.0e-8)
+
+test_run.execute(['H.inp'], ['H.mol'], args='--get=DFACMO')
+shutil.copy('DFACMO', 'DFHXXX')
+
+test_run.execute(['O.inp'], ['O.mol'], args='--get=DFACMO')
+shutil.copy('DFACMO', 'DFOXXX')
+
+test_run.execute(['O_atom.inp'], ['O.mol'], f, '--copy=DFOXXX')
+test_run.execute(['H2O.inp'], ['H2O.mol'], f, '--copy="DFHXXX DFOXXX"')
+
+# cleanup
+os.unlink('DFACMO')
+os.unlink('DFHXXX')
+os.unlink('DFOXXX')
+
+sys.exit(0)
