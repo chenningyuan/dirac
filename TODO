@@ -1,19 +1,27 @@
 
 
-  task/problem                                                      who is working on it
-----------------------------------------------------------------------------------------
+Release blockers
+----------------
+
+- create a list of new features (doc/features.rst)                  everybody          
+- update citation                                                   everybody
+- get license site and emailing ready                               HJJ
+- implement Dalton-style update.py                                  Radovan
+
+
+Important
+---------
+
+- edit list of supported platforms: doc/installation/platforms.rst  everybody
+- MPI dirac.x should be able run without mpirun on one processor    Stefan
 - fix tests (http://repo.ctcc.no/CDash/index.php?project=DIRAC)     everybody          
 - fix tickets (https://repo.ctcc.no/projects/dirac/issues)          everybody
-- create a list of new features (doc/features.rst)                  everybody          
-- edit list of supported platforms: doc/installation/platforms.rst  everybody
-
 - geometry optimization allocates the work array twice              ?
-
-- MPI dirac.x should be able run without mpirun on one processor    Stefan
-
 - documentation of new features (in particular MDIRAC)              Michal
 
-- update map                                                        Radovan            
-- implement Dalton-style update.py                                  Radovan
+
+Final steps after everything else is done
+-----------------------------------------
+
 - clean up changelog, sync with features                            Radovan
-- take out Minnesota stuff                                          Radovan
+- get web site ready                                                Radovan
