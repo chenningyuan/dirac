@@ -66,3 +66,11 @@ Always test that the test really works
 It is easy to make a mistake and create a test which is always "successful".
 Test that your test catches mistakes. Verify whether it extracts the right
 numbers.
+
+
+How to add labels to tests
+--------------------------
+
+Here is an example::
+
+  add_test('dft_ac', 'quick;dft')

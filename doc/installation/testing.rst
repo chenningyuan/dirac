@@ -44,3 +44,11 @@ cores::
 You can select the subset of tests by matching test names to a regular expression::
 
   $ ctest -R dft
+
+or matching a label::
+
+  $ ctest -L quick
+
+To print all labels::
+
+  $ ctest --print-labels
