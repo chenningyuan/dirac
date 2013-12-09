@@ -163,3 +163,18 @@ Also with tests you make it easier to understand what your code does
 and you make it easier for other people to improve your code.
 If there are no tests, then others will be afraid to modify untested
 code.
+
+
+Make sure that new code compiles with and without MPI
+-----------------------------------------------------
+
+Before you push new code to the main line development, test
+whether it compiles with and without MPI.
+
+
+Make sure that MPI binaries run without mpirun
+----------------------------------------------
+
+We want to be able to run MPI-compiled dirac.x without MPI on one processor.
+This simplifies testing. The default "make test" will not invoke any MPI
+unless you set environment variables.
