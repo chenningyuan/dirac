@@ -162,7 +162,7 @@ Developers
   :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
-  :doc:`Programmers' manual <programmers/programmers_manual>` |
+  :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
@@ -174,11 +174,9 @@ Developers
   :doc:`History <programmers/museum>` |
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
-  :doc:`Protecting your code  <programmers/protecting_your_code>` 
+  :doc:`FAQ <programmers/faq>`
 
 * **Notes:**
-  :doc:`Standalone programs <programmers/standalones>` |
-  :doc:`Shell programming <programmers/shell_prog>` |
   :doc:`DFCOEF <programmers/dfcoef>` |
   :doc:`Screening <programmers/screening>` |
   :doc:`64bit integers <programmers/int8>` |

@@ -148,5 +148,3 @@ As a final step create the tarball::
   $ cd build
   $ cmake ..
   $ make release
-
-(Radovan will document this step in more detail for DIRAC13 ...)
