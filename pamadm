@@ -182,7 +182,6 @@ def main():
     add_test('response_nmr_spin-spin')
     add_test('response_qr')
     add_test('response_rkbimp_shield')
-    add_test('scf_levelshift')
     add_test('symmetry_recognition')
     add_test('visual_div_rot')
     add_test('visual_lao_current')
