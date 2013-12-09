@@ -32,7 +32,7 @@ option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocat
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
@@ -146,10 +146,12 @@ if(ENABLE_PCMMOD)
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        -DCBLAS_ROOT=${CBLAS_ROOT}
+	#-DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
+	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
     )
     
@@ -157,16 +159,7 @@ if(ENABLE_PCMMOD)
 
     set(EXTERNAL_LIBS
         stdc++
-	interface
-        solver
-        green
-        cavity
-	utils
-        metal
-        pedra
-        pwl
-        wem
-        wavcav
+	pcm
         getkw
         ${EXTERNAL_LIBS}
         )

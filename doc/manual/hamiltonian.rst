@@ -234,28 +234,30 @@ Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian 
 
 keyword(X2C)
 
-Keyword referring to the new module for the Exact 2-Component
-relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
+Keyword referring to the module for the Exact 2-Component
+relativistic Hamiltonian, Refs. [Knecht2010]_ and [Knecht2014]_.
 
-One should combine this option with an
+In the spin-orbit case one should combine this option with an
 AMFI correction to the unscreened spin-orbit operator. This is the
 default unless :ref:`.NOAMFI` is specified.
+To use the spinfree version of X2C (which numerically yields the same numbers as in the QC packages CFour, Turbomole and Molcas) 
+one needs to add the keyword :ref:`.SPINFREE`.
 
-See als :ref:`*X2C` for debug options.
+See als :ref:`*X2C` for more options, including a local X2C scheme.
 
 keyword(X2Cmmf)
 
 Keyword referring to the 2-component molecular-mean-field Hamiltonian approach
 within the new module for the Exact 2-Component relativistic Hamiltonian, Refs.
-[Sikkema2009]_, [Knecht2010]_.
+[Sikkema2009]_, [Knecht2014]_.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
 step. after the SCF. One can combine this option with :ref:`.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
-within the RELCCSD module. Patches for other correlation modules in DIRAC are
-planned to be released soon.
+within the RELCCSD module. Patches for other correlation modules in DIRAC will 
+be part of the Dirac2014 release.
 
 
 keyword(BSS)

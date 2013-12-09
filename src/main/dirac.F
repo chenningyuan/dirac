@@ -86,6 +86,9 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
+#if defined (PCM_MODULE)
+      use pcm_scf
+#endif
 
       implicit none
 
@@ -126,9 +129,8 @@ C***********************************************************************
           call quit('Polarizable Continuum Model calculation not '//
      & 'working with X2C Hamiltonian!')
         end if
-        call init_pcm
-        call print_pcm
-        print *, 'PCMSolver initialized.'
+        call pcm_scf_initialize(lupri)
+        write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
 C
@@ -294,6 +296,9 @@ C         *************************************************
 C
           IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
+#if defined (PCM_MODULE)
+     &         .NOT. dirac_cfg_pcm .AND.
+#endif
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
              CALL PSIOPT('SCF  ',WFCONV)
           END IF
