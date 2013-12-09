@@ -125,7 +125,7 @@ print *, '*    Jon K. Laerdahl          University of Oslo                Norway
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *'
-print *, '*    Stefan Knecht            University of Southern Denmark    Denmark       *'
+print *, '*    Stefan Knecht            ETH Zuerich                       Switzerland   *'
 print *, '*    Stanislav Komorovsky     University of Tromsoe             Norway        *'
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Christoffer V. Larsen    University of Southern Denmark    Denmark       *'
