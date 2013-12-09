@@ -14,6 +14,12 @@ When you add a new test always add it to pamadm
 Otherwise the test will never be run as part of the default test suite.
 
 
+Avoid shell programming in test scripts
+---------------------------------------
+
+Otherwise the tests are not portable to Windows. Do not use os.system() calls.
+
+
 Never add inputs to the test directories which are never run
 ------------------------------------------------------------
 
