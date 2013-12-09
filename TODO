@@ -17,7 +17,7 @@ Important
 - fix tests (http://repo.ctcc.no/CDash/index.php?project=DIRAC)     everybody          
 - fix tickets (https://repo.ctcc.no/projects/dirac/issues)          everybody
 - geometry optimization allocates the work array twice              ?
-- documentation of new features (in particular MDIRAC)              Michal
+- documentation of new features                                     everybody
 
 
 Final steps after everything else is done
