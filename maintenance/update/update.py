@@ -4,11 +4,11 @@ import sys
 import subprocess
 import os
 
-# This script runs git pull. If no merges need to be done it will do so silently,
+# This script runs git pull. If no conflicts present, it will do so silently,
 # otherwise it will expose the git back-end. 
 # By Ulf Ekstrom 2013.
 
-package_name = "DALTON/LSDALTON"
+PACKAGE_NAME = "DIRAC"
 
 def run_git(args=[]):
     """Run git and return (returncode, stdout, stderr)"""
@@ -38,7 +38,7 @@ def main():
     elif sys.argv[1] in ['-h','-help','--help']:
         print "Usage: update.py [--force] [--help]"
         print """Updating script for %s. Run without arguments to check for new updates
-and apply them. This script should be run from the main %s directory.""" % (package_name, package_name)
+and apply them. This script should be run from the main %s directory.""" % (PACKAGE_NAME, PACKAGE_NAME)
         print "Run with --force to throw away local changes during the update."
         print "If you are a Git expert you can directly do a `git pull' instead of using this script."
         sys.exit(0)
@@ -47,7 +47,7 @@ and apply them. This script should be run from the main %s directory.""" % (pack
         sys.exit(-1)
     res, dum, dum = run_git(['status']) # Check if we are in a git repo
     if (res != 0) or (not os.path.isdir('.git')): # we also check that we are not accidentaly within some other git repo
-        sys.stderr.write("ERROR: The update script must be run from inside the %s directory\n" % package_name)
+        sys.stderr.write("ERROR: The update script must be run from inside the %s directory\n" % PACKAGE_NAME)
         sys.exit(-1)
     res = 0
     if len(sys.argv) > 1 and sys.argv[1] == '--force':
@@ -64,8 +64,8 @@ and apply them. This script should be run from the main %s directory.""" % (pack
     if stdout == "Already up-to-date.\n":
         print "Up-to-date."
     else:
-        print "Applied updates to the %s source code." % package_name
-        print "Remember to recompile %s after updating." % package_name
+        print "Applied updates to the %s source code." % PACKAGE_NAME
+        print "Remember to recompile %s after updating (make clean is not needed)." % PACKAGE_NAME
         reincarnate()
     
 if __name__== "__main__":
