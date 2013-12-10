@@ -10,6 +10,11 @@ mkdir $TEMPORARY_DIR
 for dir in `cat $2/pamadm-generated/list_of_tests`; do
     mv $1/test/$dir $TEMPORARY_DIR
 done
+
+# we need the test scripts
+mv $1/test/beholder_dirac.py $TEMPORARY_DIR
+mv $1/test/beholder.py       $TEMPORARY_DIR
+
 rm -rf $1/test/*
 mv $TEMPORARY_DIR/* $1/test
 rm -rf $TEMPORARY_DIR
