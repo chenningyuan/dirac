@@ -4,11 +4,9 @@ New features in DIRAC13
 -----------------------
 
 * magnetizabilities LAO, HF (perhaps DFT)
-* improved output for TDDFT excitation energies
-* projection analysis in molecular sym (perhaps)
+* `improved output for TDDFT excitation energies <tutorials/dft/tddft.html>`_
 * Hueckel start with atomic fragments
 * XML output functionality
-* localization of virtuals (Stano, to consider)
 * enhancements to FDE
 * polarization propagator for 4-C excitations (ADC2 extended)
 * improved X2C: local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry only)
