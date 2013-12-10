@@ -16,12 +16,12 @@ Environment variables for testing
 Before testing with "make test" you should export the
 following environment variables::
 
-  $ export DIRAC_TMPDIR=/scratch        # scratch space (adapt the path of course)
-  $ export DIRAC_NUM_MPI_PROCS=4        # in this case 4 processes, only relevant if you compile with MPI
+  $ export DIRAC_TMPDIR=/scratch            # scratch space (adapt the path of course)
+  $ export DIRAC_MPI_COMMAND="mpirun -np 8" # only relevant if you compile with MPI
 
-Note that if you set the DIRAC_NUM_MPI_PROCS to something different from 1,
-the pam script will assume you have compiled using MPI and run the mpirun
-command!
+Note that if you set the DIRAC_MPI_COMMAND the pam script will assume you that this is a parallel calculation.
+Before you test an MPI build, you have to set DIRAC_MPI_COMMAND otherwise the tests will be executed without
+MPI environment and many of the tests will fail.
 
 
 Running the test set
