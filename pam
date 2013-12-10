@@ -9,8 +9,11 @@
     Contributors: Radovan Bast, Ulf Ekstrom, Stefan Knecht, Andre Gomes
    
     Environmental variables used by pam:
-             DIRTIMEOUT          - time out limit for dirac run
-             DIRAC_NUM_MPI_PROCS - number of MPI processes in a MPI run
+             DIRTIMEOUT        - time out limit for dirac run
+             DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x", example: export DIRAC_MPI_COMMAND="mpirun -np 8"
+                                 if set, pam assumes that this is an MPI run
+                                 this environment variable has to be set for parallel test with ctest
+                                 it allows to run DIRAC in parallel on systems which do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
 
     Environmental variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined
@@ -828,12 +831,9 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
-        else:
-            nr_tasks = os.environ.get('DIRAC_NUM_MPI_PROCS')
-            if nr_tasks != None:
-                if nr_tasks > 1:
-                    self.nr_proc = nr_tasks
-                    self.parallel_run = True
+
+        if os.environ.get('DIRAC_MPI_COMMAND') != None:
+            self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -1204,46 +1204,53 @@ Options are also read from ~/.diracrc"""
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
-        this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
-        if not os.path.isfile(this_dirac_exe):
-            print_error_message(this_dirac_exe+' not found!')
+        dirac_executable = os.path.join(self.scratch_dir,self.dirac_exe_file)
+        if not os.path.isfile(dirac_executable):
+            print_error_message(dirac_executable+' not found!')
             sys.exit(13)
-        else:
-            pass
+
         if self.parallel_run:
-            if self.mpirun == None:
-                # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
-                #          then self.mpirun is None and we have to stop here otherwise pam calls
-                #          None -np N /paht/to(dirac.x
-                sys.exit('pam did not find mpirun, check your $PATH, or assign as parameter ! ')
 
-            if self.argument_to_pass_scratch_dir_to_slaves:
-                self.dirac_cmd = self.mpirun + ' -np ' \
-                    + str(self.nr_proc) + ' -' \
-                    + self.argument_to_pass_scratch_dir_to_slaves + ' ' \
-                    + self.scratch_dir + ' '
-            else: # no passing of scratch dir to slaves
-                self.dirac_cmd = self.mpirun + ' -np ' \
-                    + str(self.nr_proc) + ' '
+            dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND')
+            if dirac_mpi_command == None: # DIRAC_MPI_COMMAND is not set
 
-            # add extra mpi arguments
-            if self.machinefile == None:
-                self.dirac_cmd += ' '
-            else: 
-                self.dirac_cmd += '--hostfile ' + self.machinefile + ' '
+                if self.mpirun == None:
+                    # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
+                    #          then self.mpirun is None and we have to stop here otherwise pam calls
+                    #          None -np N /paht/to(dirac.x
+                    sys.exit('pam did not find mpirun, check your $PATH, or assign as parameter ! ')
+               
+                if self.argument_to_pass_scratch_dir_to_slaves:
+                    self.dirac_cmd = self.mpirun + ' -np ' \
+                        + str(self.nr_proc) + ' -' \
+                        + self.argument_to_pass_scratch_dir_to_slaves + ' ' \
+                        + self.scratch_dir + ' '
+                else: # no passing of scratch dir to slaves
+                    self.dirac_cmd = self.mpirun + ' -np ' \
+                        + str(self.nr_proc) + ' '
+               
+                # add extra mpi arguments
+                if self.machinefile == None:
+                    self.dirac_cmd += ' '
+                else: 
+                    self.dirac_cmd += '--hostfile ' + self.machinefile + ' '
+               
+                if self.mpiarg:
+                    self.dirac_cmd += self.mpiarg + ' '
+               
+                # OpenMPI debugging with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
+                # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
+                if self.vg_debug:
+                # master the final command launcher (as std debugger); TODO: adapt for Windows
+                    self.dirac_cmd =  self.dirac_cmd + \
+                   ' valgrind --log-fd=1 ' + dirac_executable + ' | tee ' + self.output_file_full
+                else:
+                   # no valgrind debugging, standard parallel run
+                   self.dirac_cmd =  self.dirac_cmd + dirac_executable
 
-            if self.mpiarg:
-                self.dirac_cmd += self.mpiarg + ' '
+            else: # DIRAC_MPI_COMMAND is set and we will use it
+                self.dirac_cmd = "%s %s" % (dirac_mpi_command, dirac_executable)
 
-            # OpenMPI debugging with valgrind: http://www.open-mpi.org/faq/?category=debugging#memchecker_run
-            # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
-            if self.vg_debug:
-            # master the final command launcher (as std debugger); TODO: adapt for Windows
-                self.dirac_cmd =  self.dirac_cmd + \
-               ' valgrind --log-fd=1 ' + this_dirac_exe + ' | tee ' + self.output_file_full
-            else:
-               # no valgrind debugging, standard parallel run
-               self.dirac_cmd =  self.dirac_cmd + this_dirac_exe
         else:
             # serial run (also in debugger)
             if self.debug:
@@ -1255,16 +1262,16 @@ Options are also read from ~/.diracrc"""
                     print_error_message('\n no debugger found in the <diracrc> file !')
                     sys.exit(235)
                 # TODO: adapt it for Windows
-                self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
+                self.dirac_cmd = self.debugger + ' ' + dirac_executable \
                     + ' | tee ' + self.output_file_full
             elif self.vg_debug:
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
                 self.dirac_cmd = 'valgrind --log-fd=1 ' \
-                    + this_dirac_exe + ' | tee ' + self.output_file_full
+                    + dirac_executable + ' | tee ' + self.output_file_full
             else:
                 # no debug, plain run
-                self.dirac_cmd = this_dirac_exe
+                self.dirac_cmd = dirac_executable
 
     def handle_machinefile(self):
         """
@@ -1648,7 +1655,6 @@ Options are also read from ~/.diracrc"""
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
             if self.parallel_run:
-                print '  # of used CPUs :', self.nr_proc
                 print '  local disks    :', not self.global_scratch_disk
                 print '  rsh/rcp        :', self.rsh,'/',self.rcp
                 print '  machine file   :', self.machinefile

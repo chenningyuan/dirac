@@ -31,6 +31,7 @@ Setting up DIRAC
 
 * **pam script:**
   :doc:`How to set the scratch directory <pam/scratch>` |
+  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
   :doc:`String replacement <pam/replace>`
 
 
