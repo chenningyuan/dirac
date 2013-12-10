@@ -12,7 +12,6 @@ New features in DIRAC13
 * enhancements to FDE
 * polarization propagator for 4-C excitations (ADC2 extended)
 * improved X2C: local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry only)
-* commutator-based CC (to be discussed with Timo and Mickael)
 * Pol embedding (to see with Erik)
 * Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
 * Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall 2z, Dyall 3z sets and for 2p, 3s, 3p for Dyall 4z basis sets.
