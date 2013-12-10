@@ -80,8 +80,9 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
+  :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
+  :doc:`2-component Hamiltonians other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`X2C molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`

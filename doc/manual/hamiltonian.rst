@@ -309,6 +309,7 @@ Second-order Douglas-Kroll Hamiltonian
 **Non-relativistic Hamiltonians**
 =================================
 
+
 keyword(LEVY-LEBLOND)
 
 Use the nonrelativistic Lévy-Leblond Hamiltonian [Levy1967]_.
