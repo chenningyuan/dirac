@@ -6403,6 +6403,7 @@ C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
+#ifdef MOD_LAO_REARRANGED
         if (SEPTEP) then
 
          if (.not. XLR_SKIPEE) then
@@ -6444,6 +6445,7 @@ C--------------------------------------------------------------------
          end if
 
         end if
+#endif
 
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)
