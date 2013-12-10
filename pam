@@ -1,37 +1,32 @@
 #!/usr/bin/env python
-#
-# Python replacement of the previous bash pam script
-#
-# Written by Miro ILIAS, Matej Bel University,
-#        Banska Bystrica, Slovakia, 2010-2013
-#
-# Contributors:  Rado Bast, France
-#                Ulf Ekstrom, Sweden
-#                Stefan Knecht, Denmark
-#                Andre Gomes, France
-#
-# Purpose: Given one single input (consisting of a mol/xyz and a inp file)
-#          run Dirac once at a known place and bring back output and restart data to the (also known) starting directory.
-#          No more no less.
-#
-#
-# Environmental variables dealt with in this script :
-# ---------------------------------------------------
-#          BASDIR - put there basis set directory
-#          DIRTIMEOUT - reads in time out limit for dirac run
-#          DIRWRK - put there value for working space
-#          DIRMAX - put there value of maximum working space
-#          XLFRTEOPTS - put there some specific string for IBM architecture
-#          DIRPAR - put there "1", if parallel run
-#          DIRNOD - put there maximum memory for nodes, if  parallel run
-#          DIRAC_NUM_MPI_PROCS - number of MPI threads in parallel run
-#          GLBSCR - put "1" for global scratch disk, otherwise put "0" - only if parallel run
-#          MKL_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
-#          MKL_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
-#          OMP_NUM_THREADS - if not defined, put "1" (for Intel-MKL library, if used)
-#          OMP_DYNAMIC - if not defined, put "FALSE" (for Intel-MKL library, if used)
-#
-##############################################################################################################################
+
+"""
+    Launch script for DIRAC calculations.
+    Takes care of copying files in and out and setting appropriate environment variables for a DIRAC calculation.
+  
+    Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
+   
+    Contributors: Radovan Bast, Ulf Ekstrom, Stefan Knecht, Andre Gomes
+   
+    Environmental variables used by pam:
+             DIRTIMEOUT          - time out limit for dirac run
+             DIRAC_NUM_MPI_PROCS - number of MPI processes in a MPI run
+
+    Environmental variables set by pam and used by MKL:
+             MKL_NUM_THREADS - set to 1 if not defined
+             MKL_DYNAMIC     - set to "FALSE" if not defined
+             OMP_NUM_THREADS - set to 1 if not defined
+             OMP_DYNAMIC     - set to "FALSE" if not defined
+
+    Environmental variables set by pam and used by DIRAC:
+             BASDIR          - basis set directory/directories
+             DIRWRK          - work space for Fortran 77 "WORK" allocations         (radovan: what units?)
+             DIRMAX          - maximum work space for Fortran 77 "WORK" allocations (radovan: how does it differ from DIRWRK?)
+             DIRPAR          - controls parallel run (1) or sequential run (0)
+             DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
+             GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (radovan: why this cryptic 6-character name?)
+             XLFRTEOPTS      - put there some specific string for IBM architecture  (radovan: what is this for?)
+"""
 
 import os
 import sys
