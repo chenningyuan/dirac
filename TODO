@@ -21,6 +21,7 @@ Important
 Final steps after everything else is done
 -----------------------------------------
 
+- check "make install"                                              Radovan
 - clean up changelog, sync with features                            Radovan
 - get web site ready                                                Radovan
 - remove this file                                                  Radovan
