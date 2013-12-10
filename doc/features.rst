@@ -7,7 +7,6 @@ New features in DIRAC13
 * improved output for TDDFT excitation energies
 * projection analysis in molecular sym (perhaps)
 * Hueckel start with atomic fragments
-* doublet EPR (perhaps)
 * XML output functionality
 * localization of virtuals (Stano, to consider)
 * enhancements to FDE

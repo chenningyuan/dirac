@@ -120,7 +120,6 @@ def main():
     add_test('dft_alda')
     add_test('stex')
     add_test('geo_opt')
-    add_test('lao_shield_rearranged')
     add_test('london_properties_symmetry')
     add_test('response_pv_nmr')
     add_test('krci_energy')
