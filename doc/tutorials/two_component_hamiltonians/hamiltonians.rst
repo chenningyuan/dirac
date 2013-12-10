@@ -1,7 +1,7 @@
 
 
-Choosing a two-component Hamiltonian other than X2C
-===================================================
+Selecting a two-component Hamiltonian other than X2C
+====================================================
 
 There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`.X2C`) implemented 
 in DIRAC arising from the decoupling transformation of the one-electron DIRAC Hamiltonian. 
