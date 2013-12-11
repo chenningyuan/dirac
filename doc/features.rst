@@ -9,7 +9,7 @@ New features in DIRAC13
 * XML output functionality
 * enhancements to frozen density embedding (`FDE <manual/fde.html>`_)
 * polarization propagator for 4-C excitations (ADC2 extended)
-* improved X2C: local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry only)
+* enhancements to X2C: local spin-free and spin-orbit X2C (`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc.html>`_)
 * Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
 * Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall 2z, Dyall 3z sets and for 2p, 3s, 3p for Dyall 4z basis sets.
 * Dyall aenz (all-electron) basis sets added, with correlating functions for all shells.
