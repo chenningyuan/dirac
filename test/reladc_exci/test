@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Main block eigenvalues         1     1g',
+      nr_lines    = 10,
+      tolerance   = 1.0e-6)
+
+f.add(from_string = 'root    dim       exc.energy       error     status',
+      nr_lines    = 10,
+      tolerance   = 1.0e-6)
+
+test_run.execute(['exci_davi.inp'], ['ne.mol'],
+                 f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
+
+sys.exit(0)

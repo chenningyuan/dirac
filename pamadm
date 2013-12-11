@@ -195,6 +195,7 @@ def main():
     list_of_new_tests.append('reladc_sip')
     list_of_new_tests.append('reladc_sipeigv')
     list_of_new_tests.append('reladc_dip')
+    list_of_new_tests.append('reladc_exci')
     list_of_new_tests.append('stex')
     list_of_new_tests.append('krci_properties_omega_tdm')
     list_of_new_tests.append('visual_elf')
