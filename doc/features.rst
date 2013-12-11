@@ -3,11 +3,11 @@
 New features in DIRAC13
 -----------------------
 
-* magnetizabilities LAO, HF (perhaps DFT)
+* magnetizabilities at the Hartree-Fock level with London atomic orbitals (LAOs)
 * `improved output for TDDFT excitation energies <tutorials/dft/tddft.html>`_
 * Hueckel start with atomic fragments
 * XML output functionality
-* enhancements to FDE
+* enhancements to frozen density embedding (`FDE <manual/fde.html>`_)
 * polarization propagator for 4-C excitations (ADC2 extended)
 * improved X2C: local spin-free and spin-orbit X2C [DLU scheme of Peng and Reiher] (C1 symmetry only)
 * Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
