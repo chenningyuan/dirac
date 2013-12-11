@@ -1,0 +1,55 @@
+Dear DIRAC-users,
+
+We are happy to announce the release of DIRAC12, the latest version
+of the DIRAC code for 2- and 4-component relativistic  molecular
+electronic structure calculations.
+
+See also our NEW web site: http://diracprogram.org/
+
+New features in DIRAC12 (released 12/12/12)
+
+    2-component relativistic Effective Core Potentials (ECPs)
+    London Atomic Orbitals (LAOs) at the DFT level
+    Simple magnetic balance for NMR shieldings
+    LAO current densities
+    Overlap diagnostic for TD-DFT calculations of excitation energies
+    Pipek-Mezey localization by trust-region optimization
+    Long-range MP2/short-range DFT
+    Atomic start guess for SCF calculations
+    MP2 natural orbitals
+    Complex/Damped DFT response module
+    New Lanczos algorithm for relativistic Algebraic Diagrammatic Construction (ADC)
+
+New defaults
+
+    New input style for RELCC and RELADC
+    Changed level shift
+    Changed bare nucleus corrections (new parameters)
+    New MPI 64/32-interface
+    Improved start guess and improved SCF convergence
+    Changed open-shell energy definition
+
+A full list of features of DIRAC12 is found here:
+http://diracprogram.org/features/
+
+On http://diracprogram.org/ under "News" you can also find the papers
+describing the new developments and some examples of applications.
+Our documentation pages
+http://diracprogram.org/doc/release-12/
+contains a number of new tutorials and is continually updated.
+
+As usual, the code is freely distributed to all academic users;
+please find detailed information about licensing and download here:
+http://dirac.chem.sdu.dk/DIRAC12/
+
+
+For proper citation of DIRAC12, please consult
+http://www.diracprogram.org/citation/
+
+
+On behalf of the DIRAC team
+
+ Radovan Bast
+ Hans Jørgen Aaagaard Jensen
+ Trond Saue
+ Lucas Visscher
