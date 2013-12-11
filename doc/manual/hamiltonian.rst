@@ -243,8 +243,8 @@ default in Dirac unless :ref:`.NOAMFI` is specified which will turn off any two-
 To use the spinfree version of X2C (which numerically yields the same numbers as in the quantum chemistry packages CFour, Turbomole and Molcas) 
 one needs to add the keyword :ref:`.SPINFREE`.
 
-See als :ref:`*X2C` for more options, including a local X2C scheme. Inputs are given in the tutorial section :doc:`X2C
-and local X2C <x2c_mol_loc>`.
+See als :ref:`*X2C` for more options, including a local X2C scheme. An overview of the (local) X2C approach is given in the tutorial 
+section :doc:`X2C and local X2C <../tutorials/two_component_hamiltonians/x2c_mol_loc.html>`_
 
 keyword(X2Cmmf)
 
@@ -257,7 +257,8 @@ step. after the SCF. One can combine this option with :ref:`.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC will 
-be part of the Dirac2014 release. See also :doc:`Molecular mean-field X2C <molecular_mean_field>`
+be part of the Dirac2014 release. See also :doc:`Molecular mean-field X2C
+<../tutorials/two_component_hamiltonians/molecular_mean_field>`_ for further information.
 
 
 keyword(BSS)
