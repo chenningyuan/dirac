@@ -100,18 +100,18 @@ For large systems the diagonalisation of the Dirac Hamiltonian --- which is an e
 unitary transformation matrix :math:`\mathbf{U}_{mol}` --- may become a bottleneck for the full molecule (hence to stress
 this fact we have introduced the explicit label *mol*).  
 This bottleneck can be avoided by extracting the coupling at the level of individual atoms as proposed in a working protocol by Peng
-and Reiher [Peng2012]_. The central idea behind this atomic or local scheme is to approximate :math:`\mathbf{U}_{mol}` 
-by a superposition of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\mathbf{U}_{i}` where a 
-decoupling matrix is calculated for each *unique* atom type. 
+and Reiher [Peng2012]_. In Dirac2013 we have implemented the *diagonal local approximation to the unitary decoupling
+transformation* (DLU scheme) of [Peng2012]_. The central idea behind this local scheme is to approximate :math:`\mathbf{U}_{mol}` by a superposition 
+of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\mathbf{U}_{i}` where a decoupling matrix is calculated for each *unique* atom type. 
 
 .. math::
 
    \mathbf{U}_{mol} \approx \sum\limits_{i=1}^{N_{A}} \mathbf{U}_{i} \oplus  \mathbf{U}_{i+1} \oplus \mathbf{U}_{i+2} \oplus \ldots, 
 
 
-In order to benefit from the above approach in Dirac which at present works *only for C1 symmetry* we need to first carry
+In order to benefit from the above DLU approach in Dirac which at present works *only for C1 symmetry* we need to first carry
 out the atomic calculations and save the atomic :math:`\mathbf{U}_{i}` matrices. This can be done as follows. 
-We run the atomic X2C transformation using an input as for example (here we use a cc-pVDZ basis)::
+We run an atomic X2C transformation for each *unique* atom in our molecule (here we assume a cc-pVDZ basis)::
 
   **DIRAC
   .TITLE
@@ -128,7 +128,7 @@ We run the atomic X2C transformation using an input as for example (here we use 
   .NOSYM
   **END OF
 
-Note the use of .NOSYM to enforce C1 symmetry in the atomic run even for an atom. A possible xyz input for an atom (here
+Note the use of .NOSYM to enforce C1 symmetry in the atomic run even for an atom. A possible corresponding xyz input for an atom (here
 C) would look like::
 
    1
@@ -143,10 +143,10 @@ and similar for other atoms::
   $ mv X2CMAT X2CMAT.006
 
 
-After we have created all atomic :math:`\mathbf{U}_{i}` matrices for each *unique* atom type in our molecule --- in 
-W(CH :math:`_{3}` ) :math:`_{6}` we would need a transformation matrix for W, C and H --- we are ready to setup 
+After we have created all atomic :math:`\mathbf{U}_{i}` matrices for each *unique* atom type in our molecule --- let's
+assume to work on W(CH :math:`_{3}` ) :math:`_{6}` where we would need a transformation matrix for W, C and H --- we are ready to setup 
 the molecular X2C calculation based on the local/atomic approach of the
-decoupling unitary  :math:`\mathbf{U}_{i}` matrices. The relevant part of the input would then be::
+decoupling unitary  :math:`\mathbf{U}_{i}` matrices. The relevant part of the input would then read::
 
   **DIRAC
   .TITLE
@@ -174,7 +174,6 @@ This input should be used with the following pam line::
 
   $ ./pam ... --put=X2CMAT.* 
 
-In this local approach the molecular :math:`\mathbf{U}_{mol}` matrix will be approximated as described above and
-corresponds exactly to the DLU scheme proposed by Peng and Reiher [Peng2012]_. It works with both spinfree and
-spin-dependent (spin-orbit) Hamiltonian schemes and includes a picture-change transformation of all molecular
-four-component property operators :math:`\Omega^{4c}_{mol}`. 
+In this DLU approach proposed by Peng and Reiher [Peng2012]_ the molecular :math:`\mathbf{U}_{mol}` matrix will then be
+approximated as described above. It works with spinfree as well as all spin-dependent (spin-orbit) Hamiltonian schemes and 
+includes a picture-change transformation of all molecular four-component property operators :math:`\Omega^{4c}_{mol}`. 
