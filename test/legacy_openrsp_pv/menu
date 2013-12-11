@@ -1,3 +1,0 @@
-pv_beta_nr.inp  ch4.mol --copy=DALTON.HES
-pv_gamma_nr.inp ch4.mol --copy=DALTON.HES
-pv_gamma_dc.inp ch4.mol --copy=DALTON.HES

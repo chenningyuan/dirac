@@ -1,5 +1,5 @@
-!  updates bydirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1190,7 +1190,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1204,8 +1206,11 @@ C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
       IF (XLR_SKIPEP) THEN
 C      .... NMR shieldings
-         !IF (SHIELD) THEN
+#ifdef MOD_LAO_REARRANGED
          IF (SHIELD.OR.shielding_rearrange) THEN
+#else
+         IF (SHIELD) THEN
+#endif
             DOEXP = .TRUE.
             NSTDIA = .TRUE.
          END IF
@@ -1341,9 +1346,12 @@ C
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
-      !IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
-      IF (SHIELD .OR. shielding_rearrange .OR. 
+#ifdef MOD_LAO_REARRANGED
+      IF (SHIELD .OR. shielding_rearrange .OR.
      &    ESRGTENS .OR. ESRANISO) THEN
+#else
+      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+#endif
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
@@ -1364,8 +1372,11 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,IPREXP)
-      !ELSE IF (SHIELD) THEN
+#ifdef MOD_LAO_REARRANGED
       ELSE IF (SHIELD .OR. shielding_rearrange) THEN
+#else
+      ELSE IF (SHIELD) THEN
+#endif
       ! message has relevance if wanted NMR shieldings
         WRITE(LUPRI,'(2X,A)')
      &  '...Aucars diamagnetic'//
@@ -1414,7 +1425,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1503,8 +1516,7 @@ C
 C
 C     NMR shielding
 C
-      !IF(SHIELD) THEN
-      IF(SHIELD .OR. shielding_rearrange) THEN
+      IF(SHIELD) THEN
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -3872,7 +3884,9 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
@@ -3968,8 +3982,11 @@ C
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-              !IF (SHIELD) THEN
+#ifdef MOD_LAO_REARRANGED
               IF (SHIELD .OR. shielding_rearrange) THEN
+#else
+              IF (SHIELD) THEN
+#endif
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
@@ -4128,8 +4145,11 @@ C        Sigma_Z:
 C
 C     Print section for NMR shielding:
 C
-      !IF (SHIELD) THEN
+#ifdef MOD_LAO_REARRANGED
       IF (SHIELD .OR. shielding_rearrange) THEN
+#else
+      IF (SHIELD) THEN
+#endif
 C
 C     A operators
 C     ===========
@@ -6251,7 +6271,9 @@ C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -6285,6 +6307,7 @@ C
 C 
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
 
+#ifdef MOD_LAO_REARRANGED
 ! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged 
 ! equation (Eq. 40-42 in JCP 131, 124119 (2009))
       if (shielding_rearrange) then
@@ -6299,6 +6322,7 @@ C
      &               'basis are rearranged too (fully connection-',
      &               'independent approach)'
       end if
+#endif
 
 C
       KFRSAV = KFREE
@@ -6374,6 +6398,7 @@ C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
+#ifdef MOD_LAO_REARRANGED
         if (SEPTEP) then
 
          if (.not. XLR_SKIPEE) then
@@ -6415,6 +6440,7 @@ C--------------------------------------------------------------------
          end if
 
         end if
+#endif
 
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)
@@ -6433,16 +6459,20 @@ C  ...  get the expect. value {T,h(mK)} reorthonormalization term
 CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
         IF (IPRPRP.GE.2) THEN
+#ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange .or. shielding_rearrange) then
             CALL HEADER('Contribution to the shielding from overlap '// 
      &      'magnetic derivative (expect.value) in symmetry '//
      &      'coordinates (ppm)',1)
             CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
           else
+#endif
             CALL HEADER('Reorthonormalization part of the '// 
      &      'shielding (expect.value) in symmetry coordinates (ppm)',1)
             CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+#ifdef MOD_LAO_REARRANGED
           end if
+#endif
         ENDIF
 C       ... extract the reorthonormalization part into the PMAT
         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)

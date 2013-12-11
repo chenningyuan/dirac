@@ -51,18 +51,18 @@ install(
     )
 
 if(ENABLE_PCMMOD)
-    install( # Install PCMSolver input parsing script
-        FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/bin/pcmsolver
-        DESTINATION bin
-        PERMISSIONS
-        OWNER_READ OWNER_WRITE OWNER_EXECUTE
-        GROUP_READ             GROUP_EXECUTE
-        WORLD_READ             WORLD_EXECUTE
-        )
-    install( # Install libraries
-        DIRECTORY ${PROJECT_BINARY_DIR}/external/share/libgetkw
-        DESTINATION share/dirac
-        )
+   install( # Install PCMSolver input parsing script
+       FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/pcmsolver
+       DESTINATION bin
+       PERMISSIONS
+       OWNER_READ OWNER_WRITE OWNER_EXECUTE
+       GROUP_READ             GROUP_EXECUTE
+       WORLD_READ             WORLD_EXECUTE
+       )
+   install( # Install libraries
+       DIRECTORY ${PROJECT_BINARY_DIR}/external/share/libgetkw
+       DESTINATION share/dirac
+       )
 endif()
 
 install(
@@ -129,13 +129,13 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
-        COMMAND cp     ${CMAKE_SOURCE_DIR}/runtest                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
-        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/update                       ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
         COMMAND cp     ${CMAKE_SOURCE_DIR}/src/main/main.F90            ${EXPORT_DIR}/src/main
         COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/.gitignore                   ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/maintenance/update/update.py ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
         COMMAND make package_source
