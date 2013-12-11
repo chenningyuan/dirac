@@ -66,7 +66,7 @@ http://www.diracprogram.org/doku.php?id=citation
 
 On behalf of the DIRAC team::
 
-   Hans Jørgen Aaagaard Jensen
-   Trond Saue
    Lucas Visscher
+   Hans Jørgen Aaagaard Jensen
    Radovan Bast
+   Trond Saue
