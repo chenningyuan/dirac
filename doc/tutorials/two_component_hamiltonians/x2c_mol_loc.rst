@@ -3,9 +3,13 @@
 X2C and local X2C
 =================
 
-It is beyond the scope of this tutorial to review the ideas behind the exact two-component Hamiltonian (X2C) approach.
-For a recent and comprehensive review the reader is referred to [Saue2011]_. The central idea is to generate a two-component Hamiltonian 
-that reproduces the positive-energy spectrum of the parent four-component Hamiltonian. This goal may be achieved by 
+This tutorial briefly demonstrates the keywords and their usage to invoke the exact two-component (X2C) Hamiltonian 
+and a local X2C variant of it in Dirac. The current available implementation and other features which will be part 
+of the next release Dirac2014 are described in [Knecht2014]_. 
+
+A recent and comprehensive review on the topic of relativistic Hamiltonians for chemistry can be found in [Saue2011]_ by
+Trond Saue. The central idea of any decoupling approach is to generate a two-component Hamiltonian that reproduces the positive-energy spectrum 
+of the parent four-component Hamiltonian in the best possible way. This goal may be achieved by 
 a unitary transformation :math:`\mathbf{U}` that will formally decouple the large and small components by block-diagonalization:
 
 .. math::
@@ -21,16 +25,16 @@ a unitary transformation :math:`\mathbf{U}` that will formally decouple the larg
          0           & \hat{h}_{--} \end{array}\right],
 
 
-Popular choices to obtain a unitary transformation matrix :math:`\mathbf{U}` are nicely discussed in Section 3 of Reference
-[Saue2011]_ while a detailed abstract of the actual implementation of the X2C approach in Dirac is given in the last part of Section
+Popular choices to obtain a unitary transformation matrix :math:`\mathbf{U}` are in particular discussed in Section 3 of [Saue2011]_ 
+while a detailed abstract of the actual implementation of the X2C approach in Dirac is given in the last part of Section
 3.3 in the same review paper. Property operators are transformed automatically on the fly to two-components within 
-the X2C approach in Dirac in order to avoid the so-called picture-change errors. For a nice discussion on the latter
-topic with the example of charge densities at a heavy nucleus see for example [Knecht2011]_. Transforming the 
-the electronic Hamiltonian based on the above prescription 
+the X2C approach in Dirac in order to avoid the so-called picture-change errors. For a detailed discussion on the latter
+topic with the example of charge densities at a heavy nucleus see for example [Knecht2011]_ by Knecht and co-workers. 
+Transforming the the electronic Hamiltonian based on the above prescription 
 
 .. math::
 
-    {\hat{h}^{2c}} = 
+    {\hat{h}^{X2C}} = {\hat{h}_{++}} = 
     \left[\mathbf{U}^{\dagger}
     \hat{h}^{4c}\mathbf{U}\right]_{++}
 
@@ -54,7 +58,11 @@ since otherwise we would introduce (significant) errors ('picture-change errors'
 X2C
 ---
 
-To invoke the X2C Hamiltonian in Dirac which is based on the diagonalization of the 1-electron bare-nucleus Dirac
+-------------------------------------------------
+X2C with spin-same-orbit two-electron corrections
+-------------------------------------------------
+
+To invoke the X2C Hamiltonian :math:`\hat{h}^{X2C}` in Dirac which is based on the diagonalization of the 1-electron bare-nucleus Dirac
 Hamiltonian, use the keyword .X2C under the input deck \*\*HAMILTONIAN::
 
   **HAMILTONIAN
@@ -62,12 +70,21 @@ Hamiltonian, use the keyword .X2C under the input deck \*\*HAMILTONIAN::
 
 
 This includes by default atomic-mean-field two-electron spin-same-orbit corrections from the
-AMFI module. To add spin-other-orbit corrections (Gaunt term of the Breit interaction) use::
+AMFI module.
+
+----------------------------------------------------------------------
+X2C with spin-same-orbit and spin-other-orbit two-electron corrections
+----------------------------------------------------------------------
+
+To add spin-other-orbit corrections (Gaunt term of the Breit interaction) use::
 
   **HAMILTONIAN
   .X2C
   .GAUNT
 
+------------
+spinfree X2C 
+------------
 
 In the spinfree case one should use::
 
@@ -84,7 +101,8 @@ unitary transformation matrix :math:`\mathbf{U}_{mol}` --- may become a bottlene
 this fact we have introduced the explicit label *mol*).  
 This bottleneck can be avoided by extracting the coupling at the level of individual atoms as proposed in a working protocol by Peng
 and Reiher [Peng2012]_. The central idea behind this atomic or local scheme is to approximate :math:`\mathbf{U}_{mol}` 
-by a superposition of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\mathbf{U}_{i}`
+by a superposition of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\mathbf{U}_{i}` where a 
+decoupling matrix is calculated for each *unique* atom type. 
 
 .. math::
 
@@ -93,7 +111,7 @@ by a superposition of :math:`i=1,...,N_A` atomic (or in principle also fragment)
 
 In order to benefit from the above approach in Dirac which at present works *only for C1 symmetry* we need to first carry
 out the atomic calculations and save the atomic :math:`\mathbf{U}_{i}` matrices. This can be done as follows. 
-We run the atomic X2C transformation (using a cc-pVDZ basis set) using the input::
+We run the atomic X2C transformation using an input as for example (here we use a cc-pVDZ basis)::
 
   **DIRAC
   .TITLE
@@ -118,14 +136,16 @@ C) would look like::
    C 0.0 0.0 0.0
 
 We save the file X2CMAT containing the atomic :math:`\mathbf{U}_{i}` matrix and rename it according to the atomic number
-of the respective atom, here X2CMAT.006. For uranium (Z=92) the ending would be X2CMAT.092::
+of the respective atom, here X2CMAT.006 for carbon (Z=6). For tungsten (Z=74) the appropriate ending would be X2CMAT.074
+and similar for other atoms::
 
-  $ ./pam --inp=atom.inp --mol=atom.xyz --get=X2CMAT
+  $ ./pam --inp=atom.inp --mol=carbon.xyz --get=X2CMAT
   $ mv X2CMAT X2CMAT.006
 
 
-After we have created all atomic :math:`\mathbf{U}_{i}` matrices for each individual atom type in our molecule, e.g.
-W(CH:math:`_{3}`):math:`_6` we are ready to setup the molecular X2C calculation based on the local/atomic approach of the
+After we have created all atomic :math:`\mathbf{U}_{i}` matrices for each *unique* atom type in our molecule --- in 
+W(CH :math:`_{3}` ) :math:`_{6}` we would need a transformation matrix for W, C and H --- we are ready to setup 
+the molecular X2C calculation based on the local/atomic approach of the
 decoupling unitary  :math:`\mathbf{U}_{i}` matrices. The relevant part of the input would then be::
 
   **DIRAC
@@ -154,7 +174,7 @@ This input should be used with the following pam line::
 
   $ ./pam ... --put=X2CMAT.* 
 
-In the above approach the molecular :math:`\mathbf{U}_{mol}` matrix will be approximated as described above and
+In this local approach the molecular :math:`\mathbf{U}_{mol}` matrix will be approximated as described above and
 corresponds exactly to the DLU scheme proposed by Peng and Reiher [Peng2012]_. It works with both spinfree and
-spin-dependent (spin-orbit) Hamiltonian schemes and includes the picture-change transformation of the molecular
+spin-dependent (spin-orbit) Hamiltonian schemes and includes a picture-change transformation of all molecular
 four-component property operators :math:`\Omega^{4c}_{mol}`. 
