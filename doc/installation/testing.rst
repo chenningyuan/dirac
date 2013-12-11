@@ -70,7 +70,19 @@ and this is how it can look::
            75 - dft_ac (Failed)
   Errors while running CTest
 
-For each test (whether passed or failed), a directory is created under
+The first place to look for the reasons in build/Testing/Temporary::
+
+  $ ls -l Testing/Temporary/
+  total 108
+  -rw-rw-r-- 1 bast bast  2247 Dec 11 10:19 CTestCostData.txt
+  -rw-rw-r-- 1 bast bast 94798 Dec 11 10:19 LastTest.log
+  -rw-rw-r-- 1 bast bast    39 Dec 11 10:19 LastTestsFailed.log
+
+LastTest.log contains a log of all tests that were run. Search for the test
+name or "failed".  If tests do not produce any output, then this is the place
+to look for reasons (environment variables, problems with pam).
+
+In addition, for each test (whether passed or failed), a directory is created under
 build/test. So in this case you can go into build/test/dft_response to figure
 out what went wrong. The interesting files are the output files::
 
@@ -83,15 +95,4 @@ The ``*.out`` file is the output file of the test. The ``*.result`` file
 contains numbers extracted by the test script. The ``*.reference`` file
 contains numbers extracted from the reference file. The ``*.diff`` file is
 empty for a test where result and reference match. If they do not match, the
-``*.diff`` file will list the lines of output where the results differ.  You
-can find additional information in build/Testing/Temporary::
-
-  $ ls -l Testing/Temporary/
-  total 108
-  -rw-rw-r-- 1 bast bast  2247 Dec 11 10:19 CTestCostData.txt
-  -rw-rw-r-- 1 bast bast 94798 Dec 11 10:19 LastTest.log
-  -rw-rw-r-- 1 bast bast    39 Dec 11 10:19 LastTestsFailed.log
-
-LastTest.log contains a log of all tests that were run. If the tests crash and
-do not produce any output, then this is the place to look for reasons
-(environment variables, problems with pam).
+``*.diff`` file will list the lines of output where the results differ.
