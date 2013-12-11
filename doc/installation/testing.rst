@@ -70,7 +70,7 @@ and this is how it can look::
            75 - dft_ac (Failed)
   Errors while running CTest
 
-The first place to look for the reasons in build/Testing/Temporary::
+The first place to look for the reasons is build/Testing/Temporary::
 
   $ ls -l Testing/Temporary/
   total 108

@@ -962,7 +962,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 
         write(*,*)
-        write(*,*) 'Main block eigenvalues ',desrep,repna(desrep)
+        write(*,'(1X,A23,6X,I3,3X,A4)') 'Main block eigenvalues ',
+     &            desrep,repna(desrep)
         write(*,*)
         do i=1,nsiz
           write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,

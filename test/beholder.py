@@ -93,6 +93,24 @@ class _SingleFilter():
 
     def __init__(self, **kwargs):
 
+        list_of_recognized_keywords = []
+        list_of_recognized_keywords.append('from_re')
+        list_of_recognized_keywords.append('from_string')
+        list_of_recognized_keywords.append('ignore_below')
+        list_of_recognized_keywords.append('ignore_sign')
+        list_of_recognized_keywords.append('mask')
+        list_of_recognized_keywords.append('num_lines')
+        list_of_recognized_keywords.append('re')
+        list_of_recognized_keywords.append('string')
+        list_of_recognized_keywords.append('tolerance')
+        list_of_recognized_keywords.append('to_re')
+        list_of_recognized_keywords.append('to_string')
+
+        for key in kwargs.keys():
+            if key not in list_of_recognized_keywords:
+                sys.stderr.write('ERROR: keyword %s not recognized\n' % key)
+                sys.exit(-1)
+
         self.from_string  = kwargs.get('from_string', '')
         self.to_string    = kwargs.get('to_string', '')
         self.tolerance    = kwargs.get('tolerance', 1.0e-5)
