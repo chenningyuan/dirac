@@ -1,7 +1,5 @@
-
-
 New features in DIRAC13
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * magnetizabilities at the Hartree-Fock level with London atomic orbitals (LAOs)
 * `improved output for TDDFT excitation energies <tutorials/dft/tddft.html>`_
@@ -17,7 +15,7 @@ New features in DIRAC13
 
 
 Improved compilation and testing
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * New test script. Simplified testing using MPI.
 * Updated math library detection.
@@ -27,8 +25,13 @@ Improved compilation and testing
 
 
 New defaults
-------------
+~~~~~~~~~~~~
 
-* The pam script sets MKL_NUM_THREADS=1, MKL_DYNAMIC="FALSE",
-  OMP_NUM_THREADS=1, and OMP_DYNAMIC="FALSE" unless these variables are set by
-  the user.
+* The pam script sets::
+
+   MKL_NUM_THREADS=1
+   MKL_DYNAMIC="FALSE"
+   OMP_NUM_THREADS=1
+   OMP_DYNAMIC="FALSE" 
+
+unless these variables are set by the user.
