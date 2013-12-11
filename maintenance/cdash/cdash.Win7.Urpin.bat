@@ -18,9 +18,8 @@ set WRK=C:\Users\milias\tmp\milias
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-
 rem initialize GIT_SSH to make PuTTy keyring work - 
-set GIT_SSH="C:\Program Files (x86)\PuTTY\plink.exe"
+rem set GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
 rem echo "I have GIT_SSH=%GIT_SSH%"
 rem echo "I have SVN_SSH=%SVN_SSH%"
 rem echo "I have PLINK_PROTOCOL=%PLINK_PROTOCOL%"
@@ -31,7 +30,7 @@ rem cmd.exe \c "C:\Users\milias\AppData\Roaming\Microsoft\Windows\Start Menu\Pro
 rem "C:\Users\milias\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\launch_key.bat" 1>> %OUT% 2>&1
 
 rem check the server connectivity:
-plink -agent git@repo.ctcc.no 
+rem plink -agent git@repo.ctcc.no 
 
 C:\Git\bin\git.exe clean -f
 
@@ -40,13 +39,12 @@ C:\Git\bin\git.exe checkout release-13
 C:\Git\bin\git.exe pull origin release-13
 
 rem show 3 last commits...
-C:\Git\bin\git.exe log -3
+rem C:\Git\bin\git.exe log -3
 
 rem remove previously generated build-directory, if exists
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD% 
-
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD%
 cd %BUILD%
 mingw32-make Experimental
 

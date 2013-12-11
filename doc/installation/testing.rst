@@ -52,3 +52,46 @@ or matching a label::
 To print all labels::
 
   $ ctest --print-labels
+
+
+How to get information about failing tests
+------------------------------------------
+
+We do our best to make sure that the release tarball is well tested on our
+machines. However, it is impossible for us to make sure that all tests will
+work on all systems and all compiler versions.  Therefore, some tests may fail
+and this is how it can look::
+
+  Total Test time (real) = 258.17 sec
+  
+  The following tests FAILED:
+           34 - dft_response (Failed)
+           73 - xyz_input (Failed)
+           75 - dft_ac (Failed)
+  Errors while running CTest
+
+For each test (whether passed or failed), a directory is created under
+build/test. So in this case you can go into build/test/dft_response to figure
+out what went wrong. The interesting files are the output files::
+
+  -rw-rw-r-- 1 bast bast 89538 Dec 11 10:17 lda_hf.out
+  -rw-rw-r-- 1 bast bast  1570 Dec 11 10:17 lda_hf.out.diff
+  -rw-rw-r-- 1 bast bast   841 Dec 11 10:17 lda_hf.out.reference
+  -rw-rw-r-- 1 bast bast   841 Dec 11 10:17 lda_hf.out.result
+
+The ``*.out`` file is the output file of the test. The ``*.result`` file
+contains numbers extracted by the test script. The ``*.reference`` file
+contains numbers extracted from the reference file. The ``*.diff`` file is
+empty for a test where result and reference match. If they do not match, the
+``*.diff`` file will list the lines of output where the results differ.  You
+can find additional information in build/Testing/Temporary::
+
+  $ ls -l Testing/Temporary/
+  total 108
+  -rw-rw-r-- 1 bast bast  2247 Dec 11 10:19 CTestCostData.txt
+  -rw-rw-r-- 1 bast bast 94798 Dec 11 10:19 LastTest.log
+  -rw-rw-r-- 1 bast bast    39 Dec 11 10:19 LastTestsFailed.log
+
+LastTest.log contains a log of all tests that were run. If the tests crash and
+do not produce any output, then this is the place to look for reasons
+(environment variables, problems with pam).

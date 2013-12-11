@@ -6,8 +6,9 @@ Setting up DIRAC
 * **Installation:**
   :doc:`Supported platforms <installation/platforms>` |
   :doc:`Linux, Unix, Mac <installation/general>` |
+  :doc:`Windows <installation/windows>` |
   :doc:`Expert options <installation/expert>` |
-  :doc:`Windows <installation/windows>`
+  :doc:`System administrators <installation/sysadmins>`
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
@@ -18,7 +19,6 @@ Setting up DIRAC
 
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
-  :doc:`MPI <installation/int64/mpi>` |
   :doc:`Math libraries <installation/int64/math>` |
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
@@ -80,8 +80,9 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
+  :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
+  :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` | 
+  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
