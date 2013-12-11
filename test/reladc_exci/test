@@ -11,11 +11,11 @@ test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Main block eigenvalues         1     1g',
-      nr_lines    = 10,
+      num_lines   = 10,
       tolerance   = 1.0e-6)
 
 f.add(from_string = 'root    dim       exc.energy       error     status',
-      nr_lines    = 10,
+      num_lines   = 10,
       tolerance   = 1.0e-6)
 
 test_run.execute(['exci_davi.inp'], ['ne.mol'],
