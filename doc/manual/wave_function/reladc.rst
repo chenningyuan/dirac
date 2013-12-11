@@ -208,14 +208,16 @@ star(LANCZOS)
 
 Once the ADC matrices are stored in packed form on disk they are diagonalized
 by the iterative Lanczos algorithm. The spectral information is written to
-the files SSPEC.#irrep (SIPs) and DSPEC.#irrep (DIPs).
+the files SSPEC.#irrep (SIPs), DSPEC.#irrep (DIPs) and XSPEC.#irrep (EXC).
 Hereby the ionization potential, the pole strength
 and the error estimate are written in a line terminated by the '@' for
 grep purposes. Immediately after this line follows the (indented)
 configuration information belonging to this final state. This is
-imaginable as a one-hole or two-hole Slater-determinant forming this
+imaginable as a one-hole, two-hole or hole-particle Slater-determinant forming this
 state in zeroth order. Strictly speaking, the configuration coefficients
 refer to the intermediate state basis.
+Note: For excitation calculations Lanczos is not the first choice. Better to activate Davidson via the
+kayword .DODAVI
 
 .SIPITER, .DIPITER, .EXCITER
 ----------------------------
@@ -313,8 +315,7 @@ are much larger than in the single ionization case.
 Attention: Be aware that the operating system allows you to allocate as much memory as you want.
 If there is not enough physical memory the OS starts to swap portions of the memory to disk.
 You have to avoid this situation since your job will not terminate in time. Check carefully that
-the memory you request is physically available! In later realizations the amount of physically
-available memory will be checked by the program itself.
+the memory you request is physically available!
 
 keyword(DVXXXXX)
 

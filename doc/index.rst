@@ -35,10 +35,11 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
-
-* :doc:`ChangeLog <patches/CHANGELOG>`
+..
+    Updates and patches
+    ===================
+    
+    * :doc:`ChangeLog <patches/CHANGELOG>`
 
 
 First steps in DIRAC territory

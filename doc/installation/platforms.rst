@@ -15,6 +15,7 @@ Tested on the following platforms
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0, OpenMPI 1.6.5
+* Mac OS X Lion 10.7.5, GNU 4.6.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 
 
 Compiles but does not pass all tests
@@ -26,7 +27,6 @@ Compiles but does not pass all tests
 Compiles but untested on the following environments
 ---------------------------------------------------
 
-* Ubuntu 12.04, Intel 14.0.0, MKL 11.0
 * SGI Altix ICE 8200, Intel 11.1
 * Cray XE6, Intel 12.1.5
 * IBM AIX, XL Fortran V13.1, XL C V11.1, g++, builtin math
