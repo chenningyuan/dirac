@@ -46,10 +46,9 @@ proceed run the SCF first while adding .X2Cmmf to the \*\*HAMILTONIAN keyword se
 Save the file DFCOEF (keyword *--outcmo* with our default submit
 script *pam*). Before restarting calculation to proceed with the 4-index transformation (MOLTRA) and the (MR)CC run,
 remove the keyword .X2Cmmf from the \*\*HAMILTONIAN section (**seems non-intuitive (!)**) and add the
-following keywords to the \*\*MOLTRA and either the namelist RELCCSSD input
+following keywords to the \*\*MOLTRA and either the namelist RELCCSSD input::
 
-::
-
+    **HAMILTONIAN
     **MOLTRA
     .INTFL2
     1 0 0 0
@@ -59,9 +58,9 @@ following keywords to the \*\*MOLTRA and either the namelist RELCCSSD input
     ...
     &CCSORT USEOE=T, NORECMP=T &END
 
-or the new RELCCSD deck input 
 
-::
+or the new RELCCSD deck input::
+
     **MOLTRA
     .INTFL2
     1 0 0 0
