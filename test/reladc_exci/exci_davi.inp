@@ -1,0 +1,35 @@
+**DIRAC
+.TITLE
+ Ne atom, small four-component PP excitation test
+.WAVE F
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+**WAVE FUNCTIONS
+.SCF
+.RELADC
+*SCF
+.CLOSED
+ 4  6
+**MOLTRA
+.SCHEME
+ 4
+.ACTIVE
+ energy -1.0 5.0 0.01
+ energy -1.0 5.0 0.01
+**RELADC
+.DOEXCI
+.EXCREPS
+ 1
+ 1
+.DODAVI
+**LANCZOS
+.DVROOTS
+ 1
+.DVMAXSP
+ 50
+.DVMAXIT
+ 6
+*END OF
+
