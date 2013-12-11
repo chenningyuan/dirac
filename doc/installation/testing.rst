@@ -5,6 +5,9 @@ Testing the installation
 
 It is very important that you verify that your DIRAC installation correctly
 reproduces the reference test set before running any production calculations.
+But also with all tests passing you are strongly advised
+to always carefully verify your results since we cannot guarantee a complete
+test coverage of all possible keyword combinations.
 
 The test set driver is CTest which can be invoked with "make test" after building
 the code.
@@ -58,8 +61,8 @@ How to get information about failing tests
 ------------------------------------------
 
 We do our best to make sure that the release tarball is well tested on our
-machines. However, it is impossible for us to make sure that all tests will
-work on all systems and all compiler versions.  Therefore, some tests may fail
+machines. However, it is impossible for us to make sure that all functionalities and tests will
+work on all systems and all compiler versions. Therefore, some tests may fail
 and this is how it can look::
 
   Total Test time (real) = 258.17 sec
