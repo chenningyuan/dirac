@@ -12,6 +12,8 @@ LAPACK libraries.
 Tested on the following platforms
 ---------------------------------
 
+* ClustervisionOS 4.0, GNU 4.3.6, system native BLAS/LAPACK
+* ClustervisionOS 4.0, Intel 11.1, MKL 11.1, system native BLAS/LAPACK
 * CrunchBang 11, GNU 4.7.2, system native BLAS/LAPACK, OpenMPI 1.6.5
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0, OpenMPI 1.6.5
