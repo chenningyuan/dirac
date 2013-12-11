@@ -62,9 +62,9 @@ As usual, the code is freely distributed to all academic users;
 please find detailed information about licensing and download here:
 http://dirac.chem.sdu.dk/DIRAC13/
 
-
 For proper citation of DIRAC13, please consult
 http://www.diracprogram.org/doku.php?id=citation
+
 
 On behalf of the DIRAC team::
 
