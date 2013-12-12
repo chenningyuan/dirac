@@ -89,7 +89,7 @@ performance. This should be the last resort if nothing else is available::
 Linking to Atlas libraries on SUSE or Fedora
 --------------------------------------------
 
-DIRAC may not be able to detect Atlas BLAS/Lapack
+DIRAC may not be able to detect Atlas BLAS/LAPACK
 libraries on SUSE or Fedora because of nonstandard suffix::
 
   $ cd /usr/lib64/atlas

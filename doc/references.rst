@@ -217,6 +217,12 @@ or popular Google-Books web-space.
    Acta Physica Slovaca. Reviews and Tutorials, **60**, *259-391* (2010)
    `[web] <http://dx.doi.org/10.2478/v10155-010-0003-1>`_
 
+
+.. [Ilias2013]  Miroslav Iliaš, Hans Jørgen Aa. Jensen, Radovan Bast and Trond Saue,
+   *Gauge origin independent calculations of molecular magnetisabilities in relativistic four-component theory*,
+   Mol. Phys. **111** (2013) *1373*
+   `[web] <http://dx.doi.org/10.1080/00268976.2013.798436>`_
+
 .. [Jensen1988] H. J. Aa. Jensen, P. Jørgensen, H. Ågren, and J. Olsen, *Second-order Møller–Plesset
    perturbation theory as a configuration and orbital generator in multiconfiguration
    self-consistent field calculations.* 
