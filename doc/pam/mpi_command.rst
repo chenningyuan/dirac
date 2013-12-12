@@ -18,3 +18,5 @@ This will then launch::
 instead of::
 
   mpirun -np N dirac.x
+
+Note that ``--mpi`` overrides DIRAC_MPI_COMMAND.

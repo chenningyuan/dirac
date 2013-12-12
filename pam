@@ -13,7 +13,9 @@
              DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x", example: export DIRAC_MPI_COMMAND="mpirun -np 8"
                                  if set, pam assumes that this is an MPI run
                                  this environment variable has to be set for parallel test with ctest
-                                 it allows to run DIRAC in parallel on systems which do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
+                                 it allows to run DIRAC in parallel on systems which
+                                 do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
+                                 --mpi overrides DIRAC_MPI_COMMAND
 
     Environmental variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined
@@ -1212,8 +1214,12 @@ Options are also read from ~/.diracrc"""
         if self.parallel_run:
 
             dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND')
-            if dirac_mpi_command == None: # DIRAC_MPI_COMMAND is not set
 
+            if (dirac_mpi_command != None) and (self.nr_proc == 0):
+                # DIRAC_MPI_COMMAND is set and --mpi is not set
+                # --mpi overrides DIRAC_MPI_COMMAND
+                self.dirac_cmd = "%s %s" % (dirac_mpi_command, dirac_executable)
+            else:
                 if self.mpirun == None:
                     # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                     #          then self.mpirun is None and we have to stop here otherwise pam calls
@@ -1247,9 +1253,6 @@ Options are also read from ~/.diracrc"""
                 else:
                    # no valgrind debugging, standard parallel run
                    self.dirac_cmd =  self.dirac_cmd + dirac_executable
-
-            else: # DIRAC_MPI_COMMAND is set and we will use it
-                self.dirac_cmd = "%s %s" % (dirac_mpi_command, dirac_executable)
 
         else:
             # serial run (also in debugger)
