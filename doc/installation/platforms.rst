@@ -18,7 +18,10 @@ Tested on the following platforms
 * Ubuntu 12.04, GNU 4.6.3, MKL 11.0, OpenMPI 1.6.5
 * Ubuntu 12.04, Intel 14.0.0, MKL 11.0, OpenMPI 1.6.5
 * Mac OS X Lion 10.7.5, GNU 4.6.2, system native BLAS/LAPACK, OpenMPI 1.6.5
+* Mac OS X Mavericks 10.9, GNU 4.8.2, system native BLAS/LAPACK
 * OpenSUSE 12.2, Intel 12.1.0, MKL 10.3.6, OpenMPI 1.6.4
+* Linux, Intel 13.0.1, MKL 11.0, Intel MPI 4.1
+* Linux, Intel 12.1.9, MKL 10.3, Bull X MPI 1.1
 
 
 Compiles but does not pass all tests
