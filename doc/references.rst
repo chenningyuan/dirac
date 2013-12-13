@@ -510,7 +510,7 @@ or popular Google-Books web-space.
    J. Chem. Phys. **81**, *1910* (1984)
    `[web] <http://dx.doi.org/10.1063/1.447865>`_
 
-.. [Stone1969 ] R.G. Stone, J. M. Pochan and W. H. Flygare,
+.. [Stone1969] R.G. Stone, J. M. Pochan and W. H. Flygare,
    *Zeeman studies including the molecular g values, magnetic susceptibilities, and molecular quadrupole moments in phosphorus and nitrogen trifluorides and phosphoryl, thionyl, and sulfuryl fluorides*,
    Inorg. Chem. **8** (1969) 2647
    `[web] <http://dx.doi.org/10.1021/ic50082a021>`_
