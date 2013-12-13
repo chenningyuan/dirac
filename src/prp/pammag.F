@@ -64,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO_ANG','.SEPTEP','.XXXXXX'   /
+     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
