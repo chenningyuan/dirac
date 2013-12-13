@@ -261,18 +261,6 @@ C ... header:
         call quit('DFT+LAO magnetizabilities not in this release')
       end if 
 
-      IF (MSUSCP.AND.LONDON) THEN
-#if !defined MOD_MAGNETIZ
-        WRITE(LUPRI,'(2X,A)') 
-     &'You have asked for magnetizabilities wih London atomic orbitals'
-        WRITE(LUPRI,'(2X,A)') 
-     &'-this is not supported in the release version of DIRAC.'
-        CALL QUIT(
-     &'Magnetizabilities wih London atomic orbitals are not supported'//
-     & ' in the DIRAC release version !')
-#endif
-      ENDIF
-
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
      & 'You have asked for center of mass to be the gauge origin!'
