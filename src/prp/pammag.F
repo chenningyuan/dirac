@@ -1855,7 +1855,6 @@ C
       RETURN
       END
 
-#if defined MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
 C*****************************************************************************
@@ -2648,8 +2647,6 @@ C     .... release the whole block used in this subroutine
       CALL QEXIT('LORDRNT')
       RETURN
       END
-#endif
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
        SUBROUTINE DEF_D1HBLOND(IMP,IPRINT)
