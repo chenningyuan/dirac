@@ -115,6 +115,12 @@ limit the gauge origin to symmetry-independent points, that is, you should stay 
 We see that the parallel component :math:`\zeta_\parallel` is unchanged, whereas the perpendicular component 
 :math:`\zeta_\perp` is dramatically different. With LAOs we get
 
+.. literalinclude:: cgo2_NF3_total
+
+where the numerical differences with respect to the original calculation is below
+the convergence threshold of the linear response calculation. We can therefore see that the use of LAOs
+removes the gauge dependence in the finite basis approximation.
+
 Basis-set convergence
 ~~~~~~~~~~~~~~~~~~~~~
 
