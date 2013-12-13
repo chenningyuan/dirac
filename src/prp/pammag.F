@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,6 +33,7 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
+      use dirac_cfg
       use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
@@ -255,6 +256,10 @@ C ... header:
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
       CALL PRSYMB(LUPRI,'=',75,0)
+
+      if (dirac_cfg_dft_calculation .and. msuscp .and. london) then
+        call quit('DFT+LAO magnetizabilities not in this release')
+      end if 
 
       IF (MSUSCP.AND.LONDON) THEN
 #if !defined MOD_MAGNETIZ

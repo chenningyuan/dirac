@@ -1,5 +1,5 @@
-!  updates bydirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1516,12 +1516,7 @@ C
 C
 C     NMR shielding
 C
-#ifdef MOD_LAO_REARRANGED
-      IF(SHIELD .OR. shielding_rearrange) THEN
-        CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-#else
       IF(SHIELD) THEN
-#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -6403,6 +6398,7 @@ C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
+#ifdef MOD_LAO_REARRANGED
         if (SEPTEP) then
 
          if (.not. XLR_SKIPEE) then
@@ -6444,6 +6440,7 @@ C--------------------------------------------------------------------
          end if
 
         end if
+#endif
 
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)

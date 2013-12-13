@@ -80,10 +80,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable SGI MPT [default: %(default)s]')
-    group.add_argument('--omp',
-            action='store_true',
-            default=False,
-            help='enable OpenMP [default: %(default)s]')
+#   group.add_argument('--omp',
+#           action='store_true',
+#           default=False,
+#           help='enable OpenMP [default: %(default)s]')
     
     group = parser.add_argument_group('math libraries')
     group.add_argument('--mkl',
@@ -206,7 +206,7 @@ def gen_cmake_command(args):
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
-    command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
+#   command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 

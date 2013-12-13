@@ -245,13 +245,18 @@ or popular Google-Books web-space.
    `[web] <http://dirac.chem.sdu.dk/thesis/09.PhD.StefanKnecht.pdf>`_
 
 .. [Knecht2010]  X2Cmod: A modular code for Exact-Two-Component Hamiltonian
-	Transformations, S. Knecht (Odense, Denmark) and T. Saue (Toulouse, France), 2010-2012.
+	Transformations, S. Knecht (ETH Zuerich, Switzerland) and T. Saue (Toulouse, France), 2010-2013 with contributions
+      from M. Ilias, H. J. Aa. Jensen and M. Repisky.
 
 .. [Knecht2010a] S. Knecht and H. J. Aa. Jensen and T. Fleig,
    *Large-Scale Parallel Configuration Interaction. II. Two- and 4-Component Double-Group General Active Space
    Implementation with Application to BiH.*,
    J. Chem. Phys. **128**, *014108* (2010)
    `[web] <http://dx.doi.org/10.1063/1.3276157>`_
+
+.. [Knecht2014] S. Knecht, M. Repisky, H. J. Aa. Jensen, K. Ruud, and T. Saue,
+   *Genuine relativistic quantum chemistry with exact two-component Hamiltonians: The easy way to infinite-order two-electron spin-orbit corrections*, 
+   J. Chem. Theory Comp., in preparation (2014).
 
 .. [Knecht2011] S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher, T. Saue,
    *Mössbauer spectroscopy for heavy elements: a relativistic benchmark study of mercury*,
@@ -371,6 +376,11 @@ or popular Google-Books web-space.
    *Electric field effects on the shielding constants of noble gases: A 4-component relativistic Hartree-Fock study*,
    J. Chem. Phys. **121**, *3051* (2004)
    `[web] <http://dx.doi.org/10.1063/1.1771635>`_
+
+.. [Peng2012] D. Peng and M. Reiher,
+   *Local relativistic exact decoupling*,
+   J. Chem. Phys. **136**, *244108* (2012)
+   `[web] <http://dx.doi.org/10.1063/1.4729788>`_
 
 .. [Perdew1986] J. P. Perdew and Y. Wang,
    *Accurate and Simple Density Functional for the Electronic Exchange Energy:
@@ -609,3 +619,10 @@ or popular Google-Books web-space.
    *Solvatochromic shifts from coupled-cluster theory embedded in density functional theory*,
    J. Chem. Phys., **139**, 104016 (2013)
    `[web] <http://dx.doi.org/10.1063/1.4820488>`_
+
+.. [Jacob2013] Christoph R. Jacob and Johannes Neugebauer,
+   *Subsystem density-functional theory*,
+   Wiley Interdisciplinary Reviews: Computational Molecular Science,
+   `[web] <http://dx.doi.org/10.1002/wcms.1175>`_   
+
+

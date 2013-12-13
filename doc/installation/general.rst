@@ -6,26 +6,24 @@ Basic installation
 General
 -------
 
-DIRAC is configured using CMake, typically via the ``setup`` script,
-and subsequently compiled using make or gmake.
+DIRAC is configured using `CMake <http://www.cmake.org/>`_ , typically via the ``setup`` script,
+and subsequently compiled using make (or gmake).
 The ``setup`` script is a useful front-end to CMake.
-You need python to run ``setup``.
-
-
-Basics
-------
-
-To see all options, run::
+You need python to run ``setup``. To see all options, run::
 
   $ ./setup --help
 
-The ``setup`` script does nothing else than creating the directory "build" and
-calling CMake with appropriate environment variables and flags::
+Sequential build
+----------------
+
+The default installation proceeds through three commands::
 
   $ ./setup [--flags]
   $ cd build
   $ make
 
+The ``setup`` script creates the directory "build" and
+calls CMake with appropriate environment variables and flags.
 By default CMake builds out of source. This means that all object files and the
 final binary are generated outside of the source directory. Typically the build
 directory is called "build", but you can change the name of the build directory
@@ -39,6 +37,23 @@ You can compile the code on several cores::
 
   $ make -j4
 
+We *strongly* recommend that the installation is followed by testing your installation::
+
+  make test
+
+For more information about testing, see `here <testing.html>`_.
+
+Parallel build
+--------------
+
+Building DIRAC for parallel runs using `MPI <http://www.mpi-forum.org/docs/docs.html>`_ 
+is in principle a very simple modification of the above procedure::
+
+  $ ./setup [--flags] --mpi
+  $ cd build
+  $ make
+
+Once again we recommend `testing the code <testing.html>`_ afterwards.
 
 Typical examples
 ----------------
@@ -94,6 +109,6 @@ If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. Download the latest pre-compiled tarball from http://www.cmake.org/cmake/resources/software.html
-2. Extract the tarball to, say, ~/cmake-2.8.11-Linux-i386
+1. `Download <http://www.cmake.org/cmake/resources/software.html>`_ the latest pre-compiled CMake tarball
+2. Extract the tarball
 3. Set correct PATH variable

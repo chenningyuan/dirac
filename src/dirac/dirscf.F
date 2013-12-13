@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -391,7 +391,7 @@ C*****************************************************************************
       use num_grid_gen
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -419,6 +419,10 @@ C
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
+
+#if defined (PCM_MODULE)
+      real(8), allocatable :: fock_pcm(:, :, :)
+#endif
 
 C
       CALL QENTER('PREDHF')
@@ -694,10 +698,17 @@ C
                  call quit('NaN found in Fock matrix')
               end if 
            end do
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
      &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1270,7 +1281,7 @@ C*****************************************************************************
       use interface_mo_specific
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -1297,6 +1308,7 @@ C
 #ifdef PCM_MODULE
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
+      real(8), allocatable :: fock_pcm(:, :, :)
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1506,11 +1518,18 @@ C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
-! fock is the 2-el Fock matrix
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
-     &              work(kfree), lfree)
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
+! fock is the 2-el Fock matrix
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1676,7 +1695,7 @@ C*****************************************************************************
 
       use dirac_cfg
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -1787,7 +1806,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
+        call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif

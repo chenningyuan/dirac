@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3989,7 +3989,8 @@ C***********************************************************************
         use fde_dirac_matrices_integration
         use num_grid_gen
 #ifdef PCM_MODULE
-        use pcm_interface
+        use pcm_linear_response, only: pcm_oit_asc
+        use pcmmod_cfg
 #endif
         use orbital_rotation_indices
 
@@ -4016,6 +4017,10 @@ C
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
+#if defined (PCM_MODULE)
+      real(8), allocatable ::mep_oit_asc(:, :, :)
+#endif
+
 C
 C
       CALL QENTER('GMOLITX1')
@@ -4154,12 +4159,25 @@ C
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_lintra_driver to get '//
-     &               'b-transformed electronic polarization charges.'
+           if (pcmmod_skipoit) then
+              write(lupri,'(a)') '* Skipping formation of '//
+     &          'One-Index Transformed electronic polarization charges.'
+           else
+              write(lupri,'(a)') '* Calling pcm_oit_asc to get '//
+     &          'One-Index Transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-            call pcm_lintra_driver(fao, fmo, ndmat, -1.0d0, 
-     &      work(kfree), lfree)
+              allocate(mep_oit_asc(ntbas(0), ntbas(0), nz))
+              mep_oit_asc = 0.0d0
+              call pcm_oit_asc(mep_oit_asc, fmo, ndmat, 
+     &         work(kfree), lfree)
+              call daxpy(n2bbasx, -1.0d0, mep_oit_asc, 1, fao, 1)
+!           print *, "Contraction of MEP and pertubed ASC: MEP_OIT_ASC"
+!           print *, "mep_oit_asc"
+!           call prqmat(mep_oit_asc, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                       nz, ipqtoq(1,0), 6 
+              deallocate(mep_oit_asc)
+           endif
         endif 
 #endif      
  
