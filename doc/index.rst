@@ -102,7 +102,8 @@ Tutorials and walkthrus
 
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
-  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
+  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
 
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
