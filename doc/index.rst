@@ -125,7 +125,7 @@ Tutorials and walkthrus
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
 * **Utility programs:**
-  :doc:`TWOFIT <tutorials/utils/twofit>`
+  :doc:`TWOFIT <tutorials/utils/twofit>` |
   :doc:`VIBCAL <tutorials/utils/vibcal>` 
 
 * **Outdated tutorials (need update):**
