@@ -179,6 +179,8 @@ C
          CENERGY = 'CCSD energy from RELCCSD'
       ELSE IF (DOMP2) THEN
          CENERGY = 'MP2 energy from RELCCSD'
+      ELSE IF (DOFSPC) THEN
+         CENERGY = '(IH-)Fock space CC energy'
       ELSE
          call quit('no energy from RELCCSD')
       END IF
