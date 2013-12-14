@@ -177,6 +177,7 @@ def main():
     add_test('response_excitation_energies')
     add_test('response_hf_polarizability', 'quick')
     add_test('response_lao_shield', 'quick')
+    add_test('response_lao_magnetiz', 'quick')
     add_test('response_nmr_levy-leblond', 'quick')
     add_test('response_nmr_spin-spin')
     add_test('response_qr')
