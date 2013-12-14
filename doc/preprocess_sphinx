@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# previous bash-script translated to this Python form by Ivan Hrasko
+
 import sys
 import os
 import shutil
