@@ -71,9 +71,6 @@ C
       Allocate (ORBE(NSTRT(1)))
       Allocate (IBORB(NSTRT(1)))
 C
-!radovan: run the test set with make check
-!         in test bss_energy KIBE(2,1) = 0
-!miro: easy fix ....
       I_KIBE21=KIBE(2,1)
       IF (KIBE(2,1).EQ.0) I_KIBE21=1
       CALL MRCONE(FMO,ORBE,WORK(KE(1,1)),WORK(KE(2,1)),

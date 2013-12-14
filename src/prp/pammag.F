@@ -64,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO_ANG','.SEPTEP','.XXXXXX'   /
+     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -260,18 +260,6 @@ C ... header:
       if (dirac_cfg_dft_calculation .and. msuscp .and. london) then
         call quit('DFT+LAO magnetizabilities not in this release')
       end if 
-
-      IF (MSUSCP.AND.LONDON) THEN
-#if !defined MOD_MAGNETIZ
-        WRITE(LUPRI,'(2X,A)') 
-     &'You have asked for magnetizabilities wih London atomic orbitals'
-        WRITE(LUPRI,'(2X,A)') 
-     &'-this is not supported in the release version of DIRAC.'
-        CALL QUIT(
-     &'Magnetizabilities wih London atomic orbitals are not supported'//
-     & ' in the DIRAC release version !')
-#endif
-      ENDIF
 
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
@@ -1867,7 +1855,6 @@ C
       RETURN
       END
 
-#if defined MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
 C*****************************************************************************
@@ -2660,8 +2647,6 @@ C     .... release the whole block used in this subroutine
       CALL QEXIT('LORDRNT')
       RETURN
       END
-#endif
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
        SUBROUTINE DEF_D1HBLOND(IMP,IPRINT)

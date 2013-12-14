@@ -159,6 +159,16 @@ or popular Google-Books web-space.
    J. Chem. Phys. **118**, *10418* (2003)
    `[web] <http://dx.doi.org/10.1063/1.1574317>`_
 
+.. [Gomes2008] André Severo Pereira Gomes, Christoph R. Jacob and Lucas Visscher, 
+   *Calculation of local excitations in large systems by embedding wave-function theory in density-functional theory*,
+   Phys. Chem. Chem. Phys., **10**, 5353-5362 (2008)
+   `[web] <http://dx.doi.org/10.1039/B805739G>`_
+
+.. [Gomes2012a] André Severo Pereira Gomes and Christoph R. Jacob,  
+   *Quantum-chemical embedding methods for treating local electronic excitations in complex chemical systems*,
+   Annu. Rep. Prog. Chem., Sect. C: Phys. Chem., **108**, 222-277 (2012)
+   `[web] <http://dx.doi.org/10.1039/C2PC90007F>`_ 
+
 .. [Gruning2001] M. Grüning, O. V.Gritsenko, S. J. A. van Gisbergen, and E. J. Baerends,
    *Shape
    corrections to exchange-correlation potentials by gradient-regulated
@@ -171,6 +181,16 @@ or popular Google-Books web-space.
    and small multiconfiguration SCF wave functions*,
    J. Chem. Phys. **84**, *5728* (1986)
    `[web] <http://dx.doi.org/10.1063/1.449880>`_
+
+.. [Hofener2012] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
+   *Molecular properties via a subsystem density functional theory formulation: A common framework for electronic embedding*,
+   J. Chem. Phys., **136**, 044104 (2012)
+   `[web] <http://dx.doi.org/10.1063/1.3675845>`_
+
+.. [Hofener2013] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
+   *Solvatochromic shifts from coupled-cluster theory embedded in density functional theory*,
+   J. Chem. Phys., **139**, 104016 (2013)
+   `[web] <http://dx.doi.org/10.1063/1.4820488>`_
 
 .. [Hughes1992] S. R. Hughes and Uzi Kaldor,
    *High sectors in the Fock space coupled-cluster method*,
@@ -216,6 +236,17 @@ or popular Google-Books web-space.
    *Relativistic effects in atomic and molecular properties*,
    Acta Physica Slovaca. Reviews and Tutorials, **60**, *259-391* (2010)
    `[web] <http://dx.doi.org/10.2478/v10155-010-0003-1>`_
+
+
+.. [Ilias2013]  Miroslav Iliaš, Hans Jørgen Aa. Jensen, Radovan Bast and Trond Saue,
+   *Gauge origin independent calculations of molecular magnetisabilities in relativistic four-component theory*,
+   Mol. Phys. **111** (2013) *1373*
+   `[web] <http://dx.doi.org/10.1080/00268976.2013.798436>`_
+
+.. [Jacob2013] Christoph R. Jacob and Johannes Neugebauer,
+   *Subsystem density-functional theory*,
+   Wiley Interdisciplinary Reviews: Computational Molecular Science,
+   `[web] <http://dx.doi.org/10.1002/wcms.1175>`_   
 
 .. [Jensen1988] H. J. Aa. Jensen, P. Jørgensen, H. Ågren, and J. Olsen, *Second-order Møller–Plesset
    perturbation theory as a configuration and orbital generator in multiconfiguration
@@ -479,6 +510,11 @@ or popular Google-Books web-space.
    J. Chem. Phys. **81**, *1910* (1984)
    `[web] <http://dx.doi.org/10.1063/1.447865>`_
 
+.. [Stone1969] R.G. Stone, J. M. Pochan and W. H. Flygare,
+   *Zeeman studies including the molecular g values, magnetic susceptibilities, and molecular quadrupole moments in phosphorus and nitrogen trifluorides and phosphoryl, thionyl, and sulfuryl fluorides*,
+   Inorg. Chem. **8** (1969) 2647
+   `[web] <http://dx.doi.org/10.1021/ic50082a021>`_
+
 .. [Strange1998] P. Strange, *Relativistic Quantum Mechanics: with applications in
    condensed matter and atomic physics*, Cambridge University Press, Cambridge, 1998
    `[web] <http://books.google.sk/books?id=sdVrBM2w0OwC&lpg=PR6&ots=MYEjcoTosy&dq=P.%20Strange%2C%20*Relativistic%20Quantum%20Mechanics%3A%20with%20applications%20in%20%20%20%20condensed%20matter%20and%20atomic%20physics*%2C%20Cambridge%20University%20Press%2C%20%20%20%20Cambridge%2C%201998&hl=sk&pg=PP1#v=onepage&q&f=false>`_
@@ -599,30 +635,4 @@ or popular Google-Books web-space.
    *"A new hybrid exchange–correlation functional using the Coulomb-attenuating method (CAM-B3LYP)*,
    Chem. Phys. Lett. **393**, 51 (2004)
    `[web] <http://dx.doi.org/10.1016/j.cplett.2004.06.011>`_
-
-.. [Gomes2012a] André Severo Pereira Gomes and Christoph R. Jacob,  
-   *Quantum-chemical embedding methods for treating local electronic excitations in complex chemical systems*,
-   Annu. Rep. Prog. Chem., Sect. C: Phys. Chem., **108**, 222-277 (2012)
-   `[web] <http://dx.doi.org/10.1039/C2PC90007F>`_ 
-
-.. [Gomes2008] André Severo Pereira Gomes, Christoph R. Jacob and Lucas Visscher, 
-   *Calculation of local excitations in large systems by embedding wave-function theory in density-functional theory*,
-   Phys. Chem. Chem. Phys., **10**, 5353-5362 (2008)
-   `[web] <http://dx.doi.org/10.1039/B805739G>`_
-
-.. [Hofener2012] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
-   *Molecular properties via a subsystem density functional theory formulation: A common framework for electronic embedding*,
-   J. Chem. Phys., **136**, 044104 (2012)
-   `[web] <http://dx.doi.org/10.1063/1.3675845>`_
-
-.. [Hofener2013] Sebastian Höfener, André Severo Pereira Gomes and Lucas Visscher,
-   *Solvatochromic shifts from coupled-cluster theory embedded in density functional theory*,
-   J. Chem. Phys., **139**, 104016 (2013)
-   `[web] <http://dx.doi.org/10.1063/1.4820488>`_
-
-.. [Jacob2013] Christoph R. Jacob and Johannes Neugebauer,
-   *Subsystem density-functional theory*,
-   Wiley Interdisciplinary Reviews: Computational Molecular Science,
-   `[web] <http://dx.doi.org/10.1002/wcms.1175>`_   
-
 
