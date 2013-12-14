@@ -2330,7 +2330,6 @@ Cpu time       0.2960Wall time       1.0000in call to TWOINT(SUSC2EL).
   Magnetizabilities                    au          SI         cgs
   ---------------------------------------------------------------
 
-   ...magnetizability output 2...
   Isotropic magnetizability:      -1.7451   -137.7081     -8.2930
   Diamagnetic contribution:        0.0000      0.0000      0.0000
   Paramagnetic contribution:      -1.7451   -137.7081     -8.2930
