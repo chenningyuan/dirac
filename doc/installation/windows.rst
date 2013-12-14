@@ -5,6 +5,8 @@
 DIRAC on Windows
 ================
 
+We offer support for the Microsoft Windows 7/8 operating system.
+
 Dependencies
 ------------
 
@@ -15,14 +17,22 @@ Dependencies
    If you want to use  the MinGW64 suite, check that *"C:\\MinGW64\\bin"* is before the 32-bit version, *"C:\\MinGW\\bin"*, 
    in the %PATH% environmental variable.
 
-3. The Python programming language of version at least 2.7 (http://www.python.org).
+   The MinGW(64) compilers and related Linux-like tools are reachable through the
+   system %PATH% variable (you find strings like *"...\\MinGW\\bin"*, or
+   *"...\\MinGW64\\bin"* in the %PATH% environmental variable and this gives no
+   conflict with CMake).  The same holds for the Python script and the CMake
+   systen.  See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
 
-The MinGW(64) compilers and related Linux-like tools are reachable through the
-system %PATH% variable (you find strings like *"...\\MinGW\\bin"*, or
-*"...\\MinGW64\\bin"* in the %PATH% environmental variable and this gives no
-conflict with CMake).  The same holds for the Python script and the CMake
-systen.  See also the web-page
-http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
+3. The Python programming language of version at least 2.7 (http://www.python.org).
+   We recommend to install the 32-bit version of Python also on 64-bit machines as not all packages needed for the development are
+   at disposal in  64-bit versions. 
+   Check that the *%Path%* Windows environmental variable points to both Python and its scripts -
+   is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
+
+   **Important:** Upon installing Python for all users on the Windows computing server it happens that registers are not
+   under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
+   See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
+
 
 
 Installation and running
@@ -48,10 +58,11 @@ must envelope them into inverted commas, "...".  For example::
 
 Configure DIRAC::
 
-  C:\Users\<username>\dirac>python setup --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles"
+  C:\Users\<username>\dirac>python setup --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" --int64  
 
-Compile the executable::
+Compile the executable (in the default *build* directory)::
 
+  cd build
   C:\Users\<username>dirac\build>mingw32-make dirac.x
 
 Run the test set::
