@@ -2,6 +2,7 @@
 
 # previous bash-script translated to this Python form by Ivan Hrasko
 
+import re
 import sys
 import os
 import shutil
@@ -31,7 +32,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! .RABOOF
         #! -------
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace("keyword(\([a-zA-Z 0-9_]\+\))","\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------")
+           print line.replace(line,re.sub(r'keyword(\([a-zA-Z 0-9_]\+\))','\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------',line))
 
         #! replace:
         #! starstar(RABOOF)
@@ -43,7 +44,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*\*RABOOF
         #! ==========
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace("starstar(\([a-zA-Z 0-9_]\+\))","\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========")
+           print line.replace(line,re.sub(r'starstar(\([a-zA-Z 0-9_]\+\))','\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========',line))
            
         #! replace:
         #! star(RABOOF)
@@ -55,10 +56,8 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*RABOOF
         #! ========        
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace("star(\([a-zA-Z 0-9_]\+\))","\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========")
+           print line.replace(line,re.sub(r'star(\([a-zA-Z 0-9_]\+\))','\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========',line))
 
 SPHINX_CALL = 'sphinx-build -b html ' + DIR_TEMP + ' ' + DIR_FINAL
 subprocess.call(SPHINX_CALL,shell=True)        
 shutil.rmtree(DIR_TEMP,True)
-
-
