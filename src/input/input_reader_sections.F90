@@ -1400,11 +1400,13 @@
          fragment_x2c_info%fragment_approach_enabled    = .true.
       end if
 
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.fragmo')) then
          x2cmod_fragment_x2c                            = .true.
          fragment_x2c_info%fragment_approach_enabled    = .true.
          fragment_x2c_info%fragment_approach_ismolecule = .true.
       end if
+#endif
 
       if (kw_matches(word, '.DEBUG ')) then
          x2cmod_debug = .true.

@@ -9,7 +9,7 @@ Verify that the tarball installs correctly
 
 Check out the release branch::
 
-  $ git checkout release-12
+  $ git checkout release-13
 
 Create the tarball yourself::
 
@@ -23,7 +23,7 @@ Please report if the tarball generation is broken.
 
 Extract the generated tarball and install it::
 
-  $ ./setup [--fc=ifort --cc=icc]
+  $ ./setup [--fc=ifort --cc=icc --cxx=icpc]
 
 Please report problems. Pay attention whether math libraries are correctly
 detected.
@@ -32,14 +32,13 @@ detected.
 Run the test set
 ----------------
 
-Run the test set using the extracted tarball (see further up).
-The best way to do that is to run ``make Experimental``::
+Run the test set using the extracted tarball (see further up)::
 
-  $ ./setup [--flags] -D BUILDNAME="my-build-name"
+  $ ./setup [--flags]
   $ cd build
-  $ make Experimental
+  $ ctest -jN -D Experimental
 
-The result of ``make Experimental`` appears automatically on the
+The result appears automatically on the
 `DIRAC Dashboard <http://repo.ctcc.no/CDash/index.php?project=DIRAC>`_.
 And we can all see which tests fail and why.
 

@@ -1,5 +1,5 @@
-!  updates bydirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1516,12 +1516,7 @@ C
 C
 C     NMR shielding
 C
-#ifdef MOD_LAO_REARRANGED
-      IF(SHIELD .OR. shielding_rearrange) THEN
-        CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-#else
       IF(SHIELD) THEN
-#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -4919,10 +4914,8 @@ C
       WRITE(LUPRI,'(1X,A)')
      &  'DEF_MSUSCP: Magnetic susceptibility'
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(1X,A)')
      &  '- with London atomic orbitals (LAO).'
-#endif
        ELSE  
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
@@ -4947,12 +4940,10 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
-#if defined MOD_MAGNETIZ
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
        CALL DEF_D1HBLOND(2,LPRINT)  
-#endif
       ELSE ! Conventional AO
 C      ... XAVECTOR
        IOP(1) = 5
@@ -5018,13 +5009,11 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,3
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
-#endif
        ELSE
        INDOP1 = IPMSUSC(1,I)
        IF(INDOP1.GT.0) THEN
@@ -5043,13 +5032,11 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1, 3
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
-#endif
        ELSE
         INDOP1 = IPMSUSC(2,I)
         IF(INDOP1.GT.0) THEN
@@ -5150,7 +5137,6 @@ C  which is fully  involved in paramag. term when rotating electrons and positro
 
 ! ... London atomic orbitals - always calculate the expectation value
       ELSE IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
 C  ... Here take care of one-electron terms 
 C ... first 3 terms from the <r r~ hd> - RM2H1+RM2H2+RM2H3
 C  ... 6 terms  Qmn.<r r~ beta' c^2>.Qmn - 6 diagonal operators
@@ -5631,7 +5617,6 @@ C
         ENDIF
 
        ENDIF
-#endif
       ENDIF
 
       CALL QEXIT('DEF_MSUSCP')
@@ -5692,9 +5677,7 @@ C=============================================================================
       CALL DZERO(SUSFS,9)
 C     ... evaluate expectation value terms first
       IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
         CALL EXPVSUSLO(WORK(KFREE),LFREE)
-#endif
       ENDIF
 
       KFRSAV = KFREE
@@ -5702,13 +5685,11 @@ C     ... evaluate expectation value terms first
 
       IF (.NOT.XLR_SKIPEP.AND.MSUSCDIA) THEN
          IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(2X,A)')
      &  'For LAO & e-p rotations the diamag.term is not (yet) defined !'
           WRITE(LUPRI,'(2X,A)')
      &  'MSUSCDIA for magnetizabilities is set to .false. ! '
           MSUSCDIA=.FALSE.
-#endif
          ENDIF
       ENDIF
 
@@ -5742,7 +5723,6 @@ C  -1 is for the compatibility with Dalton
           ENDIF 
         ENDIF ! IF (MSUSCDIA) THEN
       ELSE IF (LONDON) THEN 
-#if defined MOD_MAGNETIZ
 C ... accumulate one-electron expectation values into SUSDIA
 C.......................................................................................
 C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
@@ -5879,7 +5859,6 @@ C
         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
         CALL FLSHFO(LUPRI)
        ENDIF
-#endif
       ENDIF
 C------------------------------------------------------------
 C  ... get relaxation parts of susceptibilities
@@ -5898,7 +5877,6 @@ C ... extract the relaxation (response) part of magnetic susceptibilities...
 C ===========================================================================
        DO IB = 1,3
          IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           IBX = IPLONDON(1,IB)
           READ (PRPNAM((IBX)),'(4X,A1)') JCB
           JB = ICONVXYZ(JCB)
@@ -5908,7 +5886,6 @@ C ===========================================================================
            write(lupri,*) 'got JCB=',JCB
            CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
           ENDIF
-#endif
          ELSE
           IBX = IPMSUSC(2,IB)
 CMI  ...    extract first character, like 'X magnetic field'
@@ -5925,11 +5902,9 @@ CMI  ...    extract first character, like 'X magnetic field'
          KB = IPMSUSC(2,JB)
          DO IA = 1, 3
           IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
             IAX = IPLONDON(1,IA)
             READ (PRPNAM((IAX)),'(4X,A1)') JCA
             JA = ICONVXYZ(JCA)  
-#endif
           ELSE
             IAX = IPMSUSC(1,IA)
             READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
@@ -5955,10 +5930,8 @@ C          contributions from the linear response function
 
 C    .... DALTON type of output
          IF (LONDON) THEN  
-#if defined MOD_MAGNETIZ
           CALL HEADER('Relaxation',-1)
           CALL POLPRI(SUSREL,'   ',-2)
-#endif
          ELSE
           CALL HEADER('Relaxation part of susceptibilities',-1)
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
@@ -6017,7 +5990,6 @@ C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
          ENDDO
          ENDDO
       ELSE 
-#if defined MOD_MAGNETIZ
 C        ... the case with London atomic orbitals ...
          DO I = 1, 3
          DO J = 1, 3
@@ -6030,7 +6002,6 @@ C        ... the case with London atomic orbitals ...
            PARSUS(I,J) = SUSTOT(I,J) - DIASUSC(I,J)
          ENDDO
          ENDDO
-#endif
       ENDIF
 
 C
@@ -6100,17 +6071,14 @@ C
          WRITE (LUPRI,'(/,1X,A)')
      &  ' Calculations without London atomic orbitals.'
       ELSE
-#if defined MOD_MAGNETIZ
          WRITE (LUPRI,'(/,1X,A)')
      &  ' London atomic orbitals used in calculations.'
-#endif
       END IF
 
 CMI   ...there are three defferent types of the magnetizability output 
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
-         write(lupri,'(3X,A)') '...magnetizability output 1...'
          WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
      &      ' Magnetizability:           ',    AVE,' (au), ',
      &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
@@ -6131,7 +6099,6 @@ CMI  ====================================================================
          ANI = PAR - PER
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
-         write(lupri,'(3X,A)') '...magnetizability output 2...'
          WRITE (LUPRI,'(6(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6156,7 +6123,6 @@ CMI  ====================================================================
          ANI2 = PVAL(2) - (PVAL(1) + PVAL(3))/D2
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
-         write(lupri,'(3X,A)') '...magnetizability output 3...'
          WRITE (LUPRI,'(5(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE, SI*AVE*1.0D31, CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6404,6 +6370,7 @@ C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
+#ifdef MOD_LAO_REARRANGED
         if (SEPTEP) then
 
          if (.not. XLR_SKIPEE) then
@@ -6445,6 +6412,7 @@ C--------------------------------------------------------------------
          end if
 
         end if
+#endif
 
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)

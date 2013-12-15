@@ -8,22 +8,22 @@ It is very easy to contribute to the
 You don't need to install anything extra except CMake.
 It is as easy as typing::
 
-  $ ./setup [--flags] -D BUILDNAME="my-build-name"
+  $ ./setup [--flags]
   $ cd build
-  $ make Experimental
+  $ make -jN -D Nightly
 
-The result of ``make Experimental`` appears automatically on the
+The result of appears automatically on the
 `DIRAC Dashboard <http://repo.ctcc.no/CDash/index.php?project=DIRAC>`_.
 
-Once ``make Experimental`` works you can create a script to run ``make Nightly``.
 To get inspired have a look at the cdash example recipes in the repository
 under ``maintenance/cdash``. Then put it under crontab. Here is an example::
 
-  # m  h  dom mon dow command
-  
-    05 00 *   *   *   /home/bast/nightly/smokey_fc18_gfortran-4.7.2
-    00 02 *   *   *   killall -9 dirac.x
-    05 02 *   *   *   /home/bast/nightly/smokey_fc18_gfortran-4.7.2_i8
-    00 04 *   *   *   killall -9 dirac.x
-    05 04 *   *   *   /home/bast/nightly/smokey_fc18_gfortran-4.7.2_mpi
-    00 06 *   *   *   killall -9 dirac.x
+  # m  h  dom mon dow   command
+    05 01 *   *   *     /home/bast/nightly/dirac/maintenance/cdash/Linux-x86_64-GNU-SYSTEM_NATIVE         -b release-13 -p "--release" -n 12
+    00 02 *   *   *     killall -9 dirac.x
+    05 02 *   *   *     /home/bast/nightly/dirac/maintenance/cdash/Linux-x86_64-Intel-MKL                 -b release-13 -p "--release" -n 12
+    00 03 *   *   *     killall -9 dirac.x
+    05 03 *   *   *     /home/bast/nightly/dirac/maintenance/cdash/Linux-x86_64-OpenMPI-GNU-SYSTEM_NATIVE -b release-13 -p "--release" -n 6
+    00 05 *   *   *     killall -9 dirac.x
+    05 05 *   *   *     /home/bast/nightly/dirac/maintenance/cdash/Linux-x86_64-OpenMPI-Intel-MKL         -b release-13 -p "--release" -n 6
+    00 07 *   *   *     killall -9 dirac.x

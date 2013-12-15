@@ -1074,10 +1074,12 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
+#ifdef MOD_INTEREST
       use module_interest_interface,                                    &
      &    only: initialize_interest_herd,                               &
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
+#endif
       implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1219,17 +1221,29 @@ C
 C
 C        initialize the InteRest two-electron MPI calculation
 C
+#ifdef MOD_INTEREST
          call initialize_interest_herd 
+#else
+         call quit('ERROR: InteRest lib not available')
+#endif
       ELSE IF (ITASK .EQ. 9) THEN
 C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
+#ifdef MOD_INTEREST
          call process_two_electron_integrals_4comp_slaves 
+#else
+         call quit('ERROR: InteRest lib not available')
+#endif
       ELSE IF (ITASK .EQ. 10) THEN
 C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
+#ifdef MOD_INTEREST
          call process_two_electron_integrals_2comp_slaves 
+#else
+         call quit('ERROR: InteRest lib not available')
+#endif
 #endif /* VAR_MPI2 */
       ELSE
 C
