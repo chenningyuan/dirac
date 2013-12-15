@@ -1,8 +1,9 @@
 
-"""
-    Beholder - numerically tolerant test library.
 
-    Version 0.0.0
+BEHOLDER_VERSION = 'v0.0.1'
+
+"""
+    Beholder - numerically tolerant, bug intolerant test library.
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
@@ -74,7 +75,7 @@ class TestRun():
 
     #---------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='Beholder - numerically tolerant test library.')
+        parser = OptionParser(description='Beholder %s - numerically tolerant, bug intolerant test library.' % BEHOLDER_VERSION)
         parser.add_option('--binary-dir',
                           '-b',
                           action='store',
@@ -109,6 +110,7 @@ class _SingleFilter():
         for key in kwargs.keys():
             if key not in list_of_recognized_keywords:
                 sys.stderr.write('ERROR: keyword %s not recognized\n' % key)
+                sys.stderr.write('       available keywords: %s\n' % (', ').join(list_of_recognized_keywords))
                 sys.exit(-1)
 
         self.from_string  = kwargs.get('from_string', '')
