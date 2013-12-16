@@ -170,7 +170,7 @@ C  /* Deck rgetccsd */
 C
 C     Get energy from RELCCSD
 C
-      CHARACTER CENERGY*40
+      CHARACTER CENERGY*50
 #include "../relccsd/results.inc" 
 #include "../relccsd/inpt.inc" 
       IF (DOCCSDT) THEN
@@ -180,13 +180,16 @@ C
       ELSE IF (DOMP2) THEN
          CENERGY = 'MP2 energy from RELCCSD'
       ELSE IF (DOFSPC) THEN
-         CENERGY = '(IH-)Fock space CC energy'
+         CENERGY = '(IH-)Fock space CC energy for selected state'
       ELSE
          call quit('no energy from RELCCSD')
       END IF
+
+      RGETCCSD            = ETOT
+      if(dofspc) rgetccsd = efs(1)
+
       WRITE(LUPRI,'(2A,1P,E20.10)')
-     &   CENERGY,' = ',ETOT
-      RGETCCSD = ETOT
+     &   CENERGY,' = ',rgetccsd
       RETURN
       END
 C  /* Deck rgetccsd */

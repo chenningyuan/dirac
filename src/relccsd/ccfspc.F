@@ -653,7 +653,7 @@ C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 C        This makes the routine print excitation energies
@@ -663,7 +663,7 @@ C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,0:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
       ELSE
@@ -671,7 +671,7 @@ C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
       ENDIF
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
