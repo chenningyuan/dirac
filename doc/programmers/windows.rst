@@ -166,6 +166,17 @@ Make the CDash buildup in separate steps:  ::
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
 
+
+Automatic test runs 
+-------------------
+
+This is not easy task. Though regular launching of the buildup script can easily set up in the Windows "Task Scheduler", in praxis
+we were not able to achieve the full operability of such an automatic task.
+For instance, to perform "git pull" you must have your private key loaded in the *pageant* (see above), what is complicated when user is logged-out.
+
+We will investigate this issue further and update this manual accordingly.
+
+
 Further development plans
 -------------------------
 
