@@ -1,6 +1,6 @@
 
 
-13.1 (2013-12-15)
+13.1 (2013-12-16)
 -----------------
 
 - Magnetizabilities at the Hartree-Fock level with London atomic orbitals
