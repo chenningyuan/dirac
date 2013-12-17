@@ -2,13 +2,7 @@
 
 # previous bash-script translated to this Python form by Ivan Hrasko
 
-import re
-import sys
-import os
-import shutil
-import fnmatch
-import fileinput
-import subprocess
+import re, sys, os, shutil, fnmatch, fileinput, subprocess
 
 DIR_DOC = os.path.abspath(sys.argv[1])
 DIR_BUILD = os.path.abspath(sys.argv[2])
@@ -32,7 +26,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! .RABOOF
         #! -------
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace(line,re.sub(r'keyword(\([a-zA-Z 0-9_]\+\))','\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------',line))
+           print re.sub(r'keyword(([a-zA-Z 0-9_]+))','\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------',line[0:len(line)-1])
 
         #! replace:
         #! starstar(RABOOF)
@@ -44,7 +38,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*\*RABOOF
         #! ==========
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace(line,re.sub(r'starstar(\([a-zA-Z 0-9_]\+\))','\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========',line))
+           print re.sub(r'starstar(([a-zA-Z 0-9_]+))','\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========',line[0:len(line)-1])
            
         #! replace:
         #! star(RABOOF)
@@ -56,7 +50,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*RABOOF
         #! ========        
         for line in fileinput.input(RFILE,inplace=True):
-           print line.replace(line,re.sub(r'star(\([a-zA-Z 0-9_]\+\))','\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========',line))
+           print re.sub(r'star(([a-zA-Z 0-9_]+))','\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========',line[0:len(line)-1])
 
 SPHINX_CALL = 'sphinx-build -b html ' + DIR_TEMP + ' ' + DIR_FINAL
 subprocess.call(SPHINX_CALL,shell=True)        
