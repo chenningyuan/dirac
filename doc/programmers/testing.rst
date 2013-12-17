@@ -14,10 +14,12 @@ When you add a new test always add it to pamadm
 Otherwise the test will never be run as part of the default test suite.
 
 
-Avoid shell programming in test scripts
----------------------------------------
+Strive for portability
+----------------------
 
-Otherwise the tests are not portable to Windows. Do not use os.system() calls.
+Avoid shell programming or symlinks in test scripts otherwise the tests are not
+portable to Windows. Therefore do not use os.system() or os.symlink(). Do not
+use explicit forward slashes for paths, instead use os.path.join().
 
 
 Never add inputs to the test directories which are never run
@@ -26,30 +28,6 @@ Never add inputs to the test directories which are never run
 We want all inputs and outputs inside test/ to be accessile by the default test
 suite. Otherwise we have no automatic way to detect that some inputs or outputs
 have degraded. And degraded inputs and outputs are useless and confusing.
-
-
-How to add a new test
----------------------
-
-All you need to add a test is to add a python script called "test" in a new
-directory.
-
-In most cases you want to use the beholder test library since it gives you the
-framework to run DIRAC jobs and to filter numbers with numerical tolerance.
-
-But you don't have to. You have full liberty to test whatever you want in
-whatever way you want. Important is that you return an exit code. If the exit
-code is 0, the test was successful, if non-0, then the test has failed. Add the
-test to pamadm also.
-
-
-How the beholder test library works
------------------------------------
-
-Consult https://github.com/rbast/beholder.
-
-Also it helps browsing test scripts of related tests. If you are unsure how it
-works, please ask.
 
 
 How can I run a single test?
@@ -80,3 +58,19 @@ How to add labels to tests
 Here is an example::
 
   add_test('dft_ac', 'quick;dft')
+
+If you give several labels, separate them with ";".
+
+
+How to add a new test
+---------------------
+
+All you need to add a test is to add a python script called "test" in a new
+directory.
+
+In most cases you probably want to use the beholder_dirac.py test library (see
+:ref:`testing_beholder`) since it gives you the framework to run DIRAC jobs and
+to filter numbers with numerical tolerance.  But you don't have to. You have
+full liberty to test whatever you want in whatever way you want. Important is
+that you return an exit code. If the exit code is 0, the test was successful,
+if non-0, then the test has failed. Add the test to pamadm also.
