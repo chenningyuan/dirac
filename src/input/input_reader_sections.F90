@@ -1055,6 +1055,10 @@
          read(get_file_unit(),'(i5)') relcc_fs_tshold
       end if
 
+      if (kw_matches(word, '.GESTAT')) then
+         read(get_file_unit(),'(i5)') relcc_fs_select_state_for_numgrad_energy
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

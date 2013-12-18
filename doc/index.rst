@@ -35,11 +35,10 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-..
-    Updates and patches
-    ===================
+Updates and patches
+===================
     
-    * :doc:`ChangeLog <patches/CHANGELOG>`
+ :doc:`ChangeLog <patches/CHANGELOG>`
 
 
 First steps in DIRAC territory
@@ -168,6 +167,7 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`beholder_dirac.py <programmers/testing_beholder>` |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |

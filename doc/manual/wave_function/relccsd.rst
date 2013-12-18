@@ -250,6 +250,13 @@ Set maximum number of amplitude vectors used in the DIIS extrapolation.
 
 Specify requested convergence (10^-NTOL) in the amplitudes.
 
+.GESTAT
+~~~~~~~
+
+Specify the state number in the last active sector to pick the energy 
+from (remember to account for degeneracies) for a state-specific FSCC 
+geometry optimization based on a numerical gradient. 
+
 \*CCIH
 ------
 

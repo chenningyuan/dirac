@@ -21,11 +21,4 @@ test_run.execute(['LiH.dc_ukb.linresp_ep_magnetiz_lao-go_1.inp'],  ['LiH.C1.mol'
 test_run.execute(['LiH.dc_rkb.linresp_ee_magnetiz_lao-go_1.inp'],  ['LiH.C1.mol'], f)
 test_run.execute(['LiH.levyle.linresp_magnetiz_lao-go_1.inp'],     ['LiH.C1.mol'], f)
 
-f = Filter()
-f.add(from_string = 'London Magnetizability = Ebb',
-      num_lines   = 3,
-      tolerance   = 0.0000002)
-
-test_run.execute(['LiH.dc_rkb.openrsp_ee_magnetiz_lao-go_cm.inp'], ['LiH.C1.mol'], f)
-
 sys.exit(0)

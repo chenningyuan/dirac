@@ -414,7 +414,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
-     &                   ISIZE,INDX,IRPS,IND)
+     &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
       use codata
 #include "implicit.h"
@@ -443,6 +443,8 @@ C     - ISIZE   : size of INDX & IRPS arrays (checked inside)
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
 C     - IND     : Work array of length N_IRPS
+C     - esels   : energy of selected (FSCC) state (for numerical gradient runs)
+C     - indsel  : index of selected (FSCC) state (for numerical gradient runs)
 C
 C----------------------------------------------------------------------
 C
@@ -462,11 +464,11 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION N_EV(*),INDX(*)
-      DIMENSION EV(IRCW,*)
+      DIMENSION EV(IRCW,*), esels(ircw)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
       REAL*8   , ALLOCATABLE :: EVI(:)
-      INTEGER :: IERR, ISIZE
+      INTEGER :: IERR, ISIZE, indsel
       LOGICAL DODBG
 C
 C---------------Local variables--------------------------------------
@@ -557,6 +559,12 @@ C
       NEW=0
       AVER=0.0D0
       AVERIM=0.0D0
+
+!     save energy for selected state (if any)
+      if(indsel > 0)then
+                      esels(1)    = EV(1,INDX(indsel)) + E_OFF
+        IF(IRCW.EQ.2) esels(ircw) = EV(2,INDX(indsel)) + ECCIM
+      end if
 
       DO I=1,N_TOTAL
         E = EV(1,INDX(I))
