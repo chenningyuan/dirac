@@ -104,7 +104,7 @@ module relcc_cfg
   integer, public :: relcc_fs_max11_iterations        = -1
   integer, public :: relcc_fs_max00_iterations        = -1
   integer, public :: relcc_fs_tshold                  = 0
-  integer, public :: relcc_fs_select_state_for_numgrad_energy = 0
+  integer, public :: relcc_fs_select_state_for_numgrad_energy = -1
 ! Intermediate Hamiltonian  
   integer, public, dimension(1:16) :: relcc_ih_nacthi = 0
   integer, public, dimension(1:16) :: relcc_ih_nactpi = 0
