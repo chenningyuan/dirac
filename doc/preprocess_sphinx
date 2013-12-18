@@ -10,13 +10,12 @@ DIR_BUILD = os.path.abspath(sys.argv[2])
 DIR_TEMP = os.path.join(DIR_BUILD,'html_temp')
 DIR_FINAL = os.path.join(DIR_BUILD,'html')
 
-shutil.rmtree(DIR_TEMP,True)
+shutil.rmtree(DIR_TEMP,ignore_errors=True)
 shutil.copytree(DIR_DOC,DIR_TEMP)
 
 for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
     for filename in fnmatch.filter(files,'*.rst'):
-        RFILE = os.path.join(root,filename)
-        
+        for line in fileinput.input(os.path.join(root,filename),inplace=True):
         #! replace:
         #! keyword(RABOOF)
         #! by:
@@ -25,9 +24,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #!
         #! .RABOOF
         #! -------
-        for line in fileinput.input(RFILE,inplace=True):
-           print re.sub(r'keyword(([a-zA-Z 0-9_]+))','\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------',line[0:len(line)-1])
-
+            match_keyword = re.match(r'keyword\(([a-zA-Z 0-9_]+)\)',line)
         #! replace:
         #! starstar(RABOOF)
         #! by:
@@ -37,9 +34,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! ==========
         #! \*\*RABOOF
         #! ==========
-        for line in fileinput.input(RFILE,inplace=True):
-           print re.sub(r'starstar(([a-zA-Z 0-9_]+))','\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========',line[0:len(line)-1])
-           
+            match_starstar = re.match(r'starstar\(([a-zA-Z 0-9_]+)\)',line)
         #! replace:
         #! star(RABOOF)
         #! by:
@@ -48,10 +43,22 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #!
         #! ========
         #! \*RABOOF
-        #! ========        
-        for line in fileinput.input(RFILE,inplace=True):
-           print re.sub(r'star(([a-zA-Z 0-9_]+))','\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========',line[0:len(line)-1])
+        #! ========
+            match_star = re.match(r'star\(([a-zA-Z 0-9_]+)\)',line)
+            if match_keyword:
+                raboof = match_keyword.group(1)
+                print '.. index:: .' + raboof + '\n.. _.' + raboof + ':\n\n.' + raboof + '\n----------'
+            elif match_starstar:
+                raboof = match_starstar.group(1)
+                print '.. index:: **' + raboof + '\n.. _**' + raboof + ':\n\n==========\n\\*\\*' + raboof + '\n=========='
+            elif match_star:
+                raboof = match_star.group(1)
+                print '.. index:: *' + raboof + '\n.. _*' + raboof + ':\n\n==========\n\\*' + raboof + '\n=========='
+            else:
+                print line[0:len(line)-1]
+        
 
 SPHINX_CALL = 'sphinx-build -b html ' + DIR_TEMP + ' ' + DIR_FINAL
 subprocess.call(SPHINX_CALL,shell=True)        
-shutil.rmtree(DIR_TEMP,True)
+shutil.rmtree(DIR_TEMP,ignore_errors=True)
+
