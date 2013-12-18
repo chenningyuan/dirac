@@ -1,6 +1,6 @@
 module pcm_utils
 
-   use iso_c_binding
+   use, intrinsic :: iso_c_binding
 
    implicit none
 

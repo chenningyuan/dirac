@@ -27,7 +27,7 @@
 
 module pcm_scf
 
-   use iso_c_binding
+   use, intrinsic :: iso_c_binding
    
    implicit none 
 
@@ -273,8 +273,8 @@ module pcm_scf
       asc = 0.0d0
 
       if (.not.(pcmmod_separate)) then
-        potName = 'TotMEP'//char(0) 
-        chgName = 'TotASC'//char(0)
+        potName = 'TotMEP'//c_null_char 
+        chgName = 'TotASC'//c_null_char
 ! Calculate the (total) Molecular Electrostatic Potential
         call get_mep(nr_points, tess_cent, mep, density_matrix, work, lfree, 0, pcmmod_skipss)
 ! Set a cavity surface function with the MEP
@@ -306,15 +306,15 @@ module pcm_scf
         allocate(ele_pol_chg(nr_points))
         ele_pol_chg = 0.0d0
   
-        potName1 = 'NucMEP'//char(0)
-        chgName1 = 'NucASC'//char(0)
+        potName1 = 'NucMEP'//c_null_char
+        chgName1 = 'NucASC'//c_null_char
         call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
         call set_surface_function(nr_points, nuc_pot, potName1)
         call comp_chg_pcm(potName1, chgName1)
         call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
-        potName2 = 'EleMEP'//char(0)
-        chgName2 = 'EleASC'//char(0)
+        potName2 = 'EleMEP'//c_null_char
+        chgName2 = 'EleASC'//c_null_char
         call get_electronic_mep(nr_points, density_matrix, tess_cent, ele_pot, work, lfree, 0, .false., pcmmod_skipss)
         call set_surface_function(nr_points, ele_pot, potName2)
         call comp_chg_pcm(potName2, chgName2)
@@ -331,12 +331,12 @@ module pcm_scf
         end if
 
 ! Obtain vector of total MEP
-        potName  = 'TotMEP'//char(0)
+        potName  = 'TotMEP'//c_null_char
         mep(:) = nuc_pot(:) + ele_pot(:)
         call set_surface_function(nr_points, mep, potName)
 
 ! Obtain vector of total polarization charges 
-        chgName  = 'TotASC'//char(0)
+        chgName  = 'TotASC'//c_null_char
         asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
         call set_surface_function(nr_points, asc, chgName)
 
