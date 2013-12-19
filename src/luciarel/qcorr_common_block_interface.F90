@@ -1,16 +1,37 @@
        module qcorr_interface
 
+       use qcorr_cfg
+
        implicit none
 
 public init_qcorr
+public init_qcorr_rel
+public init_qcorr_nr
 
 
-contains 
+contains
 
-      subroutine init_qcorr()
+      subroutine init_qcorr(relQC)
+
+      logical, intent(in) :: relQC
 
 
-       
+      select case(relQC)
+
+        case(.true.)
+          print *, "rel here we go"
+          call init_qcorr_rel()
+        case(.false.)
+          call init_qcorr_nr()
+
+      end select
+      
+      end subroutine init_qcorr
+
+!contains 
+
+      subroutine init_qcorr_rel()
+
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "strbas.inc"
@@ -20,17 +41,20 @@ contains
 #include "cgas.inc"
 #include "gasstr.inc"
 
-
-
-
 ! integer block
       NGAS_q      = NGAS
-      IBSPGPFTP_q = IBSPGFTP
       MXNSTR_q    = MXNSTR
       NMS2VAL_q   = NMS2VAL
+      NACTEL_q    = real(NACTEL)
+      NORB_q      = 0
+      MXPNGAS_q   = MXPNGAS
+      
 
-      allocate(IGSOCC_q(MXPNGAS))
-      IGSOCC_q(1:MXPNGAS) = IGSOCC(1:MXPNGAS)
+      allocate(IBSPGPFTP_q(MXPSTT))
+      IBSPGPFTP_q(1:MXPSTT) = IBSPGPFTP(1:MXPSTT)
+
+      allocate(IGSOCC_q(MXPNGAS,2))
+      IGSOCC_q(1:MXPNGAS,1:2) = IGSOCC(1:MXPNGAS,1:2)
 
       allocate(NELFSPGP_q(MXPNGAS,MXPSTT))
       NELFSPGP(1:MXPNGAS,1:MXPSTT) = NELFSPGP(1:MXPNGAS,1:MXPSTT)
@@ -53,10 +77,66 @@ contains
       allocate(NOCTYP_q(MXPSTT))
       NOCTYP_q(1:MXPSTT) = NOCTYP(1:MXPSTT)
 
-      allocate(IST_FOR_DT_q(MXPSTT))
-      IST_FOR_DT_q(2,MXPSTT) = IST_FOR_DT(2,MXPSTT)
+      allocate(IST_FOR_DT_q(2,MXPSTT))
+      IST_FOR_DT_q(1:2,1:mxpstt) = IST_FOR_DT(1:2,1:MXPSTT)
 
-      end subroutine init_qcorr
+      end subroutine init_qcorr_rel
+
+
+      subroutine init_qcorr_nr()
+
+!#include "ipoist8.inc"         !kein file in lucita vorhanden
+#include "../lucita/mxpdim.inc"
+#include "../lucita/lucinp.inc" ! contains NACTEL
+#include "../lucita/strbas.inc"
+#include "../lucita/cstate.inc"
+#include "../lucita/strinp.inc"
+#include "../lucita/stinf.inc"
+#include "../lucita/cgas.inc"
+#include "../lucita/gasstr.inc"
+#include "../lucita/orbinp.inc"
+
+
+! integer block
+      NGAS_q      = NGAS
+      MXNSTR_q    = MXNSTR
+      NMS2VAL_q   = 1 
+      NACTEL_q    = real(NACTEL)
+      NORB_q      = ntoob
+      MXPNGAS_q   = MXPNGAS
+      
+
+      allocate(IBSPGPFTP_q(MXPSTT))
+      IBSPGPFTP_q(1:MXPSTT) = IBSPGPFTP(1:MXPSTT)
+
+      allocate(IGSOCC_q(MXPNGAS,2))
+      IGSOCC_q(1:MXPNGAS,1:2) = IGSOCC(1:MXPNGAS,1:2)
+
+      allocate(NELFSPGP_q(MXPNGAS,MXPSTT))
+      NELFSPGP(1:MXPNGAS,1:MXPSTT) = NELFSPGP(1:MXPNGAS,1:MXPSTT)
+
+      allocate(KNSTSO_q(MXPSTT))
+      KNSTSO_q(1:MXPSTT) = KNSTSO(1:MXPSTT) 
+      
+      allocate(KNSTSO2_q(MXPSTT))
+      KNSTSO2_q(1:MXPSTT) = KNSTSO(1:MXPSTT) 
+     
+!      allocate(MS2VAL_q(100))
+!      MS2VAL_q(1:100) = MS2VAL(1:100)
+
+!      allocate(NBLK_MS2_q(100))
+!      NBLK_MS2_q(1:100) = NBLK_MS2(1:100)
+
+      allocate(NELEC_q(MXPSTT))
+      NELEC_q(1:MXPSTT) = NELEC(1:MXPSTT)
+
+      allocate(NOCTYP_q(MXPSTT))
+      NOCTYP_q(1:MXPSTT) = NOCTYP(1:MXPSTT)
+
+!      allocate(IST_FOR_DT_q(2,MXPSTT))
+!      IST_FOR_DT_q(1:2,1:mxpstt) = IST_FOR_DT(1:2,1:MXPSTT)
+
+      end subroutine init_qcorr_nr
 
       end module
 

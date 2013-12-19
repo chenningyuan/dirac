@@ -1,20 +1,10 @@
 ***********************************************************************
 
-      SUBROUTINE Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,       ! C, LUSCR, ICISTR raus 
-     &                        LUSCR,ICISTR,IRC,WORK)
-*
-*
-* Analyze CI vector
-*
-* Jeppe Olsen, August 1995
-* Driven By IBLOCK, May 1997
-*           String occupations added, Feb. 98
+      subroutine Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,       ! C,LUSCR, ICISTR raus TODO??? 
+     &                        LUSCR,ICISTR,IRC,WORK,relQC)
 *
 *
 *''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-* Modified for relativistic CI calculations
-*
-*        Timo Fleig, Feb. 2000
 *''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 !     in:
 !         C: scratch space for ci vector
@@ -26,35 +16,20 @@
 !         ICISTR: 2
 !         IRC: 1 (real) 2 (complex)
 *
-!      use memory_allocator  ! call alloc -> allocate
-      use symmetry_setup_krci
-      use mospinor_info
       use qcorr_cfg
       use qcorr_interface
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"      ! coerr geth gegen -Infinity          
-* =====
-*.Input
-* =====
-*
-#include "mxpdim.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
-*
-      DIMENSION IBLOCK(8,NBLOCK),IBLTP(*)
+
+      implicit real*8(A-H,O-Z)
+
+      dimension IBLOCK(8,NBLOCK),IBLTP(*)
       dimension C(*), WORK(*)
-      integer               :: mj_statistics(-32:32)
+      logical, intent(in)   :: relQC
       integer, allocatable  :: mat1(:,:)
       integer, allocatable  :: astring(:,:)
       integer, allocatable  :: bstring(:,:)
       integer, allocatable  :: occupation_class(:,:)
       real(8), allocatable  :: mat2(:,:)
       character (len=2)     :: ferm_lab
-      character (len=1)     :: inv_symbol
       character (len=200), allocatable   :: ref_wavefunction(:,:)
       real(8), allocatable  :: ref_wavefunction_coeff(:)
       real(8), allocatable  :: ref_wavefunction_coeff_i(:)         ! coeff von der ersten ci_iteration!!!
@@ -62,12 +37,11 @@
       integer               :: nstates_ci
       real(8), allocatable  :: e_corr(:), e_tot(:)
       real(8)               :: q_corr, edci
-      real(8)               :: N = 8.0D0
 *
-      CALL QENTER('ANACI')
+      call QENTER('QCORR')
 
 !     initialize
-!     call qcorr_init()
+      call init_qcorr(relQC)
 
       allocate(ref_wavefunction(10,2))
       allocate(ref_wavefunction_coeff(10))
@@ -75,21 +49,25 @@
       ref_wavefunction_coeff      = 0.0d0 ! initialize all to 0.0d0
       ref_wavefunction_coeff_i    = 0.0d0 ! initialize all to 0.0d0
       ref_wavefunction_coeff_i(1) = 1.0d0
-      write(ref_wavefunction(1,1),"(4i4)"),1,2,3,4
-      write(ref_wavefunction(1,2),"(4i4)"),1,2,3,4
+      if(relQC)then
+        write(ref_wavefunction(1,1),"(4i4)"),1,2,3,4               ! for HF, TODO: multi reference case!!!
+        write(ref_wavefunction(1,2),"(4i4)"),1,2,3,4
+      else
+        write(ref_wavefunction(1,1),"(4i4)"),1,2,5,9
+        write(ref_wavefunction(1,2),"(4i4)"),1,2,5,9
+      end if
 
 *
 ** Specifications of internal space
 *
       NTEST = 000
-      NTEST = MAX(NTEST,IPRWFC)   !TODO
+      NTEST = max(NTEST,IPRWFC)
 *
       LBLK = -1
       IBOFF = 0
       call REWINE(LUSCR,-1)
       call REWINE(LUC,-1)
       call itods(-1,1,-1,LUSCR)
-      inv_symbol = ' '
 *
 * Loop over real and imaginary parts
       do IRIR = 1,IRC,1                                      !loop über call
@@ -101,9 +79,14 @@
           call IFRMDS(IONEM,1,-1,LUC)
         end if
         do IMK2_R = 1,NMS2VAL_q,1
-          MK2_R = MS2VAL_q(IMK2_R)
-          IACTP = IST_FOR_DT_q(1,IMK2_R)
-          IBCTP = IST_FOR_DT_q(2,IMK2_R)
+
+          if(relQC)then
+            IACTP = IST_FOR_DT_q(1,IMK2_R)
+            IBCTP = IST_FOR_DT_q(2,IMK2_R)
+          else
+            IACTP = 1
+            IBCTP = 2
+          end if
 *
 *  Offset for IBLOCK(sym,type) information
           if (IMK2_R.eq.1) then
@@ -112,14 +95,19 @@
             IBOFF = IBOFF + NBLK_MS2_q(IMK2_R-1)
           end if
 *
+          if(relQC)then 
+            NBL_C = NBLK_MS2_q(IMK2_R)
+          else
+            NBL_C = NBLOCK
+          end if
+
           call REWINE(LUSCR,-1)
-          NBL_C = NBLK_MS2_q(IMK2_R)
-          CALL COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
-          CALL ITODS(-1,1,-1,LUSCR)
-!     &         ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR,
-!     &         ' ----------------------------------------------'
+          call COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
+          call ITODS(-1,1,-1,LUSCR)
+
           NAEL = NELEC_q(IACTP)
           NBEL = NELEC_q(IBCTP)
+          write(6,*) 'nael, nbel ',nael,nbel
           allocate(astring(NAEL,MXNSTR_q))
           allocate(bstring(NBEL,MXNSTR_q))
 
@@ -136,22 +124,46 @@
 *. Number of occupation classes
           IWAY = 1
           NEL = NAEL + NBEL
-          CALL OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
+          
+          if(relQC)then 
+          write(6,*) 'nael, nbel before 0',nael,nbel
+          call OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
      &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
+          write(6,*) 'nael, nbel before 1',nael,nbel
+
+          else
+          write(6,*) 'nael, nbel before 0',nael,nbel
+          call OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
+     &           IGSOCC_q(1,1),IGSOCC_q(1,2),
+     &           0,0)
+          write(6,*) 'nael, nbel before 1',nael,nbel
+          end if 
 *
 *. and then the occupation classes
           allocate(occupation_class(NGAS_q,NOCCLS))
           allocate(mat1(10,NOCCLS))
           allocate(mat2(10,NOCCLS))
           IWAY = 2
-          CALL OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
-     &                   IGSOCC_q(1,1),IGSOCC_q(1,2))
+          
+          if(relQC)then 
+          write(6,*) 'nael, nbel before 2',nael,nbel
+          call OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
+     &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
+          write(6,*) 'nael, nbel before 3',nael,nbel
 
+          else
+          write(6,*) 'nael, nbel before 2',nael,nbel
+          call OCCLS(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
+     &           IGSOCC_q(1,1),IGSOCC_q(1,2),
+     &           0,0)
+          write(6,*) 'nael, nbel before 3',nael,nbel
+          end if 
 *
-*. Occupation of strings of given sym and supergroup
-          CALL get_Q_correction(C,LUSCR,NBL_C,WORK(KNSTSO_q(IACTP)),
-     &                     WORK(KNSTSO2_q(IBCTP)),
-     &                     NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
+
+          call get_Q_correction(C,LUSCR,NBL_C,
+     &                          WORK(KNSTSO_q(IACTP)),
+     &                          WORK(KNSTSO2_q(IBCTP)),
+     &                     NOCTPA,NOCTPB,MXPNGAS_q,IOCTPA,IOCTPB,
      &                     NBLOCK,IBLOCK(1,IBOFF),
      &                     THRES,MAXTRM,NAEL,NBEL,
      &                     astring, bstring,
@@ -160,10 +172,11 @@
      &                     NELFSPGP_q,
      &                     NOCCLS,NGAS_q,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,mj_statistics,inv_symbol,
+     &                     ICISTR,
      &                     IPRWFC, ref_wavefunction, 
      &                     ref_wavefunction_coeff,nref,
-     &                     ref_wavefunction_coeff_i,N)
+     &                     ref_wavefunction_coeff_i,NACTEL_q,
+     &                     NORB_q,relQC)
 *
           deallocate(mat2)
           deallocate(mat1)
@@ -207,8 +220,8 @@
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
         
-        CALL E_Q(e_corr,ref_wavefunction_coeff,nref,
-     &           ref_wavefunction_coeff_i,N,Edc_1,
+        call E_Q(e_corr,ref_wavefunction_coeff,nref,
+     &           ref_wavefunction_coeff_i,NACTEL_q,Edc_1,
      &           Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
      &           Epc_2, Emc_2)
 
@@ -291,51 +304,51 @@
 
 !
  
-      CALL QEXIT('ANACI')
+      call QEXIT('QCORR')
 *
-      END SUBROUTINE Q_correction
+      end subroutine Q_correction
+
 ***********************************************************************
 
-      SUBROUTINE get_Q_correction(C,LUC,NBL_C,NSSOA,NSSOB,
-     &                       NOCTPA,NOCTPB,
-     &                       MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
+      subroutine get_Q_correction(C,LUC,NBL_C,
+     &                            NSSOA,
+     &                            NSSOB,
+     &                       NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
+     &                       NBLOCK,IBLOCK,
      &                       THRES,MAXTRM,NAEL,NBEL,
      &                       IASTR,IBSTR,IBLTP,NSMST,
      &                       NCPMT,WCPMT,NELFSPGP_q,NOCCLS,
      &                       NGAS_q,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,mj_statistics,inv_symbol,
-     &                       IPRNT, ref_wavefunction,
+     &                       ICISTR,IPRNT,
+     &                       ref_wavefunction,
      &                       ref_wavefunction_coeff,nref,
-     &                       ref_wavefunction_coeff_i,N)
+     &                       ref_wavefunction_coeff_i,N,
+     &                       NORB,relQC)
 *
 ***********************************************************************
 *
-!      use mospinor_info
-*  Orbitals
-      IMPLICIT REAL*8(A-H,O-Z)
-!#include "ipoist8.inc"     ! ohne fehler
-      DIMENSION C(*)
+      implicit real*8(A-H,O-Z)
+
+      dimension C(*)
 *. General input
-      DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
-      DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
-      DIMENSION IBLTP(*)
-      DIMENSION NELFSPGP_q(MXPNGAS,*)
-      DIMENSION IOCCLS(NGAS_q,NOCCLS)
+      dimension NSSOA(NSMST,*), NSSOB(NSMST,*)
+      dimension IASTR(NAEL,*),IBSTR(NBEL,*)
+      dimension IBLTP(*)
+      dimension NELFSPGP_q(MXPNGAS,*)
+      dimension IOCCLS(NGAS_q,NOCCLS)
+      logical, intent(in) :: relQC
+      integer, intent(in) :: norb
 *. Specific input
-      DIMENSION IBLOCK(8,NBL_C)
+      dimension IBLOCK(8,NBL_C)
       character(len=200), intent(in)  :: ref_wavefunction(10,2)
 
 *. Output
-      DIMENSION NCPMT(10,NOCCLS)
-      DIMENSION WCPMT(10,NOCCLS)
+      dimension NCPMT(10,NOCCLS)
+      dimension WCPMT(10,NOCCLS)
       real(8) , intent(inout) :: ref_wavefunction_coeff(10)
       real(8) , intent(inout) :: ref_wavefunction_coeff_i(10)       ! coeff von der ersten ci_iteration!!!
      
-      integer, allocatable              :: mjorb_vec(:)
-      integer, intent(inout)            :: mj_statistics(-32:32)
-      character (len=1) , intent(inout) :: inv_symbol
-      character (len=1)                 :: inv_symbol_orb
       character (len=4),  allocatable   :: conf_string_a(:)
       character (len=4),  allocatable   :: conf_string_b(:)
       character (len=10), allocatable   :: stringa(:)
@@ -349,84 +362,94 @@
       NTESTL = 0000
       NTEST = max(IPRNT,NTESTL)
 *
-      MINPRT    = 0
-      ITRM      = 0
       IDET      = 0
-      IIDET     = 0
-      ILOOP     = 0
-      NCIVAR    = 0
-      CNORM     = 0.0D0
 
-      IF( ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
-      IIDET = 0
-      ILOOP = ILOOP + 1
+      if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
       
       IDET     = 0
 *
+      write(6,*) "nbl_c is",nbl_c
 *
-      DO JBLOCK = 1, NBL_C
+      do JBLOCK = 1, NBL_C
 *
          IATP = IBLOCK(1,JBLOCK)
          IBTP = IBLOCK(2,JBLOCK)
          IASM = IBLOCK(3,JBLOCK)
          IBSM = IBLOCK(4,JBLOCK)
 
+
 *. Obtain alpha strings of sym IASM and type IATP
-         CALL GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
+         if(relQC)then 
+         call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
      &                              NASTR1,IASTR)
+
+         else
+
+         IDUM = 0
+         call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
+     &                           NORB,0,IDUM,IDUM)
+         end if
+
 *. Obtain beta strings of sym IBSM and type IBTP
-         CALL GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
+         if(relQC)then 
+         call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
      &                              NBSTR1,IBSTR)
+
+         else
+
+         IDUM = 0
+         call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
+     &                           NORB,0,IDUM,IDUM)
+         end if
 *
-         IF(IBLTP(IASM).EQ.2) THEN
+         if(IBLTP(IASM).eq.2) then
             IRESTR_ANA = 1
-         ELSE
+         else
             IRESTR_ANA = 0
-         END IF
+         end if
 *
          NIA = NSSOA(IASM,IATP)
          NIB = NSSOB(IBSM,IBTP)
          IMZERO = 0
+         write(6,*) "block jblock nia,nib",jblock,nia,nib
          if (ICISTR.ge.2) then
 *. Read in a Type-Type-symmetry block
 *? Perhaps use GSTTBL here?
-            CALL IFRMDS(IDET,1,-1,LUC)
-            CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+            call IFRMDS(IDET,1,-1,LUC)
+            call FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
             IDET = 0
-         END IF
-!       write(6,*) ' IMZERO in gasanas:  ',IMZERO
-!        if(linear) IMZERO = 0
-         IF(IMZERO.NE.1) THEN
+         end if
+        write(6,*) ' IMZERO in ciq..ciq..  ',IMZERO
+         if(IMZERO.ne.1) then
 *
             IBBAS = 1
             IABAS = 1
 *
-            DO IB = IBBAS,IBBAS+NIB-1                                  ! loop über beta strings
-               IF(IRESTR_ANA.EQ.1.AND.IATP.EQ.IBTP) THEN
+            do IB = IBBAS,IBBAS+NIB-1                                  ! loop über beta strings
+               if(IRESTR_ANA.eq.1.and.IATP.eq.IBTP) then
                   MINIA = IB - IBBAS + IABAS
-               ELSE
+               else
                   MINIA = IABAS
-               END IF
-               DO  IA = MINIA,IABAS+NIA-1                              ! loop über alpha strings 
+               end if
+               do  IA = MINIA,IABAS+NIA-1                              ! loop über alpha strings 
 *
-                  IF (ILOOP .EQ. 1 ) NCIVAR = NCIVAR + 1
                     IDET = IDET + 1
-                    ITRM = ITRM + 1
-                    IIDET = IIDET + 1
-                    IF( ITRM .LE. MAXTRM ) THEN
-                       CNORM = CNORM + C(IDET) ** 2
                    
-
+                    write(6,*) 'idet, c',idet,c(idet),nael,nbel
+                    write(6,"(60i4)")          ! save strings into array
+     &              (iastr(iel,ia),iel=1,nael)                         
+                    write(6,"(60i4)") 
+     &              (ibstr(iel,ib),iel=1,nbel)
                     write(ref_wavefunction_tmp(1,1),"(60i4)")          ! save strings into array
      &              (iastr(iel,ia),iel=1,nael)                         
                     write(ref_wavefunction_tmp(1,2),"(60i4)") 
-     &              (ibstr(iel,ib),iel=1,nael)
+     &              (ibstr(iel,ib),iel=1,nbel)
 
                     ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
                     ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
                                                                         
                     iref_tmp = 0
-                    !nref     = 1 ! TODO: schould be defined in first subroutine
+
                     do 
 
                       iref_tmp = iref_tmp + 1                           ! exit if iref_tmp > nref
@@ -447,98 +470,20 @@
                     end do
 
 
-                    END IF
-               END DO
+               end do
 *     ^ End of loop over alpha strings
-            END DO
+            end do
 *     ^ End of loop over beta strings
-         END IF
+         end if
 *     ^ End of if statement for nonvanishing blocks
-      END DO
+      end do
 *     ^ End of loop over blocks
-!      IF(IIDET .EQ. 0 ) WRITE(6,*) '   ( no coefficients )'
-*
-!      WRITE(6,'(/A,E15.8/)')
-!     &     '  Norm of printed CI vector .. ', CNORM                !ausschreiben des vektors
 
-
-
-*
-*.Size of CI coefficients
-*
-*
-      IDET = 0
-      IF(ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
-      CALL IZERO(NCPMT,10*NOCCLS)
-      CALL DZERO(WCPMT,10*NOCCLS)
-      DO JBLOCK = 1, NBL_C
-         IATP = IBLOCK(1,JBLOCK)
-         IBTP = IBLOCK(2,JBLOCK)
-         IASM = IBLOCK(3,JBLOCK)
-         IBSM = IBLOCK(4,JBLOCK)
-*
-         IF(IBLTP(IASM).EQ.2) THEN
-            IRESTR_ANA = 1
-         ELSE
-            IRESTR_ANA = 0
-         END IF
-*. Occupation class corresponding to given occupation
-         JOCCLS = 0
-         DO JJOCCLS = 1, NOCCLS
-            IM_THE_ONE = 1
-            DO IGAS = 1, NGAS_q
-               IF(NELFSPGP_q(IGAS,IATP-1+IOCTPA)+
-     &          NELFSPGP_q(IGAS,IBTP-1+IOCTPB).NE.IOCCLS(IGAS,JJOCCLS))
-     &          IM_THE_ONE = 0
-            END DO
-            IF(IM_THE_ONE .EQ. 1 ) JOCCLS = JJOCCLS
-         END DO
-*
-         NIA = NSSOA(IASM,IATP)
-         NIB = NSSOB(IBSM,IBTP)
-*
-         IMZERO = 0
-         IF( ICISTR.GE.2 ) THEN
-*. Read in a Type-Type-symmetry block                               
-            CALL IFRMDS(IDET,1,-1,LUC)
-            CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
-            IDET = 0
-         END IF
-         IF(IMZERO.EQ.0) THEN
-
-            DO IB = IBBAS,IBBAS+NIB-1                                  ! 2. do-loop ber a und b strings
-               IF(IRESTR_ANA.EQ.1.AND.IATP.EQ.IBTP) THEN
-                  MINIA = IB - IBBAS + IABAS
-               ELSE
-                  MINIA = IABAS
-               END IF
-               DO IA = MINIA,IABAS+NIA-1
-                  IDET = IDET + 1
-                  DO IPOT = 1, ipot_max
-                     IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IDET)).AND.
-     &                 ABS(C(IDET)).GT. 10.0D0 ** ( - IPOT )) THEN
-                       NCPMT(IPOT,JOCCLS)=
-     &                       NCPMT(IPOT,JOCCLS)+ 1
-                       WCPMT(IPOT,JOCCLS)=
-     &                       WCPMT(IPOT,JOCCLS)+ C(IDET) ** 2
-                     END IF
-                  END DO
-*     ^ End of loop over powers of ten
-               END DO
-*     ^ End of loop over alpha strings
-            END DO
-*     ^ End of loop over beta strings
-         END IF
-*     ^ End of test for novanishing blocks
-      END DO
-*     ^ End of loop over blocks
-*
-
-      END !SUBROUTINE get_Q_correction
+      end subroutine get_Q_correction
 
 ***********************************************************************
 
-      SUBROUTINE E_Q(e_corr,ref_wavefunction_coeff,nref,
+      subroutine E_Q(e_corr,ref_wavefunction_coeff,nref,
      &               ref_wavefunction_coeff_i,N,Edc_1,
      &               Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
      &               Epc_2, Emc_2)
@@ -558,9 +503,9 @@
 *
 ***********************************************************************
 *
-      IMPLICIT NONE
+      implicit none
 
-      REAL*8,  intent(in)  :: e_corr
+      real*8,  intent(in)  :: e_corr
       real*8,  intent(in)  :: ref_wavefunction_coeff(nref)
       real*8,  intent(in)  :: ref_wavefunction_coeff_i(nref)
       real*8,  intent(out) :: Edc_1, Edrc_1, Epc_1, Emc_1
@@ -568,12 +513,12 @@
       real*8,  intent(in)  :: N
       integer, intent(in)  :: nref
 
-      REAL*8  :: c01 = 0         ! c01    = sum ( cp ) **2
-      REAL*8  :: c02 = 0         ! c02    = (sum ( cref * cp )) **2
-      REAL*8  :: c02_2 = 0       ! c02_2  = c02 * c02 entspricht c01
-      REAL*8  :: teta_1 = 0      ! teta_1 = arccos( sqrt(c01) )
-      REAL*8  :: teta_2 = 0      ! teta_2 = arccos( sqrt(c02_2))
-      integer :: i
+      real*8  :: c01    = 0      ! c01    = sum ( cp ) **2
+      real*8  :: c02    = 0      ! c02    = (sum ( cref * cp )) **2
+      real*8  :: c02_2  = 0      ! c02_2  = c02 * c02, entspricht c01
+      real*8  :: teta_1 = 0      ! teta_1 = arccos( sqrt(c01) )
+      real*8  :: teta_2 = 0      ! teta_2 = arccos( sqrt(c02_2))
+      integer :: i      = 0
       
 
       do i = 1, nref
@@ -589,10 +534,10 @@
       c02_2  = c02 * c02
       teta_2 = acos(sqrt(c02_2))
 
-!      write(6,*) "c01",   c01
-!      write(6,*) "sqrt (c01)",  sqrt(c01)
-!      write(6,*) "c02",   c02
-!      write(6,*) "c02_2", c02_2
+      write(6,*) "c01",         c01
+      write(6,*) "sqrt (c01)",  sqrt(c01)
+      write(6,*) "c02",         c02
+      write(6,*) "c02_2",       c02_2
      
       Edc_1  = (1 - c01) * e_corr            
       Edrc_1 = ((1-c01) / c01) * e_corr
@@ -610,7 +555,7 @@
       if(N > 3.0d0) Emc_2 = ((N - 2) * (N - 3) / (N * (N - 1))) *
      &                      ((1 - c02_2 **2) / c02_2 **2) * e_corr  
       
-      END SUBROUTINE E_Q
+      end subroutine E_Q
 
 
 

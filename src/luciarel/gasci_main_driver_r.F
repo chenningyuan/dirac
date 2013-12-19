@@ -822,7 +822,7 @@ C
      &                  ICISTR,IRC)
         call q_correction(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
-     &                  ICISTR,IRC,WORK)
+     &                  ICISTR,IRC,WORK,.true.)
       end do
       call REWINE(LUC,-1) 
       NPTESTVAR = 00

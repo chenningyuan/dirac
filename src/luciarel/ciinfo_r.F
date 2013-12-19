@@ -472,7 +472,6 @@ CTEMP     ISM2(3,5) = 1
           CALL OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS,
      &                   IGSOCC(1,1),IGSOCC(1,2))
 *
-*
 *. Occupation of strings of given sym and supergroup
 
 	write(6,*) 'call ##########'
@@ -677,6 +676,7 @@ C
       end if
 #endif
 *
+      write(6,*) "nbl_c is",nbl_c
       DO JBLOCK = 1, NBL_C
 *
          IATP = IBLOCK(1,JBLOCK)
@@ -708,6 +708,7 @@ C
 #endif
 *
          IMZERO = 0
+         write(6,*) "block jblock nia,nib",jblock,nia,nib
          if (ICISTR.ge.2) then
 *. Read in a Type-Type-symmetry block
 *? Perhaps use GSTTBL here?
