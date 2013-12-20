@@ -35,8 +35,9 @@ rem plink -agent git@repo.ctcc.no
 C:\Git\bin\git.exe clean -f
 
 rem download fresh Dirac - MUST HAVE full path of git
-C:\Git\bin\git.exe checkout release-13 
-C:\Git\bin\git.exe pull origin release-13
+rem C:\Git\bin\git.exe checkout release-13 
+rem C:\Git\bin\git.exe pull origin release-13
+C:\Git\bin\git.exe pull
 
 rem show 3 last commits...
 rem C:\Git\bin\git.exe log -3
