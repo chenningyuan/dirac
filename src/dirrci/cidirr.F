@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -189,9 +189,6 @@ C
       DO 10 J3 = 0, MAXE3
       J2 = NELEC - J1 - J3
       IF (J2.LT.0.OR.J2.GT.NORBR(2)) GO TO 10
-CTROND      NCDET = NOVERI(NORBR(1),J1)
-CTROND      NCDET = NOVERI(NORBR(2),J2) * NCDET
-CTROND      NCDET = NOVERI(NORBR(3),J3) * NCDET
       NCDET = BICO(NORBR(1),J1)
       NCDET = BICO(NORBR(2),J2) * NCDET
       NCDET = BICO(NORBR(3),J3) * NCDET
@@ -1921,8 +1918,6 @@ C
 C
       RETURN
 C
-!radovan: unreachable
-10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
       END
 C
       SUBROUTINE MAKIDS (ILIND,IRIND,IJREC,JLIND,JRIND,
@@ -2822,8 +2817,6 @@ C
 
       CHECK_INTS = .FALSE.
 CMI   CHECK_INTS = .TRUE.
-C
-CTROND      REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
       KLS = 0
@@ -2849,11 +2842,7 @@ CTROND      REALAR = .TRUE.
       Read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
       IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
       ENDIF
-      IF (REALAR) THEN
-         DO I = 1, M1
-            RKLI(I) = 0.0
-         ENDDO
-      ENDIF
+      IF (REALAR) CALL DCOPY(M1,0.0,0,RKLI,1)
       OPEN (MRCTWOE,FILE=FNAM(8),FORM='UNFORMATTED')
    10 REWIND (MDCINT)
       READ (MDCINT)
@@ -2863,10 +2852,8 @@ CTROND      REALAR = .TRUE.
       MINTB = 0
       MAX = MM
       IF (BREIT) MAX = MAX * 2
-      DO 20 IJKL = 1, MAX
-      TIR (IJKL) = 0.D0
-      TII (IJKL) = 0.D0
-   20 CONTINUE
+      CALL DCOPY(MAX,0.D0,0,TIR,1)
+      CALL DCOPY(MAX,0.D0,0,TII,1)
 C
 C     -------------------------
 C     READ IN COULOMB INTEGRALS
@@ -2900,13 +2887,9 @@ C
       ENDIF
 
       IF (CHECK_INTS) THEN
-CMI     write(6,*) 'read MDCINT indexes, integrals;  indk, indl, rklr: '
         write(6,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NZ
         do i = 1, nz
-CMI      write(6,'(2x,a,i4,a,i4,a,i4,a,f16.6)')
-CMI  &   'i=',i,' indk(i)=',indk(i),
-CMI  &   ' indl(i)=',indl(i),' rklr(i)=',rklr(i)
-         write(6,*) indk(i),indl(i),rklr(i)
+          write(6,*) indk(i),indl(i),rklr(i)
         enddo
       ENDIF
 

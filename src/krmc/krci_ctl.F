@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -95,6 +95,8 @@ C
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
+      character (len= 4)              :: symmetry_str1
+      character (len= 4)              :: symmetry_str2
       character (len= 4)              :: tmp_symmetry_str
       character (len= 4), allocatable :: nkrci_ciroots_symstr(:)
       character (len= 1)              :: last_char
@@ -659,8 +661,72 @@ C              subsequent MCSCF...
                STATE_SELECT_KRCI = .TRUE.
                DOPROP_KRCI       = .TRUE.
                DOJZEXP           = .TRUE.
-               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI,
-     &                       NOMEGASEL_statenr
+               if(.not.linear) then
+                 READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI,
+     &                         NOMEGASEL_statenr
+               else
+!                read mij value, root symmetry and # roots in linear symmetry input format
+                 read(lucmd,*) symmetry_str1, symmetry_str2, 
+     &                         NOMEGASEL_statenr
+
+                 do i = 1,2
+                 if(i == 1) symmetry_str = symmetry_str1
+                 if(i == 2) symmetry_str = symmetry_str2
+!                manipulate mij-value input string for further processing
+!                print *,'symmetry_str is ==> ',symmetry_str
+                 tmp_symmetry_str = trim(symmetry_str)
+                 length_of_string = len_trim(tmp_symmetry_str)
+!                print *,'length of symmetry_str is ==> ',
+!    &                    length_of_string
+                 last_char = tmp_symmetry_str(length_of_string:
+     &                                        length_of_string)
+!                print *,'last char of symmetry_str is ==> ',
+!    &                    last_char
+
+!                determine symmetry irrep of CI wave function
+!                --------------------------------------------
+
+!                a. check for inversion symmetry
+                 ascii_lchar = iachar(last_char)
+                 if(nfsym .gt. 1)then
+                   if(ascii_lchar .eq. iachar('g'))then
+                     gerade_mcci_wf = .true.
+                   else if(ascii_lchar .eq. iachar('u'))then
+                     gerade_mcci_wf = .false.
+                   else
+                     write(lupri,'(/a,/a)')
+     & '  *** input error: Dinfh contains the inversion operation'//
+     & ' as group element.',
+     & '  please specify either g or u in addition to the mj value. ***'
+                        call quit('  *** input error: Dinfh contains
+     & the inversion operation as group element. ***')
+                    end if
+                  else
+                    gerade_mcci_wf   = .true.
+                    length_of_string = length_of_string + 1
+                    if(ascii_lchar .eq. iachar('g')
+     &                 .or. ascii_lchar .eq. iachar('u'))then
+                      call quit(' *** input error: Cinfv does not
+     & have inversion as group element. ***')
+                    end if
+                  end if
+
+!                 b. get mij value in integer format
+                  read(tmp_symmetry_str(1:length_of_string-1),
+     &            fmt='(i6)') tmp_mij_val
+                  fermion_sym = 1
+                  if(.not.gerade_mcci_wf) fermion_sym = 2
+
+!                 retrieve active dbg irrep (routine is inside the module symmetry_setup_krci)
+                  call convert_mj_ferm_2_dbg_irrep_linsym_krci(
+     &                 mj2rep,max_nkrci_max_sym,tmp_mij_val,
+     &                 fermion_sym,is_current_dbg_irrep)
+
+!                 c. store the active irrep
+                  if(i == 1) IKRCI_SYMSEL   = is_current_dbg_irrep
+                  if(i == 2) NOMEGASEL_KRCI = tmp_mij_val
+                  end do
+               end if
                IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
      &            IKRCI_SYMSEL .GT. 0) THEN
                   NKRCI_SELOM(IKRCI_SYMSEL) = NOMEGASEL_KRCI
@@ -1181,9 +1247,9 @@ C
      &                  ' CI root selection for state > # of roots in'//
      &                  ' this symmetry. ***')
             end if
-            write(lupri,'(/a,a5,a,i4,a)')
-     &      ' *** symmetry:',xrepeig(ikrci_symmetry),
-     &      ' Omega value = ',nkrci_selom(ikrci_symmetry),
+            write(lupri,'(/a,i4,a,a5,a)')
+     &      ' *** symmetry:',ikrci_symmetry,
+     &      ' Omega value = ',xrepeig(ikrci_symmetry),
      &      '(/2 for fermionic systems)'
           end if
   303   continue

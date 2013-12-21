@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1136,7 +1136,8 @@ C      CALL DSCAL(NTOT,D2,PM,1)
 C
 C     Make ordered list of contributions
 C
-      IF(IPRINT.GE.1) THEN
+!     IF(IPRINT.GE.1) THEN
+! We always want this list /hjaaj Sep 2012
         CALL HEADER('Ordered list of contributions',-1)            
         DO IJ = 1,NTRI
           PBUF(IJ) = -ABS(PTRI(IJ))
@@ -1156,11 +1157,11 @@ C
           II = INDX(2,I)
           TMP = TMP + PTRI(IJ)
           FAC = TMP/EXPVAL
-          WRITE(LUPRI,'(2(A6,I5,3X),2E16.8,E16.5)') 
+          WRITE(LUPRI,'(2(A6,I5,3X),1P,2E16.8,E16.5)')
      &          REFFIL(JR),JJ,REFFIL(IR),II,PTRI(IJ),TMP,FAC
         ENDDO
  10     CONTINUE
-      ENDIF
+!     ENDIF
 C      
       RETURN
       END

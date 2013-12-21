@@ -8,7 +8,7 @@ C When referring to these routines or BLAS please check the page
 C http://www.netlib.org/blas/faq.html#1.2 for the original references.
 C
 C Make sure to use this only when nothing else is available. 
-#if defined (USE_OWN_BLAS)
+#if defined (USE_BUILTIN_BLAS)
 #if defined (USE_CUBLAS)
 c     Activate CUBLAS library (if available) only when the
 c     cost of copying the data is small compared to the number

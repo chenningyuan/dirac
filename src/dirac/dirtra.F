@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlab */
-      SUBROUTINE GETLAB(WORK,LWORK,IPRINT)
+      SUBROUTINE GETLAB(IPRINT)
 C***********************************************************************
 C
 C      Generate primitive labels for basis functions in dcblab.h
@@ -48,11 +48,10 @@ C
 #include "dcbbas.h"
 #include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
-      DIMENSION WORK(LWORK)
+      integer, allocatable :: kp(:)
 C
 #include "dcbibt.h"
       CALL QENTER('GETLAB')
-#include "memint.h"
       CLS(1) = 'L'
       CLS(2) = 'S'
 C
@@ -197,9 +196,9 @@ C
 C     Use label information to list SO-basis:
 C
       NDIM = 2*NPLAB(0)
-      CALL MEMGET('INTE',KP,NDIM,WORK,KFREE,LFREE)      
-      CALL LABLST(WORK(KP))
-      CALL MEMREL('LABLST',WORK,KWORK,KWORK,KFREE,LFREE)
+      allocate(kp(ndim))
+      CALL LABLST(KP,iprint)
+      deallocate(kp)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('GETLAB')
       RETURN
@@ -1823,10 +1822,9 @@ C
 #include "symmet.h"
 C
       DIMENSION AMAT(*)
-      real(8), allocatable :: buf(:)
+      real(8), allocatable             :: buf(:)
       CALL QENTER('BUTOBS')
 C
-
       call alloc(buf, mz*n2bbasx, id='buf in butobs')
       CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
       IZOFF = 0
@@ -1840,9 +1838,10 @@ C
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
-                  IF(NBBAS(IREP,IC).GT.0) 
-     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+                  if(NBBAS(IREP,IC).GT.0)then
+                    CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
      &                                        AMAT(ISOFF+1)   ,1)
+                  end if
                 ENDDO
               ENDDO
             ENDDO
@@ -1852,6 +1851,63 @@ C
       ENDDO
 C
       call dealloc(buf)
+      CALL QEXIT ('BUTOBS')
+      RETURN
+C
+      END
+      SUBROUTINE BUTOBS_no_work2(AMAT,MZ,bmat)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), intent(inout) :: bmat(*)
+      CALL QENTER('BUTOBS')
+C
+      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
+      call flshfo(lupri)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  if(NBBAS(IREP,IC).GT.0)then
+                    CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
+                  end if
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
       CALL QEXIT ('BUTOBS')
       RETURN
 C
@@ -3492,7 +3548,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LABLST */
-      SUBROUTINE LABLST(ILAB)
+      SUBROUTINE LABLST(ILAB,iprint)
 C***********************************************************************
 C
 C     Use information in SO-labels to generate SO-basis
@@ -3526,15 +3582,18 @@ C
         ILAB(1,JLAB) = ILAB(1,JLAB) + 1
         ILAB(2,JLAB) = I
       ENDDO
-      CALL HEADER('Symmetry Orbitals',1)
-      WRITE (LUPRI,'(1X,A,6X,8I6)')
-     *   ' Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I6)')
-     *   ' Number of large orbitals in each symmetry: ',
-     &    (NCOS(I,1),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I6)')
-     *   ' Number of small orbitals in each symmetry: ',
-     &    (NCOS(I,2),I=1,MAXREP+1)
+      if(iprint > 0)then
+        CALL HEADER('Symmetry Orbitals',1)
+        WRITE (LUPRI,'(1X,A,6X,8I6)')
+     *     ' Number of orbitals in each symmetry: ',
+     &      (NAOS(I),I=1,MAXREP+1)
+          WRITE (LUPRI,'(1X,A,8I6)')
+     *     ' Number of large orbitals in each symmetry: ',
+     &      (NCOS(I,1),I=1,MAXREP+1)
+          WRITE (LUPRI,'(1X,A,8I6)')
+     *     ' Number of small orbitals in each symmetry: ',
+     &      (NCOS(I,2),I=1,MAXREP+1)
+      end if
 C
 C     Loop over large component labels
 C
@@ -3545,31 +3604,40 @@ C
           JC = IC
           JREP = -1
           IF(IC.EQ.1) THEN
-            WRITE(LUPRI,'(/A)') '* Large component functions'
+            if(iprint > 0)then
+              WRITE(LUPRI,'(/A)') '* Large component functions'
+            end if
           ELSE
-            WRITE(LUPRI,'(/A)') '* Small component functions'
+            if(iprint > 0)then
+              WRITE(LUPRI,'(/A)') '* Small component functions'
+            end if
           ENDIF
         ENDIF
         IREP = KGET(IATTR(I,2))
         IF(IREP.NE.JREP) THEN
           JREP = IREP
-          WRITE (LUPRI,'(/2X,A,2X,A3,A1,I2,A1/)')
-     &          'Symmetry',REP(IREP),'(',(IREP+1),')'
+          if(iprint > 0)then
+            WRITE (LUPRI,'(/2X,A,2X,A3,A1,I2,A1/)')
+     &            'Symmetry',REP(IREP),'(',(IREP+1),')'
+          end if
         ENDIF
         INUC = JGET(IATTR(I,2))
         NDEG = NUCDEG(INUC)
         II = ILAB(2,I)+ICOS(IREP+1,IC)-IBBAS(IREP,IC)
         IF(NDEG.GT.1) THEN
-          WRITE(LUPRI,'(3X,I6,A,3X,A7,I1,7(A1,I1))')
-     &      ILAB(1,I),' functions: ',
-     &      PLABEL(I,2)(6:12),1,(CHRSGN(NINT(CTRAN(II,K))),K,K=2,NDEG)
+          if(iprint > 0)then
+            WRITE(LUPRI,'(3X,I6,A,3X,A7,I1,7(A1,I1))')
+     &        ILAB(1,I),' functions: ',
+     &        PLABEL(I,2)(6:12),1,(CHRSGN(NINT(CTRAN(II,K))),K,K=2,NDEG)
+          end if
         ELSE
-          WRITE(LUPRI,'(3X,I6,A,3X,A7)') ILAB(1,I),' functions: ',
-     &        PLABEL(I,2)(6:12)
+          if(iprint > 0)then
+            WRITE(LUPRI,'(3X,I6,A,3X,A7)') ILAB(1,I),' functions: ',
+     &          PLABEL(I,2)(6:12)
+          end if
         ENDIF
       ENDDO
 C
-      RETURN
       END
 C***********************************************************************
 C  /* Deck indaoc */

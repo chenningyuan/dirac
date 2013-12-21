@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1825,7 +1825,7 @@ C
       INQUIRE (FILE='DFFCK1', EXIST=EX)
       IF (EX) THEN
          CALL OPNFIL(LUFCK1,'DFFCK1','OLD','DIRH1')
-         CALL REAFCK(LUFCK1,H1AO,.FALSE.,1)
+         CALL REAFCK(LUFCK1,H1AO,.TRUE.,1)
          CLOSE(LUFCK1)
       ELSE
 C

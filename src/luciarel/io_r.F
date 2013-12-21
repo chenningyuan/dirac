@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -193,8 +193,10 @@ C
       integer                            :: ispacked
       integer                            :: iskip
       integer                            :: ipart
+      integer                            :: loutf
       character (len=14)                 :: infile_name
       character (len=21)                 :: outfile_name
+      logical                            :: is_opened
 !**********************************************************************
 !
 !     initialize scratch variables
@@ -202,13 +204,35 @@ C
       out_fh = 99
       block_length = 0
 
+      loutf = -1
 !     initialize file names
       write(infile_name,'(a11,a3)')     'KRCI_CVECS.',xflabel
-      write(outfile_name,'(a11,a3,a7)') 'KRCI_CVECS.',xflabel,'.select'
+      select case(len_trim(xflabel))
+        case (1)
+          write(outfile_name,'(a11,a1,a7)') 
+     &    'KRCI_CVECS.',xflabel,'.select'
+          loutf = 19
+        case (2)
+          write(outfile_name,'(a11,a2,a7)') 
+     &    'KRCI_CVECS.',xflabel,'.select'
+          loutf = 20
+        case (3)
+          write(outfile_name,'(a11,a3,a7)') 
+     &    'KRCI_CVECS.',xflabel,'.select'
+          loutf = 21
+        case default
+          call quit('non-existing file label in krci_cp_sel_root')
+      end select
 
 !     step 1: open files
-      open(in_fh,file=infile_name,status='old',form='unformatted',
-     &     position='rewind')
+      inquire(file=infile_name, opened=is_opened)
+      if(.not.is_opened)then
+        open(in_fh,file=infile_name,status='old',form='unformatted',
+     &       position='rewind')
+      else
+        inquire(file=infile_name, number=in_fh)
+        rewind in_fh  
+      end if
       open(out_fh,file=outfile_name,status='new',form='unformatted',
      &     position='rewind')
 
@@ -248,11 +272,11 @@ C
       end do
 
 !     step 4: close files
-      close(in_fh)
+      if(.not.is_opened) close(in_fh)
       close(out_fh)
 
-      print '(/2x,a,i2,a,a21)', 
-     &      ' *** selected CI vector (omega = ',omega_val,
+      print '(/2x,a,i3,a,i2,a,a21)', 
+     &      ' *** selected CI vector #',istate,'(omega = ',omega_val,
      &      '[/2 for fermionic systems]) saved on file ',outfile_name
       end
 ***********************************************************************

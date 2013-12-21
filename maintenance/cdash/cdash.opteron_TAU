@@ -29,7 +29,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 #
-export DIRAC_NUM_MPI_TASKS=2
+export DIRAC_NUM_MPI_PROCS=2
 ./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
 #
 cd $BUILD

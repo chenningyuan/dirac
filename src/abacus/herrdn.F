@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -309,7 +309,7 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 1000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 10000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
@@ -319,7 +319,8 @@ C
       IF (RDINPC) RETURN
       RDINPC = .TRUE.
 C
-      call alloc(WORK,LWORK,id='WORK in READIN')
+!     call alloc(WORK,LWORK,id='WORK in READIN')
+      allocate(WORK(LWORK))
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT.  0) THEN
@@ -408,7 +409,8 @@ C               These are the only two extensions at the moment.
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
-      call dealloc(WORK)
+!     call dealloc(WORK)
+      deallocate(WORK)
       RETURN
       END
 C  /* Deck read_mol */
@@ -889,6 +891,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+#include "dcbham.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -935,7 +938,6 @@ C
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL SEGT
-CMI ... forgotten
       CHARACTER(LEN=72) :: str
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1227,10 +1229,6 @@ C                 Assume it is 'LARGE   2    1....'
                   ENDIF
                END IF
 
-CMI            IF (INPTST.OR.IPREAD.GE.5) THEN
-CMI              WRITE(LUPRI,*) 'read JCO(K,I,1):',
-CMI  &           (JCO(K,I,1), K=1,IQM(I,1))
-CMI            ENDIF
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
@@ -1557,16 +1555,18 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-CMI               IF (IPREAD .GE. 5 .OR. INPTST) THEN
-CMI                  write(LUPRI,*) 'read JCO(K,I,2):',
-CMI  &              (JCO(K,I,2),K=1,IQM(I,2))
-CMI               ENDIF
-
-                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                 CNTBAS)
-                  BASREF(1,I,2) = ' Derived from large component'
+                  IF(MDIRAC) THEN
+                    CALL RKBBAS(I,IBLOCK(1),IBLOCK(2),
+     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                   NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                   CNTBAS)
+                  ELSE
+                    CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                   NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                   CNTBAS)
+                    BASREF(1,I,2) = ' Derived from large component'
+                  ENDIF
 C
                ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
@@ -2426,6 +2426,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
+#include "dcbham.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -2437,7 +2438,8 @@ C*****************************************************************************
       CHARACTER*(6*MXQN+3) TSTRING(MXBSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*31 SET_TYPE(MXBSETS)
-      DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS)
+      DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS),
+     &          NTPRIM(MXBSETS),NTBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
       integer blk
 #include "ccom.h"
@@ -2479,8 +2481,20 @@ C
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
       END IF
       NCHTOT = 0
+      DO ISET = 1,KSETS
+        NTPRIM(ISET) = 0
+        NTBAS(ISET)  = 0
+      ENDDO
       NBAS_ATOMTYPE(1:NONTYP,0:mxbsets) = 0
       DO 100 I = 1,NONTYP
+C
+         NUCLEI_IN_TYPE = 0
+         DO 20 N = 1,NONT(I)
+            ICENT  = ICENT + 1
+            NCHARG = NINT(CHARGE(ICENT))
+            NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
+            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
+   20    CONTINUE
 C
 C        Convert information to a string that can be understood by the innocent user
 C
@@ -2496,26 +2510,22 @@ C
                NPRIM(ISET) = 0
                NBAS(ISET) = 0
             END IF
+            NTPRIM(ISET) = NTPRIM(ISET)+NUCLEI_IN_TYPE*NPRIM(ISET)
+            NTBAS(ISET)  = NTBAS(ISET) +NUCLEI_IN_TYPE*NBAS(ISET)
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
             NBAS_ATOMTYPE(I,ISET) = NBAS(ISET)
             NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NBAS(ISET)
          END DO
-C
-         NUCLEI_IN_TYPE = 0
-         DO 20 N = 1,NONT(I)
-            ICENT  = ICENT + 1
-            NCHARG = NINT(CHARGE(ICENT))
-            NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
-            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
-   20    CONTINUE
          
          IF (IPREAD .GT. 0) THEN
             IF(DIRAC) THEN
                WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
      &                NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),
      &                'L  - ',TSTRING(1)
-               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+               IF(.NOT.TWOCOMPBSS) THEN
+                 WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &               NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
+               ENDIF
                IF (DOFIT) THEN
                   IF (NPRIM(3).GT.0)
      &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
@@ -2538,9 +2548,11 @@ C
          IF(DIRAC) THEN
             CALL PRSYMB(LUPRI,'-',70,2)
             WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPLRG,NLARGE,'   L  - large components'
-            WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPSML,NSMALL,'   S  - small components'
+     &            NTPRIM(1),NTBAS(1),'   L  - large components'
+            IF(.NOT.TWOCOMP) THEN
+              WRITE(LUPRI,'(23X,2I8,3X,A)')
+     &            NTPRIM(2),NTBAS(2),'   S  - small components'
+            ENDIF
             IF (DOFIT) THEN
 #if defined (NEW_DIRAC_DENSFIT_PROCESSING)
 C
@@ -2581,14 +2593,9 @@ C
          NTPBAS  = NPBAS  + NPBAS_FIT 
          NTBASIS = NBASIS + NBASIS_FIT
 #else
-         NTPBAS  = NPBAS  + NPBASAUX 
-         NTBASIS = NBASIS + NBASISAUX
+         NTPBAS  = NTPRIM(1) +NTPRIM(2) + NPBASAUX 
+         NTBASIS = NTBAS(1)  +NTBAS(2)  + NBASISAUX
 #endif
-C        WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
-C    &            'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
-C        ELSE
-C           NTPBAS  = NPBAS  + NPBAS_FIT 
-C           NTBASIS = NBASIS + NBASIS_FIT
          WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NTPBAS,NTBASIS
 C

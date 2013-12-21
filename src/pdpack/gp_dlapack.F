@@ -1,12 +1,12 @@
-#ifdef USE_OWN_LAPACK
-#define USE_OWN_DLAPACK
+#ifdef USE_BUILTIN_LAPACK
+#define USE_BUILTIN_DLAPACK
 #endif
 
 ! ESSL LAPACK la(pa)cks almost everything
 ! switch on own LAPACK until better solution is found
-#ifndef USE_OWN_LAPACK
+#ifndef USE_BUILTIN_LAPACK
 #ifdef HAVE_ESSL_LAPACK
-#define USE_OWN_DLAPACK
+#define USE_BUILTIN_DLAPACK
 #endif
 #endif
 
@@ -21,7 +21,7 @@
 !
 ! $Id$
 !
-#ifdef USE_OWN_DLAPACK
+#ifdef USE_BUILTIN_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,
      $                   WORK, IWORK, INFO )
 *
@@ -218781,7 +218781,7 @@ CIBM           PREFER SCALAR
 *     End of STZRZF
 *
       END
-#endif /* USE_OWN_DLAPACK */
+#endif /* USE_BUILTIN_DLAPACK */
 
       ! dummy routine to avoid empty file
       subroutine dummy_dirac_dlapack()

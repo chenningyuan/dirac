@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'no.    eigenvalue (eV)   mean-res.',
+      num_lines    = 4,
+      tolerance   = 1.0e-4)
+
+test_run.execute(['real_ne_dip.inp'], ['ne_d2h.mol'], f, accepted_errors=['RELADC not parallelized'])
+test_run.execute(['complex_hcn_dip.inp'], ['hcn_cs.mol'], f, accepted_errors=['RELADC not parallelized'])
+
+sys.exit(0)

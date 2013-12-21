@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -390,8 +390,6 @@ C
 C
       IBS = IBLS - 1
       IBU = IBLL + JCO(1,IATOM,1) - 1
-CMI     write(lupri,*) 'check JCO(1,IATOM,1)=',JCO(1,IATOM,1)
-CMI     call flshfo(lupri)
       IBD = IBLL - 1
       JBS = IBS
       IQM(IATOM,2) = 0
@@ -476,6 +474,74 @@ C               See note above.
         IF(JCO(J,IATOM,2).GT.0) IQM(IATOM,2) = J
       ENDDO
       NBLCK(IATOM,2) = IBS - JBS
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rkbbas */
+      SUBROUTINE RKBBAS(IATOM,IBLL,IBLS,
+     &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &     NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &     CNTBAS)
+C*****************************************************************************
+C
+C      Generate small component functions atom type IATOM for use with
+C      the modified Dirac Hamiltonian. 
+C      This amounts to copying the large component basis information
+C      into the small component one.
+C
+C      More elaborate schemes are necessary in the case of contracted basis sets
+C
+C       IBLL - index of first large component block of this atom type
+C       IBLS - index of first small component block of this atom type
+C       IQM             (KATOM)         - highest L-value
+C       NBLCK           (KATOM)         - number of AO-blocks for a given
+C                                         atomic type
+C       JCO             (KANG,KATOM)    - number of AO-blocks for a given
+C                                         atomic type and L-value
+C       NUC             (KBLOCK)        - number of uncontracted functions
+C                                         in a given AO-block
+C       NRC             (KBLOCK)        - number of contracted functions
+C                                         in a given AO-block
+C       SEG             (KBLOCK)        - TRUE: segmented contraction
+C       ALPHA           (KPRIM,KBLOCK)  - exponents
+C       CPRIM           (KPRIM,KPRIM,KBLOCK)  - normalized contraction
+C                                               coefficients
+C       CPRIMU          (KPRIM,KPRIM,KBLOCK)  - contraction coefficients
+C
+C      Written by Trond Saue May 2 2012
+C
+C*******************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "ccom.h"
+C
+      LOGICAL SEG,INPTST,CNTBAS
+      DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
+     &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
+     &          ALPHA(KPRIM,KBLOCK,2),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
+C
+      IQM(IATOM,2)   = IQM(IATOM,1)
+      NBLCK(IATOM,2) = NBLCK(IATOM,1)
+      IBLOCK = IBLS
+      DO I = 1, IQM(IATOM,2)
+        JCO(I,IATOM,2) = JCO(I,IATOM,1)
+        DO J = 1,JCO(I,IATOM,2)
+          NUC(IBLOCK,2) = NUC(IBLOCK,1)
+          NRC(IBLOCK,2) = NRC(IBLOCK,1)
+          SEG(IBLOCK,2) = SEG(IBLOCK,1)
+          ALPHA(1:NUC(IBLOCK,2),IBLOCK,2)
+     &   =ALPHA(1:NUC(IBLOCK,1),IBLOCK,1)
+          CPRIM(1:NUC(IBLOCK,2),1:NRC(IBLOCK,2),IBLOCK,2)
+     &   =CPRIM(1:NUC(IBLOCK,1),1:NRC(IBLOCK,1),IBLOCK,1)
+          CPRIMU(1:NUC(IBLOCK,2),1:NRC(IBLOCK,2),IBLOCK,2)
+     &   =CPRIMU(1:NUC(IBLOCK,1),1:NRC(IBLOCK,1),IBLOCK,1)
+          IBLOCK = IBLOCK + 1
+        ENDDO
+      ENDDO
 C
       RETURN
       END

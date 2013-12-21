@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -880,6 +880,7 @@
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
@@ -1074,11 +1075,27 @@
           IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
 !       We should typically go via this routine
             IBSFLAG=4
-            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &           INPTST,CNTBAS)
-            BASREF(1,basindex,2) = ' Derived from large component'
+!
+!           When uncontracted we generate the small component basis
+!           using the kinetic balance relation
+!           ...or...
+!           Make uncontracted small component basis
+!           set from kinetic balance.
+!           =======================================================
+!
+            IF(MDIRAC) THEN
+              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
+     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
+     &                    CNTBAS)
+            ELSE
+              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &             INPTST,CNTBAS)
+            
+              BASREF(1,basindex,2) = ' Derived from large component'
+            END IF
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN

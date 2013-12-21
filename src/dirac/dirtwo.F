@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,12 +26,10 @@ C  /* Deck twofck */
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for the construction of the two-electron Fock matrix in SO-basis
+C     Driver for the construction of the two-electron Fock matrix 
 C     
 C
 C     Written by T.Saue - January 1995
-C     tsaue - Sep 3 1996    Extended to include parameter NFMAT, number of
-C                           Fock matrices
 C     
 C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
@@ -40,6 +38,9 @@ C*****************************************************************************
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
+#endif
+#ifdef MOD_INTEREST
+      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -62,6 +63,8 @@ C
 C
       CALL QENTER('TWOFCK')
 #include "memint.h"
+      iprint_save = iprint
+!     iprint = 5
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -106,7 +109,7 @@ C
      &                  IPQTOQ(1,IREP),LUPRI)
           ENDIF
         ENDIF
-        CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
+        IF(.NOT.MDIRAC)CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
       ENDDO
 C
 C     ===========================
@@ -139,7 +142,6 @@ C     ================================
 C
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
       IF (HFXMU.NE.D0) THEN
-
 C
 C       Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C       NOTE that this extra part has to be calculated first,
@@ -175,8 +177,32 @@ C
 #endif
          HFXTMP = HFXMU
          HFXMU = D0
-         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                 IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         IF(MDIRAC)THEN
+#ifdef MOD_INTEREST
+
+!          stefan: for the time being we will have an outer loop over fock matrices 
+!                  assuming that MDIRAC will only be active for regular SCF and 
+!                  not, e.g., response. todo: inner loop over fmat and proper flags 
+!                  ISYMOP,IHRMOP, IFCKOP in InteRest.
+
+           do i = 1, nfmat
+             if(x2c)then
+               call process_two_electron_integrals_2comp(fmat(1,1,i),
+     &                                                   dmat(1,1,i),
+     &                                                   intflg,
+     &                                                   hfxfac) 
+             else
+               call process_two_electron_integrals_4comp(fmat(1,1,i),
+     &                                                   dmat(1,1,i),
+     &                                                   intflg,
+     &                                                   hfxfac) 
+             end if
+           end do
+#endif
+         ELSE
+           CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                    IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         ENDIF
          HFXMU = HFXTMP
 #ifdef MOD_SRDFT
       end if 
@@ -219,6 +245,12 @@ C
 C       Reindex to sorted basis
 C       =======================
 C
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('Unsorted FMAT before half-phases inserted',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
+          CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
         CALL BUTOBS(FMAT(1,1,I),NZ,WORK,LWORK)
         CALL BUTOBS(DMAT(1,1,I),NZ,WORK,LWORK)
         IREP = ISYMOP(I)-1
@@ -242,6 +274,12 @@ C       IH = 0   Non-symmetric
 C       IH = 1   Symmetric
 C       IH = 2   Anti-symmetric
 C
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('unSorted FMAT matrix',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
+          CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+        ENDIF
         DO IZ = 1,NZ
           IQ = IPQTOQ(IZ,IREP)
           IH = IHQMAT(IQ,IHRMOP(I)) 
@@ -259,6 +297,7 @@ C
         ENDIF
       ENDDO
       CALL QEXIT('TWOFCK')
+      iprint = iprint_save
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3499,7 +3538,7 @@ C  /* Deck diraof */
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for direct SCF calculations
+C     Driver for direct SCF calculations in AO-basis
 C
 C     Written by T.Saue July 2 1995
 C     tsaue -    Sep 2 1996 Generalized to NFMAT 
@@ -3515,6 +3554,7 @@ C
       LOGICAL LBIT
 #include "maxorb.h"
 #include "aovec.h"
+#include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
@@ -3560,6 +3600,9 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
       ENDIF
 C
       IF(NBSYM.GT.1) THEN
+        IF(MDIRAC) THEN
+          CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
+        ENDIF
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
 C
@@ -3643,7 +3686,13 @@ C  /* Deck dirao1 */
      &                  IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for direct SCF calculations
+C     Driver for direct SCF calculations in AO-basis
+C
+C        FAO - Fock matrix in AO-basis
+C        DAO - density matrix in AO-basis
+C        IFCTYP - array indicating Fock-matrix type, see routine SETFCK
+C        ISYMOP - array indicating spatial symmetry, see routine SETFCK
+C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
       use quaternion_algebra
@@ -4333,6 +4382,8 @@ C
 C
 C     Initialization
 C
+      intflg_local = intflg
+      if(twocomp .or. twocompbss) intflg_local = 1
       NDMAT = NFMAT*NZ
       CALL DZERO(DNTSKP,8)
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZ,ISYMOP,IHRMOP,IFCKOP,IPRINT)
@@ -4386,7 +4437,7 @@ C
          SOTEXT = 'SOfock:GT'
 Cluuk: scale real part by factor 3 and eliminate Coulomb
 Cluuk: this code does only work for C1 and Ci, use AOFOCK
-        IF (LBIT(INTFLG,4).AND.NZ.LT.4) 
+        IF (LBIT(intflg_local,4).AND.NZ.LT.4) 
      &     call quit ('Gaunt not implemented for SOFOCK')
          factor = -3.d0
          CALL DSCAL(N2BBASX,factor,DSO,1)
@@ -4395,7 +4446,7 @@ Cluuk: this code does only work for C1 and Ci, use AOFOCK
 C
 C....> Check whether the class is active
 C
-      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
+      IF(LBIT(intflg_local,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
@@ -4453,6 +4504,9 @@ C
 C
 C.... End of loop over integral classes
 C
+!      WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I2typ,' of',4
+!      CALL PRQMAT(FSO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             NZ,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
       ENDDO
 C
@@ -4777,9 +4831,9 @@ C aspg, timing
         ENDIF
       ELSE
 C
-C     **********************************************
-C     *****  C o n v e n t i o n a l    S C F  *****
-C     **********************************************
+C     ******************************************
+C     *****  D i s k - b a s e d    S C F  *****
+C     ******************************************
 C
         IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
      &       CALL QUIT('HFXFAC not implemented in CONSCF !')

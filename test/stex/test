@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string  = 'Electronic energy',
+      num_lines     = 8,
+      tolerance    = 1.0e-10)
+f.add(from_string  = ' --------------- STEX Final Output --------------',
+      to_string    = '   Sum of oscillator strengths',
+      tolerance    = 1.0e-5,
+      ignore_below = 1.0e-9)
+
+test_run.execute(['gs.inp'], ['LiH-c1.mol'], args='--outcmo')
+
+shutil.copy('DFCOEF', 'DFCOEF.GS')
+
+test_run.execute(['ion.inp'], ['LiH-c1.mol'], args='--incmo --outcmo')
+
+shutil.move('DFCOEF', 'DFCOEF.ION')
+shutil.move('DFCOEF.GS', 'DFCOEF')
+
+test_run.execute(['stex.inp'], ['LiH-c1.mol'], f, args='--incmo --copy="DFCOEF.ION"')
+
+os.unlink('DFCOEF.ION')
+os.unlink('DFCOEF')
+
+sys.exit(0)

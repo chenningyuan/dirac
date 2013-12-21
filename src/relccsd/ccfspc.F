@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -653,7 +653,7 @@ C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 C        This makes the routine print excitation energies
@@ -663,7 +663,7 @@ C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,0:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
       ELSE
@@ -671,7 +671,7 @@ C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
      &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE,
-     &                INDX_ALL,IRPS_ALL,IND)
+     &                INDX_ALL,IRPS_ALL,IND,EFS,STATE_E_FSCC)
       ENDIF
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
@@ -2253,6 +2253,7 @@ C
 C
 C---------------Executable code--------------------------------------
  
+#ifdef MOD_UNRELEASED
 !     At the moment only sector 4 has intensities
       IF (ICURFSS.EQ.4) THEN
       CALL FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE,
@@ -2278,6 +2279,7 @@ C---------------Executable code--------------------------------------
          END DO
       END DO
       END IF ! Intensities for excitation energies
+#endif
 C
 C     Now print an analysis of the vectors
 C     Initialize and get labels for the excited state coefficiens
@@ -2343,13 +2345,16 @@ C           Loop over the coefficients and print the interesting ones
      &/' other lines : Coefficients of contributing determinants',
      & ' (above a treshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
+#ifdef MOD_UNRELEASED
  1100 FORMAT (//' Excitation energies and intensities'/)
  1110 FORMAT (/' Irrep   State   Ex. Energy     f        ',
      & '  mu(x)     mu(y)     mu(z) '  )
  1111 FORMAT (/' Irrep   State   Ex. Energy   f     ',
      & 'mu_r(x)   mu_r(y)   mu_r(z)    mu_i(x)    mu_i(y)    mu_i(z)')
  1112 FORMAT (2X,A4,I8,2f12.6,6f10.5)
+#endif
       END
+#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,INTENSITY,
      &                                 TRANS_DIPOLE,NDT_TOT,IREPSPI,NSP,
@@ -2687,6 +2692,7 @@ c
 
       RETURN
       END
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
