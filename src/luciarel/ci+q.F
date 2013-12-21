@@ -359,9 +359,6 @@
       allocate(ref_wavefunction_tmp(10,2))
 
 *
-      NTESTL = 0000
-      NTEST = max(IPRNT,NTESTL)
-*
       IDET      = 0
 
       if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
@@ -378,30 +375,26 @@
          IBSM = IBLOCK(4,JBLOCK)
 
 
-*. Obtain alpha strings of sym IASM and type IATP
+         write(6,*) "new spgp a"
+*. Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
          if(relQC)then 
          call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
      &                              NASTR1,IASTR)
+         write(6,*) "end new spgp a"
+         write(6,*) "new spgp b"
+         call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
+     &                              NBSTR1,IBSTR)
+         write(6,*) "end new spgp b"
 
          else
 
          IDUM = 0
          call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
      &                           NORB,0,IDUM,IDUM)
-         end if
-
-*. Obtain beta strings of sym IBSM and type IBTP
-         if(relQC)then 
-         call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
-     &                              NBSTR1,IBSTR)
-
-         else
-
-         IDUM = 0
          call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
      &                           NORB,0,IDUM,IDUM)
          end if
-*
+
          if(IBLTP(IASM).eq.2) then
             IRESTR_ANA = 1
          else
