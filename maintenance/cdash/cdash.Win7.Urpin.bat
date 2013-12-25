@@ -30,7 +30,7 @@ rem cmd.exe \c "C:\Users\milias\AppData\Roaming\Microsoft\Windows\Start Menu\Pro
 rem "C:\Users\milias\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\launch_key.bat" 1>> %OUT% 2>&1
 
 rem check the server connectivity:
-rem plink -agent git@repo.ctcc.no 
+plink -agent git@repo.ctcc.no 
 
 C:\Git\bin\git.exe clean -f
 
@@ -47,7 +47,7 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
 python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD%
 cd %BUILD%
-mingw32-make Experimental
+mingw32-make -j4 Experimental
 
 rem remove the scratch space, may contain some rubbish...
 if exist %WRK% rmdir /S /Q %WRK%
