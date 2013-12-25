@@ -1,5 +1,0 @@
-$ERROR 1.E-5
-nlines 10:TOTAL ENERGY
-
-$ERROR 1.E-7
-nlines 21:Eigenvalues

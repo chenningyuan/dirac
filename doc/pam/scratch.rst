@@ -21,7 +21,8 @@ If these variables are not set, DIRAC defaults to
 
 On your local computer you typically want to use the same scratch space every
 time and you may be tired of typing ``pam --scratch`` every time.  In this
-case, put ``--scratch=/somepath`` in your ``~/.diracrc``.
+case, put ``--scratch=/somepath`` in your ``~/.diracrc`` or export
+``DIRAC_TMPDIR`` in your ``~/.bashrc`` or equivalent.
 
 DIRAC will always append ``$USER/DIRAC_inp_mol_pid`` to the scratch path.  This
 is to prevent users from accidentally wiping out their home directory.

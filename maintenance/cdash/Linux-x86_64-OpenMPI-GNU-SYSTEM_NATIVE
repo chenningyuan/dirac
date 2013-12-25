@@ -24,7 +24,7 @@ done
 
 shift $((OPTIND - 1))
 
-export DIRAC_NUM_MPI_PROCS=$NUM_CORES
+export DIRAC_MPI_COMMAND="mpirun -np $NUM_CORES"
 
 BUILDNAME="$BRANCH-$(basename $0)"
 

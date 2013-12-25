@@ -24,7 +24,6 @@ option(ENABLE_UTILITIES       "Enable utilities"                                
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
-option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
@@ -33,7 +32,7 @@ option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocat
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
@@ -77,7 +76,13 @@ include(ConfigDocumentation)
 include(ConfigExternal)
 include(ConfigGPU)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
@@ -168,10 +173,12 @@ if(ENABLE_PCMMOD)
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        -DCBLAS_ROOT=${CBLAS_ROOT}
+	#-DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
+	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
     )
     
@@ -179,16 +186,7 @@ if(ENABLE_PCMMOD)
 
     set(EXTERNAL_LIBS
         stdc++
-	interface
-        solver
-        green
-        cavity
-	utils
-        metal
-        pedra
-        pwl
-        wem
-        wavcav
+	pcm
         getkw
         ${EXTERNAL_LIBS}
         )
@@ -348,7 +346,7 @@ if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 # build unit tests
-if(ENABLE_TESTS)
+if(ENABLE_UNIT_TESTS)
     # set unit test libs
     set(UNIT_TEST_LIBS
         dirac

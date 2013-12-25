@@ -23,6 +23,7 @@ C
 C
 C     Gather results of the energy calculations
 C     ETOT is the energy at the current highest level of theory
+C     EFS is the energy of the lowest/selected eigenstate in the FSCC run (last sector)
 C
-      COMMON/ENERG/ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3
-      REAL*8 ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3
+      COMMON/ENERG/ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS(2)
+      REAL*8 ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS
