@@ -20,9 +20,6 @@ If you want to be able to run the above calculations, you have to build
 for 64-bit integers.
 
 If you decide to build for 64-bit integers, you **have to** make sure
-that:
-
--  The math library you link to can handle 64-bit integers
--  MPI library is built for 64-bit integers
+that the math library you link to can handle 64-bit integers.
 
 Otherwise DIRAC will stop.

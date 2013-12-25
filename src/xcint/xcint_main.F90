@@ -1034,6 +1034,7 @@ contains
          w(1) = rw(ipoint)
 
          if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
             call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1041,6 +1042,9 @@ contains
                          buffer,  &
                          ao)
             tau_integral = tau_integral + w(1)*tau
+#else
+            call quit('tau_mgga not available in this version')
+#endif
          end if
 
 !       number of electrons
@@ -1112,7 +1116,11 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
          if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
             u%tn(1) = derv(1, d0000010)
+#else
+            call quit('tau_mgga not available in this version')
+#endif
          end if
 
         end if !exchange-correlation potential
@@ -1871,12 +1879,16 @@ contains
       if (calculate_qr) then
 
          if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
             call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
                          buffer,  &
                          ao)
+#else
+            call quit('tau_mgga not available in this version')
+#endif
          end if
 
          if (is_gga_qr) then
@@ -1921,11 +1933,15 @@ contains
         end if
 
         if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
+#else
+            call quit('tau_mgga not available in this version')
+#endif
         end if
 
       end if !end of qr contribution
@@ -1961,12 +1977,16 @@ contains
                    ao)
         end if
         if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
            call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
                              buffer,  &
                              ao)
+#else
+            call quit('tau_mgga not available in this version')
+#endif
         end if
 
         do k = k_start, 3
@@ -1984,11 +2004,15 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
            if (fun_is_tau_mgga(xc_fun)) then
+#ifdef MOD_UNRELEASED
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
+#else
+            call quit('tau_mgga not available in this version')
+#endif
            end if
         end do
 

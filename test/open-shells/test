@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from beholder import Filter
+from beholder_dirac import DiracTestRun
+
+test_run = DiracTestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'TOTAL ENERGY',
+      num_lines   = 10,
+      tolerance   = 1.0e-5)
+f.add(from_string = 'Eigenvalues',
+      num_lines   = 21,
+      tolerance   = 1.0e-7)
+
+test_run.execute(['B.x2c.scf_2P12.inp'],         ['B.lsym.mol'],  f, args='--outcmo')
+test_run.execute(['B.x2c.scf_2P32_reord.inp'],   ['B.lsym.mol'],  f, args='--incmo ')
+test_run.execute(['CH.x2c.scf_mj.2Pi12.inp'],    ['CH.lsym.mol'], f)
+test_run.execute(['CH.x2c.scf_mj.2Pi32.inp'],    ['CH.lsym.mol'], f)
+test_run.execute(['F.x2c.scf_2P32.inp'],         ['F.lsym.mol'],  f, args='--outcmo')
+test_run.execute(['F.x2c.scf_2P12_reord.inp'],   ['F.lsym.mol'],  f, args='--incmo ')
+test_run.execute(['CH.x2c.scf.2Pi12.inp'],       ['CH.lsym.mol'], f, args='--outcmo')
+test_run.execute(['CH.x2c.scf.2Pi32_reord.inp'], ['CH.lsym.mol'], f, args='--incmo ')
+
+os.unlink('DFCOEF')
+
+sys.exit(0)

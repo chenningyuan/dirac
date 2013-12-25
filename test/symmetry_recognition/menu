@@ -1,6 +1,0 @@
-quick
-lda.inp H2O.mol
-lda.inp CH4.mol
-
-regular
-lda.inp SF6.mol

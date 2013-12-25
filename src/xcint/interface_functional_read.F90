@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -181,18 +181,27 @@ contains
            f%w(XC_M06X) = f%w(XC_M06X) + w
            f%w(XC_M06C) = f%w(XC_M06C) + w
            hfx_out = hfx_out + h*w
+#ifndef MOD_UNRELEASED
+           call quit('this functional is not available in this version')
+#endif
         end if
       
         w = get_weight(word_array(i), 'm06l')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_M06LX) = f%w(XC_M06LX) + w
            f%w(XC_M06LC) = f%w(XC_M06LC) + w
+#ifndef MOD_UNRELEASED
+           call quit('this functional is not available in this version')
+#endif
         end if
       
         w = get_weight(word_array(i), 'm06-l')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_M06LX) = f%w(XC_M06LX) + w
            f%w(XC_M06LC) = f%w(XC_M06LC) + w
+#ifndef MOD_UNRELEASED
+           call quit('this functional is not available in this version')
+#endif
         end if
       
         w = get_weight(word_array(i), 'pbe')
