@@ -17,14 +17,14 @@ By default the CMake configuration script will automatically detect these librar
 
 if you define MATH_ROOT, for instance::
 
-  $ export MATH_ROOT='/opt/intel/mkl'
+  $ export MATH_ROOT=/opt/intel/mkl
 
 Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
 correct paths depending on the processor and the default integer type.  If the
 MKL libraries that you want to use reside in
 /opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
 
-  $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
+  $ export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 
 Then::
 
@@ -40,7 +40,7 @@ If you compile with Intel compilers and have the MKL library available, you
 should use the --mkl flag which will automatically link to the MKL libraries
 (in this case you do not have to set MATH_ROOT).
 You have to specify whether you want to use the sequential or parallel
-(threaded) MKL version. For a parallel Dalton runs you should probably link to
+(threaded) MKL version. For a parallel DIRAC runs you should probably link to
 the sequential MKL::
 
   $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --mkl=sequential
@@ -89,7 +89,7 @@ performance. This should be the last resort if nothing else is available::
 Linking to Atlas libraries on SUSE or Fedora
 --------------------------------------------
 
-DIRAC may not be able to detect Atlas BLAS/Lapack
+DIRAC may not be able to detect Atlas BLAS/LAPACK
 libraries on SUSE or Fedora because of nonstandard suffix::
 
   $ cd /usr/lib64/atlas
@@ -172,18 +172,20 @@ With this the automatic detection of math libraries worked.
 Linking to the ACML library
 ---------------------------
 
-The Core Math Library (ACML) is distributed for most used Fortran compilers, both for 4-byte and 8-byte integers, and as dynamic (shareable) and static, see the `ACML web-page <http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/>`_.
+The Core Math Library (ACML) is distributed for most used Fortran compilers,
+both for 4-byte and 8-byte integers, as dynamic and static, see the `ACML
+web-page
+<http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/>`_.
 
-The user has to make the MATH_ROOT variable pointing to the proper library directory. 
-For instance, here one wants to use 64-bit integer version of ACML, in connection with Intel compilers::
+The user has to point the MATH_ROOT variable to the proper library directory.
+For instance, here one wants to use 64-bit integer version of ACML, in
+connection with Intel compilers::
 
   $ export MATH_ROOT='/home/milias/bin/acml5.3.1_ifort_int64/ifort64_int64/lib'
 
-The complete variety of compiler- and integer-specific ACML's clones can be found on the `dedicated web-page <http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/acml-downloads-resources//>`_.
-
-
-Notes
------
+The complete variety of compiler- and integer-specific ACML's clones can be
+found on the `dedicated web-page
+<http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/acml-downloads-resources//>`_.
 
 We report, however, that the gfortran generated ACML library can give these linking errors::
 
@@ -194,4 +196,3 @@ We report, however, that the gfortran generated ACML library can give these link
  collect2: ld returned 1 exit status
 
 If this happens, we recommend user to prefer some non-gfortran ACML version.
-

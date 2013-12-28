@@ -95,7 +95,7 @@ C        use F output format
          PFMT = '(A1,I7,2X,8F15.8)'
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D15.6)'
+         PFMT = '(A1,I7,2X,1P,8E15.6)'
       END IF
 C
 C LAST IS THE LAST COLUMN NUMBER IN THE ROW CURRENTLY BEING PRINTED
@@ -621,8 +621,8 @@ C        use F output format
          PFMT = '(A1,I7,2X,8F15.8)'
          thrpri = 0.5D-8
       ELSE
-C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D15.6)'
+C        use 1PE output format
+         PFMT = '(A1,I7,2X,1P,8E15.6)'
          thrpri = 1.0D-8*AMAX
       END IF
 C

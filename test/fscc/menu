@@ -1,6 +1,0 @@
-fsccsd.inp              Mg.mol --mw=110 
-bss+mfsso.fsccsd_IH.inp Mg.mol --mw=110 
-#fsccsd_IH.inp           Mg.mol --mw=110 
-sf.scf.inp              Mg.mol --outcmo
-so-fsccsd_IH.inp        Mg.mol --incmo --mw=110
-rm DFCOEF

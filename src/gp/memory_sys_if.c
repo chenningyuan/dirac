@@ -74,15 +74,11 @@ void get_memory_address_(void *variable, fortran_int8_t *address)
    errno = 0;
 
    snprintf (bufvar,(BUFFERSIZE-1), "%p" ,variable);
-// *address = FORTRAN_STR_TO_INT4(bufvar);
-// printf(" %s  %p,  %lli,  %li "FORTRAN_INT4_CONVERSION"\n",bufvar,variable,strtoll(variable,NULL,16),strtol(variable,NULL,16),*address);
 
 #ifdef ARCH32BIT
       *address = FORTRAN_STRx_TO_INT4(bufvar);
-//      printf("testing conversion: %p, "FORTRAN_INT4_CONVERSION"   "FORTRAN_INT4_CONVERSION"  "FORTRAN_INT4_CONVERSION"\n",variable,*address,strtol(variable,NULL,16),(fortran_int4_t)strtol(variable,NULL,16));
 #else
       *address = FORTRAN_STRx_TO_INT8(bufvar);
-//      printf("testing conversion: %p, "FORTRAN_INT8_CONVERSION"   "FORTRAN_INT8_CONVERSION"  "FORTRAN_INT8_CONVERSION"\n",variable,*address,strtol(variable,NULL,16),(fortran_int8_t)strtol(variable,NULL,16));
 #endif
 
 // if ( errno != 0 ) 

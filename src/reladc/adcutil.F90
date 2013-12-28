@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -342,7 +342,7 @@
           IF(reladc_md_isfano) THEN
             nr_in_evecs = nr_in_evecs + 1
             in_evecs(1:ladcx,nr_in_evecs) = evli(1:ladcx,k)
-            in_energy(1,nr_in_evecs)      = seval * autoev
+            in_energy(1,nr_in_evecs)      = seval
             in_energy(2,nr_in_evecs)      = polestr
           END IF
 !

@@ -1055,6 +1055,10 @@
          read(get_file_unit(),'(i5)') relcc_fs_tshold
       end if
 
+      if (kw_matches(word, '.GESTAT')) then
+         read(get_file_unit(),'(i5)') relcc_fs_select_state_for_numgrad_energy
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -1429,11 +1433,13 @@
          fragment_x2c_info%fragment_approach_enabled    = .true.
       end if
 
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.fragmo')) then
          x2cmod_fragment_x2c                            = .true.
          fragment_x2c_info%fragment_approach_enabled    = .true.
          fragment_x2c_info%fragment_approach_ismolecule = .true.
       end if
+#endif
 
       if (kw_matches(word, '.DEBUG ')) then
          x2cmod_debug = .true.
@@ -1518,12 +1524,13 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOSS  ')) then
-!         Do not use precomputed small charges
-         pcmmod_doss = .true.
+      if (kw_matches(word, '.SKIPSS')) then
+!         Use precomputed small charges
+         pcmmod_skipss = .true.
       end if
 
       if (kw_matches(word, '.SEPARA')) then
+!         .SEPARATE option
 !         Split potentials and polarization charges in nuclear and electronic
          pcmmod_separate = .true.
       end if
@@ -1531,6 +1538,12 @@
       if (kw_matches(word, '.DOSPF ')) then
 !        Perform elimination of spin-orbit dependent terms in the PCM operator 
          pcmmod_dospf = .true.
+      end if
+
+      if (kw_matches(word, '.SKIPOI')) then
+!         .SKIPOIT option
+!         Do not compute One-Index Transformed ASC (only for debugging)
+         pcmmod_skipoit = .true.
       end if
 
       if (kw_matches(word, '.PRINT ')) then

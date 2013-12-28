@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2321,6 +2321,10 @@ C
       use dft_cfg
       use num_grid_gen
 
+#if defined (PCM_MODULE)
+      use pcm_scf
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2337,6 +2341,7 @@ C
 #include "dcbmp2.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
+#include "dgroup.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2429,9 +2434,10 @@ ckr#endif
           call quit('Polarizable Continuum Model calculation not '//
      & 'working with X2C Hamiltonian!')
         end if
-        call init_pcm
-        call print_pcm 
-        print *, 'PCMSolver re-initialized.'
+! First finalize
+        call pcm_scf_finalize
+        call pcm_scf_initialize(lupri)
+        write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
       end if
 #endif
 
@@ -2450,7 +2456,9 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
+! If optimizing with PCM then the energy must include the
+! polarization contribution
          else if (dirac_cfg_pcm) then
             energy = dhferg
 #endif
@@ -2540,13 +2548,6 @@ C
 C
 C     Calculate gradient
 C
-#ifdef PCM_MODULE
-      if (dirac_cfg_pcm .and. .not.dongrd) then
-         write(lupri, *), 'Forcing numerical evaluation of molecular '// 
-     &   'gradient for PCM.'
-         dongrd = .true.
-      end if
-#endif
       IF(DONGRD) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -439,23 +439,6 @@
 !|
 !|________________________ end reading section
 
-!
-!  in case of a fano run save the pre diagonalized matrix
-!  to an array for later overlap analysis
-!
-      IF (reladc_md_isfano) THEN
-        fin_ndiag = 0.0
-        DO icol = 1, ladc
-          DO irow = icol, ladc
-            fin_ndiag(irow,icol) = A(irow,icol)
-          END DO
-        END DO
-        DO icol = 1, ladc - 1
-          DO irow = icol+1, ladc-1
-            fin_ndiag(icol,irow) = A(irow,icol)
-          END DO
-        END DO
-      END IF
 
 !
 !  call symmetric diagonalizer

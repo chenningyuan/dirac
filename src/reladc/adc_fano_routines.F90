@@ -370,7 +370,7 @@ CONTAINS
               is_fin            = .TRUE. !We hit a final state configuration
               counter           = counter + 1
               finalpos(counter) = row
-              WRITE(iw,*) 'position = ', row
+              !WRITE(iw,*) 'position = ', row
               count2h1p = count2h1p + 1
             ELSE
               is_fin = .FALSE.

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -180,7 +180,8 @@ CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00,
+     &                 STATE_E_FSCC
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
@@ -357,6 +358,8 @@ CMI   ...provide with default values
       MAXIT10=relcc_fs_max10_iterations 
       MAXIT11=relcc_fs_max11_iterations 
       MAXIT20=relcc_fs_max20_iterations 
+!     stefan: select state sorted by energy for numerical gradient calculation   
+      STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
 CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)

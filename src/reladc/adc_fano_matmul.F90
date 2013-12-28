@@ -14,6 +14,7 @@ CONTAINS
     use memory_allocator
     use codata
     use adc_cfg
+    use stieltjesmod
 
     IMPLICIT NONE
 
@@ -36,6 +37,7 @@ CONTAINS
 ! Local Variables
 !
     REAL(8), ALLOCATABLE, DIMENSION(:)    :: diag
+    REAL(8)                               :: autoev  = 27.2113957d0
     INTEGER                               :: ixx
 !    INTEGER                               :: nbufs
     INTEGER                               :: nact
@@ -56,6 +58,13 @@ CONTAINS
     INTEGER                               :: channel
     INTEGER                               :: first, last, off
 
+    REAL(8)                               :: e_init
+    REAL(8), ALLOCATABLE, DIMENSION(:)    :: total_gamma
+    REAL(8), ALLOCATABLE, DIMENSION(:,:)  :: partial_gamma
+    REAL(8)                               :: gammae !result from stieltjes
+    REAL(8)                               :: sum_partial
+    REAL(8)                               :: norm
+
 
 !
 ! Code
@@ -71,6 +80,11 @@ CONTAINS
 
     CALL alloc(e2h1p,nr_in_evecs*nr_fin)
     CALL alloc(t_mom,nr_in_evecs*nr_fin)
+
+    CALL alloc(total_gamma,nr_in_evecs)
+    CALL alloc(partial_gamma,reladc_fano_nrgroups,nr_in_evecs)
+
+    WRITE(iw,*) 'Number of Initial States: ', nr_in_evecs
 
     vec_start = 0
 
@@ -145,25 +159,48 @@ CONTAINS
       WRITE(iw,*)
       WRITE(iw,*) '-------------------------------------------------------------'
       WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
-      WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+      WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i)*autoev,&
                                               'eV', 'polestrength: ', in_energy(2,i)
       WRITE(iw,*) '-------------------------------------------------------------'
       WRITE(iw,*)
       WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-      WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+      IF (counter > 20) THEN
+        WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+      ELSE
+        WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+      END IF
 
-    END DO
+      WRITE(iw,*)
+      WRITE(iw,*) 'Shifting pseudo-spectrum'
+      FORALL (ixx = 1:counter)
+        e2h1p(ixx) = e2h1p(ixx) - in_energy(1,i)
+        t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
+      END FORALL
 
-
+      WRITE(iw,*)
+      WRITE(iw,*) 'Calling Stieltjes.'
+      !e_init = in_energy(1,i)
+      e_init = 0.0
+      CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
+                     gammae,2004,0)
 !
-! To be removed as soon as Dirac has its own Stieltjes routine
+! printflag 1 for no external output(dirac.out), 2 for output
 !
-    fh_trans = fhdiag
-    OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-         ACTION='WRITE',iostat=ierror)
-    WRITE(fh_trans,*) in_energy(1,i)
-    WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-    CLOSE(fh_trans)
+
+      WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+      total_gamma(i) = gammae * autoev
+!!
+!! To be removed as soon as Dirac has its own Stieltjes routine
+!!
+!      fh_trans = fhdiag
+!      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+!           ACTION='WRITE',iostat=ierror)
+!      WRITE(fh_trans,*) in_energy(1,i)
+!      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+!      CLOSE(fh_trans)
+!
+    END DO !loop over intial states
+
 
 !
 ! Starting the partial decay widths
@@ -250,28 +287,51 @@ CONTAINS
           WRITE(iw,*) 'name: ', fn_trans
           WRITE(iw,*) '-------------------------------------------------------------'
           WRITE(iw,'(1X,A45,I4)') 'Pseudo-spectrum for initial state number ', i
-          WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i),&
+          WRITE(iw,'(1X,A10,F10.6,A3,A20,F10.6)') 'energy: ', in_energy(1,i)*autoev,&
                                                   'eV', 'polestrength: ', in_energy(2,i)
           WRITE(iw,*) '-------------------------------------------------------------'
           WRITE(iw,*)
           WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-          WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          IF (counter > 20) THEN
+            WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,20)
+          ELSE
+            WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          END IF
           WRITE(iw,*)
 
 !
-! Th  is procedure only makes sense, when those final vectors not
-! as  sociated with the chosen final states are not considered in
-! th  e calculation of the transition moments.
+! This procedure only makes sense, when those final vectors not
+! associated with the chosen final states are not considered in
+! the calculation of the transition moments.
 !
-!
-! To   be removed as soon as Dirac has its own Stieltjes routine
-!
-          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-               ACTION='WRITE',iostat=ierror)
-          WRITE(fh_trans,*) in_energy(1,i)
-          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-          CLOSE(fh_trans)
+          FORALL (ixx = 1:counter)
+            e2h1p(ixx) = e2h1p(ixx) - in_energy(1,i)
+            t_mom(ixx) = 2 * pi * t_mom(ixx) * t_mom(ixx)
+          END FORALL
 
+          WRITE(iw,*) 'Channel #', channel
+          WRITE(iw,*)
+          WRITE(iw,*) 'Calling Stieltjes.'
+          WRITE(iw,*)
+          WRITE(iw,*)
+          !e_init = in_energy(1,i)
+          e_init = 0.0
+          CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
+                         gammae,1000+channel,0)
+!
+! printflag 1 for no external output(dirac.out), 2 for output
+!
+          WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
+          partial_gamma(channel,i) = gammae*autoev
+!!
+!! To be removed as soon as Dirac has its own Stieltjes routine
+!!
+!          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+!               ACTION='WRITE',iostat=ierror)
+!          WRITE(fh_trans,*) in_energy(1,i)
+!          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+!          CLOSE(fh_trans)
+!
         END DO ! end of loop over channels
       END DO   ! end of loop over initial states
 
@@ -286,12 +346,48 @@ CONTAINS
     CALL dealloc(vec2)
 
     CALL dealloc(in_evecs)
-    CALL dealloc(in_energy)
     CALL dealloc(fin_evecs)
     CALL dealloc(fin_energies)
 
     CALL dealloc(e2h1p)
     CALL dealloc(t_mom)
+
+!
+! Beautiful Summary of the calculated decay widths
+!
+
+    WRITE(iw,*)
+    WRITE(iw,*)
+
+    DO i = 1, nr_in_evecs
+      sum_partial = 0.0
+      DO j = 1, reladc_fano_nrgroups
+        sum_partial = sum_partial + partial_gamma(j,i)
+      END DO
+      norm = sum_partial / total_gamma(i)
+      partial_gamma(1:reladc_fano_nrgroups,i) = partial_gamma(1:reladc_fano_nrgroups,i) &
+                                                / norm
+      WRITE(iw,149) 'Initial state # ', i, 'energy: ', in_energy(1,i)*autoev, 'eV', &
+                  'polestr.: ', in_energy(2,i)
+      WRITE(iw,*) '--------------------------------------------------------------'
+      WRITE(iw,*) 'Total decay width: ', total_gamma(i), 'eV'
+      WRITE(iw,*) 'Sum of partial decay widths: ', sum_partial, 'eV'
+      WRITE(iw,*) 'Renormalized partial decay widths in eV:'
+      WRITE(iw,*) '--------------------------------------------------------------'
+      DO channel = 1, reladc_fano_nrgroups
+        WRITE(iw,150) 'Channel #', channel, partial_gamma(channel,i)
+      END DO
+      WRITE(iw,*) '--------------------------------------------------------------'
+      WRITE(iw,*)
+      WRITE(iw,*)
+    END DO
+
+    149 FORMAT(' ',A16,2X,I3,3X,A8,2X,F14.5,1X,A2,3X,A10,2X,F7.5)
+    150 FORMAT(' ',A9,2X,I3,3X,ES14.5)
+
+    CALL dealloc(total_gamma)
+    CALL dealloc(partial_gamma)
+    CALL dealloc(in_energy)
 
   END SUBROUTINE fano_create_t_mom
 

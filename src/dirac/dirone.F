@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -38,9 +38,9 @@ C
 C*****************************************************************************
 ! checking
        use fde_mod
-
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
@@ -59,7 +59,8 @@ C
 C.....With modified Hamiltonian this routine is skipped for now
       IF(MDIRAC) GOTO 20
       !mi: always print nuclear contribution to the dipole moment (costs nothing)
-      CALL DIPNUC(1,.FALSE.)
+      TEST=(DSUM(NUCIND,CHARGE,1).GT.D0)
+      IF(TEST) CALL DIPNUC(1,.FALSE.)
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================

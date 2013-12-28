@@ -138,7 +138,6 @@ CONTAINS
 
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     reladc_md_isfano   = .true.
-    CALL alloc(fin_ndiag,nr_fin,nr_fin,id='non-diagonalized final vectors')
     CALL FULLDIAR2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
 
     IF (reladc_fano_nrgroups == 1) THEN
@@ -148,7 +147,6 @@ CONTAINS
 !      WRITE(iw,*) 'Determine the channel of each final state'
 !      CALL fano_det_channel(nr_fin,assign_fin_channel,do_partial,iw)
     END IF
-    CALL dealloc(fin_ndiag)
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &

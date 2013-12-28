@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -164,16 +164,18 @@ contains
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
       mz = nz
-!#ifdef x2c_spinfree_before_4c_to_2c
-      if(spinfree)then
+      if (nfsym == 2) then
         allocate(boson_info(norb_dim(1)+norb_dim(2)))
+      else
+        allocate(boson_info(norb_dim(1)))
+      endif
+      if(spinfree)then
         call get_boson_irrep_info(boson_info,  &
                                   nfsym,       &
                                   norb_dim,    &
                                   print_lvl)
         mz = 1
       end if
-!#endif
 
 !     initialize matrix offsets
       ioff_osh1      = 1
@@ -212,7 +214,6 @@ contains
                                   spinfree,                          &
                                   boson_info(ioff_osh2),             &
                                   print_lvl)
-
         end if
 !       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
@@ -224,9 +225,7 @@ contains
 
       end do
 
-!#ifdef x2c_spinfree_before_4c_to_2c
-      if(spinfree) deallocate(boson_info)
-!#endif
+      deallocate(boson_info)
 
   end subroutine x2c_get_h1_defining_mat
 
