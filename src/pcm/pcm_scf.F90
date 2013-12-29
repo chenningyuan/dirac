@@ -34,8 +34,6 @@ module pcm_scf
    public pcm_scf_initialize
    public pcm_scf_finalize
   
-   public collect_nctot
-   public collect_atoms 
    public pcm_energy_driver   
    public pcm_oper_ao_driver
    public get_pcm_energy
@@ -55,7 +53,7 @@ module pcm_scf
    contains
 
       subroutine pcm_scf_initialize(print_unit)
-
+      
       integer, intent(in) :: print_unit
 
       global_print_unit = print_unit 
@@ -99,39 +97,39 @@ module pcm_scf
 
       end subroutine
 
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_') 
+     subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot') 
 
 #include "mxcent.h"
 #include "nuclei.h"
-      
-      integer(c_int), intent(out) :: nr_nuclei
-      
-      nr_nuclei = nucdep
-
-      end subroutine
-      
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(c_double), intent(out) :: atomic_charges(*)
-      real(c_double), intent(out) :: atomic_centers(3,*)
      
-      integer :: i, j, k 
+     integer(c_int), intent(out) :: nr_nuclei
 
+     nr_nuclei = nucdep
+
+     end subroutine collect_nctot
+     
+     subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
+
+#include "mxcent.h"
+#include "nuclei.h"
+     
+     real(c_double), intent(out) :: atomic_charges(*)
+     real(c_double), intent(out) :: atomic_centers(3,*)
+    
+     integer :: i, j, k 
+     
 ! Get coordinates
-      call getacord(atomic_centers)
+     call getacord(atomic_centers)
 ! Get charges      
-      i = 0
-      do j = 1, nucind
-        do k = 1, nucdeg(j)
-          i = i + 1
-          atomic_charges(i) = charge(j)
-        enddo
-      enddo
-   
-      end subroutine
+     i = 0
+     do j = 1, nucind
+       do k = 1, nucdeg(j)
+         i = i + 1
+         atomic_charges(i) = charge(j)
+       enddo
+     enddo
+  
+     end subroutine collect_atoms
 
       subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 !

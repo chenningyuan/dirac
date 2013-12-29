@@ -1,4 +1,4 @@
-module pcm_utils
+module pcm_gp
 
    use, intrinsic :: iso_c_binding
 
@@ -11,7 +11,7 @@ module pcm_utils
 
    contains
 
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_') 
+      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot') 
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -20,9 +20,9 @@ module pcm_utils
       
       nr_nuclei = nucdep
 
-      end subroutine
+      end subroutine collect_nctot
       
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
+      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -43,6 +43,6 @@ module pcm_utils
         enddo
       enddo
    
-      end subroutine
+      end subroutine collect_atoms
 
-end module pcm_utils
+end module pcm_gp
