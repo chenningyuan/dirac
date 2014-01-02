@@ -3,13 +3,14 @@ module pcm_write
    implicit none
       
    character(11), parameter, public :: pcm_file_name = 'PCM_mep_asc'
-   integer,      parameter, public :: pcm_file_unit = 800 
-   logical                , public :: pcm_file_exists = .false.
-   logical                , public :: pcm_file_open = .false.
+   integer,       parameter, public :: pcm_file_unit = 800 
+   logical                 , public :: pcm_file_exists = .false.
+   logical                 , public :: pcm_file_open = .false.
 
    public report_after_pcm_input
    public pcm_write_file
    public pcm_write_file_separate
+   public host_writer
 
    private
   
@@ -197,5 +198,16 @@ module pcm_write
       write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
     
    end subroutine 
+
+   subroutine host_writer(message, message_length) bind(c, name='host_writer')
+       
+      use, intrinsic :: iso_c_binding
+      
+      integer(c_size_t), intent(in) :: message_length
+      character(kind=c_char)        :: message(message_length)
+
+      write(*, '(1000A)') message
+
+   end subroutine host_writer
 
 end module
