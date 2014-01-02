@@ -30,14 +30,14 @@ module pcm_linear_response
 
       global_print_unit = print_unit 
 
-      call init_pcm
+      call set_up_pcm
       call print_pcm
 
       call get_cavity_size(nr_points)
 
       allocate(tess_cent(3, nr_points))
       tess_cent = 0.0d0
-      call get_tess_centers(tess_cent)
+      call get_tesserae(tess_cent)
               
       is_initialized = .true.
 
@@ -172,7 +172,7 @@ module pcm_linear_response
 ! Set a cavity surface function with the MEP
         call set_surface_function(nr_points, mep, potName)
 ! Compute polarization charges and set the proper surface function
-        call comp_chg_pcm(potName, chgName)
+        call compute_asc(potName, chgName)
 ! Get polarization charges @tesserae centers
         call get_surface_function(nr_points, asc, chgName)
 
@@ -201,14 +201,14 @@ module pcm_linear_response
         chgName1 = 'NucASC'//c_null_char
         call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
         call set_surface_function(nr_points, nuc_pot, potName1)
-        call comp_chg_pcm(potName1, chgName1)
+        call compute_asc(potName1, chgName1)
         call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
         potName2 = 'EleMEP'//c_null_char
         chgName2 = 'EleASC'//c_null_char
         call get_electronic_mep(nr_points, density_matrix, tess_cent, ele_pot, work, lfree, 0, .false., pcmmod_skipss)
         call set_surface_function(nr_points, ele_pot, potName2)
-        call comp_chg_pcm(potName2, chgName2)
+        call compute_asc(potName2, chgName2)
         call get_surface_function(nr_points, ele_pol_chg, chgName2)
 
 ! Print some information
@@ -286,7 +286,7 @@ module pcm_linear_response
       enddo
       call set_surface_function(nr_points, mep_oit, potName)
 ! Compute polarization charges and set the proper surface function
-      call comp_chg_pcm(potName, chgName)
+      call compute_asc(potName, chgName)
       call get_surface_function(nr_points, asc_oit, chgName)
 ! Now contract unpertubed potential matrix elements with perturbed ASC
       call get_electronic_mep(nr_points, mep_oit_asc, tess_cent, asc_oit, work, lwork, 0, .true., pcmmod_skipss)
