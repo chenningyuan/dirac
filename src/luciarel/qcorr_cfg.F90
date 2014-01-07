@@ -8,6 +8,7 @@
       integer, public                :: NMS2VAL_q   = 0
       integer, public                :: NORB_q      = 0
       integer, public                :: MXPNGAS_q   = 0
+      integer, public                :: NSMST_q     = 0
       integer, public, allocatable   :: IGSOCC_q(:,:)
       integer, public, allocatable   :: IBSPGPFTP_q(:)
       integer, public, allocatable   :: NELFSPGP_q(:,:)

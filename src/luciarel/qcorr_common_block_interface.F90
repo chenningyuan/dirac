@@ -32,6 +32,7 @@ contains
 
       subroutine init_qcorr_rel()
 
+ use symmetry_setup_krci
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "strbas.inc"
@@ -48,6 +49,7 @@ contains
       NACTEL_q    = real(NACTEL)
       NORB_q      = 0
       MXPNGAS_q   = MXPNGAS
+      NSMST_q     = NSMST
       
 
       allocate(IBSPGPFTP_q(MXPSTT))
@@ -95,6 +97,7 @@ contains
 #include "../lucita/cgas.inc"
 #include "../lucita/gasstr.inc"
 #include "../lucita/orbinp.inc"
+#include "../lucita/csm.inc"
 
 
 ! integer block
@@ -104,6 +107,7 @@ contains
       NACTEL_q    = real(NACTEL)
       NORB_q      = ntoob
       MXPNGAS_q   = MXPNGAS
+      NSMST_q     = NSMST
       
 
       allocate(IBSPGPFTP_q(MXPSTT))

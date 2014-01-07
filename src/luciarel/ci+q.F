@@ -167,7 +167,7 @@
      &                     NBLOCK,IBLOCK(1,IBOFF),
      &                     THRES,MAXTRM,NAEL,NBEL,
      &                     astring, bstring,
-     &                     IBLTP,NSMST,
+     &                     IBLTP,NSMST_q,
      &                     mat1, mat2,
      &                     NELFSPGP_q,
      &                     NOCCLS,NGAS_q,occupation_class,
@@ -401,6 +401,8 @@
             IRESTR_ANA = 0
          end if
 *
+         write(6,*) "IASM,IATP",IASM,IATP
+         write(6,*) "IBSM,IBTP",IASM,IATP
          NIA = NSSOA(IASM,IATP)
          NIB = NSSOB(IBSM,IBTP)
          IMZERO = 0
