@@ -20,7 +20,7 @@ import shutil
 from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
-class TestRun():
+class TestRun:
 
     #---------------------------------------------------------------------------
     def __init__(self, _file, argv):
@@ -90,7 +90,7 @@ class TestRun():
         return (options.binary_dir, options.work_dir)
 
 #-------------------------------------------------------------------------------
-class _SingleFilter():
+class _SingleFilter:
 
     def __init__(self, **kwargs):
 
@@ -159,7 +159,7 @@ class _SingleFilter():
             self.from_is_re = True
 
 #-------------------------------------------------------------------------------
-class Filter():
+class Filter:
 
     #---------------------------------------------------------------------------
     def __init__(self):
