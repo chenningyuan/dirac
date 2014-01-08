@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -105,8 +105,15 @@
 
   ! open output file
   ilogg = 2
-  open(ilogg,file=potfil(1:i)//'.vibcal', &
+  if (keymeth==1) then
+    open(ilogg,file=potfil(1:i)//'.vibcal1', &
        status='unknown',form='formatted',access='sequential')
+  elseif(keymeth==2)then  
+    open(ilogg,file=potfil(1:i)//'.vibcal2', &
+       status='unknown',form='formatted',access='sequential')
+  else
+    STOP 'Unknown option for derivative.'
+  endif
 
   !-----------------------------------------------------------------------------!
   !                 Get force constants and property derivatives                !
@@ -188,6 +195,9 @@
     read(lucmd,*) norder
     write(lupri,*) 'Select point for the calculation of derivatives'
     read(lucmd,*)  xmin
+    if(iang==1)then
+      xmin=xmin/xtang
+    endif
     do while (npoints.le.norder) 
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'

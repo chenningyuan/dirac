@@ -43,7 +43,7 @@ active spinors.
      5/0,6
 
 1 open shell with 5 electrons in 6 spinors (= 3 Kramers pairs) in
-irrep 2. Thus, the fractional occupation is 5/6.
+irrep 2 (the *ungerade* one). Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
 average-of-configurations [Thyssen1998]_ .
@@ -409,6 +409,15 @@ a factor of zero on this term (or even e.g. -0.20).
 
     .OPENFAC
      1.00
+
+2nd-order optimization
+======================
+
+keyword(2NDOPT)
+
+The default SCF of DIRAC uses only gradient information. By adding this keyword 2nd-order optimization, 
+using both gradient and Hessian information, is activated in case the regular SCF does not converge.
+This scheme is computationally more expensive and so far only available for closed-shell Hartree-Fock.
 
 
 State selection

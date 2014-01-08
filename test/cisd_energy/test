@@ -11,7 +11,7 @@ test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Number of reference determinants',
-      nr_lines    = 2)
+      num_lines    = 2)
 f.add(from_re = 'CI Total Energy',
       to_re   = 'Relative to reference')
 f.add(from_re = '.*CI-SD Energy',

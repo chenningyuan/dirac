@@ -2,7 +2,6 @@
 
 import os
 import sys
-import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from beholder import Filter
@@ -12,7 +11,7 @@ test_run = DiracTestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string  = 'scalar              x-component',
-      nr_lines     = 3)
+      num_lines     = 3)
 
 test_run.execute(['response_ez_ez_dc.inp'], ['ne_d2h.mol'], args='--get="DFCOEF PAMXVC"')
 test_run.execute(['visual_zo_dc.inp'], ['ne_d2h.mol'], f, args='--copy="DFCOEF PAMXVC"')

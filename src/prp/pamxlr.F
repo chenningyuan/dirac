@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -140,6 +140,11 @@ C***********************************************************************
 #endif
       use memory_allocator
       use orbital_rotation_indices
+      use dirac_cfg
+
+#if defined (PCM_MODULE)
+      use pcm_linear_response, only: pcm_linear_response_initialize
+#endif
 
 
 #include "implicit.h"
@@ -194,6 +199,13 @@ C
       ELSE
         KLRO = KFREE
       ENDIF
+
+#if defined (PCM_MODULE)
+      if (dirac_cfg_pcm) then
+              call pcm_linear_response_initialize(lupri)
+        write(lupri, '(//A/)') 'PCMSolver initialized.'
+      end if
+#endif
 C
 C     **********************************************************
 C     ***                                                    ***
