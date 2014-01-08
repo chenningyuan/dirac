@@ -34,7 +34,7 @@ the two-electron integrals and the CC run.
 Two-step X2Cmmf
 ---------------
 
-Besides the simple, recommended, one-step appraoch to a X2Cmmf calculation as described above one may also proceed in seperate steps. 
+Besides the one-step appraoch to an X2Cmmf calculation as described above one may also proceed in seperate steps. 
 This may be useful if one would like to use less/more MPI processes in the SCF step than in the 4-index/CC calculation. In order to
 proceed run the SCF first while adding .X2Cmmf to the \*\*HAMILTONIAN keyword section:
 
@@ -43,35 +43,31 @@ proceed run the SCF first while adding .X2Cmmf to the \*\*HAMILTONIAN keyword se
     **HAMILTONIAN
     .X2Cmmf
 
-Save the file DFCOEF (keyword *--outcmo* with our default submit
-script *pam*). Before restarting calculation to proceed with the 4-index transformation (MOLTRA) and the (MR)CC run,
-remove the keyword .X2Cmmf from the \*\*HAMILTONIAN section (**seems non-intuitive (!)**) and add the
-following keywords to the \*\*MOLTRA and either the namelist RELCCSSD input::
+Save the files DFCOEF, AOMOMAT and X2CMAT (use the keywords *--outcmo --get="AOMOMAT X2CMAT"* with our default submit
+script *pam*) . Before restarting any calculation to proceed with the 4-index transformation (MOLTRA) and/or the (MR)CC run,
+set the keywords combination as indicated below under the \*\*HAMILTONIAN section and add the
+following keyword to the namelist RELCCSSD input::
 
     **HAMILTONIAN
-    **MOLTRA
-    .INTFL2
-    1 0 0 0
-    .INTFL4
-    1 0 0 0
+    .X2C
+    *X2C
+    .mmf-restart
     ...
     ...
     &CCSORT USEOE=T, NORECMP=T &END
 
 
-or the new RELCCSD deck input::
+or to the new RELCCSD deck input::
 
-    **MOLTRA
-    .INTFL2
-    1 0 0 0
-    .INTFL4
-    1 0 0 0
-    **RELCC
+    **HAMILTONIAN
+    .X2C
+    *X2C
+    .mmf-restart
     ...
     ...
     *CCSORT
     .NORCMP
 
-Dirac will automatically read the two-component coefficients from the file DFCOEF (to add it to the run use *--incmo* on
-the *pam* command line) and proceed in two-component mode with the 4-index integral transformation and (MR)CC
+Dirac will automatically read the two-component coefficients from the file DFCOEF (use *--incmo --put="AOMOMAT X2CMAT"* on
+the *pam* command line) and proceed in two-component mode with the 4-index integral transformation and/or the (MR)CC
 calculation, respectively.
