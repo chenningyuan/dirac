@@ -61,6 +61,9 @@
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
 
+        case ('*QCORR ')
+           call read_input_qcorr(word, kw_section)
+
         case default
 !          activate as soon as everything is merged to here
 !          call quit('section '//kw_section//' not recognized')
@@ -1477,6 +1480,48 @@
 #else
       call quit('Atomic oo-order spin-orbit correction not included in this version')
 #endif
+
+   end subroutine
+
+   subroutine read_input_qcorr(word, kw_section)
+
+      use input_reader
+      use qcorr_cfg
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      luci_cfg_qcorr = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_qcorr)
+      end if
+
+      if (kw_matches(word, '.NREF  ')) then
+         call kw_read(word, nref_qcorr)
+      allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+      allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+!     if(relQC)then
+        write(ref_wavefunction_qcorr(1,1),"(4i4)"),1,2,3,4               ! for HF, TODO: multi reference case!!!
+        write(ref_wavefunction_qcorr(1,2),"(4i4)"),1,2,3,4
+!     else
+!       write(ref_wavefunction_qcorr(1,1),"(4i4)"),1,2,5,9
+!       write(ref_wavefunction_qcorr(1,2),"(4i4)"),1,2,5,9
+!     end if
+
+      end if
+
+      if (kw_matches(word, '.REFVAL ')) then
+!       TODO: read reference configurations + coefficients
+      end if
+
+      call check_whether_kw_found(word, kw_section)
 
    end subroutine
 

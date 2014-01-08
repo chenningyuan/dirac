@@ -23,45 +23,30 @@
 
       dimension IBLOCK(8,NBLOCK),IBLTP(*)
       dimension C(*), WORK(*)
-      logical, intent(in)   :: relQC
-      integer, allocatable  :: mat1(:,:)
-      integer, allocatable  :: astring(:,:)
-      integer, allocatable  :: bstring(:,:)
-      integer, allocatable  :: occupation_class(:,:)
-      real(8), allocatable  :: mat2(:,:)
-      character (len=2)     :: ferm_lab
-      character (len=200), allocatable   :: ref_wavefunction(:,:)
-      real(8), allocatable  :: ref_wavefunction_coeff(:)
-      real(8), allocatable  :: ref_wavefunction_coeff_i(:)         ! coeff von der ersten ci_iteration!!!
-      integer               :: nref = 1                            ! for HF nref = 1, TODO: input parameter!!!
-      integer               :: nstates_ci
-      real(8), allocatable  :: e_corr(:), e_tot(:)
-      real(8)               :: q_corr, edci
+      logical, intent(in)  :: relQC
+      integer, allocatable :: astring(:,:)
+      integer, allocatable :: bstring(:,:)
+      integer, allocatable :: occupation_class(:,:)
+      real(8), allocatable :: ref_wavefunction_coeff(:)
+      integer              :: nstates_ci
+      real(8), allocatable :: e_corr(:), e_tot(:)
+      real(8)              :: q_corr, edci
 *
       call QENTER('QCORR')
 
 !     initialize
       call init_qcorr(relQC)
 
-      allocate(ref_wavefunction(10,2))
-      allocate(ref_wavefunction_coeff(10))
-      allocate(ref_wavefunction_coeff_i(10))
-      ref_wavefunction_coeff      = 0.0d0 ! initialize all to 0.0d0
-      ref_wavefunction_coeff_i    = 0.0d0 ! initialize all to 0.0d0
-      ref_wavefunction_coeff_i(1) = 1.0d0
-      if(relQC)then
-        write(ref_wavefunction(1,1),"(4i4)"),1,2,3,4               ! for HF, TODO: multi reference case!!!
-        write(ref_wavefunction(1,2),"(4i4)"),1,2,3,4
-      else
-        write(ref_wavefunction(1,1),"(4i4)"),1,2,5,9
-        write(ref_wavefunction(1,2),"(4i4)"),1,2,5,9
-      end if
+      allocate(ref_wavefunction_coeff(nref_qcorr))
+      ref_wavefunction_coeff          = 0.0d0 ! initialize all to 0.0d0
+      ref_wavefunction_coeff_qcorr    = 0.0d0 ! initialize all to 0.0d0
+      ref_wavefunction_coeff_qcorr(1) = 1.0d0
 
 *
 ** Specifications of internal space
 *
       NTEST = 000
-      NTEST = max(NTEST,IPRWFC)
+      NTEST = max(NTEST,print_qcorr)
 *
       LBLK = -1
       IBOFF = 0
@@ -107,7 +92,6 @@
 
           NAEL = NELEC_q(IACTP)
           NBEL = NELEC_q(IBCTP)
-          write(6,*) 'nael, nbel ',nael,nbel
           allocate(astring(NAEL,MXNSTR_q))
           allocate(bstring(NBEL,MXNSTR_q))
 
@@ -126,37 +110,27 @@
           NEL = NAEL + NBEL
           
           if(relQC)then 
-          write(6,*) 'nael, nbel before 0',nael,nbel
           call OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
      &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
-          write(6,*) 'nael, nbel before 1',nael,nbel
 
           else
-          write(6,*) 'nael, nbel before 0',nael,nbel
           call OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
      &           IGSOCC_q(1,1),IGSOCC_q(1,2),
      &           0,0)
-          write(6,*) 'nael, nbel before 1',nael,nbel
           end if 
 *
 *. and then the occupation classes
           allocate(occupation_class(NGAS_q,NOCCLS))
-          allocate(mat1(10,NOCCLS))
-          allocate(mat2(10,NOCCLS))
           IWAY = 2
           
           if(relQC)then 
-          write(6,*) 'nael, nbel before 2',nael,nbel
           call OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
      &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
-          write(6,*) 'nael, nbel before 3',nael,nbel
 
           else
-          write(6,*) 'nael, nbel before 2',nael,nbel
           call OCCLS(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
      &           IGSOCC_q(1,1),IGSOCC_q(1,2),
      &           0,0)
-          write(6,*) 'nael, nbel before 3',nael,nbel
           end if 
 *
 
@@ -168,41 +142,36 @@
      &                     THRES,MAXTRM,NAEL,NBEL,
      &                     astring, bstring,
      &                     IBLTP,NSMST_q,
-     &                     mat1, mat2,
      &                     NELFSPGP_q,
      &                     NOCCLS,NGAS_q,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
      &                     ICISTR,
-     &                     IPRWFC, ref_wavefunction, 
-     &                     ref_wavefunction_coeff,nref,
-     &                     ref_wavefunction_coeff_i,NACTEL_q,
+     &                     ntest,ref_wavefunction_qcorr, 
+     &                     ref_wavefunction_coeff,nref_qcorr,
+     &                     ref_wavefunction_coeff_qcorr,NACTEL_q,
      &                     NORB_q,relQC)
 *
-          deallocate(mat2)
-          deallocate(mat1)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
           if(allocated(astring)) deallocate(astring)
-!          deallocate(bstring)
-!          deallocate(astring)
           deallocate(occupation_class)
         end do
       end do
 
-      !nref = 1       ! for HF nref = 1 TODO: input parameter!!!
-      do i = 1, nref
+      !nref_qcorr = 1       ! for HF nref_qcorr = 1 TODO: input parameter!!!
+      do i = 1, nref_qcorr
       
       write(6,'(A)') '                                       '
       write(6,'(A)') ' Reference wavefunction & coefficient: ' 
       write(6,'(A)') ' ===================================== '
 
-      print *, "alpha ref",ref_wavefunction(1,1)
-      print *, "beta ref",ref_wavefunction(1,2)
+      print *, "alpha ref",ref_wavefunction_qcorr(1,1)
+      print *, "beta ref",ref_wavefunction_qcorr(1,2)
 
       print *,"coefficient of reference wf #",i," == ",
      &         ref_wavefunction_coeff(i)
       print *,"coefficient of HF reference wf             ==",
-     &         ref_wavefunction_coeff_i(1)
+     &         ref_wavefunction_coeff_qcorr(1)
       end do
 
       ! for +Q correction
@@ -220,13 +189,13 @@
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
         
-        call E_Q(e_corr,ref_wavefunction_coeff,nref,
-     &           ref_wavefunction_coeff_i,NACTEL_q,Edc_1,
+        call E_Q(e_corr,ref_wavefunction_coeff,nref_qcorr,
+     &           ref_wavefunction_coeff_qcorr,NACTEL_q,Edc_1,
      &           Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
      &           Epc_2, Emc_2)
 
       ! output of the q-correction       
-        write(6,"(/Af10.6)")  " Energie corrections: "
+        write(6,"(/Af10.6)")  " Energy corrections: "
         write(6,'(A)')        " ==================== "
 
         write(6,"(/A,f10.6)") "Edc_1:"
@@ -298,9 +267,9 @@
       deallocate(e_corr)
       deallocate(e_tot)
 
-      deallocate(ref_wavefunction)
+      deallocate(ref_wavefunction_qcorr)
       deallocate(ref_wavefunction_coeff)
-      deallocate(ref_wavefunction_coeff_i)
+      deallocate(ref_wavefunction_coeff_qcorr)
 
 !
  
@@ -317,7 +286,7 @@
      &                       NBLOCK,IBLOCK,
      &                       THRES,MAXTRM,NAEL,NBEL,
      &                       IASTR,IBSTR,IBLTP,NSMST,
-     &                       NCPMT,WCPMT,NELFSPGP_q,NOCCLS,
+     &                       NELFSPGP_q,NOCCLS,
      &                       NGAS_q,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
      &                       ICISTR,IPRNT,
@@ -339,60 +308,45 @@
       dimension IOCCLS(NGAS_q,NOCCLS)
       logical, intent(in) :: relQC
       integer, intent(in) :: norb
+      integer, intent(in) :: nref
 *. Specific input
       dimension IBLOCK(8,NBL_C)
-      character(len=200), intent(in)  :: ref_wavefunction(10,2)
+      character(len=200), intent(in)  :: ref_wavefunction(nref,2)
 
 *. Output
-      dimension NCPMT(10,NOCCLS)
-      dimension WCPMT(10,NOCCLS)
-      real(8) , intent(inout) :: ref_wavefunction_coeff(10)
-      real(8) , intent(inout) :: ref_wavefunction_coeff_i(10)       ! coeff von der ersten ci_iteration!!!
+      real(8) , intent(inout)         :: ref_wavefunction_coeff(nref)
+      real(8) , intent(inout)         :: ref_wavefunction_coeff_i(nref)
      
       character (len=4),  allocatable   :: conf_string_a(:)
       character (len=4),  allocatable   :: conf_string_b(:)
       character (len=10), allocatable   :: stringa(:)
       character (len=10), allocatable   :: stringb(:)
       character (len=200), allocatable  :: ref_wavefunction_tmp(:,:)
-      logical fndlab, ex, ex_open
 
-      allocate(ref_wavefunction_tmp(10,2))
-
-*
-      IDET      = 0
+      allocate(ref_wavefunction_tmp(nref,2))
 
       if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
       
       IDET     = 0
-*
-      write(6,*) "nbl_c is",nbl_c
-*
       do JBLOCK = 1, NBL_C
-*
          IATP = IBLOCK(1,JBLOCK)
          IBTP = IBLOCK(2,JBLOCK)
          IASM = IBLOCK(3,JBLOCK)
          IBSM = IBLOCK(4,JBLOCK)
 
-
-         write(6,*) "new spgp a"
-*. Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
+!        Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
          if(relQC)then 
-         call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
-     &                              NASTR1,IASTR)
-         write(6,*) "end new spgp a"
-         write(6,*) "new spgp b"
-         call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
-     &                              NBSTR1,IBSTR)
-         write(6,*) "end new spgp b"
-
+           call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
+     &                                NASTR1,IASTR)
+           call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
+     &                                NBSTR1,IBSTR)
          else
 
-         IDUM = 0
-         call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
-     &                           NORB,0,IDUM,IDUM)
-         call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
-     &                           NORB,0,IDUM,IDUM)
+           IDUM = 0
+           call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
+     &                            NORB,0,IDUM,IDUM)
+           call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
+     &                            NORB,0,IDUM,IDUM)
          end if
 
          if(IBLTP(IASM).eq.2) then
@@ -400,41 +354,36 @@
          else
             IRESTR_ANA = 0
          end if
-*
-         write(6,*) "IASM,IATP",IASM,IATP
-         write(6,*) "IBSM,IBTP",IASM,IATP
          NIA = NSSOA(IASM,IATP)
          NIB = NSSOB(IBSM,IBTP)
          IMZERO = 0
-         write(6,*) "block jblock nia,nib",jblock,nia,nib
-         if (ICISTR.ge.2) then
-*. Read in a Type-Type-symmetry block
-*? Perhaps use GSTTBL here?
-            call IFRMDS(IDET,1,-1,LUC)
-            call FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
-            IDET = 0
+         if(ICISTR.ge.2) then
+!          read in a Type-Type-symmetry block
+           call IFRMDS(IDET,1,-1,LUC)
+           call FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+           IDET = 0
          end if
-        write(6,*) ' IMZERO in ciq..ciq..  ',IMZERO
          if(IMZERO.ne.1) then
-*
             IBBAS = 1
             IABAS = 1
-*
-            do IB = IBBAS,IBBAS+NIB-1                                  ! loop über beta strings
+            do IB = IBBAS,IBBAS+NIB-1                                  ! loop over beta strings
                if(IRESTR_ANA.eq.1.and.IATP.eq.IBTP) then
                   MINIA = IB - IBBAS + IABAS
                else
                   MINIA = IABAS
                end if
-               do  IA = MINIA,IABAS+NIA-1                              ! loop über alpha strings 
+               do  IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
 *
                     IDET = IDET + 1
                    
-                    write(6,*) 'idet, c',idet,c(idet),nael,nbel
-                    write(6,"(60i4)")          ! save strings into array
-     &              (iastr(iel,ia),iel=1,nael)                         
-                    write(6,"(60i4)") 
-     &              (ibstr(iel,ib),iel=1,nbel)
+                    if(iprnt > 10)then
+                      write(6,*) 'idet, c',idet,c(idet),nael,nbel
+                      write(6,"(60i4)")          ! save strings into array
+     &                (iastr(iel,ia),iel=1,nael)
+                      write(6,"(60i4)") 
+     &                (ibstr(iel,ib),iel=1,nbel)
+                    end if
+
                     write(ref_wavefunction_tmp(1,1),"(60i4)")          ! save strings into array
      &              (iastr(iel,ia),iel=1,nael)                         
                     write(ref_wavefunction_tmp(1,2),"(60i4)") 
@@ -466,13 +415,9 @@
 
 
                end do
-*     ^ End of loop over alpha strings
             end do
-*     ^ End of loop over beta strings
          end if
-*     ^ End of if statement for nonvanishing blocks
       end do
-*     ^ End of loop over blocks
 
       end subroutine get_Q_correction
 
@@ -517,6 +462,7 @@
       
 
       do i = 1, nref
+      print *, 'nref ...',nref, i
       c01 = c01 + ref_wavefunction_coeff(i) ** 2
       end do
 
