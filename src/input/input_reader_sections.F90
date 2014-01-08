@@ -1434,6 +1434,11 @@
          x2cmod_skip_op_pct = .true.
       end if
 
+!     restart mmf calculation
+      if (kw_matches(word, '.mmf-re')) then
+         x2cmod_mmf_restart = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

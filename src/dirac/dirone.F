@@ -2843,10 +2843,14 @@ C         2) do picture change transformation of integrals on AOPROPER
               else if(fndlab12('h12cAOn   10',lux2c))then
                 i2cofk = 1
               else
+                if(x2cmod_mmf_restart)then
+                  i2cofk = -2
+                else
                   write(lupri,'(a)') 
      &'*** restart error: no hamiltonian integrals stored on X2CMAT ***'
                   call quit(
      &'*** error in gmotra: no h1 data on file X2CMAT ***')
+                end if
               end if
             else
 !             nothing to do here for now: x2cmod_fragment_x2c is always false.
