@@ -37,17 +37,13 @@
 !     initialize
       call init_qcorr(relQC)
 
-      allocate(ref_wavefunction_coeff(nref_qcorr))
-      ref_wavefunction_coeff          = 0.0d0 ! initialize all to 0.0d0
-      ref_wavefunction_coeff_qcorr    = 0.0d0 ! initialize all to 0.0d0
-      ref_wavefunction_coeff_qcorr(1) = 1.0d0
-
-*
-** Specifications of internal space
-*
+!     print flag
       NTEST = 000
       NTEST = max(NTEST,print_qcorr)
-*
+
+      allocate(ref_wavefunction_coeff(nref_qcorr))
+      ref_wavefunction_coeff          = 0.0d0 ! initialize all to 0.0d0
+
       LBLK = -1
       IBOFF = 0
       call REWINE(LUSCR,-1)
@@ -55,11 +51,10 @@
       call itods(-1,1,-1,LUSCR)
 *
 * Loop over real and imaginary parts
-      do IRIR = 1,IRC,1                                      !loop über call
+      do IRIR = 1,IRC
 
         if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
         if (IRIR.EQ.2) then
-*
 *. Skip EOV mark between real and imaginary part
           call IFRMDS(IONEM,1,-1,LUC)
         end if
@@ -72,7 +67,6 @@
             IACTP = 1
             IBCTP = 2
           end if
-*
 *  Offset for IBLOCK(sym,type) information
           if (IMK2_R.eq.1) then
             IBOFF = 1
@@ -105,7 +99,7 @@
           IASPGPTP = IACTP
           IBSPGPTP = IBCTP
 *
-*. Number of occupation classes
+*. determine the number of occupation classes...
           IWAY = 1
           NEL = NAEL + NBEL
           
@@ -119,7 +113,7 @@
      &           0,0)
           end if 
 *
-*. and then the occupation classes
+*. and then set the occupation classes
           allocate(occupation_class(NGAS_q,NOCCLS))
           IWAY = 2
           
@@ -158,7 +152,6 @@
         end do
       end do
 
-      !nref_qcorr = 1       ! for HF nref_qcorr = 1 TODO: input parameter!!!
       do i = 1, nref_qcorr
       
       write(6,'(A)') '                                       '
@@ -271,12 +264,9 @@
       deallocate(ref_wavefunction_coeff)
       deallocate(ref_wavefunction_coeff_qcorr)
 
-!
- 
       call QEXIT('QCORR')
-*
-      end subroutine Q_correction
 
+      end subroutine Q_correction
 ***********************************************************************
 
       subroutine get_Q_correction(C,LUC,NBL_C,
