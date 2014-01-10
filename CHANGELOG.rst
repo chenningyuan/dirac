@@ -3,7 +3,7 @@
 13.2 (this is the next patch)
 -----------------------------
 
-- Document me ...
+- Adapt testing to older versions of python.
 
 
 13.1 (2013-12-16)
