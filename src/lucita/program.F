@@ -630,7 +630,7 @@ C     copy restart vector to MPI-file format
       IF( INICI .lt. 0) THEN
 C
          WRITE(LUWRTOUT,'(2X,A)')
-     &   ' restart file LUCVECT.0 will be copied to'//
+     &   ' restart file LUCVECT will be copied to'//
      &   ' MPI-readable format ...'
 C
          IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,LBLK)
