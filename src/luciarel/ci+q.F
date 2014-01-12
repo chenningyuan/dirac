@@ -19,27 +19,36 @@
       use qcorr_cfg
       use qcorr_interface
 
-      implicit real*8(A-H,O-Z)
+      implicit none
 
-      dimension IBLOCK(8,NBLOCK),IBLTP(*)
-      dimension C(*), WORK(*)
-      logical, intent(in)  :: relQC
-      integer, allocatable :: astring(:,:)
-      integer, allocatable :: bstring(:,:)
-      integer, allocatable :: occupation_class(:,:)
-      real(8), allocatable :: ref_wavefunction_coeff(:)
-      integer              :: nstates_ci
-      real(8), allocatable :: e_corr(:), e_tot(:)
-      real(8)              :: q_corr, edci
-*
+!     input
+      integer, intent(in)   :: IBLOCK(8,NBLOCK),IBLTP(*)
+      real(8), intent(inout):: C(*), WORK(*)
+      integer, intent(in)   :: nblock, luc, luscr, irc, icistr
+      logical, intent(in)   :: relQC
+!     scratch
+      integer, allocatable  :: astring(:,:)
+      integer, allocatable  :: bstring(:,:)
+      integer, allocatable  :: occupation_class(:,:)
+      real(8), allocatable  :: ref_wavefunction_coeff(:)
+      real(8), allocatable  :: e_corr(:), e_tot(:)
+      integer               :: nstates_ci
+      real(8)               :: q_corr, edci
+      real(8)               :: Edc_1, Edrc_1, Epc_1, Emc_1 
+      real(8)               :: Edc_2, Edrc_2, Epc_2, Emc_2
+      real(8)               :: reference_energy
+      integer               :: iactp, ibctp, nbl_c, nael, nbel
+      integer               :: ntest, lblk, iboff, ionem
+      integer               :: irir, imk2_r, i
+
       call QENTER('QCORR')
 
 !     initialize
       call init_qcorr(relQC)
 
 !     print flag
-      NTEST = 000
-      NTEST = max(NTEST,print_qcorr)
+      ntest = 000
+      ntest = max(ntest,print_qcorr)
 
       allocate(ref_wavefunction_coeff(nref_qcorr))
       ref_wavefunction_coeff          = 0.0d0 ! initialize all to 0.0d0
@@ -90,65 +99,20 @@
           allocate(bstring(NBEL,MXNSTR_q))
 
 *
-          NOCTPA   = NOCTYP_q(IACTP)
-          NOCTPB   = NOCTYP_q(IBCTP)
-*
-          IOCTPA   = IBSPGPFTP_q(IACTP)
-          IOCTPB   = IBSPGPFTP_q(IBCTP)
-*
-          IASPGPTP = IACTP
-          IBSPGPTP = IBCTP
-*
-*. determine the number of occupation classes...
-          IWAY = 1
-          NEL = NAEL + NBEL
-          
-          if(relQC)then 
-          call OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
-     &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
-
-          else
-          call OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS_q,
-     &           IGSOCC_q(1,1),IGSOCC_q(1,2),
-     &           0,0)
-          end if 
-*
-*. and then set the occupation classes
-          allocate(occupation_class(NGAS_q,NOCCLS))
-          IWAY = 2
-          
-          if(relQC)then 
-          call OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
-     &                  IGSOCC_q(1,1),IGSOCC_q(1,2))
-
-          else
-          call OCCLS(IWAY,NOCCLS,occupation_class,NEL,NGAS_q,
-     &           IGSOCC_q(1,1),IGSOCC_q(1,2),
-     &           0,0)
-          end if 
-*
-
           call get_Q_correction(C,LUSCR,NBL_C,
      &                          WORK(KNSTSO_q(IACTP)),
      &                          WORK(KNSTSO2_q(IBCTP)),
-     &                     NOCTPA,NOCTPB,MXPNGAS_q,IOCTPA,IOCTPB,
-     &                     NBLOCK,IBLOCK(1,IBOFF),
-     &                     THRES,MAXTRM,NAEL,NBEL,
-     &                     astring, bstring,
-     &                     IBLTP,NSMST_q,
-     &                     NELFSPGP_q,
-     &                     NOCCLS,NGAS_q,occupation_class,
-     &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,
-     &                     ntest,ref_wavefunction_qcorr, 
-     &                     ref_wavefunction_coeff,nref_qcorr,
-     &                     ref_wavefunction_coeff_qcorr,NACTEL_q,
-     &                     NORB_q,relQC)
+     &                          IBLOCK(1,IBOFF),
+     &                          NAEL,NBEL,astring, bstring,
+     &                          IBLTP,NSMST_q,
+     &                          IACTP,IBCTP,ICISTR,ntest,
+     &                          ref_wavefunction_qcorr, 
+     &                          ref_wavefunction_coeff,nref_qcorr,
+     &                          NORB_q,relQC)
 *
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
           if(allocated(astring)) deallocate(astring)
-          deallocate(occupation_class)
         end do
       end do
 
@@ -264,6 +228,9 @@
       deallocate(ref_wavefunction_coeff)
       deallocate(ref_wavefunction_coeff_qcorr)
 
+!     finalize
+      call exit_qcorr(relQC)
+
       call QEXIT('QCORR')
 
       end subroutine Q_correction
@@ -272,46 +239,46 @@
       subroutine get_Q_correction(C,LUC,NBL_C,
      &                            NSSOA,
      &                            NSSOB,
-     &                       NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
-     &                       NBLOCK,IBLOCK,
-     &                       THRES,MAXTRM,NAEL,NBEL,
-     &                       IASTR,IBSTR,IBLTP,NSMST,
-     &                       NELFSPGP_q,NOCCLS,
-     &                       NGAS_q,IOCCLS,
-     &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,IPRNT,
-     &                       ref_wavefunction,
-     &                       ref_wavefunction_coeff,nref,
-     &                       ref_wavefunction_coeff_i,N,
-     &                       NORB,relQC)
-*
+     &                            IBLOCK,
+     &                            NAEL,NBEL,IASTR,IBSTR,
+     &                            IBLTP,NSMST,
+     &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,
+     &                            ref_wavefunction,
+     &                            ref_wavefunction_coeff,nref,
+     &                            NORB,relQC)
 ***********************************************************************
-*
-      implicit real*8(A-H,O-Z)
 
-      dimension C(*)
-*. General input
-      dimension NSSOA(NSMST,*), NSSOB(NSMST,*)
-      dimension IASTR(NAEL,*),IBSTR(NBEL,*)
-      dimension IBLTP(*)
-      dimension NELFSPGP_q(MXPNGAS,*)
-      dimension IOCCLS(NGAS_q,NOCCLS)
-      logical, intent(in) :: relQC
-      integer, intent(in) :: norb
-      integer, intent(in) :: nref
-*. Specific input
-      dimension IBLOCK(8,NBL_C)
+      implicit none
+
+      real(8), intent(inout)          :: C(*)
+      integer, intent(inout)          :: IASTR(NAEL,*), IBSTR(NBEL,*)
+      integer, intent(in)             :: luc, nbl_c, nsmst
+      integer, intent(in)             :: nael, nbel, icistr, iprnt
+      integer, intent(in)             :: NSSOA(NSMST,*), NSSOB(NSMST,*)
+      integer, intent(in)             :: IBLTP(*)
+      integer, intent(in)             :: IBLOCK(8,NBL_C)
+      integer, intent(in)             :: IASPGPTP, IBSPGPTP
+      integer, intent(in)             :: norb
+      integer, intent(in)             :: nref
       character(len=200), intent(in)  :: ref_wavefunction(nref,2)
+      logical, intent(in)             :: relQC
 
-*. Output
+!     output
       real(8) , intent(inout)         :: ref_wavefunction_coeff(nref)
-      real(8) , intent(inout)         :: ref_wavefunction_coeff_i(nref)
      
-      character (len=4),  allocatable   :: conf_string_a(:)
-      character (len=4),  allocatable   :: conf_string_b(:)
-      character (len=10), allocatable   :: stringa(:)
-      character (len=10), allocatable   :: stringb(:)
-      character (len=200), allocatable  :: ref_wavefunction_tmp(:,:)
+!     scratch
+      character (len=4),  allocatable :: conf_string_a(:)
+      character (len=4),  allocatable :: conf_string_b(:)
+      character (len=10), allocatable :: stringa(:)
+      character (len=10), allocatable :: stringb(:)
+      character (len=200), allocatable:: ref_wavefunction_tmp(:,:)
+      integer                         :: iel
+      integer                         :: ia, iabas, ib, ibbas
+      integer                         :: iampack, imzero, idet, idum
+      integer                         :: ilena, ilena2, ilenb, ilenb2
+      integer                         :: iasm, iatp, ibsm, ibtp
+      integer                         :: iref_tmp, irestr_ana, jblock
+      integer                         :: minia, nastr1, nbstr1, nia, nib
 
       allocate(ref_wavefunction_tmp(nref,2))
 
@@ -326,10 +293,12 @@
 
 !        Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
          if(relQC)then 
+#ifdef PRG_DIRAC
            call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
      &                                NASTR1,IASTR)
            call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
      &                                NBSTR1,IBSTR)
+#endif
          else
 
            IDUM = 0

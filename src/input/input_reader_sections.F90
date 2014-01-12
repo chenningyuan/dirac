@@ -1578,18 +1578,6 @@
            end if
 
          end do
-
-!     if(relQC)then
-        print *, 'ref_wavefunction_qcorr(1,1)',ref_wavefunction_qcorr(1,1)
-        print *, 'ref_wavefunction_qcorr(1,2)',ref_wavefunction_qcorr(1,2)
-        print *, 'ref_wavefunction_coeff_qcorr(1)',ref_wavefunction_coeff_qcorr(1)
-
-!       write(ref_wavefunction_qcorr(1,2),"(4i4)"),1,2,3,4
-!     else
-!       write(ref_wavefunction_qcorr(1,1),"(4i4)"),1,2,5,9
-!       write(ref_wavefunction_qcorr(1,2),"(4i4)"),1,2,5,9
-!     end if
-
       end if
 
       call check_whether_kw_found(word, kw_section)
