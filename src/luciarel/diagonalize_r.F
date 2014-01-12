@@ -2934,7 +2934,6 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
      &       form="unformatted",access="sequential")
 !       TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
         write(10) nroot,eig(1,1)+eigshf
-        print *, "bla : full eig(1,1)",eig(1,1)+eigshf
         write(10) ((eig(i,iter)+eigshf),i=1,nroot)
         close(10,status="keep")
 

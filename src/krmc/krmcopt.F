@@ -3514,6 +3514,7 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C
 C***********************************************************************
+      use qcorr_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3588,6 +3589,7 @@ C
            CALL GASCIP_ANACI(CREF,NZCONF,WORK(KZCONF),THRPCI,
      &                       WORK(KFREE),LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
@@ -3599,9 +3601,7 @@ C
 C
            IF( MAXCIT .le. 0 ) THEN
 C
-             IF( NATOLCR ) THEN
-               GOTO 500
-             ELSE IF( IANACI .eq. 1 ) THEN
+             IF( NATOLCR .or. ( IANACI .eq. 1 ) .or. luci_cfg_qcorr)then
                GOTO 500
              ELSE
                GOTO 1000
@@ -3613,9 +3613,15 @@ C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
- 500     IF (IANACI.EQ.1) THEN
+
+ 500     if(luci_cfg_qcorr)then
+           CALL LUCI_QCORR(CREF,WORK,KFREE,LFREE)
+         end if
+
+         IF (IANACI.EQ.1) THEN
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
          IF (IPROPT.GT.5)

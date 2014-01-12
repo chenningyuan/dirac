@@ -1,6 +1,5 @@
-***********************************************************************
-
-      subroutine Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,
+!     ***********************************************************************
+      subroutine Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,                &
      &                        LUSCR,ICISTR,IRC,WORK,relQC)
 !     incoming variables:
 !                         C      - scratch space for ci vector
@@ -71,13 +70,13 @@
             IACTP = 1
             IBCTP = 2
           end if
-*  Offset for IBLOCK(sym,type) information
+!  Offset for IBLOCK(sym,type) information
           if (IMK2_R.eq.1) then
             IBOFF = 1
           else
             IBOFF = IBOFF + NBLK_MS2_q(IMK2_R-1)
           end if
-*
+!
           if(relQC)then 
             NBL_C = NBLK_MS2_q(IMK2_R)
           else
@@ -93,18 +92,17 @@
           allocate(astring(NAEL,MXNSTR_q))
           allocate(bstring(NBEL,MXNSTR_q))
 
-*
-          call get_Q_correction(C,LUSCR,NBL_C,
-     &                          WORK(KNSTSO_q(IACTP)),
-     &                          WORK(KNSTSO2_q(IBCTP)),
-     &                          IBLOCK(1,IBOFF),
-     &                          NAEL,NBEL,astring, bstring,
-     &                          IBLTP,NSMST_q,
-     &                          IACTP,IBCTP,ICISTR,ntest,
-     &                          ref_wavefunction_qcorr, 
-     &                          ref_wavefunction_coeff,nref_qcorr,
+!
+          call get_Q_correction(C,LUSCR,NBL_C,                          &
+     &                          WORK(KNSTSO_q(IACTP)),                  &
+     &                          WORK(KNSTSO2_q(IBCTP)),                 &
+     &                          IBLOCK(1,IBOFF),                        &
+     &                          NAEL,NBEL,astring, bstring,             &
+     &                          IBLTP,NSMST_q,                          &
+     &                          IACTP,IBCTP,ICISTR,ntest,               &
+     &                          ref_wavefunction_qcorr,                 &
+     &                          ref_wavefunction_coeff,nref_qcorr,      &
      &                          NORB_q,relQC, wunit_q)
-*
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
           if(allocated(astring)) deallocate(astring)
@@ -121,16 +119,16 @@
           write(wunit_q,*) "alpha string: ",ref_wavefunction_qcorr(i,1)
           write(wunit_q,*) "beta string:  ",ref_wavefunction_qcorr(i,2)
 
-          write(wunit_q,*)" coefficient of the reference wf ",i,
+          write(wunit_q,*)" coefficient of the reference wf ",i,        &
      &                    " in the CI: ",ref_wavefunction_coeff(i)
-          write(wunit_q,*)" original coefficient of the reference wf: ",
+          write(wunit_q,*)" original coefficient of the reference wf: ",&
      &                                   ref_wavefunction_coeff_qcorr(i)
         end do
       end if
 
       ! read data for +Q correction
-      open(file="energies.CI",unit=10,status="old",
-     &     form="unformatted",access="sequential")
+      open(file="energies.CI",unit=10,status="old",                     &
+           form="unformatted",access="sequential")
 
       read(10) nstates_ci,reference_energy
 
@@ -140,22 +138,22 @@
       read(10) (e_tot(i),i=1,nstates_ci)
       close(10,status="keep")
 
-      write(wunit_q,"(/A,/A,/A,/A,/A,/A)")
-     &                   " The acronyms for each Q correction below"//
-     &                   " refer to: ",
-     &  " Edc:  Davidson correction              [Eq. (34)]",
-     &  " Erdc: renormalized Davidson correction [Eq. (36)]",
-     &  " Epc:  Pople correction                 [Eq. (38)]",
-     &  " Epc`: modified Pople correction        [Eq. (39)]",
-     &  " Emc : Meissner correction              [Eq. (41)]"
+      write(wunit_q,"(/A,/A,/A,/A,/A,/A)")                              &
+     &                  " The acronyms for each Q correction below"//   &
+     &                  " refer to: ",                                  &
+     & " Edc:  Davidson correction              [Eq. (34)]",            &
+     & " Erdc: renormalized Davidson correction [Eq. (36)]",            &
+     & " Epc:  Pople correction                 [Eq. (38)]",            &
+     & " Epc`: modified Pople correction        [Eq. (39)]",            &
+     & " Emc : Meissner correction              [Eq. (41)]"              
 
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
         
-        call E_Q(e_corr,ref_wavefunction_coeff,nref_qcorr,
-     &           ref_wavefunction_coeff_qcorr,NACTEL_q,
-     &           Edc_1, Erdc_1, Epc_1, Emc_1, Epcp_1,
-     &           Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2,
+        call E_Q(e_corr(i),ref_wavefunction_coeff,nref_qcorr,           &
+     &           ref_wavefunction_coeff_qcorr,NACTEL_q,                 &
+     &           Edc_1, Erdc_1, Epc_1, Emc_1, Epcp_1,                   &
+     &           Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2,                   &
      &           ntest, wunit_q)
 
       ! output of the q-correction       
@@ -163,7 +161,7 @@
         write(wunit_q,"( A,1f16.8)") ' correlation energy: ', e_corr(i)
         write(wunit_q,"( A,1f16.8)") ' original CI energy: ', e_tot(i)
 
-        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//
+        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//  &
      &                          ' to Eq. (43)'
  
         write(wunit_q,"(/A)") " Edc correction :"
@@ -199,7 +197,7 @@
 !       now using eq. (44) for c0^2: c0^2 == <ref|ci>^2 == ( sum\limits_{p=1}^{nref} c_p^{(0)} * c_p )^2 
 !       where c_p^{(0)} are the coefficients in the normalized 0th-order reference (MCSCF) wave function
 
-        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//
+        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//  &
      &                          ' to Eq. (44)'
 !       write(wunit_q,"(/A)")  " Q corrections according to Eq. (44)"//
 !    &                   " where c0^2 == <ref|ci>^2 == "//
@@ -255,19 +253,19 @@
       call QEXIT('QCORR')
 
       end subroutine Q_correction
-***********************************************************************
+!     ***********************************************************************
 
-      subroutine get_Q_correction(C,LUC,NBL_C,
-     &                            NSSOA,
-     &                            NSSOB,
-     &                            IBLOCK,
-     &                            NAEL,NBEL,IASTR,IBSTR,
-     &                            IBLTP,NSMST,
-     &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,
-     &                            ref_wavefunction,
-     &                            ref_wavefunction_coeff,nref,
+      subroutine get_Q_correction(C,LUC,NBL_C,                          &
+     &                            NSSOA,                                &
+     &                            NSSOB,                                &
+     &                            IBLOCK,                               &
+     &                            NAEL,NBEL,IASTR,IBSTR,                &
+     &                            IBLTP,NSMST,                          &
+     &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,       &
+     &                            ref_wavefunction,                     &
+     &                            ref_wavefunction_coeff,nref,          &
      &                            NORB,relQC, wunit_q)
-***********************************************************************
+!     ***********************************************************************
 
       implicit none
 
@@ -315,17 +313,17 @@
 !        Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
          if(relQC)then 
 #ifdef PRG_DIRAC
-           call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
+           call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,          &
      &                                NASTR1,IASTR)
-           call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,
+           call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,          &
      &                                NBSTR1,IBSTR)
 #endif
          else
 
            IDUM = 0
-           call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
+           call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,        &
      &                            NORB,0,IDUM,IDUM)
-           call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
+           call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,        &
      &                            NORB,0,IDUM,IDUM)
          end if
 
@@ -353,20 +351,19 @@
                   MINIA = IABAS
                end if
                do  IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
-*
                     IDET = IDET + 1
                    
                     if(iprnt > 10)then
                       write(wunit_q,*) 'idet, c',idet,c(idet),nael,nbel
-                      write(wunit_q,"(60i4)")          ! save strings into array
+                      write(wunit_q,"(60i4)")                           &    ! save strings into array
      &                (iastr(iel,ia),iel=1,nael)
-                      write(wunit_q,"(60i4)") 
+                      write(wunit_q,"(60i4)")                           &
      &                (ibstr(iel,ib),iel=1,nbel)
                     end if
 
-                    write(ref_wavefunction_tmp(1,1),"(60i4)")          ! save strings into array
+                    write(ref_wavefunction_tmp(1,1),"(60i4)")           &! save strings into array
      &              (iastr(iel,ia),iel=1,nael)                         
-                    write(ref_wavefunction_tmp(1,2),"(60i4)") 
+                    write(ref_wavefunction_tmp(1,2),"(60i4)")           &
      &              (ibstr(iel,ib),iel=1,nbel)
 
                     ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
@@ -382,11 +379,11 @@
                       ilena2  = len(trim(ref_wavefunction(iref_tmp,1)))
                       ilenb2  = len(trim(ref_wavefunction(iref_tmp,2)))
 
-                    if(ref_wavefunction_tmp(1,1)(1:ilena) ==            ! compare alpha strings 
-     &                 ref_wavefunction(iref_tmp,1)(1:ilena2) .and.
-     &                 ref_wavefunction_tmp(1,2)(1:ilenb) ==            ! compare beta strings 
-     &                 ref_wavefunction(iref_tmp,2)(1:ilenb2)
-     &                )then 
+                    if(ref_wavefunction_tmp(1,1)(1:ilena) ==            &  ! compare alpha strings 
+     &                 ref_wavefunction(iref_tmp,1)(1:ilena2) .and.     &
+     &                 ref_wavefunction_tmp(1,2)(1:ilenb) ==            &! compare beta strings 
+     &                 ref_wavefunction(iref_tmp,2)(1:ilenb2)           &
+     &               )then 
                        ref_wavefunction_coeff(iref_tmp) = C(IDET)       ! if true, save coeff
    
                     exit
@@ -400,30 +397,30 @@
       end do
 
       end subroutine get_Q_correction
+!     ***********************************************************************
 
-***********************************************************************
-
-      subroutine E_Q(e_corr,ref_wavefunction_coeff,nref,
-     &               ref_wavefunction_coeff_i,N,
-     &               Edc_1, Edrc_1, Epc_1, Emc_1, Epcp_1,
-     &               Edc_2, Edrc_2, Epc_2, Emc_2, Epcp_2,
+      subroutine E_Q(e_corr,ref_wavefunction_coeff,nref,                &
+     &               ref_wavefunction_coeff_i,N,                        &
+     &               Edc_1, Edrc_1, Epc_1, Emc_1, Epcp_1,               &
+     &               Edc_2, Edrc_2, Epc_2, Emc_2, Epcp_2,               &
      &               iprnt, wunit_q)
-*
-*
-* Davidson Correction
-*
-* Equations from: Chemical Reviews 2012, 112 page 216-218
-*
-* Edc  = eq. 34 p. 116
-* Edrc = eq. 36 p. 116
-* Epc  = eq. 38 p. 116
-* Emc  = eq. 41 p. 116
-*
-* c01  = eq. 43 p. 117
-* c02  = eq. 44 p. 117
-*
-***********************************************************************
-*
+!     ***********************************************************************
+!
+!
+! Davidson Correction
+!
+! Equations from: Chemical Reviews 2012, 112 page 216-218
+!
+! Edc  = eq. 34 p. 116
+! Edrc = eq. 36 p. 116
+! Epc  = eq. 38 p. 116
+! Emc  = eq. 41 p. 116
+!
+! c01  = eq. 43 p. 117
+! c02  = eq. 44 p. 117
+!
+!**********************************************************************
+!
       implicit none
 
       real*8,  intent(in)  :: e_corr
@@ -465,23 +462,20 @@
      
       Edc_1  = (1 - c01) * e_corr            
       Edrc_1 = ((1-c01) / c01) * e_corr
-      Epc_1  = (sqrt(N **2 + 2*N * (tan(2*teta_1))**2) - N) / 
+      Epc_1  = (sqrt(N **2 + 2*N * (tan(2*teta_1))**2) - N) /           &
      &         (2*(1/(2*teta_1)) - 1) * e_corr
       Epcp_1  = (1 - (2/N)) * ((1-c01)/c01) * e_corr
 
-      if(N > 3.0d0) Emc_1 = ((N - 2) * (N - 3) / (N * (N - 1))) *
+      if(N > 3.0d0) Emc_1 = ((N - 2) * (N - 3) / (N * (N - 1))) *       &
      &                      ((1 - c01 **2) / c01 **2) * e_corr  
 
       Edc_2  = (1 - c02_2) * e_corr
       Edrc_2 = ((1-c02_2) / c02_2) * e_corr
-      Epc_2  = (sqrt(N **2 + 2*N * (tan(2*teta_2))**2) - N) / 
+      Epc_2  = (sqrt(N **2 + 2*N * (tan(2*teta_2))**2) - N) /           &
      &         (2*(1/(2*teta_2)) - 1) * e_corr
       Epcp_2  = (1 - (2/N)) * ((1-c02_2)/c02_2) * e_corr
 
-      if(N > 3.0d0) Emc_2 = ((N - 2) * (N - 3) / (N * (N - 1))) *
+      if(N > 3.0d0) Emc_2 = ((N - 2) * (N - 3) / (N * (N - 1))) *       &
      &                      ((1 - c02_2 **2) / c02_2 **2) * e_corr  
       
       end subroutine E_Q
-
-
-

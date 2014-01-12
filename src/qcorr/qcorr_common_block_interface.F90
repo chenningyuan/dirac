@@ -53,14 +53,14 @@ contains
       subroutine init_qcorr_rel()
 
  use symmetry_setup_krci
-#include "ipoist8.inc"
-#include "mxpdim.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
+#include "../luciarel/ipoist8.inc"
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/strbas.inc"
+#include "../luciarel/cstate.inc"
+#include "../luciarel/strinp.inc"
+#include "../luciarel/stinf.inc"
+#include "../luciarel/cgas.inc"
+#include "../luciarel/gasstr.inc"
 
 ! integer block
       MXNSTR_q    = MXNSTR

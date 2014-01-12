@@ -575,7 +575,7 @@ C         ... reorder always at this point: RUN_SHMEM_T = .FALSE.
           IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
 C
 ************************************************************
-          IF (CIRUN.ne.'ANALYZ') THEN
+          IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ') THEN
 CSK         IDUMMY ==> IT_TTPL
             call picasso(IPRTRA,MCSCF,
      &                   NL2D,IBU2D,ISM2D,F1,F2,DUMMY1,DUMMY2,
@@ -1734,6 +1734,66 @@ C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C      WRITE(6,*) 'NCIROOT and MOPT_MXMACRO',NCIROOT,MOPT_MXMACRO
+C
+      IF ( NCIROOT.EQ.1 .AND. MOPT_MXMACRO .gt. 0) THEN
+        IO_ANAL_IN = 1
+        IF (IO_ANAL_IN.EQ.1) THEN
+          REWIND LUC
+          CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
+     &                          DUMMY,1,
+     &                    DUMMY,1,DUMMY,1,
+     &                    2,MZ,
+     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        END IF
+      ELSE IF (NCIROOT.GT.1) THEN
+        CONTINUE
+      END IF
+C
+C     Call LUCIAREL for analysis of CI vectors.
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
+      END
+
+      SUBROUTINE LUCI_QCORR(CREF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate Davidson-type energy correction
+C
+C     Written by S. Knecht                 - Jan 12, 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "krmcluci_inf.h"
+C
+#include "../luciarel/clunit.inc"
+C
+      CHARACTER*6 CIRUN
+C
+      DIMENSION WORK(*)
+C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
+C
+      CIRUN = 'QCORR '
+C
+C     Introduce LUCIAREL action
+      CALL LUCI_TASK(CIRUN)
+C
+C     Transfer data to LUCIAREL common blocks.
+      CALL TRKRLUCI(CIRUN,0)
+C
+C     Setup routines for running LUCIAREL
+      CALL LUCI_SETUP()
 C
       IF ( NCIROOT.EQ.1 .AND. MOPT_MXMACRO .gt. 0) THEN
         IO_ANAL_IN = 1
