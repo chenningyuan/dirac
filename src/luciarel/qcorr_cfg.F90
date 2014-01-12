@@ -10,6 +10,7 @@
 ! logical block
       logical, public                  :: luci_cfg_qcorr = .false.
 ! integer block
+      integer, public                  :: wunit_q     = -1
       integer, public                  :: nref_qcorr  = -1
       integer, public                  :: print_qcorr = -1
       integer, public                  :: MXNSTR_q    =  0

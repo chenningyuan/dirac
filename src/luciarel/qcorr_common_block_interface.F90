@@ -13,7 +13,11 @@ contains
       subroutine init_qcorr(relQC)
 
       logical, intent(in) :: relQC
+#include "priunit.h"
 
+      wunit_q = lupri
+
+      call print_header_qcorr(wunit_q)
 
       select case(relQC)
 
@@ -119,6 +123,26 @@ contains
       NELEC_q(1:MXPSTT) = NELEC(1:MXPSTT)
 
       end subroutine init_qcorr_nr
+
+      subroutine print_header_qcorr(wunit)
+
+      integer, intent(in) :: wunit
+
+      write(wunit,'(/18x,a)') ' ********************************************************************'
+      write(wunit,'(18x,a )') ' ***  QCORR module for Davidon(-type) energy corrections for CI   ***'
+      write(wunit,'(18x,a )') ' ***  according to Chem. Rev. 112, 108-181 (2012)                 ***'
+      write(wunit,'(18x,a )') ' ***                                                              ***'
+      write(wunit,'(18x,a )') ' ***  authors:         - Stefan Knecht                            ***'
+      write(wunit,'(18x,a )') ' ***                   - Stefan Heinen                            ***'
+      write(wunit,'(18x,a )') ' ***  contributor:     - Markus Reiher                            ***'
+      write(wunit,'(18x,a )') ' ***                                                              ***'
+      write(wunit,'(18x,a )') ' ***  please cite: work in progress, private communication with   ***'
+      write(wunit,'(18x,a )') ' ***               S. Knecht                                      ***'
+      write(wunit,'(18x,a )') ' ***                                                              ***'
+      write(wunit,'(18x,a )') ' ***  ETH Zuerich, winter 2013/2014                               ***'
+      write(wunit,'(18x,a/)') ' ********************************************************************'
+
+      end subroutine print_header_qcorr
 
       end module
 

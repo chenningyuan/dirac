@@ -1,21 +1,16 @@
 ***********************************************************************
 
-      subroutine Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,       ! C,LUSCR, ICISTR raus TODO??? 
+      subroutine Q_correction(C,NBLOCK,IBLOCK,IBLTP,LUC,
      &                        LUSCR,ICISTR,IRC,WORK,relQC)
-*
-*
-*''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-*''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-!     in:
-!         C: scratch space for ci vector
-!         NBLOCK: # of ttsblocks
-!         IBLOCK: array containing information about each ttsblock
-!         IBLTP: ?
-!         LUC: int filepointer
-!         LUSCR: filepointer for scrathc file
-!         ICISTR: 2
-!         IRC: 1 (real) 2 (complex)
-*
+!     incoming variables:
+!                         C      - scratch space for ci vector
+!                         NBLOCK - # of ttsblocks
+!                         IBLOCK - array containing information about each ttsblock
+!                         IBLTP  - block types
+!                         LUC    - internal file pointer for CI vector file
+!                         LUSCR  - file pointer for scratch vector file
+!                         ICISTR - currently set to 2 by default
+!                         IRC:   - algebra control value: 1 (real) or 2 (complex)
       use qcorr_cfg
       use qcorr_interface
 
@@ -34,8 +29,8 @@
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
       real(8)               :: q_corr, edci
-      real(8)               :: Edc_1, Edrc_1, Epc_1, Emc_1 
-      real(8)               :: Edc_2, Edrc_2, Epc_2, Emc_2
+      real(8)               :: Edc_1, Erdc_1, Epc_1, Emc_1, Epcp_1
+      real(8)               :: Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2
       real(8)               :: reference_energy
       integer               :: iactp, ibctp, nbl_c, nael, nbel
       integer               :: ntest, lblk, iboff, ionem
@@ -51,22 +46,22 @@
       ntest = max(ntest,print_qcorr)
 
       allocate(ref_wavefunction_coeff(nref_qcorr))
-      ref_wavefunction_coeff          = 0.0d0 ! initialize all to 0.0d0
+      ref_wavefunction_coeff = 0.0d0 ! initialize all to 0.0d0
 
       LBLK = -1
       IBOFF = 0
       call REWINE(LUSCR,-1)
       call REWINE(LUC,-1)
       call itods(-1,1,-1,LUSCR)
-*
-* Loop over real and imaginary parts
+
+!     loop over real and imaginary parts
       do IRIR = 1,IRC
 
-        if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
         if (IRIR.EQ.2) then
-*. Skip EOV mark between real and imaginary part
+!         skip EOV mark between real and imaginary part
           call IFRMDS(IONEM,1,-1,LUC)
         end if
+
         do IMK2_R = 1,NMS2VAL_q,1
 
           if(relQC)then
@@ -108,7 +103,7 @@
      &                          IACTP,IBCTP,ICISTR,ntest,
      &                          ref_wavefunction_qcorr, 
      &                          ref_wavefunction_coeff,nref_qcorr,
-     &                          NORB_q,relQC)
+     &                          NORB_q,relQC, wunit_q)
 *
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
@@ -116,22 +111,24 @@
         end do
       end do
 
-      do i = 1, nref_qcorr
-      
-      write(6,'(A)') '                                       '
-      write(6,'(A)') ' Reference wavefunction & coefficient: ' 
-      write(6,'(A)') ' ===================================== '
+      if(ntest > 2)then
+        write(wunit_q,'(A)') '                                       '
+        write(wunit_q,'(A)') ' Reference wavefunction & coefficient: ' 
+        write(wunit_q,'(A)') ' ===================================== '
 
-      print *, "alpha ref",ref_wavefunction_qcorr(1,1)
-      print *, "beta ref",ref_wavefunction_qcorr(1,2)
+        do i = 1, nref_qcorr
 
-      print *,"coefficient of reference wf #",i," == ",
-     &         ref_wavefunction_coeff(i)
-      print *,"coefficient of HF reference wf             ==",
-     &         ref_wavefunction_coeff_qcorr(1)
-      end do
+          write(wunit_q,*) "alpha string: ",ref_wavefunction_qcorr(i,1)
+          write(wunit_q,*) "beta string:  ",ref_wavefunction_qcorr(i,2)
 
-      ! for +Q correction
+          write(wunit_q,*)" coefficient of the reference wf ",i,
+     &                    " in the CI: ",ref_wavefunction_coeff(i)
+          write(wunit_q,*)" original coefficient of the reference wf: ",
+     &                                   ref_wavefunction_coeff_qcorr(i)
+        end do
+      end if
+
+      ! read data for +Q correction
       open(file="energies.CI",unit=10,status="old",
      &     form="unformatted",access="sequential")
 
@@ -143,80 +140,104 @@
       read(10) (e_tot(i),i=1,nstates_ci)
       close(10,status="keep")
 
+      write(wunit_q,"(/A,/A,/A,/A,/A,/A)")
+     &                   " The acronyms for each Q correction below"//
+     &                   " refer to: ",
+     &  " Edc:  Davidson correction              [Eq. (34)]",
+     &  " Erdc: renormalized Davidson correction [Eq. (36)]",
+     &  " Epc:  Pople correction                 [Eq. (38)]",
+     &  " Epc`: modified Pople correction        [Eq. (39)]",
+     &  " Emc : Meissner correction              [Eq. (41)]"
+
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
         
         call E_Q(e_corr,ref_wavefunction_coeff,nref_qcorr,
-     &           ref_wavefunction_coeff_qcorr,NACTEL_q,Edc_1,
-     &           Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
-     &           Epc_2, Emc_2)
+     &           ref_wavefunction_coeff_qcorr,NACTEL_q,
+     &           Edc_1, Erdc_1, Epc_1, Emc_1, Epcp_1,
+     &           Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2,
+     &           ntest, wunit_q)
 
       ! output of the q-correction       
-        write(6,"(/Af10.6)")  " Energy corrections: "
-        write(6,'(A)')        " ==================== "
+        write(wunit_q,"(/A,i4)")     ' Q correction for state #', i
+        write(wunit_q,"( A,1f16.8)") ' correlation energy: ', e_corr(i)
+        write(wunit_q,"( A,1f16.8)") ' original CI energy: ', e_tot(i)
 
-        write(6,"(/A,f10.6)") "Edc_1:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction= ",Edc_1
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Edc_1
+        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//
+     &                          ' to Eq. (43)'
  
-
-        write(6,"(/A,f10.6)") "Edrc_1:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Edrc_1
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Edrc_1
-
-
-        write(6,"(/A,f10.6)") "Epc_1:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Epc_1
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Epc_1
-
-
-        write(6,"(/A,f10.6)") "Emc_1:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Emc_1
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Emc_1
-
-
-        write(6,"(/A,f10.6)") "Edc_2:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction= ",Edc_2
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Edc_2
+        write(wunit_q,"(/A)") " Edc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Edc_1
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Edc_1
+        write(wunit_q,"(A )") " ----------------"
  
+        write(wunit_q,"(/A)") " Erdc correction:"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Erdc_1
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_1
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Epc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_1
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_1
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Epc` correction:"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Epcp_1
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epcp_1
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Emc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Emc_1
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Emc_1
+        write(wunit_q,"(A )") " ----------------"
+ 
+!       now using eq. (44) for c0^2: c0^2 == <ref|ci>^2 == ( sum\limits_{p=1}^{nref} c_p^{(0)} * c_p )^2 
+!       where c_p^{(0)} are the coefficients in the normalized 0th-order reference (MCSCF) wave function
 
-        write(6,"(/A,f10.6)") "Edrc_2:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Edrc_2
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Edrc_2
-
-
-        write(6,"(/A,f10.6)") "Epc_2:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Epc_2
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Epc_2
-
-
-        write(6,"(/A,f10.6)") "Emc_2:"
-        write(6,"(A,1f10.6,/A,1f10.6)") " original ecorr = ",
-     &        e_corr(i), " +Q correction = ",Emc_2
-        write(6,"(/A,1f10.6,A,1f10.6,A,1f10.6,/)"), 
-     &        " final energies: original ", e_tot(i), ", +Q corrected ="
-     &        ,e_tot(i) + Emc_2
+        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//
+     &                          ' to Eq. (44)'
+!       write(wunit_q,"(/A)")  " Q corrections according to Eq. (44)"//
+!    &                   " where c0^2 == <ref|ci>^2 == "//
+!    &                   "( sum\limits_{p=1}^{nref} c_p^{(0)} * c_p )^2"
+!       write(wunit_q,"(A/)") " Note: c_p^{(0)} are the reference"//
+!    &                  " coefficients in the"//
+!    &                  " normalized 0th-order reference (MCSCF) wave"//
+!    &                  " function!"
+ 
+        write(wunit_q,"(/A)") " Edc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Edc_2
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Edc_2
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Erdc correction:"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Erdc_2
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_2
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Epc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_2
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_2
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Epc` correction:"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Epcp_2
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epcp_2
+        write(wunit_q,"(A )") " ----------------"
+ 
+        write(wunit_q,"(/A)") " Emc correction :"
+        write(wunit_q,"(A )") " ----------------"
+        write(wunit_q,"(A,1f16.8)") " Q correction:",Emc_2
+        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Emc_2
+        write(wunit_q,"(A )") " ----------------"
 
       end do
 
@@ -245,7 +266,7 @@
      &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,
      &                            ref_wavefunction,
      &                            ref_wavefunction_coeff,nref,
-     &                            NORB,relQC)
+     &                            NORB,relQC, wunit_q)
 ***********************************************************************
 
       implicit none
@@ -259,7 +280,7 @@
       integer, intent(in)             :: IBLOCK(8,NBL_C)
       integer, intent(in)             :: IASPGPTP, IBSPGPTP
       integer, intent(in)             :: norb
-      integer, intent(in)             :: nref
+      integer, intent(in)             :: nref, wunit_q
       character(len=200), intent(in)  :: ref_wavefunction(nref,2)
       logical, intent(in)             :: relQC
 
@@ -336,10 +357,10 @@
                     IDET = IDET + 1
                    
                     if(iprnt > 10)then
-                      write(6,*) 'idet, c',idet,c(idet),nael,nbel
-                      write(6,"(60i4)")          ! save strings into array
+                      write(wunit_q,*) 'idet, c',idet,c(idet),nael,nbel
+                      write(wunit_q,"(60i4)")          ! save strings into array
      &                (iastr(iel,ia),iel=1,nael)
-                      write(6,"(60i4)") 
+                      write(wunit_q,"(60i4)") 
      &                (ibstr(iel,ib),iel=1,nbel)
                     end if
 
@@ -383,9 +404,10 @@
 ***********************************************************************
 
       subroutine E_Q(e_corr,ref_wavefunction_coeff,nref,
-     &               ref_wavefunction_coeff_i,N,Edc_1,
-     &               Edrc_1, Epc_1, Emc_1, Edc_2, Edrc_2,
-     &               Epc_2, Emc_2)
+     &               ref_wavefunction_coeff_i,N,
+     &               Edc_1, Edrc_1, Epc_1, Emc_1, Epcp_1,
+     &               Edc_2, Edrc_2, Epc_2, Emc_2, Epcp_2,
+     &               iprnt, wunit_q)
 *
 *
 * Davidson Correction
@@ -407,10 +429,11 @@
       real*8,  intent(in)  :: e_corr
       real*8,  intent(in)  :: ref_wavefunction_coeff(nref)
       real*8,  intent(in)  :: ref_wavefunction_coeff_i(nref)
-      real*8,  intent(out) :: Edc_1, Edrc_1, Epc_1, Emc_1
-      real*8,  intent(out) :: Edc_2, Edrc_2, Epc_2, Emc_2
+      real*8,  intent(out) :: Edc_1, Edrc_1, Epc_1, Emc_1, Epcp_1
+      real*8,  intent(out) :: Edc_2, Edrc_2, Epc_2, Emc_2, Epcp_2
       real*8,  intent(in)  :: N
       integer, intent(in)  :: nref
+      integer, intent(in)  :: iprnt, wunit_q
 
       real*8  :: c01    = 0      ! c01    = sum ( cp ) **2
       real*8  :: c02    = 0      ! c02    = (sum ( cref * cp )) **2
@@ -421,7 +444,6 @@
       
 
       do i = 1, nref
-      print *, 'nref ...',nref, i
       c01 = c01 + ref_wavefunction_coeff(i) ** 2
       end do
 
@@ -434,15 +456,18 @@
       c02_2  = c02 * c02
       teta_2 = acos(sqrt(c02_2))
 
-      write(6,*) "c01",         c01
-      write(6,*) "sqrt (c01)",  sqrt(c01)
-      write(6,*) "c02",         c02
-      write(6,*) "c02_2",       c02_2
+      if(iprnt > 10)then
+        write(wunit_q,*) "c01",         c01
+        write(wunit_q,*) "sqrt (c01)",  sqrt(c01)
+        write(wunit_q,*) "c02",         c02
+        write(wunit_q,*) "c02_2",       c02_2
+      end if
      
       Edc_1  = (1 - c01) * e_corr            
       Edrc_1 = ((1-c01) / c01) * e_corr
       Epc_1  = (sqrt(N **2 + 2*N * (tan(2*teta_1))**2) - N) / 
      &         (2*(1/(2*teta_1)) - 1) * e_corr
+      Epcp_1  = (1 - (2/N)) * ((1-c01)/c01) * e_corr
 
       if(N > 3.0d0) Emc_1 = ((N - 2) * (N - 3) / (N * (N - 1))) *
      &                      ((1 - c01 **2) / c01 **2) * e_corr  
@@ -451,6 +476,7 @@
       Edrc_2 = ((1-c02_2) / c02_2) * e_corr
       Epc_2  = (sqrt(N **2 + 2*N * (tan(2*teta_2))**2) - N) / 
      &         (2*(1/(2*teta_2)) - 1) * e_corr
+      Epcp_2  = (1 - (2/N)) * ((1-c02_2)/c02_2) * e_corr
 
       if(N > 3.0d0) Emc_2 = ((N - 2) * (N - 3) / (N * (N - 1))) *
      &                      ((1 - c02_2 **2) / c02_2 **2) * e_corr  
