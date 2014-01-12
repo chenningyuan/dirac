@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -743,6 +743,7 @@ contains
 !             from file.
 !
 !    ham_lvl  == 1: oo-order 2c-Hamiltonian without AMFI contributions
+!    ham_lvl  ==-2: mmf-X2C
 !   |ham_lvl| == 3: oo-order 2c-Hamiltonian with AMFI (old == -3 or new == +3) contributions
 !
 !**********************************************************************
@@ -759,6 +760,7 @@ contains
      character (len=12)       :: flabel
 !**********************************************************************
 
+       if(ham_lvl == -2) return 
        abs_ham_lvl = abs(ham_lvl)
        if(abs_ham_lvl <= 0 .or. abs_ham_lvl > 4)           &
          call quit('*** error in read_1fock_x2c: invalid pointer to Hamiltonian integral type. ***')

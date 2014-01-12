@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -9,8 +9,7 @@
 !
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the
-!      research
+!      This means also that persons (e.g. post-docs) leaving the research
 !      group of the license holder may not take any part of Dirac,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own license.
@@ -165,10 +164,10 @@
 !        Read the number of element in each block 
          IF (ECPLIB) THEN
             CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
-            READ (ELINE,'(BN,I3)',IOSTAT=IOS) AREP_BLK(NUC1,I)
+            READ (ELINE,*,IOSTAT=IOS) AREP_BLK(NUC1,I)
          ELSE
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,I3)',IOSTAT=IOS) AREP_BLK(NUC1,I)
+            READ (MLINE(NMLINE),*,IOSTAT=IOS) AREP_BLK(NUC1,I)
          ENDIF
          IF (IOS.NE.0) GOTO 8000
 !        WRITE(RECPIN1,*) AREP_BLK(NUC1,I)
@@ -204,10 +203,10 @@
          SOREP_BLK(NUC1,I) = -1     ! initial value
          IF (ECPLIB) THEN
             CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
-            READ (ELINE,'(BN,I3)',IOSTAT=IOS) SOREP_BLK(NUC1,I)
+            READ (ELINE,*,IOSTAT=IOS) SOREP_BLK(NUC1,I)
          ELSE
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,I3)',IOSTAT=IOS) SOREP_BLK(NUC1,I)
+            READ (MLINE(NMLINE),*,IOSTAT=IOS) SOREP_BLK(NUC1,I)
          ENDIF
          IF (IOS.NE.0) GOTO 8000 
 !        WRITE(RECPIN1,*) SOREP_BLK(NUC1,I)
@@ -302,33 +301,6 @@
          ENDDO
       ENDDO
  
-!      IF (ndptag.EQ.0) THEN
-!!        --------------------
-!!        C1,Ci,Cs,C2 symmetry
-!!        --------------------
-!         WRITE(RECPIN1,1001) ndptag
-!
-!      ELSEIF (ndptag.EQ.1) THEN
-!!        -------------------
-!!        D2,C2v,C2h symmetry
-!!        -------------------
-!         WRITE(RECPIN1,1001) ndptag
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4)
-!
-!      ELSEIF (ndptag.EQ.7) THEN
-!!        ------------
-!!        D2h symmetry
-!!        ------------
-!         WRITE(RECPIN1,1001) ndptag
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(3),IRREP(4) !B1g*B2g=B3g 2*3=4
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(5),IRREP(6) !B1g*Au =B1u 2*5=6
-!         WRITE(RECPIN1,1002) IRREP(2),IRREP(7),IRREP(8) !B1g*B2u=B3u 2*7=8
-!         WRITE(RECPIN1,1002) IRREP(3),IRREP(5),IRREP(7) !B2g*Au =B2u 3*5=7
-!         WRITE(RECPIN1,1002) IRREP(3),IRREP(6),IRREP(8) !B2g*B1u=B3u 3*6=8
-!         WRITE(RECPIN1,1002) IRREP(4),IRREP(5),IRREP(8) !B3g*Au =B3u 4*5=8
-!         WRITE(RECPIN1,1002) IRREP(4),IRREP(6),IRREP(7) !B3g*B1u=B2u 4*6=7
-!      ENDIF
-
  9000 CONTINUE
       END SUBROUTINE RECP_LNK_IRREP
 
@@ -351,10 +323,8 @@
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
 
-!     RECP integral is capable less than D2h symmetry
-      IF (SYMTXT(1:2).EQ.'  ') GOTO 8000 
-      IF (SYMTXT(1:1).EQ.'D' ) GOTO 8000
-      IF (SYMTXT(1:1).EQ.'C' ) GOTO 8000
+!     IF (SYMTXT(1:1).EQ.'D' ) GOTO 8000
+!     IF (SYMTXT(1:1).EQ.'C' ) GOTO 8000
 
       CALL RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
       CALL RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
@@ -431,10 +401,11 @@
 
 !     Error message
 !     =============
- 8000 CONTINUE
-      WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
-      WRITE(LUPRI,'(A)')   'Maximum symmetry of RECP integral is D2h' 
-      CALL QUIT('Error in geometry reading')
+!8000 CONTINUE
+!     WRITE(LUPRI,'(/,X,A)') '=== RECP Error ==='
+!     WRITE(LUPRI,'(X,A,A)') 'RECP integral is not allowed to ',
+!    &                       'calculate linear symmetries.'
+!     CALL QUIT('RECP_LNK: No linear symmetries are allowed')
  9000 CONTINUE
       END
 
@@ -530,29 +501,26 @@
             enddo
          enddo
       enddo
-!
-!  operation  
-!  ---------
+ 
+!     operation  
+!     ---------
       do i=1,NONTYP
          do IREP1=1,NIREP
             do j=1,NONT(i)
-               do j2=1,MJ2(i,j)-1  ! natom(nc)
+               do j2=1,MJ2(i,j)-1   ! natom(nc)
                   do k=1,3
                      XYZ4(k)=LTRANS(k,IREP1)*XYZ3(k,j2,j,i)
-!                    print *,'43',XYZ4(k),LTRANS(k,IREP1),XYZ3(k,j2,j,i)
                   enddo
                   
-                  NCLOSE=10000 ! closest atom
+                  NCLOSE=10000      ! closest atom
                   do j3=1,MJ2(i,j)-1
                      DISTSQ=sqdif(XYZ4(1),XYZ3(1,j3,j,i),3)
-!                    print *,'DISTSQ',DISTSQ
                      if (DISTSQ.lt.NCLOSE) then
                         NCLOSE=DISTSQ
                         ICLAT=j3    ! closest atom so far
                      endif
                   enddo
                   ISEND(j2,j,IREP1,i)=ICLAT
-!                 print *,'ISEND',i,IREP1,j,j2,ISEND(j2,j,IREP1,i)
                enddo
             enddo
          enddo
@@ -587,7 +555,7 @@
       IGENQ(3)=5
       DO JGEN=1,NSYMOP
          IGEN=IGENQ(JGEN)
-         DO I=1,NUCIND         !NUCIND=nsag
+         DO I=1,NUCIND         ! NUCIND=nsag
             DO J=1,NONT(I)
                DO IATOM=1,MJ2(I,J)-1          !MJ2(I,J)-1 = nc(I)
                   IF (ISEND(IATOM,J,IGEN,I).NE.IATOM) GOTO 550

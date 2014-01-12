@@ -19,7 +19,6 @@ export DIRTIMEOUT="15m"
 
 # go to the local DIRAC directory
 cd $DIRAC
-git pull 
 git checkout release-13
 git status
 
@@ -32,10 +31,12 @@ fi
 ./pamadm -a  --builddir=$BUILD_INTEL_CHECK
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix.Intel_ilp64_release13-CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL_CHECK
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix.Intel_MKL_i8_release13-CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL_CHECK
 cd $BUILD_INTEL_CHECK
+make ExperimentalUpdate
 make Experimental
 
+cd $DIRAC
 unset BUILD_INTEL
 BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
@@ -45,8 +46,12 @@ fi
 ./pamadm -a  --builddir=$BUILD_INTEL
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix.Intel_ilp64_release13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix.Intel_MKL_i8_release13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
 cd $BUILD_INTEL
+make ExperimentalUpdate
 make Experimental
+
+# clean the working space ...
+/bin/rm -rf /tmp/milias/*
 
 exit 0

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,7 +52,6 @@ C
 C
 #include "dcbibt.h"
       CALL QENTER('GETLAB')
-#include "memint.h"
       CLS(1) = 'L'
       CLS(2) = 'S'
 C

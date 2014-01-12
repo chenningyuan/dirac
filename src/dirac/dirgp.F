@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2662,7 +2662,7 @@ C
       DIMENSION CMO(*),EIG(*),IBEIG(*)
       logical, intent(in) :: read_mcscf
       logical             :: mcorb, mjava, boson_irrep_info
-      logical             :: fndlab
+      logical             :: fndlab, mcci_natorb
 
 C     Get coefficients from KRMCSCF/DFCOEF
 C     ====================================
@@ -2671,6 +2671,8 @@ C     ====================================
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
         REWIND LUKRMC
         MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        REWIND LUKRMC
+        MCORB = .not.FNDLAB('NEWNATOB',LUKRMC)
         REWIND LUKRMC
         MJAVA = FNDLAB('MJVEC   ',LUKRMC)
 
@@ -2689,15 +2691,38 @@ C     ====================================
 
 !       read mcscf /natural orbitals
         IF(MCORB)THEN
+          WRITE(LUPRI,'(/A)')
+     &         ' (PSTOR1) Read orbitals from' //
+     &                 ' label NEWORB on file KRMCSCF'
           JRDMO = -1
           CALL RREADMO(CMO,JRDMO,1,LUKRMC)
 !         ... set to zero
           CALL DZERO(EIG,NORBT)
         ELSE
-!         read CI/MCSCF natural orbitals and occupancies
-          JRDMO = -1
-          CALL RREADMO(CMO,JRDMO,4,LUKRMC)
-          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          REWIND LUKRMC
+          mcci_natorb = .false.
+          if(FNDLAB('MCCINATO',LUKRMC))then
+            WRITE(LUPRI,'(/A)')
+     &           ' (PSTOR1) Read orbitals from' //
+     &                   ' label MCCINATO on file KRMCSCF'
+!           read CI/MCSCF natural orbitals and occupancies
+            REWIND LUKRMC
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,4,LUKRMC)
+            CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+            mcci_natorb = .true.
+          else
+            WRITE(LUPRI,'(/A)')
+     &           ' (PSTOR1) Read orbitals from' //
+     &                   ' label NEWNATOB on file KRMCSCF'
+!           read MP2 natural orbitals and occupancies
+            JRDMO = -1
+            REWIND LUKRMC
+            CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+!FIXME!!!   CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+!           ... set to zero
+            CALL DZERO(EIG,NORBT)
+          end if
         END IF
 
 !       remove old MCSCF - we write a new one as this reordering step requires 
@@ -2739,8 +2764,13 @@ C
         if(mcorb)then
           CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         else
-          CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
-          CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          if(mcci_natorb)then
+            CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+            CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          else
+            CALL WRTKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
+            CALL WRTKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+          end if
         end if
         close(LUKRMC,status='keep')
       else

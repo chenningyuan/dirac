@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -114,7 +114,7 @@ C***********************************************************************
        use num_grid_gen
        use num_grid_cfg
 #ifdef PCM_MODULE
-       use pcm_interface
+      use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 
 #include "implicit.h"
@@ -137,6 +137,7 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
+      real(8), allocatable :: fock_pcm(:, :, :)
 
 C
 #include "ibtfun.h"
@@ -236,14 +237,18 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
            call generate_num_grid(fao)
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
@@ -262,26 +267,26 @@ C          Hermitian operator
            deallocate(xc_matrix)
         end if
 
-        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
 !
 ! here we should not skip the following call, even if we don't
 ! want the fde contributions to response, since it will be
 ! necessary to start by adding the contributions from the potential 
 ! to the fmat
 !
-!       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-        if (itmp%im_frozen.and.itmp%im_update_vemb) then
+           if (itmp%im_frozen.and.itmp%im_update_vemb) then
+              if (.not.dirac_cfg_dft_calculation) then
+                 call genden(fao, cmo, 1, iprint)
+              endif
 
-           if (.not.dirac_cfg_dft_calculation) then
-              call genden(fao, cmo, 1, iprint)
+!             call fde_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
+
+              write (*,*) 'FDE Fock contributions (re)calculated'
+           else if (itmp%im_vemb) then
+              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
            endif
-
-!         call fde_set_nz(nz)
-          call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
-
-         write (*,*) 'FDE Fock matrix contributions (re)calculated'
-        else if (itmp%im_vemb) then
-         write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
 C
 C     3a. Solvent: get solvent contribution
@@ -298,11 +303,22 @@ CJTH check this
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
            call genden(fao, cmo, 1, iprint)
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+! Generate the total MEP and ASC, we are doing response
+! so pcm_energy_driver is not called...
+! fao is the AO density matrix
+           call compute_mep_asc(fao, work(kfree), lfree)
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver to get '//
      &                    'J + X(D) contribution.'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fmo is the Fock matrix in AO basis, fao is the density matrix
-           call pcm_fock_driver(fmo, fao, 1, -1.0d0, 
-     &    work(kfree), lfree)
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fmo, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
         endif 
 #endif       
 

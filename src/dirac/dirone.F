@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -37,11 +37,10 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
-       use fde_types
        use fde_mod
-
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
@@ -60,7 +59,8 @@ C
 C.....With modified Hamiltonian this routine is skipped for now
       IF(MDIRAC) GOTO 20
       !mi: always print nuclear contribution to the dipole moment (costs nothing)
-      CALL DIPNUC(1,.FALSE.)
+      TEST=(DSUM(NUCIND,CHARGE,1).GT.D0)
+      IF(TEST) CALL DIPNUC(1,.FALSE.)
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -876,7 +876,6 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
-      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -923,18 +922,19 @@ CMI     ... dcbham.h is needed
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
 
+      if (dirac_cfg_fde) then
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-
-      call fde_get_import_info(itmp)
-      if (dirac_cfg_fde .and. itmp%im_vemb) then
-         IOP = IPVEMB0
-         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &          OP1INT,FIRST,IPRHAM)
+         call fde_get_import_info(itmp)
+         if (itmp%im_vemb) then
+            IOP = IPVEMB0
+            CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
+     &                  OP1INT,FIRST,IPRHAM)
+         endif
       ENDIF
 
 C
@@ -2843,10 +2843,14 @@ C         2) do picture change transformation of integrals on AOPROPER
               else if(fndlab12('h12cAOn   10',lux2c))then
                 i2cofk = 1
               else
+                if(x2cmod_mmf_restart)then
+                  i2cofk = -2
+                else
                   write(lupri,'(a)') 
      &'*** restart error: no hamiltonian integrals stored on X2CMAT ***'
                   call quit(
      &'*** error in gmotra: no h1 data on file X2CMAT ***')
+                end if
               end if
             else
 !             nothing to do here for now: x2cmod_fragment_x2c is always false.

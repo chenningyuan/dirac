@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -253,7 +253,7 @@ C
 ! RDR Polarizable Continuum Model calculation
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
-         call report_after_pcm_input()
+         call report_after_pcm_input(lupri)
       end if
 #endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
@@ -944,7 +944,7 @@ C
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
-     &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
+     &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
@@ -1022,8 +1022,7 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-      NOQCDHF   = .FALSE.
-C      NOQCDHF   = .TRUE.
+      NOQCDHF   = .TRUE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
@@ -1527,8 +1526,8 @@ C&&& MAX MICRO ITERATIONS: Maximum number of micro iterations for QC-DHF
                   READ(LUCMD,*) MXMICRO
                GO TO 100
    34          CONTINUE
-C&&& NOQCDHF: No QC DHF
-                  NOQCDHF = .TRUE.
+C&&& 2NDOPT: activate second-order optimization if regular SCF does not converge
+                  NOQCDHF = .FALSE.
                GO TO 100
    35          CONTINUE
 C&&& SKIPEE: no e-e rotations in 2nd order optimization
@@ -1830,7 +1829,6 @@ C
       END IF
       IF(NASHT_DHF.EQ.0) THEN
         AOC     = .FALSE.
-        NOQCDHF = .FALSE.
       ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
@@ -6398,8 +6396,7 @@ C        MI/Febr 2006 Added nonrelativistic kinetic
 C                     energy integrals (TWOCOMP=.true)
 C
 C***********************************************************************
-
-      use dirac_cfg
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -6411,6 +6408,7 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
       logical is_2c_rel_run
+      type(fde_import) :: itmp
 
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
@@ -6459,15 +6457,18 @@ C     (static) embedding pontential
 C     =============================
 C
 C
-      IF (dirac_cfg_fde) THEN
-         PNAME            = 'static emb. potential '
-         IPTYP            = 1
-         NPCOMP           = 1
-         PFAC(1)          = D1
-         PLABEL(1)        = 'FDEVEMB '
-         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_vemb) then
+            PNAME         = 'static emb. potential '
+            IPTYP         = 1
+            NPCOMP        = 1
+            PFAC(1)       = D1
+            PLABEL(1)     = 'FDEVEMB '
+            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
-         IPVEMB0          = INDXPR
+            IPVEMB0       = INDXPR
+         endif
       ENDIF
 
 

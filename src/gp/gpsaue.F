@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -211,7 +211,7 @@ C
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
       IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'D'
+        MXFORM(1:1) = 'E'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
@@ -1583,7 +1583,7 @@ C        use F output format
 C        use 1PD output format
          LFMT = '(1P,A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = 'D15.8)'
+         RFMT = 'E15.8)'
       END IF
 C
 C LAST is the last column number in the row currently being printed

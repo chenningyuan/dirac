@@ -40,7 +40,7 @@ C-----For the excitation energy module
       COMMON/CCEXCI/NEXC(16),NEOPER,NTOLEX,MXDIMEX,MXITEX
       COMMON/CCEXCC/NAMEE(MAXOP)
 C-----For the Fock space module
-      INTEGER FSSECT
+      INTEGER FSSECT,STATE_E_FSCC
       COMMON/CCFSPI/FSSECT(6),MAXIT_SECT(6),NINACT(16),NACT(16),
-     &              NTOLFS,MXDIMFS,MXITFS
+     &              NTOLFS,MXDIMFS,MXITFS,STATE_E_FSCC
 

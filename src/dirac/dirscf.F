@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -387,12 +387,11 @@ C*****************************************************************************
 
       use dirac_cfg
       use interface_mo_specific
-      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -420,6 +419,10 @@ C
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
+
+#if defined (PCM_MODULE)
+      real(8), allocatable :: fock_pcm(:, :, :)
+#endif
 
 C
       CALL QENTER('PREDHF')
@@ -595,23 +598,21 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDfde = SECOND()
-        TDF2 = TDfde - TDF2
-
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-
-           tdfde =  second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde = SECOND()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde =  second() - tdfde
+           endif
         endif
 
         tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -697,10 +698,17 @@ C
                  call quit('NaN found in Fock matrix')
               end if 
            end do
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
      &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1268,13 +1276,12 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -1301,6 +1308,7 @@ C
 #ifdef PCM_MODULE
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
+      real(8), allocatable :: fock_pcm(:, :, :)
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1332,7 +1340,6 @@ C
       CALL FLSHFO(LUPRI)
 
       DO 10 ITER = 2,MAXITR
-
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -1426,12 +1433,9 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
-            !fixme: michal for InteRest                            
-            call dzero(fock,N2BBASXQ*nopen)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
-            call dzero(dmat,N2BBASXQ*nopen)
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
             IF (NISHT .GT. 0)
@@ -1460,22 +1464,20 @@ C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
-!       mi - variable initialization (otherwise runtime-check failure)
-
-        tdfde= second()
-        call interface_mo_write()
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-           tdfde = second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde= second()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde = second() - tdfde
+           endif
         endif
-
-        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           tdxc = second()
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1496,7 +1498,6 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
- 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
@@ -1515,14 +1516,20 @@ C        Calculate total energy
 C        ======================
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
-! fock is the 2-el Fock matrix
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
-     &              work(kfree), lfree)
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
+! fock is the 2-el Fock matrix
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1687,9 +1694,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_mod
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -1717,7 +1723,6 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-      real(kind=8) :: fde_energy
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
@@ -1801,7 +1806,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
+        call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif
@@ -1819,12 +1824,6 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
-
-!     if (dirac_cfg_fde) then
-!        call fde_export_write_data_to_memory('DHF') 
-!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-!        write (*,*) 'FDE energy: ',fde_energy
-!     endif
 
       DHFERG = DHFERG + ELERGY
 C
