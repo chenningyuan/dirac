@@ -10,14 +10,15 @@
 
 contains
 
-      subroutine init_qcorr(relQC)
+      subroutine init_qcorr(relQC, print_header)
 
-      logical, intent(in) :: relQC
+      logical, intent(in)           :: relQC
+      logical, intent(in), optional :: print_header
 #include "priunit.h"
 
       wunit_q = lupri
 
-      call print_header_qcorr(wunit_q)
+      if(print_header) call print_header_qcorr(wunit_q)
 
       select case(relQC)
 

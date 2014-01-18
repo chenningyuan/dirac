@@ -23,7 +23,6 @@
 !     scratch
       integer, allocatable  :: astring(:,:)
       integer, allocatable  :: bstring(:,:)
-      integer, allocatable  :: occupation_class(:,:)
       real(8), allocatable  :: ref_wavefunction_coeff(:)
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
@@ -38,7 +37,7 @@
       call QENTER('QCORR')
 
 !     initialize
-      call init_qcorr(relQC)
+      call init_qcorr(relQC,.true.)
 
 !     print flag
       ntest = 000
@@ -117,7 +116,7 @@
         do i = 1, nref_qcorr
 
           write(wunit_q,*) "alpha string: ",ref_wavefunction_qcorr(i,1)
-          write(wunit_q,*) "beta string:  ",ref_wavefunction_qcorr(i,2)
+          write(wunit_q,*) " beta string: ",ref_wavefunction_qcorr(i,2)
 
           write(wunit_q,*)" coefficient of the reference wf ",i,        &
      &                    " in the CI: ",ref_wavefunction_coeff(i)
@@ -396,6 +395,8 @@
          end if
       end do
 
+      deallocate(ref_wavefunction_tmp)
+
       end subroutine get_Q_correction
 !     ***********************************************************************
 
@@ -479,3 +480,249 @@
      &                      ((1 - c02_2 **2) / c02_2 **2) * e_corr  
       
       end subroutine E_Q
+!     ***********************************************************************
+
+      subroutine put_refvec_for_qcorr(C,NBLOCK,IBLOCK,IBLTP,LUC,        &
+     &                                LUSCR,ICISTR,IRC,WORK,relQC,nref)
+!     incoming variables:
+!                         C      - scratch space for ci vector
+!                         NBLOCK - # of ttsblocks
+!                         IBLOCK - array containing information about each ttsblock
+!                         IBLTP  - block types
+!                         LUC    - internal file pointer for CI vector file
+!                         LUSCR  - file pointer for scratch vector file
+!                         ICISTR - currently set to 2 by default
+!                         IRC:   - algebra control value: 1 (real) or 2 (complex)
+      use qcorr_cfg
+      use qcorr_interface
+
+      implicit none
+
+!     input
+      integer, intent(in)   :: IBLOCK(8,NBLOCK),IBLTP(*)
+      real(8), intent(inout):: C(*), WORK(*)
+      integer, intent(in)   :: nblock, luc, luscr, irc, icistr
+      integer, intent(in)   :: nref
+      logical, intent(in)   :: relQC
+!     scratch
+      integer, allocatable  :: astring(:,:)
+      integer, allocatable  :: bstring(:,:)
+      real(8), allocatable  :: e_corr(:), e_tot(:)
+      integer               :: nstates_ci
+      real(8)               :: q_corr, edci
+      real(8)               :: reference_energy
+      integer               :: iactp, ibctp, nbl_c, nael, nbel
+      integer               :: ntest, lblk, iboff, ionem
+      integer               :: irir, imk2_r, i
+
+      call QENTER('REFVEC')
+
+!     initialize
+      call init_qcorr(relQC,.false.)
+
+!     print flag
+      ntest = 000
+      ntest = max(ntest,print_qcorr)
+
+      open(1234,file='refvec.luci',status='replace',form='unformatted', &
+     &access='sequential',action="readwrite",position='rewind')
+
+      write(1234) nref
+
+      print *, 'printing all reference confs, total: ',nref
+      LBLK = -1
+      IBOFF = 0
+      call REWINE(LUSCR,-1)
+      call REWINE(LUC,-1)
+      call itods(-1,1,-1,LUSCR)
+
+!     loop over real and imaginary parts
+      do IRIR = 1,IRC
+
+        if (IRIR.EQ.2) then
+!         skip EOV mark between real and imaginary part
+          call IFRMDS(IONEM,1,-1,LUC)
+        end if
+
+        do IMK2_R = 1,NMS2VAL_q,1
+
+          if(relQC)then
+            IACTP = IST_FOR_DT_q(1,IMK2_R)
+            IBCTP = IST_FOR_DT_q(2,IMK2_R)
+          else
+            IACTP = 1
+            IBCTP = 2
+          end if
+!  Offset for IBLOCK(sym,type) information
+          if (IMK2_R.eq.1) then
+            IBOFF = 1
+          else
+            IBOFF = IBOFF + NBLK_MS2_q(IMK2_R-1)
+          end if
+!
+          if(relQC)then 
+            NBL_C = NBLK_MS2_q(IMK2_R)
+          else
+            NBL_C = NBLOCK
+          end if
+
+          call REWINE(LUSCR,-1)
+          call COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
+          call ITODS(-1,1,-1,LUSCR)
+
+          NAEL = NELEC_q(IACTP)
+          NBEL = NELEC_q(IBCTP)
+          allocate(astring(NAEL,MXNSTR_q))
+          allocate(bstring(NBEL,MXNSTR_q))
+
+!
+          call put_refvec_for_qcorrs(C,LUSCR,NBL_C,                     &
+     &                               WORK(KNSTSO_q(IACTP)),             &
+     &                               WORK(KNSTSO2_q(IBCTP)),            &
+     &                               IBLOCK(1,IBOFF),                   &
+     &                               NAEL,NBEL,astring, bstring,        &
+     &                               IBLTP,NSMST_q,                     &
+     &                               IACTP,IBCTP,ICISTR,ntest,          &
+     &                               NORB_q,relQC,wunit_q,nref)
+!         NAEL/NBEL may be zero and therefore no allocation of string arrays...
+          if(allocated(bstring)) deallocate(bstring)
+          if(allocated(astring)) deallocate(astring)
+        end do
+      end do
+
+      close(1234,status="keep")
+
+!     finalize
+      call exit_qcorr(relQC)
+
+      call QEXIT('REFVEC')
+
+      end subroutine put_refvec_for_qcorr
+!     ***********************************************************************
+
+      subroutine put_refvec_for_qcorrs(C,LUC,NBL_C,                     &
+     &                                 NSSOA,                           &
+     &                                 NSSOB,                           &
+     &                                 IBLOCK,                          &
+     &                                 NAEL,NBEL,IASTR,IBSTR,           &
+     &                                 IBLTP,NSMST,                     &
+     &                                 IASPGPTP,IBSPGPTP,ICISTR,IPRNT,  &
+     &                                 NORB,relQC,wunit_q,nref)
+!     ***********************************************************************
+
+      implicit none
+
+      real(8), intent(inout)          :: C(*)
+      integer, intent(inout)          :: IASTR(NAEL,*), IBSTR(NBEL,*)
+      integer, intent(in)             :: nref
+      integer, intent(in)             :: luc, nbl_c, nsmst
+      integer, intent(in)             :: nael, nbel, icistr, iprnt
+      integer, intent(in)             :: NSSOA(NSMST,*), NSSOB(NSMST,*)
+      integer, intent(in)             :: IBLTP(*)
+      integer, intent(in)             :: IBLOCK(8,NBL_C)
+      integer, intent(in)             :: IASPGPTP, IBSPGPTP
+      integer, intent(in)             :: norb
+      integer, intent(in)             :: wunit_q
+      logical, intent(in)             :: relQC
+
+!     scratch
+      character (len=4),  allocatable :: conf_string_a(:)
+      character (len=4),  allocatable :: conf_string_b(:)
+      character (len=10), allocatable :: stringa(:)
+      character (len=10), allocatable :: stringb(:)
+      character (len=200), allocatable:: ref_wavefunction_tmp(:,:)
+      integer                         :: iel
+      integer                         :: ia, iabas, ib, ibbas
+      integer                         :: iampack, imzero, idet, idum
+      integer                         :: ilena, ilena2, ilenb, ilenb2
+      integer                         :: iasm, iatp, ibsm, ibtp
+      integer                         :: iref_tmp, irestr_ana, jblock
+      integer                         :: minia, nastr1, nbstr1, nia, nib
+
+      allocate(ref_wavefunction_tmp(2,2))
+
+      if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
+      
+      IDET     = 0
+      do JBLOCK = 1, NBL_C
+         IATP = IBLOCK(1,JBLOCK)
+         IBTP = IBLOCK(2,JBLOCK)
+         IASM = IBLOCK(3,JBLOCK)
+         IBSM = IBLOCK(4,JBLOCK)
+
+!        Obtain alpha/beta strings of sym IASM/IBSM and type IATP/IBTP
+         if(relQC)then 
+#ifdef PRG_DIRAC
+           call GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,          &
+     &                                NASTR1,IASTR)
+           call GETSTR_TOTSM_SPGP_REL(IBSPGPTP,IBTP,IBSM,NBEL,          &
+     &                                NBSTR1,IBSTR)
+#endif
+         else
+
+           IDUM = 0
+           call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,        &
+     &                            NORB,0,IDUM,IDUM)
+           call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,        &
+     &                            NORB,0,IDUM,IDUM)
+         end if
+
+         if(IBLTP(IASM).eq.2) then
+            IRESTR_ANA = 1
+         else
+            IRESTR_ANA = 0
+         end if
+         NIA = NSSOA(IASM,IATP)
+         NIB = NSSOB(IBSM,IBTP)
+         IMZERO = 0
+         if(ICISTR.ge.2) then
+!          read in a Type-Type-symmetry block
+           call IFRMDS(IDET,1,-1,LUC)
+           call FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+           IDET = 0
+         end if
+         if(IMZERO.ne.1) then
+            IBBAS = 1
+            IABAS = 1
+            do IB = IBBAS,IBBAS+NIB-1                                  ! loop over beta strings
+               if(IRESTR_ANA.eq.1.and.IATP.eq.IBTP) then
+                  MINIA = IB - IBBAS + IABAS
+               else
+                  MINIA = IABAS
+               end if
+               do  IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
+                    IDET = IDET + 1
+                   
+                    if(iprnt > 10)then
+                      write(wunit_q,*) 'idet, c',idet,c(idet),nael,nbel
+                      write(wunit_q,"(60i4)")                           &
+     &                (iastr(iel,ia),iel=1,nael)
+                      write(wunit_q,"(60i4)")                           &
+     &                (ibstr(iel,ib),iel=1,nbel)
+                    end if
+
+                    write(ref_wavefunction_tmp(1,1),"(60i4)")           &
+     &              (iastr(iel,ia),iel=1,nael)                         
+                    write(ref_wavefunction_tmp(1,2),"(60i4)")           &
+     &              (ibstr(iel,ib),iel=1,nbel)
+
+                    ilena    = len(trim(ref_wavefunction_tmp(1,1)))
+                    ilenb    = len(trim(ref_wavefunction_tmp(1,2)))
+                                                                        
+                    write(1234) ilena,ilenb,                            &
+     &                          ref_wavefunction_tmp(1,1)(1:ilena),     &
+     &                          ref_wavefunction_tmp(1,2)(1:ilenb),     &
+                                C(IDET)
+                    print *, ref_wavefunction_tmp(1,1)(1:ilena)
+                    print *, ref_wavefunction_tmp(1,2)(1:ilenb)
+                    print *, C(IDET)
+   
+               end do
+            end do
+         end if
+      end do
+
+      deallocate(ref_wavefunction_tmp)
+
+      end subroutine put_refvec_for_qcorrs
+!     ***********************************************************************

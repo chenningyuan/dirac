@@ -1241,6 +1241,7 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
 C
+      IF(CIRUN /= 'REFVEC')THEN
       WRITE(LUWRT,'(/3X,A)') 
      & '=============================================================='
       WRITE(LUWRT,'(3X,A)') 
@@ -1254,6 +1255,7 @@ C
      & 'allocate resolution vector of length:         ',LCJRES_SAVE
       WRITE(LUWRT,'(3X,A/)') 
      & '=============================================================='
+      END IF
 C
 C     static allocation
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')

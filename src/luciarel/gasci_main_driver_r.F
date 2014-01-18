@@ -187,9 +187,6 @@ C         quaternion real
           IRC = 1
         end if
       END IF
-      if (NZ.eq.1) then
-        write(LUWRT,*) ' Quaternion real relativistic CI '
-      end if
 C     control variable for general file structure
       LBLK = -1
 C
@@ -316,7 +313,8 @@ C
 C       read in all (active) blocked integrals (T blocks)
 C       ==> integrals required for diagonal H on T_BUFF_D
 C
-        IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ') THEN
+        IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
 C           FIXME: 11-02-08 SK: definition of IBU2D?
           call picasso(iprtra,.TRUE.,
      &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
@@ -356,7 +354,8 @@ C
          DIAGONAL_ALLOC = .TRUE. 
 C
 CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
-         IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ') THEN
+         IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
            call picasso(iprtra, .TRUE. ,
      &                  NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
      &                  T_BUFF_D,IT_TTPL,ibosym,CIRUN,.FALSE.)
@@ -837,7 +836,6 @@ C     let the slaves wait... it is only a short way to go so why not?
 #endif
 
       else if (CIRUN.eq.'QCORR ') then
-C     analysis of optimized wave function
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 C
 C     only MASTER computes the +Q correction ...
@@ -847,6 +845,23 @@ C
           call q_correction(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                      WORK(KPCBLTP),LUC,LUSC37,
      &                      ICISTR,IRC,WORK,.true.)
+        end if
+
+#if defined (VAR_MPI2)
+C     let the slaves wait... it is only a short way to go so why not?
+      call interface_mpi_BARRIER(global_communicator)
+#endif
+C
+      else if (CIRUN.eq.'REFVEC') then
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+C
+C     only MASTER writes the reference vector data to file
+C
+        if(myproc == master)then
+          call rewine(LUC,-1)
+          call put_refvec_for_qcorr(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                              WORK(KPCBLTP),LUC,LUSC37,
+     &                              ICISTR,IRC,WORK,.true.,ndet)
         end if
 
 #if defined (VAR_MPI2)

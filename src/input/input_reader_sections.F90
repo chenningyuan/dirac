@@ -1495,7 +1495,7 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
       character(len=400)               :: input_line
-      integer                          :: i, j
+      integer                          :: i, j, la, lb
       integer                          :: ios, islash, ibar
 !     --------------------------------------------------------------------------
 
@@ -1505,6 +1505,27 @@
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, print_qcorr)
+      end if
+
+      if (kw_matches(word, '.REFFIL')) then
+
+        open(1234,file='refvec.luci',status='old',form='unformatted',    &
+        access='sequential',action="read",position='rewind')
+
+        read(1234) nref_qcorr
+!       read # reference configurations
+        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+        do i = 1, nref_qcorr
+          read(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),  &
+                           ref_wavefunction_coeff_qcorr(i)
+          print *, ref_wavefunction_qcorr(i,1)(1:la)
+          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_coeff_qcorr(i)
+
+        end do
+
+        close(1234,status="keep")
       end if
 
       if (kw_matches(word, '.REFDAT')) then
