@@ -50,6 +50,7 @@
 #include "ipoist8.inc"
 *
       character*6 CIRUN
+      real(8), intent(inout) :: eref
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -861,7 +862,7 @@ C
           call rewine(LUC,-1)
           call put_refvec_for_qcorr(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                              WORK(KPCBLTP),LUC,LUSC37,
-     &                              ICISTR,IRC,WORK,.true.,ndet)
+     &                              ICISTR,IRC,WORK,.true.,ndet,eref)
         end if
 
 #if defined (VAR_MPI2)
@@ -1390,7 +1391,9 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
-      write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+      if(CIRUN /= 'REFVEC') 
+     &write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+
 C     release memory
       IDUM = 0
       call memmar(KDUM,  IDUM,  'FLUSM ',IDUM,'GASCI ')

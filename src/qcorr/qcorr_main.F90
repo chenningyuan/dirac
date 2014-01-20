@@ -23,16 +23,18 @@
 !     scratch
       integer, allocatable  :: astring(:,:)
       integer, allocatable  :: bstring(:,:)
+      integer, allocatable  :: l_ref(:,:)
       real(8), allocatable  :: ref_wavefunction_coeff(:)
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
       real(8)               :: q_corr, edci
       real(8)               :: Edc_1, Erdc_1, Epc_1, Emc_1, Epcp_1
       real(8)               :: Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2
-      real(8)               :: reference_energy
+      real(8)               :: reference_energy, reference_energy_tmp
       integer               :: iactp, ibctp, nbl_c, nael, nbel
       integer               :: ntest, lblk, iboff, ionem
       integer               :: irir, imk2_r, i
+      integer               :: la, lb
 
       call QENTER('QCORR')
 
@@ -45,6 +47,29 @@
 
       allocate(ref_wavefunction_coeff(nref_qcorr))
       ref_wavefunction_coeff = 0.0d0 ! initialize all to 0.0d0
+
+      allocate(l_ref(nref_qcorr,2))
+
+      ! read reference configurations from file (either written by MCSCF or by user input for HF reference)
+      open(1234,file='refvec.luci',status='old',form='unformatted',     &
+      access='sequential',action="read",position='rewind')
+
+      read(1234) nref_qcorr, reference_energy_qcorr
+!     read # reference configurations
+      allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+      allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+      do i = 1, nref_qcorr
+        read(1234) l_ref(i,1),l_ref(i,2),                               &
+                         ref_wavefunction_qcorr(i,1)(1:l_ref(i,1)),     &
+                         ref_wavefunction_qcorr(i,2)(1:l_ref(i,2)),     &
+     &                   ref_wavefunction_coeff_qcorr(i)
+!       print *, ref_wavefunction_qcorr(i,1)(1:l_ref(i,1))
+!       print *, ref_wavefunction_qcorr(i,2)(1:l_ref(i,2))
+!       print *, ref_wavefunction_coeff_qcorr(i)
+
+      end do
+
+      close(1234,status="keep")
 
       LBLK = -1
       IBOFF = 0
@@ -88,9 +113,9 @@
 
           NAEL = NELEC_q(IACTP)
           NBEL = NELEC_q(IBCTP)
+
           allocate(astring(NAEL,MXNSTR_q))
           allocate(bstring(NBEL,MXNSTR_q))
-
 !
           call get_Q_correction(C,LUSCR,NBL_C,                          &
      &                          WORK(KNSTSO_q(IACTP)),                  &
@@ -101,7 +126,7 @@
      &                          IACTP,IBCTP,ICISTR,ntest,               &
      &                          ref_wavefunction_qcorr,                 &
      &                          ref_wavefunction_coeff,nref_qcorr,      &
-     &                          NORB_q,relQC, wunit_q)
+     &                          NORB_q,relQC, wunit_q,l_ref)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
           if(allocated(astring)) deallocate(astring)
@@ -110,18 +135,16 @@
 
       if(ntest > 2)then
         write(wunit_q,'(A)') '                                       '
-        write(wunit_q,'(A)') ' Reference wavefunction & coefficient: ' 
+        write(wunit_q,'(A)') ' Reference and CI coefficients       : ' 
         write(wunit_q,'(A)') ' ===================================== '
 
         do i = 1, nref_qcorr
 
-          write(wunit_q,*) "alpha string: ",ref_wavefunction_qcorr(i,1)
-          write(wunit_q,*) " beta string: ",ref_wavefunction_qcorr(i,2)
-
-          write(wunit_q,*)" coefficient of the reference wf ",i,        &
-     &                    " in the CI: ",ref_wavefunction_coeff(i)
-          write(wunit_q,*)" original coefficient of the reference wf: ",&
-     &                                   ref_wavefunction_coeff_qcorr(i)
+          write(wunit_q,*)" reference wave function (wf) #  ",i
+          write(wunit_q,*)"    CI coefficient of the wf:",              &
+     &                      ref_wavefunction_coeff(i)
+          write(wunit_q,*)" MC/HF coefficient of the wf:",              &
+     &                      ref_wavefunction_coeff_qcorr(i)
         end do
       end if
 
@@ -129,7 +152,7 @@
       open(file="energies.CI",unit=10,status="old",                     &
            form="unformatted",access="sequential")
 
-      read(10) nstates_ci,reference_energy
+      read(10) nstates_ci,reference_energy_tmp
 
       allocate(e_corr(nstates_ci))
       allocate(e_tot(nstates_ci))
@@ -146,6 +169,13 @@
      & " Epc`: modified Pople correction        [Eq. (39)]",            &
      & " Emc : Meissner correction              [Eq. (41)]"              
 
+      !> MC wave function
+      if(reference_energy_qcorr /= 0.0d0)then
+        reference_energy = reference_energy_qcorr
+      else ! HF wave function
+        reference_energy = reference_energy_tmp
+      end if
+
       do i = 1, nstates_ci
         e_corr(i) = e_tot(i) - reference_energy
         
@@ -157,6 +187,8 @@
 
       ! output of the q-correction       
         write(wunit_q,"(/A,i4)")     ' Q correction for state #', i
+        write(wunit_q,"( A,1f16.8)") ' reference   energy: ',           &
+     &                                 reference_energy
         write(wunit_q,"( A,1f16.8)") ' correlation energy: ', e_corr(i)
         write(wunit_q,"( A,1f16.8)") ' original CI energy: ', e_tot(i)
 
@@ -242,9 +274,10 @@
       deallocate(e_corr)
       deallocate(e_tot)
 
+      deallocate(l_ref)
       deallocate(ref_wavefunction_qcorr)
-      deallocate(ref_wavefunction_coeff)
       deallocate(ref_wavefunction_coeff_qcorr)
+      deallocate(ref_wavefunction_coeff)
 
 !     finalize
       call exit_qcorr(relQC)
@@ -263,13 +296,14 @@
      &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,       &
      &                            ref_wavefunction,                     &
      &                            ref_wavefunction_coeff,nref,          &
-     &                            NORB,relQC, wunit_q)
+     &                            NORB,relQC, wunit_q, lref)
 !     ***********************************************************************
 
       implicit none
 
       real(8), intent(inout)          :: C(*)
       integer, intent(inout)          :: IASTR(NAEL,*), IBSTR(NBEL,*)
+      integer, intent(in)             :: lref(nref,2)
       integer, intent(in)             :: luc, nbl_c, nsmst
       integer, intent(in)             :: nael, nbel, icistr, iprnt
       integer, intent(in)             :: NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -278,18 +312,14 @@
       integer, intent(in)             :: IASPGPTP, IBSPGPTP
       integer, intent(in)             :: norb
       integer, intent(in)             :: nref, wunit_q
-      character(len=200), intent(in)  :: ref_wavefunction(nref,2)
+      character(len=240), intent(in)  :: ref_wavefunction(nref,2)
       logical, intent(in)             :: relQC
 
 !     output
       real(8) , intent(inout)         :: ref_wavefunction_coeff(nref)
      
 !     scratch
-      character (len=4),  allocatable :: conf_string_a(:)
-      character (len=4),  allocatable :: conf_string_b(:)
-      character (len=10), allocatable :: stringa(:)
-      character (len=10), allocatable :: stringb(:)
-      character (len=200), allocatable:: ref_wavefunction_tmp(:,:)
+      character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
       integer                         :: iel
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
@@ -349,47 +379,52 @@
                else
                   MINIA = IABAS
                end if
-               do  IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
-                    IDET = IDET + 1
+               do IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
+                 IDET = IDET + 1
                    
-                    if(iprnt > 10)then
-                      write(wunit_q,*) 'idet, c',idet,c(idet),nael,nbel
-                      write(wunit_q,"(60i4)")                           &    ! save strings into array
-     &                (iastr(iel,ia),iel=1,nael)
-                      write(wunit_q,"(60i4)")                           &
-     &                (ibstr(iel,ib),iel=1,nbel)
-                    end if
 
-                    write(ref_wavefunction_tmp(1,1),"(60i4)")           &! save strings into array
-     &              (iastr(iel,ia),iel=1,nael)                         
-                    write(ref_wavefunction_tmp(1,2),"(60i4)")           &
-     &              (ibstr(iel,ib),iel=1,nbel)
+                 write(ref_wavefunction_tmp(1,1),"(60i4)")              &
+     &           (iastr(iel,ia),iel=1,nael)                         
+                 write(ref_wavefunction_tmp(1,2),"(60i4)")              &
+     &           (ibstr(iel,ib),iel=1,nbel)
 
-                    ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
-                    ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
-                                                                        
-                    iref_tmp = 0
+                 ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
+                 ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
 
-                    do 
+                 if(iprnt > 100)then
+                   write(wunit_q,*) ' comparison strings     ',         &
+     &                                ilena,ilenb
+                   write(wunit_q,*)ref_wavefunction_tmp(1,1)(1:ilena)
+                   write(wunit_q,*)ref_wavefunction_tmp(1,2)(1:ilenb)
+                 end if
+                                                                     
+                 iref_tmp = 0
 
-                      iref_tmp = iref_tmp + 1                           ! exit if iref_tmp > nref
-                      if(iref_tmp > nref) exit
+                 do 
 
-                      ilena2  = len(trim(ref_wavefunction(iref_tmp,1)))
-                      ilenb2  = len(trim(ref_wavefunction(iref_tmp,2)))
+                   iref_tmp = iref_tmp + 1                           ! exit if iref_tmp > nref
+                   if(iref_tmp > nref) exit
 
-                    if(ref_wavefunction_tmp(1,1)(1:ilena) ==            &  ! compare alpha strings 
-     &                 ref_wavefunction(iref_tmp,1)(1:ilena2) .and.     &
-     &                 ref_wavefunction_tmp(1,2)(1:ilenb) ==            &! compare beta strings 
-     &                 ref_wavefunction(iref_tmp,2)(1:ilenb2)           &
-     &               )then 
-                       ref_wavefunction_coeff(iref_tmp) = C(IDET)       ! if true, save coeff
-   
-                    exit
-                    end if
-                    end do
-
-
+                   if(iprnt > 100)then
+                     write(wunit_q,*) ' reference strings: for ',       &
+     &                                  iref_tmp
+                     write(wunit_q,*)                                   &
+     &               ref_wavefunction(iref_tmp,1)(1:lref(iref_tmp,1))
+                     write(wunit_q,*)                                   &
+     &               ref_wavefunction(iref_tmp,2)(1:lref(iref_tmp,2))
+                   end if
+                                                                     
+                   if(ref_wavefunction_tmp(1,1)(1:ilena) ==             &! compare alpha strings
+     &                ref_wavefunction(iref_tmp,1)(1:lref(iref_tmp,1))  &
+     &             .and.                                                &
+     &                ref_wavefunction_tmp(1,2)(1:ilenb) ==             &! compare beta strings
+     &                ref_wavefunction(iref_tmp,2)(1:lref(iref_tmp,2))) &
+     &             then
+!                    print *, 'total match found , coefficient ',c(idet)
+                     ref_wavefunction_coeff(iref_tmp) = C(IDET)         ! if true, save coeff
+                     exit
+                   end if
+                 end do
                end do
             end do
          end if
@@ -448,17 +483,21 @@
       teta_1 = acos(sqrt(c01))
 
       do i = 1, nref
-      c02 = c02 + ref_wavefunction_coeff(i)*ref_wavefunction_coeff_i(i)
+      c02 = c02 + abs(ref_wavefunction_coeff(i)*                        &
+     &                ref_wavefunction_coeff_i(i))
       end do
 
       c02_2  = c02 * c02
       teta_2 = acos(sqrt(c02_2))
 
       if(iprnt > 10)then
-        write(wunit_q,*) "c01",         c01
-        write(wunit_q,*) "sqrt (c01)",  sqrt(c01)
-        write(wunit_q,*) "c02",         c02
-        write(wunit_q,*) "c02_2",       c02_2
+        write(wunit_q,'(/a )')  " coefficients entering the q equations"
+        write(wunit_q,'( a )')  " -------------------------------------"
+        write(wunit_q,*) " c01       :",c01
+        write(wunit_q,*) " sqrt (c01):",sqrt(c01)
+        write(wunit_q,*) " c02       :",c02
+        write(wunit_q,*) " c02_2     :",c02_2
+        write(wunit_q,'( a/)')  " -------------------------------------"
       end if
      
       Edc_1  = (1 - c01) * e_corr            
@@ -483,7 +522,8 @@
 !     ***********************************************************************
 
       subroutine put_refvec_for_qcorr(C,NBLOCK,IBLOCK,IBLTP,LUC,        &
-     &                                LUSCR,ICISTR,IRC,WORK,relQC,nref)
+     &                                LUSCR,ICISTR,IRC,WORK,relQC,nref, &
+     &                                reference_energy)
 !     incoming variables:
 !                         C      - scratch space for ci vector
 !                         NBLOCK - # of ttsblocks
@@ -501,6 +541,7 @@
 !     input
       integer, intent(in)   :: IBLOCK(8,NBLOCK),IBLTP(*)
       real(8), intent(inout):: C(*), WORK(*)
+      real(8), intent(in)   :: reference_energy
       integer, intent(in)   :: nblock, luc, luscr, irc, icistr
       integer, intent(in)   :: nref
       logical, intent(in)   :: relQC
@@ -510,7 +551,6 @@
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
       real(8)               :: q_corr, edci
-      real(8)               :: reference_energy
       integer               :: iactp, ibctp, nbl_c, nael, nbel
       integer               :: ntest, lblk, iboff, ionem
       integer               :: irir, imk2_r, i
@@ -527,9 +567,12 @@
       open(1234,file='refvec.luci',status='replace',form='unformatted', &
      &access='sequential',action="readwrite",position='rewind')
 
-      write(1234) nref
+      write(1234) nref,reference_energy
+!     write(1234) nref
 
-      print *, 'printing all reference confs, total: ',nref
+      print *, 'printing all reference confs, total: ',nref, 'ref e:',  &
+     &          reference_energy
+
       LBLK = -1
       IBOFF = 0
       call REWINE(LUSCR,-1)
@@ -626,11 +669,7 @@
       logical, intent(in)             :: relQC
 
 !     scratch
-      character (len=4),  allocatable :: conf_string_a(:)
-      character (len=4),  allocatable :: conf_string_b(:)
-      character (len=10), allocatable :: stringa(:)
-      character (len=10), allocatable :: stringb(:)
-      character (len=200), allocatable:: ref_wavefunction_tmp(:,:)
+      character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
       integer                         :: iel
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
@@ -693,7 +732,7 @@
                do  IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
                     IDET = IDET + 1
                    
-                    if(iprnt > 10)then
+                    if(iprnt > 100)then
                       write(wunit_q,*) 'idet, c',idet,c(idet),nael,nbel
                       write(wunit_q,"(60i4)")                           &
      &                (iastr(iel,ia),iel=1,nael)
@@ -713,9 +752,9 @@
      &                          ref_wavefunction_tmp(1,1)(1:ilena),     &
      &                          ref_wavefunction_tmp(1,2)(1:ilenb),     &
                                 C(IDET)
-                    print *, ref_wavefunction_tmp(1,1)(1:ilena)
-                    print *, ref_wavefunction_tmp(1,2)(1:ilenb)
-                    print *, C(IDET)
+!                   print *, ref_wavefunction_tmp(1,1)(1:ilena)
+!                   print *, ref_wavefunction_tmp(1,2)(1:ilenb)
+!                   print *, C(IDET)
    
                end do
             end do

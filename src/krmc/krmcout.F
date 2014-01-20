@@ -61,6 +61,7 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
+      use mc_energies
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -339,6 +340,7 @@ C
  9500      FORMAT(//' (KRMCOUT) Final CI vector'/1X,25('-')/)
         END IF
         if(OPT_CIPROGRAM == 'LUCIAREL')then
+          emc_ref = emcscf
           call luci_refvec(WORK(KCREF),WORK,KFREE,LFREE)
         end if
         CALL MEMREL('KRMCOU1.CI',WORK,1,KFRSAV,KFREE,LFREE)

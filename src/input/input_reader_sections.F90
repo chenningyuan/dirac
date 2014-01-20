@@ -1512,7 +1512,7 @@
         open(1234,file='refvec.luci',status='old',form='unformatted',    &
         access='sequential',action="read",position='rewind')
 
-        read(1234) nref_qcorr
+        read(1234) nref_qcorr, reference_energy_qcorr
 !       read # reference configurations
         allocate(ref_wavefunction_qcorr(nref_qcorr,2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
@@ -1526,11 +1526,15 @@
         end do
 
         close(1234,status="keep")
+        deallocate(ref_wavefunction_qcorr)
+        deallocate(ref_wavefunction_coeff_qcorr)
+
       end if
 
       if (kw_matches(word, '.REFDAT')) then
 !        read # reference configurations
          call kw_read(word, nref_qcorr)
+         call kw_read(word, reference_energy_qcorr)
          allocate(ref_wavefunction_qcorr(nref_qcorr,2))
          allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
 !        read reference configurations + coefficients
@@ -1599,6 +1603,29 @@
            end if
 
          end do
+ 
+         open(1234,file='refvec.luci',status='replace',form='unformatted',    &
+         access='sequential',action="readwrite",position='rewind')
+
+         write(1234) nref_qcorr, reference_energy_qcorr
+!        write # reference configurations
+         do i = 1, nref_qcorr
+
+           la = len(trim(ref_wavefunction_qcorr(i,1)))
+           lb = len(trim(ref_wavefunction_qcorr(i,2)))
+
+           write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
+                       ref_wavefunction_coeff_qcorr(i)
+           print *, ref_wavefunction_qcorr(i,1)(1:la)
+           print *, ref_wavefunction_qcorr(i,2)(1:lb)
+           print *, ref_wavefunction_coeff_qcorr(i)
+
+         end do
+
+         close(1234,status="keep")
+         deallocate(ref_wavefunction_qcorr)
+         deallocate(ref_wavefunction_coeff_qcorr)
+
       end if
 
       call check_whether_kw_found(word, kw_section)

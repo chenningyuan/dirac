@@ -268,6 +268,7 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use mc_energies
       use symmetry_setup_krci
       use os_utils
       use interface_to_mpi
@@ -307,6 +308,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #include "infpar.h"
 #include "parluci.h"
       integer global_scratch_disk
+      real(8) :: eref = 0.0d0
 !     integer(8) :: kbla_blubb
 C
 C*******************************************
@@ -700,14 +702,17 @@ C               do CI in space JCMBPSC
 C
                 ISPC = JCMBSPC
                 ISM  = IREFSM
+                eref = emc_ref ! initialize...
 C
 C###############################################################
                 CALL GASCI_REL(F1,F2,
-     &                         IREFSM,JCMBSPC,IPRDIA,
+     &                         ISM,ISPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
 C###############################################################
 C
+                if(cirun == 'CIINII' .or. cirun == 'KR-CI ') 
+     &          eci_init = emc_ref ! transfer new value to the MCSCF world outside
 C               last space where vectors were stored
                 ISTOSPC = JCMBSPC
               END IF

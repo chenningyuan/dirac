@@ -3514,6 +3514,7 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C
 C***********************************************************************
+      use mc_energies
       use qcorr_cfg
 #include "implicit.h"
 #include "priunit.h"
@@ -3611,6 +3612,7 @@ C
          END IF
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+         eci = eci_init
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
 
