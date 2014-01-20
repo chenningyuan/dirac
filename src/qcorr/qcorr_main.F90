@@ -35,6 +35,9 @@
       integer               :: ntest, lblk, iboff, ionem
       integer               :: irir, imk2_r, i
       integer               :: la, lb
+      integer               :: idum, lucoef
+      real(8)               :: dum
+      logical               :: tobe = .false.
 
       call QENTER('QCORR')
 
@@ -167,12 +170,25 @@
      & " Erdc: renormalized Davidson correction [Eq. (36)]",            &
      & " Epc:  Pople correction                 [Eq. (38)]",            &
      & " Epc`: modified Pople correction        [Eq. (39)]",            &
-     & " Emc : Meissner correction              [Eq. (41)]"              
+     & " Emc : Meissner correction              [Eq. (41)]"
 
       !> MC wave function
       if(reference_energy_qcorr /= 0.0d0)then
         reference_energy = reference_energy_qcorr
       else ! HF wave function
+        INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+        IF (.NOT.TOBE) THEN
+          WRITE(wunit_q,'(/A)')                                         &
+     &    'HF coefficient/energy file not available'
+          CALL QUIT('QCORR: No MO coefficient file !')
+        ELSE
+          lucoef = 99
+          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','QCORR')
+          CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,reference_energy_tmp,&
+     &                1,DUM,IDUM,IDUM)
+          CLOSE(LUCOEF,STATUS='KEEP')
+        ENDIF
+
         reference_energy = reference_energy_tmp
       end if
 
