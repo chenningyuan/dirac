@@ -779,7 +779,7 @@ contains
         end do
       end do
 
-#ifdef LUCI_DEBUG
+!#ifdef LUCI_DEBUG
       print *, 'printing NGSob1 in match_spinor_2_boson_irrep'
       do is_gas = 1, num_gas
         print *, 'is_gas = ',is_gas
@@ -795,7 +795,17 @@ contains
         print *, 'is_gas = ',is_gas
         write(6,'(2x,32i3)') (ngsh(j,is_gas),j=1,nr_fsym)
       end do
-#endif
+      print *, 'printing imosp_dirac_counter1 in match_spinor_2_boson_irrep'
+      do i = 1, orb_counter
+        print *, 'orbital # ',i
+        write(6,'(2x,i3)') imosp_dirac_counter1(i)
+      end do
+      print *, 'printing imosp_dirac_counter2 in match_spinor_2_boson_irrep'
+      do i = 1, orb_counter
+        print *, 'orbital # ',i
+        write(6,'(2x,i3)') imosp_dirac_counter2(i)
+      end do
+!#endif
 
 !#undef LUCI_DEBUG
    end subroutine match_spinor_2_boson_irrep

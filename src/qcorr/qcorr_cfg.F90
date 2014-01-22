@@ -10,15 +10,17 @@
 ! logical block
       logical, public                          :: luci_cfg_qcorr = .false.
 ! integer block
-      integer, public                          :: wunit_q     = -1
-      integer, public                          :: nref_qcorr  = -1
-      integer, public                          :: print_qcorr = -1
-      integer, public                          :: MXNSTR_q    =  0
-      integer, public                          :: NMS2VAL_q   =  0
-      integer, public                          :: NORB_q      =  0
-      integer, public                          :: NSMST_q     =  0
+      integer, public                          :: cvorb_qcorr(1:2) = 0
+      integer, public                          :: wunit_q          = -1
+      integer, public                          :: nref_qcorr       = -1
+      integer, public                          :: print_qcorr      = -1
+      integer, public                          :: MXNSTR_q         =  0
+      integer, public                          :: NMS2VAL_q        =  0
+      integer, public                          :: NORB_q           =  0
+      integer, public                          :: NSMST_q          =  0
       integer*8, public, allocatable           :: KNSTSO_q(:)
       integer*8, public, allocatable           :: KNSTSO2_q(:)
+      integer, public,   allocatable           :: ncorbs_mc(:)
       integer, public,   allocatable           :: MS2VAL_q(:)
       integer, public,   allocatable           :: NBLK_MS2_q(:)
       integer, public,   allocatable           :: NELEC_q(:)

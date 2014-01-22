@@ -129,7 +129,7 @@
      &                          IACTP,IBCTP,ICISTR,ntest,               &
      &                          ref_wavefunction_qcorr,                 &
      &                          ref_wavefunction_coeff,nref_qcorr,      &
-     &                          NORB_q,relQC, wunit_q,l_ref)
+     &                          NORB_q,relQC, wunit_q,l_ref,cvorb_qcorr)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
           if(allocated(astring)) deallocate(astring)
@@ -312,7 +312,7 @@
      &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,       &
      &                            ref_wavefunction,                     &
      &                            ref_wavefunction_coeff,nref,          &
-     &                            NORB,relQC, wunit_q, lref)
+     &                            NORB,relQC, wunit_q, lref,cvorb)
 !     ***********************************************************************
 
       implicit none
@@ -328,6 +328,7 @@
       integer, intent(in)             :: IASPGPTP, IBSPGPTP
       integer, intent(in)             :: norb
       integer, intent(in)             :: nref, wunit_q
+      integer, intent(in)             :: cvorb(2)
       character(len=240), intent(in)  :: ref_wavefunction(nref,2)
       logical, intent(in)             :: relQC
 
@@ -336,13 +337,14 @@
      
 !     scratch
       character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
-      integer                         :: iel
+      integer                         :: iel, nael_tmp, nbel_tmp, i, j
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
       integer                         :: ilena, ilena2, ilenb, ilenb2
       integer                         :: iasm, iatp, ibsm, ibtp
       integer                         :: iref_tmp, irestr_ana, jblock
       integer                         :: minia, nastr1, nbstr1, nia, nib
+      integer                         :: off_a, off_b
 
       allocate(ref_wavefunction_tmp(nref,2))
 
@@ -399,10 +401,38 @@
                  IDET = IDET + 1
                    
 
-                 write(ref_wavefunction_tmp(1,1),"(60i4)")              &
-     &           (iastr(iel,ia),iel=1,nael)                         
-                 write(ref_wavefunction_tmp(1,2),"(60i4)")              &
-     &           (ibstr(iel,ib),iel=1,nbel)
+                !> temporary hack for core-valence orbitals in MRCI that are not part of the CAS reference
+!                  TODO: make a permanent solution + fix the case with inversion symmetry
+                 if(cvorb(1) > 0)then
+                   nael_tmp = nael
+                   nbel_tmp = nbel
+                   off_a    = 1
+                   off_b    = 1
+                   do i = 1, cvorb(1)
+                     do j = 1,nael_tmp
+                       if(iastr(j,ia) == i)then
+                         off_a    = off_a    + 1
+                         nael_tmp = nael_tmp - 1
+                       end if
+                     end do
+                     do j = 1,nbel_tmp
+                       if(iastr(j,ib) == i)then
+                         off_b    = off_b    + 1
+                         nbel_tmp = nbel_tmp - 1
+                       end if
+                     end do
+                   end do
+
+                   write(ref_wavefunction_tmp(1,1),"(60i4)")            &
+     &             (iastr(iel,ia),iel=off_a,nael_tmp)
+                   write(ref_wavefunction_tmp(1,2),"(60i4)")            &
+     &             (ibstr(iel,ib),iel=off_b,nbel_tmp)
+                 else
+                   write(ref_wavefunction_tmp(1,1),"(60i4)")            &
+     &             (iastr(iel,ia),iel=1,nael)                         
+                   write(ref_wavefunction_tmp(1,2),"(60i4)")            &
+     &             (ibstr(iel,ib),iel=1,nbel)
+                 end if
 
                  ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
                  ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
@@ -631,9 +661,9 @@
 
           NAEL = NELEC_q(IACTP)
           NBEL = NELEC_q(IBCTP)
+
           allocate(astring(NAEL,MXNSTR_q))
           allocate(bstring(NBEL,MXNSTR_q))
-
 !
           call put_refvec_for_qcorrs(C,LUSCR,NBL_C,                     &
      &                               WORK(KNSTSO_q(IACTP)),             &

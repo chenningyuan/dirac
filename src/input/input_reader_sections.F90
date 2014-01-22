@@ -1507,6 +1507,10 @@
          call kw_read(word, print_qcorr)
       end if
 
+      if (kw_matches(word, '.CVORB ')) then
+         call kw_read(word, cvorb_qcorr, 2)
+      end if
+
       if (kw_matches(word, '.REFFIL')) then
 
         open(1234,file='refvec.luci',status='old',form='unformatted',    &
