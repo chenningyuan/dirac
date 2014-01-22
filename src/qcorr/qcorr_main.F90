@@ -337,7 +337,7 @@
      
 !     scratch
       character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
-      integer                         :: iel, nael_tmp, nbel_tmp, i, j
+      integer                         :: iel, i, j
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
       integer                         :: ilena, ilena2, ilenb, ilenb2
@@ -349,7 +349,7 @@
       allocate(ref_wavefunction_tmp(nref,2))
 
       if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
-      
+
       IDET     = 0
       do JBLOCK = 1, NBL_C
          IATP = IBLOCK(1,JBLOCK)
@@ -404,29 +404,24 @@
                 !> temporary hack for core-valence orbitals in MRCI that are not part of the CAS reference
 !                  TODO: make a permanent solution + fix the case with inversion symmetry
                  if(cvorb(1) > 0)then
-                   nael_tmp = nael
-                   nbel_tmp = nbel
                    off_a    = 1
                    off_b    = 1
                    do i = 1, cvorb(1)
-                     do j = 1,nael_tmp
+                     do j = 1,nael
                        if(iastr(j,ia) == i)then
                          off_a    = off_a    + 1
-                         nael_tmp = nael_tmp - 1
                        end if
                      end do
-                     do j = 1,nbel_tmp
-                       if(iastr(j,ib) == i)then
+                     do j = 1,nbel
+                       if(ibstr(j,ib) == i)then
                          off_b    = off_b    + 1
-                         nbel_tmp = nbel_tmp - 1
                        end if
                      end do
                    end do
-
                    write(ref_wavefunction_tmp(1,1),"(60i4)")            &
-     &             (iastr(iel,ia),iel=off_a,nael_tmp)
+     &             ((iastr(iel,ia)-cvorb(1)),iel=off_a,nael)
                    write(ref_wavefunction_tmp(1,2),"(60i4)")            &
-     &             (ibstr(iel,ib),iel=off_b,nbel_tmp)
+     &             ((ibstr(iel,ib)-cvorb(1)),iel=off_b,nbel)
                  else
                    write(ref_wavefunction_tmp(1,1),"(60i4)")            &
      &             (iastr(iel,ia),iel=1,nael)                         
