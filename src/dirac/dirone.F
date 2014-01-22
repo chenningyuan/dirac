@@ -1049,13 +1049,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-CMI ... TODO: to be later renamed to PRPMBU ...
-Chjaaj: NO! routine names should not be too cryptic, BU is too special to me.
-C       Current name is made from: PRPMAO - PRoPerty Matrix AO basis
-C       If we also want to tell that the order of the AO basis is BU, then
-C       e.g. as new nanme: PRPMAO_BU /nov.08-hjaaj
-      SUBROUTINE PRPMAO(LU1INT,IOP,IDIMENS,PMAT,
-     &                  OP1INT,FIRST,IPRINT)
+      SUBROUTINE PRPMAO(LU1INT,IOP,IDIMENS,PMAT,OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
@@ -1089,22 +1083,20 @@ C
       LOGICAL FIRST(*), DOINT(4), SQUARE
       DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),IDOINT(4)
 C
-
-CMI   ... find out type of AO matrix - triangular or square
       IF (IDIMENS.NE.N2BBASX.AND.IDIMENS.NE.NNBBASX) THEN
        write(lupri,*) 'PRPMAO: NNBBASX,N2BBASX,IDIMENS=',
      &                NNBBASX,N2BBASX,IDIMENS
        call QUIT('PRPMAO: wrong dimension !!!')
       ENDIF
-
-CMI   ... this initialization is needed
-      SQUARE = .FALSE.
       SQUARE = (IDIMENS.EQ.N2BBASX)
 C
 C     Extract information about property
 C     ==================================
 C
       IOPTYP = IPRPTYP(IOP)
+      IF(IOPTYP.EQ.0) THEN
+        CALL QUIT('PRPMAO: No Fock matrix read here !')
+      ENDIF
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
@@ -1167,7 +1159,6 @@ CMI     ... assignements
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-
 ! check with data printout
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
@@ -1650,16 +1641,12 @@ C
      &          OP1INT(IDIMENS),WORK(LWORK)
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
-
       CALL QENTER('PRPMSAO')
 #include "memint.h"
-
-CMI ... first MEMCHK does not work !!!
-C      CALL MEMCHK('in PRPMSAO',WORK,1)
-
 C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
+C
       ISYM = IPRPSYM(INDXPR)
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
@@ -1689,7 +1676,6 @@ C     =============================
         write(lupri,'(2X,a)') '* this is a TRIANGULAR operator'
        ENDIF
       ENDIF
-
 C ========================================================================================
 C    ... in this case read picture change transformed property integrals from BSSMAT file
 C      which are there under the name  'P2C_'//NUMSTR 
@@ -1698,9 +1684,7 @@ C     X2C module: picture change transformed property integrals reside
 C                 on file X2CMAT
 C ========================================================================================
       IF((TWOCOMP.AND.BSS).or.x2c) THEN
-
         IPRINT2 = MAX(IPRHAM,IPRINT)
-
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
           write(lupri,*) 'PRPMSAO error output:'
           write(lupri,*) 'N2BBASXQ=',N2BBASXQ
@@ -1709,10 +1693,8 @@ C ==============================================================================
      &                    NTBAS(1)*NTBAS(1)*NZ
           CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
        ENDIF
-
 CMI    ...the label will contain the INDXPR operator index in the string form !
        CALL NUM2STR(INDXPR,NUMSTR)
-
        if(x2c)then
          write(prplab_x2c,'(a8,a4)') 'prpint2c',numstr
          open(lux2c,file='X2CMAT',status='old',form='unformatted',
@@ -1729,15 +1711,10 @@ CMI    ...the label will contain the INDXPR operator index in the string form !
      &     ' was read from BSSMAT file.'      
          ENDIF
        end if
-
-
        CALL LSET(NZ,.FALSE.,FIRST)
-
       ELSE
 CMI    -----  get the full four-component operator -------
-
         CALL LSET(NZ,.TRUE.,FIRST)
-
 C     ... do resort PTRI to DIRAC sorting
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
@@ -1748,11 +1725,9 @@ C     ... do resort PTRI to DIRAC sorting
         ELSE
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
      &                       IPRINT2)
-
           CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
-
 CMI   ----  Do the picture change transformation -----                    
         IF (BSS) THEN
          IPRINT1 = MAX(IPRHAM,IPRPRP)
@@ -1761,7 +1736,6 @@ C     ... decide if the picture change transformation is needed
 C     ... if needed, do the picture change transformation of the PMAT
          IF (YESPCTRA) THEN
           MAKEPCTRA = DOPCT .AND. .NOT.NOPCT
-
 C  ... allocate array for the picture change transformation matrix
           ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
           IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
@@ -1779,7 +1753,6 @@ CMI       ... this is needed for the picture change transformed operator
           CALL LSET(NZ,.FALSE.,FIRST)
          ENDIF
         ENDIF
-
       ENDIF
 
       CALL QEXIT('PRPMSAO')
