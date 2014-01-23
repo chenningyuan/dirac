@@ -519,6 +519,7 @@ C
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "dummy.h"
 C
       LOGICAL FIRST(*),QBTR, IS_SQUARE
@@ -572,7 +573,24 @@ C
 C     Get property matrix in AO-basis
 C     ===============================
       CALL MEMCHK('PRPMA1 1',WORK,1)
-      IF (IS_SQUARE) THEN
+      IOPTYP = IPRPTYP(INDXPR)
+      IF(IOPTYP.EQ.0.AND..NOT.(BSS.AND.TWOCOMP)) THEN
+        KLBL  = IPRPLBL(1,INDXPR)
+        INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
+        IF(FIRST(1)) THEN
+          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPMA1')
+          CALL REAFCK(2,PRPAO,.FALSE.,1)
+          CLOSE(2,STATUS = 'KEEP')
+          PFAC = FACPRP(1,INDXPR)
+          IF(PFAC.NE.D1) CALL DSCAL(N2BBASXQ,PFAC,PRPAO,1)
+CTROND          CALL LSET(NZ,.FALSE.,FIRST)
+        ELSE
+          WRITE(LUPRI,'(A,A8,A,A16,A)')
+     &      'Property file ',PRPLBL(KLBL),' for operator ',
+     &      PRPNAM(INDXPR),' not found !'
+          CALL QUIT('PRPMA1: Property file not found !')
+        ENDIF
+      ELSEIF (IS_SQUARE) THEN
        CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PRPAO,OP1INT,FIRST,
      &       WORK(KFREE),LFREE,IPRINT)
       ELSE
