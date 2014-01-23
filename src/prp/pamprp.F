@@ -4021,7 +4021,7 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                          INDXPR,ISYXPR,ITRXPR,IPRINT)
                     IF (IPRINT.GE.5) THEN
-                       !  print out assiged operators of wanted property
+                       !  print out assigned operators of wanted property
                        write(LUPRI,'(4X,A)')
      &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
