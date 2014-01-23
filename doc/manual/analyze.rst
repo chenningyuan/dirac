@@ -23,7 +23,7 @@ subsection.
 
 keyword(PROJECTION)
 
-Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
+Perform projection analysis [Faegri2001]_ Activates the :ref:`*PROJECTION`
 subsection.
 
 
@@ -38,6 +38,6 @@ keyword(LOCALIZATION)
 Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
 
 Continues to the activated :ref:`*LOCALIZATION`
-subsection. Note that in the present implementation this only works in
-C\ :sub:`1`\  symmetry.
+subsection. Note that in the present implementation this only works in 
+:math:`C_1` symmetry.
 
