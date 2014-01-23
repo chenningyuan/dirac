@@ -1094,7 +1094,6 @@ C
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
 C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
     1    CONTINUE
-           WRITE(6,*) 'TESTggg...'
            NPCOMP = 1
          GO TO 300
 C&&&&    Two components: [XYZ]AVECTOR
@@ -1565,9 +1564,9 @@ C
 CMI   ... assign key variables ...
       INDXPR = NPRPS
 C     Property name
-      PRPNAM(NPRPS)  = PNAME
+      PRPNAM(INDXPR)  = PNAME
 C     Property type
-      IPRPTYP(NPRPS) = IPTYP
+      IPRPTYP(INDXPR) = IPTYP
 C     Pointers to property labels
       IF(IPTYP.EQ.0) THEN
         DO 300 I = 1,NPRPLBL
@@ -1580,14 +1579,14 @@ C         Check property label
         NPRPLBL = NPRPLBL + 1
         INDX    = NPRPLBL
   400   CONTINUE      
-        FACPRP(1,NPRPS)  = PFAC(1)
-        IPRPLBL(1,NPRPS) = INDX
+        FACPRP(1,INDXPR)  = PFAC(1)
+        IPRPLBL(1,INDXPR) = INDX
         PRPLBL(INDX) = PLABEL(1)
         PDOINT(INDX) = PCOMB
       ELSE
 CMI     ... (IPTYP.NE.0) operator has more components
         DO 600 J = 1,NPCOMP
-          FACPRP(J,NPRPS)  = PFAC(J)
+          FACPRP(J,INDXPR)  = PFAC(J)
           INDX = INDXPL(PLABEL(J),PCOMB,IPRINT)
           IF (INDX .LE. 0) THEN
             INDXPR = -1
