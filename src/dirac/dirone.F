@@ -790,13 +790,8 @@ C
          call process_nuclear_attraction_integrals_4comp( Fock ) 
 #endif
        ELSE
-         CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KONEIN,   N2BBASX,WORK,KFREE,LFREE)
          CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
-         CALL ONEFC1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
-     &              WORK(KFREE),LFREE)
-C
-C        Memory deallocation
+         CALL ONEFC1(FOCK,WORK(KFREE),LFREE)
          CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
        ENDIF
 
@@ -862,7 +857,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onefc1 */
-      SUBROUTINE ONEFC1(FOCK,FTRI,OP1INT,FIRST,WORK,LWORK)
+      SUBROUTINE ONEFC1(FOCK,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate one-electron Fock matrix, using the one-electron operators
@@ -892,9 +887,10 @@ C
 #include "dcbprl.h"
 C
       type(fde_import) :: itmp
-      LOGICAL FIRST(NZ),TOBE
-      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
-     &          WORK(LWORK)
+      real(8), allocatable :: ftri(:,:),op1int(:)
+      logical, allocatable :: first(:)
+      LOGICAL TOBE
+      DIMENSION FOCK(N2BBASX,NZ),WORK(LWORK)
 C
       CALL QENTER('ONEFCK1')
 #include "memint.h"
@@ -908,15 +904,16 @@ C
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
+      allocate(ftri(nnbbasx,nz))
+      allocate(op1int(nnbbasx))
+      allocate(first(nz))
       CALL LSET(NZ,.TRUE.,FIRST)
 C
 C     Nuclear attraction integrals
 C     ============================
 C
       IOP = IPMOLFLD
-      CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
-CMI     ... dcbham.h is needed
+      CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,OP1INT,FIRST,IPRHAM)
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
@@ -954,11 +951,9 @@ C
 CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mode !
 
       IF (.NOT.TWOCOMP) THEN
-
         IOP = IPBETAMT
         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &           OP1INT,FIRST,IPRHAM)
-
       ENDIF
 
 C
@@ -983,6 +978,7 @@ C
 C     Make full matrix
 C     ================
 C
+      deallocate(op1int)
       DO IZ = 1,NZ
         IF(FIRST(IZ)) THEN
           CALL DZERO(FOCK(1,IZ),N2BBASX)
@@ -996,16 +992,19 @@ C
           ENDIF
         ENDIF
       ENDDO
+      deallocate(ftri)
 c
 c    now add SO integrals
 c     SOPP integrals
 c     ==============
 c     
       if (ECPCALC) then
+         allocate(op1int(n2bbasx))
          IOP = IPSOPP
 c      making it square by using N2BBASX
          CALL PRPMAO(LU1INT,IOP,N2BBASX,FOCK,
      &          OP1INT,FIRST,IPRHAM)
+         deallocate(op1int)
       endif
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -1019,6 +1018,7 @@ C
 C     Add Fock matrices when requested
 C
       IF(TOBE) THEN
+        allocate(op1int(n2bbasx1))
         CALL MEMGET('REAL',KFBUF,N2BBASXQ,WORK,KFREE,LFREE)
         DO I = 1,N1OPER
           IOP = IPR1OP(I)
@@ -1028,10 +1028,10 @@ C
             INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
             IF(FIRST(1)) THEN
               CALL OPNFIL(2,PRPLBL(KLBL),'OLD','ONEFC1')
-              CALL REAFCK(2,WORK(KFBUF),.FALSE.,1)
+              CALL REAFCK(2,OP1INT,.FALSE.,1)
               CLOSE(2,STATUS = 'KEEP')
               PFAC = FACPRP(1,IOP)
-              CALL DAXPY(N2BBASXQ,PFAC,WORK(KFBUF),1,FOCK,1)
+              CALL DAXPY(N2BBASXQ,PFAC,OP1INT,1,FOCK,1)
               CALL LSET(NZ,.FALSE.,FIRST)
             ELSE
               WRITE(LUPRI,'(A,A8,A,A16,A)')
@@ -1041,8 +1041,9 @@ C
             ENDIF
           ENDIF
         ENDDO
-        CALL MEMREL('ONEFC1.fock',WORK,KWORK,KFBUF,KFREE,LFREE)
+        deallocate(op1int)
       ENDIF
+      deallocate(first)
       CALL QEXIT('ONEFCK1')
       RETURN
       END
