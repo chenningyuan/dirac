@@ -2215,19 +2215,13 @@ C
         IPRLREP(NPRPLBL) = INTREP(ICMP)
 !       .....  
         IF(SQUARE) THEN
-C
 C       Non - symmetric operator
-C
           IPRLTYP(NPRPLBL) = 0
         ELSEIF(ANTI) THEN
-C
 C       Anti-symmetric operator
-C
           IPRLTYP(NPRPLBL) = -1
         ELSE
-C
 C       Symmetric operator
-C
           IPRLTYP(NPRPLBL) =  1
         ENDIF
       ENDDO
@@ -2260,21 +2254,13 @@ C     INDXPR in COMMON /DCBPRP/.
 C
 C     The routine assumes Hermitian operators and will therefore
 C     consider symmetric operators purely real and antisymmetric operators
-C     purely imaginary. Non-symmetric operators results in error and
-C     termination.
+C     purely imaginary. Non-symmetric operators are handled by a special routine
+C     which terminates in error if the exception has not been added.
 C   
-C     If an operators involves more than one label, the logical variable
-C     SAMSYM is used to check that the components have identical symmetry
-C     under space and time.
-C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
-C     - routine assumed general operators which can be symmetric, antisymm. 
-C       and square
-C     - removing the program stop when indeterminate symmetry of operator
-C     - print out
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2319,72 +2305,25 @@ C     Time reversal symmetry
 C     ======================
 C
 C     Matrix operator :
-C - assign IATIM according to the 
-C  IAIND = JM4(1,ITYP) = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
-C  JM4 is assigned in abacus/hergroup.F
-C
-C JM4(1,ITYP) = 0 ... scalar operator
-C               4 ... gamma5 P
-C               16..18 ????
-C
-C Miro: for determination of IATIm why not not use rather ITYP ?
-C
-      SKIP_JM4 = .TRUE.
-!     SKIP_JM4 = .FALSE.
-
-CMI ... catch possible exotic IAND...
-      IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
-        CALL QUIT('quit here due to IAIND !')
-      ENDIF
-
-CMI  remove this part (THEN block) if everythink goes well and keep only ELSE branch
-      IF (.NOT.SKIP_JM4) THEN
-
-      IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
-     &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
-C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA, i*BETA*GAMMA5
-        IATIM = 1
-      ELSE
-C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
-        IATIM = -1
-      ENDIF
-
-CMI    exception for the i*BETA*GAMMA5 operator
-       IF (ITYP.EQ.21) THEN
-         IATIM=+1 !
-         WRITE(LUPRI,'(2X,A)')
-     &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
-      ENDIF
-
-      ELSE
-!  -------------------------------------------------------------------------------------------------
-!   Simplification: determine IATIM according to ITYP parameter
-!   (this part of the code (ELSE block) is to be kept for the future)
-!
-!  scalar , gamma5, beta, i*betagamma5  matrix operators have IATIM=+1, the rest has IATIM=-1
-!  --------------------------------------------------------------------------------------------------
-       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19.OR.ITYP.EQ.21) THEN
-        IATIM=+1
-       ELSE ! the rest ....
-        IATIM=-1
-       ENDIF
-
-      ENDIF
-
-C     Scalar operator
-      IBTIM    = IPRLTYP(IBIND)
+      IATIM = JM4TIM(IAIND)
+C     Scalar operator :
+C     Here we use the following indirect argument:
+C     The operator should be Hermitian, so if the scalar operator is
+C     symmetric about the diagonal, then it is real and time symmetric.
+C     If the scalar operator is anti-symmetric, then it is imaginary
+C     and time anti-symmetric
+C     However, if the operator has no symmetry about the diagonal 
+C     we can not use this argument and has to add exceptions
+      IBTIM = IPRLTYP(IBIND)
+      IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
       ICTIM(1) = IATIM*IBTIM
-
       IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
-        WRITE(LUPRI,'(2X,4(A,I2))')
-     &  'IAIND=JM4(1,ITYP)',IAIND,' IBIND=IPRLBL(INDXPR)',IBIND,
-     &  'assigned IATIM=',IATIM,' scalar part, IBTIM=',IBTIM
-        WRITE(LUPRI,'(2X,1(A,I2))')
-     &  'ICTIM(1)=',ICTIM(1)
+        WRITE(LUPRI,*) '* Operator type: ',ITYP
+        WRITE(LUPRI,*) '* First matrix operator ',IAIND,IAREP,IATIM
+        WRITE(LUPRI,*) '* First scalar operator ',IBIND,IBREP,IBTIM
       ENDIF
-
 C
 C     Check against other components of operator
 C     ==========================================
@@ -2395,12 +2334,11 @@ C     ==========================================
         IBREP       = IPRLREP(IBIND)
         ICREP(ILBL) = IBTXOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
-        IATIM       = -1
-        IF(IAIND.EQ.0) IATIM = 1
+        IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
+        IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
         ICTIM(ILBL) = IATIM*IBTIM
         DIFTIM      = DIFTIM.AND.(ICTIM(ILBL).NE.ICTIM(1))
-
         IF (IPRINT.GE.15) THEN
           WRITE(LUPRI,'(2X,4(A,I2))')
      &  'IAIND=JM4(ILBL,ITYP)',IAIND,' IBIND=IPRLBL(ILBL,INDXPR)',IBIND,
@@ -3044,6 +2982,29 @@ C
 C
       CALL QEXIT('MINPRP')
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+      CHARACTER*8 PRPLBL
+      INTEGER ITIM
+      IF(PRPLBL(4:7).EQ.'RNST') THEN
+        ITIM = -1
+      ELSEIF(PRPLBL(4:7).EQ.'NSNL') THEN
+        ITIM = -1
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3') THEN
+        ITIM = +1
+      ELSEIF(PRPLBL(2:6).EQ.'RM1RN') THEN
+        ITIM = +1
+      ELSEIF(PRPLBL(1:7).EQ.'d|S>/dB') THEN
+        ITIM = -1
+      ELSE
+        WRITE(6,*) 'ISCALAROP_TSYM ERROR :',PRPLBL
+        CALL QUIT('ISCALAROP_TSYM: Can not assign ITIM')
+      ENDIF
+CTROND
+      WRITE(6,*) 'ISCALAROP_TSYM ',PRPLBL,'  ',ITIM
+      ISCALAROP_TSYM=ITIM
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
