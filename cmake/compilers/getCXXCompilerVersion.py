@@ -7,17 +7,17 @@ COMPILER_VENDOR = sys.argv[1]
 
 if COMPILER_VENDOR == 'GNU':
     try:
-        outputG++ = subprocess.check_output(['g++', '--version'])
+        outputGXX = subprocess.check_output(['g++', '--version'])
     except:
-        outputG++ = ''
+        outputGXX = ''
     finally:
-        matchG++ = re.search(r'\d\.\d\.\d', outputG++)
-        if matchG++:
-            G++version = matchG++.group()
+        matchGXX = re.search(r'\d\.\d\.\d', outputGXX)
+        if matchGXX:
+            GXXversion = matchGXX.group()
         else:
-            G++version = '0.0.0'
+            GXXversion = '0.0.0'
 
-    print G++version
+    print GXXversion
 elif COMPILER_VENDOR == 'Intel':
     #! not implemented yet
     print '0.0.0'
