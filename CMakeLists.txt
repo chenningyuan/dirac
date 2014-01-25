@@ -40,6 +40,11 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
+# user defined minimum versions of C, C++ and Fortran compilers
+set(MIN_C_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of C compiler")
+set(MIN_CXX_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of C++ compiler")
+set(MIN_Fortran_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of Fortran compiler")
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
