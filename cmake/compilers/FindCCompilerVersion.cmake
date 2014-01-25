@@ -1,7 +1,6 @@
 # get compiler version with Python script
-execute_process(COMMAND python getCCompilerVersion.py ${CMAKE_C_COMPILER_ID} 
-				OUTPUT_VARIABLE PYTHON_VERSION
-				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/getCCompilerVersion.py ${CMAKE_C_COMPILER_ID} 
+				OUTPUT_VARIABLE PYTHON_VERSION)
 
 if(DEFINED CMAKE_C_COMPILER_VERSION)
 	SET(CMAKE_VERSION ${CMAKE_C_COMPILER_VERSION})
