@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+import sys, subprocess, re
+
+#! GNU, Intel, PGI, XL
+C_COMPILER_VENDOR = sys.argv[1]
+CXX_COMPILER_VENDOR = sys.argv[2]
+Fortran_COMPILER_VENDOR = sys.argv[3]
+
+#! looking for C compiler version
+if C_COMPILER_VENDOR == 'GNU':
+    try:
+        outputGCC = subprocess.check_output(['gcc', '--version'])
+    except:
+        outputGCC = ''
+    finally:
+        matchGCC = re.search(r'\d\.\d\.\d', outputGCC)
+        if matchGCC:
+            GCCversion = matchGCC.group()
+        else:
+            GCCversion = '0.0.0'
+
+    C_COMPILER_VERSION = GCCversion
+elif C_COMPILER_VENDOR == 'Intel':
+    #! not implemented yet
+    C_COMPILER_VERSION = '0.0.0'
+elif C_COMPILER_VENDOR == 'PGI':
+    #! not implemented yet
+    C_COMPILER_VERSION = '0.0.0'
+elif C_COMPILER_VENDOR == 'XL':
+    #! not implemented yet
+    C_COMPILER_VERSION = '0.0.0'
+else:
+    #! unknown, not supported vendor
+    C_COMPILER_VERSION = '0.0.0'
+
+#! looking for C++ compiler version
+if CXX_COMPILER_VENDOR == 'GNU':
+    try:
+        outputGXX = subprocess.check_output(['g++', '--version'])
+    except:
+        outputGXX = ''
+    finally:
+        matchGXX = re.search(r'\d\.\d\.\d', outputGXX)
+        if matchGXX:
+            GXXversion = matchGXX.group()
+        else:
+            GXXversion = '0.0.0'
+
+    CXX_COMPILER_VERSION = GXXversion
+elif CXX_COMPILER_VENDOR == 'Intel':
+    #! not implemented yet
+    CXX_COMPILER_VERSION = '0.0.0'
+elif CXX_COMPILER_VENDOR == 'PGI':
+    #! not implemented yet
+    CXX_COMPILER_VERSION = '0.0.0'
+elif CXX_COMPILER_VENDOR == 'XL':
+    #! not implemented yet
+    CXX_COMPILER_VERSION = '0.0.0'
+else:
+    #! unknown, not supported vendor
+    CXX_COMPILER_VERSION = '0.0.0'
+
+#! looking for Fortran compiler version
+if Fortran_COMPILER_VENDOR == 'GNU':
+    try:
+        outputGFORTRAN = subprocess.check_output(['gfortran', '--version'])
+    except:
+        outputGFORTRAN = ''
+    finally:
+        matchGFORTRAN = re.search(r'\d\.\d\.\d', outputGFORTRAN)
+        if matchGFORTRAN:
+            GFORTRANversion = matchGFORTRAN.group()
+        else:
+            GFORTRANversion = '0.0.0'
+
+    Fortran_COMPILER_VERSION = GFORTRANversion
+elif Fortran_COMPILER_VENDOR == 'Intel':
+    #! not implemented yet
+    Fortran_COMPILER_VERSION = '0.0.0'
+elif Fortran_COMPILER_VENDOR == 'PGI':
+    #! not implemented yet
+    Fortran_COMPILER_VERSION = '0.0.0'
+elif Fortran_COMPILER_VENDOR == 'XL':
+    #! not implemented yet
+    Fortran_COMPILER_VERSION = '0.0.0'
+else:
+    #! unknown, not supported vendor
+    Fortran_COMPILER_VERSION = '0.0.0'
+
+
+#! this is output for CMake (must be in this order and with ;)
+print C_COMPILER_VERSION + ';' + CXX_COMPILER_VERSION + ';' + Fortran_COMPILER_VERSION
