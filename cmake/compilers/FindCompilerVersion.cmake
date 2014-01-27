@@ -1,5 +1,7 @@
-# get compiler version from Python script for C, C++ and Fortran (C;C++;Fortran -- form like CMake list)
-execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/getCompilerVersion.py 
+# get compiler version from Python script for C, C++ and Fortran compilers (C;C++;Fortran -- in form like CMake list)
+# in this moment CMAKE_<LANG>_COMPILER_ID should be defined for C, C++ and Fortran: 
+# see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake
+execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
 				${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER_ID} ${CMAKE_Fortran_COMPILER_ID}
 				OUTPUT_VARIABLE PYTHON_OUTPUT)
 				
@@ -11,44 +13,42 @@ list(GET PYTHON_OUTPUT 2 PYTHON_Fortran_VERSION)
 # cut off \n added by Python print()
 string(STRIP ${PYTHON_Fortran_VERSION} PYTHON_Fortran_VERSION)
 
-# what is minimum required version?
+# what is minimum required version? 
+# you can find these settings in projects main CMakeLists.txt
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_C ${MIN_GCC_COMPILER_VERSION})
-endif()
-if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_C_COMPILER_ID MATCHES "Intel")
 	set(REQUIRED_C ${MIN_Intel_C_COMPILER_VERSION})
-endif()
-if(CMAKE_C_COMPILER_ID MATCHES "PGI")
+elseif(CMAKE_C_COMPILER_ID MATCHES "PGI")
 	set(REQUIRED_C ${MIN_PGI_C_COMPILER_VERSION})
-endif()
-if(CMAKE_C_COMPILER_ID MATCHES "XL")
+elseif(CMAKE_C_COMPILER_ID MATCHES "XL")
 	set(REQUIRED_C ${MIN_XL_C_COMPILER_VERSION})
+else()
+	message(FATAL_ERROR "Vendor of your C compiler is not supported")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_CXX ${MIN_GXX_COMPILER_VERSION})
-endif()
-if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 	set(REQUIRED_CXX ${MIN_Intel_CXX_COMPILER_VERSION})
-endif()
-if(CMAKE_CXX_COMPILER_ID MATCHES "PGI")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "PGI")
 	set(REQUIRED_CXX ${MIN_PGI_CXX_COMPILER_VERSION})
-endif()
-if(CMAKE_CXX_COMPILER_ID MATCHES "XL")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "XL")
 	set(REQUIRED_CXX ${MIN_XL_CXX_COMPILER_VERSION})
+else()
+	message(FATAL_ERROR "Vendor of your C++ compiler is not supported")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_Fortran ${MIN_GFORTRAN_COMPILER_VERSION})
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 	set(REQUIRED_Fortran ${MIN_Intel_FORTRAN_COMPILER_VERSION})
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
 	set(REQUIRED_Fortran ${MIN_PGI_FORTRAN_COMPILER_VERSION})
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "XL")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "XL")
 	set(REQUIRED_Fortran ${MIN_XL_FORTRAN_COMPILER_VERSION})
+else()
+	message(FATAL_ERROR "Vendor of your Fortran compiler is not supported")
 endif()
 
 # checking for correct version of C compiler

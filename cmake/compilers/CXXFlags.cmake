@@ -1,3 +1,8 @@
+# This variable is not guaranteed to be defined for all compilers or languages
+if(NOT DEFINED CMAKE_CXX_COMPILER_ID)
+	message(FATAL_ERROR "CMAKE_CXX_COMPILER_ID variable is not defined! (CMake Error)")
+endif()
+
 if (NOT DEFINED DEFAULT_CXX_FLAGS_SET OR RESET_FLAGS)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
@@ -9,25 +14,21 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
             "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
     endif()
-endif()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set (CMAKE_CXX_FLAGS "-Wno-unknown-pragmas")
     set (CMAKE_CXX_FLAGS_DEBUG "-O0 -debug -DDEBUG")
     set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
     set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
-endif()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES PGI)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES PGI)
     set(CMAKE_CXX_FLAGS         "-g")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-endif()
-
-if (CMAKE_CXX_COMPILER_ID MATCHES XL)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES XL)
     set(CMAKE_CXX_FLAGS         "-g")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+else()
+	message(FATAL_ERROR "Vendor of your C++ compiler is not supported")
 endif()
 
 if(DEFINED EXTRA_CXX_FLAGS)
