@@ -20,9 +20,9 @@ set(MIN_GXX_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of G
 set(MIN_GFORTRAN_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of GFORTRAN compiler")
 
 # user defined minimum versions of C, C++ and Fortran compilers -- Intel
-set(MIN_Intel_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C compiler")
-set(MIN_Intel_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C++ compiler")
-set(MIN_Intel_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel FORTRAN compiler")
+set(MIN_Intel_C_COMPILER_VERSION "12.1.3.293" CACHE STRING "Minimum required version of Intel C compiler")
+set(MIN_Intel_CXX_COMPILER_VERSION "12.1.3.293" CACHE STRING "Minimum required version of Intel C++ compiler")
+set(MIN_Intel_FORTRAN_COMPILER_VERSION "12.1.3.293" CACHE STRING "Minimum required version of Intel FORTRAN compiler")
 
 # user defined minimum versions of C, C++ and Fortran compilers -- PGI (not implemented yet)
 #set(MIN_PGI_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI C compiler")

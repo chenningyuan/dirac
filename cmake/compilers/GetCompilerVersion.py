@@ -22,8 +22,18 @@ if C_COMPILER_VENDOR == 'GNU':
 
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
-    #! not implemented yet
-    C_COMPILER_VERSION = '0.0.0'
+    try:
+        outputIntelC = subprocess.check_output(['icc', '-V'])
+    except:
+        outputIntelC = ''
+    finally:
+        matchIntelC = re.search(r'\d\.\d\.\d\.\d', outputIntelC)
+        if matchIntelC:
+            IntelCversion = matchIntelC.group()
+        else:
+            IntelCversion = '0.0.0.0'
+			
+    C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
     #! not implemented yet
     C_COMPILER_VERSION = '0.0.0'
@@ -49,8 +59,18 @@ if CXX_COMPILER_VENDOR == 'GNU':
 
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
-    #! not implemented yet
-    CXX_COMPILER_VERSION = '0.0.0'
+    try:
+        outputIntelCXX = subprocess.check_output(['icpc', '-V'])
+    except:
+        outputIntelCXX = ''
+    finally:
+        matchIntelCXX = re.search(r'\d\.\d\.\d\.\d', outputIntelCXX)
+        if matchIntelCXX:
+            IntelCXXversion = matchIntelCXX.group()
+        else:
+            IntelCXXversion = '0.0.0.0'
+			
+    CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
     #! not implemented yet
     CXX_COMPILER_VERSION = '0.0.0'
@@ -76,8 +96,18 @@ if Fortran_COMPILER_VENDOR == 'GNU':
 
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
-    #! not implemented yet
-    Fortran_COMPILER_VERSION = '0.0.0'
+    try:
+        outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'])
+    except:
+        outputIntelFORTRAN = ''
+    finally:
+        matchIntelFORTRAN = re.search(r'\d\.\d\.\d\.\d', outputIntelFORTRAN)
+        if matchIntelFORTRAN:
+            IntelFORTRANversion = matchIntelFORTRAN.group()
+        else:
+            IntelFORTRANversion = '0.0.0.0'
+			
+    Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':
     #! not implemented yet
     Fortran_COMPILER_VERSION = '0.0.0'
