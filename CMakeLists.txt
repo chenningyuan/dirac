@@ -40,26 +40,6 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
-# user defined minimum versions of C, C++ and Fortran compilers -- GNU
-set(MIN_GCC_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of GCC compiler")
-set(MIN_GXX_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of G++ compiler")
-set(MIN_GFORTRAN_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of GFORTRAN compiler")
-
-# user defined minimum versions of C, C++ and Fortran compilers -- Intel
-set(MIN_Intel_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C compiler")
-set(MIN_Intel_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C++ compiler")
-set(MIN_Intel_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel FORTRAN compiler")
-
-# user defined minimum versions of C, C++ and Fortran compilers -- PGI (not implemented yet)
-#set(MIN_PGI_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI C compiler")
-#set(MIN_PGI_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI C++ compiler")
-#set(MIN_PGI_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI FORTRAN compiler")
-
-# user defined minimum versions of C, C++ and Fortran compilers -- XL (not implemented yet)
-#set(MIN_XL_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL C compiler")
-#set(MIN_XL_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL C++ compiler")
-#set(MIN_XL_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL FORTRAN compiler")
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake

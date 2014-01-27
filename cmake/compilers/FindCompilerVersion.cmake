@@ -13,8 +13,28 @@ list(GET PYTHON_OUTPUT 2 PYTHON_Fortran_VERSION)
 # cut off \n added by Python print()
 string(STRIP ${PYTHON_Fortran_VERSION} PYTHON_Fortran_VERSION)
 
-# what is minimum required version? 
-# you can find these settings in projects main CMakeLists.txt
+# settings for minimum required versions
+# user defined minimum versions of C, C++ and Fortran compilers -- GNU
+set(MIN_GCC_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of GCC compiler")
+set(MIN_GXX_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of G++ compiler")
+set(MIN_GFORTRAN_COMPILER_VERSION "4.3.1" CACHE STRING "Minimum required version of GFORTRAN compiler")
+
+# user defined minimum versions of C, C++ and Fortran compilers -- Intel
+set(MIN_Intel_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C compiler")
+set(MIN_Intel_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel C++ compiler")
+set(MIN_Intel_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of Intel FORTRAN compiler")
+
+# user defined minimum versions of C, C++ and Fortran compilers -- PGI (not implemented yet)
+#set(MIN_PGI_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI C compiler")
+#set(MIN_PGI_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI C++ compiler")
+#set(MIN_PGI_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of PGI FORTRAN compiler")
+
+# user defined minimum versions of C, C++ and Fortran compilers -- XL (not implemented yet)
+#set(MIN_XL_C_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL C compiler")
+#set(MIN_XL_CXX_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL C++ compiler")
+#set(MIN_XL_FORTRAN_COMPILER_VERSION "0.0.0" CACHE STRING "Minimum required version of XL FORTRAN compiler")
+
+# what is minimum required version depending on vendor? 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_C ${MIN_GCC_COMPILER_VERSION})
 elseif(CMAKE_C_COMPILER_ID MATCHES "Intel")
