@@ -105,7 +105,7 @@ if(DEFINED CMAKE_Fortran_COMPILER_VERSION)
 	# and equal or greater than minimum required version
 	
 	if(NOT (CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION))
-		message(FATAL_ERROR "Versions from CMake variable and Python script fot Fortran compiler are not equal")
+		message(FATAL_ERROR "Versions from CMake variable and Python script for Fortran compiler are not equal")
 	endif()
 	
 	if(NOT (CMAKE_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR CMAKE_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran))
