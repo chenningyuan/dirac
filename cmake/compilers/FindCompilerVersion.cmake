@@ -58,8 +58,11 @@ if(DEFINED CMAKE_C_COMPILER_VERSION)
 	# if CMake variable is available then must be equal to version obtained from Python script
 	# and equal or greater than minimum required version
 	
-	if(NOT ((CMAKE_C_VERSION VERSION_EQUAL PYTHON_C_VERSION) AND 
-	(CMAKE_C_VERSION VERSION_GREATER REQUIRED_C OR CMAKE_C_VERSION VERSION_EQUAL REQUIRED_C)))
+	if(NOT (CMAKE_C_VERSION VERSION_EQUAL PYTHON_C_VERSION))
+		message(FATAL_ERROR "Versions from CMake variable and Python script for C compiler are not equal")
+	endif()
+	
+	if(NOT (CMAKE_C_VERSION VERSION_GREATER REQUIRED_C OR CMAKE_C_VERSION VERSION_EQUAL REQUIRED_C))
 		MESSAGE(FATAL_ERROR "Not supported version of C compiler. Found: ${CMAKE_C_VERSION}, Required: ${REQUIRED_C}")
 	endif()
 else()
@@ -78,8 +81,11 @@ if(DEFINED CMAKE_CXX_COMPILER_VERSION)
 	# if CMake variable is available then must be equal to version obtained from Python script
 	# and equal or greater than minimum required version
 	
-	if(NOT ((CMAKE_CXX_VERSION VERSION_EQUAL PYTHON_CXX_VERSION) AND 
-	(CMAKE_CXX_VERSION VERSION_GREATER REQUIRED_CXX OR CMAKE_CXX_VERSION VERSION_EQUAL REQUIRED_CXX)))
+	if(NOT (CMAKE_CXX_VERSION VERSION_EQUAL PYTHON_CXX_VERSION))
+		message(FATAL_ERROR "Versions from CMake variable and Python script for C++ compiler are not equal")
+	endif()
+	
+	if(NOT (CMAKE_CXX_VERSION VERSION_GREATER REQUIRED_CXX OR CMAKE_CXX_VERSION VERSION_EQUAL REQUIRED_CXX))
 		MESSAGE(FATAL_ERROR "Not supported version of C++ compiler. Found: ${CMAKE_CXX_VERSION}, Required: ${REQUIRED_CXX}")
 	endif()
 else()
@@ -98,8 +104,11 @@ if(DEFINED CMAKE_Fortran_COMPILER_VERSION)
 	# if CMake variable is available then must be equal to version obtained from Python script
 	# and equal or greater than minimum required version
 	
-	if(NOT ((CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION) AND 
-	(CMAKE_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR CMAKE_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran)))
+	if(NOT (CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION))
+		message(FATAL_ERROR "Versions from CMake variable and Python script fot Fortran compiler are not equal")
+	endif()
+	
+	if(NOT (CMAKE_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR CMAKE_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran))
 		MESSAGE(FATAL_ERROR 
 		"Not supported version of Fortran compiler. Found: ${CMAKE_Fortran_VERSION}, Required: ${REQUIRED_Fortran}")
 	endif()
