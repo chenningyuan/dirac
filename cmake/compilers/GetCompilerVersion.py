@@ -36,8 +36,18 @@ elif C_COMPILER_VENDOR == 'Intel':
 			
     C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
-    #! not implemented yet
-    C_COMPILER_VERSION = '0.0.0'
+    try:
+        outputPGIC = subprocess.check_output(['pgcc', '-V'])
+    except:
+        outputPGIC = ''
+    finally:
+        matchPGIC = re.search(r'\d+\.\d+', outputPGIC)
+        if matchPGIC:
+            PGICversion = matchPGIC.group()
+        else:
+            PGICversion = '0.0'
+			
+    C_COMPILER_VERSION = PGICversion
 elif C_COMPILER_VENDOR == 'XL':
     #! not implemented yet
     C_COMPILER_VERSION = '0.0.0'
@@ -74,8 +84,18 @@ elif CXX_COMPILER_VENDOR == 'Intel':
 			
     CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
-    #! not implemented yet
-    CXX_COMPILER_VERSION = '0.0.0'
+    try:
+        outputPGICXX = subprocess.check_output(['pgCC', '-V'])
+    except:
+        outputPGICXX = ''
+    finally:
+        matchPGICXX = re.search(r'\d+\.\d+', outputPGICXX)
+        if matchPGICXX:
+            PGICXXversion = matchPGICXX.group()
+        else:
+            PGICXXversion = '0.0'
+			
+    CXX_COMPILER_VERSION = PGICXXversion
 elif CXX_COMPILER_VENDOR == 'XL':
     #! not implemented yet
     CXX_COMPILER_VERSION = '0.0.0'
@@ -112,8 +132,18 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
 			
     Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':
-    #! not implemented yet
-    Fortran_COMPILER_VERSION = '0.0.0'
+    try:
+        outputPGIFORTRAN = subprocess.check_output(['pgf90', '-V'])
+    except:
+        outputPGIFORTRAN = ''
+    finally:
+        matchPGIFORTRAN = re.search(r'\d+\.\d+', outputPGIFORTRAN)
+        if matchPGIFORTRAN:
+            PGIFORTRANversion = matchPGIFORTRAN.group()
+        else:
+            PGIFORTRANversion = '0.0'
+			
+    Fortran_COMPILER_VERSION = PGIFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'XL':
     #! not implemented yet
     Fortran_COMPILER_VERSION = '0.0.0'
