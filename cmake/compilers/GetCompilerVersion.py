@@ -14,7 +14,7 @@ if C_COMPILER_VENDOR == 'GNU':
     except:
         outputGCC = ''
     finally:
-        matchGCC = re.search(r'\d\.\d\.\d', outputGCC)
+        matchGCC = re.search(r'\d+\.\d+\.\d+', outputGCC)
         if matchGCC:
             GCCversion = matchGCC.group()
         else:
@@ -23,11 +23,12 @@ if C_COMPILER_VENDOR == 'GNU':
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelC = subprocess.check_output(['icc', '-V'])
+#! Intel uses stderr
+        outputIntelC = subprocess.check_output(['icc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelC = ''
     finally:
-        matchIntelC = re.search(r'\d\.\d\.\d\.\d', outputIntelC)
+        matchIntelC = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelC)
         if matchIntelC:
             IntelCversion = matchIntelC.group()
         else:
@@ -51,7 +52,7 @@ if CXX_COMPILER_VENDOR == 'GNU':
     except:
         outputGXX = ''
     finally:
-        matchGXX = re.search(r'\d\.\d\.\d', outputGXX)
+        matchGXX = re.search(r'\d+\.\d+\.\d+', outputGXX)
         if matchGXX:
             GXXversion = matchGXX.group()
         else:
@@ -60,11 +61,12 @@ if CXX_COMPILER_VENDOR == 'GNU':
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelCXX = subprocess.check_output(['icpc', '-V'])
+#! Intel uses stderr
+        outputIntelCXX = subprocess.check_output(['icpc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelCXX = ''
     finally:
-        matchIntelCXX = re.search(r'\d\.\d\.\d\.\d', outputIntelCXX)
+        matchIntelCXX = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelCXX)
         if matchIntelCXX:
             IntelCXXversion = matchIntelCXX.group()
         else:
@@ -88,7 +90,7 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     except:
         outputGFORTRAN = ''
     finally:
-        matchGFORTRAN = re.search(r'\d\.\d\.\d', outputGFORTRAN)
+        matchGFORTRAN = re.search(r'\d+\.\d+\.\d+', outputGFORTRAN)
         if matchGFORTRAN:
             GFORTRANversion = matchGFORTRAN.group()
         else:
@@ -97,11 +99,12 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'])
+#! Intel uses stderr
+        outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelFORTRAN = ''
     finally:
-        matchIntelFORTRAN = re.search(r'\d\.\d\.\d\.\d', outputIntelFORTRAN)
+        matchIntelFORTRAN = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelFORTRAN)
         if matchIntelFORTRAN:
             IntelFORTRANversion = matchIntelFORTRAN.group()
         else:

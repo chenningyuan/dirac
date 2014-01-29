@@ -1,17 +1,5 @@
-# get compiler version from Python script for C, C++ and Fortran compilers (C;C++;Fortran -- in form like CMake list)
 # in this moment CMAKE_<LANG>_COMPILER_ID should be defined for C, C++ and Fortran: 
 # see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake
-execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
-				${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER_ID} ${CMAKE_Fortran_COMPILER_ID}
-				OUTPUT_VARIABLE PYTHON_OUTPUT)
-				
-# get versions from python output
-list(GET PYTHON_OUTPUT 0 PYTHON_C_VERSION)
-list(GET PYTHON_OUTPUT 1 PYTHON_CXX_VERSION)
-list(GET PYTHON_OUTPUT 2 PYTHON_Fortran_VERSION)
-
-# cut off \n added by Python print()
-string(STRIP ${PYTHON_Fortran_VERSION} PYTHON_Fortran_VERSION)
 
 # what is minimum required version depending on vendor? 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
@@ -49,6 +37,19 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "XL")
 else()
 	message(FATAL_ERROR "Vendor of your Fortran compiler is not supported")
 endif()
+
+# get compiler version from Python script for C, C++ and Fortran compilers (C;C++;Fortran -- in form like CMake list)
+execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
+				${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER_ID} ${CMAKE_Fortran_COMPILER_ID}
+				OUTPUT_VARIABLE PYTHON_OUTPUT)
+				
+# get versions from python output
+list(GET PYTHON_OUTPUT 0 PYTHON_C_VERSION)
+list(GET PYTHON_OUTPUT 1 PYTHON_CXX_VERSION)
+list(GET PYTHON_OUTPUT 2 PYTHON_Fortran_VERSION)
+
+# cut off \n added by Python print()
+string(STRIP ${PYTHON_Fortran_VERSION} PYTHON_Fortran_VERSION)
 
 # checking for correct version of C compiler
 if(DEFINED CMAKE_C_COMPILER_VERSION)
