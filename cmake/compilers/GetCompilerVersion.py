@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, subprocess, re
+import sys, subprocess, re, platform
 
 #! GNU, Intel, PGI, XL
 C_COMPILER_VENDOR = sys.argv[1]
@@ -28,7 +28,10 @@ if C_COMPILER_VENDOR == 'GNU':
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelC = subprocess.check_output(['icc', '-V'], stderr=subprocess.STDOUT)
+		if platform.system() == 'Windows':
+		    outputIntelC = subprocess.check_output(['icl', '/V'], stderr=subprocess.STDOUT)
+		else:
+            outputIntelC = subprocess.check_output(['icc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelC = ''
     finally:
@@ -85,7 +88,10 @@ if CXX_COMPILER_VENDOR == 'GNU':
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelCXX = subprocess.check_output(['icpc', '-V'], stderr=subprocess.STDOUT)
+	    if platform.system() == 'Windows':
+		    outputIntelCXX = subprocess.check_output(['icl', '/V'], stderr=subprocess.STDOUT)
+		else:
+            outputIntelCXX = subprocess.check_output(['icpc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelCXX = ''
     finally:
@@ -142,7 +148,10 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
     try:
-        outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'], stderr=subprocess.STDOUT)
+	    if platform.system() == 'Windows':
+		    outputIntelFORTRAN = subprocess.check_output(['ifort', '/V'], stderr=subprocess.STDOUT)
+		else:
+            outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelFORTRAN = ''
     finally:
