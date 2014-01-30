@@ -114,7 +114,7 @@ C***********************************************************************
        use num_grid_gen
        use num_grid_cfg
 #ifdef PCM_MODULE
-       use pcm_interface
+      use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 
 #include "implicit.h"
@@ -137,6 +137,7 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
+      real(8), allocatable :: fock_pcm(:, :, :)
 
 C
 #include "ibtfun.h"
@@ -302,11 +303,22 @@ CJTH check this
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
            call genden(fao, cmo, 1, iprint)
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+! Generate the total MEP and ASC, we are doing response
+! so pcm_energy_driver is not called...
+! fao is the AO density matrix
+           call compute_mep_asc(fao, work(kfree), lfree)
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver to get '//
      &                    'J + X(D) contribution.'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fmo is the Fock matrix in AO basis, fao is the density matrix
-           call pcm_fock_driver(fmo, fao, 1, -1.0d0, 
-     &    work(kfree), lfree)
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fmo, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
         endif 
 #endif       
 

@@ -1,3 +1,0 @@
-PBE.inp         CO.mol --outcmo
-PBE_skipep.inp  CO.mol --incmo
-rm DFCOEF

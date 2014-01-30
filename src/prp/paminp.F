@@ -37,7 +37,9 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
          use london_helper
+#endif
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -419,12 +421,14 @@ C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
+#ifdef MOD_LAO_REARRANGED
 C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
             DOXLR  = .TRUE.
             LONDON = .TRUE.
             call set_london_keywords('shiel2')
 !gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
 ! i will have to fix that...
+#endif
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -1016,7 +1020,6 @@ C     ************************
 C     *** Specify operator ***
 C     ************************
 C
-C
 C     Read property name
 C     ==================
 C
@@ -1091,6 +1094,7 @@ C
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
 C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
     1    CONTINUE
+           WRITE(6,*) 'TESTggg...'
            NPCOMP = 1
          GO TO 300
 C&&&&    Two components: [XYZ]AVECTOR
@@ -2309,7 +2313,7 @@ C     Matrix operator, JM4REP(JM4(1,ITYP))
       IAREP    = JM4REP(IAIND)
 C     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
-C     Total point gropu symmetry of the operator, first component..
+C     Total point group symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
 C
 C     Time reversal symmetry
@@ -2433,15 +2437,13 @@ C
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 
-CMI   ... assign point group symemtry - only one !
+CMI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
 CMI   ... assign time rev.symmetry
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 
       IF (IPRINT.GE.15) THEN
-        !CALL HEADER('Output from PRPSYM',-1)
-
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
      &  ' and operator type (1-',NOPTYP,

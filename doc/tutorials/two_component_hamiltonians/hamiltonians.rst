@@ -1,24 +1,23 @@
 
 
-Setting various two-component Hamiltonians
-==========================================
+Selecting a two-component Hamiltonian other than X2C
+====================================================
 
-There are several two-component Hamiltonians in DIRAC arising from the
-decoupling transformation of the one-electron DIRAC Hamiltonian.  Likewise
-spin-orbit interaction terms can be left out and calculations can be preformed
+There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`.X2C`) implemented 
+in DIRAC arising from the decoupling transformation of the one-electron DIRAC Hamiltonian. 
+Likewise spin-orbit interaction terms can be left out and calculations can be performed
 in the spin-free mode (i.e. in boson symmetry).
 
 Besides having spin-orbit effects from the decoupling transformation, there is
 the external AMFI spin-orbit operator which can contribute either with the
 one-electron spin-orbit operator (accurate to the first order in V, very poor)
 or with the more valuable mean-field contribution, u\_so(1) (also in the first
-order), which is reasonable approximation of the 'Gaunt' term from the
+order), which is a reasonable approximation of the 'Gaunt' term at the
 four-component level.
 
-The best two-component Hamiltonian is BSS+MFSSO, or IOTC+MFSSO, or likewise
-X2C+MFSSO (see :ref:`.X2C`) where
-one-electron scalar and spin-orbit effects are up to infinite order, and AMFI
-MFSSO contribution (mean-field spin-same orbit) provides a 'screening' of
+The best two-component Hamiltonian is X2C+MFSSO (similar to BSS+MFSSO or IOTC+MFSSO)
+where one-electron scalar and spin-orbit effects are up to infinite order, and AMFI
+MFSSO contributions (mean-field spin-same orbit) provide a 'screening' of
 one-electron spin-orbit terms.
 
 
@@ -101,7 +100,7 @@ and spin-other-orbit (MFSO2) from AMFI::
 This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit comes
 from the Gaunt interaction term.
 
-DIRAC enables switching-off AMFI spin-orbit contributions from various centers.
+DIRAC allows to switch off AMFI spin-orbit contributions from various centers.
 See the keyword :ref:`.NOAMFC`.
 
 Infinite order scalar terms "from the beginning", (one-electron) spin orbit

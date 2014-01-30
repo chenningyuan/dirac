@@ -65,15 +65,12 @@ C
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
-
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
-
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
-
 C
 C     Memory deallocation
 C
@@ -354,17 +351,15 @@ CMI     ... release the allocated memory ...
         WRITE(LUPRI,'(4X,A)')
      &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
-C     Expectation values by orbital
-C    ************************************
+C     Expectation values; individual orbital contributions
+C     ====================================================
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
         WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
-
           INDXPR = LEXPP(I)
-
           IS_SQUARE = (IPRPTIM(INDXPR).EQ.0)
           IF (IS_SQUARE) THEN
             IDIMENS = N2BBASX
@@ -379,12 +374,10 @@ C
           CALL PRSYMB(LUPRI,'-',60,4)
           CALL HEADER('Operator '//PRPNAM(INDXPR)//':',0)            
           CALL HEADER('Expectation value for individual orbitals',-1)
-
           EXPVAL(I) = D0
-
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
-C.........generate property matrix in SO-basis
+C...........generate property matrix in SO-basis
             CALL PRPEX2(INDXPR,EXPBUF,.true.,LEXPST(1,I),IDIMENS,
      &                  WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
      &                  WORK,KFREE,LFREE,IPREXP)
@@ -528,7 +521,6 @@ CMI ... control output...
        IF (LEXPST(1)) WRITE(LUPRI,'(1X,A)')
      & ' Operator not symmetric! Do not calculate exp.value!'
       ENDIF
-
 C
 C     If not totally symmetric, return with zero value
 C
@@ -543,12 +535,9 @@ C
 C     Operator to be read from file
 C     =============================
 C
-
 CMI ... check it ! In the pure two-component mode there should be no reading from AOPROPER !!
       IOPTYP = IPRPTYP(INDXPR)
-
       IF(IOPTYP.EQ.0.AND..NOT.(BSS.AND.TWOCOMP)) THEN
-
         KLBL  = IPRPLBL(1,INDXPR)
         INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
         IF(FIRST(1)) THEN
@@ -557,7 +546,6 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
           CLOSE(2,STATUS = 'KEEP')
           PFAC = FACPRP(1,INDXPR)
           IF(PFAC.NE.D1) CALL DSCAL(N2BBASXQ,PFAC,PMAT,1)
-          
           CALL LSET(NZ,.FALSE.,FIRST)
         ELSE
           WRITE(LUPRI,'(A,A8,A,A16,A)')
@@ -565,7 +553,6 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
      &      PRPNAM(INDXPR),' not found !'
           CALL QUIT('PRPEX2: Property file not found !')
         ENDIF
-
       ELSEIF (ITIM.EQ.0) THEN
         IF (IDIMENS.NE.N2BBASX) CALL QUIT('PRPEX2: wrong IDIMENS !')
         CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PMAT,OP1INT,
@@ -575,7 +562,6 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
         CALL PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,OP1INT,
      &              FIRST,WORK(KFREE),LFREE,IPRINT)
       ENDIF
-
 C     
 C
  90   CONTINUE     

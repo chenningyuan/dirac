@@ -1,8 +1,0 @@
-quick
-MgF/W_A_constants/MgF.dc_rkb.scf_prptra_W_A.inp             MgF/W_A_constants/MgF.sto-2g.lsym.mol 
-MgF/W_A_constants/RnF_65+.dc_rkb.scf_rho_prptra_FC_PVC.inp  MgF/W_A_constants/Rn_MglikeF.mol
-Na/Na.dc_rkb.2fs.scf_prptra_e_edm.inp                       Na/Na.sto-2g.lsym.mol
-Na/Na.dc_rkb.2fs.scf_prptra_e_edm2.inp                      Na/Na.sto-2g.lsym.mol
-
-regular
-MgF/W_A_constants/MgF.dc_rkb.dft_prptra_W_A.inp             MgF/W_A_constants/MgF.sto-2g.lsym.mol

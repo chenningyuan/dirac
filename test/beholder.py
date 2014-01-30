@@ -1,8 +1,9 @@
 
-"""
-    Beholder - numerically tolerant test library.
 
-    Version 0.0
+BEHOLDER_VERSION = 'v0.0.1'
+
+"""
+    Beholder - numerically tolerant, bug intolerant test library.
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
@@ -19,7 +20,7 @@ import shutil
 from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
-class TestRun():
+class TestRun:
 
     #---------------------------------------------------------------------------
     def __init__(self, _file, argv):
@@ -74,7 +75,7 @@ class TestRun():
 
     #---------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='Beholder - numerically tolerant test library.')
+        parser = OptionParser(description='Beholder %s - numerically tolerant, bug intolerant test library.' % BEHOLDER_VERSION)
         parser.add_option('--binary-dir',
                           '-b',
                           action='store',
@@ -89,20 +90,44 @@ class TestRun():
         return (options.binary_dir, options.work_dir)
 
 #-------------------------------------------------------------------------------
-class _SingleFilter():
+class _SingleFilter:
 
     def __init__(self, **kwargs):
+
+        list_of_recognized_keywords = []
+        list_of_recognized_keywords.append('from_re')
+        list_of_recognized_keywords.append('from_string')
+        list_of_recognized_keywords.append('ignore_below')
+        list_of_recognized_keywords.append('ignore_sign')
+        list_of_recognized_keywords.append('mask')
+        list_of_recognized_keywords.append('num_lines')
+        list_of_recognized_keywords.append('re')
+        list_of_recognized_keywords.append('string')
+        list_of_recognized_keywords.append('tolerance')
+        list_of_recognized_keywords.append('to_re')
+        list_of_recognized_keywords.append('to_string')
+
+        for key in kwargs.keys():
+            if key not in list_of_recognized_keywords:
+                sys.stderr.write('ERROR: keyword %s not recognized\n' % key)
+                sys.stderr.write('       available keywords: %s\n' % (', ').join(list_of_recognized_keywords))
+                sys.exit(-1)
 
         self.from_string  = kwargs.get('from_string', '')
         self.to_string    = kwargs.get('to_string', '')
         self.tolerance    = kwargs.get('tolerance', 1.0e-5)
         self.ignore_sign  = kwargs.get('ignore_sign', False)
         self.ignore_below = kwargs.get('ignore_below', 1.0e-40)
-        self.num_lines     = kwargs.get('num_lines', 0)
+        self.num_lines    = kwargs.get('num_lines', 0)
         self.mask         = kwargs.get('mask', [])
         self.use_mask     = False
         if self.mask != []:
             self.use_mask = True
+
+        if self.to_string != '':
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: to_string and num_lines incompatible\n')
+                sys.exit(-1)
 
         self.from_is_re = False
         from_re = kwargs.get('from_re', '')
@@ -115,10 +140,16 @@ class _SingleFilter():
         if to_re != '':
             self.to_string = to_re
             self.to_is_re = True
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: to_re and num_lines incompatible\n')
+                sys.exit(-1)
 
         only_string = kwargs.get('string', '')
         if only_string != '':
             self.from_string = only_string
+            if self.num_lines > 0:
+                sys.stderr.write('ERROR: string and num_lines incompatible\n')
+                sys.exit(-1)
             self.num_lines = 1
 
         only_re = kwargs.get('re', '')
@@ -128,7 +159,7 @@ class _SingleFilter():
             self.from_is_re = True
 
 #-------------------------------------------------------------------------------
-class Filter():
+class Filter:
 
     #---------------------------------------------------------------------------
     def __init__(self):

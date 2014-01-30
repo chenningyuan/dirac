@@ -448,15 +448,17 @@ C
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
-
 CMI   ... define triangulariry of matrix 
-CMI    ...   - either symmetric or antisymmetric
-      TRIANGUL =  (IPRPTIM(INDXPR).NE.0)
-
+CMI    ...   - either symmetric or antisymmetric      
+      TRIANGUL = (IPRPTIM(INDXPR).NE.0)
+      IF(TRIANGUL) THEN
+       IDIMENS = NNBBASX        
+      ELSE
+       IDIMENS = N2BBASX
+      ENDIF
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
       N2PMOX = NPMOT*NPMOT
-
       IF (IPRINT .GE. 6) THEN
         CALL HEADER('Output from PRPMAT',-1)
         IF (TRIANGUL) THEN
@@ -472,22 +474,13 @@ CMI    ...   - either symmetric or antisymmetric
      &  (IPCMO(I),NPMO(I),I = 1,NFSYM)
         WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
       ENDIF
-
 C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
-
 CMI   ... own allocations.... for triangular or square AO matrixes ...
-      IF (TRIANGUL) THEN
-       CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
-       IDIMENS = NNBBASX
-      ELSE
-       CALL MEMGET('REAL',KPTRI  ,NZ*N2BBASX,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
-       IDIMENS = N2BBASX
-      ENDIF
+      CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C
       CALL PRPMA1(INDXPR,IDIMENS,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
@@ -566,14 +559,6 @@ C
       ITIM = IPRPTIM(INDXPR)
 
 C ... check for anti-/symmetricity of the property matrix/MI
-
-CMI   IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
-CMI    WRITE(LUPRI,'(/A,I3,1X,2A)')
-CMI  & '  PRPMA1: Property operator no.',INDXPR,PRPNAM(INDXPR),
-CMI  & ' is SQUARE (not hermitian neither antihermitian) !'
-CMI    CALL QUIT('PRPMA1: Non-hermitian property!')
-CMI   ENDIF
-
       IF (ITIM.EQ.0.AND.IDIMENS.EQ.N2BBASX) THEN
         IS_SQUARE = .TRUE.
       ELSE IF (ITIM.NE.0.AND.IDIMENS.EQ.NNBBASX) THEN
@@ -584,11 +569,9 @@ CMI   ENDIF
         CALL QUIT('PRPMA1: wrong parameters ! ')
       ENDIF
 C
-C
 C     Get property matrix in AO-basis
 C     ===============================
       CALL MEMCHK('PRPMA1 1',WORK,1)
-
       IF (IS_SQUARE) THEN
        CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PRPAO,OP1INT,FIRST,
      &       WORK(KFREE),LFREE,IPRINT)

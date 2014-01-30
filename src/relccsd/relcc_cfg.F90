@@ -63,11 +63,11 @@ module relcc_cfg
   character( 8), public :: relcc_ff_property_names
 
 ! Information relevant for the energy calculation
-  logical, public :: relcc_do_mp2                  = .true.
+  logical, public :: relcc_do_mp2                  = .true. ! stefan: very dangerous to set it to true IMHO
   logical, public :: relcc_do_singles              = .false.
   logical, public :: relcc_do_doubles              = .false.
-  logical, public :: relcc_do_ccsd                 = .true.
-  logical, public :: relcc_do_ccsd_t               = .true.
+  logical, public :: relcc_do_ccsd                 = .true. ! stefan: very dangerous to set it to true IMHO
+  logical, public :: relcc_do_ccsd_t               = .true. ! stefan: very dangerous to set it to true IMHO
   integer, public :: relcc_ccener_max_dimension_diis      = 8
   integer, public :: relcc_ccener_max_iterations          = 30
   integer, public :: relcc_ccener_desired_convergence     = 12
@@ -104,6 +104,7 @@ module relcc_cfg
   integer, public :: relcc_fs_max11_iterations        = -1
   integer, public :: relcc_fs_max00_iterations        = -1
   integer, public :: relcc_fs_tshold                  = 0
+  integer, public :: relcc_fs_select_state_for_numgrad_energy = -1
 ! Intermediate Hamiltonian  
   integer, public, dimension(1:16) :: relcc_ih_nacthi = 0
   integer, public, dimension(1:16) :: relcc_ih_nactpi = 0
@@ -202,6 +203,7 @@ contains
   call interface_mpi_bcast(relcc_fs_max11_iterations           ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fs_max00_iterations           ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fs_tshold                     ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_fs_select_state_for_numgrad_energy,1,0,global_communicator)
 ! Intermediate Hamiltonian  
   call interface_mpi_bcast(relcc_ih_nacthi,size(relcc_ih_nacthi),0,global_communicator)
   call interface_mpi_bcast(relcc_ih_nactpi,size(relcc_ih_nactpi),0,global_communicator)

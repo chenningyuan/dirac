@@ -26,8 +26,10 @@ module london_reorth_hb
   use dft_cfg
   use num_grid_gen
   use dirac_interface
+#ifdef MOD_LAO_REARRANGED
   use london_helper  
   use london_utils   
+#endif
 
   implicit none
 
@@ -173,9 +175,11 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
+#ifdef MOD_LAO_REARRANGED
     if (lao_lr_rearrange) then
       call get_m_ij(fmo)
     end if
+#endif
 
     call alloc(tb,  n2orbxq)
     tb = 0.0d0
@@ -204,7 +208,9 @@ contains
         call prqmat(fmat(1, icomp), &
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
+#ifdef MOD_LAO_REARRANGED
         call check_symmetry(fmat(1, icomp), norbt, nz)
+#endif
       end if
 
       call dzero(tb, n2orbxq)
@@ -256,6 +262,7 @@ contains
       end if
 
 ! in lao_lr_rearrange take only 'ai' blocks:
+#ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
         ee = .true.
         ep = .true.
@@ -263,7 +270,7 @@ contains
         if (xlr_skipee) ee = .false.
         call get_m_ai(tb, ee, ep)
       end if
-
+#endif
 
 ! get final result to buf
 
@@ -312,8 +319,9 @@ contains
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
 
+#ifdef MOD_LAO_REARRANGED
         call check_symmetry(fmat, norbt, nz)
-
+#endif
       end if
 
     end do
@@ -602,10 +610,12 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+#ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
 !       we only need occ-occ block of S^B matrix, so zero-out the rest:
         call get_m_ij(tb) 
       end if
+#endif
 
       debug_me = .false.
       if (debug_me) then

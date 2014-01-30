@@ -2,21 +2,20 @@
 DIRAC on Windows - developers section
 =====================================
 
-
-After finishing the explanation about DIRAC on the Microsoft Windows platform for users (see :ref:`windows_users`) 
-we continue this manual for the developers.
+After completing the explanation of DIRAC installation and first steps on the Microsoft (MS) Windows (shortly Windows) platform 
+for users (see :ref:`windows_users`)  we continue this manual for the developers.
 
 Motivation
 ----------
 
 DIRAC is beeing developed and works mainly on machines with Linux/Unix/Mac operating systems.
-Though many desktop computers are sold with preinstalled Windows operating system, it is worth to adapt the DIRAC software   
+Since many desktop computers are sold with preinstalled Windows operating system, it is worth, we believe, to adapt the DIRAC software   
 for the Windows environment. Also, the Windows operating system has great potential for the
 `high-performance computing <http://www.microsoft.com/education/en-au/solutions/Pages/high-performance-computing.aspx>`_.
-This is the motivation for investing efforts in the code's adaptation for the Microsoft (MS)  Windows operating system.
+This is the motivation for investing efforts in the code's adaptation for the Windows platform.
 
-Thanks to the modern, platform-universal  *CMake* buildup system and related Windows supported software 
-you can fully set up the DIRAC software under the MS Windows operating system.
+Thanks to the modern, platform-universal *CMake* buildup system and related Windows supported software 
+you can fully set up the DIRAC software under the Windows operating system.
 
 We have tested the DIRAC downloading from its git-repositories, configuration, compilation and tests running, 
 all in the framework of the Windows 7/8 operating systems.
@@ -27,12 +26,12 @@ Dependencies
 
 In addition to the necessities listed in the section for users, DIRAC developpers have to install :
 
-4. The Git version control system (http://git-scm.com). Install without modifying Windows environmental variables.
+4. The Git version control system (http://git-scm.com). Install it without modifying Windows environmental variables ! See explanation below.
 
 5. The Sphinx documentation generator and related packages, see below.
 
-Important:
-~~~~~~~~~~
+**Important:**
+~~~~~~~~~~~~~~
 The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviromental variable.
 Please avoid having both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
 in your %PATH% as these are causing conflict with CMake programs!
@@ -41,15 +40,25 @@ in your %PATH% as these are causing conflict with CMake programs!
 Documentation tools
 -------------------
 
-To be able to generate the documentation, the user has to download the *Sphinx* (http://sphinx.pocoo.org/)
-package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools).
+To be able to generate the html documentation, the user has to download the *Sphinx* (http://sphinx.pocoo.org/)
+package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools) as ::
 
-We recommend to install the 32-bit version of Python also on 64-bit machines
-as you will also need additional packages  *matplotlib* (http://matplotlib.sourceforge.net/)
-and *numpy* (http://numpy.scipy.org/) which might not be at disposal in 64-bit versions.
+  easy_install -U sphinx.
 
-Check that the %Path% Windows environmental variable points to both Python and its scripts,
-is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
+We assume that the 32-bit version of Python is installed also on 64-bit machines as not all necessary packages are 
+at disposal in 64-bit versions.
+Check that the *%Path%* Windows environmental variable points to both Python and its extensions,
+and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
+
+You also need the additional package *matplotlib* (http://matplotlib.sourceforge.net/).
+You can get easily using *setuptools* as ::
+
+  easy_install -U matplotlib
+
+You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* script.
+
+To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, which provides own (self-)installation file (and thus can not be installed with the *easy_install* tool).
+
 
 Git & PuTTy
 -----------
@@ -137,23 +146,6 @@ Regarding the Microsoft Windows platform, DIRAC is able to run under the *CygWin
 which has almost all necessary Linux substitutes. However, this is considered as the 'non-Windows' installation,
 because the *CygWin* layer ensures full Linux workplace on the top of the ground Windows operating system.
 
-  
-Development plans
------------------
-
-So far we have tested DIRAC in sequential buildups with the MinGW/MinGW64 (free of charge) suite of compilers.
-To profit from multithreading under Windows, enthusiastic developers should investigate Open MPI parallelization, www.open-mpi.org. 
-Also, one should try some commercial compilers, like Intel, PGI...
-
-Concerning mathematical libraries, we have to resort to DIRAC own BLAS & LAPACK libraries. 
-The ATLAS library preparation for Windows is only in the experimental phase (http://math-atlas.sourceforge.net/errata.html#win64).
-There is the Intel-MKL library at hand, but costs some money ;). For sure we should investigate the Windows version of the ACML library.
-
-Another topic are CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". On Windows we employ the 
-"MinGW Makefiles", what is part of the GNU MinGW suite. However, there are many more generators worth to try, 
-like NMake, MSYS Makefile, Visual Studio, Codeblocks...
-
-
 Testing
 -------
 
@@ -173,3 +165,30 @@ Make the CDash buildup in separate steps:  ::
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalBuild
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalTest
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalSubmit
+
+
+Automatic test runs 
+-------------------
+
+This is not easy task. Though regular launching of the buildup script can easily set up in the Windows "Task Scheduler", in praxis
+we were not able to achieve the full operability of such an automatic task.
+For instance, to perform "git pull" you must have your private key loaded in the *pageant* (see above), what is complicated when user is logged-out.
+
+We will investigate this issue further and update this manual accordingly.
+
+
+Further development plans
+-------------------------
+
+So far we have tested DIRAC in sequential buildups (only) with the MinGW/MinGW64 (free of charge) suite of compilers.
+To profit from multithreading under Windows, enthusiastic developers (where are you?) should investigate Open MPI parallelization, www.open-mpi.org. 
+Also, one should try some commercial compilers, like Intel, PGI...
+
+Concerning mathematical libraries, we have to resort to DIRAC own BLAS & LAPACK libraries. 
+The ATLAS library preparation for Windows is only in the experimental phase (http://math-atlas.sourceforge.net/errata.html#win64).
+There is the Intel-MKL library at hand, but costs some money ;). For sure we should investigate the Windows version of the ACML library.
+
+Another topic is the flavor of various CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". 
+On the MS Windows operating system we are employing the 
+"MinGW Makefiles" generator - part of the GNU MinGW suite. However, there are many more generators worth to try, 
+like NMake, MSYS Makefile, Visual Studio, Codeblocks...
