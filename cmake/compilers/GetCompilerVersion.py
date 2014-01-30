@@ -7,10 +7,15 @@ C_COMPILER_VENDOR = sys.argv[1]
 CXX_COMPILER_VENDOR = sys.argv[2]
 Fortran_COMPILER_VENDOR = sys.argv[3]
 
+#! in every call of subprocess.check_output() stderr is merged into stdout
+#! by option stderr=subprocess.STDOUT
+#! this is really needed probably only by Intel, but it probably also makes no problem
+#! when used everywhere
+
 #! looking for C compiler version
 if C_COMPILER_VENDOR == 'GNU':
     try:
-        outputGCC = subprocess.check_output(['gcc', '--version'])
+        outputGCC = subprocess.check_output(['gcc', '--version'], stderr=subprocess.STDOUT)
     except:
         outputGCC = ''
     finally:
@@ -23,7 +28,6 @@ if C_COMPILER_VENDOR == 'GNU':
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
     try:
-#! Intel uses stderr
         outputIntelC = subprocess.check_output(['icc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelC = ''
@@ -37,7 +41,7 @@ elif C_COMPILER_VENDOR == 'Intel':
     C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGIC = subprocess.check_output(['pgcc', '-V'])
+        outputPGIC = subprocess.check_output(['pgcc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputPGIC = ''
     finally:
@@ -49,16 +53,26 @@ elif C_COMPILER_VENDOR == 'PGI':
 			
     C_COMPILER_VERSION = PGICversion
 elif C_COMPILER_VENDOR == 'XL':
-    #! not implemented yet
-    C_COMPILER_VERSION = '0.0.0'
+    try:
+        outputXLC = subprocess.check_output(['xlc', '-qversion'], stderr=subprocess.STDOUT)
+    except:
+        outputXLC = ''
+    finally:
+        matchXLC = re.search(r'\d+\.\d+', outputXLC)
+        if matchXLC:
+            XLCversion = matchXLC.group()
+        else:
+            XLCversion = '0.0'
+			
+    C_COMPILER_VERSION = XLCversion
 else:
     #! unknown, not supported vendor
-    C_COMPILER_VERSION = '0.0.0'
+    C_COMPILER_VERSION = '0.0'
 
 #! looking for C++ compiler version
 if CXX_COMPILER_VENDOR == 'GNU':
     try:
-        outputGXX = subprocess.check_output(['g++', '--version'])
+        outputGXX = subprocess.check_output(['g++', '--version'], stderr=subprocess.STDOUT)
     except:
         outputGXX = ''
     finally:
@@ -71,7 +85,6 @@ if CXX_COMPILER_VENDOR == 'GNU':
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
     try:
-#! Intel uses stderr
         outputIntelCXX = subprocess.check_output(['icpc', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelCXX = ''
@@ -85,7 +98,7 @@ elif CXX_COMPILER_VENDOR == 'Intel':
     CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGICXX = subprocess.check_output(['pgCC', '-V'])
+        outputPGICXX = subprocess.check_output(['pgCC', '-V'], stderr=subprocess.STDOUT)
     except:
         outputPGICXX = ''
     finally:
@@ -97,16 +110,26 @@ elif CXX_COMPILER_VENDOR == 'PGI':
 			
     CXX_COMPILER_VERSION = PGICXXversion
 elif CXX_COMPILER_VENDOR == 'XL':
-    #! not implemented yet
-    CXX_COMPILER_VERSION = '0.0.0'
+    try:
+        outputXLCXX = subprocess.check_output(['xlC', '-qversion'], stderr=subprocess.STDOUT)
+    except:
+        outputXLCXX = ''
+    finally:
+        matchXLCXX = re.search(r'\d+\.\d+', outputXLCXX)
+        if matchXLCXX:
+            XLCXXversion = matchXLCXX.group()
+        else:
+            XLCXXversion = '0.0'
+			
+    CXX_COMPILER_VERSION = XLCXXversion
 else:
     #! unknown, not supported vendor
-    CXX_COMPILER_VERSION = '0.0.0'
+    CXX_COMPILER_VERSION = '0.0'
 
 #! looking for Fortran compiler version
 if Fortran_COMPILER_VENDOR == 'GNU':
     try:
-        outputGFORTRAN = subprocess.check_output(['gfortran', '--version'])
+        outputGFORTRAN = subprocess.check_output(['gfortran', '--version'], stderr=subprocess.STDOUT)
     except:
         outputGFORTRAN = ''
     finally:
@@ -119,7 +142,6 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
     try:
-#! Intel uses stderr
         outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'], stderr=subprocess.STDOUT)
     except:
         outputIntelFORTRAN = ''
@@ -133,7 +155,7 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
     Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGIFORTRAN = subprocess.check_output(['pgf90', '-V'])
+        outputPGIFORTRAN = subprocess.check_output(['pgf90', '-V'], stderr=subprocess.STDOUT)
     except:
         outputPGIFORTRAN = ''
     finally:
@@ -145,11 +167,21 @@ elif Fortran_COMPILER_VENDOR == 'PGI':
 			
     Fortran_COMPILER_VERSION = PGIFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'XL':
-    #! not implemented yet
-    Fortran_COMPILER_VERSION = '0.0.0'
+    try:
+        outputXLFORTRAN = subprocess.check_output(['xlf90', '-qversion'], stderr=subprocess.STDOUT)
+    except:
+        outputXLFORTRAN = ''
+    finally:
+        matchXLFORTRAN = re.search(r'\d+\.\d+', outputXLFORTRAN)
+        if matchXLFORTRAN:
+            XLFORTRANversion = matchXLFORTRAN.group()
+        else:
+            XLFORTRANversion = '0.0'
+			
+    Fortran_COMPILER_VERSION = XLFORTRANversion
 else:
     #! unknown, not supported vendor
-    Fortran_COMPILER_VERSION = '0.0.0'
+    Fortran_COMPILER_VERSION = '0.0'
 
 
 #! this is output for CMake (must be in this order and with ;)
