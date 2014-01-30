@@ -2001,30 +2001,21 @@ C     Electric field gradient at the individual nuclei, cartesian
 C
       ELSE IF(LABINT(3:5).EQ.'EFG') THEN
         CLASLB = 'ELFGRDC'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H2') THEN
         CLASLB = 'RM1H2'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H2') THEN
         CLASLB = 'RM2H2'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H3') THEN
         CLASLB = 'RM1H3'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H3') THEN
         CLASLB = 'RM2H3'
-
-CMI ...contributions from RDSUSLL term
       ELSE IF(LABINT(3:7).EQ.'RDSUL') THEN
         CLASLB = 'RDSUSLL'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1RN') THEN
         CLASLB = 'RM1RN'
-
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
       ELSE IF(LABINT(4:7).EQ.'RNST') THEN
         CLASLB = 'RM1N1H '
-
 CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
       ELSE IF(LABINT(1:6).EQ.'CAP_RE') THEN
         CLASLB = 'CAP_RE  '
@@ -2988,22 +2979,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
       CHARACTER*8 PRPLBL
       INTEGER ITIM
-      IF(PRPLBL(4:7).EQ.'RNST') THEN
-        ITIM = -1
-      ELSEIF(PRPLBL(4:7).EQ.'NSNL') THEN
-        ITIM = -1
-      ELSEIF(PRPLBL(2:6).EQ.'RM1H3') THEN
-        ITIM = +1
-      ELSEIF(PRPLBL(2:6).EQ.'RM1RN') THEN
-        ITIM = +1
-      ELSEIF(PRPLBL(1:7).EQ.'d|S>/dB') THEN
-        ITIM = -1
+      IF(PRPLBL(4:7).EQ.'RNST'.OR.
+     &   PRPLBL(3:7).EQ.'RM2H3'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUL'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUS'.OR.
+     &   PRPLBL(1:7).EQ.'d|S>/dB') THEN
+         ITIM = -1
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.
+     &   PRPLBL(4:7).EQ.'NSNL'.OR.
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.
+     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.
+     &   PRPLBL(2:6).EQ.'RM1RN') THEN
+         ITIM = +1
       ELSE
         WRITE(6,*) 'ISCALAROP_TSYM ERROR :',PRPLBL
         CALL QUIT('ISCALAROP_TSYM: Can not assign ITIM')
       ENDIF
-CTROND
-      WRITE(6,*) 'ISCALAROP_TSYM ',PRPLBL,'  ',ITIM
       ISCALAROP_TSYM=ITIM
       RETURN
       END

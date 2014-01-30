@@ -371,6 +371,7 @@ contains
 
          call prpmao(int1_4c_file,                         &
                      i,                                    & 
+                     .true.,                               &
                      op_mat_dim,                           &
                      scr_mat1,                             &
                      scr_mat2,                             &
@@ -382,13 +383,7 @@ contains
            call dcopy(op_mat_dim*nz,scr_mat1,1,scr_mat2,1)
          end if
 
-         call sort2sao_no_work(op_mat_dim,                 &
-                               scr_mat2,                   &
-                               scr_mat1,                   &
-                               quat_array_filled_tmp,      &
-                               op_fer_rep,                 &
-                               prop_op_trsym(i),           &
-                               print_lvl)
+         call butobs_no_work(scr_mat1,nz)
 
 !        step 2b: perform the pct: f_2c^++ == U+ * f_4c * U in DIRAC-sorted SA-AO basis
 !        --------------------------------------------------------------------------------

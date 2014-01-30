@@ -305,11 +305,8 @@ C
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF
       IF(NXOPE.GT.0) THEN
-C
-C
         CALL DZERO(GPOE,NZ*NXOPE)
         CALL PRPORB(GPOE,JXOPE,NXOPE,PRPMO,NORBT,WORK(KDV),NZ,IH,IPRINT)
-
 c       no scaling
         CALL DSCAL(NZ*NXOPE,DM1,GPOE,1)
       ENDIF
@@ -444,31 +441,16 @@ C
 #include "dcbxpr.h"
 C
       DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
-      LOGICAL   TRIANGUL
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
-CMI   ... define triangulariry of matrix 
-CMI    ...   - either symmetric or antisymmetric      
-      TRIANGUL = (IPRPTIM(INDXPR).NE.0)
-      IF(TRIANGUL) THEN
-       IDIMENS = NNBBASX        
-      ELSE
-       IDIMENS = N2BBASX
-      ENDIF
+C     Determine whether integrals are fetched on triangular or square form;
+C     check if first scalar property operator is has diagonal symmetry or not
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
       N2PMOX = NPMOT*NPMOT
       IF (IPRINT .GE. 6) THEN
         CALL HEADER('Output from PRPMAT',-1)
-        IF (TRIANGUL) THEN
-         WRITE(LUPRI,'(4X,A)')
-     & 'PRPMAT: Handling TRIANGULAR matrix of'//
-     & ' the (anti-)symmetric operator'
-        ELSE
-         WRITE(LUPRI,'(4X,A)')
-     & 'PRPMAT: Handling SQUARE matrix of property operator'
-        ENDIF
         WRITE(LUPRI,'(/A,4I10)')
      &  ' Input to PRPMAT: IPCMO, NPMO:',
      &  (IPCMO(I),NPMO(I),I = 1,NFSYM)
@@ -477,16 +459,10 @@ CMI    ...   - either symmetric or antisymmetric
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
-CMI   ... own allocations.... for triangular or square AO matrixes ...
-      CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-C
-      CALL PRPMA1(INDXPR,IDIMENS,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
-     &            WORK(KPRPAO),WORK(KPTRI),WORK(KONEIN),WORK(KFIRST),
-     &            WORK,KFREE,LFREE,IPRINT)
-
+      CALL MEMGET('REAL',KPRPAO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ      ,WORK,KFREE,LFREE)
+      CALL PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
+     &            WORK(KPRPAO),WORK(KFIRST),WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('PRPMAT',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPMAT')
 C
@@ -494,14 +470,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,IDIMENS,PRPMO,CMO,
-     &                  IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
-     &                  PTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
+     &                  FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
-C
-C     IDIMENS = N2BBASX or NNBBASX
 C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
@@ -522,11 +495,9 @@ C
 #include "dcbprl.h"
 #include "dummy.h"
 C
-      LOGICAL FIRST(*),QBTR, IS_SQUARE
+      LOGICAL QBTR,TOBE,FIRST(NZ)
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
-     &          PRPAO(N2BBASX,NZ),
-     &          PTRI(IDIMENS,NZ),
-     &          OP1INT(IDIMENS),WORK(*)
+     &          PRPAO(N2BBASX,NZ),WORK(*)
       DIMENSION J2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
@@ -558,47 +529,10 @@ C
       ISYM = IPRPSYM(INDXPR)
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
-
-C ... check for anti-/symmetricity of the property matrix/MI
-      IF (ITIM.EQ.0.AND.IDIMENS.EQ.N2BBASX) THEN
-        IS_SQUARE = .TRUE.
-      ELSE IF (ITIM.NE.0.AND.IDIMENS.EQ.NNBBASX) THEN
-        IS_SQUARE = .FALSE.
-      ELSE
-        write(lupri,*) 'PRPMA1: ITIM,IDIMENS=',ITIM,IDIMENS
-        write(lupri,*) 'PRPMA1: N2BBASX,NNBBASX=',N2BBASX,NNBBASX
-        CALL QUIT('PRPMA1: wrong parameters ! ')
-      ENDIF
 C
 C     Get property matrix in AO-basis
 C     ===============================
-      CALL MEMCHK('PRPMA1 1',WORK,1)
-      IOPTYP = IPRPTYP(INDXPR)
-      IF(IOPTYP.EQ.0.AND..NOT.(BSS.AND.TWOCOMP)) THEN
-        KLBL  = IPRPLBL(1,INDXPR)
-        INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
-        IF(FIRST(1)) THEN
-          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPMA1')
-          CALL REAFCK(2,PRPAO,.FALSE.,1)
-          CLOSE(2,STATUS = 'KEEP')
-          PFAC = FACPRP(1,INDXPR)
-          IF(PFAC.NE.D1) CALL DSCAL(N2BBASXQ,PFAC,PRPAO,1)
-CTROND          CALL LSET(NZ,.FALSE.,FIRST)
-        ELSE
-          WRITE(LUPRI,'(A,A8,A,A16,A)')
-     &      'Property file ',PRPLBL(KLBL),' for operator ',
-     &      PRPNAM(INDXPR),' not found !'
-          CALL QUIT('PRPMA1: Property file not found !')
-        ENDIF
-      ELSEIF (IS_SQUARE) THEN
-       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PRPAO,OP1INT,FIRST,
-     &       WORK(KFREE),LFREE,IPRINT)
-      ELSE
-       CALL PRPMSAO(INDXPR,IDIMENS,PTRI,PRPAO,OP1INT,FIRST,
-     &       WORK(KFREE),LFREE,IPRINT)
-      ENDIF
-      CALL MEMCHK('PRPMA1 2',WORK,1)
-
+      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.7) THEN
@@ -608,7 +542,6 @@ C    operator in the SA-AO basis
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
       ENDIF
-!
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
@@ -618,29 +551,27 @@ C
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1
-
         IF (NFBAS(I1,0).GT.0.AND.NFBAS(I2,0).GT.0) THEN
-		
-         IF (IPRINT.GE.7) THEN
-          CALL HEADER('PRPMA1: entering symm.blocked AO-matrix',-1)
-          WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
-     &    '* Fermion irps no.',I1,I2,' of ',NFSYM
-          CALL PRQMAT(PRPAO(I2BASX(I1,I2)+1,1),NFBAS(I1,0),NFBAS(I2,0),
-     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
-          IF (IPRINT.GE.10) THEN
-            CALL HEADER(
-     &      'PRPMA1: entering symm.blocked MO-coefficients',-1)
+          IF (IPRINT.GE.7) THEN
+            CALL HEADER('PRPMA1: entering symm.blocked AO-matrix',-1)
             WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
-     &      '* Fermion ircop no.',I1,I2,' of ',NFSYM
-            CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
+     &      '* Fermion irps no.',I1,I2,' of ',NFSYM
+            CALL PRQMAT(PRPAO(I2BASX(I1,I2)+1,1),
+     &                  NFBAS(I1,0),NFBAS(I2,0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+            IF (IPRINT.GE.10) THEN
+              CALL HEADER(
+     &        'PRPMA1: entering symm.blocked MO-coefficients',-1)
+              WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
+     &        '* Fermion ircop no.',I1,I2,' of ',NFSYM
+              CALL PRQMAT(CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
-            CALL FLSHFO(LUPRI)
-          ENDIF
-		 ENDIF		
+              CALL FLSHFO(LUPRI)
+            ENDIF
+          ENDIF		
 
-         IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
-           CALL QBTRANS(IREP,'AOMO','S',D0,
+          IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
+            CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -651,8 +582,8 @@ C
      &           IBEIG(IORB(I2)+1),
      &           WORK(KFREE),LFREE,IPRINT)
            QBTR = .TRUE.
-         ELSE
-           CALL QTRANS('AOMO','S',D0,
+           ELSE
+             CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -660,9 +591,8 @@ C
      &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
-         ENDIF
-
-         ENDIF
+           ENDIF ! IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
+         ENDIF ! IF (NFBAS(I1,0).GT.0.AND.NFBAS(I2,0).GT.0) THEN
   
         IF (IPRINT.GE.7) THEN
           CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
