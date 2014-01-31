@@ -734,6 +734,11 @@ C***********************************************************************
 C     
 C     Hard-wired multiplication table for the abelian subgroups of D2h
 C     Defines representation names as well.
+C     
+C     All quaternion and complex subgroups are Abelian.
+C     The real groups are non-Abelian and so an Abelian subgroup is chosen
+C       D2, C2v -> C2
+C       D2h     -> C2h
 C
 C     Luuk Visscher, Mar 18 1997
 C
@@ -745,13 +750,15 @@ C
       DIMENSION MULTB(64,64)
 C
       IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+C........Quaternion Abelian, no inversion: C1
          NSYMRPA = 1
-         REPA(1) = '   A'
-         REPA(2) = '   a'
+         REPA(1) = '   A' ! Boson irrep
+         REPA(2) = '   a' ! Fermion irrep
          MULTB(1,1) = 2
          MULTB(2,1) = 1
          MULTB(2,2) = 2
       ELSEIF (NFSYM.EQ.1.AND.NZ.LE.2) THEN
+C........Complex Abelian, no inversion (C2, Cs)
          NSYMRPA = 2
          REPA(1) = '  1E'
          REPA(2) = '  2E'
@@ -768,11 +775,12 @@ C
          MULTB(4,3) = 4
          MULTB(4,4) = 3
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+C........Quaternion Abelian, inversion: Ci
          NSYMRPA = 2
-         REPA(1) = '  AG'
-         REPA(2) = '  AU'
-         REPA(3) = '  ag'
-         REPA(4) = '  au'
+         REPA(1) = '  AG' ! Boson gerade
+         REPA(2) = '  AU' ! Boson ungerade
+         REPA(3) = '  ag' ! Fermion gerade
+         REPA(4) = '  au' ! Fermion ungerade
          MULTB(1,1) = 3
          MULTB(2,1) = 4
          MULTB(3,1) = 1
@@ -784,6 +792,7 @@ C
          MULTB(4,3) = 4
          MULTB(4,4) = 3
       ELSEIF (NFSYM.EQ.2.AND.NZ.LE.2) THEN
+C........Complex Abelian, inversion (C2h)
          NSYMRPA = 4
          REPA(1) = ' 1Eg'
          REPA(2) = ' 2Eg'
