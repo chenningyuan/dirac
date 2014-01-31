@@ -1357,7 +1357,7 @@ C
       ITIM = IPRPTIM(INDXPR)
       IPRINT2 = MAX(IPRPRP,IPRINT)
       KLBL = IPRPLBL(1,INDXPR)
-      TRIANGULAR = (IPRLTYP(KLBL))
+      TRIANGULAR = ABS(IPRLTYP(KLBL)).EQ.1
       IF (IPRINT2.GE.6) THEN
        CALL HEADER('*** Output from PRPMSAO ***',-1)
        write(lupri,'(2X,A,I3,A,A)')
@@ -1407,7 +1407,7 @@ CMI    ...the label will contain the INDXPR operator index in the string form !
      &      ' was read from BSSMAT file.'      
           ENDIF
         end if ! if(x2c)then
-CTROND        CALL LSET(NZ,.FALSE.,FIRST)
+        CALL LSET(NZ,.FALSE.,FIRST)
       ELSEIF(IOPTYP.EQ.0) THEN
 C.......Fock matrix read
         KLBL  = IPRPLBL(1,INDXPR)
@@ -1432,13 +1432,11 @@ C     ... do resort PBUF to DIRAC sorting
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (TRIANGULAR) THEN
           IDIMENS=NNBBASX
-          CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KPBUF  ,NZ*IDIMENS,WORK,KFREE,LFREE)
           CALL PRPMAO(LU1INT,INDXPR,TRIANGULAR,IDIMENS,
-     &                WORK(KPBUF),WORK(KONEIN),FIRST,IPRINT2)
-          CALL TRI2SQ(PRPAO,WORK(KPBUF),FIRST,
-     &                IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
-          CALL MEMREL('PRPMSAO.tri2sq',WORK,KWORK,KONEIN,KFREE,LFREE)
+     &                WORK(KPBUF),PRPAO,FIRST,IPRINT2)
+          CALL TRI2SQ(PRPAO,WORK(KPBUF),FIRST,IREP,ITIM)
+          CALL MEMREL('PRPMSAO.tri2sq',WORK,KWORK,KPBUF,KFREE,LFREE)
         ELSE
           IDIMENS=N2BBASX
           CALL MEMGET('REAL',KONEIN,N2BBASX,WORK,KFREE,LFREE)
@@ -1474,7 +1472,7 @@ C     ... array for the 2-component picture change transformed operator
      &                 'S',WORK(KFREE),LFREE,IPRINT1)
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTM,KFREE,LFREE)
 CMI       ... this is needed for the picture change transformed operator
-CTROND          CALL LSET(NZ,.FALSE.,FIRST)
+          CALL LSET(NZ,.FALSE.,FIRST)
          ENDIF
         ENDIF
       ENDIF
