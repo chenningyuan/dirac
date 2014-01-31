@@ -47,13 +47,13 @@ C
 #include "memint.h"
 C
 C     Memory allocation
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KEXPST ,2*NEXPP   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO  ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG  ,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
-      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,N2BBASX*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT ,N2BBASXQ*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,N2BBASXQ  ,WORK,KFREE,LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
@@ -102,7 +102,7 @@ C
 #include "dcbdhf.h"
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
-      DIMENSION EXPVAL(*),CMO(*),DMAT(*),PRPAO(*),
+      DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
      &          EIG(*),WORK(LWORK),NP(2,0:2)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
@@ -182,15 +182,12 @@ C
      &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
      &        'file "MCDENS" not found!')
          CALL OPNFIL(LUCOEF,'MCDENS','OLD','PRPEXP')
-         CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
+         CALL REAKRMC(LUCOEF,'MC  DENS',DMAT,nasht**2*nz)
 !        total DV = DV_act + DV_core
-         IF (NASHT .GT. 0) THEN ! DV_act
-           CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
-         END IF
-         call dzero(pmat,N2BBASXQ)
-         CALL DCSCT(pmat) ! DV_core
-         call daxpy(N2BBASXQ,1.0d0,pmat,1,DMAT(1+N2BBASXQ),1)
-         call dzero(pmat,N2BBASXQ)
+         IF (NASHT .GT. 0) CALL DVSCT(DMAT(1,1),DMAT(1,2)) ! DV_act
+         call dzero(PRPAO,N2BBASXQ)
+         CALL DCSCT(PRPAO) ! DV_core
+         call daxpy(N2BBASXQ,1.0D0,PRPAO,1,DMAT(1,2),1)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        Get AO density matrix.
@@ -199,8 +196,8 @@ C
          DO I = 1, NFSYM
             CALL QTRANS('MOAO','S',D0,
      &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &           DMAT(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &           DMAT(1+N2BBASXQ+I2ORBX(I,I)),
+     &           DMAT(1+I2BASX(I,I),1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &           DMAT(1+I2ORBX(I,I),2),
      &           NORBT,NORBT,NZ,IPQTOQ(1,0),
      &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
