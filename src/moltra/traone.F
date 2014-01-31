@@ -388,6 +388,11 @@ C     A better interface needs to be defined, this will serve for the
 C     moment and has the advantage that RELCCSD and DIRRCI need not be
 C     modified.
 C
+C     NSTRT(i) - number of orbitals for bra(i=1) and ket(i=2)
+C     NSTR(ifrp,p,i) - number of orbitals for fermion ircop ifrp, 
+C                      total (p=0), negative(p=1) or positive(p=2) energy,
+C                      for bra(i=1) and ket(i=2)
+C
 C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
@@ -423,13 +428,14 @@ C
       Allocate (IRPAMO(NSTRT(1),2))
       Allocate (IOCCUP(NSTRT(1),2))
       Allocate (IBSPI(NSTRT(1),2))
-C
+C.....Put orbital energies and supersymmetry information of the one or two
+C     fermion ircops into single arrays
       II = 0
       DO I = 1, NFSYM
        DO J = 1, NSTR(I,0,1)
          II = II + 1
          IF (I.EQ.1) THEN
-            ORBE(II) = ORBE1(J)
+            ORBE(II)  = ORBE1(J)
             IBORB(II) = IBORB1(J)
          ELSEIF (I.EQ.2) THEN
             ORBE(II) = ORBE2(J)
@@ -480,7 +486,7 @@ C
 #include "dgroup.h"
 C
 C     NORDER gives the order of the Abelian subgroup used linear molecules. 
-C    NORDER=16 (default) uses C_16_h for D_inf_h and C_32 for C_inf_v.
+C     NORDER=16 (default) uses C_16_h for D_inf_h and C_32 for C_inf_v.
 C
       PARAMETER (NORDER=16)
       LOGICAL BREIT,FORWARD
@@ -507,22 +513,26 @@ C     problems in the CCSD case.
 C
       BREIT = .FALSE.
       FORWARD = .TRUE.
-      IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+      IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN 
+C........Quaternion Abelian, no inversion (C1)
          NSYMRP = 2
          NBSYMRP = 1
          REPN(1) = '  1A          '
          REPN(2) = '  2A          '
-      ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN
+      ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN 
+C........Complex Abelian, no inversion (C2, Cs)
          NSYMRP = 2
          NBSYMRP = 2
          REPN(1) = '  1E          '
          REPN(2) = '  2E          '
       ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
+C........Real non-Abelian, no inversion (D2, C2v) -> C2
          NSYMRP = 2
          NBSYMRP = 4
          REPN(1) = '   E  1E      '
          REPN(2) = '   E  2E      '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+C........Quaternion Abelian, inversion (Ci)
          NSYMRP = 4
          NBSYMRP = 2
          REPN(1) = ' 1AG          '
@@ -530,6 +540,7 @@ C
          REPN(3) = ' 1AU          '
          REPN(4) = ' 2AU          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
+C........Complex Abelian, inversion (C2h)
          NSYMRP = 4
          NBSYMRP = 4
          REPN(1) = ' 1Eg          '
@@ -537,6 +548,7 @@ C
          REPN(3) = ' 1Eu          '
          REPN(4) = ' 2Eu          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
+C........Real non-Abelian, inversion (D2h) -> C2h
          NSYMRP = 4
          NBSYMRP = 8
          REPN(1) = '  Eg 1Eg      '
@@ -565,18 +577,26 @@ C
       ENDDO
 C
 C     The correlation codes (RELCCSD, DIRRCI, LUCITA) do not use 
-C     TR symmetry, write Kramers pairs as spinors
+C     time reversal symmetry, write Kramers pairs as spinors:
+C     For each fermion ircop, all unbarred orbitals come first,  followed by the partners
 C
-C
+C     For each orbital the following information is collected:
+C        IRPMO  - fermion irrep of parent group
+C        IRPAMO - fermion irrep of Abelien (sub)group
+C        ORBMO  - orbital energy
+C        IBSPI  - supersymmetry (if relevant)
+C        IOCCUP - occupied(1)/virtual(0)
+
+
       II    = 0
       IK    = 0
       IREP  = 0
       IREPA = 0
-      DO I = 1, NFSYM
+      DO I = 1, NFSYM ! loop over fermion ircops
          IREP  = IREP  + 1
          IREPA = IREPA + 1
 C........Loop over first Kramers partner
-         DO ISTR = 1, NSTR(I)
+         DO ISTR = 1, NSTR(I) ! total number of orbitals of this ircop
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
@@ -654,7 +674,7 @@ C                     0: total
 C                     1: positive energy
 C                     2: negative energy
 C     NESH-NST-NSPC -number of deleted spinors.
-      WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
+      WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),  
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
      &                      (NSPC(IRP,0),IRP=1,NFSYM),
@@ -1070,6 +1090,14 @@ C
       CHARACTER*4 REPA(64)
       CHARACTER*1 REPAS(8)
       DIMENSION MULTB(64,64),MULTBS(8,8)
+      DATA MULTBS/7,5,8,6,1,3,4,2,
+     &            5,8,6,7,2,4,1,3,
+     &            8,6,7,5,3,1,2,4,
+     &            6,7,5,8,4,2,3,1,
+     &            1,2,3,4,5,6,7,8,
+     &            3,4,1,2,6,5,8,7,
+     &            4,1,2,3,7,8,6,5,
+     &            2,3,4,1,8,7,5,6/
 C
 #include "dcbibt.h"
 C
@@ -1083,42 +1111,44 @@ C
       REPAS(6) = '4' ! mS = +/- 4/2 = +/- 2
       REPAS(7) = '2' ! mS = + 2/2 = + 1
       REPAS(8) = '2' ! mS = - 2/2 = - 1
-      MULTBS(1,1) = 7
-      MULTBS(2,1) = 5
-      MULTBS(3,1) = 8
-      MULTBS(4,1) = 6
-      MULTBS(5,1) = 1
-      MULTBS(6,1) = 3
-      MULTBS(7,1) = 4
-      MULTBS(8,1) = 2
-      MULTBS(2,2) = 8
-      MULTBS(3,2) = 6
-      MULTBS(4,2) = 7
-      MULTBS(5,2) = 2
-      MULTBS(6,2) = 4
-      MULTBS(7,2) = 1
-      MULTBS(8,2) = 3
-      MULTBS(3,3) = 7
-      MULTBS(4,3) = 5
-      MULTBS(5,3) = 3
-      MULTBS(6,3) = 1
-      MULTBS(7,3) = 2
-      MULTBS(8,3) = 4
-      MULTBS(4,4) = 8
-      MULTBS(5,4) = 4
-      MULTBS(6,4) = 2
-      MULTBS(7,4) = 3
-      MULTBS(8,4) = 1
-      MULTBS(5,5) = 5
-      MULTBS(6,5) = 6
-      MULTBS(7,5) = 7
-      MULTBS(8,5) = 8
-      MULTBS(6,6) = 5
-      MULTBS(7,6) = 8
-      MULTBS(8,6) = 7
-      MULTBS(7,7) = 6
-      MULTBS(8,7) = 5
-      MULTBS(8,8) = 6
+C
+C     
+C      MULTBS(1,1) = 7
+C      MULTBS(2,1) = 5
+C      MULTBS(3,1) = 8
+C      MULTBS(4,1) = 6
+C      MULTBS(5,1) = 1
+C      MULTBS(6,1) = 3
+C      MULTBS(7,1) = 4
+C      MULTBS(8,1) = 2
+C      MULTBS(2,2) = 8
+C      MULTBS(3,2) = 6
+C      MULTBS(4,2) = 7
+C      MULTBS(5,2) = 2
+C      MULTBS(6,2) = 4
+C      MULTBS(7,2) = 1
+C      MULTBS(8,2) = 3
+C      MULTBS(3,3) = 7
+C      MULTBS(4,3) = 5
+C      MULTBS(5,3) = 3
+C      MULTBS(6,3) = 1
+C      MULTBS(7,3) = 2
+C      MULTBS(8,3) = 4
+C      MULTBS(4,4) = 8
+C      MULTBS(5,4) = 4
+C      MULTBS(6,4) = 2
+C      MULTBS(7,4) = 3
+C      MULTBS(8,4) = 1
+C      MULTBS(5,5) = 5
+C      MULTBS(6,5) = 6
+C      MULTBS(7,5) = 7
+C      MULTBS(8,5) = 8
+C      MULTBS(6,6) = 5
+C      MULTBS(7,6) = 8
+C      MULTBS(8,6) = 7
+C      MULTBS(7,7) = 6
+C      MULTBS(8,7) = 5
+C      MULTBS(8,8) = 6
 C
       DO I = 1, 8
          DO J = 1, I-1
