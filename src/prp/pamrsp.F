@@ -510,21 +510,37 @@ C
 C     Handle case of zero microiterations
 C     ===================================
 C     Set first coefficient for each frequency equal to one
-C     for getting non-zero respons function with zero
+C     for getting non-zero response function with zero
 C     microiterations
 C     (used for Sternheimer and/or uncoupled approx.)
 C
       IF(MAXITR.EQ.0.OR.UNCOUP) THEN
+        NZRED  = NTSIM
+        NCRED  = NCSIM
+        NERED  = NESIM
+        NPRED  = NPSIM
         IF (.NOT. UNCOUP) THEN
 C         ... EVECR set in subroutine XRSST2 for UNCOUP
           DO I = 1,NFREQ
             EVECR(1,I) = D1
           ENDDO
         END IF
-        NZRED  = NTSIM
-        NCRED  = NCSIM
-        NERED  = NESIM
-        NPRED  = NPSIM
+        IF(IPRXRS.GE.4) THEN
+          IF(NCSIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+          ENDIF
+          IF(NESIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NESIM,
+     &      ' Electronic (++) trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBOE),NESIM,NZXOPE)
+          ENDIF
+          IF(NPSIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NPSIM,
+     &      ' Electronic (-+) trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBOP),NPSIM,NZXOPP)
+          ENDIF
+         END IF
       ENDIF
 C
 C     **********************************************
@@ -571,7 +587,7 @@ C         Print section
      &     (BVTYP(I),':',ISIM(I),I=1,NVPAR)
           ENDIF
 C
-          IF(IPRXRS.GE.5) THEN
+          IF(IPRXRS.GE.4) THEN
             WRITE(LUPRI,'(/A)')' Before XRSSVC'
             IF(NCSIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
@@ -1081,9 +1097,6 @@ C        and metric.
 C
       IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                       WORK,KFREE,LFREE)
-
-C
-C
 C
 C     L I N E A R   R E S P O N S E   F U N C T I O N S
 C     =================================================
@@ -4367,7 +4380,7 @@ C/* Deck setrsp */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Set a default values for a number of variables of the response
-C     module such that they need to modified only in modules where they
+C     module such that they need to be modified only in modules where they
 C     are used.
 C
 C***********************************************************************
