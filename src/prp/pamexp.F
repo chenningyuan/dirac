@@ -47,33 +47,23 @@ C
 #include "memint.h"
 C
 C     Memory allocation
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KEXPST ,2*NEXPP   ,WORK,KFREE,LFREE)
-
+      CALL MEMGET('REAL',KCMO  ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG  ,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
-      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,N2BBASX*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-
-
-CMI ... Needed for SQUARE matrixes of some property operators!
-C     CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
-C
-
+      CALL MEMGET('REAL',KDMAT ,N2BBASXQ*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,N2BBASXQ  ,WORK,KFREE,LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
-
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
-     &            WORK(KDMAT),WORK(KPMAT),
-     &            WORK(KFIRST),WORK(KFREE),LFREE)
-
+     &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
+     &            WORK(KFREE),LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
-
 C
 C     Memory deallocation
 C
@@ -84,8 +74,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
-      SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,
-     &                   FIRST,WORK,LWORK)
+      SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
+     &                  WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -99,14 +89,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16)
-C
-      LOGICAL FIRST(NZ),LEXPST(2,*),FILEX,IS_SQUARE
-      DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),
-     &          EIG(*),WORK(LWORK),NP(2,0:2)
-      CHARACTER MXFORM*6,FMT*6
-      CHARACTER WF*4
-      INTEGER   GETIOPEN
-      LOGICAL FNDLAB
       
 C
 #include "cbihr1.h"
@@ -119,7 +101,13 @@ C
 #include "dcbprp.h"
 #include "dcbdhf.h"
 #include "dcbprj.h"
-C
+      LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
+      DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
+     &          EIG(*),WORK(LWORK),NP(2,0:2)
+      CHARACTER MXFORM*6,FMT*6
+      CHARACTER WF*4
+      INTEGER   GETIOPEN
+      LOGICAL FNDLAB
 C
 C     Initialize
 C
@@ -194,15 +182,12 @@ C
      &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
      &        'file "MCDENS" not found!')
          CALL OPNFIL(LUCOEF,'MCDENS','OLD','PRPEXP')
-         CALL REAKRMC(LUCOEF,'MC  DENS',DMAT(1),nasht**2*nz)
+         CALL REAKRMC(LUCOEF,'MC  DENS',DMAT,nasht**2*nz)
 !        total DV = DV_act + DV_core
-         IF (NASHT .GT. 0) THEN ! DV_act
-           CALL DVSCT(DMAT,DMAT(1+N2BBASXQ))
-         END IF
-         call dzero(pmat,N2BBASXQ)
-         CALL DCSCT(pmat) ! DV_core
-         call daxpy(N2BBASXQ,1.0d0,pmat,1,DMAT(1+N2BBASXQ),1)
-         call dzero(pmat,N2BBASXQ)
+         IF (NASHT .GT. 0) CALL DVSCT(DMAT(1,1),DMAT(1,2)) ! DV_act
+         call dzero(PRPAO,N2BBASXQ)
+         CALL DCSCT(PRPAO) ! DV_core
+         call daxpy(N2BBASXQ,1.0D0,PRPAO,1,DMAT(1,2),1)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        Get AO density matrix.
@@ -211,8 +196,8 @@ C
          DO I = 1, NFSYM
             CALL QTRANS('MOAO','S',D0,
      &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &           DMAT(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &           DMAT(1+N2BBASXQ+I2ORBX(I,I)),
+     &           DMAT(1+I2BASX(I,I),1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &           DMAT(1+I2ORBX(I,I),2),
      &           NORBT,NORBT,NZ,IPQTOQ(1,0),
      &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
@@ -222,11 +207,6 @@ C
 C        Result is scaled by 2 in PRPEX2...
 C
          CALL DSCAL(N2BBASXQ,0.5d0,DMAT,1)
-
-!        WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX1: DMAT of IZ=',1
-!        CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
-!    &               NTBAS(0),NTBAS(0),1,LUPRI)
-C
       ELSE
          WRITE(LUPRI,'(1X,2A)')
      &        '*** ERROR in PRPEX1 *** Unknown wave function: ',WF
@@ -278,7 +258,6 @@ C.........Calculate density matrix in fragment basis
         KPFMT = KFREE
       ENDIF
 C
-C
 C     Expectation values normal procedure
 C     ===================================
 C
@@ -290,43 +269,21 @@ C
 
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
-          IS_SQUARE = (IPRPTIM(INDXPR).EQ.0)
-          IF (IS_SQUARE) THEN
-            IDIMENS = N2BBASX
-            CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
-          ELSE
-            IDIMENS = NNBBASX
-            CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
-          ENDIF
-C.........generate property matrix in SA-AO-basis into PMAT ...
-CMI ... extended parameter list by the OP1INT array for square matrixes
-          CALL PRPEX2(INDXPR,EXPVAL(I),.true.,LEXPST(1,I),IDIMENS,
-     &                WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-     &                WORK,KFREE,LFREE,IPREXP)
-
+          IREP = IPRPSYM(INDXPR)-1
+          ITIM = IPRPTIM(INDXPR)
+          CALL PRPEX2(INDXPR,EXPVAL(I),.true.,LEXPST(1,I),
+     &                PRPAO,FIRST,WORK,KFREE,LFREE,IPREXP)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
-
 C.............calculate expectation value
-          CALL PRPEX3(EXPVAL(I),INDXPR,DMAT,PMAT,FIRST,
+          CALL PRPEX3(EXPVAL(I),INDXPR,DMAT,PRPAO,FIRST,
      &        WORK,KFREE,LFREE,IPREXP)
  30       CONTINUE
 
           IF(PRJANA) THEN
 C.........Transform property matrix to fragment orbital basis
-CMI        CALL PRJEX1(WORK(KPFMT),IDIMENS,WORK(KPTRI),PMAT,WORK(KRVEC),
-Caspg 2006-07-07
-C quick hack to get the projection analysis to work, before IREPB and ITIMB
-C were undefined, hence the crash.
-C  irepb: Molecular point group symmetry
-C  itimb: Time reversal symmetry
-            IREPB = IPRPSYM(INDXPR)-1
-            ITIMB = IPRPTIM(INDXPR)
-            CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
-     &                  INDXPR,IREPB,ITIMB,NP(1,0),FIRST,IPREXP,
+            CALL PRJEX1(WORK(KPFMT),PRPAO,WORK(KRVEC),
+     &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
-Caspg
           ENDIF
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
@@ -334,18 +291,15 @@ Caspg
      &       LEXPST(1,I),LEXPST(2,I)
           CALL FLSHFO(LUPRI)
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
-            CALL PRJEX2(EXPVAL(I),IDIMENS,WORK(KPTRI),WORK(KPFMT),
-     &                 WORK(KDFMT),WORK(KBVEC),
+            CALL PRJEX2(EXPVAL(I),WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
-     &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
+     &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
           IF(PRPCAN) THEN
-            CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
+            CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
-CMI     ... release the allocated memory ...
-          CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
         ENDDO
 
         CALL PRSYMB(LUPRI,'-',76,0)
@@ -354,48 +308,32 @@ CMI     ... release the allocated memory ...
         WRITE(LUPRI,'(4X,A)')
      &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
-C     Expectation values by orbital
-C    ************************************
+C     Expectation values; individual orbital contributions
+C     ====================================================
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
         WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
-
           INDXPR = LEXPP(I)
-
-          IS_SQUARE = (IPRPTIM(INDXPR).EQ.0)
-          IF (IS_SQUARE) THEN
-            IDIMENS = N2BBASX
-            CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
-          ELSE
-            IDIMENS = NNBBASX
-            CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
-          ENDIF
-
+          IREP = IPRPSYM(INDXPR)-1
+          ITIM = IPRPTIM(INDXPR)
           CALL PRSYMB(LUPRI,'-',60,4)
           CALL HEADER('Operator '//PRPNAM(INDXPR)//':',0)            
           CALL HEADER('Expectation value for individual orbitals',-1)
-
           EXPVAL(I) = D0
-
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
-C.........generate property matrix in SO-basis
-            CALL PRPEX2(INDXPR,EXPBUF,.true.,LEXPST(1,I),IDIMENS,
-     &                  WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
+C...........generate property matrix in SO-basis
+            CALL PRPEX2(INDXPR,EXPBUF,.true.,LEXPST(1,I),PRPAO,FIRST,
      &                  WORK,KFREE,LFREE,IPREXP)
-
             IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
-
             DO J = 1,NOCC(IFRP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
 C.............calculate expectation value
-              CALL PRPEX3(EXPBUF,INDXPR,DMAT,PMAT,FIRST,
+              CALL PRPEX3(EXPBUF,INDXPR,DMAT,PRPAO,FIRST,
      &          WORK,KFREE,LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
               EXPBUF = EXPBUF*DF(IOPEN)
@@ -408,18 +346,9 @@ C.............calculate expectation value
 
             IF(PRJANA) THEN
 C...........Transform property matrix to fragment orbital basis
-Caspg
-C quick hack to get the projection analysis to work, before IREPB and ITIMB
-C were undefined, hence the crash.
-C  irepb: Molecular point group symmetry
-C  itimb: Time reversal symmetry
-      IREPB = IPRPSYM(INDXPR)-1
-      ITIMB = IPRPTIM(INDXPR)
-C
-           CALL PRJEX1(WORK(KPFMT),PMAT,WORK(KRVEC),
-     &                  INDXPR,IREPB,ITIMB,NP(1,0),FIRST,IPREXP,
-     &                  WORK,KFREE,LFREE)
-Caspg
+              CALL PRJEX1(WORK(KPFMT),PRPAO,WORK(KRVEC),
+     &                    INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
+     &                    WORK,KFREE,LFREE)
             ENDIF
  10       CONTINUE
  20       CONTINUE
@@ -430,24 +359,23 @@ Caspg
      &     LEXPST(1,I),LEXPST(2,I)
           CALL PRSYMB(LUPRI,'-',60,4)
           IF(PRPCAN) THEN
-            CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
+            CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
-            CALL PRJEX2(EXPVAL(I),IDIMENS,WORK(KPTRI),
-     &                  WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+            CALL PRJEX2(EXPVAL(I),WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
-     &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
+     &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
-CMI        ... release the memory
-          CALL MEMREL('PRPEX1.orbana',WORK,KWORK,KPTRI,KFREE,LFREE)
         ENDDO
-C        CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
      &   's0 = T : Expectation value zero by point group symmetry.'
         WRITE(LUPRI,'(4X,A)')
      &   't0 = T : Expectation value zero by time reversal symmetry.'
+      ENDIF
+      IF(PRJANA) THEN
+        CALL MEMREL('PRPEX1.prjana',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -459,9 +387,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
-      SUBROUTINE PRPEX2(INDXPR,EXPVAL,ONLY_TS,LEXPST,IDIMENS,
-     &                  PTRI,PMAT,OP1INT,FIRST,WORK,KFREE,LFREE,
-     &                  IPRINT)
+      SUBROUTINE PRPEX2(INDXPR,EXPVAL,ONLY_TS,LEXPST,PRPAO,FIRST,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     if ONLY_TS = .true.
@@ -473,7 +400,7 @@ C
 C     if ONLY_TS = .false.
 C        return property matrix anyway (i need it in OpenRSP --radovan)
 C
-C     On output: PMAT - the complete propery matrix in SA-AO basis !
+C     On output: PRPAO - the complete propery matrix in SA-AO basis !
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
@@ -497,9 +424,7 @@ C#include "dcbdhf.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
-C     DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
-      DIMENSION PTRI(IDIMENS,NZ),PMAT(N2BBASX,NZ),
-     &          OP1INT(IDIMENS),WORK(*)
+      DIMENSION PRPAO(N2BBASX,NZ),WORK(*)
 
       CALL QENTER('PRPEX2')
 
@@ -528,7 +453,6 @@ CMI ... control output...
        IF (LEXPST(1)) WRITE(LUPRI,'(1X,A)')
      & ' Operator not symmetric! Do not calculate exp.value!'
       ENDIF
-
 C
 C     If not totally symmetric, return with zero value
 C
@@ -536,46 +460,10 @@ C
   109 CONTINUE
 !.q 
 C
-C     Totally symmetric operator ==> proceed
-C
-      CALL LSET(NZ,.TRUE.,FIRST)
-C
 C     Operator to be read from file
 C     =============================
 C
-
-CMI ... check it ! In the pure two-component mode there should be no reading from AOPROPER !!
-      IOPTYP = IPRPTYP(INDXPR)
-
-      IF(IOPTYP.EQ.0.AND..NOT.(BSS.AND.TWOCOMP)) THEN
-
-        KLBL  = IPRPLBL(1,INDXPR)
-        INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
-        IF(FIRST(1)) THEN
-          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPEX2')
-          CALL REAFCK(2,PMAT,.FALSE.,1)
-          CLOSE(2,STATUS = 'KEEP')
-          PFAC = FACPRP(1,INDXPR)
-          IF(PFAC.NE.D1) CALL DSCAL(N2BBASXQ,PFAC,PMAT,1)
-          
-          CALL LSET(NZ,.FALSE.,FIRST)
-        ELSE
-          WRITE(LUPRI,'(A,A8,A,A16,A)')
-     &      'Property file ',PRPLBL(KLBL),' for operator ',
-     &      PRPNAM(INDXPR),' not found !'
-          CALL QUIT('PRPEX2: Property file not found !')
-        ENDIF
-
-      ELSEIF (ITIM.EQ.0) THEN
-        IF (IDIMENS.NE.N2BBASX) CALL QUIT('PRPEX2: wrong IDIMENS !')
-        CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PMAT,OP1INT,
-     &              FIRST,WORK(KFREE),LFREE,IPRINT)
-      ELSE
-        IF (IDIMENS.NE.NNBBASX) CALL QUIT('PRPEX2: wrong IDIMENS !')
-        CALL PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,OP1INT,
-     &              FIRST,WORK(KFREE),LFREE,IPRINT)
-      ENDIF
-
+      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     
@@ -584,7 +472,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
-      SUBROUTINE PRPEX3(EXPVAL,INDXPR,DMAT,PMAT,FIRST,
+      SUBROUTINE PRPEX3(EXPVAL,INDXPR,DMAT,PRPAO,FIRST,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -611,18 +499,17 @@ C
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION DMAT(N2BBASX,NZ),WORK(*),
-     &          PMAT(N2BBASX,NZ)
+     &          PRPAO(N2BBASX,NZ)
 
       CALL QENTER('PRPEX3')
 
       IREP = IPRPSYM(INDXPR)-1
       ITIM = IPRPTIM(INDXPR)
-
       IF (IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/A,A16)')
      & 'PRPEX3: Entering total SA-AO matrix of property ',PRPNAM(INDXPR)
         write(lupri,*) '   proerty operator IREP=',IREP,' ITIM=',ITIM
-        CALL PRQMAT(PMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+        CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &                 IPQTOQ(1,IREP),LUPRI)
       ENDIF        
 
@@ -632,15 +519,15 @@ C     integrals (ensured by logical FIRST(1..NZ) )
 C========================================================================
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-        EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ),1,PMAT(1,IZ),1)
+        EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ),1,PRPAO(1,IZ),1)
         IF (IPRINT.GE.5) THEN
           WRITE(lupri,*)
           WRITE(LUPRI,*)
      &       ' == PRPEX3: accumulated EXPVAL (ORBANA=.false.)'//
      &       ' after IZ=',IZ,
      &       '/',NZ,' exp.val=',2*EXPVAL
-          WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
-          CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+          WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: PRPAO of IZ=',IZ
+          CALL OUTPUT(PRPAO(1,IZ),1,NTBAS(0),1,NTBAS(0),
      &              NTBAS(0),NTBAS(0),1,LUPRI)
           WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: DMAT of IZ=',IZ
           CALL OUTPUT(DMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
@@ -696,33 +583,11 @@ C
       DO IZ = 1,NZ
 
       IF(.NOT.FIRST(IZ)) THEN
-         II = IZ
-CC         IF(IOPTYP.EQ.0) THEN
-C this is a fock matrix...
-CC           II = IZ
-CC         ELSE
-CC           II = 1
-CC CMI      ... this is deactivated as property matrix PAO is ready
-CC CMI       IQ = IPQTOQ(IZ,IREP)
-CC C         IH = IHQMAT(IQ,ITIM)
-CC C         IF(IH.EQ.1) THEN
-CC C           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PAO)
-CC C         ELSEIF(IH.EQ.2) THEN
-CC C           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PAO)
-CC C         ENDIF
-CC C         CALL BUTOBS(PAO,1,WORK(KFREE),LFREE)
-CC         ENDIF
-
+        II = IZ
         IPA = 1
         IPF = 1
         IPR = 1
-Caspg
         DO IFRP = 1,NFSYM
-Caspg
-C       write (6,*) 'debug prjex1 qtrans',ifrp,irep,iz
-C       write (6,*) 'debug prjex1 qtrans',nfbas(ifrp,0),ncnt(ifrp)
-C       write (6,*) 'debug prjex1 qtrans',(ipqtoq(i,irep),i=1,nz)
-Caspg
           CALL QTRANS('AOMO','S',FADD,
      &         NFBAS(IFRP,0),NFBAS(IFRP,0),NCNT(IFRP),NCNT(IFRP),
      &         PAO(IPA,II),NTBAS(0),NTBAS(0),1,IPQTOQ(IZ,IREP),
@@ -773,7 +638,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
-      SUBROUTINE PRJEX2(EXPVAL,IDIMENS,PTRI,PFO,DFO,BVEC,IBUF,
+      SUBROUTINE PRJEX2(EXPVAL,PFO,DFO,BVEC,IBUF,
      &                  INDXPR,NCNT,NMO,
      &                  NR,NTOT,FMAT,PM,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
@@ -798,9 +663,7 @@ C
 #include "dcborb.h"
 #include "dcbprj.h"
 C
-      DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),
-C    &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
-     &          BVEC(*),PTRI(IDIMENS,NZ),IBUF(*),PBUF(*),
+      DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
      &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*),
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
@@ -828,9 +691,12 @@ C
           INDX(1,II) = I
           INDX(2,II) = J
         ENDDO
-        CALL PRJEX3(EXPVL2,IDIMENS,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
+        NTRI = NCNT(IFRP)*(NCNT(IFRP)+1)/2
+        CALL MEMGET('REAL',KPTRI,NTRI,WORK,KFREE,LFREE)
+        CALL PRJEX3(EXPVL2,PFO(IPD),DFO(IPD),WORK(KPTRI),NCNT(IFRP),
      &              NR(1,IFRP),NMO(IFRP),IBUF,PBUF,FMAT,PM,INDX,
      &              NTOT,INDXPR,IFRP,IPRINT)
+        CALL MEMREL('PRJEX2.ex3',WORK,KWORK,KPTRI,KFREE,LFREE)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
  10   CONTINUE
       CALL DSCAL(NTOT,D2,PM,1)
@@ -1079,7 +945,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex3 */
-      SUBROUTINE PRJEX3(EXPVAL,IDIMENS,PTRI,PFO,DFO,NCNT,
+      SUBROUTINE PRJEX3(EXPVAL,PFO,DFO,PTRI,NCNT,
      &                  NR,NMO,IBUF,PBUF,FMAT,PM,INDX,NTOT,
      &                  INDXPR,IFRP,IPRINT)
 C***********************************************************************
@@ -1097,7 +963,7 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbprj.h"
-      DIMENSION PTRI(IDIMENS),PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),
+      DIMENSION PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),PTRI(*),
      &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
 C

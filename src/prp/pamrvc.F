@@ -1843,7 +1843,7 @@ C
       PARAMETER(DTOL=1.0D-10,D0=0.0D0)
 C
       DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
-     &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
+     &          IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
 C
 C
       IF    (NBTYP.EQ.JBCNDX) THEN

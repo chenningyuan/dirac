@@ -51,6 +51,7 @@ contains
                          prop_op_nopct,        &
                          prop_op_dgsym,        &
                          prop_op_trsym,        &
+                         prop_op_triang,       &
                          prop_op_name)
 
       use quaternion_algebra
@@ -67,6 +68,7 @@ contains
 #include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "dcbdhf.h"
 #include "priunit.h"
 
@@ -75,6 +77,7 @@ contains
     logical, optional, intent(out)              :: prop_op_nopct
     integer, optional, intent(out)              :: prop_op_dgsym(*)
     integer, optional, intent(out)              :: prop_op_trsym(*)
+    logical, optional, intent(out)              :: prop_op_triang(*)
     character (len=16), optional, intent(out)   :: prop_op_name(*)
 !   ----------------------------------------------------------------------------
 !   local variables
@@ -246,11 +249,13 @@ contains
 !        initialize the property operator arrays
          if(present(prop_op_dgsym) .and. present(prop_op_trsym) .and.  present(prop_op_name))then
            do i = 1, nprps
-             prop_op_dgsym(i) = iprpsym(i)
-             prop_op_trsym(i) = iprptim(i)
-             prop_op_name(i)  = prpnam(i)
+             prop_op_dgsym(i)  = iprpsym(i)
+             prop_op_trsym(i)  = iprptim(i)
+             j                 = iprplbl(1,i) 
+             prop_op_triang(i) = abs(iprltyp(j)).eq.1
+             prop_op_name(i)   = prpnam(i)
            end do
-           prop_op_nopct      = nopct
+           prop_op_nopct       = nopct
          end if
 
        end if ! initialize x2c information from Dirac common blocks
