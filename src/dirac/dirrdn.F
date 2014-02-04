@@ -369,7 +369,7 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
-      RKBIMP_PRJTHR = 1.0D-5
+      RKBIMP_PRJTHR = 2.0D-5
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
