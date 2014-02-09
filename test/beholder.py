@@ -1,6 +1,6 @@
 
 
-BEHOLDER_VERSION = 'v0.0.1'
+BEHOLDER_VERSION = 'v0.0.2'
 
 """
     Beholder - numerically tolerant, bug intolerant test library.
@@ -254,16 +254,16 @@ class Filter:
                         log_diff.write('line %i: %s' % (f_to_line[i]+1, out[f_to_line[i]]))
                         log_diff.write('    rel error %7.4e > %7.4e\n\n' % (rel_error, f.tolerance))
             else:
-                log_diff.write('compare floats sizes do not match\n')
+                log_diff.write('extracted sizes do not match\n')
 
-                log_diff.write('own gave %i floats:\n' % len(f_l))
+                log_diff.write('own gave %i numbers:\n' % len(f_l))
                 last_line_printed = -1
                 for i in range(len(f_l)):
                     if (f_to_line[i] != last_line_printed):
                        log_diff.write('    %s' % out[f_to_line[i]])
                        last_line_printed = f_to_line[i]
 
-                log_diff.write('refence gave %i floats:\n' % len(f_l_ref))
+                log_diff.write('reference gave %i numbers:\n' % len(f_l_ref))
                 last_line_printed = -1
                 for i in range(len(f_l_ref)):
                     if (f_to_line_ref[i] != last_line_printed):
