@@ -6,6 +6,8 @@ import sys, subprocess, re, platform
 C_COMPILER_VENDOR = sys.argv[1]
 CXX_COMPILER_VENDOR = sys.argv[2]
 Fortran_COMPILER_VENDOR = sys.argv[3]
+#! operating system name
+CMAKE_SYSTEM_NAME = sys.argv[4]
 
 #! in every call of subprocess.check_output() stderr is merged into stdout
 #! by option stderr=subprocess.STDOUT
@@ -28,7 +30,7 @@ if C_COMPILER_VENDOR == 'GNU':
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
     try:
-        if platform.system() == 'Windows':
+        if CMAKE_SYSTEM_NAME == 'Windows':
             outputIntelC = subprocess.check_output(['icl', '/V'], stderr=subprocess.STDOUT)
         else:
             outputIntelC = subprocess.check_output(['icc', '-V'], stderr=subprocess.STDOUT)
@@ -88,7 +90,7 @@ if CXX_COMPILER_VENDOR == 'GNU':
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
     try:
-        if platform.system() == 'Windows':
+        if CMAKE_SYSTEM_NAME == 'Windows':
             outputIntelCXX = subprocess.check_output(['icl', '/V'], stderr=subprocess.STDOUT)
         else:
             outputIntelCXX = subprocess.check_output(['icpc', '-V'], stderr=subprocess.STDOUT)
@@ -148,7 +150,7 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
     try:
-        if platform.system() == 'Windows':
+        if CMAKE_SYSTEM_NAME == 'Windows':
             outputIntelFORTRAN = subprocess.check_output(['ifort', '/V'], stderr=subprocess.STDOUT)
         else:
             outputIntelFORTRAN = subprocess.check_output(['ifort', '-V'], stderr=subprocess.STDOUT)
