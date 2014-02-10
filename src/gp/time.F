@@ -47,117 +47,17 @@ C  /* Deck gettim */
       SUBROUTINE GETTIM(TIMCPU,TIMWAL)
 C
 C Written 18-Dec-1984 Hans Joergen Aa. Jensen
+C Rewrite Feb 6 2014 Trond Saue
 C
 C Return elapsed CPU time and elapsed real time.
 C
-#include "implicit.h"
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C...  Cray unicos timing code
-      REAL    TCPU0, TWALL0
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY)
-         TCPU0  = SECOND()
-#else
-         TCPU0 = TSECND()
-#endif
-         TWALL0 = TIMEF()
-      ENDIF
-#if defined (SYS_CRAY)
-      TIMCPU = SECOND() - TCPU0
-#else
-      TIMCPU = TSECND() - TCPU0
-#endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX) \
- || defined (SYS_AIX)
-#if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
- || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_AIX)
-C...  SGI IRIX code
-C      external time
-      DOUBLE PRECISION TIMCPU, TIMWAL
-      EXTERNAL TIME
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#else
-C...  HP-UX code
-#endif
-C      integer*4 time
-C      real*4  etime, tarray(2)
-C      logical first
-C      save    first,iwall0
-C      data    first /.true./
-C
-      INTEGER*4 TIME
-      REAL*4 ETIME, TARRAY(2)
-      LOGICAL FIRST
-      SAVE    FIRST,IWALL0
-      DATA    FIRST /.TRUE./
-C
-C      if (first) then
-C         first = .false.
-C         iwall0 = time()
-C      end if
-C      write(mydebugfile,*) 'after if'
-C      TIMCPU = etime(tarray)
-C      write(mydebugfile,*) 'TIMCPU : ', TIMCPU
-C      itimwl = time() - iwall0
-C      TIMWAL = itimwl
-C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
-C      close(mydebugfile)
-C
-#ifdef VAR_EKO
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      TIMWAL = 0D0
-#else
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         IWALL0 = TIME()
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      ITIMWL = TIME() - IWALL0
-      TIMWAL = ITIMWL
-#endif
-#endif
-#if defined (SYS_IBM)
-      LOGICAL FIRST
-      SAVE    FIRST
-      DATA    FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         CALL SETTIM
-         TIMCPU = 0.0
-         TIMWAL = 0.0
-      ELSE
-         CALL TIMING(CPUA,CPUE,TIOA,TIOE)
-         TIMCPU = CPUA
-         TIMWAL = TIOA
-      END IF
-#endif
-#if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
- && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
- && !defined (SYS_HPUX)   && !defined (SYS_IRIX) && !defined (SYS_PARAGON) \
- && !defined (SYS_T3D)    && !defined (SYS_SUN)  && !defined (SYS_LINUX) \
- && !defined (SYS_DEC)    && !defined (SYS_SX)
-      PARAMETER (D0 = 0.0D0)
-      TIMCPU = SECOND()
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif
-C
-      RETURN
-      END
+      real(8) :: timcpu,timwal
+      integer :: clock_count, clock_rate, clock_max
+      call cpu_time (timcpu)
+      call system_clock ( clock_count, clock_rate, clock_max )
+      timwal = real ( clock_count ) / real ( clock_rate )
+      return
+      end
 C  /* Deck settim */
 #if defined (SYS_IBM)
       SUBROUTINE SETTIM

@@ -1469,16 +1469,21 @@ C
          IF (IBUF.NE.0) LGBUF(IBUF,I_FILE) = N
       ENDDO
 C
-      PERC = N_WRITTEN+N_DELETED
-      PERC = 100.D0/PERC
-      PERC = PERC*N_WRITTEN
+      IF((N_WRITTEN+N_DELETED).EQ.0) THEN
+        WRITE(LUPRI,'(A,I5,A)') 
+     &    ' Node',MYTID,' slept during first half transformation.'
+      ELSE
+        PERC = N_WRITTEN+N_DELETED
+        PERC = 100.D0/PERC
+        PERC = PERC*N_WRITTEN
 #if defined (INT_STAR8)
-      GIGABYTES = N_WRITTEN * 24.0
+        GIGABYTES = N_WRITTEN * 24.0
 #else
-      GIGABYTES = N_WRITTEN * 16.0
+        GIGABYTES = N_WRITTEN * 16.0
 #endif
-      GIGABYTES = GIGABYTES / (1024.0**3)
-      WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
+        GIGABYTES = GIGABYTES / (1024.0**3)
+        WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
+      ENDIF
  1000 FORMAT (/" Node",I5," finished first half transformation",I16,
      &         " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
       RETURN
