@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#
+# Script to determine and verify compilers (C, C++ and Fortran) versions.
+#
+# For each vendor/system call compiler specific subprocess command (like "gcc --version")
+# returning desired compiler version.
+#
+# This script returns (as stdout) for CMake a list of 3 strings - compilers versions - separated by semicommas.
+#
+# Written by Ivan Hrasko, february 2014
+#
+#
+
 
 import sys, subprocess, re, platform
 
@@ -195,5 +207,5 @@ else:
     Fortran_COMPILER_VERSION = '0.0'
 
 
-#! this is output for CMake (must be in this order and with ;)
+#! this is the standard output for CMake (must be in this order and with ;)
 print C_COMPILER_VERSION + ';' + CXX_COMPILER_VERSION + ';' + Fortran_COMPILER_VERSION

@@ -1,7 +1,19 @@
-# in this moment CMAKE_<LANG>_COMPILER_ID should be defined for C, C++ and Fortran: 
-# see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake
+########################################################################################
+#
+# CMake script for getting (from Python script and from CMake variables if defined)
+#  and comparing compilers versions
+#
+# At this moment the CMAKE_<LANG>_COMPILER_ID variable must be defined for C, C++ and Fortran: 
+# see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake, otherwise quit with fatal error.
+#
+# Written by Ivan Hrasko, February 2014.
+# 
+#########################################################################################
 
-# what is minimum required version depending on vendor? 
+
+# What is minimum required compiler version depending on vendor? 
+# Please add according to your experience. Usually the minimal required compiler's version  
+# contains smaller number of digits in its string.
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_C "4.3.1")
 elseif(CMAKE_C_COMPILER_ID MATCHES "Intel")
