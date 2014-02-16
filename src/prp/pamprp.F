@@ -4022,7 +4022,7 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                          INDXPR,ISYXPR,ITRXPR,IPRINT)
                     IF (IPRINT.GE.5) THEN
-                       !  print out assiged operators of wanted property
+                       !  print out assigned operators of wanted property
                        write(LUPRI,'(4X,A)')
      &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
@@ -8138,7 +8138,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
-      LOGICAL IS_SQUARE, IS_PCTRA
+      LOGICAL IS_PCTRA
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
 C
@@ -8148,20 +8148,16 @@ C
 C     ... allocate for LL-only operator 
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
       REWIND (LU1INT)
-
 C     ... run over all operators in the list
       DO I = 1, NPRPS
-
 C       ... get info if this operator has to be picture change transformed
         CALL DECIDEPCTR(IS_PCTRA,PRPNAM(I),IPRINT)
-
         IREP = IPRPSYM(I) - 1
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,*)
@@ -8174,42 +8170,13 @@ C       ... get info if this operator has to be picture change transformed
      &      'Operator need NOT to be picture change transformed.'
           ENDIF
         ENDIF
-
-        IF (IPRPTIM(I).EQ.0) THEN
-          IDIMENS = N2BBASX
-          IS_SQUARE = .TRUE.
-        ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
-          IDIMENS = NNBBASX
-          IS_SQUARE = .FALSE.
-        ELSE
-          CALL QUIT('PROP2BSS: wrong parameter ! ')
-        ENDIF
-C
-C       Memory allocation
-C
-        CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-
 C       ... get the operator either in the full four-component form, 
 C       .... or already in  the picture change transformed shape
 C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
-        IF (IS_SQUARE) THEN
-          CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ELSE
-          CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ENDIF
-C     ... deallocate the memory...
-        CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
-
+        CALL PRPMSAO(INDXPR,VMAT,WORK(KFIRST),WORK(KFREE),LFREE,IPRINT)   
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
-
 C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR

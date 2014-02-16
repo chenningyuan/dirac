@@ -837,10 +837,7 @@ contains
                   dummy_dp,   &
                   .false.,    &
                   lexpst,     &
-                  idimension, &
-                  ptri,       &
                   P%elms,     &
-                  op1int,     &
                   first,      &
                   work, 1, lwork, 0)
 

@@ -131,6 +131,7 @@ contains
      real(8), allocatable            :: scr_mat1(:)
      integer, allocatable            :: prop_op_dgsym(:)
      integer, allocatable            :: prop_op_trsym(:)
+     logical, allocatable            :: prop_op_triang(:)
      character (len=16), allocatable :: prop_op_name(:)
      character (len=12)              :: flabel
 !**********************************************************************
@@ -201,18 +202,21 @@ contains
        allocate(prop_op_name(num_prp_op*16))
        allocate(prop_op_dgsym(num_prp_op))
        allocate(prop_op_trsym(num_prp_op))
+       allocate(prop_op_triang(num_prp_op))
 
 !      initialize property operator attributes
        call init_x2c_cb(.false.,           &
                         prop_op_nopct,     &
                         prop_op_dgsym,     &
                         prop_op_trsym,     &
+                        prop_op_triang,    &
                         prop_op_name)
 
 !      default for all 1e property operator: write in "op_2c^++" format on file
        op_2c_ll = .true.
        call pctrafo_op_4cto2c_saao_bas(prop_op_dgsym,       &
                                        prop_op_trsym,       &
+                                       prop_op_triang,      &
                                        prop_op_name,        &
                                        naosh_ls,            &
                                        nr_ao_L,             &
@@ -234,6 +238,7 @@ contains
 
        deallocate(prop_op_dgsym)
        deallocate(prop_op_trsym)
+       deallocate(prop_op_triang)
        deallocate(prop_op_name)
 
   end subroutine pctrafo_all_op_driver
@@ -241,6 +246,7 @@ contains
 !**********************************************************************
   subroutine pctrafo_op_4cto2c_saao_bas(prop_op_dgsym,       &
                                         prop_op_trsym,       &
+                                        prop_op_triang,      &
                                         prop_op_name,        &
                                         naosh_ls,            &
                                         nr_ao_L,             &
@@ -272,6 +278,7 @@ contains
 !----------------------------------------------------------------------
      integer, intent(in)            :: prop_op_dgsym(num_prp_op)
      integer, intent(in)            :: prop_op_trsym(num_prp_op)
+     logical, intent(in)            :: prop_op_triang(num_prp_op)
      integer, intent(in)            :: naosh_ls
      integer, intent(in)            :: nr_ao_L
      integer, intent(in)            :: naosh_all(nfsym)
@@ -292,11 +299,10 @@ contains
      character (len=16), intent(in) :: prop_op_name(num_prp_op)
 !----------------------------------------------------------------------
      real(8), allocatable           :: wrk(:)
-     real(8), allocatable           :: scr_mat1(:)
+     real(8), allocatable           :: scr_mat1(:,:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
-     integer                        :: i
-     integer                        :: j
+     integer                        :: i,j
      integer                        :: lwrk
      integer                        :: nr_sph
      integer                        :: op_fer_rep
@@ -351,7 +357,7 @@ contains
 
 !      allocate two matrices for pct-procedure of each property operator
 !      idea: for optimal reuse of the matrices allocate with full dimensionality
-       allocate(scr_mat1(naosh_ls**2 * nz))
+       allocate(scr_mat1(naosh_ls**2,nz))
        allocate(scr_mat2(naosh_ls**2 * nz))
        scr_mat1        = 0
        scr_mat2        = 0
@@ -361,34 +367,38 @@ contains
 
 !        define required operator attributes
          op_fer_rep = prop_op_dgsym(i) - 1
-         op_mat_dim = naosh_ls**2
-         if(abs(prop_op_trsym(i)) > 0) op_mat_dim = naosh_ls*(naosh_ls+1)/2
-
-
+!
 !        step 2a: get 4c-operator f_4c in SA-AO basis
 !        ------------------------------------------------------------------------------
          call lset(nz,.true.,quat_array_filled_tmp)
-
-         call prpmao(int1_4c_file,                         &
-                     i,                                    & 
-                     op_mat_dim,                           &
-                     scr_mat1,                             &
-                     scr_mat2,                             &
-                     quat_array_filled_tmp,                &
-                     print_lvl)                           
-
-         if(abs(prop_op_trsym(i)) > 0)then 
-           scr_mat2 = 0
-           call dcopy(op_mat_dim*nz,scr_mat1,1,scr_mat2,1)
-         end if
-
-         call sort2sao_no_work(op_mat_dim,                 &
-                               scr_mat2,                   &
-                               scr_mat1,                   &
-                               quat_array_filled_tmp,      &
-                               op_fer_rep,                 &
-                               prop_op_trsym(i),           &
-                               print_lvl)
+         if(prop_op_triang(i)) then
+           op_mat_dim = naosh_ls*(naosh_ls+1)/2
+           call prpmao(int1_4c_file,                         &
+                       i,                                    & 
+                       prop_op_triang(i),                    &
+                       op_mat_dim,                           &
+                       scr_mat2,                             &
+                       scr_mat1,                             &
+                       quat_array_filled_tmp,                &
+                       print_lvl)                           
+                       call tri2sq(scr_mat1,scr_mat2,quat_array_filled_tmp,op_fer_rep,prop_op_trsym(i))
+         else
+           op_mat_dim = naosh_ls**2
+           call prpmao(int1_4c_file,                         &
+                       i,                                    & 
+                       prop_op_triang(i),                    &
+                       op_mat_dim,                           &
+                       scr_mat2,                             &
+                       scr_mat1,                             &
+                       quat_array_filled_tmp,                &
+                       print_lvl)                           
+           do j = 1,nz
+             if(quat_array_filled_tmp(j)) call dzero(scr_mat1(1,j),op_mat_dim)
+           enddo
+         endif
+         do j = 1,nz
+           if(.not.quat_array_filled_tmp(j)) call butobs_no_work(scr_mat1(1,j),1)
+         enddo
 
 !        step 2b: perform the pct: f_2c^++ == U+ * f_4c * U in DIRAC-sorted SA-AO basis
 !        --------------------------------------------------------------------------------
@@ -523,8 +533,7 @@ contains
      real(8), allocatable           :: wrk(:)
      real(8), allocatable           :: scr_mat2(:)
      real(8), allocatable           :: pctmat(:)
-     integer                        :: i
-     integer                        :: j
+     integer                        :: i,j
      integer                        :: lwrk
      integer                        :: op_fer_rep
      integer                        :: ioff_pct_mat

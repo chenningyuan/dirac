@@ -369,7 +369,7 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
-      RKBIMP_PRJTHR = 1.0D-5
+      RKBIMP_PRJTHR = 2.0D-5
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
@@ -6491,7 +6491,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 20 ! for the new definition
+        IPTYP            = 22 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
