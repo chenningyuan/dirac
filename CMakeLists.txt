@@ -160,6 +160,7 @@ if(ENABLE_PCMMOD)
     set(EXTERNAL_LIBS
         stdc++
 	pcm
+	z
         getkw
         ${EXTERNAL_LIBS}
         )
