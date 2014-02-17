@@ -678,9 +678,9 @@
           
 !     Convert units
           IF(.NOT.(unitname=='bohr')) THEN
-            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
-            WRITE(LUPRI,*) 'Converting to atomic units with',           &
-     &                     ' conversion factor=', UNIT_CONVERSION 
+!            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
+!            WRITE(LUPRI,*) 'Converting to atomic units with',           &
+!     &                     ' conversion factor=', UNIT_CONVERSION 
             mol=>firstatom
             DO WHILE (ASSOCIATED(mol))
               mol%x=mol%x*UNIT_CONVERSION

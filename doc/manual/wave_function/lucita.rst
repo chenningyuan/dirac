@@ -132,7 +132,7 @@ example for D:math:`_{2h}`:
 
 keyword(RSTRCI)
 
-Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation):
+Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation; until including DIRAC v13.1):
 
 ::
 

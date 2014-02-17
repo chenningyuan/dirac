@@ -47,6 +47,7 @@ module x2cmod_cfg
   logical, public :: x2cmod_debug                     =  .false.
   logical, public :: x2cmod_h1dirty                   =  .false.
   logical, public :: x2cmod_skip_op_pct               =  .false.
+  logical, public :: x2cmod_mmf_restart               =  .false.
   logical, public :: x2c_linsym                       =  .false.
   logical, public :: x2c_prep_bnccorr                 =  .false.
   logical, public :: x2c_do_spherical                 =  .false.
