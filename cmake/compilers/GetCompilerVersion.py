@@ -2,17 +2,16 @@
 #
 # Script to determine and verify compilers (C, C++ and Fortran) versions.
 #
-# For each vendor/system call compiler specific subprocess command (like "gcc --version")
+# For each vendor/system calls compiler specific subprocess command (like "gcc --version")
 # returning desired compiler version.
 #
-# This script returns (as stdout) for CMake a list of 3 strings - compilers versions - separated by semicommas.
+# This script returns (as stdout) for CMake a list of 3 strings - compilers versions - separated by semicolons.
 #
 # Written by Ivan Hrasko, february 2014
 #
 #
 
-
-import sys, subprocess, re, platform
+import sys, subprocess, re
 
 #! GNU, Intel, PGI, XL
 C_COMPILER_VENDOR = sys.argv[1]
@@ -49,11 +48,11 @@ elif C_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelC = ''
     finally:
-        matchIntelC = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelC)
+        matchIntelC = re.search(r'\d+\.\d+', outputIntelC)
         if matchIntelC:
             IntelCversion = matchIntelC.group()
         else:
-            IntelCversion = '0.0.0.0'
+            IntelCversion = '0.0'
 			
     C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
@@ -109,11 +108,11 @@ elif CXX_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelCXX = ''
     finally:
-        matchIntelCXX = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelCXX)
+        matchIntelCXX = re.search(r'\d+\.\d+', outputIntelCXX)
         if matchIntelCXX:
             IntelCXXversion = matchIntelCXX.group()
         else:
-            IntelCXXversion = '0.0.0.0'
+            IntelCXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
@@ -169,11 +168,11 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelFORTRAN = ''
     finally:
-        matchIntelFORTRAN = re.search(r'\d+\.\d+\.\d+\.\d+', outputIntelFORTRAN)
+        matchIntelFORTRAN = re.search(r'\d+\.\d+', outputIntelFORTRAN)
         if matchIntelFORTRAN:
             IntelFORTRANversion = matchIntelFORTRAN.group()
         else:
-            IntelFORTRANversion = '0.0.0.0'
+            IntelFORTRANversion = '0.0'
 			
     Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':

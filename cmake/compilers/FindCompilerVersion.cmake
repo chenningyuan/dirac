@@ -1,7 +1,7 @@
 ########################################################################################
 #
 # CMake script for getting (from Python script and from CMake variables if defined)
-#  and comparing compilers versions
+# and comparing compilers versions
 #
 # At this moment the CMAKE_<LANG>_COMPILER_ID variable must be defined for C, C++ and Fortran: 
 # see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake, otherwise quit with fatal error.
@@ -10,42 +10,42 @@
 # 
 #########################################################################################
 
-
 # What is minimum required compiler version depending on vendor? 
-# Please add according to your experience. Usually the minimal required compiler's version  
-# contains smaller number of digits in its string.
+# Please add according to your experience. But if you want to specify more numbers 
+# or different format than you see here then you must also make changes in GetCompilerVersion.py.
+# (becasuse that script matches only as many numbers as you see here)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
-	set(REQUIRED_C "4.3.1")
+	set(REQUIRED_C "4.1.2")
 elseif(CMAKE_C_COMPILER_ID MATCHES "Intel")
-	set(REQUIRED_C "12.1.3.293")
+	set(REQUIRED_C "10.1")
 elseif(CMAKE_C_COMPILER_ID MATCHES "PGI")
-	set(REQUIRED_C "12.0")
+	set(REQUIRED_C "12.5")
 elseif(CMAKE_C_COMPILER_ID MATCHES "XL")
-	set(REQUIRED_C "11.00")
+	set(REQUIRED_C "11.01")
 else()
 	message(FATAL_ERROR "Vendor of your C compiler is not supported")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	set(REQUIRED_CXX "4.3.1")
+	set(REQUIRED_CXX "4.1.2")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-	set(REQUIRED_CXX "12.1.3.293")
+	set(REQUIRED_CXX "10.1")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "PGI")
-	set(REQUIRED_CXX "12.0")
+	set(REQUIRED_CXX "12.5")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "XL")
-	set(REQUIRED_CXX "11.00")
+	set(REQUIRED_CXX "11.01")
 else()
 	message(FATAL_ERROR "Vendor of your C++ compiler is not supported")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-	set(REQUIRED_Fortran "4.3.1")
+	set(REQUIRED_Fortran "4.3.0")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
-	set(REQUIRED_Fortran "12.1.3.293")
+	set(REQUIRED_Fortran "10.1")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-	set(REQUIRED_Fortran "12.0")
+	set(REQUIRED_Fortran "12.5")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "XL")
-	set(REQUIRED_Fortran "11.00")
+	set(REQUIRED_Fortran "11.01")
 else()
 	message(FATAL_ERROR "Vendor of your Fortran compiler is not supported")
 endif()
