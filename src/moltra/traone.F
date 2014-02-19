@@ -759,6 +759,8 @@ C     All quaternion and complex subgroups are Abelian.
 C     The real groups are non-Abelian and so an Abelian subgroup is chosen
 C       D2, C2v -> C2
 C       D2h     -> C2h
+C     NSYMRPA is the number of boson irreps of the subgroup;
+C     since it is Abelian the number of fermion irreps will be the same
 C
 C     Luuk Visscher, Mar 18 1997
 C
