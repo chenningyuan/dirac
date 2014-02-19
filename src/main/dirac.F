@@ -660,7 +660,9 @@ C        reset number of active orbitals
          END DO
 
       ELSE
-         CALL QUIT('Invalid CISELECT parameter')
+         WRITE(LUPRI,'(//2A)')
+     &   'ERROR Invalid CISELECT parameter in TDHFORB : ',CISELECT
+         CALL QUIT('Invalid CISELECT parameter in TDHFORB')
       END IF
 C
 C     Define MK limits now AFTER CI has been defined:
