@@ -1348,9 +1348,9 @@ C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
 #ifdef MOD_LAO_REARRANGED
       IF (SHIELD .OR. shielding_rearrange .OR.
-     &    ESRGTENS .OR. ESRANISO) THEN
+     &    ESRGTENS .OR. ESR_HFCC) THEN
 #else
-      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+      IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
 #endif
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
@@ -3992,8 +3992,8 @@ C
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
               END IF
-              IF (ESRANISO) THEN
-                CALL OP1IND('ESRANISO',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
+              IF (ESR_HFCC) THEN
+                CALL OP1IND('ESR_HFCC',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
                 IPESR(ISCOR1,1) = INDOP1
               END IF
 
@@ -4205,9 +4205,10 @@ C
         ENDDO
       END IF
 C
-      IF (ESRANISO) THEN
+      IF (ESR_HFCC) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(A)') ' ** ESR anisotropy operators **'
+        WRITE(LUPRI,'(A)')
+     &     ' ** ESR nuclear hyperfine coupling operators **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
           INDOP1 = IPESR(I,1)
