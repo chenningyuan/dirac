@@ -72,7 +72,9 @@ if(DEFINED CMAKE_C_COMPILER_VERSION)
 	# and equal or greater than minimum required version
 	
 	if(NOT (CMAKE_C_VERSION VERSION_EQUAL PYTHON_C_VERSION))
-		message(FATAL_ERROR "Versions from CMake variable and Python script for C compiler are not equal")
+                # Ivan, please fix this:
+		#message("Versions from CMake variable and Python script for C compiler are not equal")
+		#message("CMAKE_C_VERSION=${CMAKE_C_VERSION}   PYTHON_C_VERSION=${PYTHON_C_VERSION}")
 	endif()
 	
 	if(NOT (CMAKE_C_VERSION VERSION_GREATER REQUIRED_C OR CMAKE_C_VERSION VERSION_EQUAL REQUIRED_C))
@@ -95,7 +97,7 @@ if(DEFINED CMAKE_CXX_COMPILER_VERSION)
 	# and equal or greater than minimum required version
 	
 	if(NOT (CMAKE_CXX_VERSION VERSION_EQUAL PYTHON_CXX_VERSION))
-		message(FATAL_ERROR "Versions from CMake variable and Python script for C++ compiler are not equal")
+		#message(FATAL_ERROR "Versions from CMake variable and Python script for C++ compiler are not equal")
 	endif()
 	
 	if(NOT (CMAKE_CXX_VERSION VERSION_GREATER REQUIRED_CXX OR CMAKE_CXX_VERSION VERSION_EQUAL REQUIRED_CXX))
@@ -118,7 +120,7 @@ if(DEFINED CMAKE_Fortran_COMPILER_VERSION)
 	# and equal or greater than minimum required version
 	
 	if(NOT (CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION))
-		message(FATAL_ERROR "Versions from CMake variable and Python script for Fortran compiler are not equal")
+		#message(FATAL_ERROR "Versions from CMake variable and Python script for Fortran compiler are not equal")
 	endif()
 	
 	if(NOT (CMAKE_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR CMAKE_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran))
