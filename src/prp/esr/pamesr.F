@@ -444,7 +444,7 @@ cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
         ENDDO
       END IF
 C
-      IF (ESRGTENS .OR. ESRANISO) THEN
+      IF (ESRGTENS .OR. ESR_HFCC) THEN
          CALL TITLER('DIRAC  - ESR PROPERTIES','*',116)
          WRITE(LUPRI,'(A,I5)')
      &   '* Effective spin multiplicity:',MULTIPESR
@@ -710,9 +710,9 @@ C
       ENDIF
 C     .. end if (ESRGTENS) then
 C
-C     Print ESR anisotropies from hyperfine Hamiltonian
+C     Print ESR hyperfine coupling constants from hyperfine Hamiltonian
 C
-      IF (ESRANISO)
+      IF (ESR_HFCC)
      &   CALL PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
 C
 C     Memory deallocation
@@ -1724,7 +1724,7 @@ C
 #include "symmet.h"
 #include "ibtfun.h"
 C     
-      CALL HEADER(' ESR hfs anisotropies : ',1)
+      CALL HEADER('ESR nuclear hyperfine couplings',1)
 C
 C
 C     ***************************************
@@ -1811,7 +1811,7 @@ C
          ENDIF
       END DO
 C     
-C     Fill ESR hfs anisotropy matrices Seff_p * TMPMAT * I_N,q
+C     Fill ESR hfcc matrices Seff_p * TMPMAT * I_N,q
 C
 C     The factors in front of ESRVAL will cancel the corresponding
 C     factors in the Seff_p matrices
@@ -1859,13 +1859,13 @@ C
          ENDDO
       ELSE
          WRITE(LUPRI,'(//A/A)') ' WARNING:'//
-     &   ' Only doublet and triplet hfs anisotropy implemented yet',
+     &   ' Only doublet and triplet hfcc implemented yet',
      &   ' Returning without doing anything ...'
          GO TO 9999
       END IF
 C
       IF (IPRPRP.GE.4) THEN
-         CALL HEADER('ESR hfs anisotropies'//
+         CALL HEADER('ESR hfcc'//
      &         ' in symmetry coordinates (B~I,au)',1)
          CALL FCPRI (TMPMAT,'SIGMANO',CSTRA,SCTRA)
       ENDIF
@@ -1941,15 +1941,16 @@ C
          AVETOTX= (XTHZ*1.0D-6) * AVETOT
        
 C
-         CALL TITLER('ESR anisotropy for '//NAME//':','=',1)
+         CALL TITLER(
+     &      'ESR hyperfine coupling constants for '//NAME//':','=',1)
 C
-         WRITE (LUPRI,'(A,F20.8/A,F20.2,A)')
-     &   '  Isotope number:         ',RATINF(1,L),
-     &   '  Isotropic anisotropy:   ',AVETOTX, ' MHz'
+         WRITE (LUPRI,'(A,I5//A,F20.2,A)')
+     &   '  Isotope number:',NINT(RATINF(1,L)),
+     &   '  Isotropic hyperfine coupling constant',AVETOTX, ' MHz'
          IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D20.10,A)')
-     &   '  Isotropic anisotropy:   ',AVETOT,  ' au'
+     &   '  Isotropic hyperfine coupling constant',AVETOT,  ' au'
 C
-         CALL HEADER('Total anisotropy tensor (MHz):',1)
+         CALL HEADER('Total hyperfine coupling matrix (MHz):',1)
          WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
          DO J = 1, 3
             WRITE (LUPRI,'(2X,A6,3F15.2)')
@@ -1957,7 +1958,7 @@ C
          END DO
 C
          IF (IPRINT .GT. 0) THEN
-            CALL HEADER('Total anisotropy tensor (au):',1)
+            CALL HEADER('Total hyperfine coupling matrix (au):',1)
             WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
             DO J = 1, 3
                WRITE (LUPRI,'(2X,A6,1P,3D20.10)')
