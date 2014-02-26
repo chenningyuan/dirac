@@ -17,6 +17,7 @@ import sys
 import subprocess
 import shlex
 import shutil
+import string
 from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
@@ -36,7 +37,9 @@ class TestRun:
                 stdout_file_name='',
                 accepted_errors=[]):
         try:
-            process = subprocess.Popen(shlex.split(command),
+            if sys.platform != "win32":
+                command = shlex.split(command)
+            process = subprocess.Popen(command,
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
@@ -87,6 +90,12 @@ class TestRun:
                           default=input_dir,
                           help='working directory [default: %(default)s]')
         (options, args) = parser.parse_args(args=argv[1:])
+
+        if sys.platform == "win32":
+            # on windows we flip possibly wrong slashes
+            options.binary_dir = string.replace(options.binary_dir, '/', '\\')
+            options.work_dir = string.replace(options.work_dir, '/', '\\')
+
         return (options.binary_dir, options.work_dir)
 
 #-------------------------------------------------------------------------------
