@@ -167,7 +167,6 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
-  :doc:`beholder_dirac.py <programmers/testing_beholder>` |
   `runtest_dirac.py <https://github.com/rbast/runtest/blob/master/examples/dirac/adding_tests.md>`_ |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
