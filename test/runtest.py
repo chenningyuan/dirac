@@ -1,14 +1,14 @@
 
 
-BEHOLDER_VERSION = 'v0.0.2'
+RUNTEST_VERSION = 'v0.0.3'
 
 """
-    Beholder - numerically tolerant, bug intolerant test library.
+    runtest - numerically tolerant test library.
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
 
-    For documentation see https://github.com/rbast/beholder
+    For documentation see https://github.com/rbast/runtest
 """
 
 import re
@@ -78,7 +78,7 @@ class TestRun:
 
     #---------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='Beholder %s - numerically tolerant, bug intolerant test library.' % BEHOLDER_VERSION)
+        parser = OptionParser(description='runtest %s - numerically tolerant, bug intolerant test library.' % RUNTEST_VERSION)
         parser.add_option('--binary-dir',
                           '-b',
                           action='store',
