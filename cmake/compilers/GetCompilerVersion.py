@@ -153,7 +153,7 @@ elif CXX_COMPILER_VENDOR == 'XL':
     CXX_COMPILER_VERSION = XLCXXversion
 elif CXX_COMPILER_VENDOR == 'Clang':
     try:
-        outputClangCXX = subprocess.Popen(['clang', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        outputClangCXX = subprocess.Popen(['clang++', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputClangCXX = ''
     
