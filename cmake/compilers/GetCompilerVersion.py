@@ -28,12 +28,12 @@ if C_COMPILER_VENDOR == 'GNU':
         outputGCC = subprocess.Popen(['gcc', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputGCC = ''
-    finally:
-        matchGCC = re.search(r'\d+\.\d+\.\d+', outputGCC)
-        if matchGCC:
-            GCCversion = matchGCC.group()
-        else:
-            GCCversion = '0.0.0'
+    
+    matchGCC = re.search(r'\d+\.\d+\.\d+', outputGCC)
+    if matchGCC:
+        GCCversion = matchGCC.group()
+    else:
+        GCCversion = '0.0.0'
 
     C_COMPILER_VERSION = GCCversion
 elif C_COMPILER_VENDOR == 'Intel':
@@ -44,12 +44,12 @@ elif C_COMPILER_VENDOR == 'Intel':
             outputIntelC = subprocess.Popen(['icc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputIntelC = ''
-    finally:
-        matchIntelC = re.search(r'\d+\.\d+', outputIntelC)
-        if matchIntelC:
-            IntelCversion = matchIntelC.group()
-        else:
-            IntelCversion = '0.0'
+    
+    matchIntelC = re.search(r'\d+\.\d+', outputIntelC)
+    if matchIntelC:
+        IntelCversion = matchIntelC.group()
+    else:
+        IntelCversion = '0.0'
 			
     C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
@@ -57,12 +57,12 @@ elif C_COMPILER_VENDOR == 'PGI':
         outputPGIC = subprocess.Popen(['pgcc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputPGIC = ''
-    finally:
-        matchPGIC = re.search(r'\d+\.\d+', outputPGIC)
-        if matchPGIC:
-            PGICversion = matchPGIC.group()
-        else:
-            PGICversion = '0.0'
+    
+    matchPGIC = re.search(r'\d+\.\d+', outputPGIC)
+    if matchPGIC:
+        PGICversion = matchPGIC.group()
+    else:
+        PGICversion = '0.0'
 			
     C_COMPILER_VERSION = PGICversion
 elif C_COMPILER_VENDOR == 'XL':
@@ -70,12 +70,12 @@ elif C_COMPILER_VENDOR == 'XL':
         outputXLC = subprocess.Popen(['xlc', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputXLC = ''
-    finally:
-        matchXLC = re.search(r'\d+\.\d+', outputXLC)
-        if matchXLC:
-            XLCversion = matchXLC.group()
-        else:
-            XLCversion = '0.0'
+    
+    matchXLC = re.search(r'\d+\.\d+', outputXLC)
+    if matchXLC:
+        XLCversion = matchXLC.group()
+    else:
+        XLCversion = '0.0'
 			
     C_COMPILER_VERSION = XLCversion
 elif C_COMPILER_VENDOR == 'Clang':
@@ -83,12 +83,12 @@ elif C_COMPILER_VENDOR == 'Clang':
         outputClangC = subprocess.Popen(['clang', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputClangC = ''
-    finally:
-        matchClangC = re.search(r'\d+\.\d+', outputClangC)
-        if matchClangC:
-            ClangCversion = matchClangC.group()
-        else:
-            ClangCversion = '0.0'
+    
+    matchClangC = re.search(r'\d+\.\d+', outputClangC)
+    if matchClangC:
+        ClangCversion = matchClangC.group()
+    else:
+        ClangCversion = '0.0'
 			
     C_COMPILER_VERSION = ClangCversion
 else:
@@ -101,12 +101,12 @@ if CXX_COMPILER_VENDOR == 'GNU':
         outputGXX = subprocess.Popen(['g++', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputGXX = ''
-    finally:
-        matchGXX = re.search(r'\d+\.\d+\.\d+', outputGXX)
-        if matchGXX:
-            GXXversion = matchGXX.group()
-        else:
-            GXXversion = '0.0.0'
+    
+    matchGXX = re.search(r'\d+\.\d+\.\d+', outputGXX)
+    if matchGXX:
+        GXXversion = matchGXX.group()
+    else:
+        GXXversion = '0.0.0'
 
     CXX_COMPILER_VERSION = GXXversion
 elif CXX_COMPILER_VENDOR == 'Intel':
@@ -117,12 +117,12 @@ elif CXX_COMPILER_VENDOR == 'Intel':
             outputIntelCXX = subprocess.Popen(['icpc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputIntelCXX = ''
-    finally:
-        matchIntelCXX = re.search(r'\d+\.\d+', outputIntelCXX)
-        if matchIntelCXX:
-            IntelCXXversion = matchIntelCXX.group()
-        else:
-            IntelCXXversion = '0.0'
+    
+    matchIntelCXX = re.search(r'\d+\.\d+', outputIntelCXX)
+    if matchIntelCXX:
+        IntelCXXversion = matchIntelCXX.group()
+    else:
+        IntelCXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
@@ -130,12 +130,12 @@ elif CXX_COMPILER_VENDOR == 'PGI':
         outputPGICXX = subprocess.Popen(['pgCC', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputPGICXX = ''
-    finally:
-        matchPGICXX = re.search(r'\d+\.\d+', outputPGICXX)
-        if matchPGICXX:
-            PGICXXversion = matchPGICXX.group()
-        else:
-            PGICXXversion = '0.0'
+    
+    matchPGICXX = re.search(r'\d+\.\d+', outputPGICXX)
+    if matchPGICXX:
+        PGICXXversion = matchPGICXX.group()
+    else:
+        PGICXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = PGICXXversion
 elif CXX_COMPILER_VENDOR == 'XL':
@@ -143,12 +143,12 @@ elif CXX_COMPILER_VENDOR == 'XL':
         outputXLCXX = subprocess.Popen(['xlC', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputXLCXX = ''
-    finally:
-        matchXLCXX = re.search(r'\d+\.\d+', outputXLCXX)
-        if matchXLCXX:
-            XLCXXversion = matchXLCXX.group()
-        else:
-            XLCXXversion = '0.0'
+    
+    matchXLCXX = re.search(r'\d+\.\d+', outputXLCXX)
+    if matchXLCXX:
+        XLCXXversion = matchXLCXX.group()
+    else:
+        XLCXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = XLCXXversion
 elif CXX_COMPILER_VENDOR == 'Clang':
@@ -156,12 +156,12 @@ elif CXX_COMPILER_VENDOR == 'Clang':
         outputClangCXX = subprocess.Popen(['clang', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputClangCXX = ''
-    finally:
-        matchClangCXX = re.search(r'\d+\.\d+', outputClangCXX)
-        if matchClangCXX:
-            ClangCXXversion = matchClangCXX.group()
-        else:
-            ClangCXXversion = '0.0'
+    
+    matchClangCXX = re.search(r'\d+\.\d+', outputClangCXX)
+    if matchClangCXX:
+        ClangCXXversion = matchClangCXX.group()
+    else:
+        ClangCXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = ClangCXXversion
 else:
@@ -174,12 +174,12 @@ if Fortran_COMPILER_VENDOR == 'GNU':
         outputGFORTRAN = subprocess.Popen(['gfortran', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputGFORTRAN = ''
-    finally:
-        matchGFORTRAN = re.search(r'\d+\.\d+\.\d+', outputGFORTRAN)
-        if matchGFORTRAN:
-            GFORTRANversion = matchGFORTRAN.group()
-        else:
-            GFORTRANversion = '0.0.0'
+    
+    matchGFORTRAN = re.search(r'\d+\.\d+\.\d+', outputGFORTRAN)
+    if matchGFORTRAN:
+        GFORTRANversion = matchGFORTRAN.group()
+    else:
+        GFORTRANversion = '0.0.0'
 
     Fortran_COMPILER_VERSION = GFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'Intel':
@@ -190,12 +190,12 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
             outputIntelFORTRAN = subprocess.Popen(['ifort', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputIntelFORTRAN = ''
-    finally:
-        matchIntelFORTRAN = re.search(r'\d+\.\d+', outputIntelFORTRAN)
-        if matchIntelFORTRAN:
-            IntelFORTRANversion = matchIntelFORTRAN.group()
-        else:
-            IntelFORTRANversion = '0.0'
+    
+    matchIntelFORTRAN = re.search(r'\d+\.\d+', outputIntelFORTRAN)
+    if matchIntelFORTRAN:
+        IntelFORTRANversion = matchIntelFORTRAN.group()
+    else:
+        IntelFORTRANversion = '0.0'
 			
     Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':
@@ -203,12 +203,12 @@ elif Fortran_COMPILER_VENDOR == 'PGI':
         outputPGIFORTRAN = subprocess.Popen(['pgf90', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputPGIFORTRAN = ''
-    finally:
-        matchPGIFORTRAN = re.search(r'\d+\.\d+', outputPGIFORTRAN)
-        if matchPGIFORTRAN:
-            PGIFORTRANversion = matchPGIFORTRAN.group()
-        else:
-            PGIFORTRANversion = '0.0'
+    
+    matchPGIFORTRAN = re.search(r'\d+\.\d+', outputPGIFORTRAN)
+    if matchPGIFORTRAN:
+        PGIFORTRANversion = matchPGIFORTRAN.group()
+    else:
+        PGIFORTRANversion = '0.0'
 			
     Fortran_COMPILER_VERSION = PGIFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'XL':
@@ -216,12 +216,12 @@ elif Fortran_COMPILER_VENDOR == 'XL':
         outputXLFORTRAN = subprocess.Popen(['xlf90', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     except:
         outputXLFORTRAN = ''
-    finally:
-        matchXLFORTRAN = re.search(r'\d+\.\d+', outputXLFORTRAN)
-        if matchXLFORTRAN:
-            XLFORTRANversion = matchXLFORTRAN.group()
-        else:
-            XLFORTRANversion = '0.0'
+    
+    matchXLFORTRAN = re.search(r'\d+\.\d+', outputXLFORTRAN)
+    if matchXLFORTRAN:
+        XLFORTRANversion = matchXLFORTRAN.group()
+    else:
+        XLFORTRANversion = '0.0'
 			
     Fortran_COMPILER_VERSION = XLFORTRANversion
 else:
