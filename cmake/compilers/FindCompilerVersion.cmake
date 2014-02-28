@@ -69,7 +69,8 @@ if(DEFINED CMAKE_C_COMPILER_VERSION)
 	# if CMake variable is defined then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_C_VERSION}" CMAKE_C_VERSION "${CMAKE_C_COMPILER_VERSION}")
 	if(NOT (CMAKE_C_VERSION VERSION_EQUAL PYTHON_C_VERSION))
-		message(WARNING "Versions from CMake variable and Python script for C compiler are not equal")
+		message(WARNING 
+        "Versions from CMake variable (${CMAKE_C_VERSION}) and Python script (${PYTHON_C_VERSION}) for C compiler are not equal!")
 	endif()
 	
     # and available version of compiler must be greater or equal than minimum required version
@@ -90,7 +91,8 @@ if(DEFINED CMAKE_CXX_COMPILER_VERSION)
 	# if CMake variable is defined then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_CXX_VERSION}" CMAKE_CXX_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
 	if(NOT (CMAKE_CXX_VERSION VERSION_EQUAL PYTHON_CXX_VERSION))
-		message(WARNING "Versions from CMake variable and Python script for C++ compiler are not equal")
+		message(WARNING 
+        "Versions from CMake variable (${CMAKE_CXX_VERSION}) and Python script (${PYTHON_CXX_VERSION}) for C++ compiler are not equal!")
 	endif()
 	
     # and available version of compiler must be greater or equal than minimum required version
@@ -111,7 +113,8 @@ if(DEFINED CMAKE_Fortran_COMPILER_VERSION)
 	# if CMake variable is defined then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_Fortran_VERSION}" CMAKE_Fortran_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
 	if(NOT (CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION))
-		message(WARNING "Versions from CMake variable and Python script for Fortran compiler are not equal")
+		message(WARNING 
+        "Versions from CMake variable (${CMAKE_Fortran_VERSION}) and Python script (${PYTHON_Fortran_VERSION}) for Fortran compiler are not equal!")
 	endif()
 	
     # and available version of compiler must be greater or equal than minimum required version
