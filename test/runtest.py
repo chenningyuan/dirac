@@ -1,14 +1,14 @@
 
 
-BEHOLDER_VERSION = 'v0.0.2'
+RUNTEST_VERSION = 'v0.0.3'
 
 """
-    Beholder - numerically tolerant, bug intolerant test library.
+    runtest - numerically tolerant test library.
 
     Copyright (c) 2013, Radovan Bast (lastname at kth.se)
     Licensed under the GNU Lesser General Public License.
 
-    For documentation see https://github.com/rbast/beholder
+    For documentation see https://github.com/rbast/runtest
 """
 
 import re
@@ -17,6 +17,7 @@ import sys
 import subprocess
 import shlex
 import shutil
+import string
 from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
@@ -36,7 +37,9 @@ class TestRun:
                 stdout_file_name='',
                 accepted_errors=[]):
         try:
-            process = subprocess.Popen(shlex.split(command),
+            if sys.platform != "win32":
+                command = shlex.split(command)
+            process = subprocess.Popen(command,
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
@@ -75,7 +78,7 @@ class TestRun:
 
     #---------------------------------------------------------------------------
     def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='Beholder %s - numerically tolerant, bug intolerant test library.' % BEHOLDER_VERSION)
+        parser = OptionParser(description='runtest %s - numerically tolerant, bug intolerant test library.' % RUNTEST_VERSION)
         parser.add_option('--binary-dir',
                           '-b',
                           action='store',
@@ -87,6 +90,12 @@ class TestRun:
                           default=input_dir,
                           help='working directory [default: %(default)s]')
         (options, args) = parser.parse_args(args=argv[1:])
+
+        if sys.platform == "win32":
+            # on windows we flip possibly wrong slashes
+            options.binary_dir = string.replace(options.binary_dir, '/', '\\')
+            options.work_dir = string.replace(options.work_dir, '/', '\\')
+
         return (options.binary_dir, options.work_dir)
 
 #-------------------------------------------------------------------------------
@@ -246,13 +255,13 @@ class Filter:
                         r_ref = abs(r_ref)
                     error = r - r_ref
 
-                    rel_error = error
                     if abs(r_ref) > f.ignore_below:
                         # calculate relative error only for significant ('nonzero') numbers
+                        rel_error = error
                         rel_error /= r_ref
-                    if abs(rel_error) > f.tolerance:
-                        log_diff.write('line %i: %s' % (f_to_line[i]+1, out[f_to_line[i]]))
-                        log_diff.write('    rel error %7.4e > %7.4e\n\n' % (rel_error, f.tolerance))
+                        if abs(rel_error) > f.tolerance:
+                            log_diff.write('line %i: %s' % (f_to_line[i]+1, out[f_to_line[i]]))
+                            log_diff.write('    rel error %7.4e > %7.4e\n\n' % (rel_error, f.tolerance))
             else:
                 log_diff.write('extracted sizes do not match\n')
 

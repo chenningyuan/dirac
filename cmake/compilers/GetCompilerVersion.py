@@ -81,6 +81,19 @@ elif C_COMPILER_VENDOR == 'XL':
             XLCversion = '0.0'
 			
     C_COMPILER_VERSION = XLCversion
+elif C_COMPILER_VENDOR == 'Clang':
+    try:
+        outputClangC = subprocess.check_output(['clang', '--version'], stderr=subprocess.STDOUT)
+    except:
+        outputClangC = ''
+    finally:
+        matchClangC = re.search(r'\d+\.\d+', outputClangC)
+        if matchClangC:
+            ClangCversion = matchClangC.group()
+        else:
+            ClangCversion = '0.0'
+			
+    C_COMPILER_VERSION = ClangCversion
 else:
     #! unknown, not supported vendor
     C_COMPILER_VERSION = '0.0'
@@ -141,6 +154,19 @@ elif CXX_COMPILER_VENDOR == 'XL':
             XLCXXversion = '0.0'
 			
     CXX_COMPILER_VERSION = XLCXXversion
+elif CXX_COMPILER_VENDOR == 'Clang':
+    try:
+        outputClangCXX = subprocess.check_output(['clang++', '--version'], stderr=subprocess.STDOUT)
+    except:
+        outputClangCXX = ''
+    finally:
+        matchClangCXX = re.search(r'\d+\.\d+', outputClangCXX)
+        if matchClangCXX:
+            ClangCXXversion = matchClangCXX.group()
+        else:
+            ClangCXXversion = '0.0'
+			
+    CXX_COMPILER_VERSION = ClangCXXversion
 else:
     #! unknown, not supported vendor
     CXX_COMPILER_VERSION = '0.0'
