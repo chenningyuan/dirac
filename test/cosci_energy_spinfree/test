@@ -14,9 +14,10 @@ f.add(string    = ' Electronic energy',
       tolerance = 1.0e-10)
 f.add(string    = ' Core energy',
       tolerance = 1.0e-9)
-f.add(from_re   = 'Orbital Representation',
-      to_re     = 'Number of determinants',
-      tolerance = 1.0e-7)
+# stefan: do NOT test orbital energies - this does not really make sense for open-shells...
+#f.add(from_re   = 'Orbital Representation',
+#      to_re     = 'Number of determinants',
+#      tolerance = 1.0e-7)
 f.add(from_re   = 'Energy eigenvalues in atomic units',
       to_re     = 'Total average',
       tolerance = 1.0e-8)
