@@ -1948,6 +1948,7 @@ C
       IF(LBIT(INTDEF,2)) THEN
         ISLINT = 1
         IF(.NOT.LBIT(INTOLD,2)) THEN
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(1) /= dummy) ISLINT = 0
           IF(ABS(CNV).GT.CNVINT(1)) ISLINT = 0
           IF(ITR     .LT.ITRINT(1)) ISLINT = 0
         ENDIF
@@ -1961,6 +1962,7 @@ C
       IF(LBIT(INTDEF,3)) THEN
         ISSINT = 1
         IF(.NOT.LBIT(INTOLD,3)) THEN
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(2) /= dummy) ISSINT = 0
           IF(ABS(CNV).GT.CNVINT(2)) ISSINT = 0
           IF(ITR     .LT.ITRINT(2)) ISSINT = 0
         ENDIF
@@ -1976,6 +1978,7 @@ C
         IF(.NOT.LBIT(INTOLD,4)) THEN
 C         Activate at the same point as the SS for the moment
 C         One could als put it with SL, comes in that order
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(2) /= dummy) IGTINT = 0
           IF(ABS(CNV).GT.CNVINT(2)) IGTINT = 0
           IF(ITR     .LT.ITRINT(2)) IGTINT = 0
         ENDIF
