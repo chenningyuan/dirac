@@ -523,6 +523,7 @@ c        NPSH(I) = NPSH_DHF(I)
       END DO
       NELECT = NELECT_DHF
       NAELEC = NAELEC_DHF
+      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Calculate derived variables in /DCBORB/:
 C
@@ -585,45 +586,68 @@ C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          THR_CVEC = THR_CVEC_ESR
+         THRPCI   = THRPCI_ESR
 C
-C        set up core and virtual spaces
+C        Set up core (NCSH_ESR), valence (NVSH_ESR) and virtual (secondary, NSSH_ESR) orbital shells.
 C
-         NCESRT = 0
-         NVESRT = 0
+         NCSH_ESRT = 0
+         NVSH_ESRT = 0
+         NSSH_ESRT = 0
+         NELECT    = 0
          DO I = 1,NFSYM
-           IF (NCESR(I) .LT. 0) THEN
-              NCESR(I) = NISH(I)
+
+           IF (NCSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NCSH_ESR(I) < 0')
            END IF
-           NISH(I)  = NISH(I)  - NCESR(I)
-           NELEC(I) = NELEC(I) - 2*NCESR(I)
-           NCESRT   = NCESRT   + NCESR(I)
-           IF (NVESR(I) .LT. 0) THEN
-              NVESR(I) = NSSH(I)
+           IF (NVSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NVSH_ESR(I) < 0')
            END IF
-           NSSH(I) = NSSH(I) - NVESR(I)
-           NVESRT  = NVESRT  + NVESR(I)
+           IF (NSSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NSSH_ESR(I) < 0')
+           END IF
+
+           NISH(I)   = NISH(I)   - NCSH_ESR(I) - NVSH_ESR(I)
+           NSSH(I)   = NSSH(I)   - NSSH_ESR(I)
+
+           NCSH_ESRT = NCSH_ESRT + NCSH_ESR(I)
+           NVSH_ESRT = NVSH_ESRT + NVSH_ESR(I)
+           NSSH_ESRT = NSSH_ESRT + NSSH_ESR(I)
+
+           NELEC(I)  = NELEC(I) - 2*NCSH_ESR(I) - 2*NVSH_ESR(I)
+           NELECT    = NELECT   + NELEC(I)
+
          END DO
-         NAELEC = NAELEC + 2*NCESRT
+         NGAS12_ELEC = 2*NCSH_ESRT + 2*NVSH_ESRT
+         NAELEC      = NAELEC + NGAS12_ELEC
 C
 C        initialize min and max accumulated no. of electrons in each gas space
 C
          CALL IZERO(NGSHT,MXGAS)
          NGAS_DC = 0
-         IF (NCESRT .GT. 0) THEN
+         IF (NCSH_ESRT > 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
-            NGASSP(2,NGAS_DC) = 2*NCESRT
+            NGASSP(1,NGAS_DC) = MAX(0,2*NCSH_ESRT-LVL_CIESR(0))
+            NGASSP(2,NGAS_DC) = 2*NCSH_ESRT
             DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NCESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSH(I,NGAS_DC) = NCSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NCSH_ESR(I)
+            END DO
+         END IF
+         IF (NVSH_ESRT > 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGASSP(1,NGAS_DC) = MAX(0,NGAS12_ELEC-LVL_CIESR(1))
+            NGASSP(2,NGAS_DC) = NGAS12_ELEC
+            DO I = 1,NFSYM
+               NGSH(I,NGAS_DC) = NVSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NVSH_ESR(I)
             END DO
          END IF
 
 C            (Cxx are preparation for RESOLVE instead of FULLCI
 C             in the DHF open shells)
-Cxx      XELEC = D2*NCESRT
+Cxx      XELEC = D2*NCSH_ESRT
          IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
+            write (lupri,*) 'ERROR ESRCI: NOPEN is not 1, it is: ',NOPEN
             call quit ('ESRCI: sorry, NOPEN is not 1')
          END IF
          DO J = 1, NOPEN
@@ -636,19 +660,19 @@ Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSH(I,NGAS_DC) = NASH(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
             END DO
          END DO
-         IF (NVESRT .GT. 0) THEN
+         IF (NSSH_ESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
             NGASSP(1,NGAS_DC) = NAELEC
             NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NVESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSH(I,NGAS_DC) = NSSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NSSH_ESR(I)
             END DO
          ELSE
-            NGASSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
+            NGASSP(1,NGAS_DC) = NAELEC ! reset open shell minimum, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals
@@ -704,7 +728,6 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C
