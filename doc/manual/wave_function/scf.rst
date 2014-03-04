@@ -508,8 +508,8 @@ Set :math:`alpha` equal to 1.
 
 keyword(CNVINT)
 
-Set threshold for convergence before adding SL and SS integrals to
-SCF-iterations.
+Set thresholds for convergence before adding SL and SS/GT integrals to
+SCF-iterations. 
 
 *2 (real) Arguments:*
 
@@ -520,7 +520,7 @@ SCF-iterations.
 
 keyword(ITRINT)
 
-Set the number of iterations before adding SL and SS integrals to
+Set the number of iterations before adding SL and SS/GT integrals to
 SCF-iterations.
 
 *Default:*
