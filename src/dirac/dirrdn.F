@@ -4674,7 +4674,7 @@ C
       DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
-      MOLMF3  = .FALSE.
+      X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
@@ -5317,7 +5317,7 @@ CMI&& Activate 4c-2c MO transformation
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          MOLMF3                = .TRUE.
+          X2CMMF                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN

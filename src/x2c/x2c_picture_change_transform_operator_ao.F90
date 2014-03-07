@@ -740,6 +740,7 @@ contains
 !      allocate scratch matrices
        allocate(scr_mat1(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
 
+#define continue_work
 #ifdef continue_work
 
        scr_mat1 = 0.0d0
@@ -748,8 +749,10 @@ contains
        allocate(scr_mat3(naosh_ls**2 * nz_c1 * nr_2e_fock_matrices+1))
        scr_mat3 = 0.0d0
 
+#ifdef e2part
+
        if(.not. is_1e_system)then
-#define lltest
+!#define lltest
 #ifdef lltest
          intflg_x2c = 6
          call get_2e_fock_matrix_x2c(scr_mat2,              &
@@ -778,7 +781,7 @@ contains
        fh = 99
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
-       call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
+       call read_fock_matrices_saao_basis_x2c(scr_mat2,              &
                                               naosh_ls**2*nz,        &
                                               nr_2e_fock_matrices,   &
                                               fh,                    &
@@ -794,7 +797,7 @@ contains
 !      end if
 !      !> end
 
-
+#ifdef donot
 !      !> zero LL block from f^2_4c to avoid double counting of 2e-SOC in the LL block after the pct transformation
 !      ------------------------------------------------------------------------------------------------------------
 !
@@ -886,9 +889,11 @@ contains
 !      put matrix in buffer space
        call daxpy(naosh_ls**2*nz,1.0d0,scr_mat1,1,scr_mat2,1)
        !> end
-#endif
+#endif /* donot */
+#endif /* lltest */
        end if ! 2e-fock matrix part only for systems containing more than 1 e-...
 
+#endif /* e2part */
 
 !      !> read the picture-change transformation matrix U in SA-AO basis from global file
 !      ----------------------------------------------------------------------------------
@@ -926,16 +931,9 @@ contains
 
        close(fh,status='keep')
 
-!old stefan
-!      add 2e-part to 1e-Hamiltonian
-!      -----------------------------
-!      call daxpy(naosh_ls**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
-!      scr_mat2 = 0.0d0
-!old stefan
-
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock12',6)
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock1 ',6)
        end if
 
 !      perform the pct: f_2c^++ == U+ * f_4c * U
@@ -961,6 +959,12 @@ contains
                                  .true.,                       &
                                  print_lvl)
 
+!      debug print
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2ch1 ',6)
+       end if
+
+#ifdef e2part
        if(.not. is_1e_system)then
        op_fer_rep = 0
        scr_mat3 = 0.0d0
@@ -980,10 +984,12 @@ contains
                                  op_bs_to_fs,                  &
                                  .true.,                       &
                                  print_lvl)
+         call print_x2cmat(scr_mat2,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2ch2 ',6)
 !        add 2e-part to 1e-Hamiltonian
 !        -----------------------------
          call daxpy(nr_ao_L**2*nz,1.0d0,scr_mat2,1,scr_mat1,1)
        end if
+#endif /* e2part */
 
        deallocate(pctmat)
        deallocate(scr_mat3)
@@ -993,7 +999,7 @@ contains
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
        access='sequential',action="readwrite",position='rewind')
        close(fh,status='delete')
-#endif
+#endif /* continue_work */
 
 
 !      store the picture-change transformed 1e+2e fock matrix on file
