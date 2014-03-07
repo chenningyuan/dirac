@@ -2649,8 +2649,11 @@ C.........do canonical orthonormalization
 C
 C     ** End of branching **
 C=======================================================================
-C
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+C     
+      len_ktbuf                = N2BBASXQ
+      if(x2cmod_mmf) len_ktbuf = N2BBASXQ * nfmat
+      CALL MEMGET('REAL',KTBUF,len_ktbuf,WORK,KFREE,LFREE)
+
       N2TMT   = 0
       N2TMOTQ = 0
       DO IFRP = 1,NFSYM
@@ -2823,7 +2826,6 @@ C
 
 ! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1
 
-          if(nfmat > 1) call quit('reallocate dmat for open shell.. :)')
           len_fmat  = ntbas(0)**2*nz
           len_fmats = len_fmat*nfmat
           call dzero(work(ktbuf),len_fmats)
@@ -2837,7 +2839,7 @@ C
      &         access='sequential',action='readwrite',
      &         position='rewind')
 
-!         2c-Fock operator, picture transformed from 4c-Fock operator ("++"-part)
+!         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
           write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
           call x2c_read(flabel,work(ktbuf),len_fmat,lux2c)
           call daxpy(len_fmat,-1.0d0,work(kfock2c),1,work(ktbuf),1)
