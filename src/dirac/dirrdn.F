@@ -238,9 +238,10 @@ C
         write(lupri,*) '* atomic oo-order SOC module active'
         x2c_2c_mmf_mos = .false.
         if(x2cmod_mmf)then
-          write(lupri,*) '  - generate 2e-SOCs to be added to'//
-     &                   ' the X2C Hamiltonian'
-          x2c_add_amfi = -1
+          write(lupri,*) '  - generate 2e-SRCs/SOCs to be added to'//
+     &                   ' the X2C Hamiltonian (of a molecule)'
+          x2c_add_amfi   = -1
+          x2c_2c_mmf_mos = .true.
         else
           write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
         end if

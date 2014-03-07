@@ -2224,6 +2224,10 @@ C   PAMIOU: LUTMAT
       integer              :: ndim_lowmat
       integer              :: lulmat = 99
       character(len=12)    :: flabel
+      real(8), allocatable :: tmat_mmf(:)
+      real(8), allocatable :: tbuf_mmf(:)
+      real(8), allocatable :: cmo_mmf(:)
+      real(8), allocatable :: scratch_mmf(:)
 #ifdef MOD_AOOSOC
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
@@ -2650,9 +2654,7 @@ C
 C     ** End of branching **
 C=======================================================================
 C     
-      len_ktbuf                = N2BBASXQ
-      if(x2cmod_mmf) len_ktbuf = N2BBASXQ * nfmat
-      CALL MEMGET('REAL',KTBUF,len_ktbuf,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
       N2TMT   = 0
       N2TMOTQ = 0
@@ -2754,109 +2756,10 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
-        if(x2c_2c_mmf_mos)then
-
-!       perform the final step for the molecular mean-field procedure within the X2C-module
-!       ------------------------------------------------------------------------------------
-
-!       purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                and renew the coefficient file DFCOEF
-!                a potential issue could be frozen orbitals - test me!
-        call memget('REAL',kcmomat,ncmotq,work,kfree,lfree)
-        call memget('REAL',kscratch,norbt,work,kfree,lfree)
-        call dzero(work(ktbuf),   n2bbasxq)
-        call dzero(work(kcmomat), ncmotq)
-        call dzero(work(kscratch),norbt)
-        call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
-     &                                    work(kcmomat),work(kscratch),
-     &                                    i2tmt,i2tmot,icmoq,ntmo,
-     &                                    nfbas(1,0),nfbas(1,1),nesh,nz,
-     &                                    nzt,nfsym,
-     &                                    nesht,ipqtoq,iprham)
-!       set intflag to (LL|LL) integrals only...
-        call set_intflg(1)
-!stefan test
-          TWOCOMP = .TRUE.
-          RDINPC = .FALSE.
-          IPREAD = IPREAD - 5
-          CALL READIN(.FALSE.)
-          CALL SETDC1(IPREAD)
-!         set AO-labels for large components - in x2c_main initialized for large and small components
-          call getlab(ipread)
-          IPREAD = IPREAD + 5
-!.........reset NEWPRP to re-initialize AOPROPER
-          NEWPRP = .TRUE.
-          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
-          CALL ONEGEN(WORK(kfree),lfree)
-          call renew_x2c_cb_orb_shell_dim(3)
-C
-C         Prepare for parallel calculation (set inforb)
-C         ==============================================
-C
-          CALL RELINF
-          NEWGEO = .TRUE.
-
-!         reset 2e-common blocks in Hermit
-          CALL PAOVEC(WORK(kfree),lfree,0,0)
-!         reset DFDENS
-          inquire(file='DFDENS',exist=tobe)
-          if(tobe) then
-            lublubb = 99
-            call opnfil(lublubb,'DFDENS','OLD','GMOTRA')
-            close(lublubb,status='DELETE')
-          end if
-!         reset DFT-grid
-          inquire(file='numerical_grid',exist=tobe)
-          if(tobe)then
-            inquire(file='numerical_grid',opened=tobe)
-            if(tobe)then
-            inquire(file='numerical_grid',number=lublubb)
-              CLOSE(lublubb,STATUS='DELETE')
-            else
-              lublubb = 99
-              CALL OPNFIL(lublubb,'numerical_grid','OLD','GMOTRA')
-              CLOSE(lublubb,STATUS='DELETE')
-            end if
-          end if
-          call reset_num_grid()
-!         reset interface-mo
-          call interface_mo_write()
-!         reset interface-ao
-          call interface_ao_write()
-
-! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1_mmf
-
-          len_fmat  = ntbas(0)**2*nz
-          len_fmats = len_fmat*nfmat
-          call dzero(work(ktbuf),len_fmats)
-          call denmat(work(ktbuf),work(kcmomat),iprham)
-          call memget('REAL',kfock2c,len_fmats,work,kfree,lfree)
-          call dzero(work(kfock2c),len_fmats)
-          call get_2e_2c_fock_matrix_x2c(work(kfock2c),work(ktbuf),
-     &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
-
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
-
-!         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
-          write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
-          call x2c_read(flabel,work(ktbuf),len_fmat,lux2c)
-          call daxpy(len_fmat,-1.0d0,work(kfock2c),1,work(ktbuf),1)
-          close(lux2c, status='keep')
-
-          open(lux2c,file='DFFCK_mmf',status='unknown',
-     &         access='sequential',action='readwrite',
-     &         form='unformatted',position='rewind')
-          call write_fock_matrices_saao_basis_x2c(
-     &       work(ktbuf), len_fmat, 1, lux2c, 0)
-          close(lux2c, status='keep')
-
 #ifdef MOD_AOOSOC
-        else if(aoomod)then
+        if(aoomod)then
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
-!
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
@@ -2908,13 +2811,160 @@ C
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
+        end if ! aoomod
 #else
-          call quit('generation of  atomic oo-order 2e-SOC not active'//
-     &              ' in this version')
+        call quit('generation of  atomic oo-order 2e-SOC not active'//
+     &            ' in this version')
 #endif
+        if(x2c_2c_mmf_mos)then
+
+!         release memory
+          if(allocated(work))then
+            CALL MEMREL('GMOTRA - mmfmos',WORK,KWORK,KWORK,KFREE,LFREE)
+            call dealloc(work)
+          end if
+!         perform the final step for the molecular mean-field procedure within the X2C-module
+!         ------------------------------------------------------------------------------------
+
+!         purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                  and renew the coefficient file DFCOEF
+!                  a potential issue could be frozen orbitals - test me!
+          allocate(tmat_mmf(n2bbasxq))
+          allocate(tbuf_mmf(n2bbasxq))
+          allocate(scratch_mmf(norbt))
+          allocate(cmo_mmf(ncmotq))
+          cmo_mmf     = 0
+          scratch_mmf = 0
+          tbuf_mmf    = 0
+          tmat_mmf    = 0
+
+          CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+          CALL READT(LUTMAT,N2TMT,tmat_mmf)
+          CLOSE(LUTMAT,STATUS='KEEP')
+ 
+          call x2c_molecular_mean_field_mos(tmat_mmf,tbuf_mmf,cmo_mmf,
+     &                                      scratch_mmf,
+     &                                      i2tmt,i2tmot,icmoq,ntmo,
+     &                                      nfbas(1,0),nfbas(1,1),nesh,
+     &                                      nz,nzt,nfsym,
+     &                                      nesht,ipqtoq,iprham)
+          deallocate(cmo_mmf)
+          deallocate(scratch_mmf)
+          deallocate(tbuf_mmf)
+          deallocate(tmat_mmf)
+
+!         re-allocate
+          call alloc(WORK,LWORK,id='WORK in GMOTRA - mmfmos')
+#include "memint.h"
+
+!         set intflag to (LL|LL) integrals only...
+          call set_intflg(1)
+          TWOCOMP = .TRUE.
+          RDINPC = .FALSE.
+          IPREAD = IPREAD - 5
+          CALL READIN(.FALSE.)
+          CALL SETDC1(IPREAD)
+!         set AO-labels for large components - in x2c_main initialized for large and small components
+          call getlab(ipread)
+          IPREAD = IPREAD + 5
+!.........reset NEWPRP to re-initialize AOPROPER
+          NEWPRP = .TRUE.
+          CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
+          CALL ONEGEN(WORK(kfree),lfree)
+          call renew_x2c_cb_orb_shell_dim(3)
+C
+C         Prepare for parallel calculation (set inforb)
+C         ==============================================
+C
+          CALL RELINF
+          NEWGEO = .TRUE.
+
+!         reset 2e-common blocks in Hermit
+          CALL PAOVEC(WORK(kfree),lfree,0,0)
+!         reset DFDENS
+          inquire(file='DFDENS',exist=tobe)
+          if(tobe) then
+            lublubb = 99
+            call opnfil(lublubb,'DFDENS','OLD','GMOTRA')
+            close(lublubb,status='DELETE')
+          end if
+!         reset DFT-grid
+          inquire(file='numerical_grid',exist=tobe)
+          if(tobe)then
+            inquire(file='numerical_grid',opened=tobe)
+            if(tobe)then
+            inquire(file='numerical_grid',number=lublubb)
+              CLOSE(lublubb,STATUS='DELETE')
+            else
+              lublubb = 99
+              CALL OPNFIL(lublubb,'numerical_grid','OLD','GMOTRA')
+              CLOSE(lublubb,STATUS='DELETE')
+            end if
+          end if
+          call reset_num_grid()
+!         reset interface-mo
+          call interface_mo_write()
+!         reset interface-ao
+          call interface_ao_write()
+
+!         release memory
+          CALL MEMREL('GMOTRA - mmfmos-2',WORK,KWORK,KWORK,KFREE,LFREE)
+          call dealloc(work)
+
+! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1_mmf
+          len_fmat  = ntbas(0)**2*nz
+          len_fmats = len_fmat*nfmat
+
+          allocate(cmo_mmf(ncmotq))
+          allocate(tbuf_mmf(len_fmats))
+          cmo_mmf     = 0
+          tbuf_mmf    = 0
+          !> read 2c-mos
+          call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
+          call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          close(lucoef,status='keep')
+          !> density matrix/ces
+          call denmat(tbuf_mmf,cmo_mmf,iprham)
+
+          deallocate(cmo_mmf)
+
+          allocate(tmat_mmf(len_fmats))
+          tmat_mmf    = 0
+
+          call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
+     &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
+
+          open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &         access='sequential',action='readwrite',
+     &         position='rewind')
+
+!         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
+          write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
+          call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
+          call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+          close(lux2c, status='keep')
+
+          open(lux2c,file='DFFCK_mmf',status='unknown',
+     &         access='sequential',action='readwrite',
+     &         form='unformatted',position='rewind')
+          call write_fock_matrices_saao_basis_x2c(
+     &                                            tbuf_mmf,
+     &                                            len_fmat, 1, 
+     &                                            lux2c, 0)
+          close(lux2c, status='keep')
+          deallocate(tmat_mmf)
+          deallocate(tbuf_mmf)
 
         end if ! x2c_2c_mmf_mos == .true. or aoomod == true
-      end if ! x2c == .true.
+
+#ifdef MOD_AOOSOC
+        if(aoomod)then
+          if(nucdep == 1 .and. nucind == 1)then ! finalize the 2e-SOC in an atomic run
+
+          end if ! check for atomic run
+        end if ! aoomod
+#endif
+      end if ! x2c + x2cmod_mmf == .true.
 
 !     final output
 !     ------------
