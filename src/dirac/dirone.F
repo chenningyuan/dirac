@@ -2824,7 +2824,7 @@ C
 !         reset interface-ao
           call interface_ao_write()
 
-! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1
+! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1_mmf
 
           len_fmat  = ntbas(0)**2*nz
           len_fmats = len_fmat*nfmat
@@ -2913,8 +2913,8 @@ C
      &              ' in this version')
 #endif
 
-        end if ! x2c_2c_mmf_mos .equiv. .true. or aoomod .equiv. true
-      end if ! x2c .equiv. .true.
+        end if ! x2c_2c_mmf_mos == .true. or aoomod == true
+      end if ! x2c == .true.
 
 !     final output
 !     ------------
