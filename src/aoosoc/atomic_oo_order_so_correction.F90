@@ -184,53 +184,57 @@ contains
      real(8), allocatable               :: jbuf(:)
 !----------------------------------------------------------------------
 
-      allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 
-!     print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
-!     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
-      call read_normalized_2e_soc(                                 &
-                                  Gmat_frag,                       &
-                                  nrows_ext,                       &
-                                  ncols_ext,                       &
-                                  nr_quat_ext,                     &
-                                  file_name_aoo_contributions,     &
-                                  nint(atom(center_total)%charge), &
-                                  aoo_fsoc                         &
-                                 )
-      allocate(rbuf(naosh_l))
-      allocate(cbuf(naosh_l))
-      allocate(ibuf(nrows_ext))
-      allocate(jbuf(ncols_ext))
+      if(nint(atom(center_total)%charge) > 1)then
 
-      rbuf = 0
-      cbuf = 0
-      ibuf = 0
-      jbuf = 0
+        allocate(Gmat_frag(nrows_ext*ncols_ext*4))
+!       print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
+!       get spin-orbit parts from file (of atom(i) ... == atomic fragment)
+        call read_normalized_2e_soc(                                 &
+                                    Gmat_frag,                       &
+                                    nrows_ext,                       &
+                                    ncols_ext,                       &
+                                    nr_quat_ext,                     &
+                                    file_name_aoo_contributions,     &
+                                    nint(atom(center_total)%charge), &
+                                    aoo_fsoc                         &
+                                   )
+        allocate(rbuf(naosh_l))
+        allocate(cbuf(naosh_l))
+        allocate(ibuf(nrows_ext))
+        allocate(jbuf(ncols_ext))
 
-      call put_aoblock(Gmat,                            &
-                       naosh_l,                         &
-                       naosh_l,                         &
-                       center_total,                    &
-                       aoo_nont(center_id),             &
-                       aoo_nucdeg(center_total),        &
-                       4,                               &
-                       Gmat_frag,                       &
-                       nrows_ext,                       &
-                       nrows_ext,                       &
-                       -1,                              &
-                       ncols_ext,                       &
-                       ncols_ext,                       &
-                       -1,                              &
-                       rbuf,                            &
-                       cbuf,                            &
-                       ibuf,                            &
-                       jbuf)
+        rbuf = 0
+        cbuf = 0
+        ibuf = 0
+        jbuf = 0
 
-      deallocate(jbuf)
-      deallocate(ibuf)
-      deallocate(cbuf)
-      deallocate(rbuf)
-      deallocate(Gmat_frag)
+        call put_aoblock(Gmat,                            &
+                         naosh_l,                         &
+                         naosh_l,                         &
+                         center_total,                    &
+                         aoo_nont(center_id),             &
+                         aoo_nucdeg(center_total),        &
+                         4,                               &
+                         Gmat_frag,                       &
+                         nrows_ext,                       &
+                         nrows_ext,                       &
+                         -1,                              &
+                         ncols_ext,                       &
+                         ncols_ext,                       &
+                         -1,                              &
+                         rbuf,                            &
+                         cbuf,                            &
+                         ibuf,                            &
+                         jbuf)
+
+        deallocate(jbuf)
+        deallocate(ibuf)
+        deallocate(cbuf)
+        deallocate(rbuf)
+        deallocate(Gmat_frag)
+
+      end if
 
 !     update counter
       center_total = center_total + aoo_nont(center_id)
