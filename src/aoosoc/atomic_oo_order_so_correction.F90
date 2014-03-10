@@ -96,6 +96,7 @@ contains
                            )
         end if
 
+#ifdef OLD_VERSION_AOOSOC
 !       get 2e-SO-fock matrix
         call make_so_2e_fock(                            &
                              fmat,                       &
@@ -115,6 +116,7 @@ contains
                             6                            &
                            )
         end if
+#endif
 
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &

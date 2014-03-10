@@ -1299,7 +1299,8 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
 #include "densfit.h"
-      LOGICAL   LBIT
+      real(8), allocatable :: aoo2esssoc(:)
+      LOGICAL   LBIT, tobe
       type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1451,7 +1452,6 @@ C           restore density matrix in DMAT/hj
             CALL READNS(LUDENS,DMAT)
          ELSE
             CALL WRIDNS(LUDENS,DMAT)
-            !fixme: michal for InteRest                            
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
          ENDIF
@@ -1514,6 +1514,25 @@ C
 C
 C        Calculate total energy
 C        ======================
+         inquire(file='aoo2e-ss-soc-contributions',exist=tobe)
+         if(tobe)then
+           open(99,file='aoo2e-ss-soc-contributions',status='old',
+     &     form='unformatted',
+     &     access='sequential',action="readwrite",position='rewind')
+           allocate(aoo2esssoc(ntbas(0)**2*nz))
+           read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+           close(99,status='keep')
+           call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
+           call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
+!          IF (AOC) THEN
+!             DO IOPEN = 1,NOPEN
+!                CALL DAXPY(N2BBASXQ,1.0d0,
+!    &                      aoo2esssoc,1,
+!    &                      FOCK(1+N2BBASXQ*IOPEN),1)
+!              END DO
+!           END IF
+           deallocate(aoo2esssoc)
+         end if
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
 #ifdef PCM_MODULE
@@ -1545,7 +1564,7 @@ C
          IF(AOC) THEN
            DO IOPEN = 1,NOPEN
 C
-C             The factor in only DF and not D2*DF because of the
+C             The factor is only DF and not D2*DF because of the
 C                multiplication with D2 in TWOFCK.
 C
               CALL DAXPY(N2BBASXQ,DF(IOPEN),

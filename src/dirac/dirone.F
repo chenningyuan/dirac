@@ -2172,7 +2172,8 @@ C*****************************************************************************
       use x2c_fio
       use x2c_utils, only:
      &    get_2e_2c_fock_matrix_x2c,
-     &    write_fock_matrices_saao_basis_x2c
+     &    write_fock_matrices_saao_basis_x2c,
+     &    read_fock_matrices_saao_basis_x2c
       use x2c_pct_mo_coefficients, only:
      &    x2c_molecular_mean_field_mos
       use x2c_cb_interface, only:
@@ -2185,6 +2186,9 @@ C*****************************************************************************
       use atomic_oo_order_so_correction_cfg
       use module_aoosoc_pfg
       use module_aoosoc_init
+      use atomic_oo_order_so_correction_utils, only:
+     &    dump_normalized_2e_soc,
+     &    read_normalized_2e_soc
       use atomic_oo_order_so_correction, only:
      &    get_atomic_oo_order_so_correction
 #endif
@@ -2944,12 +2948,22 @@ C
           call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
           close(lux2c, status='keep')
 
+!         save H1_mmf_X2C_AO
           open(lux2c,file='DFFCK_mmf',status='unknown',
      &         access='sequential',action='readwrite',
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tbuf_mmf,
-     &                                            len_fmat, 1, 
+     &                                            len_fmat, 1,
+     &                                            lux2c, 0)
+!         save F2c-ll part
+          close(lux2c, status='keep')
+          open(lux2c,file='D2FCK_mmf',status='unknown',
+     &         access='sequential',action='readwrite',
+     &         form='unformatted',position='rewind')
+          call write_fock_matrices_saao_basis_x2c(
+     &                                            tmat_mmf,
+     &                                            len_fmat, 1,
      &                                            lux2c, 0)
           close(lux2c, status='keep')
           deallocate(tmat_mmf)
@@ -2958,9 +2972,44 @@ C
         end if ! x2c_2c_mmf_mos == .true. or aoomod == true
 
 #ifdef MOD_AOOSOC
-        if(aoomod)then
+        if(aoomod .and. no1esystem_aoosoc)then
           if(nucdep == 1 .and. nucind == 1)then ! finalize the 2e-SOC in an atomic run
-
+            len_fmat  = ntbas(0)**2*nz
+            allocate(tmat_mmf(len_fmat))
+            allocate(tbuf_mmf(len_fmat))
+            allocate(scratch_mmf(0:1))
+            scratch_mmf = 0.0d0
+            open(lux2c,file='D2FCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+            call read_fock_matrices_saao_basis_x2c(
+     &                                             tmat_mmf,
+     &                                             len_fmat, 1,
+     &                                             lux2c, 0,
+     &                                             .false.,scratch_mmf)
+            close(lux2c, status='keep')
+            call read_normalized_2e_soc(
+     &                                  tbuf_mmf,
+     &                                  ntbas(0),
+     &                                  ntbas(0),
+     &                                  nz,
+     &                                  'aoo2esoc',
+     &                                  nint(charge(1)),
+     &                                  lux2c
+     &                                 )
+            call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+            call dump_normalized_2e_soc(
+     &                                  tbuf_mmf,
+     &                                  ntbas(0),
+     &                                  ntbas(0),
+     &                                  nz,
+     &                                  'aoo2esoc',
+     &                                  nint(charge(1)),
+     &                                  lux2c
+     &                                 )
+            deallocate(scratch_mmf)
+            deallocate(tbuf_mmf)
+            deallocate(tmat_mmf)
           end if ! check for atomic run
         end if ! aoomod
 #endif
