@@ -42,13 +42,13 @@ C***********************************************************************
       use memory_allocator
       use num_grid_cfg
       use interface_functional_read
-      use x2cmod_cfg
       use xmlout
 #ifdef PCM_MODULE
       use pcmmod_cfg
       use pcm_write
 #endif
-#ifdef MOD_AOOSOC 
+      use x2cmod_cfg
+#ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
 
@@ -911,6 +911,9 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
+#ifdef MOD_AOOSOC
+       use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1034,6 +1037,8 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
+!     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+      if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
