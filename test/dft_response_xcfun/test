@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'Electronic energy',
@@ -16,17 +15,17 @@ f.add(string    = 'DFT exchange-correlation energy',
       tolerance = 1.0e-7)
 f.add(string    = 'number of electrons from numerical integration',
       tolerance = 1.0e-7)
-f.add(from_string = ' Energy eigenvalues in atomic units',
+f.add(from_string = 'Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       tolerance   = 1.0e-4)
 
-test_run.execute(['blyp_sdft.inp', 'lda_sdft.inp'], ['he.mol'], f)
+test.run(['blyp_sdft.inp', 'lda_sdft.inp'], ['he.mol'], f)
 
 f.add(string    = 'ZZSECMOM',
       tolerance = 1.0e-7)
 f.add(string    = '  ZDIPLEN   ZDIPLEN   ZDIPLEN',
       tolerance = 1.0e-6)
 
-test_run.execute(['b3lyp.inp', 'blyp.inp', 'lda.inp', 'pbex.inp', 'pbec.inp', 'pbe0.inp', 'pbe.inp'], ['hf.mol'], f)
+test.run(['b3lyp.inp', 'blyp.inp', 'lda.inp', 'pbex.inp', 'pbec.inp', 'pbe0.inp', 'pbe.inp'], ['hf.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

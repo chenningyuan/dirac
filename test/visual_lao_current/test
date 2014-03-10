@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'r_x           r_y           r_z            scalar',
       num_lines   = 7,
       tolerance   = 1.0e-5)
 
-test_run.execute(['dc_symmetric.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
 
 inp_files = []
 inp_files.append('vis_jbz_dc_symmetric.inp')
@@ -22,19 +21,19 @@ inp_files.append('vis_jbz_dc_none_from_symmetric.inp')
 inp_files.append('vis_divjbz_dc_nolao.inp')
 inp_files.append('vis_divjbz_dc_nolao.inp')
 
-test_run.execute(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
 
-test_run.execute(['dc_natural.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+test.run(['dc_natural.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
 
 inp_files = []
 inp_files.append('vis_jbz_dc_natural.inp')
 inp_files.append('vis_jbz_dc_none_from_natural.inp')
 
-test_run.execute(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
 
 # cleanup
 os.unlink('DFCOEF')
 os.unlink('PAMXVC')
 os.unlink('TBMO')
 
-sys.exit(0)
+sys.exit(test.return_code)

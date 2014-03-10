@@ -4,16 +4,15 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_re     = ' Energy eigenvalues in atomic units',
       to_string   = ' =====================')
 
-test_run.execute(['bss_blockd.ci.inp'], ['F.mol'], f)
+test.run(['bss_blockd.ci.inp'], ['F.mol'], f)
 
 f = Filter()
 f.add(from_string = 'Number of reference determinants',
@@ -23,6 +22,6 @@ f.add(from_re     = 'CI Total Energy',
 f.add(from_re     = '.*CI-SD Energy',
       to_re       = '.*CI-SD\+Q energy')
 
-test_run.execute(['F.bss_blockd.cisd.inp'], ['F.1.mol'], f)
+test.run(['F.bss_blockd.cisd.inp'], ['F.1.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

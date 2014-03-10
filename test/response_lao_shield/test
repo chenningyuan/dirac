@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
@@ -24,6 +23,6 @@ inp_files.append('LiH.bss.shield_lao_go=cm.inp')
 inp_files.append('LiH.bss+mfsso.shield_lao_go=cm.inp')
 inp_files.append('LiH.bss_sfB.shield_lao_go=cm.inp')
 
-test_run.execute(inp_files, ['LiH.lsym.dir.mol'], f)
+test.run(inp_files, ['LiH.lsym.dir.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

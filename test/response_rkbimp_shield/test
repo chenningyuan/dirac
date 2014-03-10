@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
@@ -15,10 +14,10 @@ f.add(from_string = '@            isotropic shielding',
       num_lines   = 5,
       tolerance   = 0.0002)
 
-test_run.execute(['rkb.inp'], ['He.mol'], f, args='--outcmo')
-test_run.execute(['rkbimp.inp'], ['He.mol'], f, args='--incmo')
-test_run.execute(['ukb.inp'], ['He.mol'], f)
+test.run(['rkb.inp'], ['He.mol'], f, args='--outcmo')
+test.run(['rkbimp.inp'], ['He.mol'], f, args='--incmo')
+test.run(['ukb.inp'], ['He.mol'], f)
 
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)

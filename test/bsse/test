@@ -4,21 +4,20 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 12,
       tolerance   = 1.0e-10)
 
-test_run.execute(['x2c.scf_autoocc.inp'],         ['HF.sto-2g.lsym.mol'], f)
-test_run.execute(['x2c.scf_autoocc.xyz.inp'],     ['HF.xyz'], f)
-test_run.execute(['Gh_HF.x2c.scf.inp'],           ['Gh_HF.sto-2g.lsym.mol'], f)
-test_run.execute(['Gh_HF.x2c.scf.xyz_GhH.inp'],   ['Gh_HF.xyz'], f)
-test_run.execute(['x2c.scf_autoocc.inp'],         ['HGh_F.sto-2g.lsym.mol'], f)
-test_run.execute(['x2c.scf_autoocc.xyz_GhF.inp'], ['HGh_F.xyz'], f)
+test.run(['x2c.scf_autoocc.inp'],         ['HF.sto-2g.lsym.mol'], f)
+test.run(['x2c.scf_autoocc.xyz.inp'],     ['HF.xyz'], f)
+test.run(['Gh_HF.x2c.scf.inp'],           ['Gh_HF.sto-2g.lsym.mol'], f)
+test.run(['Gh_HF.x2c.scf.xyz_GhH.inp'],   ['Gh_HF.xyz'], f)
+test.run(['x2c.scf_autoocc.inp'],         ['HGh_F.sto-2g.lsym.mol'], f)
+test.run(['x2c.scf_autoocc.xyz_GhF.inp'], ['HGh_F.xyz'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)
