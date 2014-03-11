@@ -174,6 +174,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
+#include "dcbham.h"
 !
 !---------------Local variables--------------------------------------
 !
@@ -390,10 +391,23 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  because it relies on CCSETI and needs the orbital
 !  energies from the original HF calculation
 !  This allow for the use of X2Cmmf
-!  The NORECMP parameter is irrelevant
+!  The NORECMP parameter is NOT irrelevant - sknecht march 2014
 !
-      USEOE = .TRUE.
-      WRITE (IW,*) 'Orbital energies from HF are used'
+!
+      USEOE   = .true.
+      if(molmf3)then
+!       X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
+!       everything else results in nonsense energies
+        NORECMP = .true.
+        write(IW,'(/A,/A,/A,/A,/A/)')
+     &  ' ************************************************************',
+     &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
+     &  ' *** use of SCF orbital energies and no re-computation of ***',
+     &  ' *** Fock matrix elements set explicitly                  ***',
+     &  ' ************************************************************'
+      else
+        if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
+      end if
 
       IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
          DOCCSETI=.TRUE.
