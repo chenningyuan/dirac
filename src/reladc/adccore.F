@@ -398,7 +398,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  but the NORECMP parameter is NOT irrelevant - stefan march 2014
 !
 !
-      if(molmf3)then
+      if(X2CMMF)then
 !       X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !       everything else results in nonsense energies
         NORECMP = .true.
