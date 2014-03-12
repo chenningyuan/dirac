@@ -289,10 +289,10 @@ C
       ENDIF
 C
 CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
-!     nothing to be done for X2Cmmf (molmf3 == T)
+!     nothing to be done for X2Cmmf (X2CMMF == T)
       if(spinfr) remove_spinfree_terms = .true.
       if(bss)    remove_spinfree_terms = .false.
-      if(molmf3) remove_spinfree_terms = .false.
+      if(X2CMMF) remove_spinfree_terms = .false.
  
       if(remove_spinfree_terms)then
         CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)

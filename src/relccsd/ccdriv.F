@@ -502,7 +502,7 @@ C
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
-      if(molmf3)then
+      if(X2CMMF)then
         if(.not.relcc_use_orbital_energies) 
      &          relcc_use_orbital_energies = .true.
         if(.not.relcc_no_recompute) 

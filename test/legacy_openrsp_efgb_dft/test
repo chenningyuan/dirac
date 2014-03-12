@@ -4,16 +4,15 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '           Electric-field-gradient-induced',
       num_lines   = 12,
       tolerance   = 1.0e-6)
 
-test_run.execute(['lda.inp', 'blyp.inp', 'blyp_shifted.inp'], ['mol.mol'], f)
+test.run(['lda.inp', 'blyp.inp', 'blyp_shifted.inp'], ['mol.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

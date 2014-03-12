@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '* Dipole moment:',
@@ -17,18 +16,18 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       tolerance   = 1.0e-5)
 
-test_run.execute(['hf_lda+tfk_vemb-read_short.inp'],               ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
-test_run.execute(['hf_lda+tfk_vemb-read_nofdekern_short.inp'],     ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
-test_run.execute(['lda+tfk_vemb-read_short.inp'],                  ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
-test_run.execute(['lda+tfk_vemb-read_nofdekern_short.inp'],        ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
+test.run(['hf_lda+tfk_vemb-read_short.inp'],               ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
+test.run(['hf_lda+tfk_vemb-read_nofdekern_short.inp'],     ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
+test.run(['lda+tfk_vemb-read_short.inp'],                  ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
+test.run(['lda+tfk_vemb-read_nofdekern_short.inp'],        ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS EMBPOT" ')
 
 f.add(re          = 'density integrates to',
       tolerance   = 1.0e-7)
 
-test_run.execute(['pbe+pw91k_vemb-update_short.inp'],              ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
-test_run.execute(['hf_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
-test_run.execute(['pbe+pw91k_vemb-update_nofdekern_short.inp'],    ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
-test_run.execute(['hf_pbe+pw91k_vemb-update_nofdekern_short.inp'], ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
+test.run(['pbe+pw91k_vemb-update_short.inp'],              ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
+test.run(['hf_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
+test.run(['pbe+pw91k_vemb-update_nofdekern_short.inp'],    ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
+test.run(['hf_pbe+pw91k_vemb-update_nofdekern_short.inp'], ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
 
 f = Filter()
 f.add(from_string = '* Dipole moment:',
@@ -37,6 +36,6 @@ f.add(from_string = '* Dipole moment:',
 f.add(re          = 'density integrates to',
       tolerance   = 1.0e-7)
 
-test_run.execute(['cc_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS" --aw=90')
+test.run(['cc_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS" --aw=90')
 
-sys.exit(0)
+sys.exit(test.return_code)

@@ -32,7 +32,7 @@
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
 !     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
-!     MOLMF3     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
+!     X2CMMF     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS
@@ -133,7 +133,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -144,7 +144,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
+     &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ecpcalc,MDIRAC,TRS_MIX,                           &
      &                I2_DCLHAM
 

@@ -1659,6 +1659,7 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "frame.h"
@@ -1671,6 +1672,9 @@ C
 #include "memint.h"
 C
       CALL QENTER('rGETFC')
+
+      IPRINT_local = IPROPT
+      IF (X2CMMF) IPRINT_local = max(2,IPRINT_local)
 C
 C
 C     ***************************************************
@@ -1678,51 +1682,65 @@ C     *** Get 1-electron Fock matrix ********************
 C     ***************************************************
 C
       CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL DIRH1(WORK(KH1AO),IPROPT,WORK(KFREE),LFREE)
+      CALL DIRH1(WORK(KH1AO),IPRINT_local,WORK(KFREE),LFREE)
 C
+C     ***************************************************
+C     *** Get 2-electron Fock matrix ********************
+C     ***************************************************
+C
+      CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
       IF (NISHT .GT. 0) THEN
-C
-         CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
-C
-         CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
-C
+
          NFMAT = 1
 
          call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
          call SetIntTaskArrayDimension(NPOS,PARCAL)
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 
-C        ***************************************************
-C        *** Get one-electron density matrices *************
-C        ***************************************************
-C
-C        Construct DCAO
-C
-         CALL DENSTY(WORK(KDCAO),CMO,IPROPT)
-C
-C        ***************************************************
-C        *** Get 2-electron Fock matrices ******************
-C        ***************************************************
-C
+C        Construct one-electron density matrix DCAO
+
+         CALL DENSTY(WORK(KDCAO),CMO,IPRINT_local)
+
          CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &        WORK(KFCAO),WORK(KDCAO),
      &        NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
-C
+      ELSE
+         CALL DZERO(WORK(KFCAO),N2BBASXQ)
+         CALL DZERO(WORK(KDCAO),N2BBASXQ)
+      END IF
+
+C     if x2c_mmf, add the mmf two-electron Fock matrix
+
+      IF (X2CMMF) THEN
+         CALL MEMGET('REAL',KF2MMF,N2BBASXQ,WORK,KFREE,LFREE)
+         open(lux2c,file='DFFCK_mmf',status='old',form='unformatted',
+     &        access='sequential',action='readwrite',
+     &        position='rewind')
+         CALL REAFCK(lux2c,WORK(KF2MMF),.TRUE.,1)
+         close(lux2c, status='keep')
+         CALL DAXPY(N2BBASXQ,-1.0D0,WORK(KH1AO),1,WORK(KF2MMF),1)
+         EMMF2E = DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KF2MMF),1)  ! see "same as" below
+         CALL DAXPY(N2BBASXQ,1.0D0,WORK(KF2MMF),1,WORK(KFCAO),1)
+      ELSE
+         EMMF2E = 0.0D0
+      END IF
 C
 C        1-electron inactive energy
-C        (factor D2: DCao normed to 1 (not 2))
+C        (factor D2: DCao normalized to 1 (not 2))
 C
          ECORE = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
-         IF (IPROPT .GE. 4)
-     &        WRITE(LUPRI,9000) 1,ECORE
+         IF (IPRINT_local .GE. 2) WRITE(LUPRI,9000) 1,ECORE
 C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          EMCMY2E =            DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
 !same as EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
-         IF (IPROPT .GE. 4)
-     &        WRITE(LUPRI,9000) 2,EMCMY2E
+         IF (IPRINT_local .GE. 2) THEN
+            WRITE(LUPRI,9000) 2,EMCMY2E - EMMF2E
+            IF (X2CMMF) WRITE(LUPRI,9007) EMMF2E
+         END IF
          ECORE = ECORE + EMCMY2E
 C
 C        ***************************************************
@@ -1731,21 +1749,18 @@ C        ***************************************************
 C
          CALL DAXPY(N2BBASXQ,D1,WORK(KFCAO),1,WORK(KH1AO),1)
 C
-      ELSE
-         ECORE = D0
-      END IF
 C
 C     add the LVCORR energy correction to the ECORE energy
 C     (will be zero if DOLVC .false.) /Sep 2011 hjaaj
       ECORE    = ECORE + POTNUC + E_LVCORR_MC
       ECORE_LR = ECORE
-      IF (IPROPT .GE. 4) THEN
+      IF (IPRINT_local .GE. 2) THEN
           WRITE(LUPRI,9001) POTNUC
           IF (E_LVCORR_MC .ne. 0.0D0) WRITE(LUPRI,9002) E_LVCORR_MC
           WRITE(LUPRI,9004) ECORE
       END IF
 C
-      IF ( IPROPT .GE. 10 ) THEN
+      IF ( IPRINT_local .GE. 10 ) THEN
          WRITE(LUPRI,9006) 'FCao'
          CALL PRQMAT(WORK(KH1AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -1755,6 +1770,7 @@ C
  9002 FORMAT(/' (rGETFC) LVCORR correction     : ',F25.15)
  9004 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
  9006 FORMAT(/'  rGETFC: ',A,' fock matrix')
+ 9007 FORMAT(/' (rGETFC) 2-electron mmf energy : ',F25.15)
 C
 C     ***************************************************
 C     *** Transform to MO basis *************************
@@ -1772,8 +1788,8 @@ C
      &               NZ,IPQTOQ(1,0),
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
-     &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 10) THEN
+     &               WORK(KFREE),LFREE,IPRINT_local)
+         IF (IPRINT_local .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1839,7 +1855,7 @@ C
 C
       END IF
       IF ( IPRINT .GE. 10 ) THEN
-         WRITE(LUPRI,'(/A)') ' (DIRH1) H1 in AO basis'
+         WRITE(LUPRI,'(/A,L5)') ' (DIRH1) H1 in AO basis', EX
          CALL PRQMAT(H1AO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      $        NZ,IPQTOQ(1,0),LUPRI)
       END IF

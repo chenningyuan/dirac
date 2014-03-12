@@ -5,10 +5,9 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string  = 'Electronic energy',
@@ -19,18 +18,18 @@ f.add(from_string  = ' --------------- STEX Final Output --------------',
       tolerance    = 1.0e-5,
       ignore_below = 1.0e-9)
 
-test_run.execute(['gs.inp'], ['LiH-c1.mol'], args='--outcmo')
+test.run(['gs.inp'], ['LiH-c1.mol'], args='--outcmo')
 
 shutil.copy('DFCOEF', 'DFCOEF.GS')
 
-test_run.execute(['ion.inp'], ['LiH-c1.mol'], args='--incmo --outcmo')
+test.run(['ion.inp'], ['LiH-c1.mol'], args='--incmo --outcmo')
 
 shutil.move('DFCOEF', 'DFCOEF.ION')
 shutil.move('DFCOEF.GS', 'DFCOEF')
 
-test_run.execute(['stex.inp'], ['LiH-c1.mol'], f, args='--incmo --copy="DFCOEF.ION"')
+test.run(['stex.inp'], ['LiH-c1.mol'], f, args='--incmo --copy="DFCOEF.ION"')
 
 os.unlink('DFCOEF.ION')
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)

@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = ' TOTAL ENERGY',
       num_lines   = 11,
       tolerance   = 1.0e-10)
 
-test_run.execute(['hermit_ll.inp', 'hermit_sl.inp', 'hermit_ss.inp'], ['H2O.mol'], f)
-test_run.execute(['interest_ll.inp', 'interest_sl.inp', 'interest_ss.inp'], ['H2O.mol'], f)
+test.run(['hermit_ll.inp', 'hermit_sl.inp', 'hermit_ss.inp'], ['H2O.mol'], f)
+test.run(['interest_ll.inp', 'interest_sl.inp', 'interest_ss.inp'], ['H2O.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

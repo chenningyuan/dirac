@@ -241,18 +241,19 @@ C
       WRITE(LUPRI,'(/A,I3)')
      & '* Solving EPR/ESR problem for an effective spin multiplicity of'
      & ,MULTIPESR
-      IF (N_CIESR .GT. 0) THEN
-         WRITE(LUPRI,'(/A,I5)')
-     &   '* Number of roots to converge in CI:', N_CIESR
-      END IF
       IF (MULTIPESR .LT. 1) THEN
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
-      IF (N_CIESR .lt. MULTIPESR .AND. LVL_CIESR_T .gt. 0) THEN
+      IF (LVL_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
       !  LVL_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF
-         WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
-         INPERR = INPERR + 1
+         IF (N_CIESR < 0) N_CIESR = MULTIPESR
+         WRITE(LUPRI,'(/A,I5)')
+     &   '* Number of roots to converge in CI:', N_CIESR
+         IF (N_CIESR .lt. MULTIPESR) THEN
+            WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
+            INPERR = INPERR + 1
+         END IF
       END IF
       IF (LVL_CIESR_T .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
@@ -263,7 +264,7 @@ C
             INPERR = INPER + 1
          ELSE IF (LVL_CIESR(0) .EQ. 0) THEN
          ELSE
-            WRITE (LUPRI,'(A,I2,A,T40,2I5)') '   - 0 to',LVL_CIESR(0),
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(0),
      &         ' holes in non-frozen core orbitals:', NCSH_ESR(1:NFSYM)
          END IF
 
@@ -272,11 +273,11 @@ C
             INPERR = INPER + 1
          ELSE IF (LVL_CIESR(1) .EQ. 0) THEN
          ELSE
-            WRITE (LUPRI,'(A,I2,A,T40,2I5)') '   - 0 to',LVL_CIESR(1),
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(1),
      &         ' holes in valence orbitals:', (NVSH_ESR(I),I=1,NFSYM)
          END IF
 
-         WRITE (LUPRI,'(A,T40,2I5)') '   - active/open shell orbitals:',
+         WRITE (LUPRI,'(A,T50,2I5)') '   - active/open shell orbitals:',
      &      (NASH(I),I=1,NFSYM)
 
          IF (LVL_CIESR(2) .LT. 0) THEN
@@ -285,7 +286,7 @@ C
             INPERR = INPER + 1
          ELSE IF (LVL_CIESR(2) .EQ. 0) THEN
          ELSE
-            WRITE (LUPRI,'(A,I2,A,T40,2I5)') '   - 0 to',LVL_CIESR(2),
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(2),
      &        ' electrons in virtual orbitals:', (NSSH_ESR(I),I=1,NFSYM)
          END IF
       END IF

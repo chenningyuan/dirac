@@ -4,15 +4,14 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'Electronic energy',
       tolerance = 1.0e-7)
 
-test_run.execute(['pp86.inp', 'pp86_ggakey.inp', 'pp86_xcfun.inp', 'pw86x.inp', 'pw86x_xcfun.inp', 'p86c.inp', 'p86c_xcfun.inp'], ['ne.mol'], f)
+test.run(['pp86.inp', 'pp86_ggakey.inp', 'pp86_xcfun.inp', 'pw86x.inp', 'pw86x_xcfun.inp', 'p86c.inp', 'p86c_xcfun.inp'], ['ne.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)
