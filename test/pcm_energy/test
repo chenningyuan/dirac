@@ -5,10 +5,9 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string  = '   Electronic energy',
@@ -21,6 +20,6 @@ f.add(from_string  = '   Total energy',
       num_lines    = 1,
       tolerance    = 1.0e-10)
 
-test_run.execute(['nonrel.inp', 'levy.inp', 'dc.inp', 'dc-skipss.inp', 'dc-lda.inp', 'levy-lda.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp')
+test.run(['nonrel.inp', 'levy.inp', 'dc.inp', 'dc-skipss.inp', 'dc-lda.inp', 'levy-lda.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp')
 
-sys.exit(0)
+sys.exit(test.return_code)

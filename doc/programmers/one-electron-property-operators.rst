@@ -58,6 +58,7 @@ the following information is recorded:
 *PDOINT*   
    a CHARACTER*4 array where the four slots correspond to the LL, SL, LS and SS block 
    of the scalar property matrix and have three possible values:
+
       - '0': the block is not used (and therefore not generated)
       - '+': the block is used 
       - '-': the block is used and scaled with minus one

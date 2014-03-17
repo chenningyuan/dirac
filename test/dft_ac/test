@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '@   Elements of the electric dipole',
       to_string   = '@   anisotropy')
-f.add(from_string = ' *************************** Expectation values',
-      to_string   = '    s0 = T : Expectation value')
+f.add(from_string = '************ Expectation values',
+      to_string   = 's0 = T : Expectation value')
 
-test_run.execute(['PBE0gracLB94.inp', 'GLLBsaopLBalpha.inp'], ['Ne.mol'], f)
+test.run(['PBE0gracLB94.inp', 'GLLBsaopLBalpha.inp'], ['Ne.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

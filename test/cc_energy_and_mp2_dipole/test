@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
@@ -17,14 +16,14 @@ f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       tolerance   = 1.0e-5)
 
-test_run.execute(['sf.scf.inp'],     ['H2O.mol'], f, args='--outcmo                 ')
+test.run(['sf.scf.inp'],     ['H2O.mol'], f, args='--outcmo                 ')
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       tolerance   = 1.0e-9)
 
-test_run.execute(['so-ccsd.inp'],    ['H2O.mol'], f, args='--mw=64 --aw=130  --incmo')
+test.run(['so-ccsd.inp'],    ['H2O.mol'], f, args='--mw=64 --aw=130  --incmo')
 
 f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
@@ -33,9 +32,9 @@ f.add(from_string = '* Dipole moment',
       to_string   = '1 a.u =   2.54177000 Debye',
       tolerance   = 1.0e-5)
 
-test_run.execute(['ccsd.small.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130         ')
-test_run.execute(['ccsd.inp'],       ['H2O.mol'], f, args='--mw=64 --aw=130         ')
+test.run(['ccsd.small.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130         ')
+test.run(['ccsd.inp'],       ['H2O.mol'], f, args='--mw=64 --aw=130         ')
 
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)

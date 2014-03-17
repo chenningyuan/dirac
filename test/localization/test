@@ -6,10 +6,9 @@ import tarfile
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = '**** Inverse mean delocalization',
@@ -29,17 +28,17 @@ shutil.copy('cf.O', 'DFO1AT')
 
 # CH4
 shutil.copy('cf.CH4', 'DFPCMO')
-test_run.execute(['CH4locmul_full.inp'], ['CH4.mol'], f, '--copy="DFPCMO"')
-test_run.execute(['CH4locprj_full.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
-test_run.execute(['CH4locprj_comb.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
-test_run.execute(['CH4locprj_diag.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
+test.run(['CH4locmul_full.inp'], ['CH4.mol'], f, '--copy="DFPCMO"')
+test.run(['CH4locprj_full.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
+test.run(['CH4locprj_comb.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
+test.run(['CH4locprj_diag.inp'], ['CH4.mol'], f, '--copy="DFPCMO DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"')
 
 # H2O
 shutil.copy('cf.H2O', 'DFPCMO')
-test_run.execute(['H2Olocmul_full.inp'], ['H2O.mol'], f, '--copy="DFPCMO"')
-test_run.execute(['H2Olocprj_full.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
-test_run.execute(['H2Olocprj_comb.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
-test_run.execute(['H2Olocprj_diag.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
+test.run(['H2Olocmul_full.inp'], ['H2O.mol'], f, '--copy="DFPCMO"')
+test.run(['H2Olocprj_full.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
+test.run(['H2Olocprj_comb.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
+test.run(['H2Olocprj_diag.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT DFH2AT"')
 
 # cleanup
 os.unlink('cf.H')
@@ -55,4 +54,4 @@ os.unlink('DFH3AT')
 os.unlink('DFH4AT')
 os.unlink('DFPCMO')
 
-sys.exit(0)
+sys.exit(test.return_code)

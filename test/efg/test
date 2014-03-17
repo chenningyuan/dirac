@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
@@ -17,14 +16,14 @@ f.add(from_string = 'Individual (non-zero) components',
       to_string   = 'Total contribution to principal components',
       tolerance   = 1.0e-6)
 
-test_run.execute(['zerofield.inp'],           ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160          --outcmo')
-test_run.execute(['scf.ccsd.1.inp'],          ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
-test_run.execute(['scf.ccsd.m1.inp'],         ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
-test_run.execute(['bss+mfsso.zerofield.inp'], ['HF.p-ccpvdz.mol'], f, '                           --outcmo')
-test_run.execute(['bss.zerofield.inp'],       ['HF.p-ccpvdz.mol'], f, '                  --incmo  --outcmo')
-test_run.execute(['bss.scf.ccsd.1.inp'],      ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
-test_run.execute(['bss.scf.ccsd.m1.inp'],     ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
+test.run(['zerofield.inp'],           ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160          --outcmo')
+test.run(['scf.ccsd.1.inp'],          ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
+test.run(['scf.ccsd.m1.inp'],         ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
+test.run(['bss+mfsso.zerofield.inp'], ['HF.p-ccpvdz.mol'], f, '                           --outcmo')
+test.run(['bss.zerofield.inp'],       ['HF.p-ccpvdz.mol'], f, '                  --incmo  --outcmo')
+test.run(['bss.scf.ccsd.1.inp'],      ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
+test.run(['bss.scf.ccsd.m1.inp'],     ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
 
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)

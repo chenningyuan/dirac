@@ -289,10 +289,10 @@ C
       ENDIF
 C
 CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
-!     nothing to be done for X2Cmmf (molmf3 == T)
+!     nothing to be done for X2Cmmf (X2CMMF == T)
       if(spinfr) remove_spinfree_terms = .true.
       if(bss)    remove_spinfree_terms = .false.
-      if(molmf3) remove_spinfree_terms = .false.
+      if(X2CMMF) remove_spinfree_terms = .false.
  
       if(remove_spinfree_terms)then
         CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
@@ -759,6 +759,8 @@ C     All quaternion and complex subgroups are Abelian.
 C     The real groups are non-Abelian and so an Abelian subgroup is chosen
 C       D2, C2v -> C2
 C       D2h     -> C2h
+C     NSYMRPA is the number of boson irreps of the subgroup;
+C     since it is Abelian the number of fermion irreps will be the same
 C
 C     Luuk Visscher, Mar 18 1997
 C

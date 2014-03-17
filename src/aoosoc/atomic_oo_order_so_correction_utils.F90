@@ -111,6 +111,7 @@ contains
                                                 intflg_local,  & !all classes by default
                                                 hfxfac         &
                                                )
+#ifdef OLD_VERSION_AOOSOC
       allocate(fmat_local(nrows,ncols,nz,1))
       fmat_local = 0
       call process_two_electron_integrals_4comp(                     &
@@ -163,6 +164,7 @@ contains
                         )
       deallocate(fmat_local)
       deallocate(fmat_local2)
+#endif /* OLD_VERSION_AOOSOC */
 #else
       call quit( 'InteRest required for aoosoc module' )
 #endif
@@ -363,13 +365,6 @@ contains
                        )
 #endif
 
-      call get_ss_so_2e_fock(                   &
-                             fmat,              &
-                             nr_ao_large_aoo,   &
-                             nr_ao_large_aoo,   &
-                             nr_quat            &
-                            )
-
       dmat(1:nr_ao_total_aoo**2 * nr_quat) = 0.0d0
       call perform_pct_saao_bas(fmat,                         &
                                 pct_mat,                      &
@@ -386,6 +381,7 @@ contains
                                 aoo_bs_to_fs,                 &
                                 .true.,                       &
                                 print_lvl)
+#ifdef OLD_VERSION_AOOSOC
 !     pure 2e-SO matrix
       call pure_so_2e(                            &
                       fmat,                       &
@@ -412,7 +408,9 @@ contains
                       )
 
       deallocate(lvalue_array)
-#endif
+#endif /* SOC_DEBUG */
+
+#endif /* OLD_VERSION_AOOSOC */
 
 !     debug print
       if(print_lvl > 2)then
@@ -441,57 +439,6 @@ contains
 
 
   end subroutine get_normalized_2e_soc
-!----------------------------------------------------------------------
-
-  subroutine get_ss_so_2e_fock(                            &
-                               Gmat,                       &
-                               nrow,                       &
-                               ncol,                       &
-                               nz                          &
-                              )
-!----------------------------------------------------------------------
-!
-!    purpose: retain only ss-block of two-electron spin-orbit elements in 2-el Fock matrix
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
-     integer, intent(in)      :: nrow
-     integer, intent(in)      :: ncol
-     integer, intent(in)      :: nz
-!----------------------------------------------------------------------
-     integer                  :: i, j
-!----------------------------------------------------------------------
-
-!      check dimensionalities
-       if(nz /= 4) call quit( '2-el Fock matrix is not in quaternion format' )
-
-       if(nrow /= ncol) call quit( '2-el Fock matrix is not in MDIRAC format' )
-
-!      take out ss/sl parts
-       do j=1,nrow
-         do i=1,nrow
-           !> quaternion(i)
-!          Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
-!          Gmat(i     ,j     ,2) = 0.0d0
-!          Gmat(i+nrow,j     ,2) = 0.0d0
-!          Gmat(i     ,j+nrow,2) = 0.0d0
-!          Gmat(i+nrow,j+nrow,2) = 0.0d0
-           !> quaternion(j)
-!          Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
-!          Gmat(i     ,j     ,3) = 0.0d0
-!          Gmat(i+nrow,j     ,3) = 0.0d0
-!          Gmat(i     ,j+nrow,3) = 0.0d0
-!          Gmat(i+nrow,j+nrow,3) = 0.0d0
-           !> quaternion(k)
-!          Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
-!          Gmat(i     ,j     ,4) = 0.0d0
-!          Gmat(i+nrow,j     ,4) = 0.0d0
-!          Gmat(i     ,j+nrow,4) = 0.0d0
-!          Gmat(i+nrow,j+nrow,4) = 0.0d0
-         enddo
-       enddo
-
-  end subroutine get_ss_so_2e_fock
 !----------------------------------------------------------------------
 
   subroutine dump_normalized_2e_soc(                            &

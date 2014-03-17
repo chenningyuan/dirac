@@ -4305,7 +4305,7 @@ C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
 C***********************************************************************
 C     
-C     Which shell does electron orbital IORBITAL belong to?
+C     Which open shell does electron orbital IORBITAL belong to?
 C
 C     Written by J. Thyssen - Feb 11 1999
 C     
@@ -4313,11 +4313,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
       IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN(neg)')
+     &   CALL QUIT('illegal value in GETIOPEN (≤0)')
+      IF (IFRP .GT. NFSYM)
+     &   CALL QUIT('illegal fermion symmetry in GETIOPEN')
 C
       IF (IORBITAL .LE. NISH(IFRP)) THEN
          GETIOPEN = 0
@@ -4335,7 +4338,7 @@ C
          ILOW = IHIGH+1
       ENDIF
       END DO
-      CALL QUIT('illegal value in GETIOPEN(pos)')
+      CALL QUIT('illegal value in GETIOPEN (unoccupied orbital)')
       RETURN
       END
 
