@@ -548,20 +548,20 @@
         write(wunit_q,'( a/)')  " -------------------------------------"
       end if
      
-      print *, 'tan(2*teta_1)',tan(2*teta_1)
-      print *, 'alter...     ',(sqrt(1-c01)/sqrt(c01))/(1-((1-c01)/c01))
+!     print *, 'tan(2*teta_1)',tan(2*teta_1)
+!     print *, 'alter...     ',(sqrt(1-c01)/sqrt(c01))/(1-((1-c01)/c01))
 
       Edc_1  = (1 - c01) * e_corr            
       Edrc_1 = ((1-c01) / c01) * e_corr
       Epc_1  = e_corr*(sqrt(N**2 + 2*N * (tan(2*teta_1))**2) - N) /     &
      &         (2*(1/cos(2*teta_1) -1))
-      print *, 'blubb ...'
+!     print *, 'blubb ...'
       Epcp_1  = e_corr*(sqrt(N**2 + 2*N * (tan(2*teta_1))**2) - N) /    &
      &         (2*((1+((1-c01)/c01))/(2*((1-c01)/c01))-1))
-      print *, 'blubb ...',Epcp_1
+!     print *, 'blubb ...',Epcp_1
       Epcp_1  = e_corr*(sqrt(N**2 + 2*N * (tan(2*teta_1))**2) - N) /    &
      &         (2*((1/(2*c01-1))-1))
-      print *, 'blubb 2...',Epcp_1
+!     print *, 'blubb 2...',Epcp_1
       Epcp_1  = (1 - (2/N)) * ((1-c01)/c01) * e_corr
 
       if(N > 3.0d0) Emc_1 = ((N - 2) * (N - 3) / (N * (N - 1))) *       &
