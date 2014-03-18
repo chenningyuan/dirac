@@ -396,10 +396,9 @@ def main():
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'qcorr'
-    dirac_modules[this_module] = dirac_module('qcorr', 'Davidson-type Q corrections for restricted CI')
+    dirac_modules[this_module] = dirac_module('qcorr', 'Davidson-type +Q corrections for (MR)CISD')
     dirac_modules[this_module].add_cppflag('MOD_QCORR')
     dirac_modules[this_module].add_directory('src/qcorr')
-    dirac_modules[this_module].take_out_of_release()
 
     # define input options
 
