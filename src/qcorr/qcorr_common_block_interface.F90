@@ -42,6 +42,7 @@ contains
       deallocate(KNSTSO_q)
       deallocate(KNSTSO2_q)
       deallocate(NELEC_q)
+      deallocate(nash_q)
       if(relQC)then
         deallocate(MS2VAL_q)
         deallocate(NBLK_MS2_q)
@@ -54,6 +55,7 @@ contains
       subroutine init_qcorr_rel()
 
  use symmetry_setup_krci
+#include "dgroup.h"
 #include "../luciarel/ipoist8.inc"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/strbas.inc"
@@ -69,7 +71,10 @@ contains
       NACTEL_q    = real(NACTEL)
       NORB_q      = 0
       NSMST_q     = NSMST
-      
+      nfsym_q     = nfsym
+
+      allocate(nash_q(nfsym_q))
+      call helper_cb(nash_q,nfsym_q)
 
       allocate(KNSTSO_q(MXPSTT))
       KNSTSO_q(1:MXPSTT) = KNSTSO(1:MXPSTT) 
@@ -94,6 +99,12 @@ contains
 
       subroutine init_qcorr_nr()
 
+#ifdef PRG_DIRAC
+#include "dgroup.h"
+#else
+#include "infpar.h"
+#include "inforb.h"
+#endif
 #include "../lucita/mxpdim.inc"
 #include "../lucita/lucinp.inc" ! contains NACTEL
 #include "../lucita/strbas.inc"
@@ -112,7 +123,14 @@ contains
       NACTEL_q    = real(NACTEL)
       NORB_q      = ntoob
       NSMST_q     = NSMST
-      
+#ifdef PRG_DIRAC
+      nfsym_q     = nfsym
+
+#else
+      nfsym_q     = nsym
+#endif
+      allocate(nash_q(nfsym_q))
+      call helper_cb(nash_q,nfsym_q)
 
       allocate(KNSTSO_q(MXPSTT))
       KNSTSO_q(1:MXPSTT) = KNSTSO(1:MXPSTT) 
@@ -124,23 +142,36 @@ contains
       NELEC_q(1:MXPSTT) = NELEC(1:MXPSTT)
 
       end subroutine init_qcorr_nr
+ 
+      subroutine helper_cb(nash_q,nfsym_q)
+#ifdef PRG_DIRAC
+#include "dcborb.h"
+#else
+#include "inforb.h"
+#endif
+        integer, intent(out) :: nash_q(nfsym_q)
+        integer, intent(in)  :: nfsym_q
+        nash_q(1:nfsym_q) = nash(1:nfsym_q)
+      end subroutine helper_cb
 
       subroutine print_header_qcorr(wunit)
 
       integer, intent(in) :: wunit
 
       write(wunit,'(/18x,a)') ' ********************************************************************'
-      write(wunit,'(18x,a )') ' ***  QCORR module for Davidon(-type) energy corrections for CI   ***'
-      write(wunit,'(18x,a )') ' ***  according to Chem. Rev. 112, 108-181 (2012)                 ***'
+      write(wunit,'(18x,a )') ' ***                        QCORR-CI                              ***'
+      write(wunit,'(18x,a )') ' ***      a module for Davidson(-type) energy corrections of      ***'
+      write(wunit,'(18x,a )') ' ***                  (MR)CISD wave functions                     ***'
       write(wunit,'(18x,a )') ' ***                                                              ***'
       write(wunit,'(18x,a )') ' ***  authors:         - Stefan Knecht                            ***'
       write(wunit,'(18x,a )') ' ***                   - Stefan Heinen                            ***'
       write(wunit,'(18x,a )') ' ***  contributor:     - Markus Reiher                            ***'
       write(wunit,'(18x,a )') ' ***                                                              ***'
       write(wunit,'(18x,a )') ' ***  please cite: work in progress, private communication with   ***'
-      write(wunit,'(18x,a )') ' ***               S. Knecht                                      ***'
+      write(wunit,'(18x,a )') ' ***               S. Knecht, ETH Zuerich, 2014.                  ***'
       write(wunit,'(18x,a )') ' ***                                                              ***'
-      write(wunit,'(18x,a )') ' ***  ETH Zuerich, winter 2013/2014                               ***'
+      write(wunit,'(18x,a )') ' ***  reference for +Q models: Chem. Rev. 112, 108-181 (2012)     ***'
+      write(wunit,'(18x,a )') ' ***                                                              ***'
       write(wunit,'(18x,a/)') ' ********************************************************************'
 
       end subroutine print_header_qcorr

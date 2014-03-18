@@ -52,12 +52,14 @@
       ref_wavefunction_coeff = 0.0d0 ! initialize all to 0.0d0
 
       allocate(l_ref(nref_qcorr,2))
+      allocate(nash_qcorr(nfsym_q))
+      nash_qcorr = 0
 
       ! read reference configurations from file (either written by MCSCF or by user input for HF reference)
       open(1234,file='refvec.luci',status='old',form='unformatted',     &
       access='sequential',action="read",position='rewind')
 
-      read(1234) nref_qcorr, reference_energy_qcorr
+      read(1234) nref_qcorr,reference_energy_qcorr,nash_qcorr(1:nfsym_q)
 !     read # reference configurations
       allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
       allocate(ref_wavefunction_qcorr(nref_qcorr,2))
@@ -73,6 +75,8 @@
       end do
 
       close(1234,status="keep")
+
+      if(.not.set_nash_q_qcorr)nash_q(1:nfsym_q)=nash_qcorr(1:nfsym_q)
 
       LBLK = -1
       IBOFF = 0
@@ -129,6 +133,7 @@
      &                          IACTP,IBCTP,ICISTR,ntest,               &
      &                          ref_wavefunction_qcorr,                 &
      &                          ref_wavefunction_coeff,nref_qcorr,      &
+     &                          nash_qcorr,nash_q,nfsym_q,              &
      &                          NORB_q,relQC, wunit_q,l_ref,cvorb_qcorr)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
           if(allocated(bstring)) deallocate(bstring)
@@ -168,28 +173,29 @@
      &                  " refer to: ",                                  &
      & " Edc:  Davidson correction              [Eq. (34)]",            &
      & " Erdc: renormalized Davidson correction [Eq. (36)]",            &
-     & " Epc:  Pople correction                 [Eq. (38)]",            &
+!fixme " Epc:  Pople correction                 [Eq. (38)]",            &
      & " Epc`: modified Pople correction        [Eq. (39)]",            &
      & " Emc : Meissner correction              [Eq. (41)]"
 
-      !> MC wave function
+      !> MC/HF wave function
       if(reference_energy_qcorr /= 0.0d0)then
         reference_energy = reference_energy_qcorr
-      else ! HF wave function
-        INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-        IF (.NOT.TOBE) THEN
-          WRITE(wunit_q,'(/A)')                                         &
-     &    'HF coefficient/energy file not available'
-          CALL QUIT('QCORR: No MO coefficient file !')
-        ELSE
-          lucoef = 99
-          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','QCORR')
-          CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,reference_energy_tmp,&
-     &                1,DUM,IDUM,IDUM)
-          CLOSE(LUCOEF,STATUS='KEEP')
-        ENDIF
-
-        reference_energy = reference_energy_tmp
+!     else ! HF wave function
+!       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+!       IF (.NOT.TOBE) THEN
+!         WRITE(wunit_q,'(/A)')                                         &
+!    &    'HF coefficient/energy file not available'
+!         CALL QUIT('QCORR: No MO coefficient file !')
+!       ELSE
+!         lucoef = 99
+!         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','QCORR')
+!         CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,reference_energy_tmp,&
+!    &                1,DUM,IDUM,IDUM)
+!         CLOSE(LUCOEF,STATUS='KEEP')
+!       ENDIF
+!       reference_energy = reference_energy_tmp
+      else
+        call quit('qcorr module: no reference energy given!')
       end if
 
       do i = 1, nstates_ci
@@ -223,11 +229,11 @@
         write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_1
         write(wunit_q,"(A )") " ----------------"
  
-        write(wunit_q,"(/A)") " Epc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_1
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_1
-        write(wunit_q,"(A )") " ----------------"
+!fixme  write(wunit_q,"(/A)") " Epc correction :"
+!fixme  write(wunit_q,"(A )") " ----------------"
+!fixme  write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_1
+!fixme  write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_1
+!fixme  write(wunit_q,"(A )") " ----------------"
  
         write(wunit_q,"(/A)") " Epc` correction:"
         write(wunit_q,"(A )") " ----------------"
@@ -268,11 +274,11 @@
         write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_2
         write(wunit_q,"(A )") " ----------------"
  
-        write(wunit_q,"(/A)") " Epc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_2
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_2
-        write(wunit_q,"(A )") " ----------------"
+!fixme  write(wunit_q,"(/A)") " Epc correction :"
+!fixme  write(wunit_q,"(A )") " ----------------"
+!fixme  write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_2
+!fixme  write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_2
+!fixme  write(wunit_q,"(A )") " ----------------"
  
         write(wunit_q,"(/A)") " Epc` correction:"
         write(wunit_q,"(A )") " ----------------"
@@ -295,6 +301,7 @@
       deallocate(e_corr)
       deallocate(e_tot)
 
+      deallocate(nash_qcorr)
       deallocate(l_ref)
       deallocate(ref_wavefunction_qcorr)
       deallocate(ref_wavefunction_coeff_qcorr)
@@ -316,22 +323,23 @@
      &                            IBLTP,NSMST,                          &
      &                            IASPGPTP,IBSPGPTP,ICISTR,IPRNT,       &
      &                            ref_wavefunction,                     &
-     &                            ref_wavefunction_coeff,nref,          &
-     &                            NORB,relQC, wunit_q, lref,cvorb)
+     &                            ref_wavefunction_coeff,nref,nashref,  &
+     &                            nash,nfsym,                           &
+     &                            nrorb,relQC, wunit_q, lref,cvorb)
 !     ***********************************************************************
 
+      use mospinor_info
       implicit none
-
       real(8), intent(inout)          :: C(*)
       integer, intent(inout)          :: IASTR(NAEL,*), IBSTR(NBEL,*)
-      integer, intent(in)             :: lref(nref,2)
-      integer, intent(in)             :: luc, nbl_c, nsmst
+      integer, intent(in)             :: lref(nref,2),nashref(nfsym)
+      integer, intent(in)             :: luc, nbl_c, nsmst, nfsym
       integer, intent(in)             :: nael, nbel, icistr, iprnt
       integer, intent(in)             :: NSSOA(NSMST,*), NSSOB(NSMST,*)
-      integer, intent(in)             :: IBLTP(*)
+      integer, intent(in)             :: IBLTP(*), nash(nfsym)
       integer, intent(in)             :: IBLOCK(8,NBL_C)
       integer, intent(in)             :: IASPGPTP, IBSPGPTP
-      integer, intent(in)             :: norb
+      integer, intent(in)             :: nrorb
       integer, intent(in)             :: nref, wunit_q
       integer, intent(in)             :: cvorb(2)
       character(len=240), intent(in)  :: ref_wavefunction(nref,2)
@@ -342,6 +350,7 @@
      
 !     scratch
       character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
+      integer,             allocatable:: istr(:,:)
       integer                         :: iel, i, j
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
@@ -350,10 +359,21 @@
       integer                         :: iref_tmp, irestr_ana, jblock
       integer                         :: minia, nastr1, nbstr1, nia, nib
       integer                         :: off_a, off_b
+      integer                         :: nal, nbt, threshold
+      logical                         :: is_not_ref
 
       allocate(ref_wavefunction_tmp(nref,2))
+      allocate(istr(max(nael,nbel),2))
 
       if( ICISTR .ge. 2 ) call REWINE(LUC,-1)
+
+      threshold = cvorb(1) + cvorb(2)
+      do i = 1, size(nashref)
+        threshold = threshold + nashref(i)
+      end do
+
+      if(iprnt > 100)                                                   &
+      print *, 'nfsym, nash(1), nash(2)',nfsym,nash(1),nash(2),threshold
 
       IDET     = 0
       do JBLOCK = 1, NBL_C
@@ -374,9 +394,9 @@
 
            IDUM = 0
            call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,        &
-     &                            NORB,0,IDUM,IDUM)
+     &                            nrorb,0,IDUM,IDUM)
            call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,        &
-     &                            NORB,0,IDUM,IDUM)
+     &                            nrorb,0,IDUM,IDUM)
          end if
 
          if(IBLTP(IASM).eq.2) then
@@ -405,34 +425,104 @@
                do IA = MINIA,IABAS+NIA-1                              ! loop over alpha strings 
                  IDET = IDET + 1
                    
+                is_not_ref = .false.
 
-                !> temporary hack for core-valence orbitals in MRCI that are not part of the CAS reference
-!                  TODO: make a permanent solution + fix the case with inversion symmetry
-                 if(cvorb(1) > 0)then
-                   off_a    = 1
-                   off_b    = 1
-                   do i = 1, cvorb(1)
-                     do j = 1,nael
-                       if(iastr(j,ia) == i)then
-                         off_a    = off_a    + 1
+                !> temporary hack for CAS core orbitals in MRCI, for example orbitals that were not part of the CAS reference
+!                  TODO: make a permanent solution for non-rel CI
+                if(relQC)then
+
+                   nal   = 0
+                   nbt   = 0
+                   istr  = 0
+
+                   do j = 1,nael
+
+                     if(iastr(j,ia) > threshold)then
+                       is_not_ref = .true.
+                       exit
+                     end if
+                     off_a = imosp_luci2dirac1(ireots (iastr(j,ia)))
+
+                     if(iprnt > 100)then
+                       print *,                                         &
+                       'imosp_luci2dirac1(ireots (iastr(iel,ia)))',     &
+                        imosp_luci2dirac1(ireots (iastr(j,ia))) 
+                     end if
+
+                     ! check if actual count in gerade/ungerade
+                     if(off_a > nash(1))then ! ungerade, cvorb(2)
+
+!                      check for non-CAS "core" orbital
+                       if(off_a-nash(1) > cvorb(2))then
+                         nal         = nal + 1
+                         istr(nal,1) = off_a-cvorb(2)-nash(1)+nashref(1)
+                         if(iprnt>100) print *, 'set istr..',istr(nal,1)
                        end if
-                     end do
-                     do j = 1,nbel
-                       if(ibstr(j,ib) == i)then
-                         off_b    = off_b    + 1
+                     else ! gerade, cvorb(1)
+
+!                      check for non-CAS "core" orbital
+                       if(off_a > cvorb(1))then
+                         nal         = nal + 1
+                         istr(nal,1) = off_a-cvorb(1)
+                         if(iprnt>100) print *, 'set istr..',istr(nal,1)
                        end if
-                     end do
+                     end if
                    end do
+
+                   do j = 1,nbel
+
+                     if(ibstr(j,ib) > threshold)then
+                       is_not_ref = .true.
+                       exit
+                     end if
+
+                     off_b = imosp_luci2dirac2(ireots (ibstr(j,ib)))
+                     if(iprnt > 100)then
+                       print *,                                         &
+                       'imosp_luci2dirac2(ireots (ibstr(iel,ib)))',     &
+                        imosp_luci2dirac2(ireots (ibstr(j,ib))) 
+                     end if
+
+                     ! check if actual count in gerade/ungerade
+                     if(off_b > nash(1))then ! ungerade, cvorb(2)
+
+!                      check for non-CAS "core" orbital
+                       if(off_b-nash(1) > cvorb(2))then
+                         nbt         = nbt + 1
+                         istr(nbt,2) = off_b-cvorb(2)-nash(1)+nashref(1)
+                         if(iprnt>100) print *, 'set istr..',istr(nbt,2)
+                       end if
+                     else ! gerade, cvorb(1)
+
+!                      check for non-CAS "core" orbital
+                       if(off_b > cvorb(1))then
+                         nbt         = nbt + 1
+                         istr(nbt,2) = off_b-cvorb(1)
+                         if(iprnt>100) print *, 'set istr..',istr(nbt,2)
+                       end if
+                     end if
+                   end do
+
+                   if(iprnt>100)then
+                     print *, 'a-string: ',istr(1:nal,1)
+                     print *, 'b-string: ',istr(1:nbt,2)
+                   end if
+
                    write(ref_wavefunction_tmp(1,1),"(60i4)")            &
-     &             ((iastr(iel,ia)-cvorb(1)),iel=off_a,nael)
+     &             (istr(iel,1),iel=1,nal)
                    write(ref_wavefunction_tmp(1,2),"(60i4)")            &
-     &             ((ibstr(iel,ib)-cvorb(1)),iel=off_b,nbel)
-                 else
+     &             (istr(iel,2),iel=1,nbt)
+
+                 else ! non-rel CI
+                   if((cvorb(1)+cvorb(2)) > 0)                          &
+               call quit('no core orbitals in non-rel CI+Q! FIXME!')
                    write(ref_wavefunction_tmp(1,1),"(60i4)")            &
      &             (iastr(iel,ia),iel=1,nael)                         
                    write(ref_wavefunction_tmp(1,2),"(60i4)")            &
      &             (ibstr(iel,ib),iel=1,nbel)
-                 end if
+                 end if ! relQC switch
+
+                 if(is_not_ref) cycle ! cycle if current determinant is not included in the reference space
 
                  ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
                  ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
@@ -477,6 +567,7 @@
       end do
 
       deallocate(ref_wavefunction_tmp)
+      deallocate(istr)
 
       end subroutine get_Q_correction
 !     ***********************************************************************
@@ -629,11 +720,11 @@
       open(1234,file='refvec.luci',status='replace',form='unformatted', &
      &access='sequential',action="readwrite",position='rewind')
 
-      write(1234) nref,reference_energy
+      write(1234) nref,reference_energy,nash_q(1:nfsym_q)
 !     write(1234) nref
 
       print *, 'printing all reference confs, total: ',nref, 'ref e:',  &
-     &          reference_energy
+     &          reference_energy,'active orbitals: ',nash_q(1:nfsym_q)
 
       LBLK = -1
       IBOFF = 0
@@ -712,9 +803,10 @@
      &                                 NAEL,NBEL,IASTR,IBSTR,           &
      &                                 IBLTP,NSMST,                     &
      &                                 IASPGPTP,IBSPGPTP,ICISTR,IPRNT,  &
-     &                                 NORB,relQC,wunit_q,nref)
+     &                                 nrorb,relQC,wunit_q,nref)
 !     ***********************************************************************
 
+      use mospinor_info
       implicit none
 
       real(8), intent(inout)          :: C(*)
@@ -726,7 +818,7 @@
       integer, intent(in)             :: IBLTP(*)
       integer, intent(in)             :: IBLOCK(8,NBL_C)
       integer, intent(in)             :: IASPGPTP, IBSPGPTP
-      integer, intent(in)             :: norb
+      integer, intent(in)             :: nrorb
       integer, intent(in)             :: wunit_q
       logical, intent(in)             :: relQC
 
@@ -763,9 +855,9 @@
 
            IDUM = 0
            call GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,        &
-     &                            NORB,0,IDUM,IDUM)
+     &                            nrorb,0,IDUM,IDUM)
            call GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,        &
-     &                            NORB,0,IDUM,IDUM)
+     &                            nrorb,0,IDUM,IDUM)
          end if
 
          if(IBLTP(IASM).eq.2) then
@@ -802,10 +894,14 @@
      &                (ibstr(iel,ib),iel=1,nbel)
                     end if
 
+!                   write(ref_wavefunction_tmp(1,1),"(60i4)")           &
+!    &              (iastr(iel,ia),iel=1,nael)                         
+!                   write(ref_wavefunction_tmp(1,2),"(60i4)")           &
+!    &              (ibstr(iel,ib),iel=1,nbel)
                     write(ref_wavefunction_tmp(1,1),"(60i4)")           &
-     &              (iastr(iel,ia),iel=1,nael)                         
+     &             (imosp_luci2dirac1(ireots(iastr(iel,ia))),iel=1,nael)
                     write(ref_wavefunction_tmp(1,2),"(60i4)")           &
-     &              (ibstr(iel,ib),iel=1,nbel)
+     &             (imosp_luci2dirac2(ireots(ibstr(iel,ib))),iel=1,nbel)
 
                     ilena    = len(trim(ref_wavefunction_tmp(1,1)))
                     ilenb    = len(trim(ref_wavefunction_tmp(1,2)))

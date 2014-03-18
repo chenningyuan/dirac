@@ -1497,6 +1497,8 @@
       integer                          :: ios, islash, ibar
 !     --------------------------------------------------------------------------
 
+#include "dgroup.h"
+
       luci_cfg_qcorr = .true.
 
       call reset_available_kw_list()
@@ -1511,10 +1513,12 @@
 
       if (kw_matches(word, '.REFFIL')) then
 
+        allocate(nash_qcorr(nfsym))
+
         open(1234,file='refvec.luci',status='old',form='unformatted',    &
         access='sequential',action="read",position='rewind')
 
-        read(1234) nref_qcorr, reference_energy_qcorr
+        read(1234) nref_qcorr, reference_energy_qcorr,nash_qcorr(1:nfsym)
 !       read # reference configurations
         allocate(ref_wavefunction_qcorr(nref_qcorr,2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
@@ -1530,10 +1534,14 @@
         close(1234,status="keep")
         deallocate(ref_wavefunction_qcorr)
         deallocate(ref_wavefunction_coeff_qcorr)
+        deallocate(nash_qcorr)
 
       end if
 
       if (kw_matches(word, '.REFDAT')) then
+         set_nash_q_qcorr = .false.
+         allocate(nash_qcorr(nfsym))
+         read(get_file_unit(), *) nash_qcorr(1:nfsym)
 !        read # reference configurations
          call kw_read(word, nref_qcorr)
          call kw_read(word, reference_energy_qcorr)
@@ -1547,7 +1555,7 @@
            read(get_file_unit(),'(a)') input_line
            call upcase(input_line)
 
-           print *, 'ref input line is',input_line
+!          print *, 'ref input line is',input_line
  
            islash = index(input_line,'/')
            ibar   = index(input_line,'|')
@@ -1581,7 +1589,7 @@
            end if
 
 !          beta string
-           read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
+           read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
  
            if(ios /= 0)then
              write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
@@ -1609,7 +1617,7 @@
          open(1234,file='refvec.luci',status='replace',form='unformatted',    &
          access='sequential',action="readwrite",position='rewind')
 
-         write(1234) nref_qcorr, reference_energy_qcorr
+         write(1234) nref_qcorr, reference_energy_qcorr, nash_qcorr(1:nfsym)
 !        write # reference configurations
          do i = 1, nref_qcorr
 
@@ -1618,15 +1626,16 @@
 
            write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
                        ref_wavefunction_coeff_qcorr(i)
-           print *, ref_wavefunction_qcorr(i,1)(1:la)
-           print *, ref_wavefunction_qcorr(i,2)(1:lb)
-           print *, ref_wavefunction_coeff_qcorr(i)
+!          print *, ref_wavefunction_qcorr(i,1)(1:la)
+!          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+!          print *, ref_wavefunction_coeff_qcorr(i)
 
          end do
 
          close(1234,status="keep")
          deallocate(ref_wavefunction_qcorr)
          deallocate(ref_wavefunction_coeff_qcorr)
+         deallocate(nash_qcorr)
 
       end if
 

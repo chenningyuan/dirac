@@ -8,7 +8,8 @@
       implicit none
 
 ! logical block
-      logical, public                          :: luci_cfg_qcorr = .false.
+      logical, public                          :: luci_cfg_qcorr   = .false.
+      logical, public                          :: set_nash_q_qcorr = .true.
 ! integer block
       integer, public                          :: cvorb_qcorr(1:2) = 0
       integer, public                          :: wunit_q          = -1
@@ -18,8 +19,11 @@
       integer, public                          :: NMS2VAL_q        =  0
       integer, public                          :: NORB_q           =  0
       integer, public                          :: NSMST_q          =  0
+      integer, public                          :: nfsym_q          =  0
       integer*8, public, allocatable           :: KNSTSO_q(:)
       integer*8, public, allocatable           :: KNSTSO2_q(:)
+      integer, public,   allocatable           :: nash_q(:)
+      integer, public,   allocatable           :: nash_qcorr(:)
       integer, public,   allocatable           :: ncorbs_mc(:)
       integer, public,   allocatable           :: MS2VAL_q(:)
       integer, public,   allocatable           :: NBLK_MS2_q(:)
