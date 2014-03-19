@@ -48,12 +48,14 @@ contains
                                                dmat,       &
                                                pct_mat,    &
                                                calc_2esoc, &
+                                               lwork_ext,  &
                                                print_lvl   &
                                                )
 !**********************************************************************
      real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
      real(8), intent(in)                :: pct_mat(*)
      logical, intent(in)                :: calc_2esoc
+     integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
@@ -61,6 +63,9 @@ contains
 !----------------------------------------------------------------------
       call hello_aoosoc()
 
+      if(nr_2e_fock_matrices > 1)call quit('aoosoc module does not work yet for atomic AOC-HF; use .FOCC in *SCF')
+
+!     allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
       allocate(fmat(nrows*ncols*nr_quat*1))
       fmat = 0.0d0
 
@@ -79,6 +84,7 @@ contains
                               aoo_cb_pq_to_uq(1,0),      &
                               aoo_ihqmat(1,-1),          &
                               nr_ao_total_aoo,           &
+                              lwork_ext,                 &
                               print_lvl                  &
                              )
 
@@ -123,8 +129,6 @@ contains
                                    fmat,                 &
                                    pct_mat,              &
                                    dmat,                 &
-                                   nrows,                &
-                                   ncols,                &
                                    nr_ao_total_aoo,      &
                                    nr_ao_large_aoo,      &
                                    nr_ao_all,            &
@@ -142,8 +146,10 @@ contains
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
                                   fmat,                       &
-                                  nrows/2,                    &
-                                  ncols/2,                    &
+!only true for mdirac             nrows/2,                    &
+!only true for mdirac             ncols/2,                    &
+                                  nr_ao_large_aoo,            &
+                                  nr_ao_large_aoo,            &
                                   nr_quat,                    &
                                   file_name_aoo_contributions,&
                                   nint(atom(1)%charge),       &

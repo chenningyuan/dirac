@@ -51,7 +51,113 @@ module atomic_oo_order_so_correction_utils
 contains
 
 !----------------------------------------------------------------------
-  subroutine get_scso_2e_fock(           &
+  subroutine get_scso_2e_fock(                       &
+                             dmat,                   &
+                             fmat,                   &
+                             nrows,                  &
+                             ncols,                  &
+                             nr_2e_fock_matrices,    &
+                             aoo_dfopen,             &
+                             intflg,                 &
+                             mdirac,                 &
+                             nz,                     &
+                             ipqtoq,                 &
+                             ihqmat,                 &
+                             naosh_ls,               &
+                             lwork_ext,              &
+                             print_lvl               &
+                             )
+!**********************************************************************
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+     real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     real(8), intent(in)                :: aoo_dfopen(nr_2e_fock_matrices-1)
+     integer, intent(in)                :: nr_2e_fock_matrices
+     integer, intent(in)                :: nrows
+     integer, intent(in)                :: ncols
+     integer, intent(in)                :: nz
+     integer, intent(in)                :: intflg
+     integer, intent(in)                :: ipqtoq(4,0:7)
+     integer, intent(in)                :: ihqmat(4,-1:1)
+     integer, intent(in)                :: naosh_ls
+     integer, intent(in)                :: lwork_ext
+     integer, intent(in)                :: print_lvl
+     logical, intent(in)                :: mdirac
+!----------------------------------------------------------------------
+     integer                            :: i, npos, local_lwork, j
+     real(8), allocatable               :: work(:)
+     integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
+     logical, allocatable               :: saveflags(:)
+     logical                            :: parcal
+!----------------------------------------------------------------------
+
+!    take care of present "limitations" (being pragmatic for now)
+!    if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
+     if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
+
+!    do i = 1, nr_2e_fock_matrices-1
+!      call daxpy(nrows*ncols*nz,aoo_dfopen(i),dmat(1,1,1,i+1),1,dmat(1,1,1,1),1)
+!    end do
+
+!    2e-fock matrix construction
+     allocate(isymop(nr_2e_fock_matrices))
+     allocate(ifckop(nr_2e_fock_matrices))
+     allocate(ihrmop(nr_2e_fock_matrices))
+
+     ihrmop = 0
+     ifckop = 0
+     isymop = 0
+
+     do i = 1,nr_2e_fock_matrices
+!      totally symmetric operator
+       isymop(i) = 1
+!      fock matrix type
+       ifckop(i) = 1
+!      hermitian operator
+       ihrmop(i) = 1
+     end do
+
+     allocate(saveflags(4))
+
+     call SaveTaskDistribFlags(saveflags)
+     call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+     parcal = .false.
+#ifdef VAR_MPI
+     call mpi_initialized(parcal,i)
+#endif
+     call SetIntTaskArrayDimension(npos,parcal)
+     allocate(pos(npos))
+
+     local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices
+     allocate(work(local_lwork))
+
+!    2e-fock matrices (Dirac driver routine)
+     call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
+                 pos,intflg,print_lvl,work,local_lwork)
+
+!     FIXME!!!
+!     accumulate active fock matrices (add to inactive fock matrix)
+      if(nr_2e_fock_matrices > 1)then
+        do i = 1, nr_2e_fock_matrices-1
+          call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
+        end do
+     end if
+
+     deallocate(work)
+     if(parcal) call SetTaskDistribFlags(saveflags)
+     deallocate(pos)
+     deallocate(saveflags)
+     deallocate(ihrmop)
+     deallocate(ifckop)
+     deallocate(isymop)
+
+  end subroutine get_scso_2e_fock
+!----------------------------------------------------------------------
+
+!----------------------------------------------------------------------
+  subroutine old_get_scso_2e_fock(       &
                              dmat,       &
                              fmat,       &
                              nrows,      &
@@ -89,7 +195,7 @@ contains
 !----------------------------------------------------------------------
 
 !     take care of present "limitations" (being pragmatic for now)
-      if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
+!     if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
       if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
 
       do i = 1, nopen
@@ -180,13 +286,13 @@ contains
         iq = ipqtoq(iz,irep)
         ih = ihqmat(iq,1)
         if(ih == 1)then
-          call fulmat('S',naosh_ls,naosh_ls,fmat(1,1,iz,1))
+          call fulmat('S',nrows,ncols,fmat(1,1,iz,1))
         else if(ih == 2)then
-          call fulmat('A',naosh_ls,naosh_ls,fmat(1,1,iz,1))
+          call fulmat('A',nrows,ncols,fmat(1,1,iz,1))
         end if
       end do
 
-  end subroutine get_scso_2e_fock
+  end subroutine old_get_scso_2e_fock
 !----------------------------------------------------------------------
 
   subroutine make_so_2e_fock(                            &
@@ -318,8 +424,6 @@ contains
                                    fmat,                 &
                                    pct_mat,              &
                                    dmat,                 &
-                                   nrows,                &
-                                   ncols,                &
                                    nr_ao_total_aoo,      &
                                    nr_ao_large_aoo,      &
                                    nr_ao_all,            &
@@ -334,8 +438,6 @@ contains
      real(8), intent(inout)             :: dmat(*)
      real(8), intent(in)                :: pct_mat(*)
      real(8), intent(inout)             :: fmat(*)
-     integer, intent(in)                :: nrows
-     integer, intent(in)                :: ncols
      integer, intent(in)                :: nr_ao_total_aoo
      integer, intent(in)                :: nr_ao_large_aoo
      integer, intent(in)                :: nr_ao_all(nr_fsym)

@@ -2805,12 +2805,19 @@ C
             no1esystem_aoosoc = .false.
             no1esystem_aoosoc = (ichrg - kcharg > 1)
 
+            x2c = .false. ! turn off x2c for the proper inside call of twofck
+
+            lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
+
             call get_atomic_oo_order_so_correction(
      &                                             dmat_aoosoc,
      &                                             pctm_aoosoc,
      &                                             no1esystem_aoosoc,
+     &                                             lwork_local,
      &                                             iprham
      &                                             )
+
+            x2c = .true. ! reset
 
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
