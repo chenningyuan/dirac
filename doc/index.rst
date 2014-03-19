@@ -128,6 +128,7 @@ Tutorials and walkthrus
   :doc:`TWOFIT <tutorials/utils/twofit>` |
   :doc:`VIBCAL <tutorials/utils/vibcal>` |
   :doc:`CFREAD <tutorials/utils/cfread>` |
+  :doc:`LABREAD <tutorials/utils/labread>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
