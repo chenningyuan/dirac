@@ -2804,6 +2804,7 @@ C
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
             no1esystem_aoosoc = .false.
             no1esystem_aoosoc = (ichrg - kcharg > 1)
+            if(onesys) no1esystem_aoosoc = .false.
 
             x2c = .false. ! turn off x2c for the proper inside call of twofck
 
@@ -2942,7 +2943,8 @@ C
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
 
-          call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
+          if(.not.onesys)
+     &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
      &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
 
           open(lux2c,file='X2CMAT',status='old',form='unformatted',
