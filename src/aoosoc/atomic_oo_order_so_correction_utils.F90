@@ -63,7 +63,6 @@ contains
                              nz,                     &
                              ipqtoq,                 &
                              ihqmat,                 &
-                             naosh_ls,               &
                              lwork_ext,              &
                              print_lvl               &
                              )
@@ -81,7 +80,6 @@ contains
      integer, intent(in)                :: intflg
      integer, intent(in)                :: ipqtoq(4,0:7)
      integer, intent(in)                :: ihqmat(4,-1:1)
-     integer, intent(in)                :: naosh_ls
      integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
      logical, intent(in)                :: mdirac
@@ -169,7 +167,6 @@ contains
                              nz,         &
                              ipqtoq,     &
                              ihqmat,     &
-                             naosh_ls,   &
                              print_lvl   &
                              )
 !**********************************************************************
@@ -183,7 +180,6 @@ contains
      integer, intent(in)                :: intflg
      integer, intent(in)                :: ipqtoq(4,0:7)
      integer, intent(in)                :: ihqmat(4,-1:1)
-     integer, intent(in)                :: naosh_ls
      integer, intent(in)                :: print_lvl
      logical, intent(in)                :: mdirac
 !----------------------------------------------------------------------

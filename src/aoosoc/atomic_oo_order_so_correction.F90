@@ -65,8 +65,7 @@ contains
 
       if(nr_2e_fock_matrices > 1)call quit('aoosoc module does not work yet for atomic AOC-HF; use .FOCC in *SCF')
 
-!     allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
-      allocate(fmat(nrows*ncols*nr_quat*1))
+      allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
       fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
@@ -76,14 +75,13 @@ contains
                               fmat,                      &
                               nrows,                     &
                               ncols,                     &
-                              nr_2e_fock_matrices-1,     &
+                              nr_2e_fock_matrices,       &
                               aoo_dfopen,                &
                               aoo_intflg,                &
                               aoo_mdirac,                &
                               nr_quat,                   &
                               aoo_cb_pq_to_uq(1,0),      &
                               aoo_ihqmat(1,-1),          &
-                              nr_ao_total_aoo,           &
                               lwork_ext,                 &
                               print_lvl                  &
                              )
