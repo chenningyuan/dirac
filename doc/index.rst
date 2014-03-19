@@ -126,7 +126,8 @@ Tutorials and walkthrus
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
-  :doc:`VIBCAL <tutorials/utils/vibcal>` 
+  :doc:`VIBCAL <tutorials/utils/vibcal>` |
+  :doc:`CFREAD <tutorials/utils/cfread>` |
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
