@@ -68,8 +68,8 @@ How to add a new test
 All you need to add a test is to add a python script called "test" in a new
 directory.
 
-In most cases you probably want to use the beholder_dirac.py test library (see
-:ref:`testing_beholder`) since it gives you the framework to run DIRAC jobs and
+In most cases you probably want to use the runtest_dirac.py test library
+since it gives you the framework to run DIRAC jobs and
 to filter numbers with numerical tolerance.  But you don't have to. You have
 full liberty to test whatever you want in whatever way you want. Important is
 that you return an exit code. If the exit code is 0, the test was successful,

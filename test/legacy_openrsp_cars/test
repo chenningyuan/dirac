@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'd/dg Alpha',
@@ -20,6 +19,6 @@ f.add(from_string = 'Polarizability (au)',
       to_string   = ' total',
       tolerance   = 1.0e-6)
 
-test_run.execute(['cars_ll.inp'], ['h2o2.mol'], f, args='--put=DALTON.HES')
+test.run(['cars_ll.inp'], ['h2o2.mol'], f, args='--put=DALTON.HES')
 
-sys.exit(0)
+sys.exit(test.return_code)

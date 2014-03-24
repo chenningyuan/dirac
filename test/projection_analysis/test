@@ -5,10 +5,9 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
@@ -21,16 +20,16 @@ f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       tolerance   = 1.0e-4)
 
-test_run.execute(['H.inp'], ['H.mol'], args='--get=DFACMO')
+test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'DFHAT1')
 shutil.copy('DFACMO', 'DFHAT2')
 shutil.copy('DFACMO', 'DFHAT3')
 shutil.copy('DFACMO', 'DFHAT4')
 
-test_run.execute(['C.inp'], ['C.mol'], args='--get=DFACMO')
+test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'DFCAT')
 
-test_run.execute(['CH4.inp'], ['CH4.mol'], f, args='--copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"')
+test.run(['CH4.inp'], ['CH4.mol'], f, args='--copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"')
 
 # cleanup
 os.unlink('DFACMO')
@@ -40,4 +39,4 @@ os.unlink('DFHAT2')
 os.unlink('DFHAT3')
 os.unlink('DFHAT4')
 
-sys.exit(0)
+sys.exit(test.return_code)

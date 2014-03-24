@@ -4,23 +4,23 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = ' Electronic energy',
       tolerance = 1.0e-10)
 f.add(string    = ' Core energy',
       tolerance = 1.0e-9)
-f.add(from_re   = 'Orbital Representation',
-      to_re     = 'Number of determinants',
-      tolerance = 1.0e-7)
+# stefan: do NOT test orbital energies - this does not really make sense for open-shells...
+#f.add(from_re   = 'Orbital Representation',
+#      to_re     = 'Number of determinants',
+#      tolerance = 1.0e-7)
 f.add(from_re   = 'Energy eigenvalues in atomic units',
       to_re     = 'Total average',
       tolerance = 1.0e-8)
 
-test_run.execute(['ci.inp', 'bss_rkb_sfB.ci.inp', 'bss_rkb_sfE.ci.inp', 'bss_sfB.ci.inp'], ['F.mol'], f)
+test.run(['ci.inp', 'bss_rkb_sfB.ci.inp', 'bss_rkb_sfE.ci.inp', 'bss_sfB.ci.inp'], ['F.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

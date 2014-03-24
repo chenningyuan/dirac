@@ -133,7 +133,7 @@ C
       NDSOINT      = 0
       MGRAD        = .FALSE.
       ESRGTENS     = .FALSE.
-      ESRANISO     = .FALSE.
+      ESR_HFCC     = .FALSE.
       NPRP_WF      = 1
       PRP_WF(1)    = 'DHF '
       BXLAO        = .FALSE.
@@ -282,7 +282,7 @@ C&&&& NSTDIA diamagnetic contribution to shielding
 C&&&& ESR parameters
             DOESR = .TRUE.
             ESRGTENS = .TRUE.
-            ESRANISO = .TRUE.
+            ESR_HFCC = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& PVC Parity violation - chirality

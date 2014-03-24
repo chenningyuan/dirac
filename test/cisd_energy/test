@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Number of reference determinants',
@@ -17,9 +16,9 @@ f.add(from_re = 'CI Total Energy',
 f.add(from_re = '.*CI-SD Energy',
       to_re   = '.*CI-SD\+Q energy')
 
-test_run.execute(['cisd.inp', 'F.bss+mfsso.cisd.inp', 'F.bss_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)
-test_run.execute(['F.bss.cisd.inp', 'F.bss_rkb.cisd.inp', 'F.dkh2_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)
-test_run.execute(['F.bss_rkb+mfsso.cisd.inp', 'F.bss_sfEso1.cisd.inp', 'F.bss_sfBso1.cisd.inp'], ['F.mol'], f)
-test_run.execute(['F.dkh2_sfBso1.cisd.inp', 'F.dkh2_sfEso1.cisd.inp'], ['F.mol'], f)
+test.run(['cisd.inp', 'F.bss+mfsso.cisd.inp', 'F.bss_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)
+test.run(['F.bss.cisd.inp', 'F.bss_rkb.cisd.inp', 'F.dkh2_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)
+test.run(['F.bss_rkb+mfsso.cisd.inp', 'F.bss_sfEso1.cisd.inp', 'F.bss_sfBso1.cisd.inp'], ['F.mol'], f)
+test.run(['F.dkh2_sfBso1.cisd.inp', 'F.dkh2_sfEso1.cisd.inp'], ['F.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

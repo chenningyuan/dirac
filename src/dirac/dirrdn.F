@@ -42,13 +42,13 @@ C***********************************************************************
       use memory_allocator
       use num_grid_cfg
       use interface_functional_read
-      use x2cmod_cfg
       use xmlout
 #ifdef PCM_MODULE
       use pcmmod_cfg
       use pcm_write
 #endif
-#ifdef MOD_AOOSOC 
+      use x2cmod_cfg
+#ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
 
@@ -238,9 +238,10 @@ C
         write(lupri,*) '* atomic oo-order SOC module active'
         x2c_2c_mmf_mos = .false.
         if(x2cmod_mmf)then
-          write(lupri,*) '  - generate 2e-SOCs to be added to'//
-     &                   ' the X2C Hamiltonian'
-          x2c_add_amfi = -1
+          write(lupri,*) '  - generate 2e-SRCs/SOCs to be added to'//
+     &                   ' the X2C Hamiltonian (of a molecule)'
+          x2c_add_amfi   = -1
+          x2c_2c_mmf_mos = .true.
         else
           write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
         end if
@@ -910,6 +911,9 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
+#ifdef MOD_AOOSOC
+       use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1033,6 +1037,8 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
+!     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+      if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
@@ -4674,7 +4680,7 @@ C
       DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
-      MOLMF3  = .FALSE.
+      X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
@@ -5317,7 +5323,7 @@ CMI&& Activate 4c-2c MO transformation
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          MOLMF3                = .TRUE.
+          X2CMMF                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN

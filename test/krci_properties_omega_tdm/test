@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '   * state  1(0g  )         * state',
@@ -18,6 +17,6 @@ f.add(string = '1        0g',
 f.add(string = '1        4u',
       ignore_sign = True)
 
-test_run.execute(['h2.inp'], ['H2.mol'], f)
+test.run(['h2.inp'], ['H2.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

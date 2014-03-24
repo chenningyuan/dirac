@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Number of determinants/combinations')
 f.add(string = ' Final energy')
 
-test_run.execute(['HBr.inp'], ['HBr.mol'], f, args='--mw=60',
+test.run(['HBr.inp'], ['HBr.mol'], f, args='--mw=60',
                  accepted_errors=['FATAL ERROR for LUCITA runs: memory offset (dynamic memory - static memory) is too big for i*4',
                                   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4'])
 
-sys.exit(0)
+sys.exit(test.return_code)

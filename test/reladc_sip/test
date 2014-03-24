@@ -4,10 +4,9 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'no.    eigenvalue (eV)   mean-res.',
@@ -15,9 +14,9 @@ f.add(from_string = 'no.    eigenvalue (eV)   mean-res.',
       tolerance   = 1.0e-4,
       mask        = [1, 2, 3])
 
-test_run.execute(['adclevel1_real.inp', 'adclevel2_real.inp', 'adclevel3_real.inp'], ['ne_d2h.mol'],
+test.run(['adclevel1_real.inp', 'adclevel2_real.inp', 'adclevel3_real.inp'], ['ne_d2h.mol'],
                  f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
-test_run.execute(['hcn_complex_1.inp', 'hcn_complex_2.inp', 'hcn_complex_3.inp'], ['hcn_cs.mol'],
+test.run(['hcn_complex_1.inp', 'hcn_complex_2.inp', 'hcn_complex_3.inp'], ['hcn_cs.mol'],
                  f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
 
-sys.exit(0)
+sys.exit(test.return_code)

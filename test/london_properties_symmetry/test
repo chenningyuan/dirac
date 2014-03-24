@@ -4,22 +4,21 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       tolerance   = 0.0002)
 
-test_run.execute(['dft_lda_ll_shielding.inp',
+test.run(['dft_lda_ll_shielding.inp',
                   'dft_lda_dc_shielding.inp',
                   'dft_b3lyp_ll_shielding.inp',
                   'dft_b3lyp_dc_shielding.inp'], ['co2_d2h.mol'], f)
 
-test_run.execute(['sdft_lda_dc_shielding.inp','sdft_b3lyp_dc_shielding.inp'],
+test.run(['sdft_lda_dc_shielding.inp','sdft_b3lyp_dc_shielding.inp'],
                  ['co2_c1.mol', 'co2_cs.mol', 'co2_ci.mol', 'co2_c2.mol', 'co2_c2v.mol', 'co2_c2h.mol', 'co2_d2.mol', 'co2_d2h.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)
