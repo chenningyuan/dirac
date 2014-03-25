@@ -126,7 +126,9 @@ Tutorials and walkthrus
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
-  :doc:`VIBCAL <tutorials/utils/vibcal>` 
+  :doc:`VIBCAL <tutorials/utils/vibcal>` |
+  :doc:`CFREAD <tutorials/utils/cfread>` |
+  :doc:`LABREAD <tutorials/utils/labread>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -167,7 +169,7 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
-  `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests_dirac.html>`_ |
+  `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |

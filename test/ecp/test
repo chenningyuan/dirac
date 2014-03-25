@@ -4,16 +4,15 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Total energy                             :',
       tolerance = 1.0e-5)
 
-test_run.execute(['HF.inp'], ['HI_arep.mol', 'HI_sorep.mol', 'HI_ecplib.mol'], f)
-test_run.execute(['DFT.inp'], ['Bi2.xyz'], f)
+test.run(['HF.inp'], ['HI_arep.mol', 'HI_sorep.mol', 'HI_ecplib.mol'], f)
+test.run(['DFT.inp'], ['Bi2.xyz'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

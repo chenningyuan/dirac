@@ -204,7 +204,6 @@ contains
 
 !      step 4: store h1_inf_2c in SA-AO basis on file (tag i = 0: marks data storage of "gerade+ungerade" (if nfsym > 1))
 !      ------------------------------------------------------------------------------
-       i = 0
 
 !      are we going to add atomic-mean-field corrections in a subsequent step?
        if(add_amfi_contrib > 0)then
@@ -212,7 +211,7 @@ contains
 !        set (intermediate) pointer to Hamiltonian integral type - final adaption after AMFI step
          is_final_ham_lvl = 5
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOa',1,0
 !                                          ^
 !                                          |
 !                                          a ("amfi preparation"); label will be
@@ -228,29 +227,35 @@ contains
            is_final_ham_lvl = 2
          end if
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
+         if(basic_h1mat == 2)then ! basic h1-mat == 4c-fock operator, aka "mmf"
+
+            ! We first save the full 4c Fock matrix (the "F" in "h12cAOF") transformed to
+            ! X2C basis in 4c storage mode because we use it later to get the canonical 2c
+            ! MOs before all AO and MO index vectors are changed to 2c (i.e. e.g. ntbas(2) = 0 etc.)
+            ! Below (label "h12cAOn") we save the 2c storage mode part, i.e. the "++" part, for
+            ! use as the X2c one-electron operator and mmf two-electron operator.
+
+            write(flabel,'(a7,i4,i1)') 'h12cAOF',1,0
+            call x2c_write(flabel,h1_2cinf_saao,naosh_ls**2*nz,x2c_file_glb)
+
+!           debug print
+            if(print_lvl > 1)then
+              do i = 1, nfsym
+                nbas1_f  = naosh_all(i)
+                call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),      &
+                   'x2c - h1_2nd_2c-AO',6,.true.)
+              end do
+            end if
+
+         end if ! basic_h1mat
+
+         write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
 !                                          ^
 !                                          |
 !                                          n ("no amfi") == final Hamiltonian integrals
 
-         if(basic_h1mat == 2)then ! basic h1-mat == 4c-fock operator
-
-           do i = 1, nfsym
-             nbas1_f  = naosh_all(i)
-             if(naosh_all(i) > 0)then
-               write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
-               call x2c_write(flabel,h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_glb)
-!              debug print
-               if(print_lvl > 1)then
-                 call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),      &
-                                  'x2c - h1_2nd_2c-AO',6,.true.)
-               end if
-             end if
-           end do
-
-         else
-
-!          select LL-block of h1_inf_2c
+!        select LL-block of h1_inf_2c
+           call dzero(scr_mat2,naosh_ls**2*nz)
            call pick_LL_block_saao_bas(h1_2cinf_saao,       &
                                        scr_mat2,            &
                                        naosh_L,             &
@@ -280,8 +285,6 @@ contains
            else
              call x2c_write(flabel,scr_mat2     ,nr_ao_L**2 * nz,x2c_file_glb)
            end if
-
-         end if ! basic_h1mat
 
        end if ! amfi contributions 
 

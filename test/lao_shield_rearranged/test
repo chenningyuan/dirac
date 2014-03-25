@@ -4,22 +4,21 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       tolerance   = 0.002)
 
-test_run.execute(['lao_shield_unchanged_sc_septep.inp', 'lao_shield_unchanged_sc_septep_doeprn.inp', 'lao_shield_lr_rearranged_septep.inp'],
+test.run(['lao_shield_unchanged_sc_septep.inp', 'lao_shield_unchanged_sc_septep_doeprn.inp', 'lao_shield_lr_rearranged_septep.inp'],
                  ['co2_c1.mol'], f)
-test_run.execute(['lao_shield_unchanged_sc.inp', 'lao_shield_unchanged_nc.inp', 'lao_shield_rearranged_sc.inp',
+test.run(['lao_shield_unchanged_sc.inp', 'lao_shield_unchanged_nc.inp', 'lao_shield_rearranged_sc.inp',
                   'lao_shield_rearranged_nc.inp', 'lao_shield_lr_rearranged.inp'],
                  ['co2_c1.mol', 'co2_d2h.mol'], f)
-test_run.execute(['lao_shield_unchanged_sc_b3lyp.inp', 'lao_shield_rearranged_sc_b3lyp.inp', 'lao_shield_lr_rearranged_b3lyp.inp'],
+test.run(['lao_shield_unchanged_sc_b3lyp.inp', 'lao_shield_rearranged_sc_b3lyp.inp', 'lao_shield_lr_rearranged_b3lyp.inp'],
                  ['co2_d2h.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

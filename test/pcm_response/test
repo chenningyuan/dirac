@@ -5,10 +5,9 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest import Filter
-from runtest_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string  = '@   xx',
@@ -27,28 +26,28 @@ f.add(from_string  = '@   anisotropy',
       num_lines    = 1,
       tolerance    = 1.0e-5)
 
-test_run.execute(['pcm-scf-levy.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
+test.run(['pcm-scf-levy.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-levy_CH4.out')
-test_run.execute(['pcm-levy.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
-test_run.execute(['pcm-levy-skipoit.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-levy.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-levy-skipoit.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 
-test_run.execute(['pcm-scf-levy.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --outcmo')
+test.run(['pcm-scf-levy.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-levy_H2O.out')
-test_run.execute(['pcm-levy.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
-test_run.execute(['pcm-levy-skipoit.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-levy.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-levy-skipoit.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 
-test_run.execute(['pcm-scf-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
+test.run(['pcm-scf-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-dc_CH4.out')
-test_run.execute(['pcm-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --incmo')
-test_run.execute(['pcm-dc-skipoit.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc-skipoit.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 
-test_run.execute(['pcm-scf-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --outcmo')
+test.run(['pcm-scf-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-dc_H2O.out')
-test_run.execute(['pcm-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --incmo')
-test_run.execute(['pcm-dc-skipoit.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc-skipoit.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)
