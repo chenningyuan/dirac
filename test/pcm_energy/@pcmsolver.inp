@@ -34,17 +34,19 @@ STR Restart 1 False
 DBL MinRadius 1 False
 100.0
 SECT Medium 1 True
-TAG F KW 5
+TAG F KW 6
 STR SolverType 1 False
 IEFPCM
+STR Solvent 1 True
+Water
 DBL Correction 1 False
 0.0
 DBL ProbeRadius 1 False
 1.0
-STR Solvent 1 True
-Water
 STR EquationType 1 False
 SecondKind
+BOOL MatrixSymm 1 False
+True
 SECT Green 1 False
 TAG F KW 7
 DBL EpsRe 1 False
