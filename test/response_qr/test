@@ -12,11 +12,11 @@ f = Filter()
 
 f.add(from_string = 'Electronic energy',
       num_lines   = 3,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Value of electronic part',
       num_lines   = 3,
       ignore_sign = True,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 test.run(['qrpa1.inp', 'excprp1.inp'], ['LiH.mol'], f)
 test.run(['tpa1.inp'], ['He.mol'], f)

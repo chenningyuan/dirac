@@ -9,7 +9,8 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'Final KR-MCSCF energy')
+f.add(string = 'Final KR-MCSCF energy',
+      rel_tolerance = 1.0e-5)
 
 test.run(['Be.inp'], ['Be.mol'], f)
 test.run(['Be.gascip.bss+mfsso.krmc.inp'], ['Be.gascip.mol'], f)

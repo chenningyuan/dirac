@@ -12,7 +12,7 @@ f = Filter()
 
 f.add(from_re     = '! PV',
       to_string   = '----------------------------------------------',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['shielding_dc.inp', 'shielding_nr.inp', 'spinspin_dc.inp', 'spinspin_nr.inp'], ['H2O2.mol'], f)
 

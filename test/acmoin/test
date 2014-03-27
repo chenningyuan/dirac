@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = '* Electronic eigenvalue',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 
 # run calculation for hydrogen in linear symmetry
 test.run(['H_lin.inp'], ['H_lin.mol'], f, '--get=DFACMO')

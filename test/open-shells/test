@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 10,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = 'Eigenvalues',
       num_lines   = 21,
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
 test.run(['B.x2c.scf_2P12.inp'],         ['B.lsym.mol'],  f, args='--outcmo')
 test.run(['B.x2c.scf_2P32_reord.inp'],   ['B.lsym.mol'],  f, args='--incmo ')

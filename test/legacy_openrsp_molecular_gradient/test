@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_re   = 'molecular gradient',
       num_lines = 6,
-      tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-6)
 
 test.run(['hf_ll.inp', 'hf_dc.inp', 'hf_dc_cval=5.inp'], ['h2o2.mol'], f)
 test.run(['lda_ll.inp', 'b3lyp_ll.inp', 'blyp_ll.inp'], ['h2o2.mol'], f)

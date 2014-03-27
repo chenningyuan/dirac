@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Overview of calculated energies',
       num_lines   = 4,
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 
 test.run(['srLDA.inp', 'srPBEH.inp', 'srPBES.inp'], ['He2.mol'], f)
 

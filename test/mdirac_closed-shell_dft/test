@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' TOTAL ENERGY',
       num_lines   = 11,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
 test.run(['hermit_ll.inp', 'hermit_sl.inp', 'hermit_ss.inp'], ['H2O.mol'], f)
 test.run(['interest_ll.inp', 'interest_sl.inp', 'interest_ss.inp'], ['H2O.mol'], f)
