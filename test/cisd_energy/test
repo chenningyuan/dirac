@@ -10,11 +10,14 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Number of reference determinants',
-      num_lines    = 2)
+      num_lines    = 2,
+      rel_tolerance = 1.0e-5)
 f.add(from_re = 'CI Total Energy',
-      to_re   = 'Relative to reference')
+      to_re   = 'Relative to reference',
+      rel_tolerance = 1.0e-5)
 f.add(from_re = '.*CI-SD Energy',
-      to_re   = '.*CI-SD\+Q energy')
+      to_re   = '.*CI-SD\+Q energy',
+      rel_tolerance = 1.0e-5)
 
 test.run(['cisd.inp', 'F.bss+mfsso.cisd.inp', 'F.bss_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)
 test.run(['F.bss.cisd.inp', 'F.bss_rkb.cisd.inp', 'F.dkh2_sfEso1+mfsso.cisd.inp'], ['F.mol'], f)

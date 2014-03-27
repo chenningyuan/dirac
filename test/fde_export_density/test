@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' Output FDE data to XML file:GRIDOUT',
       num_lines   = 6,
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
 test.run(['fde_dc_hf_exportdens_short.inp'],  ['water.sto6g.mol'], f, args='--mw=80 --put="vemb.grid GRIDOUT"')
 test.run(['fde_dc_lda_exportdens_short.inp'], ['water.sto6g.mol'], f, args='--mw=80 --put="vemb.grid GRIDOUT numerical_grid"')

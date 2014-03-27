@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = '* Dipole moment:',
       num_lines   = 8,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 test.run(['fde_dc_lda_short.inp'],      ['water.sto6g.mol'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')
 test.run(['fde_dc_lda_short.inp'],      ['water.sto6g.c2v'], f, args='--mw=80 --nw=80 --aw=90 --put=vemb.grid')

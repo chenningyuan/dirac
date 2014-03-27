@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'Total EPV =',
-      tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-5)
 
 test.run(['point_charge.inp', 'gaussian_model.inp'], ['h2o2.mol'], f)
 

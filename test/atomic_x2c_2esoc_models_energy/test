@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' TOTAL ENERGY',
       num_lines   = 11,
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 
 test.run(['he.inp'], ['he.xyz'], f, args='--get="X2CMAT aoo2esoc.002"')
 shutil.copy('X2CMAT', 'X2CMAT.002')

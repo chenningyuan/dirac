@@ -10,9 +10,9 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = '@ gamma',
-      tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-6)
 f.add(string    = '@ averaged gamma',
-      tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-6)
 
 test.run(['levy.inp'], ['mol.mol'], f)
 

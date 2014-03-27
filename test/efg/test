@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Individual (non-zero) components',
       to_string   = 'Total contribution to principal components',
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 test.run(['zerofield.inp'],           ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160          --outcmo')
 test.run(['scf.ccsd.1.inp'],          ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')

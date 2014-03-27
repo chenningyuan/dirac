@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
 test.run(['NR_direct_Jengine+LinK.inp', 'NR_direct_Jengine+LinK_LDA.inp',
                   '2C_SF_direct_Jengine+LinK.inp', '2C_SF_direct_Jengine+LinK_LDA.inp'], ['H2O2.mol'], f)

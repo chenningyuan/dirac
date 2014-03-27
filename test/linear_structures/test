@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 12,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 f.add(from_string = '* Dipole moment',
       num_lines   = 9,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 test.run(['x2c.scf.inp'], ['HeNe2.lsym1.mol', 'He2Ne2.lsym1.mol', 'HeNe3.lsym.mol'], f)
 test.run(['x2c.molecule.scf.inp'], ['HeNe2.xyz'], f)
