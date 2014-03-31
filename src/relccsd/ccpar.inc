@@ -1,29 +1,29 @@
-C
-C
-C MPI information for RELCCSD
-C
-C     General MPI information
-C
+!
+!
+! MPI information for RELCCSD
+!
+!     General MPI information
+!
       COMMON/CCPAR/ MASTER,MYPROC,NMPROC
-C
-C     MASTER: contains node number of master (0 in general)
-C     MYPROC:  -"-     own process number. According to MPI
-C             counting starts at zero.....# proc -1 !
-C     NMPROC:  -"-     total number of processes (including master !)
-C
+!
+!     MASTER: contains node number of master (0 in general)
+!     MYPROC:  -"-     own process number. According to MPI
+!             counting starts at zero.....# proc -1 !
+!     NMPROC:  -"-     total number of processes (including master !)
+!
 
-C Information for integral distribution
-C
-C     Distribution of two-electron integrals
-C     First index : start, stop of block on node
-C     Second index : integral type (VOVV,VVVV)
-C     Third index : irrep
-C
+! Information for integral distribution
+!
+!     Distribution of two-electron integrals
+!     First index : start, stop of block on node
+!     Second index : integral type (VOVV,VVVV)
+!     Third index : irrep
+!
       INTEGER*8 NV6PAR,NV5PAR,IDIST
       COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST(6,10,32)
-C
-C DIRAC-specific preprocessor statement to solve 32/64 bit compatibility problems 
-C
+!
+! DIRAC-specific preprocessor statement to solve 32/64 bit compatibility problems 
+!
 #if defined (INT_STAR8)
 #define my_MPI_INTEGER MPI_INTEGER8
 #else

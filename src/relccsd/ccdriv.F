@@ -771,6 +771,8 @@ C
          CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+        write(*,*)'hi, memory check is passed for the property module'
+
 C
       IF (DOSOPR) THEN
          MXCORR1 = 0
@@ -2529,9 +2531,12 @@ C
      &                             a_XVO(:), a_XOV(:),  a_EVO(:),
      &                             a_EOV(:), a_EOO(:),  a_EVV(:),
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
-     &                             a_CCC(:), a_BB1(:),  a_BB2(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
-     &                             a_BUF3(:),a_FVV(:)
+     &                             a_BUF3(:),a_FVV(:),a_AZ(:), a_H(:), 
+     &                             a_HO(:), a_HV(:), a_HOV(:), a_GOO(:),
+     &                             a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                             a_BB2(:)
+
 
       real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
@@ -2548,15 +2553,17 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient not yet implemented,'
-     &         ,' calculate MP2 gradient instead'
-         doccsdg = .false.
-         domp2g = .true.
+         WRITE (IW,*) ' CCSD gradient is being implemented,'
+!         doccsdg = .false.
+         doccsdg = .true.
       endif
-      ALLOC_ME = ICALC.GE.2
-      IF (ICALC.LE.0) RETURN
-C
-C     Allocate space for the calculation of the gradient
+
+      if (domp2g) then
+
+         WRITE (IW,*) 'calculate MP2 gradient'
+         domp2g = .true.
+
+      endif
 C
 C     here we allocate the variables common to both schemes
 C     the specific ones are allocated as needed
@@ -2574,13 +2581,12 @@ C
       call alloc( a_DOV   , NDIMX*RCW        , id="dov" )
       call alloc( a_DMO   , NORBT*NORBT*NZ   , id="dmo" )
       call alloc( a_XMO   , NORBT*NORBT*NZ   , id="xmo" )
-
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
 
 C     Calculate the size of the array needed for the sorted T2 array that      
 C     is used in MOLTRA. In spinfree calculations this will be larger than     
-C     the the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
+C     the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
 C     This initialization does not fix the problem with spinfree calculations, 
 C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be     
 C     adapted to the fact that in spinfree calculations there is a many-to-1   
@@ -2785,7 +2791,7 @@ C         this means that, for the time being, we can deallocate everything?
           ENDIF
 #endif
 C
-C        Get MP2 amplitudes and lambdas
+C        Get CCSD amplitudes and lambdas
 C
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 C
@@ -2804,7 +2810,6 @@ C
 C        Create upper triangle of density matrix
 C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
-C
 C        Write density matrix to file for later processing
 C
          CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
@@ -2820,6 +2825,8 @@ C
 C
           CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
+
+
 C
 C        Release the slaves (in case of parallel runs)
 C
@@ -2832,6 +2839,141 @@ C
 #endif
  431  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
+      ENDIF
+C
+
+
+!-----------------------------------------------------------
+**ashee
+** new section for lambda equation in coupled cluster level.
+!-----------------------------------------------------------
+      IF (DOCCSDG) THEN
+C
+C     Calculate size of the 3rd work array that is passed on to the
+C     response module as work, we make it as large as possible.
+C
+      call allocator_get_maxbuff(freemem,kind(a_BUF3))
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW
+
+
+C     Allocate now also this remaining work array
+      call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+
+
+! arrays specific for the use in the call sequence of cceqns subroutine.
+
+         call alloc( a_AZ   ,    NV1*RCW              , id="az" )
+         call alloc( a_H    ,    NV4*RCW              , id="h" )
+         call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
+         call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
+         call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
+         call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
+         call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
+         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
+         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
+         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
+
+
+
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr = current_mem_use - start_mem_use
+
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient Calculation",MXCORR
+         GOTO 451
+      ENDIF
+
+          WRITE (IW,1008)
+C
+C         Slaves will only help in the integral calculation.
+C
+C         this means that, for the time being, we can deallocate everything? 
+#if defined (VAR_MPI)
+          IF (MYPROC.NE.MASTER) THEN
+             IF (ICALC.EQ.2) CALL DIRNOD2()
+             goto 451
+          ENDIF
+#endif
+
+
+         MAXDIM = MXDIMCC
+         MAXIT  = MXITCC
+
+!--------------------------------------------------
+**ashee
+** get coupled cluster amplitudes
+!--------------------------------------------------
+!      IF (IMSTAT(5).EQ.3) THEN
+!        CALL GETAMPT (a_T1,a_T2)
+!      ENDIF
+
+!------------------------------------------
+** solve coupled cluster lambda equation.
+** ashee
+!------------------------------------------
+
+!        get coupled cluster lambdas
+
+
+         CALL CCDUMP
+
+         write(*,*)'hi1'  
+
+         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
+     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
+     &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
+     &           a_CCC,a_BB1,a_BB2,
+     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+
+         write(*,*)'hi2'  
+!        Get amplitude part of density matrix
+
+         CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
+     &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
+     &                    a_DVV , a_DVO , a_DOV , a_DMO)
+C
+C        Solve Z-vector equations 
+C
+         IF (.NOT.NOZG)
+     &      CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
+     &                   NBUF3, a_XMO , a_DMO)
+C
+C        Create upper triangle of density matrix
+C
+         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
+C        Write density matrix to file for later processing
+C
+         CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
+
+C        Release the slaves (in case of parallel runs)
+C
+#if defined (VAR_MPI)
+         NTEST = -1
+         DO NODE = 1,NMPROC-1
+            call interface_mpi_SEND(NTEST,1,NODE,27,
+     &                     global_communicator)
+         ENDDO
+#endif
+ 451  CONTINUE
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
+
+      
+         call dealloc( a_AZ )
+         call dealloc( a_H  )
+         call dealloc( a_HO )
+         call dealloc( a_HV )
+         call dealloc( a_HOV)
+         call dealloc( a_GOO)
+         call dealloc( a_GVV)
+         call dealloc( a_CCC)
+         call dealloc( a_BB1) 
+         call dealloc( a_BB2) 
+
       ENDIF
 C
       call dealloc( a_FOO, id="foo")

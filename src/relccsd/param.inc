@@ -1,13 +1,13 @@
-C
-C
+!
+!
       REAL*8 ACCUR
       PARAMETER (ACCUR=1.D-15)
       REAL*8 AR0,AR1,ARP3
       PARAMETER (AR0=0.0D00,AR1=1.0D00,ARP3=1.0D00/3.0D00)
       COMPLEX*16 A0,A1,A2,AP5,A1I
-      PARAMETER (A0=(0.0D00,0.0D00),
-     &           A1=(1.0D00,0.0D00),
-     &           AP5=(0.50D00,0.0D00))
+      PARAMETER (A0=(0.0D00,0.0D00),                                                      &
+     &          A1=(1.0D00,0.0D00),                                                       &
+     &          AP5=(0.50D00,0.0D00))
       PARAMETER (A2=(2.0D00,0.0D00))
       PARAMETER (A1I=(0.0D00,1.0D00))
       LOGICAL LTR,LFA

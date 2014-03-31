@@ -2,7 +2,7 @@
 
     implicit none
 
-     public f_bar_mi
+    public f_bar_mi
 !    public f_bar_ae   ! these names are subject to be changed if better alternative is found out
 !    public f_bar_ia
 
@@ -33,15 +33,15 @@
 !---------------------------------------
       call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
-      II = 1
-      I = 1
-      do IRP = 1, NREP
-         N = NO(IRP)
-         ND = (N+1) * RCW
-         CALL DAXPY(N,-A1,EPS(I),1,HO(II),ND)
-         I = I + N
-         II = II + N * N * RCW
-      enddo
+!!    II = 1
+!!    I = 1
+!!    do IRP = 1, NREP
+!!       N = NO(IRP)
+!!       ND = (N+1) * RCW
+!!       CALL DAXPY(N,-A1,EPS(I),1,HO(II),ND)
+!!       I = I + N
+!!       II = II + N * N * RCW
+!!    enddo
       CALL DELFCK ('OO','DK',HO)
 !----------------------------------------------------------------------
 ! H(K,I) = H(K,I) + W(KL,CD) * T(CD,IL) = H(K,I) + W*(CDL,K) * T(CDL,I)
@@ -56,14 +56,19 @@
 !---------------------------------------------------------------
 !F_bar_mi = F_bar_mi + V(nm, ei) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
-!      allocate (vooo(,))
 
-      call getvooo (BUF3)
-      call delint ('VOOO','DDDD',BUF3,0,0,0)
-      call SRT1C1 (NREP,NVO,NOO,BUF3,BUF2)
-      call SRT16 (NREP,MULTB,LFA,LFA,NO,NO,NV,NO,MVO,JVOOO,JJOO,JJVO,&
-     &            BUF2,BUF1)
-      call XGEMV ('N',NOO,NVO,A1,BUF1,NOO,T1,1,A1,HO,1)
+      CALL GETVOOO (BUF1)
+      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
+      CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
+     &            BUF1,BUF2)
+      CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
+
+!     call getvooo (BUF3)
+!     call delint ('VOOO','DDDD',BUF3,0,0,0)
+!     call SRT1C1 (NREP,NVO,NOO,BUF3,BUF2)
+!     call SRT16 (NREP,MULTB,LFA,LFA,NO,NO,NV,NO,MVO,JVOOO,JJOO,JJVO,&
+!    &            BUF2,BUF1)
+!     call XGEMV ('N',NOO,NVO,A1,BUF1,NOO,T1,1,A1,HO,1)
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !-----------------------------------------------------------------
@@ -87,6 +92,7 @@
       real(8), intent(out):: HV(*)
       real(8), intent(in) :: BUF1(*),BUF2(*),BUF3(*)
       real(8) :: ddot
+      integer :: IRP, ND, AA, A, N 
 !---------------Common Blocks--------------------------------------
 
 #include "param.inc"
@@ -120,11 +126,11 @@
 ! H(A,C) = H(A,C) - W(KL,CD) * T(AD,KL) = H(A,C) - T(A,DKL) * W*(C,DKL)
 !----------------------------------------------------------------------
       CALL GETTAU (T1,T2,BUF3)
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
      &             BUF3,BUF1)
       CALL GETVVOO (BUF3)
       CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
      &             BUF3,BUF2)
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A1,HV,NREP)
 
@@ -133,18 +139,18 @@
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) --> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
 
-      call getvooo (BUF3)
-      call delint ('VOOO','DDDD',BUF3,0,0,0)
-      call SRT1C1 (NREP,NVO,NOO,BUF3,BUF2)
-      call SRT16 (NREP,MULTB,LFA,LFA,NO,NO,NV,NO,MVO,JVOOO,JJOO,JJVO,&
-     &            BUF2,BUF1)
-      call XGEMV ('N',NOO,NVO,A1,BUF1,NOO,T1,1,A1,HO,1)
+!!!   call getvooo (BUF3)
+!!!   call delint ('VOOO','DDDD',BUF3,0,0,0)
+!!!   call SRT1C1 (NREP,NVO,NOO,BUF3,BUF2)
+!!!   call SRT16 (NREP,MULTB,LFA,LFA,NO,NO,NV,NO,MVO,JVOOO,JJOO,JJVO,&
+!!!  &            BUF2,BUF1)
+!!!   call XGEMV ('N',NOO,NVO,A1,BUF1,NOO,T1,1,A1,HO,1)
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !-----------------------------------------------------------------
 
-      if (carith) call conjuga (NFVO,FVO,1) 
-      call CNTRCT ('C','N',NO,NO,NV,A1,FVO,T1,A1,HO,NREP)
+!      if (carith) call conjuga (NFVO,FVO,1) 
+!      call CNTRCT ('C','N',NO,NO,NV,A1,FVO,T1,A1,HO,NREP)
 
 
   end subroutine

@@ -116,11 +116,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
-C
+
       use interface_to_mpi
       use xmlout
+      use intermediates_1b_2b 
       IMPLICIT INTEGER (A-Z)
-C
+
 C---------------Description--------------------------------------------
 C
 C     Solves CCSD amplitude or lambda equations.
@@ -134,26 +135,26 @@ C
 C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
-C
+
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
       REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
-C
+
 C     for diis ...
-C
+
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
-C
+
       REAL*8 RMS,CONV
       REAL*8 DIAG
-C
+
 C     for Fock space ...
-C
+
       REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
-C
+
 C---------------Common Blocks--------------------------------------
-C
+
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
@@ -166,15 +167,15 @@ C
 #if defined (VAR_MPI)
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
-C
+
 C---------------Local variables--------------------------------------
-C
+
       REAL*8 CPU,CPU4V,CPUH1,CPUH2
       LOGICAL TEQ,FOCKSP,PRENE
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
       REAL*8 DDOT
-C
+
 C---------------Executable code--------------------------------------
 C
 C
@@ -182,11 +183,11 @@ C     Get initial values of timers for the most important contractions
 C     This is important in Fock space calculations where we enter this
 C     routine more than once. We do it in this manner rather than resetting
 C     the timer because we want the overall timing at the end.
-C
+
       CALL XTIMRD (CPU4V,'-- BINTM                       ')
       CALL XTIMRD (CPUH1,'--- HINTM: VVOO contribution   ')
       CALL XTIMRD (CPUH2,'--- T2EQNS: HINTM*T2           ')
-C
+
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
          FOCKSP = .FALSE.
@@ -208,62 +209,70 @@ C
          IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
          IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
          IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
-C
+
 C        Initialize S1 and S2 in case we want to do zero
 C        iterations (tests). In normal runs S1 and S2 will
 C        be initialized in T1EQNS and T2EQNS.
-C
+
          CALL XCOPY(NDIMT1,A0,0,S1,1)
          CALL XCOPY(NDIMT2,A0,0,S2,1)
          CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
-C
+
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
-C
+
 C     Zero amplitudes if the NOCCX options are specified
-C
+
       IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
       IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
-C
+
 C     Initialize the work arrays to zero.
-C
+
       CALL XCOPY (NDIMT2,A0,0,BUF1,1)
       CALL XCOPY (NBUF2,A0,0,BUF2,1)
       CALL XCOPY (NBUF3,A0,0,BUF3,1)
-C
+
 C     Initialize DIIS.
-C
+
       IT = -1
       CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
-C
+
       ECCSD = 0.D0
       NIT = 0
-C
+
       CALL T1DIAG(DIAG,T1,BUF1)
       CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
       IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-C
+
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
          WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       ENDIF
-C
-C     Calculate fixed intermediaries for Lambda equations
-C
+
+
+!     Calculate fixed intermediaries for Lambda equations
+
       IF (.NOT.TEQ) THEN
          CALL GETAMPT (S1,S2)
-         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
+!         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
+         call f_bar_mi(foo,fvo,eps,s1,s2,buf1,buf2,buf3,ho)
+
+         write(*,*)'f_bar_mi intermediate'
+         write(*,*)'---------------------'
+         write(*,*)(ho(i),i=1,nfoo)
+
          CALL HVINTM (FVV,EPS,S1,S2,BUF1,BUF2,BUF3,HV)
          CALL HOVINTM (FVO,S1,BUF1,BUF2,HOV)
          CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
          CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
          CALL AINTM (S1,S2,BUF1,BUF2,AZ)
          CALL CINTM (T1,T2,FVO,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
-         CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
-         CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
+!avijit         CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
+!avijit         CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
       ENDIF
+
 C
 C  START ITERATIVE PROCEDURE
 C
@@ -2089,19 +2098,17 @@ C
 C---------------Executable code--------------------------------------
 C
       CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
-      CALL DELFCK ('VO','DD',BUF1)
+      CALL DELFCK ('VO','DD',BUF1) ! Only used in Fock space calculations
 C
-      CALL XDOTC(CECC1,NFVO,BUF1,1,T1,1)
+      CALL XDOTC(CECC1,NFVO,BUF1,1,T1,1) ! Non-zero only in non-canonical case
       ECC = CECC1(1)
       IF (CARITH) THEN
          IF (ABS(CECC1(2)).GT.ACCUR) 
      &      WRITE (IW,1000) 'T1',CECC1(2)
       ENDIF
 C
-c     print*,'T1 contribution to CC energy',ecc
-C
       CALL GETVVOO (BUF1)
-      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0) ! Only used in Fock space calculations
       CALL GETTAU  (T1,T2,BUF2)
 C
       CALL XDOTC(CECC2,NDIMT2,BUF1,1,BUF2,1)
@@ -2111,7 +2118,6 @@ C
      &      WRITE (IW,1000) 'T2',CECC2(2)
       ENDIF
 
-CMI  ... sum imaginary energies
       IF (CARITH) THEN
         ECCIM = CECC1(2) + CECC2(2)
       ENDIF
