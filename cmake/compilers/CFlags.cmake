@@ -37,7 +37,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
     set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_C_FLAGS
-            "${CMAKE_C_FLAGS} -static -fpic"
+            "${CMAKE_C_FLAGS} -Bstatic -fpic"
             )
     endif()
 else()
