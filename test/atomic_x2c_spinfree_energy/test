@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' TOTAL ENERGY',
       num_lines   = 11,
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 
 test.run(['atoms.inp'], ['atoms.xyz'],
                  args='--replace closed_occ="4" --replace open_e="5" --replace open_orb="6" --replace myatom="F" --get="X2CMAT"')

@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' Output from ERGCAL',
       num_lines   = 6,
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 
 test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'DFHXXX')

@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'trace/nr of orbitals',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 
 test.run(['dc.inp'],
                  ['h2o_c1.mol', 'ne_auto.mol', 'ne_c1.mol', 'ne_c2.mol', 'ne_c2h.mol', 'ne_c2v.mol', 'ne_ci.mol', 'ne_cs.mol', 'ne_d2.mol', 'ne_d2h.mol'],

@@ -12,10 +12,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string  = 'Electronic energy',
       num_lines     = 8,
-      tolerance    = 1.0e-10)
+      rel_tolerance    = 1.0e-10)
 f.add(from_string  = ' --------------- STEX Final Output --------------',
       to_string    = '   Sum of oscillator strengths',
-      tolerance    = 1.0e-5,
+      rel_tolerance    = 1.0e-5,
       ignore_below = 1.0e-9)
 
 test.run(['gs.inp'], ['LiH-c1.mol'], args='--outcmo')

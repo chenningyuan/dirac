@@ -11,9 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Sum of all contributions to the energy',
       num_lines   = 5,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = 'Relative real eigenvalues in other units;')
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance = 1.0e-5)
 
 test.run(['levelshift_virtuals.inp'], ['Mg.mol'], f, args='--mw=110')
 

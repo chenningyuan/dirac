@@ -11,9 +11,9 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final geometry (bohr)',
       num_lines   = 5,
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 f.add(string      = 'Energy at final geometry is',
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 
 test.run(['lda_numgra.inp', 'lda_numgra_x2c.inp'], ['h2.mol'], f)
 test.run(['lda.inp'], ['h2o.mol'], f)

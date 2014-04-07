@@ -12,12 +12,12 @@ f = Filter()
 
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 12,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
 f.add(from_string = 'All nonzero property elements',
       num_lines   = 7,
       ignore_sign = True,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 test.run(['MgF.dc_rkb.scf_prptra_W_A.inp'], ['MgF.sto-2g.lsym.mol'], f)
 test.run(['RnF_65+.dc_rkb.scf_rho_prptra_FC_PVC.inp'], ['Rn_MglikeF.mol'], f)

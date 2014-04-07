@@ -12,7 +12,7 @@ f = Filter()
 f.add(from_string = '   * dipole moment for electronic state:   1 (   a)',
       num_lines   = 83,
       ignore_sign = True,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['h3.inp'], ['H3.mol'], f)
 
