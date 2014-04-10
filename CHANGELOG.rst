@@ -4,6 +4,7 @@
 -----------------------------
 
 - Adapt testing to older versions of python.
+- Simplified restart option for an X2Cmmf calculation
 
 
 13.1 (2013-12-16)
