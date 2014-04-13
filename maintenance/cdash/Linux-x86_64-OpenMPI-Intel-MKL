@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # these env variables are machine dependent, adapt to your needs
-export PATH=$HOME/openmpi/intel/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/openmpi/intel/lib:$LD_LIBRARY_PATH
+export PATH=/opt/mpich-3.1/intel-14.0.2/bin:$PATH
+export LD_LIBRARY_PATH=/opt/mpich-3.1/intel-14.0.2/lib:$LD_LIBRARY_PATH
 
 BRANCH='master'
 PAMADM_FLAGS='--adm'
