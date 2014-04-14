@@ -1,10 +1,16 @@
 
 
-13.2 (this is the next patch)
------------------------------
+13.3 (this will be the next patch)
+----------------------------------
 
+- write me ...
+
+
+13.2 (2014-04-14)
+-----------------
+
+- Simplified restart option for X2Cmmf calculations.
 - Adapted testing framework to older versions of python.
-- Simplified restart option for an X2Cmmf calculation.
 
 
 13.1 (2013-12-16)
@@ -12,7 +18,7 @@
 
 - Magnetizabilities at the Hartree-Fock level with London atomic orbitals
   (LAOs) were accidentally deactivated in 13.0.
-- Enabled numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster 
+- Enabled numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster
   state (to be picked from the last active sector).
 
 
