@@ -6,9 +6,6 @@
 import sys
 import os
 import subprocess
-import locale
-
-encoding = locale.getdefaultlocale()[1]
 
 version = 'unknown'
 
@@ -59,8 +56,8 @@ if sys.version >= '2.4':
         if out != '':
             if compiler_name != 'pgf90' and compiler_name != 'pgcc' and  compiler_name != 'pgCC':
                 # use only first line, not the copyright stuff
-                version = out.decode(encoding).split('\n')[0]
+                version = out.split('\n')[0]
             else:
                 # for Portland compilers, however, use the second line (the first line is empty)
-                version = out.decode(encoding).split('\n')[1]
+                version = out.split('\n')[1]
 print(version)

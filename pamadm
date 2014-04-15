@@ -19,6 +19,7 @@ Examples: print available options
 from optparse import OptionParser
 import sys
 import os
+import string
 import glob
 
 
@@ -468,13 +469,13 @@ def main():
 
     #  there are no modules
     if (len(sys.argv) == 1):
-       print('only core functionality selected')
+       print 'only core functionality selected'
     else:
-       print('Active modules:')
+       print 'Active modules:'
 
     for module in dirac_modules:
         if dirac_modules[module].is_included:
-           print('       ' + dirac_modules[module].message)
+           print '       ' + dirac_modules[module].message
     print
 
     if not os.path.exists(options.builddir):
@@ -501,22 +502,22 @@ def main():
     list_of_include_files         = []
     for directory in directories_with_sources:
         for source in glob.glob('%s/*.F' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_fixed_fortran_sources.append(source)
         for source in glob.glob('%s/*.F90' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_free_fortran_sources.append(source)
         for source in glob.glob('%s/*.f90' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_free_fortran_sources.append(source)
         for source in glob.glob('%s/*.c' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_c_sources.append(source)
         for source in glob.glob('%s/*.h' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_include_files.append(source)
         for source in glob.glob('%s/*.inc' % directory):
-            source.replace('\\', '/')
+            source = string.replace(source, '\\', '/')
             list_of_include_files.append(source)
 
     list_of_c_sources = set(list_of_c_sources)
@@ -586,7 +587,7 @@ def main():
 
     # write pamadm flags to file
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'pamadm-flags'), 'w')
-    f.write(''.join(sys.argv[1:]))
+    f.write(string.join(sys.argv[1:]))
     f.close()
 
     # get delete flags (used by make release)
@@ -600,7 +601,7 @@ def main():
     for module in dirac_modules:
         if dirac_modules[module].is_included:
            for cppflag in dirac_modules[module].cppflags:
-               delete_flags.replace('-U%s' % cppflag, '')
+               delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'delete_flags'), 'w')
     f.write(delete_flags)
     f.close()
