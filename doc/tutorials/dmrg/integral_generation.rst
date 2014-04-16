@@ -70,7 +70,7 @@ To run the above example we use DIRACs pyhton script *pam* with the following co
   $ $path-to-dirac-build-directory/pam --inp=fci.inp --mol=hf.xyz  
 
 A closer look at the output of the CI program at the bottom of the Dirac calculation will tell us the final FCI/CASCI
-energy for the :math:`\Omega=0` state to be **-100.1956846...** Hartree. This is the reference energy we should expect to
+energy for the :math:`\Omega=0` state to be **-100.1956847...** Hartree. This is the reference energy we should expect to
 get from the DMRG calculation on the same active space. 
 
 To obtain now the integral file **FCIDUMP** for the above FCI/CASCI example we first need to modify the above input file
