@@ -1350,7 +1350,7 @@ C
 C     Spin-rotation constant
 C
       IF(SPINRO) THEN
-         CALL DEF_SPINRO(WORK,LWORK,IPRPRP)
+         CALL DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Optical rotation
@@ -8950,12 +8950,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPINRO */
-      SUBROUTINE DEF_SPINRO(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define operators for spin-rotation constants
 C
-C     Written by Augustin Aucar and Trond Saue Sep 2013
+C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
@@ -8980,7 +8980,7 @@ C***********************************************************************
 C
 C     Define operators for spin-rotation constants
 C
-C     Written by Augustin Aucar and Trond Saue Sep 2013
+C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
@@ -8998,11 +8998,12 @@ C
 #include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbexp.h"
+#include "dcbprp.h"
 c...common block for expectation values
 #include "dcbxlr.h"
 C...common block for linear reponse
 #include "dcbxpr.h"
-      PARAMETER(D1 = 1.0D0,DP5=0.5D0,DM1=-1.0D0)
+      PARAMETER(D1 = 1.0D0,DP5=-0.5D0,DM1=-1.0D0)
       LOGICAL DOATOM(NUCIND)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
@@ -9010,6 +9011,10 @@ C...common block for linear reponse
 #include "ibtfun.h"
 C
       CALL QENTER('DEF_SPINRO1')
+
+      NNSTIN = 0
+      NSCOOR = 3*NUCDEP
+      CALL IZERO(IPSPINRO,6+MXCOOR)
 C
 C     Here we set up the operators needed for the expectation value
 C
@@ -9055,8 +9060,10 @@ C
       PLABEL(1) = 'XANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('XSPINRL',IPSPINRO(1+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
 C
       PNAME     = 'Orb.ang.mom.:  Y'
       IPTYP     = 1  ! diagonal operator
@@ -9065,8 +9072,10 @@ C
       PLABEL(1) = 'YANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('YSPINRL',IPSPINRO(2+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
 C
       PNAME     = 'Orb.ang.mom.:  Z'
       IPTYP     = 1  ! diagonal operator
@@ -9075,8 +9084,10 @@ C
       PLABEL(1) = 'ZANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('ZANGMOM ',INDOP1,LLRBPU,NLBAPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('ZSPINRL',IPSPINRO(3+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('ZANGMOM ',INDOP1,LLRBPU,NLBAPT,
+!     &                       INDXPR,MAXLLR)
 C
 C     Spin angular momentum
 C                  
@@ -9087,8 +9098,10 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('XSPINRS',IPSPINRO(4+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
 C
       PNAME     = 'Spin angmom.:  Y'
       IPTYP     = 11  ! Sigma_y
@@ -9097,8 +9110,10 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('YSPINRS',IPSPINRO(5+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
 C
       PNAME     = 'Spin angmom.:  Z'
       IPTYP     = 12  ! Sigma_z
@@ -9107,8 +9122,10 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      CALL OP1IND('ZSPINMOM',INDOP1,LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
+      IF (SPINRO) CALL OP1IND('ZSPINRS',IPSPINRO(6+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('ZSPINMOM',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
 C
 C    Left-hand operators
 C
@@ -9170,8 +9187,13 @@ C
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-              CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
+              IF (SPINRO) THEN
+                CALL OP1IND('XSPINROA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
+                IPSPINRO(ISCOR1) = INDOP1
+!              CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
+!     &                      INDXPR,MAXLLR)
+              ENDIF
             ENDIF
           ENDDO
         END IF
@@ -9203,12 +9225,358 @@ C
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
       logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
+      NCMAT =  NUCDEP*9
       allocate(DOATOM(NUCIND))
+c IAA  revisar
+ccccccccccccccccc
+      CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATRE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREP,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREO,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNMAT,2*NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT,2*NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT,2*NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNISO,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDISO,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPISO,NUCDEP,WORK,KFREE,LFREE)
+!      CALL MEMGET('REAL',KANIS,NUCDEP,WORK,KFREE,LFREE)
+!      CALL MEMGET('REAL',KASYM,NUCDEP,WORK,KFREE,LFREE)
+!      CALL MEMGET('REAL',KSKEW,NUCDEP,WORK,KFREE,LFREE)
+!      CALL MEMGET('REAL',KSPAN,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMPMAT,2*NCMAT,WORK,KFREE,LFREE)
+ccccccccccccccccc
       CALL SETATM(DOATOM,NATOM,-29)
-CTROND
-      WRITE(6,*) 'Here comes the nice output for spin-rotation.'
+      CALL PRP_SPINRO1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
+     &     WORK(KDMATLO),WORK(KDMATRE),WORK(KDMATREE),WORK(KDMATREP),
+     &     WORK(KDMATREO),
+     &     WORK(KNMAT),
+     &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),
+     &     WORK(KNISO),WORK(KDISO),WORK(KPISO),
+!     &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),
+     &     WORK(KIBUF),
+     &     DOATOM,WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
       deallocate(DOATOM)
       CALL MEMREL('PRP_SPINRO',WORK,1,KFRSAV,KFREE,LFREE)
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck PRP_SPINRO1 */
+      SUBROUTINE PRP_SPINRO1(EXPVAL,ABLRF,TMPMAT,TMAT,
+     &      DMATLO,DMATRE,DMATREE,DMATREP,DMATREO,
+     &      NMAT,DMAT,PMAT,TISO,NUISO,DISO,PISO,
+!     &      ANIS,ASYM,SKEW,SPAN,
+     &      IBUFA,DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Output routine for nuclear spin-rotation tensor
+C     This routine is modelled after PRP_SHIELD by T.Enevoldsen
+C
+C     Written by A. Aucar - Mar 21 2014
+C
+C***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcborb.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "dcbnmr.h"
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
+      LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
+     &     DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
+     &     DMATREE(3,3,NUCDEP),DMATREP(3,3,NUCDEP),DMATREO(3,3,NUCDEP),
+     &     PMAT(3,3,NUCDEP,2),NMAT(3,3,NUCDEP),
+     &     TISO(NUCDEP),NUISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
+!     &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
+     &     IBUFA(3*NUCDEP),IBUFB(6),CSTRA(NUCDEP*NUCDEP*9),
+     &     SCTRA(NUCDEP*NUCDEP*9),WORK(*),
+     &     RATINF(3,5,NUCDEP), IATINF(3,NUCDEP)
+      INTEGER ICONVXYZ
+      CHARACTER*1 CJB
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+C
+      CALL QENTER('PRP_SPINRO1')
+C 
+      CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
+C
+      KFRSAV = KFREE
+      NSCOOR = 3*NUCDEP
+      NCMAT = 9*NUCDEP
+      CALL DZERO(TMPMAT,NCMAT)
+      CALL DZERO(DMAT,NCMAT)
+      CALL DZERO(DMATLO,NCMAT)
+      CALL DZERO(DMATRE,NCMAT)
+      CALL DZERO(DMATREE,NCMAT)
+      CALL DZERO(DMATREP,NCMAT)
+      CALL DZERO(TMAT,NCMAT)
+      CALL DZERO(PMAT,2*NCMAT)
+C--------------------------------------------------------------------
+C     ***************************************
+C     ***** Extract nuclear information *****
+C    ****************************************
+C
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',61,0)
+      WRITE(LUPRI,'(A)')
+     &  '@ name  charge  isotope   mass         abundance     g factor'
+      CALL PRSYMB(LUPRI,'-',61,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+      IDEG = NUCDEG(INUC)
+      IF(DOATOM(INUC)) THEN
+        TEST = .FALSE.
+        IZ   = NINT(CHARGE(INUC))
+        NISO = 0
+        DO ISO = 1,5
+          GVAL = DISOTP(IZ,ISO,'GVAL')
+          IF(GVAL.NE.0) THEN
+            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = GVAL
+            ENDIF
+          ENDIF
+        ENDDO
+        IF(NISO.GT.0) THEN
+          IATINF(1,NSPEC+1) = IDEP + 1
+          IATINF(2,NSPEC+1) = IZ
+          IATINF(3,NSPEC+1) = NISO
+          WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
+     &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+          DO J = 2,NISO
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
+     &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
+          ENDDO
+          DO K = 2,IDEG
+            IATINF(1,NSPEC+K) = IDEP + K
+            IATINF(2,NSPEC+K) = IZ
+            IATINF(3,NSPEC+K) = NISO
+            DO L = 1,NISO
+              RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+              RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+              RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+            ENDDO
+          ENDDO
+          NSPEC = NSPEC + IDEG
+        ENDIF
+      ENDIF
+      IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_SPINRO1')
+        RETURN
+      ENDIF
+C
+C     *** Extract spin-rotation constants ***
+C
+C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
+      NA = 0
+      DO I = 1,NSCOOR
+        IF(IPSPINRO(I).GT.0) THEN
+          NA = NA + 1
+          IBUFA(NA) = I
+        ENDIF
+      END DO
+CMI/HJ internal consistency check
+      IF (NA.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO1: NA=',NA
+        CALL QUIT('PRP_SPINRO1:Wrong value of NA!')
+      ENDIF
+C     The 3 L orbital- and 3 S spin- angular momentum directions as B operators in <<A;B>> :
+      NB = 0
+      DO I = 1, 6
+        IF(IPSPINRO(I+MXCOOR).GT.0) THEN
+          NB = NB + 1
+          IBUFB(NB) = I
+        ENDIF
+      END DO
+      IF (NB.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO1: NB=',NB
+        CALL QUIT('PRP_SPINRO1:Wrong value of NB!')
+      ENDIF
+C
+C     Fill spin-rotation matrices
+C
+      IF (XLR_SKIPEE) THEN
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EE = -999999999
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EE = -999999999
+          IABLRF_EP = 2
+        END IF
+      ELSE
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EE = 2
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EE = 2
+          IABLRF_EP = 3
+        END IF
+      END IF
+#if defined (XH4)
+      WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
+#endif
+      DO IFREQ = 1,NBFREQ
+        CALL PRSYMB(LUPRI,'-',72,2)
+        IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           WRITE(LUPRI,'(A,F15.8,2X,A)')
+     &          '*** Frequency    :',BFREQ(IFREQ),'a.u.'
+        ENDIF
+        CALL DZERO(TMPMAT,2*NCMAT)
+        DO IB = 1,NB
+          JB = IBUFB(IB)
+          KB = IPSPINRO(JB+MXCOOR)
+          DO IA = 1,NA
+            JA = IBUFA(IA)
+            KA = IPSPINRO(JA)
+C...        First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE) TMPMAT(IPTAX(JB,2),JA) =
+     &                        -ABLRF(IFREQ,KA,KB,IABLRF_EE)
+C...        then extract the e-p "diamagnetic" contribution
+            IF (.NOT. XLR_SKIPEP) TMPMAT(IPTAX(JB,2),JA+NCMAT) =
+     &                       -ABLRF(IFREQ,KA,KB,IABLRF_EP)
+          ENDDO
+        ENDDO
+#if defined (XH4)
+        TMPMAT(2,8)  = TMPMAT(1,4)
+        TMPMAT(2,9)  = TMPMAT(1,6)
+        TMPMAT(2,10) = TMPMAT(1,7)
+        TMPMAT(2,11) = TMPMAT(1,5)
+        TMPMAT(3,12) = TMPMAT(1,4)
+        TMPMAT(3,13) = TMPMAT(1,6)
+        TMPMAT(3,15) = TMPMAT(1,7)
+        TMPMAT(3,14) = TMPMAT(1,5)
+        TMPMAT(2,8+NCMAT)  = TMPMAT(1,4+NCMAT)
+        TMPMAT(2,9+NCMAT)  = TMPMAT(1,6+NCMAT)
+        TMPMAT(2,10+NCMAT) = TMPMAT(1,7+NCMAT)
+        TMPMAT(2,11+NCMAT) = TMPMAT(1,5+NCMAT)
+        TMPMAT(3,12+NCMAT) = TMPMAT(1,4+NCMAT)
+        TMPMAT(3,13+NCMAT) = TMPMAT(1,6+NCMAT)
+        TMPMAT(3,15+NCMAT) = TMPMAT(1,7+NCMAT)
+        TMPMAT(3,14+NCMAT) = TMPMAT(1,5+NCMAT)
+#endif
+C
+C     Transform to C1 basis
+C
+        CALL DZERO(PMAT,2*NCMAT)
+        CALL DZERO(TMAT,NCMAT)
+        IF (.NOT. XLR_SKIPEE) THEN
+          IF (IPRPRP.GE.2) THEN
+            CALL HEADER('e-e response part of shielding'//
+     &           ' in symmetry coordinates (ppm)',1)
+            CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          ENDIF
+C         .... extract the e-e response part into PMAT(...,1)
+          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+C         .... save e-e response part into TMAT
+          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,1),1,TMAT,1)
+        END IF
+C       ... include London + reorthonormalization to total shielding
+        IF (LONDON) THEN
+          CALL DAXPY(9*NUCDEP,D1,DMATLO,1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,DMATRE,1,TMAT,1)
+        ENDIF
+        IF (XLR_SKIPEP) THEN
+C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
+            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
+        ELSE
+C       ... add (diamagnetic-NSNL)+London+reortho terms to the TMAT
+          IF (IPRPRP.GE.2) THEN
+             CALL HEADER('e-p response part of spin-rotation'//
+     &          ' constant'//
+     &          ' in symmetry coordinates (kHz)',1)
+             CALL FCPRI (TMPMAT(1,1+NCMAT),'SIGMAS',CSTRA,SCTRA)
+          ENDIF
+C         ... extract the e-p response part into PMAT(...,2)
+          CALL TRADIP(TMPMAT(1,1+NCMAT),PMAT(1,1,1,2),
+     &                CSTRA,SCTRA,3*NUCDEP,2,2)
+C         ... add the e-p response PMAT(...,2) into TMAT
+C         so the TMAT now contains total response
+          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,2),1,TMAT,1)
+        END IF
+C
+C     Analyze results
+C
+        IATOM = 0
+        DO 100 I = 1, NUCIND
+          DO 200 ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IATOM = IATOM + 1
+!            IF (DOATOM(I)) THEN
+!              CALL SPRRES(GEOM(IATOM,1),AMASS(IATOM),GVAL,
+!     &                  DMAT(1,1,IATOM),PMAT(1,1,IATOM,1),WORK,LWORK,
+!     &                  IATOM,IPRPRP)
+!              CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
+!     &             DMATLO(1,1,IATOM),DMATRE(1,1,IATOM),
+!     &             DMATREE(1,1,IATOM), DMATREP(1,1,IATOM),
+!     &             DMATREO(1,1,IATOM),
+!     &             PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
+!     &             TISO(IATOM),DISO(IATOM),PISO(IATOM),
+!     &             ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
+!     &             SPAN(IATOM),NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1),
+!     &             IPRPRP)
+!            END IF
+          END IF
+ 200      CONTINUE
+ 100    CONTINUE
+C
+        CALL AROUND('Summary of spin-rotation constant')
+!        WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
+!     &      'state Nuc.Magn.Res. 2 (1993), 285'
+        WRITE (LUPRI,'()')
+        WRITE (LUPRI,'(A/A/A/A)')
+     &      '@                  isotropic spin-rotation',
+     &      '@              -------------------------------',
+     &      '@atom          total          nuc          dia'//     
+     &      '            para',!//
+!     &      '            span            anis            asym',
+     &      '@-----------------------------------------------------'//
+     &      '----------' !-------------'
+
+!        IATOM = 0
+!        DO 300 I = 1, NUCIND
+!          DO 400 ISYMOP = 0, MAXOPR
+!          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+!            IATOM = IATOM + 1
+!            IF (DOATOM(I)) THEN
+!              WRITE (LUPRI,'(A,A,3F14.4)') '@',
+!     &        NAMDEP(IATOM),TISO(IATOM),NUISO(IATOM),
+!     &        DISO(IATOM),PISO(IATOM)
+!            END IF
+!          END IF
+! 400      CONTINUE
+! 300    CONTINUE
+!        WRITE(LUPRI,'(A,/)')
+!     &        '@-----------------------------------------------------'!//
+!     &        '----------' !-------------'
+C
+      END DO
+      CALL QEXIT('PRP_SPINRO1')
       RETURN
       END

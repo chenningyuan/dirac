@@ -45,7 +45,7 @@
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IP_PVC_SHIELD(MXCOOR+3),                                  &
      &        IP_PVC_SPINSPIN(2,MXCOOR),                                &
-     &        IP_BLAO(2,3)
+     &        IP_BLAO(2,3),IPSPINRO(MXCOOR+6)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRP_WF,       &
      &                         IPROTG,IPMSUSC,IMAGOUT, EXCPRPTYP,       &
@@ -53,7 +53,7 @@
      &                IPLONDON,IPCON,IPRNST,                            &
      &                IP_PVC_SHIELD,                                    &
      &                IP_PVC_SPINSPIN,                                  &
-     &                IP_BLAO
+     &                IP_BLAO,IPSPINRO
 
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND
