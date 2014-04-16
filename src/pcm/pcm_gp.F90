@@ -7,6 +7,7 @@ module pcm_gp
    public collect_nctot
    public collect_atoms 
    public set_point_group
+   public timing
 
    private
 
@@ -62,5 +63,17 @@ module pcm_gp
       gen3   = 0 !pcm_igen(4)
 
       end subroutine set_point_group
+
+      real(8) function timing()
+
+      use interface_to_mpi
+      
+#if defined (VAR_MPI)
+      timing = interface_MPI_WTIME()
+#else
+      call cpu_time(timing)
+#endif                      
+
+      end function timing
 
 end module pcm_gp
