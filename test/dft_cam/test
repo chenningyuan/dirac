@@ -10,9 +10,11 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '@   Elements of the electric dipole',
-      to_string   = '@   anisotropy')
+      to_string   = '@   anisotropy',
+      rel_tolerance = 1.0e-5)
 f.add(from_string = ' *************************** Expectation values',
-      to_string   = '    s0 = T : Expectation value')
+      to_string   = '    s0 = T : Expectation value',
+      rel_tolerance = 1.0e-5)
 
 test.run(['camb3lyp.inp', 'camb3lyp_explicit.inp', 'b3lyp.inp', 'b3lyp_via_cam.inp'], ['ne.mol'], f)
 

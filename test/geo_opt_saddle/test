@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string      = 'Electronic energy',
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
 test.run(['minimum.inp', 'saddle.inp'], ['ethane_1.mol'], f)
 test.run(['constrained.inp'], ['ethane_2.mol'], f)
@@ -18,7 +18,7 @@ test.run(['constrained.inp'], ['ethane_2.mol'], f)
 f = Filter()
 f.add(from_string = '                          Redundant internal coordinates',
       num_lines   = 37,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['findre.inp'], ['ethane_2.mol'], f)
 

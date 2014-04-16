@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Total :',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['Rhonuc.inp'], ['CO.mol'], f)
 

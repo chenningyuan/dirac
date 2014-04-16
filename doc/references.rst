@@ -285,6 +285,11 @@ or popular Google-Books web-space.
    J. Chem. Phys. **128**, *014108* (2010)
    `[web] <http://dx.doi.org/10.1063/1.3276157>`_
 
+.. [Knecht2014a] S. Knecht, O. Legeza, and M. Reiher,
+   *Communication: Four-component density matrix renormalization group*,
+   J. Chem. Phys., **140**, *041101* (2014).
+   `[web] <http://dx.doi.org/10.1063/1.4862495>`_
+
 .. [Knecht2014] S. Knecht, M. Repisky, H. J. Aa. Jensen, K. Ruud, and T. Saue,
    *Genuine relativistic quantum chemistry with exact two-component Hamiltonians: The easy way to infinite-order two-electron spin-orbit corrections*, 
    J. Chem. Theory Comp., in preparation (2014).
