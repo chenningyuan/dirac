@@ -26,11 +26,14 @@ class TestRun(runtest.TestRun):
     def run(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
 
         pam_script = os.path.normpath(os.path.join(self.binary_dir, 'pam'))
-        if not os.path.exists(pam_script):
-            sys.stderr.write('ERROR: pam script not found in %s\n' % pam_script)
-            sys.stderr.write('       have you set the correct --binary-dir (or -b)?\n')
-            sys.stderr.write('       try also --help\n')
-            sys.exit(-1)
+        if self.skip_run:
+            sys.stdout.write('\nskipping actual run\n')
+        else:
+            if not os.path.exists(pam_script):
+                sys.stderr.write('ERROR: pam script not found in %s\n' % pam_script)
+                sys.stderr.write('       have you set the correct --binary-dir (or -b)?\n')
+                sys.stderr.write('       try also --help\n')
+                sys.exit(-1)
 
         launcher = 'python "%s" --noarch --nobackup %s' % (pam_script, args)
 
@@ -59,6 +62,9 @@ class TestRun(runtest.TestRun):
                             sys.stderr.write(e.message)
                             self.return_code += 1
                         except runtest.BadFilterError as e:
+                            sys.stderr.write(e.message)
+                            sys.exit(-1)
+                        except runtest.FilterKeywordError as e:
                             sys.stderr.write(e.message)
                             sys.exit(-1)
                 except runtest.AcceptedError as e:

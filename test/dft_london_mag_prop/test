@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
 test.run(['sdft_lda_dc_nc_rkb.inp', 'sdft_lda_dc_nc_rkb_g987.inp', 'sdft_lda_dc_sc_rkb.inp', 'sdft_lda_dc_sc_rkb_g987.inp'],
                  ['hehe.mol'], f)

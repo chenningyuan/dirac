@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'r_x           r_y           r_z            scalar',
       num_lines   = 7,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['response_london_bz.inp'], ['co2_d2h.mol'],    args=' --get="DFCOEF PAMXVC TBMO"')
 test.run(['vis_shield_natural_zz.inp'], ['co2_d2h.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')

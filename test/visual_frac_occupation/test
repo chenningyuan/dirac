@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'scalar              x-component',
       num_lines   = 3,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['density_1s.inp', 'density_4s.inp', 'density_total.inp'], ['he.mol'], f)
 test.run(['density_1s.inp', 'density_4s.inp', 'density_total.inp', 'density_total_orbstring.inp'], ['ne.mol'], f)
@@ -19,7 +19,7 @@ test.run(['density_1s.inp', 'density_4s.inp', 'density_total.inp', 'density_tota
 f = Filter()
 f.add(from_re     = 'r_x           r_y           r_z            scalar',
       num_lines   = 7,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['density_n.inp'], ['n.mol'], f)
 

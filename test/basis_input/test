@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Atoms and basis sets',
       to_string   = 'Threshold for integrals',
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 
 mol_files = []
 mol_files.append('ch4_temp.mol')

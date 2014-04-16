@@ -10,10 +10,10 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string      = 'Electronic energy',
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 f.add(from_string = '* Dipole moment:',
       num_lines   = 12,
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
 mol = []
 mol.append('Turbomole-DZP.mol')

@@ -11,13 +11,13 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
 MRCCDIR = os.environ.get('MRCCDIR')
 if MRCCDIR == None:

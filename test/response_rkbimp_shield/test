@@ -12,7 +12,7 @@ f = Filter()
 
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 5,
-      tolerance   = 0.0002)
+      rel_tolerance   = 0.0002)
 
 test.run(['rkb.inp'], ['He.mol'], f, args='--outcmo')
 test.run(['rkbimp.inp'], ['He.mol'], f, args='--incmo')

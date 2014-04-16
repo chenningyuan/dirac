@@ -59,7 +59,11 @@ if(ENABLE_STATIC_LINKING)
        # ld-linkers, fix for older linkers
        set(NODYNEXPORT "-Wl,--no-export-dynamic")
     endif()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Bstatic ${NODYNEXPORT}")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    endif()
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
