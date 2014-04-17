@@ -9060,7 +9060,7 @@ C
       PLABEL(1) = 'XANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('XSPINRL',IPSPINRO(1+MXCOOR),
+      IF (SPINRO) CALL OP1IND('XANGMOM',IPSPINRO(1+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
@@ -9072,7 +9072,7 @@ C
       PLABEL(1) = 'YANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('YSPINRL',IPSPINRO(2+MXCOOR),
+      IF (SPINRO) CALL OP1IND('YANGMOM',IPSPINRO(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
@@ -9084,7 +9084,7 @@ C
       PLABEL(1) = 'ZANGMOM'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('ZSPINRL',IPSPINRO(3+MXCOOR),
+      IF (SPINRO) CALL OP1IND('ZANGMOM',IPSPINRO(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('ZANGMOM ',INDOP1,LLRBPU,NLBAPT,
 !     &                       INDXPR,MAXLLR)
@@ -9098,7 +9098,7 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('XSPINRS',IPSPINRO(4+MXCOOR),
+      IF (SPINRO) CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
@@ -9110,7 +9110,7 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('YSPINRS',IPSPINRO(5+MXCOOR),
+      IF (SPINRO) CALL OP1IND('YSPINMOM',IPSPINRO(5+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
@@ -9122,7 +9122,7 @@ C
       PLABEL(1) = 'OVERLAP'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('ZSPINRS',IPSPINRO(6+MXCOOR),
+      IF (SPINRO) CALL OP1IND('ZSPINMOM',IPSPINRO(6+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('ZSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
@@ -9188,7 +9188,7 @@ C
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
               IF (SPINRO) THEN
-                CALL OP1IND('XSPINROA',INDOP1,LLRAPU,NLRAPT,
+                CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSPINRO(ISCOR1) = INDOP1
 !              CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
@@ -9488,8 +9488,9 @@ C
         CALL DZERO(TMAT,NCMAT)
         IF (.NOT. XLR_SKIPEE) THEN
           IF (IPRPRP.GE.2) THEN
-            CALL HEADER('e-e response part of shielding'//
-     &           ' in symmetry coordinates (ppm)',1)
+            CALL HEADER('e-e response part of spin-rotation'//
+     &          ' constant'//
+     &          ' in symmetry coordinates (kHz)',1)
             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
           ENDIF
 C         .... extract the e-e response part into PMAT(...,1)
@@ -9523,28 +9524,21 @@ C         so the TMAT now contains total response
 C
 C     Analyze results
 C
-        IATOM = 0
-        DO 100 I = 1, NUCIND
-          DO 200 ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-            IATOM = IATOM + 1
+!        IATOM = 0
+!        DO 100 I = 1, NUCIND
+!          DO 200 ISYMOP = 0, MAXOPR
+!          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+!            IATOM = IATOM + 1
 !            IF (DOATOM(I)) THEN
+!              CALL NUCSPR(GEOM(IATOM,1),GAGORG,IPRPRP)
+!              CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRINT)
 !              CALL SPRRES(GEOM(IATOM,1),AMASS(IATOM),GVAL,
 !     &                  DMAT(1,1,IATOM),PMAT(1,1,IATOM,1),WORK,LWORK,
 !     &                  IATOM,IPRPRP)
-!              CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
-!     &             DMATLO(1,1,IATOM),DMATRE(1,1,IATOM),
-!     &             DMATREE(1,1,IATOM), DMATREP(1,1,IATOM),
-!     &             DMATREO(1,1,IATOM),
-!     &             PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
-!     &             TISO(IATOM),DISO(IATOM),PISO(IATOM),
-!     &             ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
-!     &             SPAN(IATOM),NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1),
-!     &             IPRPRP)
 !            END IF
-          END IF
- 200      CONTINUE
- 100    CONTINUE
+!          END IF
+! 200      CONTINUE
+! 100    CONTINUE
 C
         CALL AROUND('Summary of spin-rotation constant')
 !        WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
@@ -9555,9 +9549,8 @@ C
      &      '@              -------------------------------',
      &      '@atom          total          nuc          dia'//     
      &      '            para',!//
-!     &      '            span            anis            asym',
      &      '@-----------------------------------------------------'//
-     &      '----------' !-------------'
+     &      '----------' 
 
 !        IATOM = 0
 !        DO 300 I = 1, NUCIND
@@ -9573,10 +9566,12 @@ C
 ! 400      CONTINUE
 ! 300    CONTINUE
 !        WRITE(LUPRI,'(A,/)')
-!     &        '@-----------------------------------------------------'!//
-!     &        '----------' !-------------'
-C
+!     &        '@-----------------------------------------------------'//
+!     &        '----------'
+
       END DO
       CALL QEXIT('PRP_SPINRO1')
       RETURN
       END
+
+c Here comes NUCSPR, DIASPR and SPRRES
