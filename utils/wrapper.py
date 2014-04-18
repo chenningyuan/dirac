@@ -467,7 +467,7 @@ class Wrapper:
         try:
             os.chdir(self.tmppath)
             if self.do_pcm:
-		os.system('./pcmsolver --dryrun')
+		os.system('./pcmsolver')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:
