@@ -5,6 +5,10 @@ Introduction
 ------------
 
 We want to study excitation of the oxygen 1s electron of water.
+
+Excitation-window restricted TD-HF
+----------------------------------
+
 Starting from the molecular input file `H2O.mol` 
 
 .. literalinclude:: H2O.mol
@@ -43,7 +47,8 @@ and find the isotropically averaged oscillator strenghts
 
 .. literalinclude:: H2O_1s_spectrum
 
-where we have added by hand the most important virtual orbitals. Orbital densities of the fifteen first canonical HF orbitals of water are given below
+where we have added by hand the most important virtual orbitals. 
+For reference, orbital densities of the fifteen first canonical HF orbitals of water are given below
 
 .. image:: H2Oorbs.png
    :scale: 50
@@ -55,6 +60,36 @@ We may simulating the spectrum using a Lorentzian lineshape with half-width at h
 .. image:: water_O1s_tdhf.png
    :scale: 100
    :alt: alternate text
+
+Complex response
+----------------
+
+We can alternatively obtain the above spectrum from complex response. The isotropically averaged 
+ocillator strength associated within the electric dipole approximation is related to the 
+isotropic electric dipole polarizability through the relation
+
+.. math::
+
+   f^{iso}\left(\omega\right)=\frac{2m\omega}{\pi e^2} Im\left[\alpha^{iso}\left(\omega+i\gamma\right)\right]
+
+where :math:`\gamma` is a damping parameter corresponding to the half-width at half-maximum (HWHM) of 
+the Lorentzian lineshape.
+
+We can calculate the real and imaginary parts of the polarizability by complex response. By choosing a 
+frequency window we can directly access the region of the spectrum of interest.
+
+Using the input file
+
+.. literalinclude:: cpp.inp
+
+and the command::
+
+   pam --incmo --mol=H2O --inp=cpp
+
+To get enough data points we do a second run using::
+
+   .FREQ INTERVAL
+   20.01 21.0 0.02
 
 
 
