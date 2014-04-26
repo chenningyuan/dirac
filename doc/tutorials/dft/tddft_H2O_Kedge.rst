@@ -6,8 +6,8 @@ Introduction
 
 We want to study excitation of the oxygen 1s electron of water.
 
-Excitation-window restricted TD-HF
-----------------------------------
+Restricted excitation window TDDFT (REW-TDDFT)
+----------------------------------------------
 
 Starting from the molecular input file `H2O.mol` 
 
@@ -78,7 +78,7 @@ the Lorentzian lineshape.
 We can calculate the real and imaginary parts of the polarizability by complex response. By choosing a 
 frequency window we can directly access the region of the spectrum of interest.
 
-Using the input file
+We use the input file
 
 .. literalinclude:: cpp.inp
 
@@ -91,5 +91,12 @@ To get enough data points we do a second run using::
    .FREQ INTERVAL
    20.01 21.0 0.02
 
+Extracting the imaginary part of the frequency-dependent electric dipole polarizatibility and converting to oscillator strength 
+we can directly plot the spectrum as below
 
+.. image:: water_O1s_cpp.png
+   :scale: 100
+   :alt: alternate text
 
+In the above graph we have also included the results from REW-TDDFT and they completely overlap, except that a keen eyemay note that 
+REW-TDDFT is missing the peak around 570 eV, simply because not enough excitations were specified in the input.
