@@ -84,7 +84,7 @@
 @timestamp rot 0
 @timestamp font 0
 @timestamp char size 1.000000
-@timestamp def "Sat Apr 26 12:03:11 2014"
+@timestamp def "Sat Apr 26 18:30:21 2014"
 @r0 off
 @link r0 to g0
 @r0 type above
@@ -371,7 +371,7 @@
 @    s1 errorbar riser clip off
 @    s1 errorbar riser clip length 0.100000
 @    s1 comment "/home/saue/Dirac/doc/tutorials/dft/au.dat"
-@    s1 legend  "REW-TDDFT"
+@    s1 legend  "REW-TDHF"
 @target G0.S0
 @type xy
 544.22791 0.0032540315
