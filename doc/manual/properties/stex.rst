@@ -3,9 +3,6 @@ star(STEX)
 Core excitation spectra in the Static Exchange approximation
 ============================================================
 
-Introduction
-------------
-
 A well known limitation of the time dependent Hartree-Fock approximation
 is that electronic relaxation is not accounted for in the calculation of
 excitation energies. This relaxation can be understood as a correlation
@@ -53,7 +50,7 @@ please provide an
    example !
 
 Directives
-----------
+==========
 
 **Basic**
 
