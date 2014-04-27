@@ -41,6 +41,7 @@ Keyword reference
    - :doc:`QUADRATIC RESPONSE <properties/quadratic_response>` --- Quadratic response
    - :doc:`MOLGRD <properties/molgrd>` --- Molecular gradient
    - :doc:`NMR <properties/nmr>` --- NMR directives
+   - :doc:`STEX <properties/stex>` --- Static exchange (STEX) directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module
