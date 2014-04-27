@@ -1,7 +1,10 @@
-star{STEX)
+star(STEX)
 
 Core excitation spectra in the Static Exchange approximation
----------------------------------------------------------------------
+============================================================
+
+Introduction
+------------
 
 A well known limitation of the time dependent Hartree-Fock approximation
 is that electronic relaxation is not accounted for in the calculation of
@@ -11,7 +14,7 @@ and the relaxation of the remaining N-1 electrons (or rather
 orbitals) due to the "hole" left behind by the excited electron. On the
 other hand the relaxation is well described already at the Hartree-Fock
 level when the excited states are optimized separately, in the so-called
-Δ*S**C**F* approach.
+ΔSCF approach.
 
 The Static Exchange (STEX) approximation is a cheap way to incorporate
 relaxation effects into the calculation of core excitation spectra,
@@ -29,22 +32,60 @@ A STEX calculation typically proceeds in the following way:
    wavefunction saved in the ``DFCOEF`` file.
 
 #. The groundstate output is examined and the indices of the core
-orbital of interest are noted.
-If the core orbitals are not well localized to individual atoms it
-may be necessary to add a small
-fractional charge to break a symmetry of the molecule. This change
-can then be removed in the final calculation.
+   orbital of interest are noted.
+   If the core orbitals are not well localized to individual atoms it
+   may be necessary to add a small
+   fractional charge to break a symmetry of the molecule. This change
+   can then be removed in the final calculation.
 
 #. An average-of-configuration open shell Hartree-Fock calculation is
-performed to get an approximate wavefunction of the core
-ionized molecule. This wavefunction should then be saved to a file
-``DFCOEF.ION``.
-In order for the core ionized state to converge it is necessary to
-use overlap selection and possibly orbital freezing.
+   performed to get an approximate wavefunction of the core
+   ionized molecule. This wavefunction should then be saved to a file
+   ``DFCOEF.ION``.
+   In order for the core ionized state to converge it is necessary to
+   use overlap selection and possibly orbital freezing.
 
 #. The STEX calculation is run with the specified hole orbitals,
-starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
-files.\
+   starting from the previously calculated ``DFCOEF`` and ``DFCOEF.ION``
+   files.\
 
 please provide an
    example !
+
+Directives
+----------
+
+**Basic**
+
+keyword(HOLES)
+
+Indicate (singly occupied) hole orbitals. Example::
+
+     .HOLES
+     ! Expects format like (NFSYM=2)
+     2    ! nr of holes in fermion symmetry 1.
+     5 9  ! holes in fs 1
+     1    ! nr of holes in fermion symmetry 2.
+     1    ! holes in fs 2
+
+keyword(PRINT)
+
+Print level. *Default:* 0 
+
+**Advanced keywords**
+
+keyword(BATCH)
+
+Number of simultaneous Fock matrices to build. *Default:* 4
+
+keyword(CUBE)
+
+Deactivated ?
+
+keyword(CUTOFF)
+
+Set default cutoff in eV. *Default:* 100 eV
+
+keyword(SCREEN)
+
+Screening threshold. 
