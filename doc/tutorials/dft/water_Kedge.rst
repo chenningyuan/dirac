@@ -183,3 +183,28 @@ been shifted so that our linear response estimate for the ionization energy has 
 experimental O1s binding energy. We can see that the shift improves agreement, but
 the spacing and relative intensities of peaks do not agree with experiment.
 
+Static Exchange Approximation
+-----------------------------
+
+In order to incorporate orbital relaxation we carry out a STEX calculation.
+At the moment symmetry is not implemented, so we turn off symmetry in the nolecular input file
+
+.. literalinclude:: H2O_C1.mol
+
+We then first run the ground state::
+
+   pam --inp=H2O --mol=H2O_C1 --outcmo
+
+followed by the 1s core-ionized state::
+
+   pam --mol=H2O_C1 --inp=H2O_1s --incmo --get "DFCOEF=DFCOEF.ION"
+
+We now run STEX using the input
+
+.. literalinclude:: stex.inp
+
+We have plotted the STEX spectrum below together with the experimental one
+
+.. image:: stex.png
+   :scale: 100
+   :alt: alternate text
