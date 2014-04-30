@@ -73,11 +73,11 @@
 
 
 !---------------------------------------------------------------
-!F_bar_mi = F_bar_mi + V(nm, ei) * T1(e,n) --> V(mi,en) * T1(en) 
+!F_bar_mi = F_bar_mi + V(mn, ei) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
 
       CALL GETVOOO (BUF1)
-      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
+      cALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
      &            BUF1,BUF2)
       CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)

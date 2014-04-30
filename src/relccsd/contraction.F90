@@ -45,7 +45,7 @@
 !----------calling variables-----------------------------------
     real(8), intent(in) :: varray(*), tarray(*)      
     complex(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
-!    character(*), intent(in) :: vorder, torder, worder
+!   character(*), intent(in) :: vorder, torder, worder
     character (*), dimension(4), intent(in) :: vorder, torder
     character (*), dimension(2), intent(in) :: worder
     real(8), intent(in) :: buf2(*), buf1(*)      
