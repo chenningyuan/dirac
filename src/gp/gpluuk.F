@@ -1278,7 +1278,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "bucket_sort.h"
-      CHARACTER*10 NAME*5,FNODE,LFNAM
+      CHARACTER*10 FNODE,LFNAM
+      CHARACTER*5  NAME
 C
 C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
 C     because we also need to store the labels
@@ -1288,7 +1289,7 @@ C
 C     The opening of a file is a bit tricky in FORTRAN, pray that the unit
 C     is not yet in use....
 C
-      WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE
+      WRITE (NAME,'(A3,I2.2)') 'BUF',I_FILE
       FNODE = LFNAM(NAME)
       LGFIL = I_BF_UNIT+I_FILE
 
