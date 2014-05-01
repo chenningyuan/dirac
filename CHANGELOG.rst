@@ -3,7 +3,8 @@
 13.3 (this will be the next patch)
 ----------------------------------
 
-- write me ...
+- Fix for more than nine buffer files in integral trnasformation
+  (problem reported on dirac-users mailing list)
 
 
 13.2 (2014-04-14)
