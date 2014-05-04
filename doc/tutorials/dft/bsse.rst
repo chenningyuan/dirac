@@ -64,7 +64,7 @@ get a grid since we import it from the previous calculation. The corresponding m
 We have adjusted the electron number to that of the atom and also ask for the import of the numerical grid.
 We run the calculation using::
 
-   pam13 --inp=MP2srLDA_cp --mol=HeGh --put=numerical_grid
+   pam --inp=MP2srLDA_cp --mol=HeGh --put=numerical_grid
 
 
 Using xyz-files
