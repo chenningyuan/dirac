@@ -18,11 +18,4 @@ CAM p:alpha=0.0 p:beta=1.0 p:mu=0.40 x:slater=1.0 c:srvwn5=1.0
 *MP2CAL                                                                                             
 .VIRTHR                                                                                             
 40.00                                                                                               
-**MOLECULE
-*BASIS
-.DEFAULT
-aug-cc-pVDZ
-*CENTERS
-.NUCLEUS
- Gh 0.0 0.0
 *END OF       

@@ -1,4 +1,3 @@
-
 Basis set superposition error
 =============================
 
@@ -38,7 +37,7 @@ The input file for our calculation combining MP2 with short-range LDA reads
 
 .. literalinclude:: MP2srLDA.inp
 
-Note a final touch: We use the keyword `NORTSDW` to avoid that our molecule is moved (placing origin at 
+Note a final touch: We use the keyword `NORTSD` to avoid that our molecule is moved (placing origin at 
 center of mass) during symmetry detection. We run the molecular calculation using::
 
    pam --inp=MP2srLDA --mol=He2Gh --get=numerical_grid
