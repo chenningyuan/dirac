@@ -63,13 +63,24 @@ contains
 !----------------------------------------------------------------------
       call hello_aoosoc()
 
-      if(nr_2e_fock_matrices > 1)call quit('aoosoc module does not work yet for atomic AOC-HF; use .FOCC in *SCF')
+!     if(nr_2e_fock_matrices > 1)call quit('aoosoc module does not work yet for atomic AOC-HF; use .FOCC in *SCF')
 
       allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
       fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
       if(calc_2esoc)then
+#define try_this
+#if defined try_this
+        call get_scso_2e_fock_aoc(                       &
+                                  dmat,                  &
+                                  fmat,                  &
+                                  nrows,                 &
+                                  ncols,                 &
+                                  1,                     &
+                                  nr_quat                &
+                                 )
+#else
         call get_scso_2e_fock(                           &
                               dmat,                      &
                               fmat,                      &
@@ -86,6 +97,7 @@ contains
                               print_lvl                  &
                              )
 
+#endif
 
 !       debug print
         if(print_lvl > 2)then
@@ -99,28 +111,6 @@ contains
                             6                            &
                            )
         end if
-
-#ifdef OLD_VERSION_AOOSOC
-!       get 2e-SO-fock matrix
-        call make_so_2e_fock(                            &
-                             fmat,                       &
-                             nrows/2,                    &
-                             ncols/2,                    &
-                             nr_quat                     &
-                            )
-!       debug print
-        if(print_lvl > 2)then
-          call print_x2cmat(                             &
-                            fmat,                        &
-                            nr_ao_total_aoo,             &
-                            nr_ao_total_aoo,             &
-                            nr_quat,                     &
-                            aoo_cb_pq_to_uq(1,0),        &
-                            'aoosoc - 2e-soc-only',      &
-                            6                            &
-                           )
-        end if
-#endif
 
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &
@@ -139,13 +129,23 @@ contains
                                    print_lvl             &
                                   )
 
+!       debug print
+!       if(print_lvl > 2)then
+          call print_x2cmat(                             &
+                            fmat,                        &
+                            nr_ao_large_aoo,             &
+                            nr_ao_large_aoo,             &
+                            nr_quat,                     &
+                            aoo_cb_pq_to_uq(1,0),        &
+                            'aoosoc - 2e-normalized',    &
+                            6                            &
+                           )
+!       end if
       end if
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
                                   fmat,                       &
-!only true for mdirac             nrows/2,                    &
-!only true for mdirac             ncols/2,                    &
                                   nr_ao_large_aoo,            &
                                   nr_ao_large_aoo,            &
                                   nr_quat,                    &
