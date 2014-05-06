@@ -839,11 +839,11 @@ Options are also read from ~/.diracrc"""
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
-        # check the executable
-        if  os.path.isfile(self.dirac_exe) is False:
-            err_message=\
-            "The dirac.x(.exe) executable either does not exist or its location is wrongly or not specified. Wanted executable:"+self.dirac_exe_file
-            print_error_message(err_message)
+
+        # check whether the executable exists
+        if not os.path.isfile(self.dirac_exe):
+            print_error_message("pam ERROR: %s not found" % self.dirac_exe)
+            sys.exit(1)
 
         if options.dest_timeout:
             print '...timeout from pam:'
