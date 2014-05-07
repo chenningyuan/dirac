@@ -314,7 +314,9 @@ foreach(
 endforeach()
 
 # give a nice message at the end
-add_custom_target(final ALL COMMENT "Compilation successfully completed - good job!")
+include(Motivation)
+get_motivational_message(${DEVELOPMENT_CODE} msg)
+add_custom_target(final ALL COMMENT "Compilation successfully completed - ${msg}")
 set(_list_of_all_targets ${LIST_OF_EXECUTABLES})
 if(ENABLE_XCFUN)
     set(_list_of_all_targets ${_list_of_all_targets} example_fortran funeval testall)
