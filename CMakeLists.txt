@@ -313,6 +313,15 @@ foreach(
 
 endforeach()
 
+# give a nice message at the end
+add_custom_target(final ALL COMMENT "Compilation successfully completed - good job!")
+set(_list_of_all_targets ${LIST_OF_EXECUTABLES})
+if(ENABLE_XCFUN)
+    set(_list_of_all_targets ${_list_of_all_targets} example_fortran funeval testall)
+endif()
+add_dependencies(final ${_list_of_all_targets})
+unset(_list_of_all_targets)
+
 #enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
 if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
