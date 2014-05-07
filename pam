@@ -309,7 +309,8 @@ class pam_enviroment:
     def create_scratch_dir(self):
         ''' create the scratch directory  '''
         if not os.path.isdir(self.scratch_dir) :
-            print '\n  Creating the scratch directory.'
+            if self.verbose:
+                print '\n  Creating the scratch directory.'
             os.makedirs(self.scratch_dir)
         else:
             if glob.glob(os.path.join(self.scratch_dir, "*")):
@@ -412,11 +413,12 @@ class pam_enviroment:
                         shutil.rmtree(self.scratch_dir)
                     except:
                         count = count + 1
-                if count > 1:
-                    sys.stdout.write('done (after %s attempts)' % count)
-                else:
-                    sys.stdout.write('done')
-                print
+                if self.verbose:
+                    if count > 1:
+                        sys.stdout.write('done (after %s attempts)' % count)
+                    else:
+                        sys.stdout.write('done')
+                    print
             else:
                 if self.verbose:
                     print '  keeping the scratch directory'
@@ -425,9 +427,10 @@ class pam_enviroment:
     def exit_function(self):
         '''prints message on the DIRAC executable exit according to the input parameter'''
         elapsed_time = time.time() - self.start_time
-        print
-        print '  exit date      :', datetime.datetime.now()
-        print '  elapsed time   :', time.strftime('%Hh%Mm%Ss', time.gmtime(elapsed_time))
+        if self.verbose:
+            print
+            print '  exit date      :', datetime.datetime.now()
+            print '  elapsed time   :', time.strftime('%Hh%Mm%Ss', time.gmtime(elapsed_time))
         f = open(self.output_file_full)
         if 'E N D   of   D I R A C  output' in f.read():
             print '  exit           : normal'
@@ -839,11 +842,11 @@ Options are also read from ~/.diracrc"""
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
-
-        # check whether the executable exists
-        if not os.path.isfile(self.dirac_exe):
-            print_error_message("pam ERROR: %s not found" % self.dirac_exe)
-            sys.exit(1)
+        # check the executable
+        if  os.path.isfile(self.dirac_exe) is False:
+            err_message=\
+            "The dirac.x(.exe) executable either does not exist or its location is wrongly or not specified. Wanted executable:"+self.dirac_exe_file
+            print_error_message(err_message)
 
         if options.dest_timeout:
             print '...timeout from pam:'
@@ -1019,24 +1022,29 @@ Options are also read from ~/.diracrc"""
         env_variables_set = 0
         if not os.environ.get('MKL_NUM_THREADS'):
             os.environ['MKL_NUM_THREADS'] = '1'
-            print('  Setting MKL_NUM_THREADS=1')
+            if self.verbose:
+                print('  Setting MKL_NUM_THREADS=1')
             env_variables_set += 1
         if not os.environ.get('MKL_DYNAMIC'):
             os.environ['MKL_DYNAMIC'] = 'FALSE'
-            print('  Setting MKL_DYNAMIC="FALSE"')
+            if self.verbose:
+                print('  Setting MKL_DYNAMIC="FALSE"')
             env_variables_set += 1
         if not os.environ.get('OMP_NUM_THREADS'):
             os.environ['OMP_NUM_THREADS'] = '1'
-            print('  Setting OMP_NUM_THREADS=1')
+            if self.verbose:
+                print('  Setting OMP_NUM_THREADS=1')
             env_variables_set += 1
         if not os.environ.get('OMP_DYNAMIC'):
             os.environ['OMP_DYNAMIC'] = 'FALSE'
-            print('  Setting OMP_DYNAMIC="FALSE"')
+            if self.verbose:
+                print('  Setting OMP_DYNAMIC="FALSE"')
             env_variables_set += 1
-        if env_variables_set > 1:
-            print('  pam script will not (re)set these environment variables if they are set by the user')
-        elif env_variables_set > 0:
-            print('  pam script will not (re)set this environment variable if it is set by the user')
+        if self.verbose:
+            if env_variables_set > 1:
+                print('  pam script will not (re)set these environment variables if they are set by the user')
+            elif env_variables_set > 0:
+                print('  pam script will not (re)set this environment variable if it is set by the user')
 
 
     def copy_files(self):
@@ -1635,10 +1643,10 @@ Options are also read from ~/.diracrc"""
             dirac_run = 'parallel ( launcher:'+self.mpirun+')'
         else:
             dirac_run = 'serial'
-        print
-        print '  DIRAC pam script running:'
-        print
         if self.verbose:
+            print
+            print '  DIRAC pam script running:'
+            print
             print '  user           :', self.user_name
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
@@ -1661,6 +1669,8 @@ Options are also read from ~/.diracrc"""
                 print '  local disks    :', not self.global_scratch_disk
                 print '  rsh/rcp        :', self.rsh,'/',self.rcp
                 print '  machine file   :', self.machinefile
+        else:
+            print '  running', os.path.join(pam_directory, 'pam'), ' '.join(self.pam_args)
 
         if self.timeout and not is_windows():
             print '  Allowed runtime:', self.timeout, \
@@ -1671,10 +1681,8 @@ Options are also read from ~/.diracrc"""
         if self.profile:
            print '  You want profiling - check that you have proper linking flag and assigned profiler.'
            if not os.path.isfile(str(find_executable(self.profiler))):
-               print_error_message('You fool - your profiler not found:'+self.profiler)
+               print_error_message('ERROR: profiler %s not found' % self.profiler)
                sys.exit(19)
-
-        print
 
         # add few consistency checks
         if self.dirac_exe == None:
@@ -1715,7 +1723,8 @@ class pam_run(pam_enviroment):
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
         return_code = self.pam_variables.exit_function()
-        self.pam_variables.grep_for_warnings()
+        if self.pam_variables.verbose:
+            self.pam_variables.grep_for_warnings()
         return return_code
 
 # short definition of the script's main function
