@@ -135,7 +135,7 @@ C&&&& PRINT:  Print level in ESR module
 C&&&& OPERATOR: Define additional operator for results section
     3          CONTINUE ! .OPERATOR
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRESR)
+     &                        IPRESR)
                   CALL OP1IND('ESRINP',INDESR,LESRP,NESRP,INDXPR,
      &                        MAXESR)
                   DOESR = .TRUE.

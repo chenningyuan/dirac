@@ -564,21 +564,21 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& A OPERATOR: Left side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     3          CONTINUE
 C&&&& B OPERATOR: Right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     4          CONTINUE
 C&&&& OPERATOR: Both left/right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,

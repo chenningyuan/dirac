@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-      SUBROUTINE XQRINP(WORD,RESET,WORK,LWRK)
+      SUBROUTINE XQRINP(WORD,RESET)
 !*****************************************************************************
 !
 !     Input section for quadratic response  <<A;B,C>>
@@ -48,7 +48,7 @@
 !
       LOGICAL SET,NEWDEF,RESET
       CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7,PNAME*16
-      DIMENSION WORK(LWRK),PNAME(3)
+      DIMENSION PNAME(3)
 !
       SAVE SET
       DATA TABLE /                                                      &
@@ -172,19 +172,19 @@
  2          CONTINUE
 !     A operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,         &
-            WORK(KFREE),LFREE,IPRXQR)
+            IPRXQR)
             CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
             GO TO 100
  3          CONTINUE
 !     B operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,         &
-            WORK(KFREE),LFREE,IPRXQR)
+            IPRXQR)
             CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
             GO TO 100
  4          CONTINUE
 !     C operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,         &
-            WORK(KFREE),LFREE,IPRXQR)
+            IPRXQR)
             CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
             GO TO 100
  5          CONTINUE
@@ -332,7 +332,7 @@
             GO TO 100
  29         CONTINUE
 !     .EXCPRP compute excited state properties (or matrix elements)
-            CALL EXCPRPINP(2,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
+            CALL EXCPRPINP(2,DOEXCPRP,EXCPRPTYP)
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GO TO 300
@@ -360,7 +360,7 @@
 !     Check that the specification of the EXCPRP calculation
 !     is complete and consistent
 !
-      CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
+      CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP)
 !
 !     Do not set DOXQR if DOTPA is already set.
 !
@@ -473,6 +473,15 @@
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR),RES_QR(3,MAXQR)
       DIMENSION WORK(LWRK)
+
+      real(8), allocatable :: cmo(:)
+      real(8), allocatable :: vecaee(:)
+      real(8), allocatable :: vecaep(:)
+      real(8), allocatable :: vecbee(:)
+      real(8), allocatable :: vecbep(:)
+      real(8), allocatable :: veccee(:)
+      real(8), allocatable :: veccep(:)
+      integer, allocatable :: ibeig(:)
 !
       CALL QENTER('PRPXQR')
 !
@@ -481,15 +490,15 @@
 !
 !     Get the MO coefficients
 !
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      allocate(cmo(ncmotq))
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
       IF(SPINFR) THEN
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),          &
+        allocate(ibeig(ntbas(0)))
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,          &
                TOTERG,11,WORK,KFREE,LFREE)
       ELSE
-        KIBRP = KFREE
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,        &
+        allocate(ibeig(1))
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3,        &
                WORK,KFREE,LFREE)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
@@ -504,33 +513,52 @@
 !     the electronic and positronic solutions, respectively.
 !
       CALL QRVEC(WORK(KFREE),LFREE)
-!
+
+
+      if (mzyee*nz > 0) then
+         allocate(vecaee(mzyee*nz))
+         allocate(vecbee(mzyee*nz))
+         allocate(veccee(mzyee*nz))
+      end if
+
+      if (mzyep*nz > 0) then
+         allocate(vecaep(mzyep*nz))
+         allocate(vecbep(mzyep*nz))
+         allocate(veccep(mzyep*nz))
+      end if
+
+
 !     Perform the vector dot product to obtain the linear
 !     response function values.
 !
-      CALL MEMGET('REAL',KVECAEE,MZYEE*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVECAEP,MZYEP*NZ,WORK,KFREE,LFREE)
-      CALL LRCALC(RES_LR,WORK(KVECAEE),WORK(KVECAEP),WORK(KCMO),        &
-      WORK(KIBRP),WORK(KFREE),LFREE)
+      CALL LRCALC(RES_LR,VECAEE,VECAEP,CMO,        &
+      ibeig,WORK(KFREE),LFREE)
 !
 !     Perform the matrix contraction to obtain the quadratic
 !     response function values.
 !
-      CALL MEMGET('REAL',KVECBEE,MZYEE*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVECBEP,MZYEP*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVECCEE,MZYEE*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVECCEP,MZYEP*NZ,WORK,KFREE,LFREE)
-      CALL QRHYP(RES_QR,WORK(KVECAEE),WORK(KVECBEE),WORK(KVECCEE),      &
-      WORK(KVECAEP),WORK(KVECBEP),WORK(KVECCEP),                        &
-      WORK(KCMO),WORK(KIBRP),WORK(KFREE),LFREE)
+      CALL QRHYP(RES_QR,VECAEE,VECBEE,VECCEE,      &
+                 VECAEP,VECBEP,VECCEP,             &
+                 CMO,ibeig,WORK(KFREE),LFREE)
+
+
+      deallocate(cmo)
+      deallocate(ibeig)
+      if (allocated(vecaee)) deallocate(vecaee)
+      if (allocated(vecaep)) deallocate(vecaep)
+      if (allocated(vecbee)) deallocate(vecbee)
+      if (allocated(vecbep)) deallocate(vecbep)
+      if (allocated(veccee)) deallocate(veccee)
+      if (allocated(veccep)) deallocate(veccep)
 !
 !     Formatted print out of result
 !
       CALL QR_PRINT(RES_LR,RES_QR)
 !
       CALL QEXIT('PRPXQR')
-      RETURN
       END
+
+
       SUBROUTINE QR_SETUP(WORK,LWRK)
 !*****************************************************************************
 !
@@ -2354,16 +2382,12 @@
 !     Construct the modified density matrices
 !
       CALL DZERO(WORK(KD1AO),3*N2BBASXQ)
-      CALL QDENS1(ISYMB,ITIMB,IFERB,WORK(KB),WORK(KD1AO),               &
-      CMO,WORK(KFREE),LFREE)
-      CALL QDENS1(ISYMC,ITIMC,IFERC,WORK(KC),WORK(KD2AO),               &
-      CMO,WORK(KFREE),LFREE)
+      CALL QDENS1(ISYMB,ITIMB,IFERB,WORK(KB),WORK(KD1AO),CMO)
+      CALL QDENS1(ISYMC,ITIMC,IFERC,WORK(KC),WORK(KD2AO),CMO)
       CALL QDENS2(ISYMB,ITIMB,IFERB,WORK(KB),ISYMC,ITIMC,IFERC,WORK(KC),&
-      WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,                              &
-      CMO,WORK(KFREE),LFREE)
+      WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,CMO)
       CALL QDENS2(ISYMC,ITIMC,IFERC,WORK(KC),ISYMB,ITIMB,IFERB,WORK(KB),&
-      WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,                              &
-      CMO,WORK(KFREE),LFREE)
+      WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,CMO)
 !
 !     Construct the Fock matrices in AO basis.
 !
@@ -2594,7 +2618,7 @@
 !
       RETURN
       END
-      SUBROUTINE QDENS1(ISYM1,ITIM1,IFER1,W1,DEN,CMO,WORK,LWRK)
+      SUBROUTINE QDENS1(ISYM1,ITIM1,IFER1,W1,DEN,CMO)
 !*****************************************************************************
 !
 !     Construct the modified density matrix
@@ -2614,21 +2638,20 @@
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 !
       DIMENSION DEN(N2BBASX,NZ),CMO(*),W1(NORBT,NORBT,NZ)
-      DIMENSION WORK(LWRK)
+
+      real(8), allocatable :: tmpao(:)
 !
       CALL QENTER('QDENS1')
 !
       KFREE = 1
       LFREE = LWRK
 !
-      CALL MEMGET('REAL',KTMPAO,N2BBASXQ,WORK,KFREE,LFREE)
-!
 !     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 !
-      CALL QDEN1(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),            &
-      CMO,WORK(KFREE),LFREE)
-      CALL QDEN1(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),           &
-      CMO,WORK(KFREE),LFREE)
+      allocate(tmpao(n2bbasxq))
+      CALL QDEN1(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,TMPAO,CMO)
+      CALL QDEN1(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,TMPAO,CMO)
+      deallocate(tmpao)
 !
 !     Print
 !
@@ -2644,7 +2667,7 @@
       RETURN
       END
       SUBROUTINE QDEN1(JINDX,FAC,ISYM1,ITIM1,IFER1,W1,DEN,DTMP,         &
-      CMO,WORK,LWRK)
+      CMO)
 !*****************************************************************************
 !
 !     Construct the modified density matrix
@@ -2668,7 +2691,7 @@
 !
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),W1(NORBT,NORBT,NZ)
-      DIMENSION CMO(*),WORK(LWRK)
+      DIMENSION CMO(*)
 !
       CALL QENTER('QDEN1')
 !
@@ -2714,14 +2737,14 @@
         END IF
 !
         IF (NORB1.GT.0 .AND. NORB2.GT.0) THEN
-           CALL QTRANS('MOAO',T,D1,                                     &
+           CALL QTRANS90('MOAO',T,D1,                                     &
            NFBAS(I1,0),NFBAS(I2,0),NORB1,NORB2,                         &
            DTMP(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),                   &
            NZ,IPQTOQ(1,ISYM1-1),                                        &
            W1(IORB1,IORB2,1),NORBT,NORBT,NZ,IPQTOQ(1,ISYM1-1),          &
            CMO(ICMO1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),              &
            CMO(ICMO2),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),              &
-           WORK(KFREE),LFREE,IPRXQR)
+           IPRXQR)
         END IF
 !
 !     End loop over fermion symmetries
@@ -2748,7 +2771,7 @@
       RETURN
       END
       SUBROUTINE QDENS2(ISYM1,ITIM1,IFER1,W1,ISYM2,ITIM2,IFER2,W2,      &
-      DEN,ISYM3,ITIM3,IFER3,CMO,WORK,LWRK)
+      DEN,ISYM3,ITIM3,IFER3,CMO)
 !*****************************************************************************
 !
 !     Construct the modified density matrix
@@ -2768,7 +2791,10 @@
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 !
       DIMENSION DEN(N2BBASX,NZ),W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
-      DIMENSION CMO(*),WORK(LWRK)
+      DIMENSION CMO(*)
+
+      real(8), allocatable :: tmpao(:)
+      real(8), allocatable :: tmpmo(:)
 !
 !
       CALL QENTER('QDENS2')
@@ -2776,30 +2802,27 @@
       KFREE = 1
       LFREE = LWRK
 !
-      CALL MEMGET('REAL',KTMPAO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMPMO,N2ORBXQ,WORK,KFREE,LFREE)
-!
 !     D_{ab} = C_{ai} W1_{iu} W2_{uv} C+_{bv}
 !            + C_{av} W2_{vu} W1_{ui} C+_{bi}
 !            - C_{av} W2_{vi} W1_{iu} C+_{bu}
 !            - C_{au} W1_{ui} W2_{iv} C+_{bv}
 !
+      allocate(tmpao(n2bbasxq))
+      allocate(tmpmo(n2orbxq))
       CALL QDEN2(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,                         &
-      ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),                                &
-      ISYM3,ITIM3,IFER3,WORK(KTMPMO),                                   &
-      CMO,WORK(KFREE),LFREE)
+      ISYM2,ITIM2,IFER2,W2,TMPAO,                                &
+      ISYM3,ITIM3,IFER3,TMPMO,CMO)
       CALL QDEN2(3,D1,ISYM2,ITIM2,IFER2,W2,DEN,                         &
-      ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),                                &
-      ISYM3,ITIM3,IFER3,WORK(KTMPMO),                                   &
-      CMO,WORK(KFREE),LFREE)
+      ISYM1,ITIM1,IFER1,W1,TMPAO,                                &
+      ISYM3,ITIM3,IFER3,TMPMO,CMO)
       CALL QDEN2(2,DM1,ISYM2,ITIM2,IFER2,W2,DEN,                        &
-      ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),                                &
-      ISYM3,ITIM3,IFER3,WORK(KTMPMO),                                   &
-      CMO,WORK(KFREE),LFREE)
+      ISYM1,ITIM1,IFER1,W1,TMPAO,                                &
+      ISYM3,ITIM3,IFER3,TMPMO,CMO)
       CALL QDEN2(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,                        &
-      ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),                                &
-      ISYM3,ITIM3,IFER3,WORK(KTMPMO),                                   &
-      CMO,WORK(KFREE),LFREE)
+      ISYM2,ITIM2,IFER2,W2,TMPAO,                                &
+      ISYM3,ITIM3,IFER3,TMPMO,CMO)
+      deallocate(tmpao)
+      deallocate(tmpmo)
 !
 !     Print
 !
@@ -2817,7 +2840,7 @@
       SUBROUTINE QDEN2(JINDX,FAC,ISYM1,ITIM1,IFER1,W1,DEN,              &
       ISYM2,ITIM2,IFER2,W2,DTMP,                                        &
       ISYM3,ITIM3,IFER3,WTMP,                                           &
-      CMO,WORK,LWRK)
+      CMO)
 !*****************************************************************************
 !
 !     Construct the modified density matrix
@@ -2843,7 +2866,7 @@
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),WTMP(NORBT,NORBT,NZ)
       DIMENSION W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
-      DIMENSION T(-1:1),IQBF(4),CMO(*),WORK(LWRK)
+      DIMENSION T(-1:1),IQBF(4),CMO(*)
 !
       CALL QENTER('QDEN2')
 !
@@ -2906,14 +2929,14 @@
 !           T(-1) = 'A'
            T(-1) = 'S'
 !
-           CALL QTRANS('MOAO',T(ITIM3),D1,                              &
+           CALL QTRANS90('MOAO',T(ITIM3),D1,                              &
            NFBAS(I1,0),NFBAS(I3,0),NORB1,NORB3,                         &
            DTMP(I2BASX(I1,I3)+1,1),NTBAS(0),NTBAS(0),                   &
            NZ,IPQTOQ(1,ISYM3-1),                                        &
            WTMP(IORB1,IORB3,1),NORBT,NORBT,NZ,IPQTOQ(1,ISYM3-1),        &
            CMO(ICMO1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),              &
            CMO(ICMO3),NFBAS(I3,0),NORB(I3),NZ,IPQTOQ(1,0),              &
-           WORK(KFREE),LFREE,IPRXQR)
+           IPRXQR)
 !
         END IF
 !
@@ -3039,7 +3062,7 @@
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(NORB(I1).GT.0 .AND. NORB(I2).GT.0) THEN
-            CALL QTRANS('AOMO','S',                                     &
+            CALL QTRANS90('AOMO','S',                                   &
             D0,NFBAS(I1,0),NFBAS(I2,0),NORB(I1),NORB(I2),               &
             FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,                  &
             IPQTOQ(1,ISYM-1),                                           &
@@ -3047,7 +3070,7 @@
             IPQTOQ(1,ISYM-1),                                           &
             CMO(ICMOQ(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),       &
             CMO(ICMOQ(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),       &
-            WORK(KFREE),LFREE,IPRINT)
+            IPRINT)
          END IF
       END DO
 !

@@ -883,6 +883,7 @@ C
       NZCONF   = 0
       NZCONFQ  = NZCONF *NZ
 C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
+      ! radovan: allocating a pointer on a common block is not great
       CALL MEMGET2('REAL','JCONF',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
 C
 C     Orbital parameters
