@@ -209,6 +209,12 @@ def main():
     add_test('response_nonrel', 'quick')
     add_test('cosci_energy', 'quick')
 
+# miro: here we go with benchmark tests
+    add_test('benchmark_cc', 'benchmark')
+    add_test('benchmark_cc_linear', 'benchmark')
+    add_test('benchmark_gaunt', 'benchmark')
+    add_test('benchmark_moltra_4or6', 'benchmark')
+
     # list of directories and files
     # that are never compiled as part of the "dirac" library
     # first list individual files
