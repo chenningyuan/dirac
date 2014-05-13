@@ -1608,23 +1608,30 @@ C
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
 #endif
-C
-C     Print section
-C     -------------
-C
-      IF(IPRXLR.GE.3) THEN
-        IF(NFREQ.EQ.1) THEN
-          WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for one frequency:'
-        ELSE
-          WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for',NFREQ,' frequencies:'
-        ENDIF
-CPP.....make space for complex case
-        CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
-        CALL FLSHFO(LUPRI)
-      ENDIF
-C
+
+
+      ! print section
+      if (iprxlr > 2) then
+         do ifreq = 1, nfreq
+            WRITE(LUPRI,'(/1X,A2,A,I3)') BVTYP(ITYP),
+     &     ' part of solution vectors for frequency', ifreq
+            do idamp = 1, ndamp
+               if (ndamp == 2) then
+                  ! we only print this for complex response vectors
+                  if (idamp == 1) then
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the real part of the complex response vector'
+                  else
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the imag part of the complex response vector'
+                  end if
+               end if
+               call prbvec(lupri, xpo(1, 1, idamp, ifreq), 1, NXPAR)
+            end do
+         end do
+      end if
+
+
 C     Next form linear response functions
 C     ===================================
 C     (for now we form only combinations between
