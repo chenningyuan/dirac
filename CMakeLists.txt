@@ -34,6 +34,7 @@ option(ENABLE_UNIT_TESTS      "Enable unit tests"                               
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
