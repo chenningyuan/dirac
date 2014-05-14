@@ -1961,6 +1961,7 @@ C
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('ANAXRS')
       KFRSAV = KFREE
@@ -2075,17 +2076,13 @@ C         Generate orbital rotation operator
             IF(TOBE) THEN
               CALL MEMREL('ANAXRS',WORK,KLOOP,KLOOP,KFREE,LFREE)
             ENDIF
-            CALL MEMGET2('INTE','NOROT',KNOROT,NORBT,WORK,KFREE,LFREE)
-            CALL IZERO(WORK(KNOROT),NORBT)
+            allocate(norot(norbt))
+            norot = 0
             GASWF = .FALSE.
-            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
+            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,NOROT,
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
      &            IPRINT)
-C           No CALL MEMREL here for KNOROT, because
-C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
-C           be preserved!!!
-!           radovan: that's not true anymore, the indices are sitting on
-!                    a module and work array can be reused
+            deallocate(norot)
             JFRP = IFRP
           ENDIF
 C

@@ -863,6 +863,8 @@ C
 C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
+
+      use orbital_rotation_indices, only: setxop
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -874,6 +876,7 @@ C
       LOGICAL   SKIPEE,SKIPEP
       DIMENSION WORK(*)
       LOGICAL GASWF
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('XRSPAR')
 C
@@ -896,19 +899,16 @@ C     but is not defined for DHF/DFT yet (only for KRMC now)
 C     hjaaj June 2001: GASWF should be based on either
 C     MCSCF common block or that this WF is not KRMC
 C
-      CALL MEMGET2('INTE','NOROT',KNOROT,NORBT,WORK,KFREE,LFREE)
-      CALL IZERO(WORK(KNOROT),NORBT)
+      allocate(norot(norbt))
+      norot = 0
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
      &            IPRINT)
-C     No CALL MEMREL here!!!!
-C     NZXOPE, NZHOPE, NZXOPP and the
-C     pointers KZXOPE and KXZOPP are defined in SETXOP
-C     THEY MUST NOT BE RELEASED WITH MEMREL !
-C     We must p.t. live with KNOROT allocation ...
-C
+      deallocate(norot)
 C===TODO end
+
+
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP
