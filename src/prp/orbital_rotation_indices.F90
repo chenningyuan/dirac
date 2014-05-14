@@ -1,11 +1,7 @@
 module orbital_rotation_indices
 
-!  radovan: this can be improved a lot
-!           but for the moment it is working
-
    implicit none
 
-   public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
    public set_orbital_rotation_indices
@@ -21,13 +17,9 @@ module orbital_rotation_indices
 
 contains
 
-   subroutine set_as_initialized()
-      is_initialized = .true.
-   end subroutine
-
    subroutine check_if_interface_is_initialized()
       if (.not. is_initialized) then
-         print *, 'error: you try to access orbital_rotation_indices'
+         print *, 'ERROR: you try to access orbital_rotation_indices'
          print *, '       but this interface is not initialized'
          stop 1
       end if
@@ -181,7 +173,7 @@ contains
       end if
 
       deallocate(ibuf)
-      call set_as_initialized()
+      is_initialized = .true.
 
       CALL QEXIT('SETXOP')
 
@@ -843,7 +835,7 @@ contains
          orbital_rotation_indices_pn = 0
       end if
 
-      call set_as_initialized()
+      is_initialized = .true.
 
    end subroutine
 

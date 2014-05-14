@@ -684,7 +684,7 @@
          JTIMOP = IPRPTIM(IPT)
          JOPSY  = JBTOF(JSYMOP-1,1)
          CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,                  &
-                WORK,KFREE,LFREE,IPRXQR)
+                IPRXQR)
          MZYEE = MAX(MZYEE,2*NZXOPE)
          MZYEP = MAX(MZYEP,2*NZXOPP)
       END DO
@@ -946,7 +946,7 @@
          STATIC = (NFREQ.EQ.1 .AND. QRFREQ(1,IOP).EQ.D0)
 !
          CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,                  &
-                WORK,KFREE,LFREE,IPRXQR)
+                IPRXQR)
 !
 !     Check if response vectors exist on restart file
 !
@@ -978,7 +978,7 @@
          CALL MEMGET('REAL',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
 !
          CALL PAMGRD(INDPRP,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),        &
-         JOPSY,WORK(KZCONF),                                            &
+         JOPSY,                                                         &
          get_orbital_rotation_indices_pp(),                             &
          get_orbital_rotation_indices_pn(),                             &
          NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXQR)
@@ -1402,7 +1402,7 @@
             JOPSY  = IFERA
             JTIMOP = ITIMA
             CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,               &
-            WORK,KFREE,LFREE,IPRXQR)
+            IPRXQR)
 !
             NZYAEE = 2*NZXOPE
             NZYAEP = 2*NZXOPP
@@ -1691,7 +1691,7 @@
       JOPSY  = IFER
       JTIMOP = ITIM
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,                     &
-             WORK,KFREE,LFREE,IPRXQR)
+             IPRXQR)
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(IPT,ABS(FREQ),IREC)
@@ -1959,7 +1959,7 @@
       JSYMOP = ISYM
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,                     &
-             WORK,KFREE,LFREE,IPRINT)
+             IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP)                           &
       CALL QUIT('GTZYMT: Inconsistent orbital rotations')
 !
@@ -2190,7 +2190,7 @@
       JSYMOP = ISYMGR
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,                     &
-             WORK,KFREE,LFREE,IPRINT)
+             IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP)                           &
       CALL QUIT('RSP1GR: Inconsistent orbital rotations')
 !
