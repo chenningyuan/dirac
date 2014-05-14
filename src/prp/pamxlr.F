@@ -2080,7 +2080,7 @@ C         Generate orbital rotation operator
             norot = 0
             GASWF = .FALSE.
             CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,NOROT,
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
             deallocate(norot)
             JFRP = IFRP

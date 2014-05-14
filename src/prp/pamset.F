@@ -903,7 +903,7 @@ C
       norot = 0
       GASWF = .FALSE.
       CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
       deallocate(norot)
 C===TODO end
