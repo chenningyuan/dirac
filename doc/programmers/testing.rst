@@ -57,7 +57,7 @@ How to add labels to tests
 
 Here is an example::
 
-  add_test('dft_ac', 'quick;dft')
+  add_test('dft_ac', 'short;dft')
 
 If you give several labels, separate them with ";".
 
