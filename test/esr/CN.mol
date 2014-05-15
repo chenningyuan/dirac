@@ -1,0 +1,12 @@
+INTGRL
+CN  molecule(S=1/2)
+basis: cc-pVTZ                                                 
+C   2    2  Y  X   A                   
+        6.    1 
+C        0.0000000    0.0000000  -0.63
+LARGE BASIS cc-pVTZ      
+        7.    1
+N        0.0000000    0.0000000   0.545
+LARGE BASIS cc-pVTZ   
+FINISH
+

@@ -208,6 +208,7 @@ def main():
     add_test('response_complex', 'short')
     add_test('response_nonrel', 'short')
     add_test('cosci_energy', 'short')
+    add_test('esr')
 
 # miro: here we go with benchmark tests
     add_test('benchmark_cc', 'benchmark')
