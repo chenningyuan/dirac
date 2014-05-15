@@ -1337,7 +1337,7 @@ C
         CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
-C     Magnetizabilities (magnetic susceptibilities), relaxation, expectation value,
+C     Magnetizabilities (magnetic susceptibilities), relaxation,expectation value,
 C     and if wished, diamagnetic terms
 C
       IF(MSUSCP) THEN
@@ -4046,9 +4046,9 @@ C
 C  Conventional atomic orbitals (common gauge origin approach)
 C
       NCOMP = 2
-      PFAC(1)  = DMI2*CVAL
-      PFAC(2)  = DMI2*CVAL
-      PFAC(3)  = DMI2*G1FAC
+      PFAC(1)  = -DMI2*CVAL
+      PFAC(2)  = -DMI2*CVAL
+      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'
