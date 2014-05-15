@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Energy at final geometry is',
       num_lines   = 3,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['O.inp'], ['O.mol'], args='--get=DFCOEF')
 shutil.copy('DFCOEF', 'DFPROJ')

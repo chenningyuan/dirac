@@ -2804,13 +2804,21 @@ C
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
             no1esystem_aoosoc = .false.
             no1esystem_aoosoc = (ichrg - kcharg > 1)
+            if(onesys) no1esystem_aoosoc = .false.
+
+            x2c = .false. ! turn off x2c for the proper inside call of twofck
+
+            lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
 
             call get_atomic_oo_order_so_correction(
      &                                             dmat_aoosoc,
      &                                             pctm_aoosoc,
      &                                             no1esystem_aoosoc,
+     &                                             lwork_local,
      &                                             iprham
      &                                             )
+
+            x2c = .true. ! reset
 
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
@@ -2935,7 +2943,8 @@ C
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
 
-          call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
+          if(.not.onesys)
+     &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
      &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
 
           open(lux2c,file='X2CMAT',status='old',form='unformatted',

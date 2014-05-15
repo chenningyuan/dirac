@@ -564,21 +564,21 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& A OPERATOR: Left side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     3          CONTINUE
 C&&&& B OPERATOR: Right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     4          CONTINUE
 C&&&& OPERATOR: Both left/right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,
@@ -1608,23 +1608,30 @@ C
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
 #endif
-C
-C     Print section
-C     -------------
-C
-      IF(IPRXLR.GE.3) THEN
-        IF(NFREQ.EQ.1) THEN
-          WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for one frequency:'
-        ELSE
-          WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for',NFREQ,' frequencies:'
-        ENDIF
-CPP.....make space for complex case
-        CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
-        CALL FLSHFO(LUPRI)
-      ENDIF
-C
+
+
+      ! print section
+      if (iprxlr > 2) then
+         do ifreq = 1, nfreq
+            WRITE(LUPRI,'(/1X,A2,A,I3)') BVTYP(ITYP),
+     &     ' part of solution vectors for frequency', ifreq
+            do idamp = 1, ndamp
+               if (ndamp == 2) then
+                  ! we only print this for complex response vectors
+                  if (idamp == 1) then
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the real part of the complex response vector'
+                  else
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the imag part of the complex response vector'
+                  end if
+               end if
+               call prbvec(lupri, xpo(1, 1, idamp, ifreq), 1, NXPAR)
+            end do
+         end do
+      end if
+
+
 C     Next form linear response functions
 C     ===================================
 C     (for now we form only combinations between
@@ -1954,6 +1961,7 @@ C
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('ANAXRS')
       KFRSAV = KFREE
@@ -2068,17 +2076,13 @@ C         Generate orbital rotation operator
             IF(TOBE) THEN
               CALL MEMREL('ANAXRS',WORK,KLOOP,KLOOP,KFREE,LFREE)
             ENDIF
-            CALL MEMGET2('INTE','NOROT',KNOROT,NORBT,WORK,KFREE,LFREE)
-            CALL IZERO(WORK(KNOROT),NORBT)
+            allocate(norot(norbt))
+            norot = 0
             GASWF = .FALSE.
-            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
+            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,NOROT,
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
      &            IPRINT)
-C           No CALL MEMREL here for KNOROT, because
-C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
-C           be preserved!!!
-!           radovan: that's not true anymore, the indices are sitting on
-!                    a module and work array can be reused
+            deallocate(norot)
             JFRP = IFRP
           ENDIF
 C

@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = '**** Inverse mean delocalization',
-      tolerance = 1.0e-9)
+      rel_tolerance = 1.0e-9)
 
 # get input files
 tar = tarfile.open('cf.tgz')

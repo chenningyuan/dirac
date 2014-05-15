@@ -11,18 +11,19 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = 'contribution             contribution             contribution',
       num_lines   = 5,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = 'Quadratic Response Functions',
-      to_string   = '@   average')
+      to_string   = '@   average',
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 5,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['gaunt.inp'], ['Ne.C2.mol'], f)
 

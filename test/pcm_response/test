@@ -12,19 +12,19 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string  = '@   xx',
       num_lines    = 1,
-      tolerance    = 1.0e-5)
+      rel_tolerance    = 1.0e-5)
 f.add(from_string  = '@   yy',
       num_lines    = 1,
-      tolerance    = 1.0e-5)
+      rel_tolerance    = 1.0e-5)
 f.add(from_string  = '@   zz',
       num_lines    = 1,
-      tolerance    = 1.0e-5)
+      rel_tolerance    = 1.0e-5)
 f.add(from_string  = '@   average',
       num_lines    = 1,
-      tolerance    = 1.0e-5)
+      rel_tolerance    = 1.0e-5)
 f.add(from_string  = '@   anisotropy',
       num_lines    = 1,
-      tolerance    = 1.0e-5)
+      rel_tolerance    = 1.0e-5)
 
 test.run(['pcm-scf-levy.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-levy_CH4.out')

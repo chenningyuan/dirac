@@ -10,12 +10,12 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'DFT exchange-correlation energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(string    = 'Electronic energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = ' Relative real eigenvalues in other units;',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['m05.inp', 'm06-l.inp', 'm06.inp'], ['hf.mol'], f)
 

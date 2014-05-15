@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = '          <<<<<<<<<<<<<<<<<<<<  End of Minimization',
       to_string   = ' Iter     Energy     Change    GradNorm  Index   StepLen',
-      tolerance   = 1.0e-3)
+      rel_tolerance   = 1.0e-3)
 f.add(from_string = 'Energy at final geometry is',
       num_lines   = 3,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['acetone.inp'], ['acetone.mol'], f)
 test.run(['HeH+.inp'], ['HeH+.mol'], f)

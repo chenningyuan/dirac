@@ -11,12 +11,12 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(string      = '    2        0.02',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
 test.run(['4dcg_mmf_x.inp', '4dcg_mmf_xx.inp', '2dcg_x2c.inp'], ['fo.mol'], f, args='--mw=110 --aw=120')
 
