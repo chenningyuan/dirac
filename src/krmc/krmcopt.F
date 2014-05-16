@@ -2628,7 +2628,7 @@ C
       DIMENSION FC(*),FCAC(*)
 C
       CALL QENTER('RGETAC')
-      IF (IPRINT .GE. 5) CALL HEADER('Output from rGETAC',-1)
+      IF (IPRINT .GE. 7) CALL HEADER('Output from rGETAC',-1)
 C
       IF (NASHT .EQ. 0) GOTO 9999
 C
