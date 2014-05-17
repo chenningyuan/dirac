@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'no.    eigenvalue (eV)   mean-res.',
       num_lines    = 4,
-      tolerance   = 1.0e-4,
+      rel_tolerance   = 1.0e-4,
       mask        = [1, 2, 3])
 
 test.run(['adclevel1_real.inp', 'adclevel2_real.inp', 'adclevel3_real.inp'], ['ne_d2h.mol'],

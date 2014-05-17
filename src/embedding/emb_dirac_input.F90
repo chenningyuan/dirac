@@ -131,6 +131,7 @@ module fde_input_dirac
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                skip_all_imports = .true.
+               doprp = .true.
 
 #endif /* MOD_UNRELEASED */ 
 

@@ -10,7 +10,8 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
-      num_lines   = 9)
+      num_lines   = 9,
+      rel_tolerance = 1.0e-5)
 
 inp_files = []
 inp_files.append('ci.inp')

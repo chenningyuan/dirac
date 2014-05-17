@@ -372,8 +372,8 @@ C             do NOT activate picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
-            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
+            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP)
+            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP)
             GO TO 100
   131    CONTINUE 
 C&&&& .MAGOUT - specify the hard-output for the magnetizability
@@ -534,7 +534,7 @@ CMI ... changed for LAO-based magnetic properties
 #endif
          GO TO 200
     8 CONTINUE
-         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+         CALL XQRINP(WORD,.FALSE.)
          GO TO 200
 C     *STEX
     9 CONTINUE
@@ -570,7 +570,7 @@ CMI ... read again the input
 !
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
@@ -694,7 +694,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& OPERATOR: Define operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPREXP)
+     &                        IPREXP)
                   CALL OP1IND('EXPINP',INDEXP,LEXPP,NEXPP,INDXPR,
      &                        MAXEXP)
                   DOEXP = .TRUE.
@@ -825,7 +825,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprinp */
       SUBROUTINE XPRINP(LUCMDX,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                  WORK,LWORK,IPRINT)
+     &                  IPRINT)
 C***********************************************************************
 C
 ! PURPOSE:
@@ -934,7 +934,7 @@ C
       PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
-      DIMENSION PFAC(3),WORK(LWORK)
+      DIMENSION PFAC(3)
       CHARACTER   PLABEL(3)*8, PNAME*16
       LOGICAL     CLABEL
 C

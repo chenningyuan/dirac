@@ -1,9 +1,17 @@
 
 
-13.2 (this is the next patch)
------------------------------
+13.3 (this will be the next patch)
+----------------------------------
 
-- Adapt testing to older versions of python.
+- Fix for more than nine buffer files in integral trnasformation
+  (problem reported on dirac-users mailing list)
+
+
+13.2 (2014-04-14)
+-----------------
+
+- Simplified restart option for X2Cmmf calculations.
+- Adapted testing framework to older versions of python.
 
 
 13.1 (2013-12-16)
@@ -11,8 +19,8 @@
 
 - Magnetizabilities at the Hartree-Fock level with London atomic orbitals
   (LAOs) were accidentally deactivated in 13.0.
-- Enable numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster 
-  state (to be picked from the last active sector)
+- Enabled numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster
+  state (to be picked from the last active sector).
 
 
 13.0 (2013-12-12)

@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'g values (x, y, z, iso)',
+      num_lines = 3,
+      rel_tolerance = 1.0e-5)
+f.add(from_string = 'g shifts in ppm (x, y, z, iso)',
+      num_lines = 3,
+      rel_tolerance = 1.0e-5)
+
+test.run(['esr.inp'], ['CN.mol'], f)
+
+sys.exit(test.return_code)

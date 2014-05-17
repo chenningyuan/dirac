@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re     = ' Relative real eigenvalues in other units;',
-      tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-4)
 
 test.run(['lda_sigma.inp', 'lda_betasigma.inp', 'blyp_sigma.inp', 'blyp_betasigma.inp'], ['he.mol'], f)
 

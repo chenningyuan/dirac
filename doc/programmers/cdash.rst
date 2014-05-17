@@ -4,7 +4,7 @@ Nightly testing dashboard
 -------------------------
 
 It is very easy to contribute to the
-`DIRAC Dashboard <http://repo.ctcc.no/CDash/index.php?project=DIRAC>`_.
+`DIRAC Dashboard <https://repo.theochem.kth.se/cdash/index.php?project=DIRAC>`_.
 You don't need to install anything extra except CMake.
 It is as easy as typing::
 
@@ -13,7 +13,7 @@ It is as easy as typing::
   $ make -jN -D Nightly
 
 The result of appears automatically on the
-`DIRAC Dashboard <http://repo.ctcc.no/CDash/index.php?project=DIRAC>`_.
+`DIRAC Dashboard <https://repo.theochem.kth.se/cdash/index.php?project=DIRAC>`_.
 
 To get inspired have a look at the cdash example recipes in the repository
 under ``maintenance/cdash``. Then put it under crontab. Here is an example::
