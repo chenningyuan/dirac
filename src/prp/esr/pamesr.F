@@ -365,13 +365,13 @@ C
 C
 C **  Retrieve molecular orbitals
 C
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
       IF (SPINFR.OR.LEVYLE) THEN
-         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &               TOTERG,10,WORK,KFREE,LFREE)
       ELSE
@@ -417,15 +417,16 @@ C
 C     Make CI Hamiltonian matrix (diagonal now, but it may be made
 C     non-diagonal in ESRPHASE)
 C
-      CALL MEMGET('REAL',KHCI,MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HCI',KHCI,
+     &   MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHCI),MZ*MULTIPESR*MULTIPESR)
       DO I = 1, MULTIPESR
          II = KHCI + (I-1)*MULTIPESR + (I-1)
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
 
-      IF (IPRESR .GT. 5) THEN
-         WRITE(lupri,*) 'WORK(KHCI) AFTER DIAGONAL'
+      IF (IPRESR .GT. 25) THEN
+         WRITE(lupri,*) 'DEBUG: WORK(KHCI) AFTER DIAGONAL'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
       END IF
@@ -435,7 +436,7 @@ C     and fix relative phases of these state vectors.
 C
 C     Memory allocation for ESRPHASE and PRPESR1
 C
-      CALL MEMGET('REAL',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMAT',KPMAT,NZ*N2ASHX ,WORK,KFREE,LFREE)
 C
 C
 #ifdef ESR_DEBUG
@@ -458,8 +459,8 @@ C    &              HCI,CIEVEC,MZ,WORK,KFREE,LFREE)
 C
 C     Memory allocation for PRPESR1
 C
-      CALL MEMGET('LOGI',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','ESRST',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMAT ',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
 
       IF (IPRESR .GT. 1) THEN
         WRITE(LUPRI,'(/A)')
@@ -497,9 +498,9 @@ cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
       END IF
 C
       IF (ESRGTENS .OR. ESR_HFCC) THEN
-         CALL TITLER('DIRAC  - ESR PROPERTIES','*',116)
+         CALL TITLER('@  DIRAC  - ESR PROPERTIES','*',116)
          WRITE(LUPRI,'(A,I5)')
-     &   '* Effective spin multiplicity:',MULTIPESR
+     &   '@  *  Effective spin multiplicity:',MULTIPESR
       END IF
       IF (ESRGTENS) THEN
 C
@@ -520,11 +521,11 @@ C
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
           GTENSOR(K,1) =  D4*ESRVAL(jphlf,jmhlf,1,I)
-          GTENSOR(K,2) =  D4*ESRVAL(jphlf,jmhlf,2,I)
+          GTENSOR(K,2) = -D4*ESRVAL(jphlf,jmhlf,2,I)
           GTENSOR(K,3) =  D4*ESRVAL(jphlf,jphlf,1,I)
           J = IPESR(MXCOOR+K,2)
           GCORR(K,1)   =  D4*ESRVAL(jphlf,jmhlf,1,J)
-          GCORR(K,2)   =  D4*ESRVAL(jphlf,jmhlf,2,J)
+          GCORR(K,2)   = -D4*ESRVAL(jphlf,jmhlf,2,J)
           GCORR(K,3)   =  D4*ESRVAL(jphlf,jphlf,1,J)
         ENDDO
 C
@@ -889,7 +890,7 @@ C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
 C
       L_CIVEC2 = NZCONF * N_CIESR * MZ
-      CALL MEMGET('REAL',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CIVEC2',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
       CALL DCOPY(L_CIVEC2,CIEVEC,1,WORK(KCIVEC2),1)
       CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,D1,
      &           'N','N',IQINDX,
@@ -967,13 +968,13 @@ C
       DO J = 2,MULTIPESR
         JM1 = J-1
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_x|JM1>  :",J,JM1,ESRVAL(JM1,J,1,1),
-     &                            ' + i',ESRVAL(JM1,J,2,1)
+     &     " J,JM1,<J|S_x|JM1>  :",J,JM1,ESRVAL(J,JM1,1,1),
+     &                            ' + i',ESRVAL(J,JM1,2,1)
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_y|JM1>  :",J,JM1,ESRVAL(JM1,J,1,2),
-     &                            ' + i',ESRVAL(JM1,J,2,2)
-        SPLUS_R = ESRVAL(JM1,J,1,1) - ESRVAL(JM1,J,2,2)
-        SPLUS_I = ESRVAL(JM1,J,2,1) + ESRVAL(JM1,J,1,2)
+     &     " J,JM1,<J|S_y|JM1>  :",J,JM1,ESRVAL(J,JM1,1,2),
+     &                            ' + i',ESRVAL(J,JM1,2,2)
+        SPLUS_R = ESRVAL(J,JM1,1,1) - ESRVAL(J,JM1,2,2)
+        SPLUS_I = ESRVAL(J,JM1,2,1) + ESRVAL(J,JM1,1,2)
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
      &     " J,JM1,<J|S_+|JM1>  :",J,JM1,SPLUS_R,
      &                            ' + i',SPLUS_I
@@ -1332,8 +1333,10 @@ C
 C
       CALL DZERO(ESRVAL,(MULTIPESR**2)*2)
 C     Allocate memory for property matrix in molfdir format:
-      CALL MEMGET('REAL',KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KMUUUU ,0              ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMLF ',
+     &   KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MUUUU',
+     &   KMUUUU ,0,WORK,KFREE,LFREE)
 C
 C     Extract symmetry information
 C     =============================
@@ -1372,7 +1375,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 !d    call memchk('esrTRANS 2',work,1)
-      CALL MEMGET('REAL',KIBEIG ,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
       CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
@@ -1453,7 +1456,7 @@ C         and transform to the desired property matrix in ESRVAL from
 C         the MULTIPESR first CI vectors with QTRANS afterwards.
 C
          LPCI = MZ*NZCONF*NZCONF
-         CALL MEMGET('REAL',KPR    ,LPCI           ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PR',KPR,LPCI,WORK,KFREE,LFREE)
          KPI  = KPR + NZCONF*NZCONF
          CALL GASCIP_MAKEH(.FALSE.,IHRM,NZCONF,WORK(KZCONF),
      &         WORK(KPR),WORK(KPI),WORK(KPMLF),WORK(KMUUUU))
@@ -1500,7 +1503,7 @@ C
           CALL PRQMAT(ESRVAL,MULTIPESR,MULTIPESR,
      &                MULTIPESR,MULTIPESR,NZCMPLX,IQINDX,LUPRI)
 C
-        CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
 C
        END IF
        IF (ITIM.EQ.1) THEN
@@ -1736,15 +1739,17 @@ C
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
-      CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMAT',KTMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TISO',KTISO,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBUF',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','ATOM',KATOM,NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IATM',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RATM',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CSTRA',KCSTRA,
+     &   NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCTRA',KSCTRA,
+     &   NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMPMAT',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,29)
       CALL PRP_ESR1(ESRVAL,WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
@@ -1892,9 +1897,9 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) = D2*ESRVAL(jphlf,jmhlf,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = D2*ESRVAL(jphlf,jmhlf,2,KA)
-            TMPMAT(IPTAX(3,2),JA) = D2*ESRVAL(jphlf,jphlf,1,KA)
+            TMPMAT(IPTAX(1,2),JA) =  D2*ESRVAL(jphlf,jmhlf,1,KA)
+            TMPMAT(IPTAX(2,2),JA) = -D2*ESRVAL(jphlf,jmhlf,2,KA)
+            TMPMAT(IPTAX(3,2),JA) =  D2*ESRVAL(jphlf,jphlf,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
