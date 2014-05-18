@@ -170,11 +170,11 @@ def main():
     add_test('krci_properties_perm_dipmom', 'short')
     add_test('linear_structures', 'short')
     add_test('lucita_large')
-    add_test('mcscf_energy')
-    add_test('mcscf_properties', 'short')
+    add_test('mcscf_energy','mcscf')
+    add_test('mcscf_properties', 'short;mcscf')
     add_test('mp2_energy', 'short')
     add_test('mp2_properties')
-    add_test('mp2_srdft_energies', 'short')
+    add_test('mp2_srdft_energies', 'short;srdft')
     add_test('open-shells', 'short')
     add_test('projection_analysis', 'short')
     add_test('pvc_scf', 'short')
@@ -208,7 +208,7 @@ def main():
     add_test('response_complex', 'short')
     add_test('response_nonrel', 'short')
     add_test('cosci_energy', 'short')
-    add_test('esr')
+    add_test('esr', 'short;gascip;ci')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library

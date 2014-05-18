@@ -1,4 +1,4 @@
-DIRAC pam run in /people/disk2/mnp/for_radovan
+DIRAC pam run in /Users/hjj/prog/gitDirac_repo14/build_master_g4.8/test/esr
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
@@ -159,39 +159,32 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | mnp@fe6
- System                   | Linux-2.6.18-128.el5
+ Who compiled             | hjj
+ Host                     | nat-100219.local
+ System                   | Darwin-13.1.0
  CMake generator          | Unix Makefiles
- Processor                | x86_64
+ Processor                | i386
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /people/disk2/magnus/intel/composer_xe_2011_sp1.9.
-                          | 293/bin/intel64/ifort
- Fortran compiler version | ifort (IFORT) 12.1.3 20120212
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O3 
-                          | -ip
- C compiler               | /people/disk2/magnus/intel/composer_xe_2011_sp1.9.
-                          | 293/bin/intel64/icc
- C compiler version       | icc (ICC) 12.1.3 20120212
- C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
-                          | 7 -O2
- C++ compiler             | /people/disk2/magnus/intel/composer_xe_2011_sp1.9.
-                          | 293/bin/intel64/icpc
- C++ compiler version     | icpc (ICC) 12.1.3 20120212
- C++ flags                | -Wno-unknown-pragmas -debug -O3 -DNDEBUG
- BLAS                     | /usr/lib64/libblas.so
- LAPACK                   | /usr/lib64/liblapack.so
+ Fortran compiler         | /opt/local/bin/gfortran
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
+ C compiler               | /opt/local/bin/gcc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /opt/local/bin/g++
+ C++ compiler version     | g++ (MacPorts gcc48 4.8.2_0) 4.8.2
+ BLAS                     | /opt/local/lib/libf77blas.a;/usr/lib/libcblas.dyli
+                          | b;/opt/local/lib/libatlas.a
+ LAPACK                   | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | a00f59a22e340f989a0c7ed1d18e5eebac0a8a0d
- Configuration time       | 2012-10-26 13:28:28.382890
+ Last Git revision        | 0aa3d3d555536bcc9b2c359490ed559edad876b6
+ Git branch               | master
+ Configuration time       | 2014-05-15 19:04:32.406618
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu May 15 09:20:51 2014
-     Host name              : fe7                                     
 
 
 Contents of the input file
@@ -199,7 +192,7 @@ Contents of the input file
 
 **DIRAC                                                                                             
 .TITLE                                                                                              
-CN molecule(S=1/2)                                                                                  
+CN molecule (S=1/2)                                                                                 
 .WAVE F                                                                                             
 .PROPER                                                                                             
 **HAMILTIONIAN                                                                                      
@@ -224,6 +217,8 @@ CN molecule(S=1/2)
 **PROPERTIES                                                                                        
 .ESR                                                                                                
 *ESR                                                                                                
+.PRINT                                                                                              
+  5                                                                                                 
 .MAX CI                                                                                             
  50                                                                                                 
 .MULTIP                                                                                             
@@ -233,7 +228,7 @@ CN molecule(S=1/2)
  0                                                                                                  
  4                                                                                                  
  17                                                                                                 
-**END OF INPUT                                                                                      
+**END OF DIRAC INPUT                                                                                
                                                                                                     
 
 
@@ -242,21 +237,21 @@ Contents of the molecule file
 
 INTGRL                                                                                              
 CN  molecule(S=1/2)                                                                                 
-basis: cc-pVTZ                                                                                      
+basis: cc-pVDZ (too small for production use, but OK for testing)                                   
 C   2    2  Y  X   A                                                                                
         6.    1                                                                                     
 C        0.0000000    0.0000000  -0.63                                                              
-LARGE BASIS cc-pVTZ                                                                                 
+LARGE BASIS cc-pVDZ                                                                                 
         7.    1                                                                                     
 N        0.0000000    0.0000000   0.545                                                             
-LARGE BASIS cc-pVTZ                                                                                 
+LARGE BASIS cc-pVDZ                                                                                 
 FINISH                                                                                              
                                                                                                     
 
 
-    **************************************************************************
-    *************************** CN molecule(S=1/2) ***************************
-    **************************************************************************
+    *************************************************************************
+    ************************** CN molecule (S=1/2) **************************
+    *************************************************************************
 
  Jobs in this run:
    * Wave function
@@ -329,7 +324,7 @@ FINISH
   -----------
 
   CN  molecule(S=1/2)                                                     
-  basis: cc-pVTZ                                                          
+  basis: cc-pVDZ (too small for production use, but OK for testing)       
 
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
@@ -415,6 +410,9 @@ Point group: C2v
     B1   j
     A2   i
 
+  QM-QM nuclear repulsion energy :     18.915270424340
+
+
 
   Atoms and basis sets
   --------------------
@@ -424,15 +422,15 @@ Point group: C2v
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C           1       6      47      47      L  - [10s5p2d1f|10s5p2d1f]                                          
-                            112     112      S  - [5s12p6d2f1g|5s12p6d2f1g]                                      
-  N           1       7      47      47      L  - [10s5p2d1f|10s5p2d1f]                                          
-                            112     112      S  - [5s12p6d2f1g|5s12p6d2f1g]                                      
+  C           1       6      27      27      L  - [9s4p1d|9s4p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  N           1       7      27      27      L  - [9s4p1d|9s4p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
   ----------------------------------------------------------------------
-                             94      94      L  - large components
-                            224     224      S  - small components
+                             54      54      L  - large components
+                            136     136      S  - small components
   ----------------------------------------------------------------------
-  total:      2      13     318     318
+  total:      2      13     190     190
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -474,7 +472,7 @@ Point group: C2v
   -------------------------------------------
 
     2
- 
+
 C      0.0000000000   0.0000000000  -0.6300000000
 N      0.0000000000   0.0000000000   0.5450000000
 
@@ -528,199 +526,133 @@ N      0.0000000000   0.0000000000   0.5450000000
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   40
+   * Large components:   20
      1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
-     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L C   1 fxxx    12  L C   1 fxxy
-    13  L C   1 fxxz    14  L C   1 fxyy    15  L C   1 fxyz    16  L C   1 fxzz    17  L C   1 fyyy    18  L C   1 fyyz
-    19  L C   1 fyzz    20  L C   1 fzzz    21  L N   1 s       22  L N   1 px      23  L N   1 py      24  L N   1 pz  
-    25  L N   1 dxx     26  L N   1 dxy     27  L N   1 dxz     28  L N   1 dyy     29  L N   1 dyz     30  L N   1 dzz 
-    31  L N   1 fxxx    32  L N   1 fxxy    33  L N   1 fxxz    34  L N   1 fxyy    35  L N   1 fxyz    36  L N   1 fxzz
-    37  L N   1 fyyy    38  L N   1 fyyz    39  L N   1 fyzz    40  L N   1 fzzz
-   * Small components:   70
-    41  S C   1 s       42  S C   1 px      43  S C   1 py      44  S C   1 pz      45  S C   1 dxx     46  S C   1 dxy 
-    47  S C   1 dxz     48  S C   1 dyy     49  S C   1 dyz     50  S C   1 dzz     51  S C   1 fxxx    52  S C   1 fxxy
-    53  S C   1 fxxz    54  S C   1 fxyy    55  S C   1 fxyz    56  S C   1 fxzz    57  S C   1 fyyy    58  S C   1 fyyz
-    59  S C   1 fyzz    60  S C   1 fzzz    61  S C   1 g400    62  S C   1 g310    63  S C   1 g301    64  S C   1 g220
-    65  S C   1 g211    66  S C   1 g202    67  S C   1 g130    68  S C   1 g121    69  S C   1 g112    70  S C   1 g103
-    71  S C   1 g040    72  S C   1 g031    73  S C   1 g022    74  S C   1 g013    75  S C   1 g004    76  S N   1 s   
-    77  S N   1 px      78  S N   1 py      79  S N   1 pz      80  S N   1 dxx     81  S N   1 dxy     82  S N   1 dxz 
-    83  S N   1 dyy     84  S N   1 dyz     85  S N   1 dzz     86  S N   1 fxxx    87  S N   1 fxxy    88  S N   1 fxxz
-    89  S N   1 fxyy    90  S N   1 fxyz    91  S N   1 fxzz    92  S N   1 fyyy    93  S N   1 fyyz    94  S N   1 fyzz
-    95  S N   1 fzzz    96  S N   1 g400    97  S N   1 g310    98  S N   1 g301    99  S N   1 g220   100  S N   1 g211
-   101  S N   1 g202   102  S N   1 g130   103  S N   1 g121   104  S N   1 g112   105  S N   1 g103   106  S N   1 g040
-   107  S N   1 g031   108  S N   1 g022   109  S N   1 g013   110  S N   1 g004
+     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L N   1 s       12  L N   1 px  
+    13  L N   1 py      14  L N   1 pz      15  L N   1 dxx     16  L N   1 dxy     17  L N   1 dxz     18  L N   1 dyy 
+    19  L N   1 dyz     20  L N   1 dzz 
+   * Small components:   40
+    21  S C   1 s       22  S C   1 px      23  S C   1 py      24  S C   1 pz      25  S C   1 dxx     26  S C   1 dxy 
+    27  S C   1 dxz     28  S C   1 dyy     29  S C   1 dyz     30  S C   1 dzz     31  S C   1 fxxx    32  S C   1 fxxy
+    33  S C   1 fxxz    34  S C   1 fxyy    35  S C   1 fxyz    36  S C   1 fxzz    37  S C   1 fyyy    38  S C   1 fyyz
+    39  S C   1 fyzz    40  S C   1 fzzz    41  S N   1 s       42  S N   1 px      43  S N   1 py      44  S N   1 pz  
+    45  S N   1 dxx     46  S N   1 dxy     47  S N   1 dxz     48  S N   1 dyy     49  S N   1 dyz     50  S N   1 dzz 
+    51  S N   1 fxxx    52  S N   1 fxxy    53  S N   1 fxxz    54  S N   1 fxyy    55  S N   1 fxyz    56  S N   1 fxzz
+    57  S N   1 fyyy    58  S N   1 fyyz    59  S N   1 fyzz    60  S N   1 fzzz
 
 
                                 GETLAB: SO-labels
                                 -----------------
 
-   * Large components:   40
-     1  L A1 C  s        2  L A1 C  pz       3  L A1 C  dxx      4  L A1 C  dyy      5  L A1 C  dzz      6  L A1 C  fxxz
-     7  L A1 C  fyyz     8  L A1 C  fzzz     9  L A1 N  s       10  L A1 N  pz      11  L A1 N  dxx     12  L A1 N  dyy 
-    13  L A1 N  dzz     14  L A1 N  fxxz    15  L A1 N  fyyz    16  L A1 N  fzzz    17  L B2 C  py      18  L B2 C  dyz 
-    19  L B2 C  fxxy    20  L B2 C  fyyy    21  L B2 C  fyzz    22  L B2 N  py      23  L B2 N  dyz     24  L B2 N  fxxy
-    25  L B2 N  fyyy    26  L B2 N  fyzz    27  L B1 C  px      28  L B1 C  dxz     29  L B1 C  fxxx    30  L B1 C  fxyy
-    31  L B1 C  fxzz    32  L B1 N  px      33  L B1 N  dxz     34  L B1 N  fxxx    35  L B1 N  fxyy    36  L B1 N  fxzz
-    37  L A2 C  dxy     38  L A2 C  fxyz    39  L A2 N  dxy     40  L A2 N  fxyz
-   * Small components:   70
-    41  S A1 C  s       42  S A1 C  pz      43  S A1 C  dxx     44  S A1 C  dyy     45  S A1 C  dzz     46  S A1 C  fxxz
-    47  S A1 C  fyyz    48  S A1 C  fzzz    49  S A1 C  g400    50  S A1 C  g220    51  S A1 C  g202    52  S A1 C  g040
-    53  S A1 C  g022    54  S A1 C  g004    55  S A1 N  s       56  S A1 N  pz      57  S A1 N  dxx     58  S A1 N  dyy 
-    59  S A1 N  dzz     60  S A1 N  fxxz    61  S A1 N  fyyz    62  S A1 N  fzzz    63  S A1 N  g400    64  S A1 N  g220
-    65  S A1 N  g202    66  S A1 N  g040    67  S A1 N  g022    68  S A1 N  g004    69  S B2 C  py      70  S B2 C  dyz 
-    71  S B2 C  fxxy    72  S B2 C  fyyy    73  S B2 C  fyzz    74  S B2 C  g211    75  S B2 C  g031    76  S B2 C  g013
-    77  S B2 N  py      78  S B2 N  dyz     79  S B2 N  fxxy    80  S B2 N  fyyy    81  S B2 N  fyzz    82  S B2 N  g211
-    83  S B2 N  g031    84  S B2 N  g013    85  S B1 C  px      86  S B1 C  dxz     87  S B1 C  fxxx    88  S B1 C  fxyy
-    89  S B1 C  fxzz    90  S B1 C  g301    91  S B1 C  g121    92  S B1 C  g103    93  S B1 N  px      94  S B1 N  dxz 
-    95  S B1 N  fxxx    96  S B1 N  fxyy    97  S B1 N  fxzz    98  S B1 N  g301    99  S B1 N  g121   100  S B1 N  g103
-   101  S A2 C  dxy    102  S A2 C  fxyz   103  S A2 C  g310   104  S A2 C  g130   105  S A2 C  g112   106  S A2 N  dxy 
-   107  S A2 N  fxyz   108  S A2 N  g310   109  S A2 N  g130   110  S A2 N  g112
+   * Large components:   20
+     1  L A1 C  s        2  L A1 C  pz       3  L A1 C  dxx      4  L A1 C  dyy      5  L A1 C  dzz      6  L A1 N  s   
+     7  L A1 N  pz       8  L A1 N  dxx      9  L A1 N  dyy     10  L A1 N  dzz     11  L B2 C  py      12  L B2 C  dyz 
+    13  L B2 N  py      14  L B2 N  dyz     15  L B1 C  px      16  L B1 C  dxz     17  L B1 N  px      18  L B1 N  dxz 
+    19  L A2 C  dxy     20  L A2 N  dxy 
+   * Small components:   40
+    21  S A1 C  s       22  S A1 C  pz      23  S A1 C  dxx     24  S A1 C  dyy     25  S A1 C  dzz     26  S A1 C  fxxz
+    27  S A1 C  fyyz    28  S A1 C  fzzz    29  S A1 N  s       30  S A1 N  pz      31  S A1 N  dxx     32  S A1 N  dyy 
+    33  S A1 N  dzz     34  S A1 N  fxxz    35  S A1 N  fyyz    36  S A1 N  fzzz    37  S B2 C  py      38  S B2 C  dyz 
+    39  S B2 C  fxxy    40  S B2 C  fyyy    41  S B2 C  fyzz    42  S B2 N  py      43  S B2 N  dyz     44  S B2 N  fxxy
+    45  S B2 N  fyyy    46  S B2 N  fyzz    47  S B1 C  px      48  S B1 C  dxz     49  S B1 C  fxxx    50  S B1 C  fxyy
+    51  S B1 C  fxzz    52  S B1 N  px      53  S B1 N  dxz     54  S B1 N  fxxx    55  S B1 N  fxyy    56  S B1 N  fxzz
+    57  S A2 C  dxy     58  S A2 C  fxyz    59  S A2 N  dxy     60  S A2 N  fxyz
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          142    74    74    28
-  Number of large orbitals in each symmetry:     48    20    20     6
-  Number of small orbitals in each symmetry:     94    54    54    22
+  Number of orbitals in each symmetry:           90    44    44    12
+  Number of large orbitals in each symmetry:     32    10    10     2
+  Number of small orbitals in each symmetry:     58    34    34    10
 
 * Large component functions
 
   Symmetry  A1 ( 1)
 
-       10 functions:    C  s   
-        5 functions:    C  pz  
-        2 functions:    C  dxx 
-        2 functions:    C  dyy 
-        2 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dyy 
+        1 functions:    C  dzz 
+        9 functions:    N  s   
+        4 functions:    N  pz  
+        1 functions:    N  dxx 
+        1 functions:    N  dyy 
+        1 functions:    N  dzz 
+
+  Symmetry  B2 ( 2)
+
+        4 functions:    C  py  
+        1 functions:    C  dyz 
+        4 functions:    N  py  
+        1 functions:    N  dyz 
+
+  Symmetry  B1 ( 3)
+
+        4 functions:    C  px  
+        1 functions:    C  dxz 
+        4 functions:    N  px  
+        1 functions:    N  dxz 
+
+  Symmetry  A2 ( 4)
+
+        1 functions:    C  dxy 
+        1 functions:    N  dxy 
+
+* Small component functions
+
+  Symmetry  A1 ( 1)
+
+        4 functions:    C  s   
+       10 functions:    C  pz  
+        4 functions:    C  dxx 
+        4 functions:    C  dyy 
+        4 functions:    C  dzz 
         1 functions:    C  fxxz
         1 functions:    C  fyyz
         1 functions:    C  fzzz
-       10 functions:    N  s   
-        5 functions:    N  pz  
-        2 functions:    N  dxx 
-        2 functions:    N  dyy 
-        2 functions:    N  dzz 
+        4 functions:    N  s   
+       10 functions:    N  pz  
+        4 functions:    N  dxx 
+        4 functions:    N  dyy 
+        4 functions:    N  dzz 
         1 functions:    N  fxxz
         1 functions:    N  fyyz
         1 functions:    N  fzzz
 
   Symmetry  B2 ( 2)
 
-        5 functions:    C  py  
-        2 functions:    C  dyz 
+       10 functions:    C  py  
+        4 functions:    C  dyz 
         1 functions:    C  fxxy
         1 functions:    C  fyyy
         1 functions:    C  fyzz
-        5 functions:    N  py  
-        2 functions:    N  dyz 
+       10 functions:    N  py  
+        4 functions:    N  dyz 
         1 functions:    N  fxxy
         1 functions:    N  fyyy
         1 functions:    N  fyzz
 
   Symmetry  B1 ( 3)
 
-        5 functions:    C  px  
-        2 functions:    C  dxz 
+       10 functions:    C  px  
+        4 functions:    C  dxz 
         1 functions:    C  fxxx
         1 functions:    C  fxyy
         1 functions:    C  fxzz
-        5 functions:    N  px  
-        2 functions:    N  dxz 
+       10 functions:    N  px  
+        4 functions:    N  dxz 
         1 functions:    N  fxxx
         1 functions:    N  fxyy
         1 functions:    N  fxzz
 
   Symmetry  A2 ( 4)
 
-        2 functions:    C  dxy 
+        4 functions:    C  dxy 
         1 functions:    C  fxyz
-        2 functions:    N  dxy 
+        4 functions:    N  dxy 
         1 functions:    N  fxyz
-
-* Small component functions
-
-  Symmetry  A1 ( 1)
-
-        5 functions:    C  s   
-       12 functions:    C  pz  
-        6 functions:    C  dxx 
-        6 functions:    C  dyy 
-        6 functions:    C  dzz 
-        2 functions:    C  fxxz
-        2 functions:    C  fyyz
-        2 functions:    C  fzzz
-        1 functions:    C  g400
-        1 functions:    C  g220
-        1 functions:    C  g202
-        1 functions:    C  g040
-        1 functions:    C  g022
-        1 functions:    C  g004
-        5 functions:    N  s   
-       12 functions:    N  pz  
-        6 functions:    N  dxx 
-        6 functions:    N  dyy 
-        6 functions:    N  dzz 
-        2 functions:    N  fxxz
-        2 functions:    N  fyyz
-        2 functions:    N  fzzz
-        1 functions:    N  g400
-        1 functions:    N  g220
-        1 functions:    N  g202
-        1 functions:    N  g040
-        1 functions:    N  g022
-        1 functions:    N  g004
-
-  Symmetry  B2 ( 2)
-
-       12 functions:    C  py  
-        6 functions:    C  dyz 
-        2 functions:    C  fxxy
-        2 functions:    C  fyyy
-        2 functions:    C  fyzz
-        1 functions:    C  g211
-        1 functions:    C  g031
-        1 functions:    C  g013
-       12 functions:    N  py  
-        6 functions:    N  dyz 
-        2 functions:    N  fxxy
-        2 functions:    N  fyyy
-        2 functions:    N  fyzz
-        1 functions:    N  g211
-        1 functions:    N  g031
-        1 functions:    N  g013
-
-  Symmetry  B1 ( 3)
-
-       12 functions:    C  px  
-        6 functions:    C  dxz 
-        2 functions:    C  fxxx
-        2 functions:    C  fxyy
-        2 functions:    C  fxzz
-        1 functions:    C  g301
-        1 functions:    C  g121
-        1 functions:    C  g103
-       12 functions:    N  px  
-        6 functions:    N  dxz 
-        2 functions:    N  fxxx
-        2 functions:    N  fxyy
-        2 functions:    N  fxzz
-        1 functions:    N  g301
-        1 functions:    N  g121
-        1 functions:    N  g103
-
-  Symmetry  A2 ( 4)
-
-        6 functions:    C  dxy 
-        2 functions:    C  fxyz
-        1 functions:    C  g310
-        1 functions:    C  g130
-        1 functions:    C  g112
-        6 functions:    N  dxy 
-        2 functions:    N  fxyz
-        1 functions:    N  g310
-        1 functions:    N  g130
-        1 functions:    N  g112
 
 
    ***************************************************************************
@@ -838,20 +770,20 @@ N      0.0000000000   0.0000000000   0.5450000000
     7  X magnetic field     B2      T-
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
-      Labels and factors     : ZDIPLEN  0++0     68.517999904721 (real)     
-                               YDIPLEN  0++0     68.517999904721 (real)     
+      Labels and factors     : ZDIPLEN  0++0    -68.517999904721 (real)     
+                               YDIPLEN  0++0    -68.517999904721 (real)     
 ...........................................................................
    10  Y magnetic field     B1      T-
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
-      Labels and factors     : XDIPLEN  0++0     68.517999904721 (real)     
-                               ZDIPLEN  0++0     68.517999904721 (real)     
+      Labels and factors     : XDIPLEN  0++0    -68.517999904721 (real)     
+                               ZDIPLEN  0++0    -68.517999904721 (real)     
 ...........................................................................
    13  Z magnetic field     A2      T-
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : YDIPLEN  0++0     68.517999904721 (real)     
-                               XDIPLEN  0++0     68.517999904721 (real)     
+      Labels and factors     : YDIPLEN  0++0    -68.517999904721 (real)     
+                               XDIPLEN  0++0    -68.517999904721 (real)     
 ...........................................................................
 ===========================================================================
  ** ESR nuclear hyperfine coupling operators **
@@ -919,14 +851,14 @@ N      0.0000000000   0.0000000000   0.5450000000
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A1    * Deleted:          6(Proj:          6, Lindep:          0)
-   L   B2    * Deleted:          2(Proj:          2, Lindep:          0)
-   L   B1    * Deleted:          2(Proj:          2, Lindep:          0)
+   L   A1    * Deleted:          2(Proj:          2, Lindep:          0)
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
    L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A1    * Deleted:         22(Proj:         22, Lindep:          0)
-   S   B2    * Deleted:          6(Proj:          6, Lindep:          0)
-   S   B1    * Deleted:          6(Proj:          6, Lindep:          0)
-   S   A2    * Deleted:          2(Proj:          2, Lindep:          0)
+   S   A1    * Deleted:         10(Proj:         10, Lindep:          0)
+   S   B2    * Deleted:          2(Proj:          2, Lindep:          0)
+   S   B1    * Deleted:          2(Proj:          2, Lindep:          0)
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
 
 
                                 Output from MODHAM
@@ -940,10 +872,9 @@ N      0.0000000000   0.0000000000   0.5450000000
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    84
-No. of negative energy orbitals (NPSH):    84
-Total no. of orbitals           (NORB):   168
- >>> Time used in PAMSET is   0.13 seconds
+No. of positive energy orbitals (NESH):    52
+No. of negative energy orbitals (NPSH):    52
+Total no. of orbitals           (NORB):   104
 
 
    ****************************************************************************
@@ -955,221 +886,207 @@ Total no. of orbitals           (NORB):   168
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu May 15 09:20:51 2014
+########## START ITERATION NO.   1 ##########                           
 
 
 => Calculating sum of orbital energies
-It.    1    -34.42875879068      0.00D+00  0.00D+00  0.00D+00               0.06499000s   Scr. nuclei    Thu May 15
+It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01417000s   Scr. nuclei              
 
-########## START ITERATION NO.   2 ##########   Thu May 15 09:20:52 2014
+########## START ITERATION NO.   2 ##########                           
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    7.39%    0.00%    0.00%   0.17397398s
-SOfock:SL  1.00D-11    0.00%   13.56%    0.00%    0.00%   1.58076006s
->>> Total wall time: 2.90625000s
->>> Total CPU time : 2.00269500s
+SOfock:LL  1.00D-11    0.00%    8.04%    0.00%    0.00%   0.03371800s
+SOfock:SL  1.00D-11    0.00%   14.46%    0.00%    0.00%   0.23563498s
+>>> Total wall time: 0.39453125s
+>>> Total CPU time : 0.37869700s
 
-########## END ITERATION NO.   2 ##########   Thu May 15 09:20:52 2014
+########## END ITERATION NO.   2 ##########                           
 
-It.    2    -91.92044336289      5.75D+01  7.96D+00  2.02D+00               2.00269500s   LL SL          Thu May 15
+It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.37869700s   LL SL                    
 
-########## START ITERATION NO.   3 ##########   Thu May 15 09:20:55 2014
+########## START ITERATION NO.   3 ##########                           
 
-    3 *** Differential density matrix. DCOVLP     = 0.9495
-    3 *** Differential density matrix. DVOVLP( 1) = 0.6351
+    3 *** Differential density matrix. DCOVLP     = 0.9489
+    3 *** Differential density matrix. DVOVLP( 1) = 0.7913
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.14%    0.00%    0.00%   0.17597294s
-SOfock:SL  1.00D-11    0.00%   14.72%    0.00%    0.00%   1.57276106s
->>> Total wall time: 2.35937500s
->>> Total CPU time : 1.80172700s
+SOfock:LL  1.00D-11    0.00%    8.95%    0.00%    0.00%   0.03584000s
+SOfock:SL  1.00D-11    0.00%   15.81%    0.00%    0.00%   0.24184299s
+>>> Total wall time: 0.31054688s
+>>> Total CPU time : 0.29235100s
 
-########## END ITERATION NO.   3 ##########   Thu May 15 09:20:55 2014
+########## END ITERATION NO.   3 ##########                           
 
-It.    3    -92.18143457743      2.61D-01 -1.26D+00  5.75D-01   DIIS   2    1.80172700s   LL SL          Thu May 15
+It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.29235100s   LL SL                    
 
-########## START ITERATION NO.   4 ##########   Thu May 15 09:20:57 2014
+########## START ITERATION NO.   4 ##########                           
 
-    4 *** Differential density matrix. DCOVLP     = 0.9981
-    4 *** Differential density matrix. DVOVLP( 1) = 0.9393
+    4 *** Differential density matrix. DCOVLP     = 0.9872
+    4 *** Differential density matrix. DVOVLP( 1) = 0.9914
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.51%    0.00%    0.00%   0.17197418s
-SOfock:SL  1.00D-11    0.00%   15.05%    0.00%    0.00%   1.54576492s
->>> Total wall time: 2.07812500s
->>> Total CPU time : 1.77073000s
+SOfock:LL  1.00D-11    0.00%    9.15%    0.00%    0.00%   0.03906703s
+SOfock:SL  1.00D-11    0.00%   16.33%    0.00%    0.00%   0.23859698s
+>>> Total wall time: 0.30468750s
+>>> Total CPU time : 0.29294600s
 
-########## END ITERATION NO.   4 ##########   Thu May 15 09:20:57 2014
+########## END ITERATION NO.   4 ##########                           
 
-It.    4    -92.20862336641      2.72D-02  7.77D-01  4.97D-01   DIIS   3    1.77073000s   LL SL          Thu May 15
+It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.29294600s   LL SL                    
 
-########## START ITERATION NO.   5 ##########   Thu May 15 09:20:59 2014
+########## START ITERATION NO.   5 ##########                           
 
-    5 *** Differential density matrix. DCOVLP     = 0.9944
-    5 *** Differential density matrix. DVOVLP( 1) = 0.9224
+    5 *** Differential density matrix. DCOVLP     = 0.9964
+    5 *** Differential density matrix. DVOVLP( 1) = 0.8981
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    9.48%    0.00%    0.00%   0.17597389s
-SOfock:SL  1.00D-11    0.00%   16.79%    0.00%    0.00%   1.55376291s
->>> Total wall time: 2.46875000s
->>> Total CPU time : 1.78472900s
+SOfock:LL  1.00D-11    0.00%    9.89%    0.00%    0.00%   0.03329706s
+SOfock:SL  1.00D-11    0.00%   17.53%    0.00%    0.00%   0.24535990s
+>>> Total wall time: 0.30664062s
+>>> Total CPU time : 0.29204600s
 
-########## END ITERATION NO.   5 ##########   Thu May 15 09:20:59 2014
+########## END ITERATION NO.   5 ##########                           
 
-It.    5    -92.26306318766      5.44D-02 -3.13D-01  3.44D-02   DIIS   4    1.78472900s   LL SL          Thu May 15
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.29204600s   LL SL                    
 
-########## START ITERATION NO.   6 ##########   Thu May 15 09:21:01 2014
+########## START ITERATION NO.   6 ##########                           
 
-    6 *** Differential density matrix. DCOVLP     = 1.0001
-    6 *** Differential density matrix. DVOVLP( 1) = 1.0076
+    6 *** Differential density matrix. DCOVLP     = 0.9973
+    6 *** Differential density matrix. DVOVLP( 1) = 0.9997
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   10.93%    0.00%    0.00%   0.17597342s
-SOfock:SL  1.00D-11    0.00%   19.02%    0.00%    0.00%   1.57176065s
->>> Total wall time: 1.98437500s
->>> Total CPU time : 1.80472600s
+SOfock:LL  1.00D-11    0.00%   11.82%    0.00%    0.00%   0.03301597s
+SOfock:SL  1.00D-11    0.00%   19.55%    0.00%    0.00%   0.23339498s
+>>> Total wall time: 0.29492188s
+>>> Total CPU time : 0.27973000s
 
-########## END ITERATION NO.   6 ##########   Thu May 15 09:21:01 2014
+########## END ITERATION NO.   6 ##########                           
 
-It.    6    -92.26425041135      1.19D-03 -1.75D-02  2.39D-02   DIIS   5    1.80472600s   LL SL          Thu May 15
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.27973000s   LL SL                    
 
-########## START ITERATION NO.   7 ##########   Thu May 15 09:21:03 2014
+########## START ITERATION NO.   7 ##########                           
 
-    7 *** Differential density matrix. DCOVLP     = 0.9987
-    7 *** Differential density matrix. DVOVLP( 1) = 0.9982
+    7 *** Differential density matrix. DCOVLP     = 0.9977
+    7 *** Differential density matrix. DVOVLP( 1) = 0.9975
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   11.85%    0.00%    0.00%   0.17297363s
-SOfock:SL  1.00D-11    0.00%   20.27%    0.00%    0.00%   1.53876591s
->>> Total wall time: 2.17187500s
->>> Total CPU time : 1.76373200s
+SOfock:LL  1.00D-11    0.00%   12.61%    0.00%    0.00%   0.03795898s
+SOfock:SL  1.00D-11    0.00%   20.73%    0.00%    0.00%   0.23674798s
+>>> Total wall time: 0.31054688s
+>>> Total CPU time : 0.28953500s
 
-########## END ITERATION NO.   7 ##########   Thu May 15 09:21:03 2014
+########## END ITERATION NO.   7 ##########                           
 
-It.    7    -92.26471141989      4.61D-04  7.30D-03  1.04D-02   DIIS   6    1.76373200s   LL SL          Thu May 15
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.28953500s   LL SL                    
 
-########## START ITERATION NO.   8 ##########   Thu May 15 09:21:06 2014
+########## START ITERATION NO.   8 ##########                           
 
-    8 *** Differential density matrix. DCOVLP     = 0.9979
-    8 *** Differential density matrix. DVOVLP( 1) = 1.0019
+    8 *** Differential density matrix. DCOVLP     = 0.9971
+    8 *** Differential density matrix. DVOVLP( 1) = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   12.39%    0.00%    0.00%   0.17697239s
-SOfock:SL  1.00D-11    0.00%   20.97%    0.00%    0.00%   1.55776310s
->>> Total wall time: 1.96875000s
->>> Total CPU time : 1.79172700s
+SOfock:LL  1.00D-11    0.00%   12.96%    0.00%    0.00%   0.03699088s
+SOfock:SL  1.00D-11    0.00%   21.50%    0.00%    0.00%   0.23393798s
+>>> Total wall time: 0.30468750s
+>>> Total CPU time : 0.28628000s
 
-########## END ITERATION NO.   8 ##########   Thu May 15 09:21:06 2014
+########## END ITERATION NO.   8 ##########                           
 
-It.    8    -92.26485643230      1.45D-04 -3.50D-03  2.61D-03   DIIS   7    1.79172700s   LL SL          Thu May 15
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.28628000s   LL SL                    
 
-########## START ITERATION NO.   9 ##########   Thu May 15 09:21:08 2014
+########## START ITERATION NO.   9 ##########                           
 
-    9 *** Differential density matrix. DCOVLP     = 0.9994
-    9 *** Differential density matrix. DVOVLP( 1) = 1.0015
+    9 *** Differential density matrix. DCOVLP     = 0.9993
+    9 *** Differential density matrix. DVOVLP( 1) = 1.0011
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   14.74%    0.00%    0.00%   0.17397404s
-SOfock:SL  1.00D-11    0.00%   24.30%    0.00%    0.00%   1.51377010s
->>> Total wall time: 1.89062500s
->>> Total CPU time : 1.74273500s
+SOfock:LL  1.00D-11    0.00%   15.97%    0.00%    0.00%   0.03741002s
+SOfock:SL  1.00D-11    0.00%   25.68%    0.00%    0.00%   0.24310088s
+>>> Total wall time: 0.31054688s
+>>> Total CPU time : 0.29625700s
 
-########## END ITERATION NO.   9 ##########   Thu May 15 09:21:08 2014
+########## END ITERATION NO.   9 ##########                           
 
-It.    9    -92.26486429561      7.86D-06 -6.96D-04  5.49D-04   DIIS   8    1.74273500s   LL SL          Thu May 15
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.29625700s   LL SL                    
 
-########## START ITERATION NO.  10 ##########   Thu May 15 09:21:09 2014
+########## START ITERATION NO.  10 ##########                           
 
-   10 *** Differential density matrix. DCOVLP     = 0.9999
+   10 *** Differential density matrix. DCOVLP     = 0.9998
    10 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   17.18%    0.00%    0.00%   0.17197418s
-SOfock:SL  1.00D-11    0.00%   28.11%    0.00%    0.04%   1.53376675s
->>> Total wall time: 2.40625000s
->>> Total CPU time : 1.76073200s
+SOfock:LL  1.00D-11    0.00%   18.57%    0.00%    0.00%   0.03895998s
+SOfock:SL  1.00D-11    0.00%   28.84%    0.00%    0.00%   0.23032618s
+>>> Total wall time: 0.29492188s
+>>> Total CPU time : 0.28385700s
 
-########## END ITERATION NO.  10 ##########   Thu May 15 09:21:09 2014
+########## END ITERATION NO.  10 ##########                           
 
-It.   10    -92.26486466653      3.71D-07  1.90D-04  1.60D-04   DIIS   9    1.76073200s   LL SL          Thu May 15
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.28385700s   LL SL                    
 
-########## START ITERATION NO.  11 ##########   Thu May 15 09:21:12 2014
+########## START ITERATION NO.  11 ##########                           
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
-   11 *** Differential density matrix. DVOVLP( 1) = 1.0001
+   11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   21.06%    0.00%    0.00%   0.16997528s
-SOfock:SL  1.00D-11    0.00%   34.68%    0.00%    0.94%   1.49177361s
->>> Total wall time: 2.20312500s
->>> Total CPU time : 1.72873800s
+SOfock:LL  1.00D-11    0.00%   23.42%    0.00%    0.00%   0.03729200s
+SOfock:SL  1.00D-11    0.00%   34.06%    0.00%    0.01%   0.23709822s
+>>> Total wall time: 0.30859375s
+>>> Total CPU time : 0.29000900s
 
-########## END ITERATION NO.  11 ##########   Thu May 15 09:21:12 2014
+########## END ITERATION NO.  11 ##########                           
 
-It.   11    -92.26486468111      1.46D-08  6.24D-05  3.63D-05   DIIS   9    1.72873800s   LL SL          Thu May 15
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.29000900s   LL SL                    
 
-########## START ITERATION NO.  12 ##########   Thu May 15 09:21:14 2014
+########## START ITERATION NO.  12 ##########                           
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   24.78%    0.00%    0.00%   0.15897560s
-SOfock:SL  1.00D-11    0.00%   38.95%    0.00%    2.13%   1.36479378s
->>> Total wall time: 1.65625000s
->>> Total CPU time : 1.58275900s
+SOfock:LL  1.00D-11    0.00%   28.56%    0.00%    0.00%   0.03365993s
+SOfock:SL  1.00D-11    0.00%   39.61%    0.00%    0.15%   0.23069406s
+>>> Total wall time: 0.29492188s
+>>> Total CPU time : 0.27779400s
 
-########## END ITERATION NO.  12 ##########   Thu May 15 09:21:14 2014
+########## END ITERATION NO.  12 ##########                           
 
-It.   12    -92.26486468328      2.17D-09  1.08D-05  2.11D-05   DIIS   9    1.58275900s   LL SL          Thu May 15
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.27779400s   LL SL                    
 
-########## START ITERATION NO.  13 ##########   Thu May 15 09:21:16 2014
+########## START ITERATION NO.  13 ##########                           
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   24.78%    0.00%    0.00%   0.15897751s
-SOfock:SL  1.00D-11    0.00%   38.54%    0.00%    2.16%   1.36679077s
->>> Total wall time: 1.64062500s
->>> Total CPU time : 1.58175900s
+SOfock:LL  1.00D-11    0.00%   28.10%    0.00%    0.00%   0.03648996s
+SOfock:SL  1.00D-11    0.00%   39.42%    0.00%    0.12%   0.23567915s
+>>> Total wall time: 0.30468750s
+>>> Total CPU time : 0.28686200s
 
-########## END ITERATION NO.  13 ##########   Thu May 15 09:21:16 2014
+########## END ITERATION NO.  13 ##########                           
 
-It.   13    -92.26486468464      1.36D-09 -6.15D-06  7.11D-06   DIIS   9    1.58175900s   LL SL          Thu May 15
+It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.28686200s   LL SL                    
 
-########## START ITERATION NO.  14 ##########   Thu May 15 09:21:17 2014
+########## START ITERATION NO.  14 ##########                           
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   27.44%    0.00%    0.00%   0.15697670s
-SOfock:SL  1.00D-11    0.00%   42.66%    0.00%    3.58%   1.34779358s
->>> Total wall time: 1.62500000s
->>> Total CPU time : 1.55776400s
+SOfock:LL  1.00D-11    0.00%   30.70%    0.00%    0.00%   0.03639889s
+SOfock:SL  1.00D-11    0.00%   42.49%    0.00%    0.30%   0.22156692s
+>>> Total wall time: 0.28906250s
+>>> Total CPU time : 0.27339200s
 
-########## END ITERATION NO.  14 ##########   Thu May 15 09:21:17 2014
+########## END ITERATION NO.  14 ##########                           
 
-It.   14    -92.26486468478      1.45D-10 -2.47D-06  3.05D-06   DIIS   9    1.55776400s   LL SL          Thu May 15
+It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.27339200s   LL SL                    
 
-########## START ITERATION NO.  15 ##########   Thu May 15 09:21:19 2014
+########## START ITERATION NO.  15 ##########                           
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   33.24%    0.01%    0.09%   0.15797615s
-SOfock:SL  1.00D-11    0.00%   51.85%    0.03%    8.02%   1.29680252s
->>> Total wall time: 1.51562500s
->>> Total CPU time : 1.50277100s
+SOfock:LL  1.00D-11    0.00%   38.59%    0.00%    0.00%   0.03591299s
+SOfock:SL  1.00D-11    0.00%   51.86%    0.00%    3.36%   0.21730971s
+>>> Total wall time: 0.27148438s
+>>> Total CPU time : 0.26964800s
 
-########## END ITERATION NO.  15 ##########   Thu May 15 09:21:19 2014
+########## END ITERATION NO.  15 ##########                           
 
-It.   15    -92.26486468478     -1.45D-12 -1.71D-06  2.17D-07   DIIS   9    1.50277100s   LL SL          Thu May 15
-
-########## START ITERATION NO.  16 ##########   Thu May 15 09:21:20 2014
-
-   16 *** Differential density matrix. DCOVLP     = 1.0000
-   16 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   49.70%    0.28%    0.76%   0.15797615s
-SOfock:SL  1.00D-11    0.00%   71.80%    0.11%   15.63%   1.19081879s
->>> Total wall time: 1.50000000s
->>> Total CPU time : 1.40578700s
-
-########## END ITERATION NO.  16 ##########   Thu May 15 09:21:20 2014
-
-It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40578700s   LL SL          Thu May 15
+It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26964800s   LL SL                    
 
 
                                    SCF - CYCLE
@@ -1185,40 +1102,39 @@ It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -34.42875879068      0.00D+00  0.00D+00  0.00D+00               0.06499000s   Scr. nuclei    Thu May 15
-It.    2    -91.92044336289      5.75D+01  7.96D+00  2.02D+00               2.00269500s   LL SL          Thu May 15
-It.    3    -92.18143457743      2.61D-01 -1.26D+00  5.75D-01   DIIS   2    1.80172700s   LL SL          Thu May 15
-It.    4    -92.20862336641      2.72D-02  7.77D-01  4.97D-01   DIIS   3    1.77073000s   LL SL          Thu May 15
-It.    5    -92.26306318766      5.44D-02 -3.13D-01  3.44D-02   DIIS   4    1.78472900s   LL SL          Thu May 15
-It.    6    -92.26425041135      1.19D-03 -1.75D-02  2.39D-02   DIIS   5    1.80472600s   LL SL          Thu May 15
-It.    7    -92.26471141989      4.61D-04  7.30D-03  1.04D-02   DIIS   6    1.76373200s   LL SL          Thu May 15
-It.    8    -92.26485643230      1.45D-04 -3.50D-03  2.61D-03   DIIS   7    1.79172700s   LL SL          Thu May 15
-It.    9    -92.26486429561      7.86D-06 -6.96D-04  5.49D-04   DIIS   8    1.74273500s   LL SL          Thu May 15
-It.   10    -92.26486466653      3.71D-07  1.90D-04  1.60D-04   DIIS   9    1.76073200s   LL SL          Thu May 15
-It.   11    -92.26486468111      1.46D-08  6.24D-05  3.63D-05   DIIS   9    1.72873800s   LL SL          Thu May 15
-It.   12    -92.26486468328      2.17D-09  1.08D-05  2.11D-05   DIIS   9    1.58275900s   LL SL          Thu May 15
-It.   13    -92.26486468464      1.36D-09 -6.15D-06  7.11D-06   DIIS   9    1.58175900s   LL SL          Thu May 15
-It.   14    -92.26486468478      1.45D-10 -2.47D-06  3.05D-06   DIIS   9    1.55776400s   LL SL          Thu May 15
-It.   15    -92.26486468478     -1.45D-12 -1.71D-06  2.17D-07   DIIS   9    1.50277100s   LL SL          Thu May 15
-It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40578700s   LL SL          Thu May 15
+It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01417000s   Scr. nuclei              
+It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.37869700s   LL SL                    
+It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.29235100s   LL SL                    
+It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.29294600s   LL SL                    
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.29204600s   LL SL                    
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.27973000s   LL SL                    
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.28953500s   LL SL                    
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.28628000s   LL SL                    
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.29625700s   LL SL                    
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.28385700s   LL SL                    
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.29000900s   LL SL                    
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.27779400s   LL SL                    
+It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.28686200s   LL SL                    
+It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.27339200s   LL SL                    
+It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26964800s   LL SL                    
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   16 iterations.
+* Convergence after   15 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.14062500s
-      LL SL        :    2.02500000s
+      No 2-ints    :    0.01367188s
+      LL SL        :    0.30719866s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -111.18013573965987
+   Electronic energy                        :    -111.15966474735973
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      18.91527042434043
    SS Coulombic correction                  :       0.00000063050901
 
    Sum of all contributions to the energy
-   Total energy                             :     -92.26486468481043
+   Total energy                             :     -92.24439369251029
 
 
                                    Eigenvalues
@@ -1227,33 +1143,26 @@ It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -15.63961094699  ( 2)      -11.35980291991  ( 2)       -1.24594787821  ( 2)       -0.62899562308  ( 2)       -0.51035491109  ( 2)
-    -0.51000055608  ( 2)
+   -15.64345482529  ( 2)      -11.36225662549  ( 2)       -1.24755885830  ( 2)       -0.62714954925  ( 2)       -0.50780888324  ( 2)
+    -0.50747219013  ( 2)
   * Open shell #1, f = 0.5000
-    -0.34063372786  ( 2)
+    -0.33775469134  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.16047178227  ( 2)        0.16070504660  ( 2)        0.26963529709  ( 2)        0.39438016560  ( 2)        0.43183062475  ( 2)
-     0.43190736336  ( 2)        0.56147633351  ( 2)        0.70691858447  ( 2)        0.70721046972  ( 2)        0.80100754971  ( 2)
-     0.80104110297  ( 2)        0.81952922730  ( 2)        0.96263997408  ( 2)        1.03282264798  ( 2)        1.03289457866  ( 2)
-     1.40224932298  ( 2)        1.40230524627  ( 2)        1.41947376840  ( 2)        1.77258377356  ( 2)        1.77267585561  ( 2)
-     1.80338666310  ( 2)        2.11743085164  ( 2)        2.11785036279  ( 2)        2.24687986973  ( 2)        2.61569305718  ( 2)
-     2.90987321654  ( 2)        2.90990601339  ( 2)        3.02441877293  ( 2)        3.02446709890  ( 2)        3.07569265034  ( 2)
-     3.07657682110  ( 2)        3.19322557422  ( 2)        3.20402984354  ( 2)        3.20425873126  ( 2)        3.24513461789  ( 2)
-     3.24526767148  ( 2)        3.58080827772  ( 2)        3.66659464754  ( 2)        3.66669401307  ( 2)        4.16687405294  ( 2)
-     4.30152807016  ( 2)        4.30167940857  ( 2)        4.39318137352  ( 2)        4.79098249510  ( 2)        4.79123209279  ( 2)
-     4.96350244777  ( 2)        4.96386000781  ( 2)        5.24807699507  ( 2)        5.24829522252  ( 2)        5.80659054300  ( 2)
-     5.88445864505  ( 2)        5.88463860786  ( 2)        6.38561021207  ( 2)        8.48521808048  ( 2)        8.48751973834  ( 2)
-     9.59345289793  ( 2)       12.07183744295  ( 2)       12.13729740671  ( 2)       12.14224600409  ( 2)       12.94275963475  ( 2)
-    16.77362005423  ( 2)       41.07802165202  ( 2)       41.10440181812  ( 2)       41.67896794140  ( 2)       46.70885473330  ( 2)
-    58.46458455767  ( 2)       58.51910427362  ( 2)       59.02030946658  ( 2)       64.89927627656  ( 2)      167.54983434274  ( 2)
-   232.12955260916  ( 2)      614.20559525747  ( 2)      845.74509182122  ( 2)     2491.77378648210  ( 2)     3368.59618947018  ( 2)
- 11880.76992511718  ( 2)    15292.22762793629  ( 2)
+     0.17588256186  ( 2)        0.17613334504  ( 2)        0.38056871805  ( 2)        0.60775930600  ( 2)        0.60788229186  ( 2)
+     0.63543873595  ( 2)        0.80194855542  ( 2)        0.97845556645  ( 2)        0.97888784995  ( 2)        1.03883885892  ( 2)
+     1.31367728648  ( 2)        1.31368446484  ( 2)        1.40438162224  ( 2)        1.49313040966  ( 2)        1.49320805240  ( 2)
+     2.09787791702  ( 2)        2.16005977143  ( 2)        2.16021920039  ( 2)        2.66372710067  ( 2)        2.66388213306  ( 2)
+     2.97629784414  ( 2)        3.38302568022  ( 2)        3.38378975093  ( 2)        3.67834487595  ( 2)        4.86270395454  ( 2)
+     4.86454355767  ( 2)        5.48444093887  ( 2)        7.68375534952  ( 2)       10.47506615248  ( 2)       18.03840377208  ( 2)
+    18.04683468734  ( 2)       18.24996646409  ( 2)       25.86234640397  ( 2)       25.87981567763  ( 2)       26.32809988018  ( 2)
+    35.48648404136  ( 2)       47.95099396762  ( 2)      132.77788655250  ( 2)      179.10354728002  ( 2)      493.00343231505  ( 2)
+   663.36630410873  ( 2)     2025.94416299690  ( 2)     2691.36596639832  ( 2)     9969.49595247328  ( 2)    12697.13015795271  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.16047178 au (symmetry E1 )
-  - E(HOMO) :    -0.34063373 au (symmetry E1 )
+    E(LUMO) :     0.17588256 au (symmetry E1 )
+  - E(HOMO) :    -0.33775469 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.50110551 au
+    gap     :     0.51363725 au
 
 
 
@@ -1321,7 +1230,7 @@ It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40
 
  (RSETCI) Number of determinants:          588 (dimension          588)
 
- CPU (Wall) time for generation of determinants:  0.00100000s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.00035100s( 0.00000000s)
 
  (ESR_RESOLVE) Integrals for CI: LL SL    
 
@@ -1335,74 +1244,67 @@ It.   16    -92.26486468481      2.71D-11  1.53D-07  5.86D-08   DIIS   9    1.40
 
  (RTRACTL1) Starting 4-index integral transformation.
  - Integral class 1 : (LL|??)
-   - Beginning task   1 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   2 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   3 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   5 of   8 after      1. seconds and      1. CPU-seconds
-   - Beginning task   6 of   8 after      1. seconds and      1. CPU-seconds
-   - Beginning task   7 of   8 after      2. seconds and      2. CPU-seconds
-   - Beginning task   8 of   8 after      2. seconds and      2. CPU-seconds
+   - Beginning task   1 of   6 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   6 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   6 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   6 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   6 after      0. seconds and      0. CPU-seconds
+   - Beginning task   6 of   6 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   9 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  10 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  11 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  12 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  13 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  14 of  22 after      3. seconds and      3. CPU-seconds
-   - Beginning task  15 of  22 after      4. seconds and      3. CPU-seconds
-   - Beginning task  16 of  22 after      4. seconds and      4. CPU-seconds
-   - Beginning task  17 of  22 after      4. seconds and      4. CPU-seconds
-   - Beginning task  18 of  22 after      5. seconds and      4. CPU-seconds
-   - Beginning task  19 of  22 after      5. seconds and      4. CPU-seconds
-   - Beginning task  20 of  22 after      5. seconds and      5. CPU-seconds
-   - Beginning task  21 of  22 after      6. seconds and      5. CPU-seconds
-   - Beginning task  22 of  22 after      7. seconds and      5. CPU-seconds
+   - Beginning task   7 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task   8 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task   9 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  10 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  11 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  12 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  13 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  14 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  15 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task  16 of  16 after      1. seconds and      1. CPU-seconds
 
- - Starting symmetrization after           7.06 seconds
- - Finished symmetrization after           7.06 seconds
+ - Starting symmetrization after           1.43 seconds
+ - Finished symmetrization after           1.43 seconds
 
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file            0.004 seconds
- Time in  Computing+transform. integral       5.692 seconds
+ Time in  Initializing MS4IND file            0.002 seconds
+ Time in  Computing+transform. integral       1.425 seconds
+ Time in  Symmetrizing MO integrals           0.000 seconds
 
------- End of timing report ------
+ (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
+            Transformation ended                         
 
-
- (RTRACTL1) Total CPU (wall) time used :   00:00:06 (   00:00:07)
-            Transformation ended Thu May 15 09:21:29 2014
-
-* REAFCK: Fock matrix read from file /people/disk2/mnp/DIRAC_scratch_directory/mnp/DIRAC_CN_test_
-* Heading :CN molecule(S=1/2)                                Thu May 15 09:20:51 2014
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :CN molecule (S=1/2)                                                       
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   15.44%    0.00%    0.00%   0.15797615s
-SOfock:SL  1.00D-11    0.00%   27.30%    0.00%    0.92%   1.26880836s
+SOfock:LL  1.00D-11    0.00%   13.71%    0.00%    0.00%   0.03250694s
+SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.22167397s
 
- (rGETFC) 1-electron core energy:       -96.480074049058928
+ (rGETFC) 1-electron core energy:       -96.480446363805044
 
- (rGETFC) 2-electron core energy:         9.437684276355029
+ (rGETFC) 2-electron core energy:         9.438360094113195
 
  (rGETFC) Nuclear repulsion     :        18.915270424340427
 
- (rGETFC) Total core energy     :       -68.127119348363465
+ (rGETFC) Total core energy     :       -68.126815845351416
 
  Reading from file : 4INDINFO 
+ (RGETH21) Time and date read from 4INDINFO: 19:05:20 15May14 
  Reading from file : 4IND1XXXX0
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         T         F         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
     6 start vectors based on lowest diagonal element of H_CI
-        69          -92.264865
-       295          -92.264865
-       296          -92.186765
-       155          -92.186765
-       190          -92.186352
-       314          -92.186352
+        69          -92.244394
+       295          -92.244394
+       155          -92.168314
+       296          -92.168314
+       190          -92.167920
+       314          -92.167920
 
 
  (GASCIP_RCISTD) CI microiteration no.   1
@@ -1410,56 +1312,68 @@ SOfock:SL  1.00D-11    0.00%   27.30%    0.00%    0.92%   1.26880836s
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.26486532        -92.26486532        -92.18676507        -92.18676507
-                                             -92.18635244        -92.18635244
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 0.000D+00 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1     -24.11757848   -24.11757848   -24.04149835   -24.04149835   -24.04110382   -24.04110382
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.24439432        -92.24439432        -92.16831419        -92.16831419
+                                             -92.16791966        -92.16791966
                  Lowering of energy =          0.00000000          0.00000000          0.00000000          0.00000000
                                                0.00000000          0.00000000
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         8.74380D-02
-         2         8.74380D-02
+         1         1.00625D-01
+         2         1.00625D-01
 
- (RCINORM) CI vector renormalized with factor       6.548835642199
+ (RCINORM) CI vector renormalized with factor       0.990593626220
 
- (RCINORM) CI vector renormalized with factor       6.548835642199
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     239 elements in new CI trial vector no.   1; zeroes, left :       294        55
+ (RCINORM) CI vector renormalized with factor       0.990593626220
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     233 elements in new CI trial vector no.   1; zeroes, left :       295        60
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     239 elements in new CI trial vector no.   2; zeroes, left :       294        55
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     233 elements in new CI trial vector no.   2; zeroes, left :       295        60
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.04499400s( 0.04687500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.05019900s( 0.05078125s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   2
@@ -1467,34 +1381,46 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27580373        -92.27580373
-                 Lowering of energy =          0.01093841          0.01093841
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 6.946D-17 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.12949926   -24.12949926   -24.04149835   -24.04149835   -24.04110384   -24.04110384   -23.60494953   -23.60494953
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25631511        -92.25631511
+                 Lowering of energy =          0.01192079          0.01192079
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         2.18642D-02
-         2         2.18642D-02
+         1         2.43449D-02
+         2         2.43449D-02
 
- (RCINORM) CI vector renormalized with factor      32.645553575170
+ (RCINORM) CI vector renormalized with factor      31.358467037641
 
- (RCINORM) CI vector renormalized with factor      32.645553575170
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     214 elements in new CI trial vector no.   1; zeroes, left :       295        79
+ (RCINORM) CI vector renormalized with factor      31.358467037641
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     207 elements in new CI trial vector no.   1; zeroes, left :       295        86
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     214 elements in new CI trial vector no.   2; zeroes, left :       295        79
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     207 elements in new CI trial vector no.   2; zeroes, left :       295        86
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01399700s( 0.01562500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01501200s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   3
@@ -1502,34 +1428,49 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27638480        -92.27638480
-                 Lowering of energy =          0.00058107          0.00058107
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.799D-15 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13010242   -24.13010242   -24.04149835   -24.04149835   -24.04110599   -24.04110599   -23.72281537   -23.72281537
+
+               Column   9     Column  10
+       1     -23.31019179   -23.31019179
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25691827        -92.25691827
+                 Lowering of energy =          0.00060316          0.00060316
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         8.11184D-03
-         2         8.11184D-03
+         1         9.73785D-03
+         2         9.73785D-03
 
- (RCINORM) CI vector renormalized with factor      77.819133563113
+ (RCINORM) CI vector renormalized with factor      77.046594820463
 
- (RCINORM) CI vector renormalized with factor      77.819133563115
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     197 elements in new CI trial vector no.   1; zeroes, left :       295        96
+ (RCINORM) CI vector renormalized with factor      77.046594820472
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     187 elements in new CI trial vector no.   1; zeroes, left :       295       106
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     197 elements in new CI trial vector no.   2; zeroes, left :       295        96
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     187 elements in new CI trial vector no.   2; zeroes, left :       295       106
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01399800s( 0.01562500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01599600s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   4
@@ -1537,34 +1478,49 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27644551        -92.27644551
-                 Lowering of energy =          0.00006071          0.00006071
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.713D-14 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13017066   -24.13017066   -24.04149835   -24.04149835   -24.04111307   -24.04111307   -23.73454900   -23.73454900
+
+               Column   9     Column  10     Column  11     Column  12
+       1     -23.31230869   -23.31230869   -23.12054911   -23.12054911
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25698651        -92.25698651
+                 Lowering of energy =          0.00006824          0.00006824
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         2.57176D-03
-         2         2.57176D-03
+         1         3.28847D-03
+         2         3.28847D-03
 
- (RCINORM) CI vector renormalized with factor     239.320370516916
+ (RCINORM) CI vector renormalized with factor     250.474412511330
 
- (RCINORM) CI vector renormalized with factor     239.320370516910
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     187 elements in new CI trial vector no.   1; zeroes, left :       296       105
+ (RCINORM) CI vector renormalized with factor     250.474412511198
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     168 elements in new CI trial vector no.   1; zeroes, left :       296       124
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     187 elements in new CI trial vector no.   2; zeroes, left :       296       105
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     168 elements in new CI trial vector no.   2; zeroes, left :       296       124
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01499800s( 0.01562500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01611200s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   5
@@ -1572,34 +1528,49 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645421        -92.27645421
-                 Lowering of energy =          0.00000870          0.00000870
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 4.417D-14 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018010   -24.13018010   -24.04149835   -24.04149835   -24.04114030   -24.04114030   -23.77158857   -23.77158857
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14
+       1     -23.34095730   -23.34095730   -23.17669642   -23.17669642   -23.10180867   -23.10180867
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699595        -92.25699595
+                 Lowering of energy =          0.00000944          0.00000944
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         1.01031D-03
-         2         1.01031D-03
+         1         1.04749D-03
+         2         1.04749D-03
 
- (RCINORM) CI vector renormalized with factor     715.426971651904
+ (RCINORM) CI vector renormalized with factor     653.068569678749
 
- (RCINORM) CI vector renormalized with factor     715.426971651808
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     190 elements in new CI trial vector no.   1; zeroes, left :       296       102
+ (RCINORM) CI vector renormalized with factor     653.068569678860
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     187 elements in new CI trial vector no.   1; zeroes, left :       296       105
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     190 elements in new CI trial vector no.   2; zeroes, left :       296       102
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     187 elements in new CI trial vector no.   2; zeroes, left :       296       105
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01499800s( 0.01562500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01507100s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   6
@@ -1607,34 +1578,49 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645588        -92.27645588
-                 Lowering of energy =          0.00000166          0.00000166
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 6.272D-14 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018165   -24.13018165   -24.04149835   -24.04149835   -24.04124315   -24.04124315   -23.86690062   -23.86690062
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.64045561   -23.64045561   -23.28197240   -23.28197240   -23.11497330   -23.11497330   -22.71971832   -22.71971832
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699750        -92.25699750
+                 Lowering of energy =          0.00000155          0.00000155
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         3.68952D-04
-         2         3.68952D-04
+         1         4.55622D-04
+         2         4.55622D-04
 
- (RCINORM) CI vector renormalized with factor    1459.552997018794
+ (RCINORM) CI vector renormalized with factor    1366.241038333580
 
- (RCINORM) CI vector renormalized with factor    1459.552997021447
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     186 elements in new CI trial vector no.   1; zeroes, left :       296       106
+ (RCINORM) CI vector renormalized with factor    1366.241038333255
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     172 elements in new CI trial vector no.   1; zeroes, left :       296       120
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     186 elements in new CI trial vector no.   2; zeroes, left :       296       106
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     172 elements in new CI trial vector no.   2; zeroes, left :       296       120
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01499700s( 0.01562500s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01500700s( 0.01367188s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   7
@@ -1642,34 +1628,52 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645609        -92.27645609
-                 Lowering of energy =          0.00000022          0.00000022
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 9.456D-14 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018196   -24.13018196   -24.04149835   -24.04149835   -24.04136777   -24.04136777   -23.93760681   -23.93760681
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.81373878   -23.81373878   -23.29196305   -23.29196305   -23.24241207   -23.24241207   -22.99374068   -22.99374068
+
+               Column  17     Column  18
+       1     -22.65870558   -22.65870558
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699781        -92.25699781
+                 Lowering of energy =          0.00000031          0.00000031
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         9.81965D-05
-         2         9.81965D-05
+         1         1.27964D-04
+         2         1.27964D-04
 
- (RCINORM) CI vector renormalized with factor    8853.110653943108
+ (RCINORM) CI vector renormalized with factor    9050.504118317585
 
- (RCINORM) CI vector renormalized with factor    8853.110653893256
-
-Threshold for removing element in trial vectors  1.00D-03
-Removed     178 elements in new CI trial vector no.   1; zeroes, left :       296       114
+ (RCINORM) CI vector renormalized with factor    9050.504118215937
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     162 elements in new CI trial vector no.   1; zeroes, left :       296       130
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     178 elements in new CI trial vector no.   2; zeroes, left :       296       114
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+Removed     162 elements in new CI trial vector no.   2; zeroes, left :       296       130
+ IROUND           1  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01499800s( 0.00000000s)
+Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
+
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01516800s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   8
@@ -1677,34 +1681,52 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645610        -92.27645610
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.156D-13 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018197   -24.13018197   -24.04149835   -24.04149835   -24.04136860   -24.04136860   -23.94672248   -23.94672248
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.81380226   -23.81380226   -23.48566986   -23.48566986   -23.25376983   -23.25376983   -23.00983238   -23.00983238
+
+               Column  17     Column  18     Column  19     Column  20
+       1     -22.74772206   -22.74772206   -22.65865228   -22.65865228
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699782        -92.25699782
                  Lowering of energy =          0.00000001          0.00000001
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         1.97527D-05
-         2         1.97527D-05
+         1         2.04015D-05
+         2         2.04015D-05
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     182 elements in new CI trial vector no.   1; zeroes, left :       296       110
+Removed     160 elements in new CI trial vector no.   1; zeroes, left :       296       132
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     182 elements in new CI trial vector no.   2; zeroes, left :       296       110
+Removed     160 elements in new CI trial vector no.   2; zeroes, left :       296       132
+ IROUND           1  for vector           2
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01499800s( 0.03125000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01588400s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   9
@@ -1712,34 +1734,52 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645610        -92.27645610
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.519D-13 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018198   -24.13018198   -24.04152297   -24.04152297   -24.04149835   -24.04149835   -23.94850140   -23.94850140
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.82502771   -23.82502771   -23.65791710   -23.65791710   -23.25728650   -23.25728650   -23.11707123   -23.11707123
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22
+       1     -22.80394794   -22.80394794   -22.66669452   -22.66669452   -22.49960221   -22.49960221
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699782        -92.25699782
                  Lowering of energy =          0.00000000          0.00000000
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         7.32611D-06
-         2         7.32611D-06
+         1         4.62105D-06
+         2         4.62105D-06
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     171 elements in new CI trial vector no.   1; zeroes, left :       296       121
+Removed     156 elements in new CI trial vector no.   1; zeroes, left :       296       136
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     171 elements in new CI trial vector no.   2; zeroes, left :       296       121
+Removed     156 elements in new CI trial vector no.   2; zeroes, left :       296       136
+ IROUND           1  for vector           2
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01399800s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01680900s( 0.01562500s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  10
@@ -1747,34 +1787,52 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645610        -92.27645610
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.749D-13 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018198   -24.13018198   -24.04286447   -24.04286447   -24.04149835   -24.04149835   -23.94874636   -23.94874636
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.89090211   -23.89090211   -23.82163787   -23.82163787   -23.26981751   -23.26981751   -23.11748017   -23.11748017
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1     -23.01504925   -23.01504925   -22.79605812   -22.79605812   -22.66341497   -22.66341497   -22.29616953   -22.29616953
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699782        -92.25699782
                  Lowering of energy =          0.00000000          0.00000000
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         1.35063D-06
-         2         1.35063D-06
+         1         1.69911D-06
+         2         1.69911D-06
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     166 elements in new CI trial vector no.   1; zeroes, left :       296       126
+Removed     158 elements in new CI trial vector no.   1; zeroes, left :       296       134
+ IROUND           1  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           1
 
 Threshold for removing element in trial vectors  1.00D-03
-Removed     166 elements in new CI trial vector no.   2; zeroes, left :       296       126
+Removed     158 elements in new CI trial vector no.   2; zeroes, left :       296       134
+ IROUND           1  for vector           2
 
 Threshold for removing element in trial vectors  1.00D-03
+ IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01499700s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01719600s( 0.01953125s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  11
@@ -1782,31 +1840,48 @@ Threshold for removing element in trial vectors  1.00D-03
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
+ DO2EL, IHRM,  IPRINT:         T         1         5
 
 
  --- Output from GASCIP_CI ---
  DODIA, DOSIG, DODEN :         F         T         F
- DO2EL, IHRM,  IPRINT:         T         1         3
- (GASCIP_RCISTD) Total energy       =        -92.27645610        -92.27645610
+ DO2EL, IHRM,  IPRINT:         T         1         5
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 2.038D-13 0.000D+00
+
+ (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.13018198   -24.13018198   -24.04378427   -24.04378427   -24.04149835   -24.04149835   -23.94912467   -23.94912467
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1     -23.94218152   -23.94218152   -23.82176613   -23.82176613   -23.35309036   -23.35309036   -23.15787588   -23.15787588
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1     -23.08998097   -23.08998097   -22.83730772   -22.83730772   -22.74680760   -22.74680760   -22.61959385   -22.61959385
+
+               Column  25     Column  26
+       1     -22.28862885   -22.28862885
+    ==== End of matrix output ====
+ (GASCIP_RCISTD) Total energy       =        -92.25699782        -92.25699782
                  Lowering of energy =          0.00000000          0.00000000
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         1.61412D-07
-         2         1.61412D-07
+         1         2.28325D-07
+         2         2.28325D-07
 
  *** All requested CI roots are converged. ***
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01399800s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01528900s( 0.01562500s)
 
- (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.19197100s ( 0.20312500s)
+ (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.20782900s ( 0.20898438s)
 
 
  (GASCIP_RCISTD) Micro iterations converged.
 
- (GASCIP_RCISTD) Core energy        =         -68.12711935
-                 Active energies    =         -24.14933675        -24.14933675
- (GASCIP_RCISTD) Final CI energies  =         -92.27645610        -92.27645610
+ (GASCIP_RCISTD) Core energy        =         -68.12681585
+                 Active energies    =         -24.13018198        -24.13018198
+ (GASCIP_RCISTD) Final CI energies  =         -92.25699782        -92.25699782
 
 
  ============================================
@@ -1817,9 +1892,9 @@ Threshold for removing element in trial vectors  1.00D-03
 
  Print of CI coefficients in range 1.0D-01 to 1.0D+00 :
 
-   Determinant no.      295 coeff.         0.9858925130; weight 0.97198405
-     P-string     :    1   2   3   4   5
-     P(bar)-string:    1   2   3   4
+   Determinant no.       69 coeff.         0.9858935861; weight 0.97198616
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   3   4   5
 
  Print of CI coefficients in range 1.0D-02 to 1.0D-01 :
 
@@ -1828,36 +1903,39 @@ Threshold for removing element in trial vectors  1.00D-03
 
  Print of CI coefficients in range 1.0D-03 to 1.0D-02 :
 
-   Determinant no.        1 coeff.        -0.0837902520; weight 0.00702081
-     P-string     :    1   2   3
-     P(bar)-string:    1   2   3   4   5   6
-   Determinant no.       19 coeff.         0.0835045424; weight 0.00697301
-     P-string     :    1   2   4
-     P(bar)-string:    1   2   3   4   5   7
-   Determinant no.      298 coeff.         0.0445923209; weight 0.00198848
-     P-string     :    1   2   3   4   5
-     P(bar)-string:    1   2   3   7
-   Determinant no.      315 coeff.        -0.0445519550; weight 0.00198488
-     P-string     :    1   2   3   4   5
-     P(bar)-string:    1   2   4   6
-   Determinant no.      454 coeff.         0.0390632510; weight 0.00152594
-     P-string     :    1   2   3   5   7
-     P(bar)-string:    1   2   3   4
-   Determinant no.      470 coeff.        -0.0390870155; weight 0.00152779
-     P-string     :    1   2   4   5   6
-     P(bar)-string:    1   2   3   4
+   Determinant no.       88 coeff.        -0.0402873983; weight 0.00162307
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   3   5   7
+   Determinant no.      104 coeff.         0.0403083193; weight 0.00162476
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   4   5   6
+   Determinant no.      174 coeff.        -0.0449038140; weight 0.00201635
+     P-string     :    1   2   3   7
+     P(bar)-string:    1   2   3   4   5
+   Determinant no.      208 coeff.         0.0448620870; weight 0.00201261
+     P-string     :    1   2   4   6
+     P(bar)-string:    1   2   3   4   5
+   Determinant no.      235 coeff.         0.0325691281; weight 0.00106075
+     P-string     :    1   3   4   5
+     P(bar)-string:    1   2   3   4  15
+   Determinant no.      521 coeff.        -0.0853172187; weight 0.00727903
+     P-string     :    1   2   3   4   5   6
+     P(bar)-string:    1   2   3
+   Determinant no.      526 coeff.         0.0850444880; weight 0.00723256
+     P-string     :    1   2   3   4   5   7
+     P(bar)-string:    1   2   4
 
 
  Distribution of determinants wrt. MK
  ------------------------------------------------
       MK              #dets      #non-zero
  ------------------------------------------------
-    -3/2                 68             27
-    -1/2                226              0
-     1/2                226            109
-     3/2                 68              0
+    -3/2                 68              0
+    -1/2                226            118
+     1/2                226              0
+     3/2                 68             28
  ------------------------------------------------
-     all                588            136
+     all                588            146
  ------------------------------------------------
 
 
@@ -1869,9 +1947,9 @@ Threshold for removing element in trial vectors  1.00D-03
 
  Print of CI coefficients in range 1.0D-01 to 1.0D+00 :
 
-   Determinant no.       69 coeff.         0.9858925130; weight 0.97198405
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   3   4   5
+   Determinant no.      295 coeff.         0.9858935861; weight 0.97198616
+     P-string     :    1   2   3   4   5
+     P(bar)-string:    1   2   3   4
 
  Print of CI coefficients in range 1.0D-02 to 1.0D-01 :
 
@@ -1880,56 +1958,344 @@ Threshold for removing element in trial vectors  1.00D-03
 
  Print of CI coefficients in range 1.0D-03 to 1.0D-02 :
 
-   Determinant no.       88 coeff.         0.0390632510; weight 0.00152594
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   3   5   7
-   Determinant no.      104 coeff.        -0.0390870155; weight 0.00152779
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   4   5   6
-   Determinant no.      174 coeff.         0.0445923209; weight 0.00198848
-     P-string     :    1   2   3   7
-     P(bar)-string:    1   2   3   4   5
-   Determinant no.      208 coeff.        -0.0445519550; weight 0.00198488
-     P-string     :    1   2   4   6
-     P(bar)-string:    1   2   3   4   5
-   Determinant no.      521 coeff.        -0.0837902520; weight 0.00702081
-     P-string     :    1   2   3   4   5   6
-     P(bar)-string:    1   2   3
-   Determinant no.      526 coeff.         0.0835045424; weight 0.00697301
-     P-string     :    1   2   3   4   5   7
-     P(bar)-string:    1   2   4
+   Determinant no.        1 coeff.        -0.0853172187; weight 0.00727903
+     P-string     :    1   2   3
+     P(bar)-string:    1   2   3   4   5   6
+   Determinant no.       19 coeff.         0.0850444880; weight 0.00723256
+     P-string     :    1   2   4
+     P(bar)-string:    1   2   3   4   5   7
+   Determinant no.      298 coeff.        -0.0449038140; weight 0.00201635
+     P-string     :    1   2   3   4   5
+     P(bar)-string:    1   2   3   7
+   Determinant no.      315 coeff.         0.0448620870; weight 0.00201261
+     P-string     :    1   2   3   4   5
+     P(bar)-string:    1   2   4   6
+   Determinant no.      416 coeff.         0.0325691281; weight 0.00106075
+     P-string     :    1   2   3   4  15
+     P(bar)-string:    1   3   4   5
+   Determinant no.      454 coeff.        -0.0402873983; weight 0.00162307
+     P-string     :    1   2   3   5   7
+     P(bar)-string:    1   2   3   4
+   Determinant no.      470 coeff.         0.0403083193; weight 0.00162476
+     P-string     :    1   2   4   5   6
+     P(bar)-string:    1   2   3   4
 
 
  Distribution of determinants wrt. MK
  ------------------------------------------------
       MK              #dets      #non-zero
  ------------------------------------------------
-    -3/2                 68              0
-    -1/2                226            109
-     1/2                226              0
-     3/2                 68             27
+    -3/2                 68             28
+    -1/2                226              0
+     1/2                226            118
+     3/2                 68              0
  ------------------------------------------------
-     all                588            136
+     all                588            146
  ------------------------------------------------
 
- (GASCIP_RCISTD) Total CPU (Wall) time for routine:  1.72173800s ( 1.73437500s)
+ (GASCIP_RCISTD) Total CPU (Wall) time for routine:  0.53611000s ( 0.53906250s)
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : z-spin          
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: z-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   z-spin          
+...........................................................................
+    1  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+ test output after qdiag for S_z; ESRVAL matrix 2
+ (2 ~ eigenvalues, 3 ~ eigenvectors)
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.49997536     0.00000000
+    ==== End of matrix output ====
+ test output after qdiag for S_z; ESRVAL matrix 3
+ (2 ~ eigenvalues, 3 ~ eigenvectors)
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       1.00000000     0.00000000
+       2       0.00000000     1.00000000
+    ==== End of matrix output ====
+  H_CI matrix after transform. to S_z basis
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     -92.25699782     0.00000000
+       2       0.00000000   -92.25699782
+    ==== End of matrix output ====
+===========================================================================
+* ESRPHASE: calculating property no.  1 :   x-spin          
+...........................................................................
+    1  x-spin               B2      T-
+...........................................................................
+      Operator type XSIGMA   : [Sigma_x]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : x-spin          
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: x-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2       0.49996661     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   x-spin          
+...........................................................................
+    1  x-spin               B2      T-
+...........................................................................
+      Operator type XSIGMA   : [Sigma_x]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2       0.49996661     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* ESRPHASE: calculating property no.  2 :   y-spin          
+...........................................................................
+    2  y-spin               B1      T-
+...........................................................................
+      Operator type YSIGMA   : [Sigma_y]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : y-spin          
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: y-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2      -0.49996661     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   y-spin          
+...........................................................................
+    1  y-spin               B1      T-
+...........................................................................
+      Operator type YSIGMA   : [Sigma_y]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2      -0.49996661     0.00000000
+    ==== End of matrix output ====
+===========================================================================
+* ESRPHASE: calculating property no.  3 :   z-spin          
+...........................................................................
+    3  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : z-spin          
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: z-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   z-spin          
+...........................................................................
+    1  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
 
 
 *ESRPHASE: checking S_Z(eff) and relative phases ...
 
- State no., <Sigma_Z>, index S_Z(eff) :    1  -0.4999756503    1
- State no., <Sigma_Z>, index S_Z(eff) :    2   0.4999756503    2
+ State no., <Sigma_Z>, index S_Z(eff) :    1  -0.4999753573    1
+ State no., <Sigma_Z>, index S_Z(eff) :    2   0.4999753573    2
 
- J,JM1,<J|S_x|JM1>  :    2    1   0.4999675758 + i   0.0000000000
+ J,JM1,<J|S_x|JM1>  :    2    1   0.4999666107 + i   0.0000000000
 
- J,JM1,<J|S_y|JM1>  :    2    1   0.0000000000 + i   0.4999675758
+ J,JM1,<J|S_y|JM1>  :    2    1   0.0000000000 + i  -0.4999666107
 
- J,JM1,<J|S_+|JM1>  :    2    1   0.0000000000 + i   0.0000000000
+ J,JM1,<J|S_+|JM1>  :    2    1   0.9999332215 + i   0.0000000000
 
- J,JM1,<J|S_x|JM1'> :    2    1   0.0000000000 + i   0.0000000000
- CPLUS / 2   0.500000000000000     
+ J,JM1,<J|S_x|JM1'> :    2    1   0.9999332215 + i   0.0000000000
+ CPLUS / 2   0.50000000000000000     
 
- J,JM1,<J|S_x|JM1'> :    2    1   1.0000000000 + i   0.0000000000; PHASE_J_NORM   0.0000000000  -0.5000000000
+ J,JM1,<J|S_x|JM1'> :    2    1   1.0000000000 + i   0.0000000000; PHASE_J_NORM   0.9999332215   0.4999332215
 
 
    S**2 matrix in CI basis
@@ -1940,8 +2306,1099 @@ Threshold for removing element in trial vectors  1.00D-03
 
 
                Column   1     Column   2
-       1       0.74991080     0.00000000
-       2       0.00000000     0.74991080
+       1       0.74990858    -0.00000000
+       2      -0.00000000     0.74990858
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+* PRPESR called with the following operators:
+...........................................................................
+    Operator no.  1:   NUCSP001C   B2 X
+...........................................................................
+    1  NUCSP001C   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 001  0++0    -137.03599980944 (real)     
+                               NEF 003  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  2:   NUCSP002N   B2 X
+...........................................................................
+    2  NUCSP002N   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 002  0++0    -137.03599980944 (real)     
+                               NEF 004  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  3:   NUCSP003C   B1 Y
+...........................................................................
+    3  NUCSP003C   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 005  0++0    -137.03599980944 (real)     
+                               NEF 001  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  4:   NUCSP004N   B1 Y
+...........................................................................
+    4  NUCSP004N   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 006  0++0    -137.03599980944 (real)     
+                               NEF 002  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  5:   NUCSP005C   A2 Z
+...........................................................................
+    5  NUCSP005C   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 003  0++0    -137.03599980944 (real)     
+                               NEF 005  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  6:   NUCSP006N   A2 Z
+...........................................................................
+    6  NUCSP006N   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 004  0++0    -137.03599980944 (real)     
+                               NEF 006  0++0    -137.03599980944 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  7:   X magnetic field
+...........................................................................
+    7  X magnetic field     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZDIPLEN  0++0    -68.517999904721 (real)     
+                               YDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  8:   g_1 MAGFLDX     
+...........................................................................
+    8  g_1 MAGFLDX          B2      T-
+...........................................................................
+      Operator type XBETASIG : [beta Sigma_x]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+...........................................................................
+    Operator no.  9:   x-spin          
+...........................................................................
+    9  x-spin               B2      T-
+...........................................................................
+      Operator type XSIGMA   : [Sigma_x]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 10:   Y magnetic field
+...........................................................................
+   10  Y magnetic field     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XDIPLEN  0++0    -68.517999904721 (real)     
+                               ZDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 11:   g_1 MAGFLDY     
+...........................................................................
+   11  g_1 MAGFLDY          B1      T-
+...........................................................................
+      Operator type YBETASIG : [beta Sigma_y]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 12:   y-spin          
+...........................................................................
+   12  y-spin               B1      T-
+...........................................................................
+      Operator type YSIGMA   : [Sigma_y]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 13:   Z magnetic field
+...........................................................................
+   13  Z magnetic field     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YDIPLEN  0++0    -68.517999904721 (real)     
+                               XDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 14:   g_1 MAGFLDZ     
+...........................................................................
+   14  g_1 MAGFLDZ          A2      T-
+...........................................................................
+      Operator type ZBETASIG : [beta Sigma_z]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+...........................................................................
+    Operator no. 15:   z-spin          
+...........................................................................
+   15  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+===========================================================================
+* PRPESR1: calculating property no.  1 : NUCSP001C   B2 X
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP001C   B2 X
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP001C   B2 X
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 001 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 003 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2       3.19696925     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP001C   B2 X
+...........................................................................
+    1  NUCSP001C   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 001  0++0    -137.03599980944 (real)     
+                               NEF 003  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2       3.19696925     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  2 : NUCSP002N   B2 X
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP002N   B2 X
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP002N   B2 X
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 002 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 004 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2      -0.26218321     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP002N   B2 X
+...........................................................................
+    1  NUCSP002N   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 002  0++0    -137.03599980944 (real)     
+                               NEF 004  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2      -0.26218321     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  3 : NUCSP003C   B1 Y
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP003C   B1 Y
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP003C   B1 Y
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 005 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 001 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2      -3.19696925     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP003C   B1 Y
+...........................................................................
+    1  NUCSP003C   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 005  0++0    -137.03599980944 (real)     
+                               NEF 001  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2      -3.19696925     0.00000000
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  4 : NUCSP004N   B1 Y
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP004N   B1 Y
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP004N   B1 Y
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 006 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 002 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2       0.26218321     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP004N   B1 Y
+...........................................................................
+    1  NUCSP004N   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 006  0++0    -137.03599980944 (real)     
+                               NEF 002  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2       0.26218321     0.00000000
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  5 : NUCSP005C   A2 Z
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP005C   A2 Z
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP005C   A2 Z
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 003 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 005 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -3.72381667     0.00000000
+       2       0.00000000     3.72381667
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP005C   A2 Z
+...........................................................................
+    1  NUCSP005C   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 003  0++0    -137.03599980944 (real)     
+                               NEF 005  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -3.72381667     0.00000000
+       2       0.00000000     3.72381667
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  6 : NUCSP006N   A2 Z
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : NUCSP006N   A2 Z
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: NUCSP006N   A2 Z
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   NEF 004 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   NEF 006 
+Factor:     -137.035999809442330 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -0.27734474     0.00000000
+       2       0.00000000     0.27734474
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   NUCSP006N   A2 Z
+...........................................................................
+    1  NUCSP006N   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 004  0++0    -137.03599980944 (real)     
+                               NEF 006  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.27734474     0.00000000
+       2       0.00000000     0.27734474
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  7 : X magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : X magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: X magnetic field
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   ZDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   YDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2       0.49926483     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   X magnetic field
+...........................................................................
+    1  X magnetic field     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZDIPLEN  0++0    -68.517999904721 (real)     
+                               YDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2       0.49926483     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  8 : g_1 MAGFLDX     
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : g_1 MAGFLDX     
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: g_1 MAGFLDX     
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2    -5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   g_1 MAGFLDX     
+...........................................................................
+    1  g_1 MAGFLDX          B2      T-
+...........................................................................
+      Operator type XBETASIG : [beta Sigma_x]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2    -5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no.  9 : x-spin          
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : x-spin          
+  Boson symmetry, g/u symmetry, time reversal :    2    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: x-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2       0.49996661     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   x-spin          
+...........................................................................
+    1  x-spin               B2      T-
+...........................................................................
+      Operator type XSIGMA   : [Sigma_x]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2       0.49996661     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 10 : Y magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : Y magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Y magnetic field
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   XDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   ZDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2      -0.49926483     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   Y magnetic field
+...........................................................................
+    1  Y magnetic field     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XDIPLEN  0++0    -68.517999904721 (real)     
+                               ZDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2      -0.49926483     0.00000000
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 11 : g_1 MAGFLDY     
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : g_1 MAGFLDY     
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: g_1 MAGFLDY     
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2     5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   g_1 MAGFLDY     
+...........................................................................
+    1  g_1 MAGFLDY          B1      T-
+...........................................................................
+      Operator type YBETASIG : [beta Sigma_y]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2     5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 12 : y-spin          
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : y-spin          
+  Boson symmetry, g/u symmetry, time reversal :    3    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: y-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F        -1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2      -0.49996661     0.00000000
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   y-spin          
+...........................................................................
+    1  y-spin               B1      T-
+...........................................................................
+      Operator type YSIGMA   : [Sigma_y]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2      -0.49996661     0.00000000
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 13 : Z magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : Z magnetic field
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Z magnetic field
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   YDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 2
+Component nr.    2   XDIPLEN 
+Factor:     -68.5179999047211652 and PDOINT:0++0
+Integrals enter matrix :    1
+FIRST = F and IC(1 or 2): 2
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -0.49996746     0.00000000
+       2       0.00000000     0.49996746
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   Z magnetic field
+...........................................................................
+    1  Z magnetic field     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YDIPLEN  0++0    -68.517999904721 (real)     
+                               XDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49996746     0.00000000
+       2       0.00000000     0.49996746
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 14 : g_1 MAGFLDZ     
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : g_1 MAGFLDZ     
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: g_1 MAGFLDZ     
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1     5.797967E-04   0.000000E+00
+       2     0.000000E+00  -5.797967E-04
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   g_1 MAGFLDZ     
+...........................................................................
+    1  g_1 MAGFLDZ          A2      T-
+...........................................................................
+      Operator type ZBETASIG : [beta Sigma_z]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     5.797967E-04   0.000000E+00
+       2     0.000000E+00  -5.797967E-04
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+===========================================================================
+* PRPESR1: calculating property no. 15 : z-spin          
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+---------------------------------------------------------------------------
+* ESRTRANS: calculating property  : z-spin          
+  Boson symmetry, g/u symmetry, time reversal :    4    1   -1
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: z-spin          
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   OVERLAP 
+Factor:      0.50000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+
+ --- Output from GASCIP_CI ---
+ DODIA, DOSIG, DODEN :         F         T         F
+ DO2EL, IHRM,  IPRINT:         F         1         5
+
+ (GASCIP_MAKE_P1MAT) CI property matrix - real part
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+
+  ESRTRANS results in CI eigenvector basis (test output)
+  ------------------------------------------------------
+
+...........................................................................
+    Operator no. 1 :   z-spin          
+...........................................................................
+    1  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -1951,11 +3408,355 @@ Threshold for removing element in trial vectors  1.00D-03
     ==== End of matrix output ====
 
 
-            *********************************************************
-            **************** DIRAC  - ESR PROPERTIES ****************
-            *********************************************************
+  PRPESR results in CI eigenvector basis (test output)
+  ----------------------------------------------------
 
-* Effective spin multiplicity:    2
+...........................................................................
+    Operator no.  1:   NUCSP001C   B2 X
+...........................................................................
+    1  NUCSP001C   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 001  0++0    -137.03599980944 (real)     
+                               NEF 003  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2       3.19696925     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  2:   NUCSP002N   B2 X
+...........................................................................
+    2  NUCSP002N   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 002  0++0    -137.03599980944 (real)     
+                               NEF 004  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2      -0.26218321     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  3:   NUCSP003C   B1 Y
+...........................................................................
+    3  NUCSP003C   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 005  0++0    -137.03599980944 (real)     
+                               NEF 001  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     3.19696925
+       2      -3.19696925     0.00000000
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  4:   NUCSP004N   B1 Y
+...........................................................................
+    4  NUCSP004N   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 006  0++0    -137.03599980944 (real)     
+                               NEF 002  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000    -0.26218321
+       2       0.26218321     0.00000000
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  5:   NUCSP005C   A2 Z
+...........................................................................
+    5  NUCSP005C   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 003  0++0    -137.03599980944 (real)     
+                               NEF 005  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -3.72381667     0.00000000
+       2       0.00000000     3.72381667
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  6:   NUCSP006N   A2 Z
+...........................................................................
+    6  NUCSP006N   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 004  0++0    -137.03599980944 (real)     
+                               NEF 006  0++0    -137.03599980944 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.27734474     0.00000000
+       2       0.00000000     0.27734474
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  7:   X magnetic field
+...........................................................................
+    7  X magnetic field     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZDIPLEN  0++0    -68.517999904721 (real)     
+                               YDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2       0.49926483     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  8:   g_1 MAGFLDX     
+...........................................................................
+    8  g_1 MAGFLDX          B2      T-
+...........................................................................
+      Operator type XBETASIG : [beta Sigma_x]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2    -5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no.  9:   x-spin          
+...........................................................................
+    9  x-spin               B2      T-
+...........................................................................
+      Operator type XSIGMA   : [Sigma_x]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2       0.49996661     0.00000000
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 10:   Y magnetic field
+...........................................................................
+   10  Y magnetic field     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XDIPLEN  0++0    -68.517999904721 (real)     
+                               ZDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49926483
+       2      -0.49926483     0.00000000
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 11:   g_1 MAGFLDY     
+...........................................................................
+   11  g_1 MAGFLDY          B1      T-
+...........................................................................
+      Operator type YBETASIG : [beta Sigma_y]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     0.000000E+00  -5.798120E-04
+       2     5.798120E-04   0.000000E+00
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 12:   y-spin          
+...........................................................................
+   12  y-spin               B1      T-
+...........................................................................
+      Operator type YSIGMA   : [Sigma_y]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1       0.00000000     0.49996661
+       2      -0.49996661     0.00000000
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 13:   Z magnetic field
+...........................................................................
+   13  Z magnetic field     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YDIPLEN  0++0    -68.517999904721 (real)     
+                               XDIPLEN  0++0    -68.517999904721 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49996746     0.00000000
+       2       0.00000000     0.49996746
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 14:   g_1 MAGFLDZ     
+...........................................................................
+   14  g_1 MAGFLDZ          A2      T-
+...........................................................................
+      Operator type ZBETASIG : [beta Sigma_z]P
+      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1     5.797967E-04   0.000000E+00
+       2     0.000000E+00  -5.797967E-04
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+...........................................................................
+    Operator no. 15:   z-spin          
+...........................................................................
+   15  z-spin               A2      T-
+...........................................................................
+      Operator type ZSIGMA   : [Sigma_z]P
+      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
+...........................................................................
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+               Column   1     Column   2
+       1      -0.49997536     0.00000000
+       2       0.00000000     0.49997536
+    ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
+
+
+     Zero matrix.
+    ==== End of matrix output ====
+
+
+           ************************************************************
+           **************** @  DIRAC  - ESR PROPERTIES ****************
+           ************************************************************
+
+@  *  Effective spin multiplicity:    2
 
 
    ESR g shifts :
@@ -1964,19 +3765,25 @@ Threshold for removing element in trial vectors  1.00D-03
 
 * The g-tensor for H(Zeeman) = 1/2c B g Seff :
 
-            -1.99704908        0.00000000        0.00000000
-             0.00000000        1.99704908        0.00000000
-             0.00000000        0.00000000       -1.99987029
+             1.99705931       -0.00000000        0.00000000
+             0.00000000        1.99705931        0.00000000
+             0.00000000       -0.00000000        1.99986985
+
+  The G-matrix = g * g^T :
+
+             3.98824589        0.00000000        0.00000000
+             0.00000000        3.98824589        0.00000000
+             0.00000000        0.00000000        3.99947941
 
 * The Dirac equation g values corresponding to g_e = 2
 
   The g values (x, y, z, iso):
 
-             1.99704908        1.99704908        1.99987029        1.99798949
+             1.99705931        1.99705931        1.99986985        1.99799616
 
   The g shifts in ppm (x, y, z, iso):
 
-                -2950.9           -2950.9            -129.7           -2010.5
+                -2940.7           -2940.7            -130.2           -2003.8
 
  The corresponding eigenvectors:
 
@@ -1988,26 +3795,32 @@ Threshold for removing element in trial vectors  1.00D-03
 
   The corrected g values (x, y, z, iso):
 
-             1.99936497        1.99936497        2.00218944        2.00030646
+             1.99937520        1.99937520        2.00218900        2.00031314
 
   The corrected g shifts in ppm (x, y, z, iso):
 
-                -2954.3           -2954.3            -129.9           -2012.8
+                -2944.1           -2944.1            -130.3           -2006.2
 
 * The g_1 corrected g-tensor for H(Zeeman) = 1/2c B g Seff :
 
-            -1.99472984        0.00000000        0.00000000
-             0.00000000        1.99472984        0.00000000
-             0.00000000        0.00000000       -1.99755109
+             1.99474006       -0.00000000        0.00000000
+             0.00000000        1.99474006        0.00000000
+             0.00000000       -0.00000000        1.99755066
+
+  The G-matrix = g * g^T :
+
+             3.97898792        0.00000000        0.00000000
+             0.00000000        3.97898792        0.00000000
+             0.00000000        0.00000000        3.99020864
 
 * The g_1 corrected Dirac eq. g values corresponding to g_e = 2.0023193044
   The g values (x, y, z, iso):
 
-             1.99472984        1.99472984        1.99755109        1.99567026
+             1.99474006        1.99474006        1.99755066        1.99567693
 
   The g shifts in ppm (x, y, z, iso):
 
-                -7589.5           -7589.5           -4768.2           -6649.0
+                -7579.2           -7579.2           -4768.6           -6642.4
 
   The corresponding eigenvectors:
 
@@ -2033,7 +3846,7 @@ Threshold for removing element in trial vectors  1.00D-03
 
   Isotope number:   13
 
-  Isotropic hyperfine coupling constant              340.12 MHz
+  Isotropic hyperfine coupling constant              904.09 MHz
 
 
   Total hyperfine coupling matrix (MHz):
@@ -2041,9 +3854,9 @@ Threshold for removing element in trial vectors  1.00D-03
 
                   Sx             Sy             Sz
 
-  C    x         872.88           0.00           0.00
-  C    y           0.00        -872.88           0.00
-  C    z           0.00           0.00        1020.37
+  C    x         857.01           0.00           0.00
+  C    y           0.00         857.01           0.00
+  C    z           0.00           0.00         998.24
 
 
   ESR hyperfine coupling constants for N     :
@@ -2051,7 +3864,7 @@ Threshold for removing element in trial vectors  1.00D-03
 
   Isotope number:   14
 
-  Isotropic hyperfine coupling constant                8.99 MHz
+  Isotropic hyperfine coupling constant               -6.34 MHz
 
 
   Total hyperfine coupling matrix (MHz):
@@ -2059,9 +3872,9 @@ Threshold for removing element in trial vectors  1.00D-03
 
                   Sx             Sy             Sz
 
-  N    x         -11.83           0.00           0.00
-  N    y           0.00          11.83           0.00
-  N    z           0.00           0.00          26.96
+  N    x         -20.20           0.00           0.00
+  N    y           0.00         -20.20           0.00
+  N    z           0.00           0.00          21.37
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -2069,33 +3882,31 @@ Threshold for removing element in trial vectors  1.00D-03
 
 
  
-     Date and time (Linux)  : Thu May 15 09:21:31 2014
-     Host name              : fe7                                     
 
+>>>> Node 0, utime: 6, stime: 0, minflt: 20308, majflt: 0, nvcsw: 161, nivcsw: 56, maxrss: 75030528
+>>>> Total WALL time used in DIRAC: 7s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :       101.10
+  Mean allocation size (Mb) :       101.07
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine pamprp_+0x316                              for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine psidhf_+0xb0                               for WORK in PSIDHF                            
-      488.28 Mb at subroutine pamset_+0x1b9e                             for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x6424                             for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0xab                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0x569                               for test allocation of work array in DIRAC mai
-        0.77 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
-        0.76 Mb at subroutine paminp_+0xa3                               for PAMINP WORK array                         
-        0.39 Mb at subroutine gtovlx_+0x154                              for unnamed variable                          
-        0.22 Mb at subroutine rgeth2_+0xc23                              for idxb34_reod_geth2                         
+      488.28 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine unknown                                    for WORK in PSIDHF                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
+        0.28 Mb at subroutine unknown                                    for buf in butobs                             
+        0.14 Mb at subroutine unknown                                    for unnamed variable                          
+        0.08 Mb at subroutine unknown                                    for idxb34_reod_geth2                         
   
   Peak memory usage    (Mb) :       489.00
-       reached at subroutine : butobs_no_work_+0x94                      
+       reached at subroutine : unknown                                   
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 33, stime: 0, minflt: 19235, majflt: 0, nvcsw: 7150, nivcsw: 6406, maxrss: 145452
->>>> Total WALL time used in DIRAC: 40s

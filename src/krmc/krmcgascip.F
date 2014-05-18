@@ -2162,7 +2162,7 @@ C
 C     Get active-active part of FCmo:
 C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(A)') '(GASCIP_RCISTD) Active Fock matrix:'
          CALL OUTPUT(WORK(KFCAC),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
       END IF
