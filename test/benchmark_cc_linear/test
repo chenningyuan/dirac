@@ -20,6 +20,6 @@ f.add(from_string = ' Overview of calculated energies',
       rel_tolerance   = 1.0e-6)
 
 test.run(['cc.inp'], ['N2.ccpVQZ.mol'], f, args='--mw=130 --aw=140')
-test.run(['cc.inp'], ['N2.ccpV5Z.mol'], f, args='--mw=180 --aw=200')
+test.run(['cc.inp'], ['N2.ccpV5Z.mol'], f, args='--mw=280 --aw=300')
 
 sys.exit(test.return_code)
