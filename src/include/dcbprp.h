@@ -24,14 +24,14 @@
 
       LOGICAL DOEXP, DOXLR, DOXPP, DOXQR, DIPOLE, EPOLAR, MSUSCP,       &
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
-     &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
+     &        ESRGTENS, ESR_HFCC, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
      &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,SPINRO
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,DOVDW, &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
-     &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
+     &                PVC, DOESR, ESRGTENS, ESR_HFCC, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP,              &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &

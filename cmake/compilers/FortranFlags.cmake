@@ -1,3 +1,8 @@
+# This variable is not guaranteed to be defined for all compilers or languages
+if(NOT DEFINED CMAKE_Fortran_COMPILER_ID)
+	message(FATAL_ERROR "CMAKE_Fortran_COMPILER_ID variable is not defined! (CMake Error)")
+endif()
+
 if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET OR RESET_FLAGS)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
@@ -26,13 +31,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -ftest-coverage"
             )
     endif()
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    message(FATAL_ERROR "g95 is not supported")
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
@@ -65,13 +64,16 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -Bstatic"
+            )
+    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -87,9 +89,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             "${CMAKE_Fortran_FLAGS} "
             )
     endif()
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qsuppress=cmpmsg")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
@@ -108,6 +108,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
+else()
+	message(FATAL_ERROR "Vendor of your Fortran compiler is not supported")
 endif()
 
 if(DEFINED EXTRA_Fortran_FLAGS)

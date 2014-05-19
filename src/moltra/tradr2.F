@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -118,8 +118,6 @@ C
 C
 C     *** New parallel MP2 algorithm ***
 C
-CTROND
-         WRITE(6,*) 'TESTcall TR2MST..',MAXSHL
          KDRIJ = KFREE
          CALL MEMGET('INTE',KDSLST,MAXSHL*6,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTIMDS,MAXSHL,WORK,KFREE,LFREE)
@@ -2635,12 +2633,8 @@ C
          CALL DZERO(TIMDIS,NDSLST)
          CALL SHLLST(NDSLST,IDSLST,INTFLG,WORK(KINDX),
      &               LFREE,IPRINT,SRTSHL)
-CTROND
-         WRITE(6,*) 'TESTa..',NDSLST,MAXTSK
          IF ((IPRINT .EQ. 0) .AND. (IJBTCH .EQ. 1))
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
-CTROND
-         WRITE(6,*) 'TESTb..',NDSLST,MAXTSK
          IBTNFO(1) = IJBTCH
          IBTNFO(2) = LENTSK
          call interface_mpi_BCAST(IBTNFO,2,MPARID,
@@ -2678,8 +2672,6 @@ C
          IF (CMMNFO) WRITE(LUPRI,'(2(A,I4))')
      &        ' <COMMINFO> Master received ', NODINT,
      &        ' from node #', NODE
-CTROND
-         WRITE(6,*) '*TEST...',NODE,NODINT,ITSKSD,NDSLST
 C
 C     Slave is idle and there's more tasks available:
 C        Send next task to slave

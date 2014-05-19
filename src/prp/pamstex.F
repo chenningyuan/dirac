@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -85,6 +85,8 @@ C     Set default cutoff in eV
       STEX_CUTOFF = STEX_CUTOFFEV/XTEV
 C     Screening (-1 means not set here)
       STEX_SCRFCK = -1.0D0
+C     Print level
+      STEX_PRINT=0
 
 C     Add diplen and dipvel to DCBPRP
       PNAME(1) = 'XDIPLEN '

@@ -1,6 +1,6 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -32,7 +32,7 @@ C
 C     Input section for ESR properties
 C
 C     Written by A.Noerager - Mar 2000
-C     Last revision: 
+C     Last revision:
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -41,17 +41,19 @@ C
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
+#include "dcborb.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 12)
-      LOGICAL SET, NEWDEF, RESET, GORG
+      PARAMETER (NTABLE = 15)
+      LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
-     &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI'/
+     &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
+     &            '.COREHO','.MY CI ','.THRPCI'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -75,24 +77,24 @@ C
       IPRESR    = 0
       NESRP     = 0
       MULTIPESR = 0
+      N_CIESR   = -1
       MAX_CIESR_IT = 0
       THR_CVEC_ESR = 1.0D-3
-      N_CIESR   = -1
-      THR_CIESR = 1.0D-6 ! based on 1 ppm = 10**(-6)
+      THRPCI_ESR   = 1.0D-3
+      THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
 C     variables for spin polarization in CI
-      NCESR(1)  = 0
-      NCESR(2)  = 0
-      NVESR(1)  = 0
-      NVESR(2)  = 0
+      NCSH_ESR(:)  = -1
+      NVSH_ESR(:)  = -1
+      NSSH_ESR(:)  = -1
       LVL_CIESR(:) = 0
 C
 C     Initialize orgcom.h
 C     ===================
 C
-      GORG = .FALSE.
+      GORG_BY_USER = .FALSE.
       CALL DZERO(GAGORG,3)
 C
-C     Process input 
+C     Process input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -110,7 +112,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -121,134 +123,184 @@ C
      *            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-    1          CONTINUE ! .GAUGEO
 C Read user specified gauge origin
+    1          CONTINUE ! .GAUGEO
                   READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG = .TRUE.
+                  GORG_BY_USER = .TRUE.
                GO TO 100
     2          CONTINUE ! .PRINT
 C&&&& PRINT:  Print level in ESR module
                   READ(LUCMD,*) IPRESR
                GO TO 100
-    3          CONTINUE ! .OPERATOR
 C&&&& OPERATOR: Define additional operator for results section
+    3          CONTINUE ! .OPERATOR
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRESR)
+     &                        IPRESR)
                   CALL OP1IND('ESRINP',INDESR,LESRP,NESRP,INDXPR,
      &                        MAXESR)
                   DOESR = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
-    4          CONTINUE ! .MULTIPLICITY
 C Read multiplicity
+    4          CONTINUE ! .MULTIPLICITY
                   READ(LUCMD,*) MULTIPESR
                GO TO 100
-    5          CONTINUE ! .SPINPOL
 C&&&& SPINPOLARIZATION (= SCI)
-                  LVL_CIESR(:) = 1
-                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+    5          CONTINUE ! .SPINPOL
+                  LVL_CIESR(1:2) = 1
+                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
                GO TO 100
-    6          CONTINUE ! .SDCI
 C&&&& Singles and doubles CI
-                  LVL_CIESR(:) = 2
-                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+    6          CONTINUE ! .SDCI
+                  LVL_CIESR(1:2) = 2
+                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
                GO TO 100
-    7          CONTINUE ! .MAX CI ITERATIONS
 C&&&& MAX CI ITERATIONS
+    7          CONTINUE ! .MAX CI ITERATIONS
                   READ(LUCMD,*) MAX_CIESR_IT
                GO TO 100
+C&&&& CI ROOTS to calculate
     8          CONTINUE ! .CI ROOTS
-C&&&& CI ROOTS
                   READ(LUCMD,*) N_CIESR
-                  IF (N_CIESR .lt. MULTIPESR)
-     &               CALL QUIT('N_CIESR .lt. MULTIPESR')
                GO TO 100
-    9          CONTINUE  ! .THRCVEC
 C&&&& THRESHOLD FOR CVECS IN GASCIP_RCISTD
+    9          CONTINUE  ! .THRCVEC
                   READ(LUCMD,*) THR_CVEC_ESR
                GO TO 100
+C&&&& Convergence threshold for CI
    10          CONTINUE  ! .THRCI
-C&&&& Convergence threshold for CI 
                   READ(LUCMD,*) THR_CIESR
                GO TO 100
-   11          CONTINUE ! .SDTCI
 C&&&& Singles doubles triples CI
-                  LVL_CIESR(:) = 3
-                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+   11          CONTINUE ! .SDTCI
+                  LVL_CIESR(1:2) = 3
+                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
                GO TO 100
-   12          CONTINUE ! .SDT*CI
 C&&&& MR-CI-SDT/SD
+   12          CONTINUE ! .SDT*CI
                   LVL_CIESR(1) = 3
                   LVL_CIESR(2) = 2
-                  READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+               GO TO 100
+C&&&& number of holes in non-frozen NISH(1:2) - NVSH_ESR(1:2) orbitals
+   13          CONTINUE ! .COREHOLES
+                  READ(LUCMD,*) LVL_CIESR(0)
+               GO TO 100
+C&&&& flexible input of the CI you want
+   14          CONTINUE ! .MY CI
+                  READ(LUCMD,*) LVL_CIESR(0:2)
+                  READ(LUCMD,*) (NCSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
+                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+               GO TO 100
+C&&&& limit for printing CI coefficients in output
+   15          CONTINUE ! .THRPCI
+                  READ(LUCMD,*) THRPCI_ESR
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in ESRINP.'
+     &            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in ESRINP.')
             END IF
       END IF
   300 CONTINUE
+      LVL_CIESR_T = LVL_CIESR(0) + LVL_CIESR(1) + LVL_CIESR(2)
+      IF (LVL_CIESR_T == 0) THEN
+         NCSH_ESR(:) = 0
+         NVSH_ESR(:) = 0
+         NSSH_ESR(:) = 0
+      ELSE
+         IF (NSSH_ESR(1) < 0) THEN
+            NSSH_ESR(1:2) = NSSH(1:2)
+         END IF
+         IF (NCSH_ESR(1) < 0) THEN
+            NCSH_ESR(1:2) = 0
+            IF (NVSH_ESR(1) < 0) THEN
+               NVSH_ESR(1:2) = NISH(1:2) - NFRO(1:2)
+            ELSE IF (LVL_CIESR(0) > 0) THEN
+               NCSH_ESR(1:2) = NISH(1:2) - NFRO(1:2) - NVSH_ESR(1:2)
+            END IF
+         ELSE
+            IF (NVSH_ESR(1) < 0) THEN
+               NVSH_ESR(1:2) = NISH(1:2) - NFRO(1:2) - NCSH_ESR(1:2)
+            END IF
+         END IF
+      END IF
 C
 C     Print section
 C     =============
 C
-      WRITE(LUPRI,'(/A,I5)')
-     & '* Solving ESR problem for an effective spin multiplicity of :',
-     & MULTIPESR
-      IF (N_CIESR .GT. 0) THEN
-         WRITE(LUPRI,'(/A,I5)')
-     &   '* Number of roots to converge in CI:', N_CIESR
-      END IF
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(/A,I3)')
+     & '* Solving EPR/ESR problem for an effective spin multiplicity of'
+     & ,MULTIPESR
       IF (MULTIPESR .LT. 1) THEN
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
-      LVL_CIESR_T = LVL_CIESR(1) + LVL_CIESR(2)
-      IF (LVL_CIESR_T .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' * Spin polarization included with'
-         IF (LVL_CIESR(1) .EQ. 1) THEN
-            WRITE (LUPRI,'(A)') '   - singles CI from core orbitals:'
-         ELSE IF (LVL_CIESR(1) .EQ. 2) THEN
-            WRITE (LUPRI,'(A)')
-     &         '   - singles and doubles CI from core orbitals:'
-         ELSE IF (LVL_CIESR(1) .EQ. 3) THEN
-            WRITE (LUPRI,'(A)') '   - CISDT from core orbitals:'
-         ELSE
-            call quit('only SCI, SDCI, SDTCI implemented so far')
+      IF (LVL_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
+      !  LVL_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF
+         IF (N_CIESR < 0) N_CIESR = MULTIPESR
+         WRITE(LUPRI,'(/A,I5)')
+     &   '* Number of roots to converge in CI:', N_CIESR
+         IF (N_CIESR .lt. MULTIPESR) THEN
+            WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
+            INPERR = INPERR + 1
          END IF
-         WRITE (LUPRI,'(2I5)') (NCESR(I),I=1,NFSYM)
-         IF (LVL_CIESR(2) .EQ. 1) THEN
-            WRITE (LUPRI,'(A)') '   - singles CI to virtual orbitals:'
-         ELSE IF (LVL_CIESR(2) .EQ. 2) THEN
-            WRITE (LUPRI,'(A)')
-     &         '   - singles and doubles CI to virtual orbitals:'
-         ELSE IF (LVL_CIESR(2) .EQ. 3) THEN
-            WRITE (LUPRI,'(A)') '   - CISDT to virtual orbitals:'
-         ELSE
-            call quit('only SCI, SDCI, SDTCI implemented so far')
-         END IF
-         WRITE (LUPRI,'(2I5)') (NVESR(I),I=1,NFSYM)
       END IF
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') 'ESRINP: '
-         CALL PRSYMB(LUPRI,'=',75,0)
-         IF (GORG) THEN
-            WRITE(LUPRI,'(/,A,3F12.6,/)') 'User defined gauge '//
-     &           'origin used:',(GAGORG(I), I = 1, 3)
+      IF (LVL_CIESR_T .GT. 0) THEN
+         WRITE (LUPRI,'(/A)')
+     &      ' * Spin polarization and correlation included with'
+
+         IF (LVL_CIESR(0) .LT. 0) THEN
+            WRITE(LUPRI,*) 'INPUT ERROR: number of core holes < 0'
+            INPERR = INPER + 1
+         ELSE IF (LVL_CIESR(0) .EQ. 0) THEN
+         ELSE
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(0),
+     &         ' holes in non-frozen core orbitals:', NCSH_ESR(1:NFSYM)
          END IF
+
+         IF (LVL_CIESR(1) .LT. 0) THEN
+            WRITE(LUPRI,*) 'INPUT ERROR: number of valence holes < 0'
+            INPERR = INPER + 1
+         ELSE IF (LVL_CIESR(1) .EQ. 0) THEN
+         ELSE
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(1),
+     &         ' holes in valence orbitals:', (NVSH_ESR(I),I=1,NFSYM)
+         END IF
+
+         WRITE (LUPRI,'(A,T50,2I5)') '   - active/open shell orbitals:',
+     &      (NASH(I),I=1,NFSYM)
+
+         IF (LVL_CIESR(2) .LT. 0) THEN
+            WRITE(LUPRI,*)
+     &         'INPUT ERROR: number of virtual space electrons < 0'
+            INPERR = INPER + 1
+         ELSE IF (LVL_CIESR(2) .EQ. 0) THEN
+         ELSE
+            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(2),
+     &        ' electrons in virtual orbitals:', (NSSH_ESR(I),I=1,NFSYM)
+         END IF
+      END IF
+
+      IF (GORG_BY_USER) THEN
+         CALL PRSYMB(LUPRI,'-',75,0)
+         WRITE(LUPRI,'(/A,3F12.6)') '* User defined magnetic '//
+     &           'gauge origin used:',(GAGORG(I), I = 1, 3)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       END IF
+      CALL PRSYMB(LUPRI,'=',75,0)
+
   999 CONTINUE
-      IF (INPERR.GT.0) CALL QUIT('Input error in *ESR')
+      IF (INPERR.GT.0) CALL QUIT('Input error(s) in *ESR')
       RETURN
 C
       END
@@ -313,13 +365,13 @@ C
 C
 C **  Retrieve molecular orbitals
 C
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
       IF (SPINFR.OR.LEVYLE) THEN
-         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &               TOTERG,10,WORK,KFREE,LFREE)
       ELSE
@@ -365,15 +417,16 @@ C
 C     Make CI Hamiltonian matrix (diagonal now, but it may be made
 C     non-diagonal in ESRPHASE)
 C
-      CALL MEMGET('REAL',KHCI,MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HCI',KHCI,
+     &   MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHCI),MZ*MULTIPESR*MULTIPESR)
       DO I = 1, MULTIPESR
          II = KHCI + (I-1)*MULTIPESR + (I-1)
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
-      
-      IF (IPRESR .GT. 5) THEN
-         WRITE(lupri,*) 'WORK(KHCI) AFTER DIAGONAL'
+
+      IF (IPRESR .GT. 25) THEN
+         WRITE(lupri,*) 'DEBUG: WORK(KHCI) AFTER DIAGONAL'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
       END IF
@@ -383,7 +436,7 @@ C     and fix relative phases of these state vectors.
 C
 C     Memory allocation for ESRPHASE and PRPESR1
 C
-      CALL MEMGET('REAL',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMAT',KPMAT,NZ*N2ASHX ,WORK,KFREE,LFREE)
 C
 C
 #ifdef ESR_DEBUG
@@ -394,20 +447,20 @@ C
        IF (MZ .EQ. 2) THEN
           WRITE(LUPRI,*)
      &      'PRPESR: Imag part of the N_CIESR CI vectors'
-          CALL OUTPUT(WORK(KEIGVC),1,NZCONF,1,N_CIESR,
+          KEIGVC_I = KEIGVC + NZCONF*N_CIESR
+          CALL OUTPUT(WORK(KEIGVC_I),1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
        END IF
 #endif
       CALL ESRPHASE(ESRVAL,WORK(KCMO), WORK(KPMAT),
      &              WORK(KHCI),WORK(KEIGVC),MZ,WORK,KFREE,LFREE)
-C      CALL ESRPHASE(ESRVAL,CMO,PMAT,
-C     &             HCI,CIEVEC,MZ,WORK,KFREE,LFREE)
-!d     call memchk('esrphase 3',work,1)
+C     CALL ESRPHASE(ESRVAL,CMO,PMAT,
+C    &              HCI,CIEVEC,MZ,WORK,KFREE,LFREE)
 C
 C     Memory allocation for PRPESR1
 C
-      CALL MEMGET('LOGI',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','ESRST',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMAT ',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
 
       IF (IPRESR .GT. 1) THEN
         WRITE(LUPRI,'(/A)')
@@ -424,10 +477,10 @@ C
 C
       CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
      &             WORK(KEIGVC),MZ,WORK,KFREE,LFREE)
-C      CALL PRPESR1(ESRVAL,LESRST,CMO,PMAT,
-C     &             CIEVEC,MZ,WORK,KFREE,LFREE)
+C     CALL PRPESR1(ESRVAL,LESRST,CMO,PMAT,
+C    &             CIEVEC,MZ,WORK,KFREE,LFREE)
 C
-      IF (IPRESR .GT. 2) THEN
+      IF (IPRESR .GT. 1) THEN
         CALL HEADER('PRPESR results in CI eigenvector basis'//
      &           ' (test output)',1)
         DO I = 1,NESRP
@@ -444,10 +497,10 @@ cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
         ENDDO
       END IF
 C
-      IF (ESRGTENS .OR. ESRANISO) THEN
-         CALL TITLER('DIRAC  - ESR PROPERTIES','*',116)
+      IF (ESRGTENS .OR. ESR_HFCC) THEN
+         CALL TITLER('@  DIRAC  - ESR PROPERTIES','*',116)
          WRITE(LUPRI,'(A,I5)')
-     &   '* Effective spin multiplicity:',MULTIPESR
+     &   '@  *  Effective spin multiplicity:',MULTIPESR
       END IF
       IF (ESRGTENS) THEN
 C
@@ -458,7 +511,7 @@ C     and multiply with 2 (because H_Zeeman = 1/2 * B * g * Seff )
 C
       IF (MULTIPESR .EQ. 2) THEN
 C     ....doublet molecules (S_eff = 1/2)
-C      
+C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
@@ -467,12 +520,12 @@ C
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) =  D4*ESRVAL(jmhlf,jphlf,1,I)
-          GTENSOR(K,2) =  D4*ESRVAL(jmhlf,jphlf,2,I)
+          GTENSOR(K,1) =  D4*ESRVAL(jphlf,jmhlf,1,I)
+          GTENSOR(K,2) = -D4*ESRVAL(jphlf,jmhlf,2,I)
           GTENSOR(K,3) =  D4*ESRVAL(jphlf,jphlf,1,I)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   =  D4*ESRVAL(jmhlf,jphlf,1,J)
-          GCORR(K,2)   =  D4*ESRVAL(jmhlf,jphlf,2,J)
+          GCORR(K,1)   =  D4*ESRVAL(jphlf,jmhlf,1,J)
+          GCORR(K,2)   = -D4*ESRVAL(jphlf,jmhlf,2,J)
           GCORR(K,3)   =  D4*ESRVAL(jphlf,jphlf,1,J)
         ENDDO
 C
@@ -482,7 +535,7 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
-C  BRANCH CODE      
+C  BRANCH CODE
         jm1 = 1
         j0  = 2
         jp1 = 3
@@ -490,8 +543,8 @@ C  BRANCH CODE
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) = D2SQRT2*ESRVAL(jm1,j0 ,1,I)
-          GTENSOR(K,2) = D2SQRT2*ESRVAL(jm1,j0 ,2,I)
+          GTENSOR(K,1) = D2SQRT2*ESRVAL(j0 ,jm1,1,I)
+          GTENSOR(K,2) = D2SQRT2*ESRVAL(j0 ,jm1,2,I)
           GTENSOR(K,3) =      D2*ESRVAL(jp1,jp1,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
 c         WRITE(lupri,*)'K =', K
@@ -499,8 +552,8 @@ c         WRITE(lupri,*)'GTENSOR(K,1)', GTENSOR(K,1),
 c    &                  'GTENSOR(K,2)', GTENSOR(K,2),
 c    &                  'GTENSOR(K,3)', GTENSOR(K,3)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   = D2SQRT2*ESRVAL(jm1,j0 ,1,J)
-          GCORR(K,2)   = D2SQRT2*ESRVAL(jm1,j0 ,2,J)
+          GCORR(K,1)   = D2SQRT2*ESRVAL(j0 ,jm1,1,J)
+          GCORR(K,2)   = D2SQRT2*ESRVAL(j0 ,jm1,2,J)
           GCORR(K,3)   =      D2*ESRVAL(jp1,jp1,1,J)
 c         WRITE(lupri,*)'K =', K
 c         WRITE(lupri,*)'GCORR(K,1)', GCORR(K,1),
@@ -557,7 +610,7 @@ C  BRANCH CODE
         EM1 = WORK(KHCI)
         E0  = WORK(KHCI+  MULTIPESR+1)
         EP1 = WORK(KHCI+2*MULTIPESR+2)
-        ZFS_D = -(E0-(EP1+EM1)/D2) 
+        ZFS_D = -(E0-(EP1+EM1)/D2)
         ZFS_E = (EP1-EM1)/D2
         ZFS_DCM = ZFS_D*XTKAYS
         ZFS_ECM = ZFS_E*XTKAYS
@@ -568,17 +621,17 @@ C  BRANCH CODE
      &   '  ZFS parameter E:      ',ZFS_ECM, ' cm-1 '
 C   END BRANCH CODE
 C
-C   TRUNK CODE 
+C   TRUNK CODE
 C      ZFS_D = -(WORK(KEIGVL) - (WORK(KEIGVL+1)+WORK(KEIGVL+2))/D2)
 C..   ZFS_D = EIGVAL(1) - (EIGVAL(2)+EIGVAL(3))/D2
 C      ZFS_E = (WORK(KEIGVL+1)-WORK(KEIGVL+2))/D2
 C      ZFS_DCM = ZFS_D*XTKAYS
 C      ZFS_ECM = ZFS_E*XTKAYS
 C      CALL HEADER('Zero field splitting parameters:',1)
-C         WRITE (LUPRI,'(5(/,1X,A,F15.8,A))')
-C     &   'ZFS parameter D:                ',ZFS_DCM,  '(cm-1) '
-C         WRITE (LUPRI,'(5(/,1X,A,F15.8,A))')
-C     &   'ZFS parameter E:                ',ZFS_ECM,  '(cm-1) '
+C         WRITE (LUPRI,'(5(/A,F15.8,A))')
+C     &   ' ZFS parameter D:                ',ZFS_DCM,  '(cm-1) '
+C         WRITE (LUPRI,'(5(/A,F15.8,A))')
+C     &   ' ZFS parameter E:                ',ZFS_ECM,  '(cm-1) '
 C     print *, 'ZERO-FIELD D= ',ZFS_DCM, '(cm-1)'
 C   END TRUNK CODE
 
@@ -592,13 +645,13 @@ C
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) =  D2*ESRVAL(3,2,1,I)
-          GTENSOR(K,2) = -D2*ESRVAL(3,2,2,I)
+          GTENSOR(K,1) =  D2*ESRVAL(2,3,1,I)
+          GTENSOR(K,2) = -D2*ESRVAL(2,3,2,I)
           GTENSOR(K,3) =  D4*ESRVAL(3,3,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   =  D2*ESRVAL(3,2,1,J)
-          GCORR(K,2)   = -D2*ESRVAL(3,2,2,J)
+          GCORR(K,1)   =  D2*ESRVAL(2,3,1,J)
+          GCORR(K,2)   = -D2*ESRVAL(2,3,2,J)
           GCORR(K,3)   =  D4*ESRVAL(3,3,1,J)
         ENDDO
 C
@@ -663,9 +716,7 @@ C
       DO I = 1,3
       DO K = 1,3
 C        ... for B field in direction k (x,y,z)
-C        Compaired with the ESR branch we have a phase factor of -1
-C        somewhere that therefor the -GTENSOR(K,I)
-         GTENSOR(K,I) = -GTENSOR(K,I) + GCORR(K,I)
+         GTENSOR(K,I) = GTENSOR(K,I) + GCORR(K,I)
       ENDDO
       ENDDO
 
@@ -710,9 +761,9 @@ C
       ENDIF
 C     .. end if (ESRGTENS) then
 C
-C     Print ESR anisotropies from hyperfine Hamiltonian
+C     Print ESR hyperfine coupling constants from hyperfine Hamiltonian
 C
-      IF (ESRANISO)
+      IF (ESR_HFCC)
      &   CALL PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
 C
 C     Memory deallocation
@@ -732,7 +783,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C*****************************************************************************
 C
 C     --- Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
-C         Modify phases acc. to convention so <M_S + 1 | Sx | M_S > .gt. 0
+C         Modify phases acc. to convention so <M_S + 1 | S_x | M_S > .gt. 0
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -751,8 +802,7 @@ C
      &          HCI(MULTIPESR,MULTIPESR,MZ), CIEVEC(NZCONF,N_CIESR,MZ),
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
-      INTEGER   GETIOPEN, IPCMO(2), IPCMPL(2)
-      DATA IPCMPL/1,2/
+      INTEGER   IPCMO(2)
 C
 C Used from common blocks:
 C  dcbgen : LU1INT,?
@@ -770,8 +820,6 @@ C
 C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
-      print *,'ESRPHASE 1 KFREE,LFREE',KFREE,LFREE
-      call memchk('esrphase 1',work,1)
 C
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &      FILE='AOPROPER')
@@ -813,7 +861,7 @@ C             is a real operator
      &           ESRVAL(1,1,1,2),1,ESRVAL(1,1,1,3),
      &           MULTIPESR,MULTIPESR,WORK(KFREE),LFREE,IERR)
 
-      IF (IPRESR .GT. 10) THEN
+      IF (IPRESR .GT. 4) THEN
         DO I = 2,3
           write (lupri,'(A,I2/A)')
      &     ' test output after qdiag for S_z; ESRVAL matrix',I,
@@ -822,17 +870,18 @@ C             is a real operator
      &                MULTIPESR,MULTIPESR,MZ,IQINDX,LUPRI)
         END DO
       END IF
+
 C
 C     Transform the first HCI matrix to the new CI basis
 C
       CALL DCOPY(N2MULT*MZ,HCI,1,ESRVAL,1)
       CALL QTRANS('AOMO','S',D0,MULTIPESR,MULTIPESR,MULTIPESR,MULTIPESR,
-     &        ESRVAL,         MULTIPESR,MULTIPESR,MZ,IPCMPL,
-     &        HCI,            MULTIPESR,MULTIPESR,MZ,IPCMPL,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IPCMPL,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IPCMPL,
+     &        ESRVAL,         MULTIPESR,MULTIPESR,MZ,IQINDX,
+     &        HCI,            MULTIPESR,MULTIPESR,MZ,IQINDX,
+     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IQINDX,
+     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IQINDX,
      &        WORK(KFREE),LFREE,-1)
-      IF (IPRESR .GT. 1) THEN
+      IF (IPRESR .GT. 3) THEN
         write (lupri,*) ' H_CI matrix after transform. to S_z basis'
         CALL PRQMAT(HCI,MULTIPESR,MULTIPESR,
      &              MULTIPESR,MULTIPESR,MZ,IQINDX,LUPRI)
@@ -841,7 +890,7 @@ C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
 C
       L_CIVEC2 = NZCONF * N_CIESR * MZ
-      CALL MEMGET('REAL',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CIVEC2',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
       CALL DCOPY(L_CIVEC2,CIEVEC,1,WORK(KCIVEC2),1)
       CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,D1,
      &           'N','N',IQINDX,
@@ -879,11 +928,10 @@ C
         ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
-      call memchk('esrphase 4',work,1)
 C
 C
 C     SEFF        = S_eff (one of 0.0, 0.5, 1.0, ...)
-C     MULTIPESR   = 2 * S_eff + 1 
+C     MULTIPESR   = 2 * S_eff + 1
 C     2 for doublet, 3 for triplet, etc.
 C
       SEFF = (MULTIPESR - 1)/2.0D0
@@ -895,7 +943,7 @@ C
       WRITE (LUPRI,'(//A/)')
      &  '*ESRPHASE: checking S_Z(eff) and relative phases ...'
       IERR = 0
-      DO J = 1,MULTIPESR  
+      DO J = 1,MULTIPESR
          SZJ = ESRVAL(J,J,1,3)
          K   = NINT(SZJ+SEFF+D1)
          WRITE (LUPRI,'(A,I5,F15.10,I5)')
@@ -917,19 +965,27 @@ C       (which is same as <J+1|Sigma_X|J> .gt. 0) /tow+hjaaj
 C
       PHASE_JM1_R = D1
       PHASE_JM1_I = D0
-      DO J = 2,MULTIPESR  
+      DO J = 2,MULTIPESR
         JM1 = J-1
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
      &     " J,JM1,<J|S_x|JM1>  :",J,JM1,ESRVAL(J,JM1,1,1),
-     &                           ' + i',ESRVAL(J,JM1,2,1)
-        PHASE_J_R = PHASE_JM1_R*ESRVAL(J,JM1,1,1)
-     &            - PHASE_JM1_I*ESRVAL(J,JM1,2,1)
-        PHASE_J_I = PHASE_JM1_R*ESRVAL(J,JM1,2,1)
-     &            + PHASE_JM1_I*ESRVAL(J,JM1,1,1)
+     &                            ' + i',ESRVAL(J,JM1,2,1)
+        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
+     &     " J,JM1,<J|S_y|JM1>  :",J,JM1,ESRVAL(J,JM1,1,2),
+     &                            ' + i',ESRVAL(J,JM1,2,2)
+        SPLUS_R = ESRVAL(J,JM1,1,1) - ESRVAL(J,JM1,2,2)
+        SPLUS_I = ESRVAL(J,JM1,2,1) + ESRVAL(J,JM1,1,2)
+        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
+     &     " J,JM1,<J|S_+|JM1>  :",J,JM1,SPLUS_R,
+     &                            ' + i',SPLUS_I
+        PHASE_J_R = PHASE_JM1_R*SPLUS_R
+     &            - PHASE_JM1_I*SPLUS_I
+        PHASE_J_I = PHASE_JM1_R*SPLUS_I
+     &            + PHASE_JM1_I*SPLUS_R
 C       ... here PHASE is new phase of vector J-1
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
      &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I
-        PHASE_J_NORM = SQRT(PHASE_J_R**2 + PHASE_J_I**2) 
+        PHASE_J_NORM = SQRT(PHASE_J_R**2 + PHASE_J_I**2)
         PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
         PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
            Seff_M = (JM1 - 1) - Seff
@@ -949,7 +1005,7 @@ C
            PHASE_JM1_R = PHASE_J_R
            PHASE_JM1_I = PHASE_J_I
         ELSE
-           PHASCHK = PHASE_JM1_R * ESRVAL(J,JM1,1,1) 
+           PHASCHK = PHASE_JM1_R * ESRVAL(J,JM1,1,1)
            IF (PHASCHK .LT. D0) THEN
              PHASE_JM1_R = -PHASE_JM1_R
 C         ... here PHASE is updated to new phase of vector J
@@ -1004,8 +1060,7 @@ C
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),CMO(*),PMAT(*),
      &          CIEVEC(NZCONF,N_CIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
-      INTEGER   GETIOPEN, IPCMO(2), IPCMPL(2)
-      DATA IPCMPL/1,2/
+      INTEGER   IPCMO(2)
 C
 C Used from common blocks:
 C  dcbgen : LU1INT,?
@@ -1166,12 +1221,12 @@ C          ELSE
 C             JZ = 2
 Cunoedvendig CALL DZERO(ESRVAL(1,1,1,I),N2CIESR)
 C          END IF
-C      
+C
 C          CALL QTRANS('AOMO','S',D0,N_CIESR,N_CIESR,N_CIESR,N_CIESR,
-C     &        WORK(KPR),N_CIESR,N_CIESR,MZ,IPCMPL(JZ),
-C     &        ESRVAL(1,1,1,I),N_CIESR,N_CIESR,2,IPCMPL,
-C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IPCMPL,
-C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IPCMPL,
+C     &        WORK(KPR),N_CIESR,N_CIESR,MZ,IQINDX(JZ),
+C     &        ESRVAL(1,1,1,I),N_CIESR,N_CIESR,2,IQINDX,
+C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IQINDX,
+C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IQINDX,
 C     &        WORK(KFREE),LFREE,-1)
 C
 ccc       IF ( MOD(NAELEC,2) .EQ. 1) THEN
@@ -1190,7 +1245,7 @@ c         CALL PRPESR2(LU1INT,INDXPR,ESRVAL(I),LESRST(1,I),
 c    &        work(kDMAT),PMAT,work(kPTRI),work(kOP1INT),
 c    &        WORK(KFREE),LFREE,IPRESR)
 c         FMT = MXFORM(ESRVAL(I),15)
-c         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
+c         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
 c    &       PRPNAM(INDXPR),' : ',ESRVAL(I),'a.u.',
 c    &       LESRST(1,I),LESRST(2,I)
 c         CALL FLSHFO(LUPRI)
@@ -1212,10 +1267,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C     --- indsaet kommentar
+C     Calculate one-electron property INDXPR in CI basis (in CIEVEC)
+C     and return result in ESRVAL.
 C
 C     Input:
 C       INDXPR : index of property operator
+C       CMO    : MO coefficients
+C       CIEVEC : CI vectors
+C       MZ     : = 1 if CI vectors real, =2 if complex
+C
+C     Output:
+C       ESRVAL : Property matrix elements in CI basis
+C       PMAT   : Property matrix elements in MO basis
+C
+C     Scratch:
+C       WORK(KFREE:KFREE+LFREE-1)
 C
 C     Based on PRPESR1
 C
@@ -1235,8 +1301,7 @@ C
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2),CMO(*),PMAT(*),
      &          CIEVEC(NZCONF,N_CIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
-      INTEGER   GETIOPEN, IPCMO(2), IPCMPL(2)
-      DATA IPCMPL/1,2/
+      INTEGER   IPCMO(2)
 C
 C Used from common blocks:
 C  dcbgen : LU1INT,?
@@ -1268,8 +1333,10 @@ C
 C
       CALL DZERO(ESRVAL,(MULTIPESR**2)*2)
 C     Allocate memory for property matrix in molfdir format:
-      CALL MEMGET('REAL',KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KMUUUU ,0              ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PMLF ',
+     &   KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MUUUU',
+     &   KMUUUU ,0,WORK,KFREE,LFREE)
 C
 C     Extract symmetry information
 C     =============================
@@ -1308,7 +1375,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 !d    call memchk('esrTRANS 2',work,1)
-      CALL MEMGET('REAL',KIBEIG ,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
       CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
@@ -1337,7 +1404,7 @@ C
          END IF
       END IF
 
-C     In which component of ESRVAL (real or imaginary) should the 
+C     In which component of ESRVAL (real or imaginary) should the
 C     property matrix be ?
 
       IF (MZ .EQ. 2) THEN
@@ -1356,20 +1423,20 @@ C           ESRVAL(MULTIPESR, MULTIPESR, 2)
 C
 
 #ifdef ESR_DEBUG
-         write(lupri,*) 
+         write(lupri,*)
      &   'Check hermiticity before GASCIP_MAKE_P1MAT ', IHRM
-         write(lupri,*) 
+         write(lupri,*)
      &    'N_CIESR,NZCONF,KZCONF,MULTIPESR,IHRM,KPMLF',
      &    N_CIESR,NZCONF,KZCONF,MULTIPESR,IHRM,KPMLF
        WRITE(LUPRI,*)
-     &   'GASCIP_MAKE_P1MAT: Real part of the N_CIESR CI vectors 
-     &    BEFORE MAKE_P1MAT'
+     &   'GASCIP_MAKE_P1MAT: Real part of the N_CIESR CI vectors'//
+     &   ' BEFORE MAKE_P1MAT'
        CALL OUTPUT(CIEVEC,1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
        IF (NZ_in_CI .EQ. 2) THEN
           WRITE(LUPRI,*)
-     &      'GASCIP_MAKE_P1MAT: Imag part of the N_CIESR CI vectors 
-     &       BEFORE MAKE_P1MAT'
+     &      'GASCIP_MAKE_P1MAT: Imag part of the N_CIESR CI vectors'//
+     &      '  BEFORE MAKE_P1MAT'
           CALL OUTPUT(CIEVEC(1,1,2),1,NZCONF,1,N_CIESR,
      &                NZCONF,N_CIESR,-1,LUPRI)
        END IF
@@ -1378,21 +1445,22 @@ C
          CALL GASCIP_MAKE_P1MAT(CIEVEC,N_CIESR,NZCONF,WORK(KZCONF),
      &                         ESRVAL(1,1,JZ),MULTIPESR,IHRM,
      &                         WORK(KPMLF),WORK(KFREE),LFREE,IPRESR)
-C        CALL GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,
-C     &                            P1MAT_CI,N_P1MAT_CI,IHRM_P1,
-C     &                            P1MAT_MO,  WORK,LWORK, IPRINT)
-      ELSE 
+C       CALL GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,
+C    &                         P1MAT_CI,N_P1MAT_CI,IHRM_P1,
+C    &                         P1MAT_MO,  WORK,LWORK, IPRINT)
+      ELSE  ! here if MAX_CIESR_IT .le. 0
 C
-C         First code. Construct complete property matrix over determinants
+C         Our first non-iterative code with full, explicit CI matrices.
+C         Construct complete property matrix over determinants
 C         and transform to the desired property matrix in ESRVAL from
 C         the MULTIPESR first CI vectors with QTRANS afterwards.
 C
          LPCI = MZ*NZCONF*NZCONF
-         CALL MEMGET('REAL',KPR    ,LPCI           ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PR',KPR,LPCI,WORK,KFREE,LFREE)
          KPI  = KPR + NZCONF*NZCONF
          CALL GASCIP_MAKEH(.FALSE.,IHRM,NZCONF,WORK(KZCONF),
      &         WORK(KPR),WORK(KPI),WORK(KPMLF),WORK(KMUUUU))
-         IF (IPRESR .GT. 5) THEN
+         IF (IPRESR .GT. 10) THEN
             IF (MZ .EQ. 2) THEN
                WRITE (LUPRI,'(/A)')
      &          ' Real part of det-CI property matrix'
@@ -1417,10 +1485,10 @@ C        Transform to eigenvector basis
 C
 
          CALL QTRANS('AOMO','S',D0,NZCONF,NZCONF,MULTIPESR,MULTIPESR,
-     &        WORK(KPR),NZCONF,NZCONF,MZ,IPCMPL(JZ),
-     &        ESRVAL,   MULTIPESR,MULTIPESR, 2,IPCMPL,
-     &        CIEVEC,   NZCONF,N_CIESR,MZ,IPCMPL,
-     &        CIEVEC,   NZCONF,N_CIESR,MZ,IPCMPL,
+     &        WORK(KPR),NZCONF,NZCONF,MZ,IQINDX(JZ),
+     &        ESRVAL,   MULTIPESR,MULTIPESR, 2,IQINDX,
+     &        CIEVEC,   NZCONF,N_CIESR,     MZ,IQINDX,
+     &        CIEVEC,   NZCONF,N_CIESR,     MZ,IQINDX,
      &        WORK(KFREE),LFREE,-1)
        END IF
 C
@@ -1435,7 +1503,7 @@ C
           CALL PRQMAT(ESRVAL,MULTIPESR,MULTIPESR,
      &                MULTIPESR,MULTIPESR,NZCMPLX,IQINDX,LUPRI)
 C
-        CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
 C
        END IF
        IF (ITIM.EQ.1) THEN
@@ -1561,7 +1629,7 @@ C
          END IF
       END IF
       RETURN
-      END      
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #ifdef WORK_IN_PROGRESS
 C  /* Deck PRPESR2 */
@@ -1627,7 +1695,7 @@ C
       IF(.NOT.FIRST(IZ)) THEN
         IQ = IPQTOQ(IZ,IREP)
         IH = IHQMAT(IQ,ITIM)
-        IF(IH.EQ.1) THEN        
+        IF(IH.EQ.1) THEN
           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ELSEIF(IH.EQ.2) THEN
           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
@@ -1654,39 +1722,41 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_ESR */
       SUBROUTINE PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
 C***********************************************************************
-C     
+C
 C     Output routine for ESR properties
 C     This routine is modelled after PRP_SHIELD
 C
 C     Written by A.Noerager APR 2000
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C     
+C
 #include "dcbesr.h"
 #include "nuclei.h"
 C
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
-      CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
-C     
+      CALL MEMGET2('REAL','TMAT',KTMAT,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TISO',KTISO,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBUF',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','ATOM',KATOM,NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IATM',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RATM',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CSTRA',KCSTRA,
+     &   NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCTRA',KSCTRA,
+     &   NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMPMAT',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
+C
       CALL SETATM(WORK(KATOM),NATOM,29)
       CALL PRP_ESR1(ESRVAL,WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
      &     WORK(KIATM),WORK(KRATM),WORK(KIBUF),
      &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA) )
       CALL MEMREL('PRP_ESR',WORK,1,KFRSAV,KFREE,LFREE)
-C     
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1694,9 +1764,9 @@ C     /* Deck PRP_ESR1 */
       SUBROUTINE PRP_ESR1(ESRVAL,TMPMAT,TMAT,TISO,IATINF,RATINF,
      &                    IBUFA,DOATOM,CSTRA,SCTRA)
 C***********************************************************************
-C     
+C
 C     Output routine for ESR properties
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1723,8 +1793,8 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
-C     
-      CALL HEADER(' ESR hfs anisotropies : ',1)
+C
+      CALL HEADER('ESR nuclear hyperfine couplings',1)
 C
 C
 C     ***************************************
@@ -1762,10 +1832,10 @@ C
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
           WRITE(LUPRI,'
-     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
           DO J = 2,NISO
-            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
           ENDDO
           DO K = 2,IDEG
@@ -1788,13 +1858,13 @@ C
         WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
         GO TO 9999
       ENDIF
-C     
+C
       NSCOOR = 3*NUCDEP
       NCMAT  = 9*NUCDEP
       CALL DZERO(TMPMAT,NCMAT)
-C     
+C
 C     *** Extract requested nuclear coordinates and B fields ***
-C     
+C
       NA = 0
       DO I = 1,NSCOOR
          IF(IPESR(I,1).GT.0) THEN
@@ -1802,7 +1872,7 @@ C
             IBUFA(NA) = I
          ENDIF
       END DO
-C     
+C
       NB = 0
       DO I = 1, 3
          IF(IPESR(I+MXCOOR,1).GT.0) THEN
@@ -1810,13 +1880,13 @@ C
             IBUFB(NB) = I
          ENDIF
       END DO
-C     
-C     Fill ESR hfs anisotropy matrices Seff_p * TMPMAT * I_N,q
+C
+C     Fill ESR hfcc matrices Seff_p * TMPMAT * I_N,q
 C
 C     The factors in front of ESRVAL will cancel the corresponding
 C     factors in the Seff_p matrices
 C
-C     
+C
       CALL DZERO(TMPMAT,NCMAT)
 C
       IF (MULTIPESR .EQ. 2) THEN
@@ -1827,9 +1897,9 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) = D2*ESRVAL(jmhlf,jphlf,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = D2*ESRVAL(jmhlf,jphlf,2,KA)
-            TMPMAT(IPTAX(3,2),JA) = D2*ESRVAL(jphlf,jphlf,1,KA)
+            TMPMAT(IPTAX(1,2),JA) =  D2*ESRVAL(jphlf,jmhlf,1,KA)
+            TMPMAT(IPTAX(2,2),JA) = -D2*ESRVAL(jphlf,jmhlf,2,KA)
+            TMPMAT(IPTAX(3,2),JA) =  D2*ESRVAL(jphlf,jphlf,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
@@ -1842,8 +1912,8 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) = SQRT2*ESRVAL(jm1,j0 ,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = SQRT2*ESRVAL(jm1,j0 ,2,KA)
+            TMPMAT(IPTAX(1,2),JA) = SQRT2*ESRVAL(j0 ,jm1,1,KA)
+            TMPMAT(IPTAX(2,2),JA) = SQRT2*ESRVAL(j0 ,jm1,2,KA)
             TMPMAT(IPTAX(3,2),JA) =       ESRVAL(jp1,jp1,1,KA)
          ENDDO
 C
@@ -1853,30 +1923,30 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) =    ESRVAL(3,2,1,KA)
-            TMPMAT(IPTAX(2,2),JA) =   -ESRVAL(3,2,2,KA)
+            TMPMAT(IPTAX(1,2),JA) =    ESRVAL(2,3,1,KA)
+            TMPMAT(IPTAX(2,2),JA) =   -ESRVAL(2,3,2,KA)
             TMPMAT(IPTAX(3,2),JA) = D2*ESRVAL(3,3,1,KA)
          ENDDO
       ELSE
-         WRITE(LUPRI,'(//A/A)') ' WARNING:'//
-     &   ' Only doublet and triplet hfs anisotropy implemented yet',
-     &   ' Returning without doing anything ...'
+         WRITE(LUPRI,'(//A/A)') '@ WARNING:'//
+     &   ' Only doublet and triplet hfcc implemented yet',
+     &   '@ Returning without doing anything ...'
          GO TO 9999
       END IF
 C
       IF (IPRPRP.GE.4) THEN
-         CALL HEADER('ESR hfs anisotropies'//
+         CALL HEADER('ESR hfcc'//
      &         ' in symmetry coordinates (B~I,au)',1)
          CALL FCPRI (TMPMAT,'SIGMANO',CSTRA,SCTRA)
       ENDIF
-C     
+C
 C     Transform to non-symmetry basis
-C     
+C
          CALL DZERO(TMAT(1,1,1),NCMAT)
          CALL TRADIP(TMPMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C     
+C
 C     Analyze results
-C     
+C
          NSPEC = 0
          IATOM = 0
          DO 100 I = 1, NUCIND
@@ -1892,8 +1962,8 @@ C
                END IF
  200        CONTINUE
  100     CONTINUE
-C     
-C     
+C
+C
  9999 CONTINUE
       RETURN
       END
@@ -1902,12 +1972,12 @@ C     /* Deck ESRANA */
       SUBROUTINE ESRANA(TMAT,AVETOT,IATINF,RATINF,
      &                  NAME,NAMEX,IPRINT)
 C***********************************************************************
-C     
+C
 C     Analyze routine for ESR properties
 C     This routine is modelled after SHIANA in DALTON
 C
 C     April 2000 A. Noerager
-C     
+C
 C***********************************************************************
       use codata
 #include "implicit.h"
@@ -1939,17 +2009,18 @@ C
          ENDDO
          AVETOT = (TMATNY(1,1)+TMATNY(2,2)+TMATNY(3,3))/D3
          AVETOTX= (XTHZ*1.0D-6) * AVETOT
-       
+
 C
-         CALL TITLER('ESR anisotropy for '//NAME//':','=',1)
+         CALL TITLER(
+     &      'ESR hyperfine coupling constants for '//NAME//':','=',1)
 C
-         WRITE (LUPRI,'(A,F20.8/A,F20.2,A)')
-     &   '  Isotope number:         ',RATINF(1,L),
-     &   '  Isotropic anisotropy:   ',AVETOTX, ' MHz'
+         WRITE (LUPRI,'(A,I5//A,F20.2,A)')
+     &   '  Isotope number:',NINT(RATINF(1,L)),
+     &   '  Isotropic hyperfine coupling constant',AVETOTX, ' MHz'
          IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D20.10,A)')
-     &   '  Isotropic anisotropy:   ',AVETOT,  ' au'
+     &   '  Isotropic hyperfine coupling constant',AVETOT,  ' au'
 C
-         CALL HEADER('Total anisotropy tensor (MHz):',1)
+         CALL HEADER('Total hyperfine coupling matrix (MHz):',1)
          WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
          DO J = 1, 3
             WRITE (LUPRI,'(2X,A6,3F15.2)')
@@ -1957,7 +2028,7 @@ C
          END DO
 C
          IF (IPRINT .GT. 0) THEN
-            CALL HEADER('Total anisotropy tensor (au):',1)
+            CALL HEADER('Total hyperfine coupling matrix (au):',1)
             WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
             DO J = 1, 3
                WRITE (LUPRI,'(2X,A6,1P,3D20.10)')

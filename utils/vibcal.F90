@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,7 +44,7 @@
 
   real*8            :: u, v2, v3, v4, p0, p1, p2, um, omega, step
   real*8            :: fac, a0, a1, a2, a3, v, w, har, anh, tot, dif, dif2
-  real*8            :: err1, err2, err3, edifb, edifh
+  real*8            :: err1, err2, err3, edifb, edifh, edifb3
   real*8            :: chisq, yp, dev, xmin
   real*8            :: Rinf, Rinf3, Rinf4, dRinf, dRinf3, dRinf4, xmax
   real*8            :: total_00, total_01, total_02, total_03 
@@ -52,7 +52,7 @@
   real*8, parameter :: dp5=0.5d0, d1=1.0d0, dp16=0.0625d0, xtcm=2.19474625d+05
   real*8, parameter :: engerr=1.0d-10
 
-  real*8, dimension(   0:4  ) :: b, h, eb, eh
+  real*8, dimension(   0:4  ) :: b, h, b3, eb3, eb, eh
   real*8, dimension(nder  ,2) :: errder
   real*8, dimension(nder  ,3) :: derres
   real*8, dimension(2*nder,2) :: errwng
@@ -105,8 +105,15 @@
 
   ! open output file
   ilogg = 2
-  open(ilogg,file=potfil(1:i)//'.vibcal', &
+  if (keymeth==1) then
+    open(ilogg,file=potfil(1:i)//'.vibcal1', &
        status='unknown',form='formatted',access='sequential')
+  elseif(keymeth==2)then  
+    open(ilogg,file=potfil(1:i)//'.vibcal2', &
+       status='unknown',form='formatted',access='sequential')
+  else
+    STOP 'Unknown option for derivative.'
+  endif
 
   !-----------------------------------------------------------------------------!
   !                 Get force constants and property derivatives                !
@@ -188,6 +195,9 @@
     read(lucmd,*) norder
     write(lupri,*) 'Select point for the calculation of derivatives'
     read(lucmd,*)  xmin
+    if(iang==1)then
+      xmin=xmin/xtang
+    endif
     do while (npoints.le.norder) 
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
@@ -294,6 +304,7 @@
     anh = a2*v + a3*w
     tot = har + anh 
     b(n) = tot         
+    b3(n) = har + a2*v
     h(n) = har
     if(nprint == 1) write(ilogg,'(i5,7e16.8)') n,a0,a1*v,a2*v,a3*w,har,anh,tot
   enddo
@@ -320,11 +331,13 @@
       v = n + dp5
       w = n*n+n+dp5
       eb(n) = v*err1 + v*err2 + w*err3
+      eb3(n) = v*err1 + v*err2 
       eh(n) = v*err1
       if(nprint == 1) write(ilogg,'(i5,5e16.8)') n,0.0d0,v*err1,v*err2,w*err3,eb(n)
     enddo
-    edifb = xthz * 1000.0d0 * (eb(0) + eb(1))
-    edifh = xthz * 1000.0d0 * (eh(0) + eh(1))
+    edifb  = xthz * 1000.0d0 * (eb(0) + eb(1))
+    edifb3 = xthz * 1000.0d0 * (eb3(0) + eb3(1))
+    edifh  = xthz * 1000.0d0 * (eh(0) + eh(1))
   endif
 
   !---------------!
@@ -343,6 +356,14 @@
   else
     write(ilogg,'(a,e40.8,a,f40.1,a)')'  Difference :',dif, ' au = ',dif2, ' mHz'
     write(ilogg,'(a,f40.3,a)')'  PV shift:',2.0d0*dif2,' mHz'
+  endif
+
+  if(keymeth == 1)then
+    dif = b3(1)-b3(0)
+    dif2 = dif*xthz*1000.0d0
+    write(ilogg,'(a)')'  Cubic model:'
+    write(ilogg,'(a,e40.8,a,f40.1,a,f40.4)')'  Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb3
+    write(ilogg,'(a,f40.3,a,f40.4)')'  PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb3
   endif
 
   write(ilogg,'(a)')'  Harmonic model:'

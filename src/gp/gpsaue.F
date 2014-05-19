@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -211,7 +211,7 @@ C
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
       IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'D'
+        MXFORM(1:1) = 'E'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
@@ -1583,7 +1583,7 @@ C        use F output format
 C        use 1PD output format
          LFMT = '(1P,A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = 'D15.8)'
+         RFMT = 'E15.8)'
       END IF
 C
 C LAST is the last column number in the row currently being printed
@@ -3024,6 +3024,7 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
+!#define DEBUG
 #ifdef DEBUG
       print*, 'QTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
@@ -3031,6 +3032,7 @@ C
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
       print*, 'QTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#undef DEBUG
 #endif
 C
 C     Time reversal symmetry of F-matrix
@@ -3086,7 +3088,7 @@ C
             CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = FC
+C         First part of transformation: W = Fao C
 C         ------------------------------------
 C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
@@ -3101,7 +3103,7 @@ C
             CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = (C+)W
+C         Second part of transformation: Fmo = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
@@ -3188,14 +3190,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = F(C+)
+C         First part of transformation: W = Fmo(C+)
 C
           CALL QGEMM(NRMO,NCAO,NCMO,D1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       D0,IQW,BUF,NRMO,NCAO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = CW
 C
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
@@ -3211,14 +3213,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = CF
+C         First part of transformation: W = CFmo
 C
           CALL QGEMM(NRAO,NCMO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       D0,IQW,BUF,NRAO,NCMO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = W(C+)
 C
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
      &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
@@ -3246,8 +3248,13 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
       use memory_allocator
 #include "implicit.h"
-      real(8), allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
+      real(8) :: FAO(LRAO,LCAO,NZAO)
+      real(8) :: FMO(LRMO,LCMO,NZMO)
+      real(8) :: TM1(LR1 ,LC1 ,NZTM1)
+      real(8) :: TM2(LR2 ,LC2 ,NZTM2)
+      integer :: IQAO(nzao),IQMO(nzmo),IQTM1(nztm1),IQTM2(nztm2)
+      real(8), allocatable :: work(:)
       integer IQW(4)
 C     find out how much buffer is needed in qtrans
       IF(TYP.EQ.'AOMO') THEN
@@ -6380,49 +6387,6 @@ C***********************************************************************
       DO I = 1,N
         INDEX(I)=II
         II=II+INC
-      ENDDO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gatmat */
-      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
-C***********************************************************************
-C     This routine will transfer elements from matrix B to matrix A
-C     according to row and column pointers INDR and INDC
-C
-C	Written by T.Saue, March 2011
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION A(LDA,*),B(LDB,NC),INDR(NR),INDC(NC)
-      DO J = 1,NC
-        JJ = INDC(J)
-        DO I = 1,NR
-          II = INDR(I)
-          A(II,JJ)=B(I,J)
-        ENDDO
-      ENDDO
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
-C***********************************************************************
-C     Make reverse indexing for elements of ILIST.GE.0
-C     Written by T. Saue March 31 2011
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION ILIST(NI),JLIST(NJ)
-      J = 0
-      DO I = 1,NI
-      IF(ILIST(I).GE.0) THEN
-        J = J + 1
-        IF(J.GT.NJ) CALL QUIT('REVINDEX: Out of bounds !')
-        JLIST(J) = I
-      ENDIF
       ENDDO
       RETURN
       END

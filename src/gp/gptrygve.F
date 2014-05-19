@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,6 +33,7 @@ C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
 #include "priunit.h"
+      integer, intent(in) :: in
 C
       LHEAD = LNBLNK(HEAD)
       IF (IN .GE. 0) THEN
@@ -43,6 +44,21 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      RETURN
+      END
+      SUBROUTINE HEADER2(HEAD,IN,unitn)
+      CHARACTER HEAD*(*)
+      integer, intent(in) :: unitn, in
+C
+      LHEAD = LNBLNK(HEAD)
+      IF (IN .GE. 0) THEN
+         INDENT = IN + 1
+      ELSE
+         INDENT = MAX(1,(80 - LHEAD)/2 + 1)
+      END IF
+      WRITE (unitn, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (unitn, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
+      WRITE (unitn, '()')
       RETURN
       END
 C  /* Deck timer */

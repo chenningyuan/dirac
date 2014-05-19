@@ -1,6 +1,6 @@
 #define not_GASCIP_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2162,7 +2162,7 @@ C
 C     Get active-active part of FCmo:
 C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(A)') '(GASCIP_RCISTD) Active Fock matrix:'
          CALL OUTPUT(WORK(KFCAC),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
       END IF
@@ -2991,8 +2991,8 @@ C
       DMX = 1.0D0
       DMN = 0.1D0
  10   CONTINUE
-         WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1/)')
-     &     ' Print of CI coefficients in range ',DMN,' to ',DMX
+         WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1,A/)')
+     &     ' Print of CI coefficients in range ',DMN,' to ',DMX,' :'
          K = 0
          DO I = 1, NDET
             DI = 0.0D0
@@ -3002,23 +3002,27 @@ C
             IF (DI .GT. DMN .AND. DI .LE. DMX) THEN
                K = K + 1
                IF (NZ_in_CI .EQ. 1) THEN
-                  WRITE(LUPRI,'(3X,A,I8,A,1P,D20.10,A,0P,F10.8)')
+!                 WRITE(LUPRI,'(3X,A,I8,A,1P,D20.10,A,0P,F10.8)')
+                  WRITE(LUPRI,'(3X,A,I8,A,F20.10,A,F10.8)')
      &                 'Determinant no. ',I,' coeff. ',
      &                 CREF(I,1),'; weight ',DI
                ELSE
+!                 WRITE(LUPRI,
+!    &                 '(3X,A,I8,A,1P,D20.10,A,D20.10,A,0P,F10.8)')
                   WRITE(LUPRI,
-     &                 '(3X,A,I8,A,1P,D20.10,A,D20.10,A,0P,F10.8)')
+     &                 '(3X,A,I8,2(A,F20.10),A,F10.8)')
      &                 'Determinant no. ',I,' coeff. ',
      &                 CREF(I,1),' + ',CREF(I,2),' i; weight ',DI
                END IF
                CALL IDET2STR(IDET(1,I),IDET(2,I),JASTR,JBSTR,IA,IB)
                WRITE(LUPRI,'(3X,A,40I4)')
-     &              'P-string     : ',(JASTR(J),J=1,IA)
-               WRITE(LUPRI,'(3X,A,40I4/)')
-     &              'P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
+     &            '  P-string     : ',(JASTR(J),J=1,IA)
+               WRITE(LUPRI,'(3X,A,40I4)')
+     &            '  P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
             END IF
          END DO
-         IF (K .EQ. 0) WRITE(LUPRI,'(3X,A/)') 'None'
+         IF (K .EQ. 0) WRITE(LUPRI,'(3X,A/)')
+     &      'No CI coefficients in this range.'
          DMX = DMN
          DMN = DMN * 0.1D0
       IF (DMX .GT. THRPCI_local) GO TO 10
@@ -3046,7 +3050,7 @@ C
       END DO ! MK2
       WRITE(LUPRI,9103) NDET,N_NONZERO_TOT
  9100 FORMAT(//' Distribution of determinants wrt. MK'/1X,48('-')
-     &        /6X,'MK',T25,'#dets',T34,'#non-zero'/1X,48('-'))
+     &        /6X,'MK',T23,'#dets',T34,'#non-zero'/1X,48('-'))
  9101 FORMAT(I8,T18,I10,T33,I10)
  9102 FORMAT(I6,'/2',T18,I10,T33,I10)
  9103 FORMAT(1X,48('-') / 5X,'all',T18,I10,T33,I10/1X,48('-'))
