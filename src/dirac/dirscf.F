@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -42,11 +42,7 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -54,7 +50,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpsi.h"
-#include "blocks.h"
 C
       LOGICAL   WFCONV, DO4C2C_SAVE, EX,
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
@@ -163,6 +158,8 @@ C     Memory deallocation of the rest..
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+      call dealloc(work)
+
 C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
@@ -173,9 +170,11 @@ C=============================================================
         SSMTRC = SSMTRC_SAVE
 
         BSS = .FALSE.
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
 CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
         CALL SETDC2(0)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
@@ -187,7 +186,7 @@ CMI      ... prepare the starting 4c Fock MO matrix
         CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
         CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
-C         .... prepare the DFCOEF file with staring MO's
+C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
         CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),   WORK,KFREE,LFREE)
@@ -269,6 +268,8 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
         CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
+        call dealloc(work)
+
         DO2C4C = .FALSE.
       ENDIF
 
@@ -291,7 +292,9 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
 !
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
-        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.)
+
+        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -333,6 +336,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
 
           CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
+        call dealloc(work)
       END IF ! 4c --> 2c switch
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
@@ -344,7 +348,7 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
-      call dealloc(WORK)
+      if(allocated(work)) call dealloc(WORK)
       CALL QEXIT('PSIDHF')
       RETURN
 C
@@ -383,12 +387,11 @@ C*****************************************************************************
 
       use dirac_cfg
       use interface_mo_specific
-      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -397,8 +400,6 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00,
      &          D2 = 2.0D0, DP5=0.5D0)
 C
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -418,6 +419,10 @@ C
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
+
+#if defined (PCM_MODULE)
+      real(8), allocatable :: fock_pcm(:, :, :)
+#endif
 
 C
       CALL QENTER('PREDHF')
@@ -483,6 +488,7 @@ C.......In the open-shell case use fractional occupation in first iteration; res
         NFMATBUF = NFMAT
         NFMAT    = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
+        !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C
@@ -560,6 +566,7 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
+          !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
@@ -577,6 +584,7 @@ C         restore density matrix in DMAT/tsaue
           CALL READNS(LUDENS,DMAT)
         ELSE ! DSCFON
           CALL WRIDNS(LUDENS,DMAT)
+          !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
         END IF ! DSCFON
@@ -590,25 +598,21 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDfde = SECOND()
-        TDF2 = TDfde - TDF2
-
-        call interface_mo_write()
-
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-
-           tdfde =  second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde = SECOND()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde =  second() - tdfde
+           endif
         endif
-#endif
 
         tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -659,6 +663,7 @@ C       ... read 1-electron Fock matrix into FOCK ...
          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
+!       bncron = .false.
         IF(BNCRON .AND. .NOT. ONESYS) THEN
           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
           IF(IPRSCF.GE.12) THEN
@@ -693,10 +698,17 @@ C
                  call quit('NaN found in Fock matrix')
               end if 
            end do
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fock is the 2-el Fock matrix
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
      &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix after pcm_fock')
@@ -1151,7 +1163,7 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C
-C    Solve Hartree-Fock.
+C    Solve SCF
 C
 C
 C   Called from PSIDHF
@@ -1173,15 +1185,13 @@ C
 
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
-
-
 C
 C     Generate one-electron Fock matrix and write to file
 C     ===================================================
 C
+!sk   two-component methods: pct-1-el fock matrix will be read from file (BSSMAT or X2CMAT)
       CALL ONEFCK(FOCK,IPRONE,WORK,LWORK)
-CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
-C       in ONEFCK ... no need to prepare LUFCK1 !!!!
+!sk   we write 1-el fock matrix here and read it later during the scf cycle from file.
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
@@ -1224,14 +1234,11 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "cbihr2.h"
-#include "blocks.h"
       CALL QENTER('SCFCYC')
 #include "memint.h"
 C
@@ -1269,13 +1276,12 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
       use xmlout
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
@@ -1284,8 +1290,6 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00,
      &          D2 = 2.00D00)
 C
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -1295,7 +1299,8 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
 #include "densfit.h"
-      LOGICAL   LBIT
+      real(8), allocatable :: aoo2esssoc(:)
+      LOGICAL   LBIT, tobe
       type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1304,6 +1309,7 @@ C
 #ifdef PCM_MODULE
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
+      real(8), allocatable :: fock_pcm(:, :, :)
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1335,7 +1341,6 @@ C
       CALL FLSHFO(LUPRI)
 
       DO 10 ITER = 2,MAXITR
-
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -1369,8 +1374,6 @@ C
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
 #endif
-
-
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1461,24 +1464,20 @@ C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
-!       mi - variable initialization (otherwise runtime-check failure)
-
-        tdfde= second()
-        call interface_mo_write()
-
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_dirac_set_nz(nz)
-!          call fde_calculate_embpot(ntbas(0),dmat,fock)
-           call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
-           tdfde = second() - tdfde
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_update_vemb) then
+              tdfde= second()
+              call interface_mo_write()
+              call fde_dirac_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
+              tdfde = second() - tdfde
+           endif
         endif
-#endif
-
-        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           tdxc = second()
+           call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1499,13 +1498,11 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
- 
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-
 C
 C        Calculate correction according to the One-center app. models 
 C        ============================================================
@@ -1517,16 +1514,44 @@ C
 C
 C        Calculate total energy
 C        ======================
+         inquire(file='aoo2e-ss-soc-contributions',exist=tobe)
+         if(tobe)then
+           open(99,file='aoo2e-ss-soc-contributions',status='old',
+     &     form='unformatted',
+     &     access='sequential',action="readwrite",position='rewind')
+           allocate(aoo2esssoc(ntbas(0)**2*nz))
+           read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+           close(99,status='keep')
+           call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
+           call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
+           if(aoc) call quit('AOC not working yet for aoo2esssoc...')
+           !> stefan: enabling this is wrong but not doing it as well...
+           !> if possible the contributions should be added in the MO basis but how to calculate the energy at this point correctly???
+!          IF (AOC) THEN
+!             DO IOPEN = 1,NOPEN
+!                CALL DAXPY(N2BBASXQ,1.0d0,
+!    &                      aoo2esssoc,1,
+!    &                      FOCK(1+N2BBASXQ*IOPEN),1)
+!              END DO
+!           END IF
+           deallocate(aoo2esssoc)
+         end if
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-
 #ifdef PCM_MODULE
          if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver'
-! fock is the 2-el Fock matrix
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
-           call pcm_fock_driver(fock, dmat, 1, -1.0d0, 
-     &              work(kfree), lfree)
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
+! fock is the 2-el Fock matrix
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fock, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
 #endif
@@ -1536,14 +1561,13 @@ C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
          CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
-
 C
 C        Add active two-electron Fock matrices
 C
          IF(AOC) THEN
            DO IOPEN = 1,NOPEN
 C
-C             The factor in only DF and not D2*DF because of the
+C             The factor is only DF and not D2*DF because of the
 C                multiplication with D2 in TWOFCK.
 C
               CALL DAXPY(N2BBASXQ,DF(IOPEN),
@@ -1692,18 +1716,15 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use fde_mod
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf
 #endif
 
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
      &          DP25 = 0.25D00)
-#include "mxcent.h"
 C
-#include "nuclei.h"
 #include "frame.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1724,7 +1745,6 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-      real(kind=8) :: fde_energy
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
@@ -1759,6 +1779,7 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
+!        print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
@@ -1807,7 +1828,7 @@ C
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
-        call pcm_energy_driver(pcm_energy, dmat, 1, work, lwork)
+        call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
 #endif
@@ -1825,12 +1846,6 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
-
-!     if (dirac_cfg_fde) then
-!        call fde_export_write_data_to_memory('DHF') 
-!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-!        write (*,*) 'FDE energy: ',fde_energy
-!     endif
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1955,6 +1970,7 @@ C
       IF(LBIT(INTDEF,2)) THEN
         ISLINT = 1
         IF(.NOT.LBIT(INTOLD,2)) THEN
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(1) /= dummy) ISLINT = 0
           IF(ABS(CNV).GT.CNVINT(1)) ISLINT = 0
           IF(ITR     .LT.ITRINT(1)) ISLINT = 0
         ENDIF
@@ -1968,6 +1984,7 @@ C
       IF(LBIT(INTDEF,3)) THEN
         ISSINT = 1
         IF(.NOT.LBIT(INTOLD,3)) THEN
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(2) /= dummy) ISSINT = 0
           IF(ABS(CNV).GT.CNVINT(2)) ISSINT = 0
           IF(ITR     .LT.ITRINT(2)) ISSINT = 0
         ENDIF
@@ -1983,6 +2000,7 @@ C
         IF(.NOT.LBIT(INTOLD,4)) THEN
 C         Activate at the same point as the SS for the moment
 C         One could als put it with SL, comes in that order
+          IF(ABS(CNV) == 0.0d0 .and. CNVINT(2) /= dummy) IGTINT = 0
           IF(ABS(CNV).GT.CNVINT(2)) IGTINT = 0
           IF(ITR     .LT.ITRINT(2)) IGTINT = 0
         ENDIF
@@ -2360,9 +2378,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "frame.h"
-#include "nuclei.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -3088,16 +3104,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
-#include "aovec.h"
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 C
 #include "dcbfir.h"
 #include "dcbgen.h"
 #include "dcbmvo.h"
-#include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
@@ -4101,7 +4113,8 @@ C
           IBEIG(IORB(I)+J) = 0
         ENDDO
 
-
+         iprham_save = iprham
+!        iprham = 5
 C ... control print out of the matrix to be diagonalized
          IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -4220,7 +4233,8 @@ C
               IPOS=IPOS+1
              ENDDO
              ENDDO
-             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,IDUMMY,.TRUE.,2)
+             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,
+     &                    IDUMMY,.TRUE.,IPRSCF)
               IPOS=0
               DO II=1,NBO
                 EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
@@ -4334,6 +4348,7 @@ C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
+        iprham = iprham_save
 C
  30   CONTINUE
 C
@@ -5026,16 +5041,12 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxorb.h"
-#include "aovec.h"
-C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "blocks.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2),NO(2)
 C
 #include "memint.h"
@@ -5428,7 +5439,7 @@ C.........extract selected vectors from CMO and place in CBUF
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
@@ -5446,10 +5457,15 @@ C.........Generate contribution to atomic density matrix from this shell
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
-        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
-     &                   NUCDEG(ICENT),NZC1,
+        CALL MEMGET('INTE',KR1BUF,NTBAS(0),WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KC1BUF,NTBAS(0),WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KI1BUF,NBAS,WORK,KFREE,LFREE)      
+        CALL MEMGET('INTE',KJ1BUF,NBAS,WORK,KFREE,LFREE) 
+        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),NTBAS(0),ICENT,
+     &                   NONT(IATOM),NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
-     &                   WORK,KFREE,LFREE)
+     &                   WORK(KR1BUF),WORK(KC1BUF),
+     &                   WORK(KI1BUF),WORK(KJ1BUF))
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
@@ -5494,71 +5510,6 @@ C.......transform atomic start to actual symmetry
         ENDDO
       ENDIF
       CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,NZC1,
-     &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
-     &                       WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Put an atomic block into a molecular matrix
-C       AMOL        - molecular matrix
-C       NBAS        - dimension of molecular matrix
-C       INUC        - index of first atom of this type in list of
-C                     symmetry-independent centers
-C       NONT        - number of symmetry-independent centers of this type
-C       NDEG(ICENT) - degeneracy of symmetry-independent center ICENT
-C
-C       ATOM        - atomic matrix with leading row LR and column LC
-C       NR          - real rows of atomic matrix
-C       NC          - real columns of atomic matrix            
-C
-C     Written by T. Saue March 31 2011
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION AMOL(NBAS,NBAS,NZC1),ATOM(LR,LC,NZC1),NDEG(*),
-     &          WORK(*)
-      KFRSAV=KFREE
-      ICENT=INUC
-      CALL MEMGET('INTE',KRBUF,NBAS,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
-      DO ITYP = 1,NONT
-        DO IDEG = 1,NDEG(ITYP)
-C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
-          IF(N1.NE.NR) THEN
-            WRITE(6,'(A,2(/A,I5))') 
-     &                'PUT_AOBLOCK: Error in row number',
-     &                'Expected  : ',NR,
-     &                'Found     : ',N1
-            CALL QUIT('PUT_AOBLOCK: Error in row number !')
-          ENDIF
-C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KRBUF),NBAS,WORK(KIBUF),NR)
-C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(N2,WORK(KCBUF),NBAS,1,IC_CLS,ICENT,IDEG,-1)
-          IF(N2.NE.NC) THEN
-            WRITE(6,'(A,2(/A,I5))') 
-     &                'PUT_AOBLOCK: Error in column number',
-     &                'Expected  : ',NC,
-     &                'Found     : ',N2
-            CALL QUIT('PUT_AOBLOCK: Error in column number !')
-          ENDIF
-C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
-          DO IZ = 1,NZC1
-            CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
-     &                 WORK(KIBUF),WORK(KJBUF))
-          ENDDO
-        ENDDO
-        ICENT = ICENT + 1
-      ENDDO
-      CALL MEMREL('PUT_AOBLOCK',WORK,1,KFRSAV,KFREE,LFREE)
-C
       RETURN
       END
 

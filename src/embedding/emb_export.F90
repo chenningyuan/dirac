@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,14 +21,15 @@
 
 module fde_export_data
 
+#ifdef MOD_UNRELEASED
    use fde_cfg
    use fde_types
-#ifdef MOD_UNRELEASED 
    use fde_data
    use fde_io
    use xml_parser
    use xml_file
    use fde_evaluators
+#endif
    
    public fde_export_to_file
 
@@ -36,6 +37,16 @@ module fde_export_data
    
    contains
 
+#ifndef MOD_UNRELEASED 
+!   ----------------------------------------------------------------------------
+      subroutine fde_export_to_file(level)
+!   ----------------------------------------------------------------------------
+         character(len=4) :: level
+
+         call fde_quit('FDE density/el. pot. not available in this version')
+      end subroutine fde_export_to_file
+      
+#else
 !   ----------------------------------------------------------------------------
       subroutine fde_export_to_file(level)
 !   ----------------------------------------------------------------------------

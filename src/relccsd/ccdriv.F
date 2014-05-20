@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -180,7 +180,8 @@ CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00,
+     &                 STATE_E_FSCC
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
@@ -219,7 +220,7 @@ C
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-C     
+
 C     Note that reading this namelist may override the Dirac style input. Leave 
 C     this at the discretion of the user for the moment.
       READ (IN,RELCCSD,END=2,ERR=1)
@@ -357,6 +358,8 @@ CMI   ...provide with default values
       MAXIT10=relcc_fs_max10_iterations 
       MAXIT11=relcc_fs_max11_iterations 
       MAXIT20=relcc_fs_max20_iterations 
+!     stefan: select state sorted by energy for numerical gradient calculation   
+      STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
 CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)
@@ -499,7 +502,7 @@ C
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
-      if(molmf3)then
+      if(X2CMMF)then
         if(.not.relcc_use_orbital_energies) 
      &          relcc_use_orbital_energies = .true.
         if(.not.relcc_no_recompute) 
@@ -529,6 +532,12 @@ C
 C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
+
+      if (DOENER.AND.DOFSPC) then
+         relcc_do_energy = .false.
+         DOENER = .FALSE.
+      endif
+
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE

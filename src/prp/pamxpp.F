@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -493,7 +493,7 @@ C&&&& ANALYZe: Analyze individual contributions to repsonse functions
     4          CONTINUE
 C&&&& OPERATOR: operator of transition moment
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
+     &                        IPRXPP)
                   CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
      &                        MAXLPP)
                GO TO 100
@@ -1962,7 +1962,7 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
         deallocate(excbuf)
         deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
-     &              NEXC,INDX,IRPS,IND)
+     &              NEXC,INDX,IRPS,IND,xxdummy,-1)
         deallocate(n_ev)
 C
 C     Spinfree case with high enough symmetry to distinguish singlets and triplets
@@ -2026,7 +2026,7 @@ C.......we include the ground state
         deallocate(excbuf)
         deallocate(iebuf)
         CALL PRT_EV(LUPRI,N_IRPS,N_EV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
-     &              NEXC,INDX,IRPS,IND)
+     &              NEXC,INDX,IRPS,IND,xxdummy,-1)
         deallocate(n_ev)
       ELSE
 C.....Default case
@@ -2050,7 +2050,7 @@ C.....Default case
         EXCERG(1) = 0.0D0
         KEXCNV(1) = KEXCNV(1) + 1
         CALL PRT_EV(LUPRI,NBSYM,KEXCNV,SYMLAB,XPPERG,0.0D0,1,EXCERG,
-     &              NEXC,INDX,IRPS,IND)
+     &              NEXC,INDX,IRPS,IND,xxdummy,-1)
         KEXCNV(1) = KEXCNV(1) - 1
 C.......Make an extra empty symmetry label to use below
         MEXC= MAXEXC*NBSYM

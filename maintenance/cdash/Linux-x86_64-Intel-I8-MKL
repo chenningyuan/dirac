@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# these env variables are machine dependent, adapt to your needs
+source /opt/intel/bin/compilervars.sh intel64
+
+BRANCH='master'
+PAMADM_FLAGS='--adm'
+NUM_CORES=1
+
+while getopts b:p:n: opt; do
+  case $opt in
+  b)
+      BRANCH=$OPTARG
+      ;;
+  p)
+      PAMADM_FLAGS=$OPTARG
+      ;;
+  n)
+      NUM_CORES=$OPTARG
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+BUILDNAME="$BRANCH-$(basename $0)"
+
+CTEST_TEMP_DIR=/tmp/cdash-scratch
+mkdir -p $CTEST_TEMP_DIR
+
+export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
+
+git clone git@repo.ctcc.no:dirac $CTEST_TEMP_DIR/compile
+
+cd $CTEST_TEMP_DIR/compile
+git checkout $BRANCH &> /dev/null
+./pamadm $PAMADM_FLAGS
+./setup --fc=ifort --cc=icc --cxx=icpc --int64 --mkl=sequential -D BUILDNAME=$BUILDNAME
+cd build
+make -j$NUM_CORES
+ctest -D Nightly -j$NUM_CORES
+
+rm -rf $CTEST_TEMP_DIR
+
+exit 0

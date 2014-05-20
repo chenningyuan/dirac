@@ -1,10 +1,13 @@
-get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-
-message("-- System: ${CMAKE_SYSTEM_NAME}")
+message("-- System                : ${CMAKE_SYSTEM_NAME}")
+message("-- Processor type        : ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 message("-- Fortran compiler flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${cmake_build_type_toupper}}")
-message("-- C compiler flags: ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${cmake_build_type_toupper}}")
-message("-- Libraries: ${LIBS}")
-message("-- Definitions: ${LIST_OF_DEFINITIONS}")
+message("-- C compiler flags      : ${CMAKE_C_FLAGS}       ${CMAKE_C_FLAGS_${cmake_build_type_toupper}}")
+message("-- C++ compiler flags    : ${CMAKE_CXX_FLAGS}     ${CMAKE_CXX_FLAGS_${cmake_build_type_toupper}}")
+message("-- Libraries             : ${EXTERNAL_LIBS}")
+
+get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+message("-- Definitions           : ${_list_of_definitions}")
+unset(_list_of_definitions)
 
 # get size of static allocations
 foreach(_binary ${STATIC_MEM_INFO_BINARIES})

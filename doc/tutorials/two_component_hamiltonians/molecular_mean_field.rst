@@ -1,15 +1,14 @@
 
 
-I would like to use the 2c-molecular-mean-field Hamiltonian (X2Cmmf) - what do i need to consider?
---------------------------------------------------------------------------------------------------
+Molecular mean-field X2C
+========================
 
-The 2c-molecular-mean-field Hamiltonian (X2Cmmf) is at present **available** for the following methods:
+The molecular-mean-field X2C Hamiltonian (X2Cmmf) is **available** for the following methods:
 
--  Coupled-Cluster
--  Fock-space Coupled Cluster (including the intermediate Hamiltonian
-   version)
+-  Coupled Cluster (CC): module RELCCSD
+-  multi-reference (MR) CC: Fock-space CC (including the intermediate Hamiltonian IHFSCC version): module RELCCSD
 
-The remaining modules are **not supported** yet but patches are planned in the course of 2013:
+The remaining post-SCF modules are **not supported** yet:
 
 -  KR-MCSCF
 -  KR-CI
@@ -18,50 +17,57 @@ The remaining modules are **not supported** yet but patches are planned in the c
 The X2Cmmf Hamiltonian scheme can be used for the Dirac-Coulomb as well
 as the Dirac-Coulomb-Gaunt Hamiltonian (add .GAUNT to \*\*HAMILTONIAN).
 
-As follows we will consider the necessary inputs for an X2Cmmf
-calculation where we perform the SCF + post-SCF calculation in **one**
-shot or **two separate** runs:
+One-step X2Cmmf
+---------------
 
--  **one-step** procedure:
-
-   -  add .X2Cmmf to the \*\*HAMILTONIAN keyword section:
+In order to perform a two-component (MR)CC after a four-component SCF calculation add the keyword .X2Cmmf 
+to the \*\*HAMILTONIAN keyword section:
 
 ::
 
     **HAMILTONIAN
     .X2Cmmf
 
-that's it. After the SCF calculation the program will proceed with the
-transformation to 2-components prior to the post-HF steps.
+After the SCF calculation Dirac will carry out the transformation to two-component prior to the 4-index transformation of
+the two-electron integrals and the CC run.
 
--  **two-step** procedure (**EXPERT mode**!):
+Two-step X2Cmmf
+---------------
 
-1. ***SCF step***. Add .X2Cmmf to the \*\*HAMILTONIAN keyword section:
+Besides the one-step X2Cmmf protocol as described above one may also proceed in seperate steps. 
+This may be useful if one would like to use less/more MPI processes in the SCF+decoupling step than in the 4-index/CC calculation. 
+The first step (SCF+decoupling) simply requires the .X2Cmmf keyword under the \*\*HAMILTONIAN input deck (same as above):
 
 ::
 
     **HAMILTONIAN
     .X2Cmmf
 
-and save the file DFCOEF (keyword *--outcmo* with our default submit
-script *pam*)
+Save the files DFCOEF, AOMOMAT and X2CMAT, for example using the *pam* script::
 
-2. ***post-HF step***. Remove .X2Cmmf from the \*\*HAMILTONIAN section
-(**non-intuitive (!)** step which will be solved in Dirac12) and add the
-following keywords to the \*\*MOLTRA and namelist RELCCSSD input
-section.
+    ./pam ... --outcmo --get="AOMOMAT X2CMAT"
 
-::
+To restart now any further calculation, for example the 4-index transformation (MOLTRA) and/or the (MR)CC run copy the above files to
+your scratch directory::
 
-    **MOLTRA
-    .INTFL2
-    1 0 0 0
-    .INTFL4
-    1 0 0 0
-    ...
-    ...
+    ./pam ... --incmo --put="AOMOMAT X2CMAT"
+
+and set the keyword combination as indicated below under the \*\*HAMILTONIAN input deck::
+
+    **HAMILTONIAN
+    .X2C
+    *X2C
+    .mmf-restart
+
+In order to run a (MR)CC calculation add also the following keyword(s) to the namelist RELCCSSD input::
+
     &CCSORT USEOE=T, NORECMP=T &END
 
-You are now ready to restart your post-HF calculation but do not forget
-to copy your MO-coefficient file DFCOEF to your scratch directory, i.e.
-add *--incmo* to your *pam* command line.
+
+or the new RELCCSD deck input::
+
+    *CCSORT
+    .NORCMP
+
+Dirac will automatically read the two-component coefficients from the file DFCOEF and proceed in two-component mode for
+any wave function analysis or post-HF step required for a (MR)CC calculation.

@@ -51,28 +51,40 @@ module electrostatic_potential
    if (el_part) then
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
-      call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0)
+! Never neglect SS-block for visualization purposes
+      call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0, .false., .false.)
       call dealloc(work)
    end if
 
    end subroutine
 
-   subroutine get_mep(nr_points, points, mep, dmat, work, lwork, iprint)
+   subroutine get_mep(nr_points, points, mep, dmat, work, lwork, iprint, skipss)
 
 #include "dcbbas.h"
 #include "dgroup.h"
 
 ! Passed variables
       integer, intent(in)  :: nr_points
-      real(8), intent(in)  :: points(nr_points, 3)
+      real(8), intent(in)  :: points(3, nr_points)
       real(8), intent(in)  :: dmat(ntbas(0), ntbas(0), nz)
       real(8), intent(out) :: mep(nr_points)     
       real(8)              :: work(*)
       integer              :: iprint, lwork
+      logical, optional    :: skipss
+! Local variables
+      logical              :: skipss_block
+ 
+! Skip SS block?      
+      skipss_block = .false. 
+      if (present(skipss)) then
+        if (skipss) then
+            skipss_block = .true.
+        end if
+      end if
 
 ! Get nuclear and electronic contribution.
       call get_nuclear_mep(nr_points, points, mep, iprint)
-      call get_electronic_mep(nr_points, dmat, points, mep, work, lwork, iprint, .false.)
+      call get_electronic_mep(nr_points, dmat, points, mep, work, lwork, iprint, .false., skipss_block)
 
    end subroutine
 
@@ -94,8 +106,9 @@ module electrostatic_potential
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in) :: nr_points
-      real(8) :: points(3, nr_points), nuc_mep(nr_points)
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: points(3, nr_points)
+      real(8), intent(out) :: nuc_mep(nr_points)
       integer :: iprint
 
 !     Local variables
@@ -143,7 +156,8 @@ module electrostatic_potential
 !  array nuc_mep(r_i) contains the nuclear MEP at point r_i.
 ! 
 ! We also take care of symmetry, since it is straightforward 
-! for the nuclei.      
+! for the nuclei.
+! The ele_mep vector is not zeroed out in this subroutine!
 !
 ! RDR 0612.
 !
@@ -152,8 +166,9 @@ module electrostatic_potential
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in) :: nr_points
-      real(8) :: points(3, nr_points), ele_mep(nr_points)
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: points(3, nr_points) 
+      real(8), intent(out) :: ele_mep(nr_points)
       integer :: iprint
 
 !     Local variables
@@ -173,7 +188,6 @@ module electrostatic_potential
          enddo
       enddo
 
-      ele_mep = 0.0d0
       do i = 1, nucdep 
         do ipoint = 1, nr_points
             dist = (coora(1, i) - points(1, ipoint))**2 +               &
@@ -192,7 +206,7 @@ module electrostatic_potential
    end subroutine
 
    subroutine get_electronic_mep(nr_points, matrix, points, vector,    &
-                        work, lwork, iprint, get_matrix)
+                        work, lwork, iprint, get_matrix, skipss_block)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -247,8 +261,10 @@ module electrostatic_potential
 ! potential.      
       logical, optional   :: get_matrix 
       real(8)             :: vector(nr_points)
-      real(8)             :: points(3, nr_points), work(*)
+      real(8), intent(in) :: points(3, nr_points)
+      real(8)             :: work(*)
       integer             :: iprint, lwork
+      logical             :: skipss_block
 
 ! Local variables
       real(8), allocatable :: ader(:, :, :)
@@ -277,8 +293,11 @@ module electrostatic_potential
       tolog = 2 * log(thrs)
 ! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
+      if (mc == 1) then
 ! Looping only over LL block only
-      if (mc == 1) then 
+          idxmax = nlrgsh
+      else if  (skipss_block) then
+! Looping only over LL block only
           idxmax = nlrgsh
       else 
           idxmax = kmax
@@ -368,6 +387,13 @@ module electrostatic_potential
        idena = idena + khkta * multa
       end do
 
+      if (skipss_block .and. (.not. do_matrix) .and. (mc /= 1)) then
+! Simple Coulombic Correction for the MEP when skipss is selected.
+! This must NOT be done when:
+! 1. we want a Fock matrix contribution;
+! 2. MC == 1, i.e. the Hamiltonian specified does not make use of the SS-block
+          call get_scc_electronic_mep(nr_points, points, vector, iprint)
+      end if
 
 !          do ipoint = 1, nr_points
 !            print *, "Electronic ESP @point", ipoint, vector(ipoint)

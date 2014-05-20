@@ -8,11 +8,13 @@ module orbital_rotation_indices
    public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
+   public set_orbital_rotation_indices
+   public setxop
 
    private
 
-   integer, allocatable, target, public :: orbital_rotation_indices_pp(:)
-   integer, allocatable, target, public :: orbital_rotation_indices_pn(:)
+   integer, allocatable, target :: orbital_rotation_indices_pp(:)
+   integer, allocatable, target :: orbital_rotation_indices_pn(:)
 
    logical :: is_initialized = .false.
 
@@ -41,8 +43,6 @@ contains
       call check_if_interface_is_initialized()
       p => orbital_rotation_indices_pn
    end function
-
-end module
 
       SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,           &
                    NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,                      &
@@ -76,9 +76,6 @@ end module
 !
 !***********************************************************************
 
-      use orbital_rotation_indices
-
-#include "implicit.h"
 #include "priunit.h"
 !
 ! Used from common blocks:
@@ -93,10 +90,14 @@ end module
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
-      DIMENSION NSTR(0:2,3,2)
-      DIMENSION NOROT(*)
+      integer :: NSTR(0:2,3,2)
+      integer :: NOROT(*)
       integer, allocatable :: ibuf(:)
       integer              :: idummy(2)
+      integer              :: kxope, kxopp, nxope, nxopp, nhope
+      integer              :: nbuf
+      integer              :: iprint
+      integer              :: iopsy
 !
       CALL QENTER('SETXOP')
       KXOPE = -1
@@ -154,7 +155,7 @@ end module
 
       CALL QEXIT('SETXOP')
 
-      END
+      end subroutine
 
 
 
@@ -166,7 +167,6 @@ end module
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -178,12 +178,20 @@ end module
 #include "dcbbas.h"
 #include "dcbxrs.h"
 !
-      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION NOROT(*)
+      integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: NOROT(*)
+      integer :: nhope, nxope, iprint
       LOGICAL GAS
       LOGICAL dryrun
+      integer :: isym, jsym
+      integer :: isti, iendi, ista, ienda
+      integer :: jsti, jendi, jsta, jenda
+      integer :: jsts, jends
+      integer :: ia, ja, js, in, j, iaa, jaa
+      integer :: indi, inda, inds
+      integer :: iopsy
 !
-      DIMENSION JACAC(MAXASH,MAXASH)
+      integer :: JACAC(MAXASH,MAXASH)
 !
       CALL QENTER('SETXEE')
 !
@@ -390,7 +398,7 @@ end module
       end if
 !
       CALL QEXIT('SETXEE')
-      END
+      end subroutine
 
       SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT,dryrun)
 !***********************************************************************
@@ -400,7 +408,6 @@ end module
 !     Written by T.Saue July 21 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 !
 #include "dgroup.h"
@@ -408,8 +415,11 @@ end module
 #include "dcbbas.h"
 !
       LOGICAL QED, dryrun
-      DIMENSION JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION NOROT(*)
+      integer :: JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: NOROT(*)
+      integer :: nxopp, iprint
+      integer :: indi, iopsy, isym, jsym, inds, is, iends, ists, inda
+      integer :: isti, iendi, ista, ienda, in, jp, j, ia, indp
 !
       CALL QENTER('SETXEP')
 !
@@ -500,7 +510,8 @@ end module
       end if
 !
       CALL QEXIT('SETXEP')
-      END
+
+   end subroutine
 
       SUBROUTINE UNPSTR(INDSTR,NTYP,IND,LIND,NIND,IPRINT)
 !***********************************************************************
@@ -510,14 +521,15 @@ end module
 !     Written by T.Saue July 19 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 !
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER INDSTR(NTYP,NFSYM)*72
-      DIMENSION IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
+      integer :: IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
+      integer :: iprint, ntyp, lind
+      integer :: ifrp, ityp, nvec, i, ioff, joff
 !
       DO IFRP = 1,NFSYM
         DO ITYP = 1,NTYP
@@ -573,8 +585,8 @@ end module
           ENDDO
         ENDDO
       ENDIF
-!
-      END
+
+   end subroutine
 
       SUBROUTINE RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
 !***********************************************************************
@@ -586,7 +598,6 @@ end module
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -597,15 +608,19 @@ end module
 #include "dcborb.h"
 #include "dcbbas.h"
 !
-      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION JACAC(MAXASH,MAXASH)
-      DIMENSION NOROT(*)
+      integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: JACAC(MAXASH,MAXASH)
+      integer :: NOROT(*)
 !
-      DIMENSION IGAS(MAXASH)
+      integer :: IGAS(MAXASH)
+      integer :: iprint, nxope, iopsy
       LOGICAL GASCAS(MXGAS), dryrun
+      integer :: nxopes, isym, i, j, ii, ngst, jsym
+      integer :: mincas, maxcas
+      integer :: ista, ienda, jsta, jenda
+      integer :: ia, ja, iaa, jaa
+
 !
-!
-!     iprint = 20
       NXOPES = NXOPE
 !
 !     Set up help arrays
@@ -759,8 +774,8 @@ end module
             END DO
          END IF
       end if
-!     stop 'after GASCAS determination.'
-      END
+
+   end subroutine
 
    subroutine set_orbital_rotation_indices(                            &
                                            do_pp,                      &
@@ -770,8 +785,6 @@ end module
                                            orbital_rotation_vector_pp, &
                                            orbital_rotation_vector_pn  &
                                           )
-
-      use orbital_rotation_indices
 
       logical :: do_pp
       logical :: do_pn
@@ -803,3 +816,5 @@ end module
       call set_as_initialized()
 
    end subroutine
+
+end module

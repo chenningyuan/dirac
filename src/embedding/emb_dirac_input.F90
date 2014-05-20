@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -82,7 +82,6 @@ module fde_input_dirac
               read(lucmd,*) pl
               call fde_set_print_level(pl)
 
-#ifdef MOD_UNRELEASED
             CASE ('.FRDENS')
                read(lucmd,'(A60)') ftmp%frozen%name
                itmp%im_frozen   = .true.
@@ -115,6 +114,7 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
+#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
@@ -131,6 +131,7 @@ module fde_input_dirac
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                skip_all_imports = .true.
+               doprp = .true.
 
 #endif /* MOD_UNRELEASED */ 
 

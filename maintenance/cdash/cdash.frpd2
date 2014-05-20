@@ -3,29 +3,25 @@
 # ------------------------ #
 # enviroment variables ... #
 # ------------------------ #
-#export PATH=/home/ilias/bin:/home/ilias/bin/openmpi_i32lp64_static/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-#export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
 
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 
 # go to the local DIRAC directory
 cd $DIRAC
+git checkout release-13
 
-export DIRTIMEOUT="10m"
+export DIRTIMEOUT="14m"
 
 BUILD_GNU=build_gnu_ilp64
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
+./pamadm -a --builddir=$BUILD_GNU
 # configure step
-export DIRAC_NUM_MPI_TASKS=3
-./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64"  -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
+./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64-check-release13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
 cd $BUILD_GNU
-make clean
-cmake ..
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
@@ -36,7 +32,6 @@ make ExperimentalSubmit
 ####  server's Intel compilers  ####
 if [[ -z $PROD_DIR ]]; then
   source /home/ilias/intel/bin/compilervars.sh intel64
-  #source /opt/intel/bin/compilervars.sh intel64
   echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
   export MATH_ROOT=/home/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 fi
@@ -47,16 +42,10 @@ if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL"
   /bin/rm -rf $BUILD_INTEL
 fi
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
+./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intel_mkl_ilp64" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8_release-13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
 cd $BUILD_INTEL
-make ExperimentalUpdate
-make clean
-cmake ..
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
+make Experimental
 
 exit 0

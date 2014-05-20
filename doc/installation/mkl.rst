@@ -57,5 +57,5 @@ Sometimes you could get this error::
   OMP: Error #18: Setting environment variable "__KMP_REGISTERED_LIB_12973" failed:
   OMP: Hint: Seems application required too much memory.
 
-This can happen with statically linked multithreaded MKL library,
+This can happen with statically linked multi-threaded MKL library,
 see `here <http://software.intel.com/en-us/forums/showthread.php?t=104947>`_.

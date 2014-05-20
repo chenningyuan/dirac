@@ -14,9 +14,7 @@ Modules not running with 32 bit integers
 ----------------------------------------
 
 * LUCITA
-* KR-MCSCF (using LUCIAREL)
-* KR-CI modules
-* large Coupled-Cluster calculations
+* VERY large Coupled-Cluster calculations
 
 
 gfortran: Can't open module file
@@ -35,10 +33,3 @@ calculations on large molecules. The issue is reported to Intel, but affect
 ifort at least up to version 10. As far as we know there is no solution except
 to use a different compiler.
 
-
-Old MKL libraries
------------------
-
-All libraries have bugs and we have experienced one in an older MKL library
-(http://software.intel.com/en-us/forums/intel-math-kernel-library/topic/61244/).
-In doubt update MKL or use the built-in LAPACK implementation.

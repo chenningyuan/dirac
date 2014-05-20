@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -437,7 +437,7 @@ end function iodfac
 
 ! --------------- SOCFPD ---------------
 SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair, &
-           ijsf,mru,la,lb,mstu,idp,nsopr,mau,mics,mjcs,nd,nprir,npair,ilfact,esfb)
+           ijsf,mru,la,lb,mstu,idp,nsopr,mau,MAXICS,MAXJCS,nd,nprir,npair,ilfact,esfb)
   USE RECP_IPT
   USE RECP_FUNCTION2
   IMPLICIT NONE
@@ -445,11 +445,11 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
 #include "inc_print.h"
 ! global variable
   INTEGER nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair,ijsf
-  INTEGER mru,la(mru,*),lb(*),mstu,idp(mstu,mstu,*),nsopr(*),mau(*),mics(*),mjcs(*),nd(*)
+  INTEGER mru,la(mru,*),lb(*),mstu,idp(mstu,mstu,*),nsopr(*),mau(*),MAXICS(*),MAXJCS(*),nd(*)
   INTEGER nprir(2,mstu,*),npair(2,*),ilfact
   LOGICAL esfb
-! global variable
-  INTEGER ist,ipr,ics,jcs,ir,jr,lai,laj,npru,iesfb
+! local variable
+  INTEGER ist,ipr,ics,jcs,ir,jr,la1,la2,npru,iesfb
 
  
   if(esfb) then
@@ -460,9 +460,7 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
     npru = iru * jru
   endif
  
-  if (npru.gt.mnrup) then
-    call bummer('change mnrup (one place) to ',npru,2)
-  endif
+  if (npru.gt.mnrup) call bummer('change mnrup (one place) to ',npru,2)
 
   npr = 0 
   DO ist = 1, nst
@@ -471,26 +469,26 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
      isfr = isfrib
      DO ir = 1, iru
         isfr = isfr + 1
-        lai = la(ir,iaords)
+        la1 = la(ir,iaords)
         IF(esfb) jru = ir
         jsfr = jsfrjb
         jcs = 0
         DO jr = 1, jru
            jsfr = jsfr + 1
-           laj = la(jr,jaords)
-!          print *,'socfpd: idp',lai,laj,ist,'=',idp(lai,laj,ist)
-           IF ( idp(lai,laj,ist).NE.0 ) THEN
+           la2 = la(jr,jaords)
+!          print *,'socfpd: idp',la1,la2,ist,'=',idp(la1,la2,ist)
+           IF ( idp(la1,la2,ist).NE.0 ) THEN
               ipair = ipair + 1
-              IPT_IL(ipair) = (nsopr(lai)+lb(isfr))*ilfact + (nsopr(laj)+lb(jsfr))
+              IPT_IL(ipair) = (nsopr(la1)+lb(isfr))*ilfact + (nsopr(la2)+lb(jsfr))
  
               npr = npr + 1
-              mau(npr)  = nd(lai)
-              mics(npr) = ics
-              mjcs(npr) = jcs
+              mau(npr)  = nd(la1)
+              MAXICS(npr) = ics
+              MAXJCS(npr) = jcs
            ENDIF
-           jcs = jcs + nd(laj)
+           jcs = jcs + nd(la2)
         ENDDO
-        ics = ics + nd(lai)
+        ics = ics + nd(la1)
      ENDDO
      nprir(iesfb,ist,ijsf) = npr - ipr
   ENDDO
@@ -498,16 +496,17 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
 END SUBROUTINE RECP_SOCFPD_SETNPR
 
 
-SUBROUTINE RECP_SOCFPD_SETICXU(RETURNVALUE,igcs,jgcs,ijsf,icx,IPQ_TEMP,icu,icxu,isf,jsf, &
-           npr,mcxu,icxa,mgcsu,icxsv1,icxsv2,icxst,icxast,nt,jcu,esfb,ea)
+SUBROUTINE RECP_SOCFPD_SETICXU(RETURNVALUE,igcs,jgcs,ijsf,icx,icu,icxu,isf,jsf, &
+           npr,MAXCX,icxa,ngcs,icxsv1,icxsv2,icxst,icxast,nt,jcu,esfb,SO_CALC)
   USE RECP_FUNCTION2
   IMPLICIT NONE
 ! global variable
-  INTEGER RETURNVALUE,igcs,jgcs,ijsf,icx,IPQ_TEMP,icu,icxu,isf,jsf,npr,mcxu,icxa,mgcsu
-  INTEGER icxsv1(*),icxsv2(mgcsu,*),icxst(2,*),icxast(*),nt(*),jcu
-  LOGICAL esfb,ea
+  INTEGER RETURNVALUE,igcs,jgcs,ijsf,icx,icu,icxu,isf,jsf,npr,MAXCX,icxa,ngcs
+  INTEGER icxsv1(ngcs),icxsv2(ngcs,ngcs)
+  INTEGER icxst(2,*),icxast(*),nt(*),jcu
+  LOGICAL esfb,SO_CALC
 ! local variable
-  INTEGER isv1,isv2
+  INTEGER isv1,isv2,SUM0
 
   RETURNVALUE = 0  !set initial return value  
 
@@ -515,54 +514,51 @@ SUBROUTINE RECP_SOCFPD_SETICXU(RETURNVALUE,igcs,jgcs,ijsf,icx,IPQ_TEMP,icu,icxu,
      isv1 = icxsv1(igcs)
      if (isv1.ne.0) then
         icxst(1,ijsf) = icxst(1,isv1)
-        if(ea) icxast(ijsf) = icxast(isv1)
+        if(SO_CALC) icxast(ijsf) = icxast(isv1)
         RETURNVALUE = 1
         RETURN
      endif
 
      icxsv1(igcs) = ijsf
      icxst(1,ijsf) = icx
-     IPQ_TEMP = (icu*nt(isf)+1)*( (icu*nt(isf)+1)-1 )/2
-     icxu = icx+(npr*IPQ_TEMP)
-!    print *,'socfpd-icxu :',icxu
-     if ( ea ) then
-        IPQ_TEMP = (icu*nt(isf)+1)*((icu*nt(isf)+1)-1)/2
-        mcxu = mcxu-(npr*IPQ_TEMP)
-!       print *,'socfpd-mcxu :',mcxu
-        icxa = mcxu
+     SUM0 = (icu*nt(isf)+1)*((icu*nt(isf)+1)-1)/2
+     icxu = icx+(npr*SUM0)
+     if (SO_CALC) then
+        MAXCX = MAXCX-(npr*SUM0)
+        icxa = MAXCX 
         icxast(ijsf) = icxa
      endif
   else
      isv2 = icxsv2(jgcs,igcs)
-     if ( isv2 .ne. 0 ) then
+     if (isv2.ne.0) then
         icxst(2,ijsf) = icxst(2,isv2)
         RETURNVALUE = 1
         RETURN
      endif
      icxsv2(jgcs,igcs) = ijsf
      icxst(2,ijsf) = icx
-     icxu = icx+npr*icu*nt(isf)*jcu*nt(jsf)
+     SUM0 = icu*nt(isf)*jcu*nt(jsf)
+     icxu = icx+npr*SUM0
   endif
 
-  if (icxu.gt.mcxu) then
-     call bummer('socfpd: (icxu-mcxu)=',(icxu-mcxu),2)
-  endif
+  if (icxu.gt.MAXCX) call bummer('socfpd: (icxu-MAXCX)=',(icxu-MAXCX),2)
+! print *,'SOCFPD-MAXCX :',MAXCX
 END SUBROUTINE RECP_SOCFPD_SETICXU
 
 
-SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,mics,mjcs, &
-           mau,igcs,jgcs,FILE_NUM,ea,msfbct,esfb)
+SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS,MAXJCS, &
+           mau,igcs,jgcs,FILE_NUM,SO_CALC,msfbct,esfb)
 ! # compute new cx block
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
 ! global variable
-  INTEGER icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,mics(*),mjcs(*),mau(*),igcs,jgcs,FILE_NUM(3)
-  LOGICAL ea,msfbct,esfb
+  INTEGER icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS(*),MAXJCS(*),mau(*),igcs,jgcs,FILE_NUM(3)
+  LOGICAL SO_CALC,msfbct,esfb
 ! local variable
   INTEGER ic,jc,ict,jct,it,jt,ictic,jctjc
   LOGICAL easfb,esfbc
-  easfb = ea .and. esfb
+  easfb = SO_CALC.and.esfb
   ict = 0
   DO ic = 1, icu
      ictic = ict
@@ -580,7 +576,7 @@ SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,mics,mjcs, &
               jct = jct + 1
               msfbct = (.not.esfb) .or. (ic.eq.jc .and. it.eq.jt)
 
-              CALL RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,  &
+              CALL RECP_SOCFPD_CX0(npr,icx,icxa,MAXICS,MAXJCS,  &
                    mau,ict,jct,igcs,jgcs,FILE_NUM,easfb,msfbct)
            ENDDO
         ENDDO
@@ -589,13 +585,13 @@ SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,mics,mjcs, &
 END SUBROUTINE RECP_SOCFPD_CALCX0
 
 
-SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
+SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,MAXICS,MAXJCS,mau,ict,jct,igcs,jgcs, &
            FILE_NUM,easfb,msfbct)
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
 ! global variable
-  INTEGER npr,icx,icxa,mics(*),mjcs(*),mau(*),ict,jct,igcs,jgcs,FILE_NUM(*)
+  INTEGER npr,icx,icxa,MAXICS(*),MAXJCS(*),mau(*),ict,jct,igcs,jgcs,FILE_NUM(*)
   LOGICAL easfb,msfbct
 ! local variable
   INTEGER I,J,ICS,JCS
@@ -613,8 +609,8 @@ SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
 
 !    set ICS/JCS
 !    -----------
-     ICS = mics(I)
-     JCS = mjcs(I)
+     ICS = MAXICS(I)
+     JCS = MAXJCS(I)
 
 !    write file for debug
 !    --------------------
@@ -625,7 +621,7 @@ SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
         ENDIF
      ENDIF
 
-!    get IPT_CX1
+!    get IPT_CX0
 !    -----------
      DO J = 1, mau(I)
         ICS = ICS + 1
@@ -653,50 +649,39 @@ SUBROUTINE RECP_SOCFPD_CX0(npr,icx,icxa,mics,mjcs,mau,ict,jct,igcs,jgcs, &
 END SUBROUTINE RECP_SOCFPD_CX0
 
 
-SUBROUTINE RECP_SOCFPD_SHIFTCX(mcxu,mcxu1,icx,icxu,ijsf,icxast,ea)
-! # move antisymmetric coefficient products down.
+SUBROUTINE RECP_SOCFPD_SHIFTCX(MAXCX,MAXCX0,icx,icxu,ijsf,icxast,SO_CALC)
+! move antisymmetric coefficient products down.
 
-! #       offsets: 0               mcxu1  mblu
-! # before: a(*)-->................c(*)
-! #                0          mcxu mcxu1  mblu
-! # now:    a(*)-->cx(*)......x(*),c(*)
-! #                0    mcxu2 mcxu       (mblu+mcxu)
-! # after:  a(*)-->cx(*),x(*),........
+!       offsets: 0               MAXCX0  mblu
+! before: a(*)-->................c(*)
+!                0          MAXCX MAXCX0  mblu
+! now:    a(*)-->cx(*)......x(*),c(*)
+!                0    MAXCX2 MAXCX       (mblu+MAXCX)
+! after:  a(*)-->cx(*),x(*),........
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
 ! global variable
-  INTEGER mcxu,mcxu1,icx,icxu,ijsf,icxast(*)
-  LOGICAL ea
+  INTEGER MAXCX,MAXCX0,icx,icxu,ijsf,icxast(*)
+  LOGICAL SO_CALC
 ! local variable
   INTEGER I,icxl
-  if (ea) then
-!    # on return, mcxu2 is the offset for the s.o. coefficients.
+  IF (SO_CALC) THEN
      icxl  = icx + 1
-     icxu  = mcxu - icx
-     mcxu  = mcxu1 - icxu
-!    print *,'socfpd :',icxl, mcxu
-     do icx = icxl, mcxu
-       IPT_CX0(icx) = IPT_CX0(icx+icxu)
-!      print *,'socfpd:cx(',icx,')',IPT_CX0(icx)
+     icxu  = MAXCX - icx
+     MAXCX = MAXCX0 - icxu
+     do icx = icxl, MAXCX
+        IPT_CX0(icx) = IPT_CX0(icx+icxu)
      enddo
 
-!    # make pointers relative to mcxu2 instead of 0.
      do I = 1, ijsf
-       icxast(I) = icxast(I) - icxu
+        icxast(I) = icxast(I) - icxu
      enddo
-
-!    # on return, mcxu and mblu divide the workspace as:
-!    # a(*)-->[cx//x](1:mcxu),w(1:mblu)
-  else
-!    # on return, mcxu and mblu divide the workspace as:
-!    # a(*)-->cx(1:mcxu),w(1:mblu)
-     mcxu = icx
-  endif
-
-  IF (RECP_DBG.GE.2) THEN
-     write(RECP_OUT,'(A,I9)') ' * socfpd: mcxu=',mcxu
+  ELSE
+     MAXCX = icx
   ENDIF
+
+  IF (RECP_DBG.GE.2) WRITE(RECP_OUT,'(A,I9)') ' * SOCFPD: MAXCX=',MAXCX
 END SUBROUTINE RECP_SOCFPD_SHIFTCX
 
 

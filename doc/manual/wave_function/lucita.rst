@@ -132,7 +132,7 @@ example for D:math:`_{2h}`:
 
 keyword(RSTRCI)
 
-Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation):
+Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation; until including DIRAC v13.1):
 
 ::
 
@@ -145,6 +145,20 @@ Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation)
 
     .RSTRCI
      0
+
+Convergence threshold for energy (double-precision value):
+
+::
+
+    .CONVER
+     x.xd-0x
+
+*default*: 1.0d-08
+
+::
+
+    .CONVER
+     1.0d-08
 
 **Specific input -- GASCI**
 ===========================
