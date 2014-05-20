@@ -50,6 +50,7 @@ C     Bin Gao, Nov. 9, 2011
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
+      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
@@ -200,6 +201,9 @@ C#endif
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
+      DIPORG_SET = .FALSE.
+      GAGORG_SET = .FALSE.
+      CAVORG_SET = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
@@ -602,12 +606,14 @@ C
             GO TO 100
  170     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+            GAGORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
             ENDIF
             GO TO 100
  171     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
+            DIPORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
             ENDIF
@@ -920,15 +926,6 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
          ENDIF
       END IF
-
-! Miro: I hope that these coordinates are in atomic units
-      IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
-      IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
-      IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
-
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
       IF (SOTEST) WRITE (LUPRI,'(/,A,/)')
@@ -1067,17 +1064,27 @@ C
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
 #endif
       CALL SETDCH
-      IF (DORLM .AND. .NOT. CAVUSR) THEN
-         DO 234 I = 1, MXCENT
-            ISOTOP(I) = 1
- 234     CONTINUE
-         KGEOM = 1
-         KMASS = KGEOM + 3*NATOMS
-         KNAT  = KMASS + NATOMS
-         KLAST = KNAT + (NATOMS + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+C.....Find center of mass
+      DO 234 I = 1, MXCENT
+         ISOTOP(I) = 1
+ 234  CONTINUE
+      KGEOM = 1
+      KMASS = KGEOM + 3*NATOMS
+      KNAT  = KMASS + NATOMS
+      KLAST = KNAT + (NATOMS + 1)/IRAT
+      IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
      &                                     LWORK)
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+      IF(.NOT.GAGORG_SET) THEN
+         CALL DCOPY(3,CMXYZ,1,GAGORG)
+      ENDIF
+      WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
+      WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
+      WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Origin for London phase factor (a.u.):', (ORIGIN(I),I=1,3)
+      IF (DORLM .AND. .NOT. CAVUSR) THEN
          CALL DCOPY(3,CMXYZ,1,CAVORG,1)
          WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
