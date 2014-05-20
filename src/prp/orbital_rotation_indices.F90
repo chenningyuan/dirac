@@ -1,15 +1,12 @@
 module orbital_rotation_indices
 
-!  radovan: this can be improved a lot
-!           but for the moment it is working
-
    implicit none
 
-   public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
    public set_orbital_rotation_indices
    public setxop
+   public update_orbital_rotation_indices
 
    private
 
@@ -20,13 +17,9 @@ module orbital_rotation_indices
 
 contains
 
-   subroutine set_as_initialized()
-      is_initialized = .true.
-   end subroutine
-
    subroutine check_if_interface_is_initialized()
       if (.not. is_initialized) then
-         print *, 'error: you try to access orbital_rotation_indices'
+         print *, 'ERROR: you try to access orbital_rotation_indices'
          print *, '       but this interface is not initialized'
          stop 1
       end if
@@ -44,8 +37,39 @@ contains
       p => orbital_rotation_indices_pn
    end function
 
+   subroutine update_orbital_rotation_indices(in_nzhope, &
+                                              in_nzxope, &
+                                              in_nzxopp, &
+                                              in_jzxope,  &
+                                              in_jzxopp)
+      integer, intent(in) :: in_nzhope
+      integer, intent(in) :: in_nzxope
+      integer, intent(in) :: in_nzxopp
+      integer, intent(in) :: in_jzxope(*)
+      integer, intent(in) :: in_jzxopp(*)
+
+#include "dcbxrs.h"
+
+      nzhope = in_nzhope
+      nzxope = in_nzxope
+      nzxopp = in_nzxopp
+
+      if (nzhope > 0) then
+         if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
+         allocate(orbital_rotation_indices_pp(nzhope*2))
+         orbital_rotation_indices_pp(1:nzhope*2) = in_jzxope(1:nzhope*2)
+      end if
+
+      if (nzxopp > 0) then
+         if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
+         allocate(orbital_rotation_indices_pn(nzxopp*2))
+         orbital_rotation_indices_pn(1:nzxopp*2) = in_jzxopp(1:nzxopp*2)
+      end if
+
+   end subroutine
+
       SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,           &
-                   NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,                      &
+                   NXOPE,NHOPE,NXOPP,                  &
                    IPRINT)
 !***********************************************************************
 !
@@ -94,14 +118,12 @@ contains
       integer :: NOROT(*)
       integer, allocatable :: ibuf(:)
       integer              :: idummy(2)
-      integer              :: kxope, kxopp, nxope, nxopp, nhope
+      integer              :: nxope, nxopp, nhope
       integer              :: nbuf
       integer              :: iprint
       integer              :: iopsy
 !
       CALL QENTER('SETXOP')
-      KXOPE = -1
-      KXOPP = -1
       NXOPE =  0
       NXOPP =  0
       NHOPE =  0
@@ -151,7 +173,7 @@ contains
       end if
 
       deallocate(ibuf)
-      call set_as_initialized()
+      is_initialized = .true.
 
       CALL QEXIT('SETXOP')
 
@@ -813,7 +835,7 @@ contains
          orbital_rotation_indices_pn = 0
       end if
 
-      call set_as_initialized()
+      is_initialized = .true.
 
    end subroutine
 

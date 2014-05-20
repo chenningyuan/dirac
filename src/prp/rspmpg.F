@@ -288,7 +288,7 @@ C     Initialize orbital parameters
 C     =============================
 C
                call xrspar(xlr_indstr,xlr_skipee,xlr_skipep,
-     &                     work,kfree,lfree,IPRXLR)
+     &                     IPRXLR)
 C
 C     Property gradient
 C     =================
@@ -298,7 +298,7 @@ C
                call memget('REAL',kgpoe,nzxopeq,work,kfree,lfree)
                call memget('REAL',kgpop,nzxoppq,work,kfree,lfree)
                call pamgrd_mpg(indprb,work(kgpoe),
-     &                         work(kgpop),jopsy,work(kzconf),
+     &                         work(kgpop),jopsy,
      &                         get_orbital_rotation_indices_pp(),
      &                         get_orbital_rotation_indices_pn(),
      &                         nzconf,nzxope,
@@ -431,7 +431,7 @@ C
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd_mpg */
-      SUBROUTINE PAMGRD_MPG(INDXPR,GPOE,GPOP,JOPSY,JCONF,JXOPE,
+      SUBROUTINE PAMGRD_MPG(INDXPR,GPOE,GPOP,JOPSY,JXOPE,
      &                      JXOPP,NCONF,NXOPE,NXOPP,XMO,WORK,KFREE,
      &                      LFREE,IPRINT)
 C***********************************************************************
@@ -454,7 +454,6 @@ C
 #include "dcbxpr.h"
       dimension gpoe(*)
       dimension gpop(*)
-      dimension jconf(*)
       dimension jxope(*)
       dimension jxopp(*)
       DIMENSION XMO(*)
