@@ -566,6 +566,7 @@ C     *STEX
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+! IAA why NMRINP has to be here?
 !gosia: i have to reset these variables once again...
 !or always remember to put *NMR .LONDON in the input...
       if (bxlao .or. bylao .or. bzlao) then

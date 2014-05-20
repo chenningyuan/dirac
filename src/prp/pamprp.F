@@ -9179,7 +9179,7 @@ C     Print section for spin-rotation:
 C
 
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'spin-rotation:'
+      WRITE(LUPRI,'(1X,A)') 'Nuclear spin-rotation constant:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
 C      Print reference
