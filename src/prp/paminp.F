@@ -111,6 +111,7 @@ C
       MSUSCP       = .FALSE.
       IMAGOUT      = 0
       SHIELD       = .FALSE.
+      SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       SPNSPN       = .FALSE.

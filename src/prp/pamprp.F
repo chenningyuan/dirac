@@ -1347,12 +1347,6 @@ C
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
-C     Spin-rotation constant
-C
-      IF(SPINRO) THEN
-         CALL DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
-      ENDIF
-C
 C     Optical rotation
 C
       IF (OPTROT) THEN
@@ -1378,8 +1372,16 @@ C
      &  ' contribution to NMR shieldings not calculated.'
       ENDIF
 C
+C
+C
       IF (ROTG) THEN
        CALL DEF_ROTG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Spin-rotation constant
+C
+      IF(SPINRO) THEN
+         CALL DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 
 ! gosia:
@@ -9053,7 +9055,7 @@ C     Define right-hand operators
 C
 C.....Orbital angular momentum
 C
-      PNAME     = 'Orb.ang.mom.:  X'
+      PNAME     = 'X Orb. ang. mom.'
       IPTYP     = 1  ! diagonal operator
       NPCOMP    = 1  ! one component
       PFAC(1)   = D1 ! factor
@@ -9065,7 +9067,7 @@ C
 !      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Orb.ang.mom.:  Y'
+      PNAME     = 'Y Orb. ang. mom.'
       IPTYP     = 1  ! diagonal operator
       NPCOMP    = 1  ! one component
       PFAC(1)   = D1 ! factor
@@ -9077,7 +9079,7 @@ C
 !      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Orb.ang.mom.:  Z'
+      PNAME     = 'Z Orb. ang. mom.'
       IPTYP     = 1  ! diagonal operator
       NPCOMP    = 1  ! one component
       PFAC(1)   = D1 ! factor
@@ -9091,7 +9093,7 @@ C
 C
 C     Spin angular momentum
 C                  
-      PNAME     = 'Spin angmom.:  X'
+      PNAME     = 'X Spin ang.mom. '
       IPTYP     = 10  ! Sigma_x
       NPCOMP    = 1   ! one component
       PFAC(1)   = DP5 ! factor
@@ -9103,7 +9105,7 @@ C
 !      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Spin angmom.:  Y'
+      PNAME     = 'Y Spin ang.mom. '
       IPTYP     = 11  ! Sigma_y
       NPCOMP    = 1   ! one component
       PFAC(1)   = DP5 ! factor
@@ -9115,7 +9117,7 @@ C
 !      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Spin angmom.:  Z'
+      PNAME     = 'Z Spin ang.mom. '
       IPTYP     = 12  ! Sigma_z
       NPCOMP    = 1   ! one component
       PFAC(1)   = DP5 ! factor
@@ -9200,6 +9202,62 @@ C
         ENDDO
       ENDDO
 
+C
+C     Print section for spin-rotation:
+C
+
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'spin-rotation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+C      Print reference
+C
+      WRITE(LUPRI,'(4X,A)')
+     & 'Reference: I.A.Aucar et al, JCP 136 (2012) p.204119'
+     
+      WRITE(LUPRI,'(1X,A)')
+     & 'NOTE: You must set .USECM in the *NMR section '//
+     & ' to get correct values of spin-rotation_tensor.'
+C
+      IF (SPINRO) THEN
+C
+C     A operators
+C     ===========
+C
+        CALL PRSYMB(LUPRI,'-',75,0)
+        IF (LONDON) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '** A operators for spin-rotation, LAO approach **'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &   '** A operators for spin-rotation, CGO approach **'
+        ENDIF
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NSCOOR
+          INDOP1 = IPSPINRO(I)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LLRAPU(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
+C
+C
+C     B operators
+C     ===========
+C
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** B operators for spin-rotation **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,6
+          INDOP1 = IPSPINRO(I+MXCOOR)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LLRBPU(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
+
+      ENDIF
+
       CALL QEXIT('DEF_SPINRO1')
       RETURN
       END
@@ -9279,7 +9337,7 @@ C
 C     Output routine for nuclear spin-rotation tensor
 C     This routine is modelled after PRP_SHIELD by T.Enevoldsen
 C
-C     Written by A. Aucar - Mar 21 2014
+C     Written by A. Aucar and T. Saue - May 2014
 C
 C***********************************************************************
       use memory_allocator
