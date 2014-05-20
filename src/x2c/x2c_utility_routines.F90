@@ -815,6 +815,7 @@ contains
 #include "dcbdhf.h"
 !----------------------------------------------------------------------
      integer                          :: real_bytes    = 8
+     integer                          :: i
      integer                          :: record_number
      integer                          :: file_unit
      logical                          :: does_exist
@@ -865,6 +866,23 @@ contains
          deallocate(temp_mat)
 
        else ! end of DEBUG ONLY OPTION!
+
+         !> read and dump the F1 Fock matrix in AO basis to file (if needed later)
+         file_unit = 99
+         open(file_unit,file='DFFCK1',status='old',form='unformatted',access='sequential',action='read')
+         call read_fock_matrices_saao_basis_x2c(xmat,                       &
+                                                nr_ao_total_x2c**2*nr_quat, &
+                                                1,                          &
+                                                file_unit,                  &
+                                                print_lvl)
+
+         open(81,file='4cf1AO',status='replace',form='unformatted',         &
+               access='sequential',action='write',position='rewind')
+         write(81) (xmat(i),i=1,nr_ao_total_x2c**2*nr_quat)
+         close(81,status="keep")
+
+         close(file_unit, status='keep')
+         call dzero(xmat,nr_ao_total_x2c**2*nr_quat)
 
 !      step 1: inquire file and set record number
 !      ------------------------------------------

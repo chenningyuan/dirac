@@ -62,13 +62,18 @@ if all orbitals (fullMCSCF, feasible only for systems with 2-3 active electrons)
 
 keyword(INACTIVE)
 
-Inactive orbitals per fermion correp. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
+Inactive orbitals per fermion correp. *default*: all orbitals are active. The example below for a molecule with inversion
+center marks the lowest 4 *gerade* and 2 *ungerade* orbitals as inactive, i.e. they are always kept doubly occupied in all determinants
+of the CI expansion:
 
 ::
 
     .INACTIVE
      4 2
 
+All remaining orbitals above the inactive + active space are considered as secondary orbitals, i.e. they are kept empty
+in all determinants of the CI expansion. By default all orbital rotations between the inactive-active and active-secondary
+space are included. 
 
 optional keywords under \*KRMCSCF
 =================================

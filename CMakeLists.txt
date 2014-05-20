@@ -34,6 +34,7 @@ option(ENABLE_UNIT_TESTS      "Enable unit tests"                               
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -312,6 +313,17 @@ foreach(
     endif()
 
 endforeach()
+
+# give a nice message at the end
+include(Motivation)
+get_motivational_message(${DEVELOPMENT_CODE} msg)
+add_custom_target(final ALL COMMENT "Compilation successfully completed - ${msg}")
+set(_list_of_all_targets ${LIST_OF_EXECUTABLES})
+if(ENABLE_XCFUN)
+    set(_list_of_all_targets ${_list_of_all_targets} example_fortran funeval testall)
+endif()
+add_dependencies(final ${_list_of_all_targets})
+unset(_list_of_all_targets)
 
 #enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
 if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)

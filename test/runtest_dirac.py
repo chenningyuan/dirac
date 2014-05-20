@@ -35,7 +35,7 @@ class TestRun(runtest.TestRun):
                 sys.stderr.write('       try also --help\n')
                 sys.exit(-1)
 
-        launcher = 'python "%s" --noarch --nobackup %s' % (pam_script, args)
+        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (pam_script, os.path.join(self.binary_dir, 'dirac.x'), args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
@@ -62,6 +62,9 @@ class TestRun(runtest.TestRun):
                             sys.stderr.write(e.message)
                             self.return_code += 1
                         except runtest.BadFilterError as e:
+                            sys.stderr.write(e.message)
+                            sys.exit(-1)
+                        except runtest.FilterKeywordError as e:
                             sys.stderr.write(e.message)
                             sys.exit(-1)
                 except runtest.AcceptedError as e:

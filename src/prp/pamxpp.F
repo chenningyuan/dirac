@@ -493,7 +493,7 @@ C&&&& ANALYZe: Analyze individual contributions to repsonse functions
     4          CONTINUE
 C&&&& OPERATOR: operator of transition moment
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
+     &                        IPRXPP)
                   CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
      &                        MAXLPP)
                GO TO 100
