@@ -8969,6 +8969,7 @@ C..maximum number of orbitals/basis functions
 C
 #include "nuclei.h"
 #include "symmet.h"
+#include "dgroup.h"
 #include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbexp.h"
@@ -8999,6 +9000,25 @@ C
       DO IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
       IF (DOATOM(IATOM)) THEN ! selection of atoms
         DO IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
+         IF (LINEAR) THEN ! calculate only those mean values required for linear molecules
+           ICOOR = 3
+           ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+           IF(ISCOOR .GT. 0) THEN
+              ITYP = ITYP + 1
+              IFIRST=ISCOOR/100
+              ISECND=MOD(ISCOOR,100)/10
+              ITHIRD = MOD(MOD(ISCOOR,100),10)
+              PLABEL(1) = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+              PNAME    = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
+     &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+           END IF
+         ELSE ! calculate all mean values; for the case of non-linear molecules
           DO ICOOR = 1, 3 ! loop over coordinates
             ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
             IF(ISCOOR .GT. 0) THEN
@@ -9017,6 +9037,8 @@ C
      &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
           ENDDO
+         END IF !LINEAR
+
         ENDDO
       END IF
       ENDDO
@@ -9025,84 +9047,116 @@ C     Here we set up the operators needed for the linear reponse part
 C
 C     Define right-hand operators
 C
+      IF (LINEAR) THEN
+C
 C.....Orbital angular momentum
 C
-      PNAME     = 'X Orb. ang. mom.'
-      IPTYP     = 1  ! diagonal operator
-      NPCOMP    = 1  ! one component
-      PFAC(1)   = D1 ! factor
-      PLABEL(1) = 'XANGMOM'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+       PNAME     = 'X Orb. ang. mom.'
+       IPTYP     = 1  ! diagonal operator
+       NPCOMP    = 1  ! one component
+       PFAC(1)   = D1 ! factor
+       PLABEL(1) = 'XANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('XANGMOM',IPSPINRO(1+MXCOOR),
+       IF (SPINRO) CALL OP1IND('XANGMOM',IPSPINRO(1+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Y Orb. ang. mom.'
-      IPTYP     = 1  ! diagonal operator
-      NPCOMP    = 1  ! one component
-      PFAC(1)   = D1 ! factor
-      PLABEL(1) = 'YANGMOM'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+C     Spin angular momentum
+C                  
+       PNAME     = 'X Spin ang.mom. '
+       IPTYP     = 10  ! Sigma_x
+       NPCOMP    = 1   ! one component
+       PFAC(1)   = DP5 ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('YANGMOM',IPSPINRO(2+MXCOOR),
+       IF (SPINRO) CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
+      ELSE ! if LINEAR is not TRUE
+C
+C.....Orbital angular momentum
+C
+       PNAME     = 'X Orb. ang. mom.'
+       IPTYP     = 1  ! diagonal operator
+       NPCOMP    = 1  ! one component
+       PFAC(1)   = D1 ! factor
+       PLABEL(1) = 'XANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       IF (SPINRO) CALL OP1IND('XANGMOM',IPSPINRO(1+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+!      CALL OP1IND('XANGMOM ',INDOP1,LLRBPU,NLRBPT,
+!     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Y Orb. ang. mom.'
+       IPTYP     = 1  ! diagonal operator
+       NPCOMP    = 1  ! one component
+       PFAC(1)   = D1 ! factor
+       PLABEL(1) = 'YANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       IF (SPINRO) CALL OP1IND('YANGMOM',IPSPINRO(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('YANGMOM ',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Z Orb. ang. mom.'
-      IPTYP     = 1  ! diagonal operator
-      NPCOMP    = 1  ! one component
-      PFAC(1)   = D1 ! factor
-      PLABEL(1) = 'ZANGMOM'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+       PNAME     = 'Z Orb. ang. mom.'
+       IPTYP     = 1  ! diagonal operator
+       NPCOMP    = 1  ! one component
+       PFAC(1)   = D1 ! factor
+       PLABEL(1) = 'ZANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('ZANGMOM',IPSPINRO(3+MXCOOR),
+       IF (SPINRO) CALL OP1IND('ZANGMOM',IPSPINRO(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('ZANGMOM ',INDOP1,LLRBPU,NLBAPT,
 !     &                       INDXPR,MAXLLR)
 C
 C     Spin angular momentum
 C                  
-      PNAME     = 'X Spin ang.mom. '
-      IPTYP     = 10  ! Sigma_x
-      NPCOMP    = 1   ! one component
-      PFAC(1)   = DP5 ! factor
-      PLABEL(1) = 'OVERLAP'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+       PNAME     = 'X Spin ang.mom. '
+       IPTYP     = 10  ! Sigma_x
+       NPCOMP    = 1   ! one component
+       PFAC(1)   = DP5 ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),
+       IF (SPINRO) CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('XSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Y Spin ang.mom. '
-      IPTYP     = 11  ! Sigma_y
-      NPCOMP    = 1   ! one component
-      PFAC(1)   = DP5 ! factor
-      PLABEL(1) = 'OVERLAP'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+       PNAME     = 'Y Spin ang.mom. '
+       IPTYP     = 11  ! Sigma_y
+       NPCOMP    = 1   ! one component
+       PFAC(1)   = DP5 ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('YSPINMOM',IPSPINRO(5+MXCOOR),
+       IF (SPINRO) CALL OP1IND('YSPINMOM',IPSPINRO(5+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('YSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
 C
-      PNAME     = 'Z Spin ang.mom. '
-      IPTYP     = 12  ! Sigma_z
-      NPCOMP    = 1   ! one component
-      PFAC(1)   = DP5 ! factor
-      PLABEL(1) = 'OVERLAP'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+       PNAME     = 'Z Spin ang.mom. '
+       IPTYP     = 12  ! Sigma_z
+       NPCOMP    = 1   ! one component
+       PFAC(1)   = DP5 ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-      IF (SPINRO) CALL OP1IND('ZSPINMOM',IPSPINRO(6+MXCOOR),
+       IF (SPINRO) CALL OP1IND('ZSPINMOM',IPSPINRO(6+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 !      CALL OP1IND('ZSPINMOM',INDOP1,LLRBPU,NLRBPT,
 !     &                       INDXPR,MAXLLR)
+      END IF !LINEAR
+C
 C
 C    Left-hand operators
-C
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -9126,6 +9180,51 @@ C
 C
 C         Cartesian directions
 C
+         IF (LINEAR) THEN
+          ICOOR1 = 1
+            ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
+            IF (ISCOR1 .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_SPINRO1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR1 .GT. 0) THEN
+              IFIRST = ISCOR1/100
+              ISECND = MOD(ISCOR1,100)/10
+              ITHIRD = MOD(MOD(ISCOR1,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
+              IPTYP    = IOP(ICOOR1)
+              IC1      = MOD(ICOOR1+1,3) + 1
+              IC2      = MOD(ICOOR1  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_SPINRO: sym. error !',IATOM1,ICOOR1,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+              IF (SPINRO) THEN
+                CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
+     &                      INDXPR,MAXLLR)
+                IPSPINRO(ISCOR1) = INDOP1
+!              CALL OP1IND('XSPINRA',INDOP1,LLRAPU,NLRAPT,
+!     &                      INDXPR,MAXLLR)
+              ENDIF
+            ENDIF
+         ELSE ! If not LINEAR
           DO ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GE. 1000) THEN
@@ -9170,6 +9269,8 @@ C
               ENDIF
             ENDIF
           ENDDO
+          END IF !LINEAR
+
         END IF
         ENDDO
       ENDDO
