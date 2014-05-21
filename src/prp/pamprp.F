@@ -9186,10 +9186,11 @@ C      Print reference
 C
       WRITE(LUPRI,'(4X,A)')
      & 'Reference: I.A.Aucar et al, JCP 136 (2012) p.204119'
-     
-      WRITE(LUPRI,'(1X,A)')
-     & 'NOTE: You must set .USECM in the *NMR section '//
-     & ' to get correct values of spin-rotation_tensor.'
+
+C IAA: USECM is seted as default option, May 2014
+C      WRITE(LUPRI,'(1X,A)')
+C     & 'NOTE: You must set .USECM in the *NMR section '//
+C     & ' to get correct values of spin-rotation_tensor.'
 C
       IF (SPINRO) THEN
 C
@@ -9197,13 +9198,8 @@ C     A operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        IF (LONDON) THEN
          WRITE(LUPRI,'(1X,A)')
-     &   '** A operators for spin-rotation, LAO approach **'
-        ELSE
-         WRITE(LUPRI,'(1X,A)')
-     &   '** A operators for spin-rotation, CGO approach **'
-        ENDIF
+     &   '** A operators for spin-rotation **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
           INDOP1 = IPSPINRO(I)
@@ -9218,7 +9214,13 @@ C     B operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(A)') ' ** B operators for spin-rotation **'
+        IF (LONDON) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for spin-rotation, LAO approach **'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for spin-rotation, CGO approach **'
+        ENDIF
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,6
           INDOP1 = IPSPINRO(I+MXCOOR)
