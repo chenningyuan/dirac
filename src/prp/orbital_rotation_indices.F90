@@ -1,30 +1,25 @@
 module orbital_rotation_indices
 
-!  radovan: this can be improved a lot
-!           but for the moment it is working
-
    implicit none
 
-   public set_as_initialized
    public get_orbital_rotation_indices_pp
    public get_orbital_rotation_indices_pn
+   public set_orbital_rotation_indices
+   public setxop
+   public update_orbital_rotation_indices
 
    private
 
-   integer, allocatable, target, public :: orbital_rotation_indices_pp(:)
-   integer, allocatable, target, public :: orbital_rotation_indices_pn(:)
+   integer, allocatable, target :: orbital_rotation_indices_pp(:)
+   integer, allocatable, target :: orbital_rotation_indices_pn(:)
 
    logical :: is_initialized = .false.
 
 contains
 
-   subroutine set_as_initialized()
-      is_initialized = .true.
-   end subroutine
-
    subroutine check_if_interface_is_initialized()
       if (.not. is_initialized) then
-         print *, 'error: you try to access orbital_rotation_indices'
+         print *, 'ERROR: you try to access orbital_rotation_indices'
          print *, '       but this interface is not initialized'
          stop 1
       end if
@@ -42,10 +37,39 @@ contains
       p => orbital_rotation_indices_pn
    end function
 
-end module
+   subroutine update_orbital_rotation_indices(in_nzhope, &
+                                              in_nzxope, &
+                                              in_nzxopp, &
+                                              in_jzxope,  &
+                                              in_jzxopp)
+      integer, intent(in) :: in_nzhope
+      integer, intent(in) :: in_nzxope
+      integer, intent(in) :: in_nzxopp
+      integer, intent(in) :: in_jzxope(*)
+      integer, intent(in) :: in_jzxopp(*)
+
+#include "dcbxrs.h"
+
+      nzhope = in_nzhope
+      nzxope = in_nzxope
+      nzxopp = in_nzxopp
+
+      if (nzhope > 0) then
+         if (allocated(orbital_rotation_indices_pp)) deallocate(orbital_rotation_indices_pp)
+         allocate(orbital_rotation_indices_pp(nzhope*2))
+         orbital_rotation_indices_pp(1:nzhope*2) = in_jzxope(1:nzhope*2)
+      end if
+
+      if (nzxopp > 0) then
+         if (allocated(orbital_rotation_indices_pn)) deallocate(orbital_rotation_indices_pn)
+         allocate(orbital_rotation_indices_pn(nzxopp*2))
+         orbital_rotation_indices_pn(1:nzxopp*2) = in_jzxopp(1:nzxopp*2)
+      end if
+
+   end subroutine
 
       SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,           &
-                   NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,                      &
+                   NXOPE,NHOPE,NXOPP,                  &
                    IPRINT)
 !***********************************************************************
 !
@@ -76,9 +100,6 @@ end module
 !
 !***********************************************************************
 
-      use orbital_rotation_indices
-
-#include "implicit.h"
 #include "priunit.h"
 !
 ! Used from common blocks:
@@ -93,14 +114,16 @@ end module
 !
       LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
-      DIMENSION NSTR(0:2,3,2)
-      DIMENSION NOROT(*)
+      integer :: NSTR(0:2,3,2)
+      integer :: NOROT(*)
       integer, allocatable :: ibuf(:)
       integer              :: idummy(2)
+      integer              :: nxope, nxopp, nhope
+      integer              :: nbuf
+      integer              :: iprint
+      integer              :: iopsy
 !
       CALL QENTER('SETXOP')
-      KXOPE = -1
-      KXOPP = -1
       NXOPE =  0
       NXOPP =  0
       NHOPE =  0
@@ -150,11 +173,11 @@ end module
       end if
 
       deallocate(ibuf)
-      call set_as_initialized()
+      is_initialized = .true.
 
       CALL QEXIT('SETXOP')
 
-      END
+      end subroutine
 
 
 
@@ -166,7 +189,6 @@ end module
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -178,12 +200,20 @@ end module
 #include "dcbbas.h"
 #include "dcbxrs.h"
 !
-      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION NOROT(*)
+      integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: NOROT(*)
+      integer :: nhope, nxope, iprint
       LOGICAL GAS
       LOGICAL dryrun
+      integer :: isym, jsym
+      integer :: isti, iendi, ista, ienda
+      integer :: jsti, jendi, jsta, jenda
+      integer :: jsts, jends
+      integer :: ia, ja, js, in, j, iaa, jaa
+      integer :: indi, inda, inds
+      integer :: iopsy
 !
-      DIMENSION JACAC(MAXASH,MAXASH)
+      integer :: JACAC(MAXASH,MAXASH)
 !
       CALL QENTER('SETXEE')
 !
@@ -390,7 +420,7 @@ end module
       end if
 !
       CALL QEXIT('SETXEE')
-      END
+      end subroutine
 
       SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT,dryrun)
 !***********************************************************************
@@ -400,7 +430,6 @@ end module
 !     Written by T.Saue July 21 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 !
 #include "dgroup.h"
@@ -408,8 +437,11 @@ end module
 #include "dcbbas.h"
 !
       LOGICAL QED, dryrun
-      DIMENSION JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION NOROT(*)
+      integer :: JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: NOROT(*)
+      integer :: nxopp, iprint
+      integer :: indi, iopsy, isym, jsym, inds, is, iends, ists, inda
+      integer :: isti, iendi, ista, ienda, in, jp, j, ia, indp
 !
       CALL QENTER('SETXEP')
 !
@@ -500,7 +532,8 @@ end module
       end if
 !
       CALL QEXIT('SETXEP')
-      END
+
+   end subroutine
 
       SUBROUTINE UNPSTR(INDSTR,NTYP,IND,LIND,NIND,IPRINT)
 !***********************************************************************
@@ -510,14 +543,15 @@ end module
 !     Written by T.Saue July 19 1997
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 !
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER INDSTR(NTYP,NFSYM)*72
-      DIMENSION IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
+      integer :: IND(LIND,NTYP,NFSYM),NIND(2,NTYP,NFSYM)
+      integer :: iprint, ntyp, lind
+      integer :: ifrp, ityp, nvec, i, ioff, joff
 !
       DO IFRP = 1,NFSYM
         DO ITYP = 1,NTYP
@@ -573,8 +607,8 @@ end module
           ENDDO
         ENDDO
       ENDIF
-!
-      END
+
+   end subroutine
 
       SUBROUTINE RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT,dryrun)
 !***********************************************************************
@@ -586,7 +620,6 @@ end module
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -597,15 +630,19 @@ end module
 #include "dcborb.h"
 #include "dcbbas.h"
 !
-      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
-      DIMENSION JACAC(MAXASH,MAXASH)
-      DIMENSION NOROT(*)
+      integer :: JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      integer :: JACAC(MAXASH,MAXASH)
+      integer :: NOROT(*)
 !
-      DIMENSION IGAS(MAXASH)
+      integer :: IGAS(MAXASH)
+      integer :: iprint, nxope, iopsy
       LOGICAL GASCAS(MXGAS), dryrun
+      integer :: nxopes, isym, i, j, ii, ngst, jsym
+      integer :: mincas, maxcas
+      integer :: ista, ienda, jsta, jenda
+      integer :: ia, ja, iaa, jaa
+
 !
-!
-!     iprint = 20
       NXOPES = NXOPE
 !
 !     Set up help arrays
@@ -759,8 +796,8 @@ end module
             END DO
          END IF
       end if
-!     stop 'after GASCAS determination.'
-      END
+
+   end subroutine
 
    subroutine set_orbital_rotation_indices(                            &
                                            do_pp,                      &
@@ -770,8 +807,6 @@ end module
                                            orbital_rotation_vector_pp, &
                                            orbital_rotation_vector_pn  &
                                           )
-
-      use orbital_rotation_indices
 
       logical :: do_pp
       logical :: do_pn
@@ -800,6 +835,8 @@ end module
          orbital_rotation_indices_pn = 0
       end if
 
-      call set_as_initialized()
+      is_initialized = .true.
 
    end subroutine
+
+end module

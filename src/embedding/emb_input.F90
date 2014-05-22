@@ -89,13 +89,13 @@ module fde_input
          itmp%im_coulomb  = .true.
       endif
 
+      endif ! .not.skip_all_imports
+
       if (etmp%do_grid_out) then
          etmp%ex_n        = .true.
          etmp%ex_coulomb  = .true.
          etmp%ex_gn       = .true.
       endif
-
-      endif ! .not.skip_all_imports
 
 #ifndef PRG_DIRAC
 ! in dirac this is redundant, since we go for reading

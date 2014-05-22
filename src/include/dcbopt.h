@@ -21,10 +21,6 @@
 !
 !     OPT_INDSTR - inactive/active/secondary orbitals
 !     
-!     KZCONF    - pointer to configurational parameters
-!     KZXOPE    - pointer to orbital e-e parameters
-!     KZXOPP    - pointer to orbital e-p parameters
-!
 !     MOPT_MXMICRO   - maximum micro iterations
 !     MOPT_MXMACRO   - maximum macro iterations
 !
@@ -126,8 +122,8 @@
       COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR,&
      &                OPT_DELSTR
 
-      INTEGER KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
-      COMMON /DCMOPT/ KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
+      INTEGER         KZCONF, LZCONF, LZXOPE, LZXOPP
+      COMMON /DCMOPT/ KZCONF, LZCONF, LZXOPE, LZXOPP
 
 !     lzconf is integer length of WORK(KZCONF) etc.
 !
