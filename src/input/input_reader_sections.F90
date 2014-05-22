@@ -54,6 +54,9 @@
 
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
+        
+        case ('*PCMSOL')
+           call read_input_pcmsolver(word, kw_section)
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
@@ -1522,6 +1525,76 @@
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, pcmmod_print)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+#else
+      call quit('Polarizable Continuum Model not included in this version')
+#endif
+
+   end subroutine
+   
+   subroutine read_input_pcmsolver(word, kw_section)
+
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+#ifdef PCM_MODULE
+      pcmmod_host_provides_input = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.CAVTYP')) then
+         call kw_read(word, pcmmod_cavity_type)
+      end if
+      
+      if (kw_matches(word, '.PATCHL')) then
+         call kw_read(word, pcmmod_patch_level)
+      end if
+      
+      if (kw_matches(word, '.COARSI')) then
+         call kw_read(word, pcmmod_coarsity)
+      end if
+      
+      if (kw_matches(word, '.AREATS')) then
+         call kw_read(word, pcmmod_cavity_area)
+      end if
+      
+      if (kw_matches(word, '.MINDIS')) then
+         call kw_read(word, pcmmod_min_distance)
+      end if
+      
+      if (kw_matches(word, '.DERORD')) then
+         call kw_read(word, pcmmod_der_order)
+      end if
+      
+      if (kw_matches(word, '.SCALIN')) then
+              pcmmod_scaling = .true.
+      end if
+
+      if (kw_matches(word, '.RADIIS')) then
+         call kw_read(word, pcmmod_radii_set)
+      end if
+      
+      if (kw_matches(word, '.RESTAR')) then
+         call kw_read(word, pcmmod_restart_name)
+      end if
+      
+      if (kw_matches(word, '.SOLVER')) then
+         call kw_read(word, pcmmod_solver_type)
+      end if
+      
+      if (kw_matches(word, '.SOLVNT')) then
+         call kw_read(word, pcmmod_solvent)
       end if
 
       call check_whether_kw_found(word, kw_section)
