@@ -35,7 +35,12 @@ class TestRun(runtest.TestRun):
                 sys.stderr.write('       try also --help\n')
                 sys.exit(-1)
 
-        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (pam_script, os.path.join(self.binary_dir, 'dirac.x'), args)
+        if sys.platform == "win32":
+            dirac_exe='dirac.x.exe'
+        else:
+            dirac_exe='dirac.x'
+
+        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (pam_script, os.path.join(self.binary_dir,dirac_exe), args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
