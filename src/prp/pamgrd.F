@@ -24,7 +24,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd */
       SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
-     &                  JOPSY,JCONF,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
+     &                  JOPSY,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -42,7 +42,7 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION GPCI(*),GPOE(*),GPOP(*),JCONF(*),JXOPE(*),JXOPP(*),
+      DIMENSION GPCI(*),GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          WORK(*)
       CALL QENTER('PAMGRD')
 C
