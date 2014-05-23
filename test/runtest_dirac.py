@@ -12,7 +12,7 @@ class Filter(runtest.Filter):
     def add(self, *args, **kwargs):
         try:
             runtest.Filter.add(self, *args, **kwargs)
-        except runtest.FilterKeywordError as e:
+        except runtest.FilterKeywordError, e:
             sys.stderr.write(e.message)
             sys.exit(-1)
 
@@ -60,20 +60,20 @@ class TestRun(runtest.TestRun):
                         try:
                             f.check(self.work_dir, '%s' % out, 'result/%s' % out, self.verbose)
                             sys.stdout.write('passed\n')
-                        except IOError as e:
+                        except IOError, e:
                             sys.stderr.write('ERROR: could not open file %s\n' % e.filename)
                             sys.exit(-1)
-                        except runtest.TestFailedError as e:
+                        except runtest.TestFailedError, e:
                             sys.stderr.write(e.message)
                             self.return_code += 1
-                        except runtest.BadFilterError as e:
+                        except runtest.BadFilterError, e:
                             sys.stderr.write(e.message)
                             sys.exit(-1)
-                        except runtest.FilterKeywordError as e:
+                        except runtest.FilterKeywordError, e:
                             sys.stderr.write(e.message)
                             sys.exit(-1)
-                except runtest.AcceptedError as e:
+                except runtest.AcceptedError, e:
                     sys.stdout.write(e.message)
-                except runtest.SubprocessError as e:
+                except runtest.SubprocessError, e:
                     sys.stderr.write(e.message)
                     sys.exit(-1)
