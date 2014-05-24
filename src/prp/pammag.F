@@ -2691,7 +2691,8 @@ C
       DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_D1HBLOND')
-#include "memint.h"
+
+!miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
 
       IF (IPRINT.GE.2) THEN
