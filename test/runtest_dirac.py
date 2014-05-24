@@ -13,7 +13,7 @@ class Filter(runtest.Filter):
         try:
             runtest.Filter.add(self, *args, **kwargs)
         except runtest.FilterKeywordError, e:
-            sys.stderr.write(e.message)
+            sys.stderr.write(str(e))
             sys.exit(-1)
 
 
@@ -64,16 +64,16 @@ class TestRun(runtest.TestRun):
                             sys.stderr.write('ERROR: could not open file %s\n' % e.filename)
                             sys.exit(-1)
                         except runtest.TestFailedError, e:
-                            sys.stderr.write(e.message)
+                            sys.stderr.write(str(e))
                             self.return_code += 1
                         except runtest.BadFilterError, e:
-                            sys.stderr.write(e.message)
+                            sys.stderr.write(str(e))
                             sys.exit(-1)
                         except runtest.FilterKeywordError, e:
-                            sys.stderr.write(e.message)
+                            sys.stderr.write(str(e))
                             sys.exit(-1)
                 except runtest.AcceptedError, e:
-                    sys.stdout.write(e.message)
+                    sys.stdout.write(str(e))
                 except runtest.SubprocessError, e:
-                    sys.stderr.write(e.message)
+                    sys.stderr.write(str(e))
                     sys.exit(-1)
