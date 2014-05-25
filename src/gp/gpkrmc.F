@@ -491,6 +491,9 @@ C       ... write
         CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
         REWIND LUNIT
       ELSE
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*)' matrix to be read from file with label ',LABEL
+        END IF
 C       ... read from file
         REWIND LUNIT
         CALL MOLLAB(LABEL,LUNIT,LUPRI)

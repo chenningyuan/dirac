@@ -1074,7 +1074,7 @@ C
       IF(IOPTYP.EQ.0) THEN
         CALL QUIT('PRPMAO: No Fock matrix read here !')
       ENDIF
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.5) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
      & 'Generating property matrix for the property: ',PRPNAM(IOP)
@@ -1175,7 +1175,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
           WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
           CALL QUIT('PRPMAO: IQP.GT.NZ !!!')
         ENDIF
-        IF(IPRINT.GE.4) THEN
+        IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
           FMT = MXFORM(PFAC,20)
           WRITE(LUPRI,'(A,4X,'//FMT//',A,A4)')
@@ -1189,7 +1189,7 @@ C               Get integrals from the AOPROPER file
 C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,NDIM,IPRINT)
-        IF(IPRINT.GE.8) THEN
+        IF(IPRINT.GE.15) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
@@ -1214,7 +1214,7 @@ C
         PFAC  = FACPRP(I,IOP)*IFAC
         IF(PFAC.NE.D1) THEN
           CALL DSCAL(NDIM,PFAC,OP1INT,1)
-          IF(IPRINT.GE.8) THEN
+          IF(IPRINT.GE.15) THEN
             WRITE(LUPRI,'(/A,D13.6)')
      &    '* scaled integrals with the factor=',PFAC
            IF (TRIANG) THEN
@@ -1256,7 +1256,7 @@ C
             CALL QMPHASE('S',IZ,IBRP,OP1INT,DOINT)
           ENDIF
 
-          IF(IPRINT.GE.8) THEN
+          IF(IPRINT.GE.15) THEN
              WRITE(LUPRI,'(A/3A)')
      &          '* Phase and/or PDOINT transformed integrals:',
      &          '  ( PDOINT = ',PDOINT(KLBL),' )'
@@ -1280,7 +1280,7 @@ C         ... accumulate the property ...
         ENDIF
  10   CONTINUE
 
-      IF(IPRINT.GE.6) THEN
+      IF(IPRINT.GE.10) THEN
         DO IZ = 1, NZ
           WRITE(LUPRI,'(A,I2,A)') '* Property matrix (IZ=',IZ,')'
           IF (FIRST(IZ)) THEN
@@ -1358,7 +1358,7 @@ C
       IPRINT2 = MAX(IPRPRP,IPRINT)
       KLBL = IPRPLBL(1,INDXPR)
       TRIANGULAR = ABS(IPRLTYP(KLBL)).EQ.1
-      IF (IPRINT2.GE.6) THEN
+      IF (IPRINT2.GE.10) THEN
        CALL HEADER('*** Output from PRPMSAO ***',-1)
        write(lupri,'(2X,A,I3,A,A)')
      & '* dealing with the operator with INDXPR=',
@@ -1401,7 +1401,7 @@ CMI    ...the label will contain the INDXPR operator index in the string form !
           PRPLABEL = 'P2C_'//NUMSTR
           CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
      &                 PRPAO,N2BBASXQ,LUBSS,IPRINT2)
-          IF (IPRINT2.GE.3) THEN
+          IF (IPRINT2.GE.6) THEN
             write(lupri,'(2x,A,A,A)')
      &      'PRPMSAO: 2comp. property record ',PRPLABEL,
      &      ' was read from BSSMAT file.'
@@ -1532,16 +1532,15 @@ C ... some are usable (ZANGMOM)
      &     PROPNAME.EQ.'dS/dB2ZZ        '
      &      ) DOTRANS = .FALSE.
 
-      IF (IPRINT.GE.5) THEN
-       WRITE(LUPRI,*)
+      IF (IPRINT.GE.4) THEN
        IF (DOTRANS) THEN
-         WRITE(lupri,'(2X,A,A,A)')
+         WRITE(lupri,'(/2X,3A)')
      &   'DECIDEPCTR: operator of entering name ',PROPNAME,
      &   ' HAS to be picture change transformed.'
        ELSE
-         WRITE(lupri,'(2X,A,A,A)')
+         WRITE(lupri,'(/2X,3A)')
      &   'DECIDEPCTR: operator of entering name ',PROPNAME,
-     &   ' DOES NOT to be picture change transformed.'
+     &   ' DOES NOT have to be picture change transformed.'
        ENDIF
        CALL FLSHFO(LUPRI)
       ENDIF
@@ -1729,8 +1728,9 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
-              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
-     &          COMP(IC),REP(IREP),'* Deleted: ',NDEL
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,A,E8.2)')
+     &          COMP(IC),REP(IREP),'* Deleted: ',NDEL,
+     &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
 C
 C           Zero columns of Lowdin canonical matrix that are to be deleted
@@ -1780,7 +1780,8 @@ C
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
-     &           COMP(IC),REP(IREP),'* Deleted: ',NDEL
+     &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
+     &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
 C
 C           Zero columns of Lowdin canonical matrix that are to be deleted
@@ -3838,9 +3839,10 @@ C
       NA = NCAR - NSPH
       NB = NSPH - NEFF
       ND = NA + NB
-      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)')
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &           '(Proj: ',NA,', Lindep: ',NB,')'
+     &           '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &           EIG(NSPH)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3947,9 +3949,10 @@ C
       NA = NCAR - NSPH
       NB = NSPH - NEFF
       ND = NA + NB
-      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)')
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &     COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &     '(Proj: ',NA,', Lindep: ',NB,')'
+     &     '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &     EIG(NSPH)
 C
       RETURN
       END

@@ -371,12 +371,21 @@ C ... call the routine in abacus/hergp.F
      &   "--> These are accepted values from user's .INTFLG input."
          ENDIF
        ENDIF
-       ENDIF
+      ELSE   !  (LONDON)
+C   .... defined conventional atomic orbitals (AO), not London AO
+       IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
+          WRITE(LUPRI,'(A/A/A)')
+     &'  Used conventional atomic orbitals, not London orbitals !',
+     &'  WARNING: Calculated magnetic properties are dependent'//
+     &  ' on the choice of the gauge origin!'   ,
+     &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
+       END IF
+      END IF  !  (LONDON)
 
 C =========================================================================
 CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
-       IF (MSUSCP) THEN
+      IF (MSUSCP) THEN
           IF (RDSUSLLMOD) THEN
             WRITE(LUPRI,'(1X,A)') 
      &'WARNING: Used the LS block of the RDSUSLL operator'//
@@ -386,20 +395,6 @@ C =========================================================================
             WRITE(LUPRI,'(1X,A)') 
      &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
-      ELSE 
-C   .... defined conventional atomic orbitals (AO), not London AO
-       IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
-!gosia: this 'if' has to be checked,
-! i get this warning even for shielding+london!...
-        WRITE(LUPRI,'(1X,A)')
-     &'  Used conventional atomic orbitals, not London orbitals !'
-        WRITE(LUPRI,'(1X,A)')
-     &'WARNING: Calculated magnetic properties are dependent'//
-     &' on the choice of the gauge origin!'   
-         WRITE(LUPRI,'(A,3F12.6)')
-     &  'NMRINP: The gauge & dipole '//
-     &  'origin :',(GAGORG(I), I = 1, 3)
-       END IF
       END IF
 
   999 CONTINUE
@@ -1946,7 +1941,7 @@ C prepare IFCTYP and IREPDM
 C call TWOINT and modify routines inside her2ave
 C ...Integral type - London orbitals and without EXPECT in her2ave !!!
       ITYPE = -5  
-      MAXDIF = 2  ! Second derivate...=> SUSCEPTIBILITIES !!
+      MAXDIF = 2  ! Second derivative...=> SUSCEPTIBILITIES !!
       IATOM = 0
       RETUR  = .FALSE.
       RELCAL = .TRUE.
@@ -2180,8 +2175,7 @@ C   PURPOSE:
 C  ----------
 C   Compute the lowest order expectation value
 C   reorthonormalization terms needed for calculating
-C   the magnetic susceptibility 
-C   with London atomic orbitals. 
+C   the magnetic susceptibility with London atomic orbitals.
 C   In the Levy-Leblond case these are identical
 C   with the DALTON counterparts.
 C
@@ -2655,7 +2649,8 @@ C
       DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_D1HBLOND')
-#include "memint.h"
+
+!miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
 
       IF (IPRINT.GE.2) THEN
@@ -3099,7 +3094,7 @@ C    PURPOSE:
 C  ==============
 C   Accumulate selected terms (depends on IB)
 C   of the (dH/dB)|B=0 property gradient
-C   in MO-basis into the enetring PRPMO MO matrix
+C   in MO-basis into the entering PRPMO MO matrix
 C   when using London orbitals.
 C
 C   The gradient is needed for calculating the NMR shieldings and

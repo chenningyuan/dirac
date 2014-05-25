@@ -5,12 +5,14 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
-# set ctest own timeout
-set(DART_TESTING_TIMEOUT
-    "1500"
-    CACHE STRING
-    "Set timeout in seconds for every single test"
-    )
+if(NOT ENABLE_BENCHMARKS)
+    # set ctest own timeout
+    set(DART_TESTING_TIMEOUT
+        "1500"
+        CACHE STRING
+        "Set timeout in seconds for every single test"
+        )
+endif()
 
 find_package(PythonInterp)
 if(NOT PYTHONINTERP_FOUND)

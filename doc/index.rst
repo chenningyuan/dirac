@@ -62,6 +62,14 @@ First steps in DIRAC territory
   :doc:`Memory problems <getting_help/memory>`
 
 
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 Tutorials and walkthrus
 =======================
 
@@ -124,6 +132,9 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
+* **DMRG interface:**
+  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
   :doc:`VIBCAL <tutorials/utils/vibcal>` |
@@ -147,15 +158,6 @@ Exercises
    :maxdepth: 1
 
    exercises/index.rst
-
-
-Reference manual
-================
-
-.. toctree::
-   :maxdepth: 1
-
-   manual/index.rst
 
 
 Developers

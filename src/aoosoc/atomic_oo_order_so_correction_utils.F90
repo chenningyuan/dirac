@@ -38,6 +38,7 @@ module atomic_oo_order_so_correction_utils
   implicit none
 
   public get_scso_2e_fock
+  public get_scso_2e_fock_aoc
   public make_so_2e_fock
   public pure_so_2e
   public get_normalized_2e_soc
@@ -154,7 +155,46 @@ contains
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
 
+  subroutine get_scso_2e_fock_aoc(                        &
+                                  dmat,                   &
+                                  fmat,                   &
+                                  nrows,                  &
+                                  ncols,                  &
+                                  nr_2e_fock_matrices,    &
+                                  nz                      &
+                                 )
+!**********************************************************************
+     real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     integer, intent(in)                :: nr_2e_fock_matrices
+     integer, intent(in)                :: nrows
+     integer, intent(in)                :: ncols
+     integer, intent(in)                :: nz
 !----------------------------------------------------------------------
+     integer                            :: i
+!----------------------------------------------------------------------
+
+     dmat = 0
+     fmat = 0
+
+     !> read the F1 Fock matrix in AO basis from file
+     open(81,file='4cf1AO',status='old',form='unformatted',         &
+          access='sequential',action='read',position='rewind')
+     read(81) dmat
+     close(81,status="delete")
+
+     !> read the F1 Fock matrix in AO basis from file
+     open(81,file='4cf1f2AO',status='old',form='unformatted',       &
+          access='sequential',action='read',position='rewind')
+     read(81) fmat
+     close(81,status="delete")
+ 
+     !> subtract F1 from full Fock matrix to get F2
+     call daxpy(nrows*ncols*nz*nr_2e_fock_matrices,-1.0d0,dmat,1,fmat,1)
+
+  end subroutine get_scso_2e_fock_aoc
+!----------------------------------------------------------------------
+
   subroutine old_get_scso_2e_fock(       &
                              dmat,       &
                              fmat,       &

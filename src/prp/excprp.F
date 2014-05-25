@@ -519,7 +519,7 @@ C
       END
 !
 !
-      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS, WORK, LWRK)
+      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS)
 C*****************************************************************************
 C
 C     Input handling for excited state properties calculation
@@ -545,7 +545,6 @@ C*****************************************************************************
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
       INTEGER KEYWID, SETTINGS, LWRK
-      REAL*8 WORK(LWRK)
       LOGICAL DOFLAG
       LOGICAL lstateOK
       INTEGER LFREE, KFREE, DUMMY, DUMMY2, OPINDEX
