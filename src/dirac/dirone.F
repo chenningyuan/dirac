@@ -1728,8 +1728,9 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
-              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
-     &          COMP(IC),REP(IREP),'* Deleted: ',NDEL
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,A,E8.2)')
+     &          COMP(IC),REP(IREP),'* Deleted: ',NDEL,
+     &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
 C
 C           Zero columns of Lowdin canonical matrix that are to be deleted
@@ -1779,7 +1780,8 @@ C
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
-     &           COMP(IC),REP(IREP),'* Deleted: ',NDEL
+     &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
+     &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
 C
 C           Zero columns of Lowdin canonical matrix that are to be deleted
@@ -3837,9 +3839,10 @@ C
       NA = NCAR - NSPH
       NB = NSPH - NEFF
       ND = NA + NB
-      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)')
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &           '(Proj: ',NA,', Lindep: ',NB,')'
+     &           '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &           EIG(NSPH)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3946,9 +3949,10 @@ C
       NA = NCAR - NSPH
       NB = NSPH - NEFF
       ND = NA + NB
-      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)')
+      WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &     COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &     '(Proj: ',NA,', Lindep: ',NB,')'
+     &     '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &     EIG(NSPH)
 C
       RETURN
       END

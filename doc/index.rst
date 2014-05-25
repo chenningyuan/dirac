@@ -62,6 +62,14 @@ First steps in DIRAC territory
   :doc:`Memory problems <getting_help/memory>`
 
 
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 Tutorials and walkthrus
 =======================
 
@@ -150,15 +158,6 @@ Exercises
    :maxdepth: 1
 
    exercises/index.rst
-
-
-Reference manual
-================
-
-.. toctree::
-   :maxdepth: 1
-
-   manual/index.rst
 
 
 Developers

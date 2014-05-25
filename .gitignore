@@ -1,4 +1,3 @@
 build*/*
 test/*/*out*
-test/*/compare
 *.pyc
