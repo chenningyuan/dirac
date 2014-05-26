@@ -3138,9 +3138,9 @@ C
 C     Write transformation matrices
 C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
+!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.) --> S(-1/2)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-!     right index transformed overlap matrix Saomo
+!     right index transformed overlap matrix Saomo --> S(+1/2)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
