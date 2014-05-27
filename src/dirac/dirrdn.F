@@ -4829,7 +4829,7 @@ C&&&& ONESYS: Ignore two-electron operator
   103    CONTINUE
 C&&&& OPERATOR: Read in additional  operator, the print level is IPRGEN from the section **GENERAL
            CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                 WORK,LWORK,IPRGEN)
+     &                 IPRGEN)
            N1OPER = N1OPER + 1
            IF(N1OPER.GT.MAX1OPER) THEN
              WRITE(LUPRI,'(A)')

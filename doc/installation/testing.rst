@@ -50,7 +50,7 @@ You can select the subset of tests by matching test names to a regular expressio
 
 or matching a label::
 
-  $ ctest -L quick
+  $ ctest -L short
 
 To print all labels::
 

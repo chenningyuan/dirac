@@ -20,5 +20,5 @@ H2O
 .MULPOP
 *MULPOP
 .VECPOP
-1..10
+1..oo
 *END OF
