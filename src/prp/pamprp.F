@@ -9395,7 +9395,7 @@ C
 C--------------------------------------------------------------------
 C     ***************************************
 C     ***** Extract nuclear information *****
-C    ****************************************
+C     ***************************************
 C
       WRITE(LUPRI,'(A)') '@ Nuclear species:'
       CALL PRSYMB(LUPRI,'=',61,0)
@@ -9569,21 +9569,21 @@ C         so the TMAT now contains total response
 C
 C     Analyze results
 C
-!        IATOM = 0
-!        DO 100 I = 1, NUCIND
-!          DO 200 ISYMOP = 0, MAXOPR
-!          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-!            IATOM = IATOM + 1
-!            IF (DOATOM(I)) THEN
+        IATOM = 0
+        DO 100 I = 1, NUCIND
+          DO 200 ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IATOM = IATOM + 1
+            IF (DOATOM(I)) THEN
 !              CALL NUCSPR(GEOM(IATOM,1),GAGORG,IPRPRP)
 !              CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRINT)
-!              CALL SPRRES(GEOM(IATOM,1),AMASS(IATOM),GVAL,
-!     &                  DMAT(1,1,IATOM),PMAT(1,1,IATOM,1),WORK,LWORK,
-!     &                  IATOM,IPRPRP)
-!            END IF
-!          END IF
-! 200      CONTINUE
-! 100    CONTINUE
+              CALL SPRRES(GEOM(IATOM,1),AMASS(IATOM),GVAL,
+     &                  DMAT(1,1,IATOM),PMAT(1,1,IATOM,1),WORK,LWORK,
+     &                  IATOM,IPRPRP)
+            END IF
+          END IF
+ 200      CONTINUE
+ 100    CONTINUE
 C
         CALL AROUND('Summary of spin-rotation constant')
 !        WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
@@ -9617,6 +9617,222 @@ C
       END DO
  10   CONTINUE
       CALL QEXIT('PRP_SPINRO1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck sprres */
+      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DIAMAT,PARMAT,WORK,LWORK,
+     &                  KATOM,IPRINT)
+C***********************************************************************
+C
+C     Output routine for nuclear spin-rotation tensor
+C     This routine is modelled based on DALTON routine SPRRES
+C
+C     Written by A. Aucar and T. Saue - May 2014
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           THRESH = 1.0D-5, DP5 = 1/D2)
+      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      LOGICAL PLANAR, LINEAR, D12, D23
+      DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
+     &          EIGVAL(3), EIGVEC(3,3),
+     &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
+     &          GVAL(KATOM), GTRANP(3,3), PARMAT(3,3,KATOM),
+     &          DIAMAT(3,3,KATOM)
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+!#include "sigma.h"  ! from DALTON
+#include "spinro.h"
+#include "orgcom.h"
+#include "ibtfun.h"
+C
+      D12 = .FALSE.
+      D23 = .FALSE.
+C
+      IF (IPRINT .GE. 0)
+     &     CALL TITLER('ABACUS - SPIN-ROTATION CONSTANTS','*',104)
+      CALL DZERO(TOTSPR,3*MXCOOR)
+      CALL DZERO(GTRANT,9*MXCENT)
+C
+C     We need to transform the dia- and paramagnetic part
+C     of the spin-rotation constant
+C
+      CALL DAXPY(9*NUCDEP,D1,SIGMAS,1,ELSPRD,1)
+      KCSTRA = 1
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
+      IF (KLAST .GT. LWORK) CALL STOPIT('SPRRES','TRADIP',KLAST,LWORK)
+      IF (NOLOND) THEN
+         CALL DCOPY(9*NUCDEP,SPRDNL,1,DIAMAT,1)
+         CALL DSCAL(9*NUCDEP,DP5,DIAMAT,1)
+      ELSE
+         CALL TRADIP(ELSPRD,DIAMAT,WORK(KCSTRA),WORK(KSCTRA),
+     &               3*NUCDEP,2,2)
+      END IF
+      CALL TRADIP(ELSPRP,PARMAT,WORK(KCSTRA),WORK(KSCTRA),3*NUCDEP,2,2)
+C
+C     We add up the total spin-rotation constants. Also add nuclear
+C     and diamagnetic term into one total diamagnetic term
+C
+      DO 99 IATOM = 1, NUCDEP
+         DO 200 I = 1, 3
+            ANGMOM(I) = D1
+            DO 200 J = 1, 3
+               TOTSPR(I,J,IATOM) = DIAMAT(I,J,IATOM) + PARMAT(I,J,IATOM)
+     &                           + SPRNUC(I,J,IATOM)/D2
+ 200        CONTINUE
+ 99   CONTINUE
+C
+C     Determine principal moments of inertia
+C
+      JATOM = 1
+      DO 100 IATOM = 1, NUCIND
+         NATTYP = NINT(CHARGE(IATOM))
+         NUMIS  = ISOTOP(IATOM)
+         DO 110 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
+               GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
+          IF (IPRINT.GE.9) THEN
+           write(lupri,*) 'NATTYP,NUMIS,DISOTP=',NATTYP,NUMIS,
+     &     DISOTP(NATTYP,NUMIS,'MASS')
+           write(lupri,*)
+     &    'AMASS(',JATOM,')=',AMASS(JATOM) 
+          ENDIF
+
+               DO 120 ICOOR = 1, 3
+                  GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
+             if (IPRINT.GE.8) THEN
+               write(lupri,*)
+     &         'geom(',JATOM,';',ICOOR,')=',
+     &         GEOM(JATOM,ICOOR)
+             endif
+
+ 120           CONTINUE
+               JATOM = JATOM + 1
+            END IF
+ 110     CONTINUE
+ 100  CONTINUE
+
+      CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
+     &            .TRUE.,PLANAR,LINEAR,IPRINT)
+C
+C     Transform each spin-rotation constant to principal axis system,
+C     and multiply by inverse moment of inertia and various constants
+C
+C     All components of the moment of inertia not defined for linear molecules
+C
+      IF (LINEAR) THEN
+         IF (IPRINT .GE. 0) THEN
+            WRITE (LUPRI,'(A)') ' The molecule is linear'
+            WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
+     &                                  D1/EIGVAL(3)
+         END IF
+         DO 98 IATOM = 1, NUCDEP
+            IF (GVAL(IATOM) .NE. 0.0D0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  CALL HEADER('Spin-rotation constants (kHz) for   '//
+     &                        NAMDEP(IATOM),-1)
+                  WRITE (LUPRI,'(2X,A18,F6.2,/)')
+     &                 'Nuclear g-value  :',GVAL(IATOM)
+               END IF
+               FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
+               IF (ABS(TOTSPR(1,1,IATOM)) .GT. THRESH) THEN
+                  AVETOT = TOTSPR(1,1,IATOM)*FACTOT
+                  AVENUC = SPRNUC(1,1,IATOM)*FACTOT/D2
+                  AVEPAR = PARMAT(1,1,IATOM)*FACTOT
+                  AVEDIA = DIAMAT(1,1,IATOM)*FACTOT
+               ELSE
+                  AVETOT = TOTSPR(2,2,IATOM)*FACTOT
+                  AVENUC = SPRNUC(2,2,IATOM)*FACTOT/D2
+                  AVEPAR = PARMAT(2,2,IATOM)*FACTOT
+                  AVEDIA = DIAMAT(2,2,IATOM)*FACTOT
+               END IF
+               CALL DZERO(GTRANT(1,1,IATOM),9)
+               GTRANT(1,1,IATOM) = AVETOT
+               GTRANT(2,2,IATOM) = AVETOT
+               GTRANT(3,3,IATOM) = AVETOT
+               IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &              ' Total spin-rotation constant       :',AVETOT,
+     &              ' Nuclear part of spin-rotation      :',AVENUC,
+     &              ' Diamagnetic part of spin-rotation  :',AVEDIA,
+     &              ' Paramagnetic part of spin-rotation :',AVEPAR
+            END IF
+ 98      CONTINUE
+      ELSE
+         IF (IPRINT .GE. 0) THEN
+            CALL HEADER
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
+            WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
+     &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &           'IC',D1/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+         END IF
+         DO 45 IATOM = 1, NUCDEP
+            IF (GVAL(IATOM) .NE. 0.0D0) THEN
+               FACTOT = GVAL(IATOM)*FAC
+               CALL DZERO(GTRANN,9)
+               CALL DZERO(GTRAND,9)
+               CALL DZERO(GTRANP,9)
+               DO 50 I = 1, 3
+               DO 50 J = 1, 3
+                  DO 60 IX = 1, 3
+                     DO 60 IY = 1, 3
+                        JX = IPTAX(IX,2)
+                        JY = IPTAX(IY,2)
+                        CONST = EIGVAL(I)*FACTOT
+                        GTRANT(I,J,IATOM)=GTRANT(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                        GTRANN(I,J) = GTRANN(I,J) + EIGVEC(IX,I)
+     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST/D2
+                        GTRAND(I,J) = GTRAND(I,J) + EIGVEC(IX,I)
+     &                       *DIAMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                        GTRANP(I,J) = GTRANP(I,J) + EIGVEC(IX,I)
+     &                       *PARMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+ 60               CONTINUE
+ 50            CONTINUE
+               IF (IPRINT .GE. 0) THEN
+                  CALL HEADER('Spin rotation constants (kHz) for '//
+     &                      NAMDEP(IATOM),-1)
+                  WRITE (LUPRI,'(2X,A18,F6.2,/)')
+     &                 'Nuclear g-value  :',GVAL(IATOM)
+                  WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
+     &              'principal axis system'
+                  IF (IPRINT .GT. 2) THEN
+                     CALL HEADER('Nuclear contribution',-1)
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANN(I,1),I = 1,3),
+     &                    'B', (GTRANN(I,2),I = 1,3),
+     &                    'C', (GTRANN(I,3),I = 1,3)
+                     CALL HEADER('Diamagnetic contribution',-1)
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRAND(I,1),I = 1,3),
+     &                    'B', (GTRAND(I,2),I = 1,3),
+     &                    'C', (GTRAND(I,3),I = 1,3)
+                     CALL HEADER('Paramagnetic contribution',-1)
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANP(I,1),I = 1,3),
+     &                    'B', (GTRANP(I,2),I = 1,3),
+     &                    'C', (GTRANP(I,3),I = 1,3)
+                     CALL HEADER('Total spin rotation constants',-1)
+                  END IF
+                  WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+               END IF
+            END IF
+ 45      CONTINUE
+      END IF
       RETURN
       END
 
