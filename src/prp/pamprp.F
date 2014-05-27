@@ -3882,7 +3882,7 @@ C***********************************************************************
 #endif
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &          DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -4041,7 +4041,7 @@ C
       NCOMP = 2
       PFAC(1)  = DMI2*CVAL
       PFAC(2)  = DMI2*CVAL
-      PFAC(3)  = DMI2*G1FAC
+      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'
