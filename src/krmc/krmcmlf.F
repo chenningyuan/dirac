@@ -207,12 +207,26 @@ C     ... end do IZ = 1,NZ
       END DO
 C     ... end do IFSY = 1,NFSYM
 C
+!#define DMRG_DEBUG
+#ifdef DMRG_DEBUG
+
+      do IZ = 1, min(nz,2)
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+           if(k/=l) DMFC(k,l,iz) = 0.0d0
+         END DO
+      END DO
+      end do
+
+#undef DMRG_DEBUG
+#endif
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
 CSK   IPRINT = 00
+
 C
       CALL QEXIT('QFC2MFC')
       RETURN
@@ -930,6 +944,7 @@ C
       DIMENSION NSTR(2,0:2,4)
       DIMENSION KR(-300:300)
       DIMENSION DINT(8,2)
+      real*8, allocatable :: vmuuuu_tmp(:,:,:,:,:)
 C
 #include "ibtfun.h"
 C
@@ -937,8 +952,10 @@ C
       CALL DZERO(VMUUUU, (2*NASHT)**4 * MIN(NZ,2))
 C
       iprint_local = iprint
+#ifdef DMRG_DEBUG
 !     debug
-!     iprint_local = 30
+      iprint_local = 30
+#endif
       II = 0
       JJ = 0
       DO IFSYM = 1, NFSYM
@@ -1146,6 +1163,32 @@ C
 !9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
  9001 FORMAT(4I5,5X,2F20.10)
 C
+
+!#define DMRG_DEBUG
+#ifdef DMRG_DEBUG
+      allocate(vmuuuu_tmp(2*nasht,2*nasht,2*nasht,2*nasht,nz_in_ci))
+      vmuuuu_tmp = 0
+      do IZ = 1, NZ_in_CI
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            if(k/=l)cycle
+            DO J = 1,2*NASHT
+               if(j/=l) cycle
+               DO I = 1,2*NASHT
+                 if(i/=l) cycle
+                  print *, 'debug ints... ',i,j,k,l,VMUUUU(I,J,K,L,IZ)
+                  VMUUUU_tmp(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ)
+               END DO
+            END DO
+         END DO
+      END DO
+      end do
+      call dcopy(2*nasht*2*nasht*2*nasht*2*nasht*nz_in_ci,
+     &           vmuuuu_tmp,1,vmuuuu,1)
+      deallocate(vmuuuu_tmp)
+#undef DMRG_DEBUG
+#endif
+
       IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
