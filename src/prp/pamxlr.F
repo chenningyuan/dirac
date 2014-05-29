@@ -277,7 +277,7 @@ C            loop up, but by placing it here local restrictions
 C            are possible, see e.g. REDPAR below....)
 C
             CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXLR)
+     &                  IPRXLR)
             INDBP  = LLBPSU(JOPB+IOPB)
             INDPRB = LLRBPU(INDBP)
             JTIMOP = IPRPTIM(INDPRB)
@@ -300,7 +300,7 @@ C
               NOSPIN = .TRUE.
             ENDIF
             CALL PAMGRD(INDPRB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                  JOPSY,WORK(KZCONF),
+     &                  JOPSY,
      &                  get_orbital_rotation_indices_pp(),
      &                  get_orbital_rotation_indices_pn(),
      &                  NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXLR)
@@ -327,7 +327,6 @@ C           ====================================
 C
             IF(THRCOM.NE.D0) THEN
               CALL REDPAR(IREDJOB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                    WORK(KZCONF),
      &                    get_orbital_rotation_indices_pp(),
      &                    get_orbital_rotation_indices_pn(),
      &                    NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
@@ -2080,7 +2079,7 @@ C         Generate orbital rotation operator
             norot = 0
             GASWF = .FALSE.
             CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,NOROT,
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
             deallocate(norot)
             JFRP = IFRP

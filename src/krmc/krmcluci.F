@@ -110,7 +110,9 @@ C     set "I/O node master" + "shared memory node master"
      &                                mxndgirr,mxpngas,nfsym,ngas,
      &                                dougrp,nirr_dg,mj2rep,
      &                                imosp_dirac_counter1,
-     &                                imosp_dirac_counter2)
+     &                                imosp_dirac_counter2,
+     &                                imosp_dirac_mjub,
+     &                                imosp_dirac_mjb)
 
       if(dougrp .ge. 10) call dealloc(orb_sym_vec)
 

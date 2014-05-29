@@ -24,7 +24,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd */
       SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
-     &                  JOPSY,JCONF,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
+     &                  JOPSY,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -42,7 +42,7 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION GPCI(*),GPOE(*),GPOP(*),JCONF(*),JXOPE(*),JXOPP(*),
+      DIMENSION GPCI(*),GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          WORK(*)
       CALL QENTER('PAMGRD')
 C
@@ -535,7 +535,7 @@ C     ===============================
       CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
-      IF (IPRINT.GE.7) THEN
+      IF (IPRINT.GE.15) THEN
         WRITE(LUPRI,'(/A,A16,1X,A,I1,A,I2)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR),'IREP=',IREP,' ITIM=',ITIM
@@ -552,14 +552,14 @@ C
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1
         IF (NFBAS(I1,0).GT.0.AND.NFBAS(I2,0).GT.0) THEN
-          IF (IPRINT.GE.7) THEN
+          IF (IPRINT.GE.20) THEN
             CALL HEADER('PRPMA1: entering symm.blocked AO-matrix',-1)
             WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &      '* Fermion irps no.',I1,I2,' of ',NFSYM
             CALL PRQMAT(PRPAO(I2BASX(I1,I2)+1,1),
      &                  NFBAS(I1,0),NFBAS(I2,0),NTBAS(0),NTBAS(0),NZ,
      &                  IPQTOQ(1,IREP),LUPRI)
-            IF (IPRINT.GE.10) THEN
+            IF (IPRINT.GE.25) THEN
               CALL HEADER(
      &        'PRPMA1: entering symm.blocked MO-coefficients',-1)
               WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
@@ -594,7 +594,7 @@ C
            ENDIF ! IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
          ENDIF ! IF (NFBAS(I1,0).GT.0.AND.NFBAS(I2,0).GT.0) THEN
   
-        IF (IPRINT.GE.7) THEN
+        IF (IPRINT.GE.15) THEN
           CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -608,7 +608,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.16) THEN
+      IF(IPRINT.GE.10) THEN
         CALL HEADER('PRPMA1: Total MO matrix of property',-1)
         IF (QBTR) THEN
          WRITE(LUPRI,'(4X,A)')

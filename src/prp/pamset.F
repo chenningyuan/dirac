@@ -404,7 +404,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck REDPAR */
-      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
+      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JXOPE,JXOPP,
      &                  NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
      &                  NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
      &                  WORK,KFREE,LFREE,IPRINT)
@@ -429,7 +429,7 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
-     &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
+     &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
       LOGICAL LBIT
 C
       KFRSAV = KFREE
@@ -854,7 +854,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -865,7 +865,12 @@ C
 C***********************************************************************
 
       use orbital_rotation_indices, only: setxop
-#include "implicit.h"
+      use conf_parameters, only: allocate_conf_array
+
+      implicit none
+
+      integer, intent(in) :: iprint
+
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -874,7 +879,6 @@ C
 C
       CHARACTER INDSTR(3,2)*72
       LOGICAL   SKIPEE,SKIPEP
-      DIMENSION WORK(*)
       LOGICAL GASWF
       integer, allocatable :: norot(:)
 C
@@ -886,9 +890,10 @@ C
       NZCONF   = 0
       NZCONFQ  = NZCONF *NZ
 C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
-      ! radovan: allocating a pointer on a common block is not great
-      CALL MEMGET2('REAL','JCONF',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
-C
+
+      call allocate_conf_array(nzconfq)
+
+
 C     Orbital parameters
 C     ==================
 C
@@ -903,7 +908,7 @@ C
       norot = 0
       GASWF = .FALSE.
       CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
       deallocate(norot)
 C===TODO end
@@ -927,5 +932,4 @@ C
       END IF
 C
       CALL QEXIT('XRSPAR')
-      RETURN
       END

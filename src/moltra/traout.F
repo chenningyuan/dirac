@@ -340,9 +340,12 @@ C
             MKL = - IREPKLB(1,I) - IREPKLB(2,I)
          ENDIF
 !        write(lupri,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
-!        IF (MIJ+MKL.NE.0)
+!        IF (MIJ+MKL/=0)
 !    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
-!    &   '(linzero): removed integral(',i,')',FMAT(I)
+!    &   '(linzero): removed integral(',iclass,')',FMAT(I)
+!        IF (MIJ+MKL==0)
+!    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
+!    &   '(linzero): kept integral(',iclass,')',FMAT(I)
          IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
       ENDDO
 C

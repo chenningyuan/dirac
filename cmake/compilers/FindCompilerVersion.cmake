@@ -68,6 +68,36 @@ list(GET PYTHON_OUTPUT 2 PYTHON_Fortran_VERSION)
 # cut off \n added by Python print()
 string(STRIP ${PYTHON_Fortran_VERSION} PYTHON_Fortran_VERSION)
 
+# write information about minimum required/found compilers versions to a file in build directory
+set(filename "${PROJECT_BINARY_DIR}/COMPILERS_VERSIONS.txt")
+# create or rewrite the file
+file(WRITE ${filename} "Information about minimum required/found compilers versions\n\n")
+# next strings are append to the file created before
+# write compilers vendors
+file(APPEND ${filename} "Compilers vendors (C, C++, Fortran compiler): ")
+file(APPEND ${filename} "${CMAKE_C_COMPILER_ID}, ${CMAKE_CXX_COMPILER_ID}, ${CMAKE_Fortran_COMPILER_ID}\n\n")
+# write versions found by Python script
+file(APPEND ${filename} "Compilers versions found by Python (required/found):\n")
+file(APPEND ${filename} "C language compiler:\t\t\t\t${REQUIRED_C}\t/\t${PYTHON_C_VERSION}\n")
+file(APPEND ${filename} "C++ language compiler:\t\t\t\t${REQUIRED_CXX}\t/\t${PYTHON_CXX_VERSION}\n")
+file(APPEND ${filename} "Fortran language compiler:\t\t\t${REQUIRED_Fortran}\t/\t${PYTHON_Fortran_VERSION}\n\n")
+
+# if available write versions found by CMake
+if((DEFINED CMAKE_C_COMPILER_VERSION) OR (DEFINED CMAKE_CXX_COMPILER_VERSION) OR (DEFINED CMAKE_Fortran_COMPILER_VERSION))
+    file(APPEND ${filename} "Compilers versions found by CMake (required/found):\n")
+    file(APPEND ${filename} "(Note: not available for all compilers)\n")
+
+    if(DEFINED CMAKE_C_COMPILER_VERSION)
+        file(APPEND ${filename} "C language compiler:\t\t\t\t${REQUIRED_C}\t/\t${CMAKE_C_COMPILER_VERSION}\n")
+    endif()
+    if(DEFINED CMAKE_CXX_COMPILER_VERSION)
+        file(APPEND ${filename} "C++ language compiler:\t\t\t\t${REQUIRED_CXX}\t/\t${CMAKE_CXX_COMPILER_VERSION}\n")
+    endif()
+    if(DEFINED CMAKE_Fortran_COMPILER_VERSION)
+        file(APPEND ${filename} "Fortran language compiler:\t\t\t${REQUIRED_Fortran}\t/\t${CMAKE_Fortran_COMPILER_VERSION}\n")
+    endif()
+endif()
+
 # checking for correct version of C compiler
 if(DEFINED CMAKE_C_COMPILER_VERSION)
 	# if CMake variable is defined then it must begins with version string from Python (so they are equal)   

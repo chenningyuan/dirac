@@ -2162,14 +2162,18 @@ C
 C     Get active-active part of FCmo:
 C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(A)') '(GASCIP_RCISTD) Active Fock matrix:'
          CALL OUTPUT(WORK(KFCAC),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
       END IF
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C
+#ifdef DMRG_DEBUG
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,30)
+#else
       CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
+#endif
 C
       CALL MEMREL('RCISTD after rGETFC etc.',WORK,1,KFCAC,KFREE,LFREE)
 C
@@ -2223,7 +2227,12 @@ c     CALL GASCIP_HDIAG(WORK(KHDIAG),NDET,IDET,WORK(KFCACM),WORK(KMUUUU))
       CALL GASCIP_CI(.TRUE.,WORK(KHDIAG),
      &     .FALSE.,DUMMY,DUMMY,WORK(KFCACM),WORK(KMUUUU),
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &     .TRUE.,NDET,IDET,IHRM,IPRINT)
+#ifdef DMRG_DEBUG
+     &     .FALSE.,NDET,IDET,IHRM,IPRINT
+#else
+     &     .TRUE.,NDET,IDET,IHRM,IPRINT
+#endif
+     &     )
 C     CALL GASCIP_CI(DODIA,DIAG,
 C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
 C          DODEN,CL,CR,DV,PV,
@@ -2254,14 +2263,16 @@ C     Make sure that we don't break symmetry by only having all
 C     components of a (nearly) degenerate set - criterium for
 C     degeneracy: energy difference less than 0.01 bohr)
 C
-      HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
-   90 HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
-      call flshfo(lupri)
-      IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
-         N_CSIM = N_CSIM - 1
-         HDIAG_N_CSIMp1 = HDIAG_N_CSIM
-         GO TO 90
-      END IF
+      if(ndet > 1)then
+        HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
+   90   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
+        call flshfo(lupri)
+        IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
+           N_CSIM = N_CSIM - 1
+           HDIAG_N_CSIMp1 = HDIAG_N_CSIM
+           GO TO 90
+        END IF
+      end if
       IF (N_CSIM .LT. N_ROOTS) THEN
           WRITE(LUPRI,*) 'N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
      &      N_CSIM,N_ROOTS

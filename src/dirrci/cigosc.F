@@ -1179,7 +1179,7 @@ C
      &                (indk(inz),indl(inz),inz=1,nz),
      &                (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
       ENDIF
-      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','N4A',nuniq+nz)
+      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','   N4A',nuniq+nz)
       If (ikr.EQ.0) GoTo 40 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
 C-->  K|ia> = |ib> ; K|ib> = - |ia>
@@ -1316,7 +1316,7 @@ C
       OPEN(MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
       READ(MRCONEE) NSPACT,BREIT,ECORE,NFSYM,NZ,SPINFR
       REALAR = NZ .EQ. 1 .OR. SPINFR
-      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','N1',NSPACT)
+      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','    N1',NSPACT)
       READ(MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ(MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
       READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
