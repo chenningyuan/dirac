@@ -1644,7 +1644,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
         write(luwrt,'(a)')
      &'  ============================================= '
         do ici = 1, ncmbspc
-          write(luwrt,'(1p,4g22.12)') (xispsm(ii,ici),ii=1,nsmci)
+          write(luwrt,'(1p,5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
         end do
       end if
 
