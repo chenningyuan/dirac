@@ -1626,9 +1626,13 @@
 
            write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
                        ref_wavefunction_coeff_qcorr(i)
-!          print *, ref_wavefunction_qcorr(i,1)(1:la)
-!          print *, ref_wavefunction_qcorr(i,2)(1:lb)
-!          print *, ref_wavefunction_coeff_qcorr(i)
+
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+           print *, ref_wavefunction_qcorr(i,1)(1:la)
+           print *, ref_wavefunction_qcorr(i,2)(1:lb)
+           print *, ref_wavefunction_coeff_qcorr(i)
+#endif
 
          end do
 

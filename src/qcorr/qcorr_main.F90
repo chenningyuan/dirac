@@ -24,6 +24,7 @@
       integer, allocatable  :: astring(:,:)
       integer, allocatable  :: bstring(:,:)
       integer, allocatable  :: l_ref(:,:)
+      integer, allocatable  :: ref_order(:,:)
       real(8), allocatable  :: ref_wavefunction_coeff(:)
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
@@ -33,8 +34,8 @@
       real(8)               :: reference_energy, reference_energy_tmp
       integer               :: iactp, ibctp, nbl_c, nael, nbel
       integer               :: ntest, lblk, iboff, ionem
-      integer               :: irir, imk2_r, i
-      integer               :: la, lb
+      integer               :: irir, imk2_r, i, j
+      integer               :: la, lb, max_lref_len
       integer               :: idum, lucoef
       real(8)               :: dum
       logical               :: tobe = .false.
@@ -63,16 +64,48 @@
 !     read # reference configurations
       allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
       allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+      max_lref_len = 0
       do i = 1, nref_qcorr
         read(1234) l_ref(i,1),l_ref(i,2),                               &
                          ref_wavefunction_qcorr(i,1)(1:l_ref(i,1)),     &
                          ref_wavefunction_qcorr(i,2)(1:l_ref(i,2)),     &
      &                   ref_wavefunction_coeff_qcorr(i)
-!       print *, ref_wavefunction_qcorr(i,1)(1:l_ref(i,1))
-!       print *, ref_wavefunction_qcorr(i,2)(1:l_ref(i,2))
-!       print *, ref_wavefunction_coeff_qcorr(i)
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+         print *, ref_wavefunction_qcorr(i,1)(1:l_ref(i,1))
+         print *, ref_wavefunction_qcorr(i,2)(1:l_ref(i,2))
+         print *, ref_wavefunction_coeff_qcorr(i)
+#endif
+          max_lref_len = max(max_lref_len,l_ref(i,1),l_ref(i,2)) 
+      
+      end do
+      
+      allocate(ref_order(max_lref_len,2*nref_qcorr))
+      ref_order = 0
+      !> sort numbers from 1 ... x in reference strings such that we do not miss anything in linear symmetry (reordered spinors wrt mj)
+      do j = 1, nref_qcorr
+        do i = 1, l_ref(j,1)/4
+          read(ref_wavefunction_qcorr(j,1)(1+(i-1)*4:4*i),'(i4)')       &
+     &         ref_order(i,j)
+        end do
+        call sort(ref_order(1,j),l_ref(j,1)/4)
+        do i = 1, l_ref(j,2)/4
+          read(ref_wavefunction_qcorr(j,2)(1+(i-1)*4:4*i),'(i4)')       &
+     &         ref_order(i,j+nref_qcorr)
+        end do
+        call sort(ref_order(1,j+nref_qcorr),l_ref(j,2)/4)
+        !> write sorted strings
+        ref_wavefunction_qcorr(j,1)(1:l_ref(j,1)) = ' '
+        ref_wavefunction_qcorr(j,2)(1:l_ref(j,2)) = ' '
+        write(ref_wavefunction_qcorr(j,1),"(60i4)")                     &
+     &  (ref_order(i,j),i=1,l_ref(j,1)/4)
+        write(ref_wavefunction_qcorr(j,2),"(60i4)")                     &
+     &  (ref_order(i,j+nref_qcorr),i=1,l_ref(j,2)/4)
 
       end do
+
+      deallocate(ref_order)
+
 
       close(1234,status="keep")
 
@@ -245,7 +278,7 @@
         write(wunit_q,"(A )") " ----------------"
         write(wunit_q,"(A,1f16.8)") " Q correction:",Emc_1
         write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Emc_1
-        write(wunit_q,"( A,1f16.8)") 'N reduced Q:  ',Emc_N1
+        write(wunit_q,"( A,1f16.8)") 'N reduced Q (Nact - 2e):  ',Emc_N1
         write(wunit_q,"( A,1f16.8)") 'N reduced:CI+Q',Emc_N1 + e_tot(i)
         write(wunit_q,"(A )") " ----------------"
 
@@ -290,7 +323,7 @@
         write(wunit_q,"(A )") " ----------------"
         write(wunit_q,"(A,1f16.8)") " Q correction: ",Emc_2
         write(wunit_q,"( A,1f16.8)")" CI+Q energy:  ", e_tot(i) + Emc_2
-        write(wunit_q,"( A,1f16.8)") 'N reduced Q:  ',Emc_N2
+        write(wunit_q,"( A,1f16.8)") 'N reduced Q (Nact - 2e):  ',Emc_N2
         write(wunit_q,"( A,1f16.8)") 'N reduced:CI+Q',Emc_N2 + e_tot(i)
         write(wunit_q,"(A )") " ----------------"
 
@@ -351,6 +384,7 @@
 !     scratch
       character (len=240), allocatable:: ref_wavefunction_tmp(:,:)
       integer,             allocatable:: istr(:,:)
+      integer,             allocatable:: ref_order(:,:)
       integer                         :: iel, i, j
       integer                         :: ia, iabas, ib, ibbas
       integer                         :: iampack, imzero, idet, idum
@@ -372,8 +406,11 @@
         threshold = threshold + nashref(i)
       end do
 
+      allocate(ref_order(threshold,2))
+
       if(iprnt > 100)                                                   &
-      print *, 'nfsym, nash(1), nash(2)',nfsym,nash(1),nash(2),threshold
+      print *, 'nfsym, nash(1:nfsym), threshold',                       &
+                nfsym, nash(1:nfsym), threshold
 
       IDET     = 0
       do JBLOCK = 1, NBL_C
@@ -443,7 +480,7 @@
                      end if
                      off_a = imosp_luci2dirac1(ireots (iastr(j,ia)))
 
-                     if(iprnt > 100)then
+                     if(iprnt > 200)then
                        print *,                                         &
                        'imosp_luci2dirac1(ireots (iastr(iel,ia)))',     &
                         imosp_luci2dirac1(ireots (iastr(j,ia))) 
@@ -456,7 +493,7 @@
                        if(off_a-nash(1) > cvorb(2))then
                          nal         = nal + 1
                          istr(nal,1) = off_a-cvorb(2)-nash(1)+nashref(1)
-                         if(iprnt>100) print *, 'set istr..',istr(nal,1)
+                         if(iprnt>200) print *, 'set istr..',istr(nal,1)
                        end if
                      else ! gerade, cvorb(1)
 
@@ -464,7 +501,7 @@
                        if(off_a > cvorb(1))then
                          nal         = nal + 1
                          istr(nal,1) = off_a-cvorb(1)
-                         if(iprnt>100) print *, 'set istr..',istr(nal,1)
+                         if(iprnt>200) print *, 'set istr..',istr(nal,1)
                        end if
                      end if
                    end do
@@ -477,7 +514,7 @@
                      end if
 
                      off_b = imosp_luci2dirac2(ireots (ibstr(j,ib)))
-                     if(iprnt > 100)then
+                     if(iprnt > 200)then
                        print *,                                         &
                        'imosp_luci2dirac2(ireots (ibstr(iel,ib)))',     &
                         imosp_luci2dirac2(ireots (ibstr(j,ib))) 
@@ -490,7 +527,7 @@
                        if(off_b-nash(1) > cvorb(2))then
                          nbt         = nbt + 1
                          istr(nbt,2) = off_b-cvorb(2)-nash(1)+nashref(1)
-                         if(iprnt>100) print *, 'set istr..',istr(nbt,2)
+                         if(iprnt>200) print *, 'set istr..',istr(nbt,2)
                        end if
                      else ! gerade, cvorb(1)
 
@@ -498,7 +535,7 @@
                        if(off_b > cvorb(1))then
                          nbt         = nbt + 1
                          istr(nbt,2) = off_b-cvorb(1)
-                         if(iprnt>100) print *, 'set istr..',istr(nbt,2)
+                         if(iprnt>200) print *, 'set istr..',istr(nbt,2)
                        end if
                      end if
                    end do
@@ -522,7 +559,7 @@
      &             (ibstr(iel,ib),iel=1,nbel)
                  end if ! relQC switch
 
-                 if(is_not_ref) cycle ! cycle if current determinant is not included in the reference space
+                 if(is_not_ref) cycle ! cycle if current determinant is for sure not included in the reference space
 
                  ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
                  ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
@@ -533,6 +570,28 @@
                    write(wunit_q,*)ref_wavefunction_tmp(1,1)(1:ilena)
                    write(wunit_q,*)ref_wavefunction_tmp(1,2)(1:ilenb)
                  end if
+
+                 !> sort numbers from 1 ... x such that we do not miss anything in linear symmetry (reordered spinors wrt mj)
+                 ref_order = 0
+                 do i = 1, ilena/4
+                   read(ref_wavefunction_tmp(1,1)(1+(i-1)*4:4*i),'(i4)')&
+     &             ref_order(i,1)
+                 end do
+                 call sort(ref_order(1,1),ilena/4)
+                 do i = 1, ilenb/4
+                   read(ref_wavefunction_tmp(1,2)(1+(i-1)*4:4*i),'(i4)')&
+     &             ref_order(i,2)
+                 end do
+                 call sort(ref_order(1,2),ilenb/4)
+
+                 !> write sorted strings
+                 ref_wavefunction_tmp(1,1)(1:ilena) = ' '
+                 ref_wavefunction_tmp(1,2)(1:ilenb) = ' '
+                 write(ref_wavefunction_tmp(1,1),"(60i4)")              &
+     &           (ref_order(i,1),i=1,ilena/4)
+                 write(ref_wavefunction_tmp(1,2),"(60i4)")              &
+     &           (ref_order(i,2),i=1,ilenb/4)
+                 
                                                                      
                  iref_tmp = 0
 
@@ -566,6 +625,7 @@
          end if
       end do
 
+      deallocate(ref_order)
       deallocate(ref_wavefunction_tmp)
       deallocate(istr)
 
@@ -923,3 +983,49 @@
 
       end subroutine put_refvec_for_qcorrs
 !     ***********************************************************************
+
+!     !> routines for sorting... found on http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap08/sorting.f90
+!     !> slightly modified to make it compile - stknecht may 2014
+
+      INTEGER FUNCTION  FindMinimum(x, Start, End)
+         IMPLICIT  NONE
+         INTEGER, DIMENSION(1:END), INTENT(IN) :: x
+         INTEGER, INTENT(IN)                   :: Start, End
+         INTEGER                               :: Minimum
+         INTEGER                               :: Location
+         INTEGER                               :: i
+    
+         Minimum  = x(Start)! assume the first is the min
+         Location = Start! record its position
+         DO i = Start+1, End ! start with next elements
+            IF (x(i) < Minimum) THEN!   if x(i) less than the min?
+               Minimum  = x(i)!      Yes, a new minimum found
+               Location = i                !      record its position
+            END IF
+         END DO
+         FindMinimum = Location        ! return the position
+      END FUNCTION  FindMinimum
+
+      SUBROUTINE  Swap(a, b)
+         IMPLICIT  NONE
+         INTEGER, INTENT(INOUT) :: a, b
+         INTEGER                :: Temp
+
+         Temp = a
+         a    = b
+         b    = Temp
+      END SUBROUTINE  Swap
+
+      SUBROUTINE  Sort(x, Size)
+        IMPLICIT  NONE
+        INTEGER, DIMENSION(1:size), INTENT(INOUT) :: x
+        INTEGER, INTENT(IN)                       :: Size
+        INTEGER                                   :: i
+        INTEGER                                   :: Location
+        INTEGER                                   :: FindMinimum
+
+        DO i = 1, Size-1! except for the last
+           Location = FindMinimum(x, i, Size)! find min from this to last
+           CALL  Swap(x(i), x(Location))! swap this and the minimum
+        END DO
+      END SUBROUTINE  Sort
