@@ -1,5 +1,5 @@
-O1s core-ionization of H2O by complex response
-==============================================
+Core electron excitations and ionization in H2O at the HF and DFT levels
+========================================================================
 
 Introduction
 ------------
