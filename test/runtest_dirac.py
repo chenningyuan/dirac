@@ -25,17 +25,22 @@ class TestRun(runtest.TestRun):
 
     def run(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
 
-        pam_script = os.path.normpath(os.path.join(self.binary_dir, 'pam'))
+        launch_script = os.path.normpath(os.path.join(self.binary_dir, 'pam'))
         if self.skip_run:
             sys.stdout.write('\nskipping actual run\n')
         else:
-            if not os.path.exists(pam_script):
-                sys.stderr.write('ERROR: pam script not found in %s\n' % pam_script)
+            if not os.path.exists(launch_script):
+                sys.stderr.write('ERROR: launch script %s not found\n' % launch_script)
                 sys.stderr.write('       have you set the correct --binary-dir (or -b)?\n')
                 sys.stderr.write('       try also --help\n')
                 sys.exit(-1)
 
-        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (pam_script, os.path.join(self.binary_dir, 'dirac.x'), args)
+        if sys.platform == "win32":
+            dirac_exe='dirac.x.exe'
+        else:
+            dirac_exe='dirac.x'
+
+        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (launch_script, os.path.join(self.binary_dir,dirac_exe), args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
