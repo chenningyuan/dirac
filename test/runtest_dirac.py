@@ -40,7 +40,7 @@ class TestRun(runtest.TestRun):
         else:
             dirac_exe='dirac.x'
 
-        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (launch_script, os.path.join(self.binary_dir,dirac_exe), args)
+        launcher = 'python "%s" --dirac=%s --noarch --nobackup %s' % (launch_script, os.path.join(self.binary_dir, dirac_exe), args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
