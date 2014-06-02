@@ -1,7 +1,13 @@
 
 
-13.3 (this will be the next patch)
-----------------------------------
+13.4 (this is the next patch)
+-----------------------------
+
+- Nicer error messages if the mol file is wrongly formatted.
+
+
+13.3 (2014-06-02)
+-----------------
 
 - Fix for more than nine buffer files in integral trnasformation
   (problem reported on dirac-users mailing list).
