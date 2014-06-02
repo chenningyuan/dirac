@@ -1,6 +1,6 @@
 
 """
-   runtest - numerically tolerant test library.
+   runtest - Numerically tolerant test library.
 
    Author:
       Radovan Bast (lastname at kth.se).
@@ -15,7 +15,7 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.5'
+RUNTEST_VERSION = 'v0.1.6'
 
 import re
 import os
