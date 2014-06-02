@@ -9505,7 +9505,7 @@ C
 
       CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 
       DO I = 1, MXCENT
             ISOTOP(I) = 1
@@ -9641,25 +9641,27 @@ C      KDIAMA = KGVAL + JATOM
 C      KPARMA = KDIAMA + 9*JATOM
 !***
       CALL MEMGET('REAL',KGVAL  ,JATOM ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDIAMA ,JATOM ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPARMA ,9*JATOM ,WORK,KFREE,LFREE)
-!*** IAA not needed
+      CALL MEMGET('REAL',KDIAMA ,9*JATOM ,WORK,KFREE,LFREE)
+
+c iaa I have to check memory assigned to KPARMA
+      CALL MEMGET('REAL',KPARMA ,4*9*JATOM ,WORK,KFREE,LFREE)
+
+!*** IAA not needed (dalton)
 c      KLAST  = KAMASS + JATOM
 !***
-      CALL MEMGET('REAL',KLAST ,JATOM ,WORK,KFREE,LFREE)
+!      CALL MEMGET('REAL',KLAST ,JATOM ,WORK,KFREE,LFREE)
 
-      LWRK   = LFREE - KLAST + 1
+!      LWRK   = LFREE - KLAST + 1
 !         IF (KLAST .GT. LFREE) CALL
 !     &        QUIT('PRP_SPINRO...error allocations !!! ')
 
 !        CALL MEMCHK('prp_spinro 0.1',WORK,1)
+!iaa
+!      CALL MEMGET('REAL',KLFREE ,JATOM ,WORK,KFREE,LFREE)
 
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
-
+c iaa
       CALL SPRRES(WORK(KGEOM),WORK(KAMASS),WORK(KGVAL),
-     &               WORK(KDIAMA),WORK(KPARMA),WORK(KLAST),LWRK,! or WORK(KFREE),LFREE, ?
+     &               WORK(KDIAMA),WORK(KPARMA),KLAST,LFREE,! or WORK(KFREE),WORK(KLFREE), ?
      &               JATOM,IPRPRP)
 C-------------------------------------------------------------------
 C
@@ -9680,12 +9682,12 @@ C
         DO 400 ISYMOP = 0, MAXOPR
         IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
-c iaa activate
-!          IF (DOATOM(I)) THEN
-!           WRITE (LUPRI,'(A,A,4F14.4)') '@',
-!     &     NAMDEP(IATOM),TMAT(1,1,IATOM),SPRNUC(1,1,IATOM),
-!     &     DMAT(1,1,IATOM),PMAT(1,1,IATOM,1)+PMAT(1,1,IATOM,2)
-!          END IF
+! iaa activate/deactivate
+          IF (DOATOM(I)) THEN
+           WRITE (LUPRI,'(A,A,4F14.4)') '@',
+     &     NAMDEP(IATOM),TMAT(1,1,IATOM),SPRNUC(1,1,IATOM),
+     &     DMAT(1,1,IATOM),PMAT(1,1,IATOM,1)+PMAT(1,1,IATOM,2)
+          END IF
         END IF
  400    CONTINUE
  300  CONTINUE
@@ -9906,12 +9908,15 @@ C***********************************************************************
 !From DALTON
 !#include "sigma.h"
 C
+c iaa to check
+      DO I = 1, MXCENT
+          ISOTOP(I) = 1
+      END DO
+c
       LONDON = .FALSE.
       D12 = .FALSE.
       D23 = .FALSE.
 C
-!      IF (IPRINT .GE. 0)
-!     &     CALL TITLER('DIRAC - SPIN-ROTATION CONSTANTS','*',104)
       CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
 C
@@ -9930,7 +9935,8 @@ C
          CALL TRADIP(ELSPRD,DMAT,WORK(KCSTRA),WORK(KSCTRA),
      &               3*NUCDEP,2,2)
       END IF
-      CALL TRADIP(ELSPRP,PMAT,WORK(KCSTRA),WORK(KSCTRA),3*NUCDEP,2,2)
+C iaa to solve problems with memory
+ !     CALL TRADIP(ELSPRP,PMAT,WORK(KCSTRA),WORK(KSCTRA),3*NUCDEP,2,2)
 C
 C     We add up the total spin-rotation constants. Also add nuclear
 C     and diamagnetic term into one total diamagnetic term
@@ -9975,7 +9981,7 @@ C
  100  CONTINUE
 c
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGUMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
-     &            .TRUE.,PLANAR,LINEAR)
+     &            .TRUE.,PLANAR,LINEAR,IPRINT)
 C
 C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
