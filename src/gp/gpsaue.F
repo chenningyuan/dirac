@@ -210,12 +210,12 @@ C
       ELSE
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
-      IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
+      IF((NDEC.LT.0).OR.(NDEC.GE.(NDIG-3))) THEN
         MXFORM(1:1) = 'E'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
-        NDEC = NDIG - NDEC - 3
+        NDEC = NDIG - 3 - NDEC
       ENDIF
       IF(NDEC.LE.0) THEN
         WRITE(LUPRI,*) 'MXFORM out of boundaries...'
