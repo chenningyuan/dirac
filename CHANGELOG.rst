@@ -3,7 +3,7 @@
 13.4 (this is the next patch)
 -----------------------------
 
-- Write me ...
+- Nicer error messages if the mol file is wrongly formatted.
 
 
 13.3 (2014-06-02)
