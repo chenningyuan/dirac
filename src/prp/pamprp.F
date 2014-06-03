@@ -8931,13 +8931,29 @@ C
 C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      implicit none
+
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-      DIMENSION WORK(LWORK)
+!      DIMENSION WORK(LWORK)
       logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
+      INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
+     &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
+     &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
+     &        IS2,ISCOOR,ISCORD1,ISECND,!KFREE,LFREE,
+     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
+     &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
+     &        IBTSHL,IBTSHR
+
+      DOUBLE PRECISION PFAC
+
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION PFAC(3)
+C
+#include "memint_i_n.h"
       allocate(DOATOM(NUCIND))
       CALL SETATM(DOATOM,NATOM,-29)
       CALL DEF_SPINRO1(DOATOM,WORK(KFREE),LFREE,IPRINT)
@@ -8954,6 +8970,9 @@ C
 C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      implicit none
+
 #include "priunit.h"
 C
 #include "mxcent.h" 
@@ -8974,10 +8993,24 @@ c...common block for expectation values
 #include "dcbxlr.h"
 C...common block for linear reponse
 #include "dcbxpr.h"
-      PARAMETER(D1 = 1.0D0,DP5=-0.5D0,DM1=-1.0D0)
+!#include "memint_i_n.h"
+
+      INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
+     &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
+     &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
+     &        IS2,ISCOOR,ISCORD1,ISECND,LWORK,!KFREE,LFREE,
+     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
+     &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
+     &        IBTSHL,IBTSHR,ISCOR1
+
+      DOUBLE PRECISION PFAC,WORK,D1,DL,DS,DM1
+
       LOGICAL DOATOM(NUCIND)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
+
+c iaa check "internal sign" of DS
+      PARAMETER(D1 = 1.0D0,DL = 1.0D0,DS = -0.5D0,DM1=-1.0D0)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -9031,7 +9064,7 @@ C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
        NPCOMP    = 1  ! one component
-       PFAC(1)   = D1 ! factor
+       PFAC(1)   = DL ! factor
        PLABEL(1) = 'XANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9043,7 +9076,7 @@ C
        PNAME     = 'X Spin ang.mom. '
        IPTYP     = 10  ! Sigma_x
        NPCOMP    = 1   ! one component
-       PFAC(1)   = DP5 ! factor
+       PFAC(1)   = DS ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9057,7 +9090,7 @@ C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
        NPCOMP    = 1  ! one component
-       PFAC(1)   = D1 ! factor
+       PFAC(1)   = DL ! factor
        PLABEL(1) = 'XANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9067,7 +9100,7 @@ C
        PNAME     = 'Y Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
        NPCOMP    = 1  ! one component
-       PFAC(1)   = D1 ! factor
+       PFAC(1)   = DL ! factor
        PLABEL(1) = 'YANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9077,7 +9110,7 @@ C
        PNAME     = 'Z Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
        NPCOMP    = 1  ! one component
-       PFAC(1)   = D1 ! factor
+       PFAC(1)   = DL ! factor
        PLABEL(1) = 'ZANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9089,7 +9122,8 @@ C
        PNAME     = 'X Spin ang.mom. '
        IPTYP     = 10  ! Sigma_x
        NPCOMP    = 1   ! one component
-       PFAC(1)   = DP5 ! factor
+       PFAC(1)   = DS ! factor
+!
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9099,7 +9133,7 @@ C
        PNAME     = 'Y Spin ang.mom. '
        IPTYP     = 11  ! Sigma_y
        NPCOMP    = 1   ! one component
-       PFAC(1)   = DP5 ! factor
+       PFAC(1)   = DS ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9109,7 +9143,7 @@ C
        PNAME     = 'Z Spin ang.mom. '
        IPTYP     = 12  ! Sigma_z
        NPCOMP    = 1   ! one component
-       PFAC(1)   = DP5 ! factor
+       PFAC(1)   = DS ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9259,6 +9293,7 @@ C
 C***********************************************************************
       use codata
       use memory_allocator
+
       implicit none
 
 #include "priunit.h"
@@ -9274,8 +9309,8 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbnmr.h"
 #include "symmet.h"
-c iaa rewrite ibtfun.h
-!#include "ibtfun.h"
+c iaa rewrited ibtfun.h
+!#include "ibtfun_i_n.h"
 #include "gfac.h"  ! added
 #include "orgcom.h"  ! added
 #include "spinro.h"  ! added
