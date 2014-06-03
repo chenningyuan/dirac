@@ -1,6 +1,6 @@
-========================================
-Investigating covalency of LuF:math:`_3`
-========================================
+===============================================
+Investigating covalency of :math:`\mbox{LuF}_3`
+===============================================
 
 The problem
 -----------
@@ -14,3 +14,7 @@ are in general not suitable for 'seeing' chemical bonds since they follow irreps
 and tend to delocalize over the molecule. One option is therefore to exploit the invariance of the 
 electronic energy upon rotations amongst the occupied orbitals of a closed-shell molecule to 
 localize molecular orbitals 
+
+.. image:: LuF3.png
+   :scale: 50
+   :alt: alternate text
