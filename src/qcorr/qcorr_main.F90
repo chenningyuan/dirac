@@ -987,17 +987,17 @@
 !     !> routines for sorting... found on http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap08/sorting.f90
 !     !> slightly modified to make it compile - stknecht may 2014
 
-      INTEGER FUNCTION  FindMinimum(x, Start, End)
+      INTEGER FUNCTION  FindMinimum(x, Start, finish)
          IMPLICIT  NONE
-         INTEGER, DIMENSION(1:END), INTENT(IN) :: x
-         INTEGER, INTENT(IN)                   :: Start, End
+         INTEGER, INTENT(IN)                   :: Start, finish
+         INTEGER, DIMENSION(1:finish), INTENT(IN) :: x
          INTEGER                               :: Minimum
          INTEGER                               :: Location
          INTEGER                               :: i
     
          Minimum  = x(Start)! assume the first is the min
          Location = Start! record its position
-         DO i = Start+1, End ! start with next elements
+         DO i = Start+1, finish ! start with next elements
             IF (x(i) < Minimum) THEN!   if x(i) less than the min?
                Minimum  = x(i)!      Yes, a new minimum found
                Location = i                !      record its position
@@ -1016,16 +1016,16 @@
          b    = Temp
       END SUBROUTINE  Swap
 
-      SUBROUTINE  Sort(x, Size)
+      SUBROUTINE  Sort(x, is_size)
         IMPLICIT  NONE
-        INTEGER, DIMENSION(1:size), INTENT(INOUT) :: x
-        INTEGER, INTENT(IN)                       :: Size
+        INTEGER, INTENT(IN)                       :: is_size
+        INTEGER, DIMENSION(1:is_size), INTENT(INOUT) :: x
         INTEGER                                   :: i
         INTEGER                                   :: Location
         INTEGER                                   :: FindMinimum
 
-        DO i = 1, Size-1! except for the last
-           Location = FindMinimum(x, i, Size)! find min from this to last
+        DO i = 1, is_size-1! except for the last
+           Location = FindMinimum(x, i, is_size)! find min from this to last
            CALL  Swap(x(i), x(Location))! swap this and the minimum
         END DO
       END SUBROUTINE  Sort
