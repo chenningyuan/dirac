@@ -456,6 +456,7 @@ C
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
+        CALL OPNFIL(LUFCKT,'DFFCKT','UNKNOWN','PREDHF')
         CALL OPNFIL(LUDENS,'DFDENS','UNKNOWN','PREDHF')
       ENDIF
       CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
@@ -732,6 +733,10 @@ C
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
           END DO
         ENDIF
+C
+C       Write total Fock matrix
+C
+        CALL WRIFCK(LUFCKT,FOCK,NFMAT)
         IF(IPRSCF.GE.5) THEN
           IF (NISHT .GT. 0) THEN
             CALL HEADER('PREDHF: Total FD matrix in SA-AO basis',-1)
@@ -1575,6 +1580,10 @@ C
            END DO
          ENDIF
 C
+C       Write total Fock matrix
+C
+        CALL WRIFCK(LUFCKT,FOCK,NFMAT)
+C
          IF(IPRSCF.GE.5) THEN
            IF (NISHT .GT. 0) THEN
             CALL HEADER(
@@ -1685,6 +1694,7 @@ C
       CLOSE(LUFOCK,STATUS='KEEP')
       CLOSE(LUFCK1,STATUS='KEEP')
       CLOSE(LUFCK2,STATUS='KEEP')
+      CLOSE(LUFCKT,STATUS='KEEP')
       CLOSE(LUCYCL,STATUS='KEEP')
       CLOSE(LUEVEC,STATUS='KEEP')
 
