@@ -4,6 +4,9 @@
 -----------------------------
 
 - Nicer error messages if the mol file is wrongly formatted.
+- Bugfix for dipole moment calculations with the KRCI property module.
+  The core-electronic part was not added to the electronic contribution 
+  of the total dipole moment.
 
 
 13.3 (2014-06-02)
