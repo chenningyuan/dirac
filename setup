@@ -161,6 +161,23 @@ def parse_input():
             default=None,
             help='extra C++ flags [default: %(default)s]',
             metavar='STRING')
+            
+    group = parser.add_argument_group('pass custom flags to the compiler')
+    group.add_argument('--custom-fc-flags',
+            action='store',
+            default=None,
+            help='custom Fortran flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--custom-cc-flags',
+            action='store',
+            default=None,
+            help='custom C flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--custom-cxx-flags',
+            action='store',
+            default=None,
+            help='custom C++ flags [default: %(default)s]',
+            metavar='STRING')
     
     return parser.parse_args()
 
@@ -264,6 +281,13 @@ def gen_cmake_command(args):
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
     if args.extra_cxx_flags:
         command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
+        
+    if args.custom_fc_flags:
+        command += ' -DCUSTOM_Fortran_FLAGS="%s"' % args.custom_fc_flags
+    if args.custom_cc_flags:
+        command += ' -DCUSTOM_C_FLAGS="%s"' % args.custom_cc_flags
+    if args.custom_cxx_flags:
+        command += ' -DCUSTOM_CXX_FLAGS="%s"' % args.custom_cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
