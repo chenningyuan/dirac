@@ -9309,12 +9309,12 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbnmr.h"
 #include "symmet.h"
-c iaa rewrited ibtfun.h
-!#include "ibtfun_i_n.h"
 #include "gfac.h"  ! added
 #include "orgcom.h"  ! added
 #include "spinro.h"  ! added
 #include "iratdef.h"  ! added
+c iaa rewrited ibtfun.h
+#include "ibtfun.h" !"ibtfun_i_n.h"
 C
 C 
       logical, allocatable :: DOATOM(:)
@@ -9361,13 +9361,15 @@ C
      &        IATOM, IB,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
      &        JA, JATOM,JB,K,KA,KB,KFRSAV,KFREE,L,NA,NATOM,NB,NCMAT,
      &        NEXP,NISO,NSCOOR, NSPEC
-      INTEGER ICONVXYZ
+      INTEGER ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,KLAST,LFREE
 
       double precision RATINF(3,5,NUCDEP), IATINF(3,NUCDEP),DISOTP,
      &                 IBTAND,EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &     ABCNV(NBFREQ,NLRBPT),ABND,
-     &     GTRANN(3,3), GTRAND(3,3),GTRANP1(3,3),GTRANP2(3,3),!,
-     &     GVALUE,IABLRF_EE,IABLRF_EP
+     &                 ABCNV(NBFREQ,NLRBPT),ABND,
+     &                 GTRANN(3,3), GTRAND(3,3),GTRANP1(3,3),
+     &                 GTRANP2(3,3),
+     &                 GVALUE,IABLRF_EE,IABLRF_EP,
+     &                 AVETOT,AVENUC,AVEDIA,AVEPAR
 C
       CHARACTER*1 CJB
 
@@ -9649,8 +9651,8 @@ C         so the TMAT now contains total response
 C--------------------------------------------------------------------
 C
 c iaa
-C      CALL SPRRES(KGEOM,KAMASS,KGVAL,KDIAMA,KPARMA,KLAST,LFREE,! or WORK(KFREE),WORK(KLFREE), ?
-C     &               JATOM,IPRPRP)
+      CALL SPRRES(GEOM,AMASS,GVAL,DIAMA,PARMA,KLAST,LFREE,
+     &            JATOM,IPRPRP)
 C-------------------------------------------------------------------
 C
 C Final print section
@@ -9664,20 +9666,19 @@ C
      &      '            para',!//
      &      '@-----------------------------------------------------'//
      &      '----------' 
-
-c iaa
+C
       IATOM = 0
       DO 300 I = 1, NUCIND
         DO 400 ISYMOP = 0, MAXOPR
-!        IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-!         IATOM = IATOM + 1
-c          IF (DOATOM(I)) THEN
-c             IF (LINEAR) THEN
-c               WRITE (LUPRI,'(A,A,4F14.4)') '@',
-c     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
-c             END IF
-c          END IF
-!        END IF
+        IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+         IATOM = IATOM + 1
+          IF (DOATOM(I)) THEN
+             IF (LINEAR) THEN
+               WRITE (LUPRI,'(A,A,4F14.4)') '@',
+     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
+             END IF
+          END IF
+        END IF
  400    CONTINUE
  300  CONTINUE
       WRITE(LUPRI,'(A,/)')
@@ -9724,17 +9725,27 @@ C
 C     This subroutine is modelled based on DALTON NUCSPR
 C***********************************************************************
 C
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-      PARAMETER (D1 = 1.0D0, D0 = 0.D0)
-      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
 #include "abainf.h"
 #include "symmet.h"
 #include "spinro.h"
 #include "ibtfun.h"
+C
+      double precision D0,D1,GEOM,ORIGIN
+
+      PARAMETER (D1 = 1.0D0, D0 = 0.D0)
+      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
+C
+      integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
+     &        KK,LL,NATOM1
+C
+      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC,
+     &                 IBTAND,IBTOR,IBTSHL,IBTSHR,IBTXOR
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -9814,19 +9825,27 @@ C
 C     This subroutine is modelled based on DALTON DIASPR
 C***********************************************************************
 C
+      implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "nuclei.h"
-      DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
-     &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
 #include "abainf.h"
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 !#include "helfey.h"
 #include "ibtfun.h"
+C
+      integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT,
+     &        IBTAND,IBTOR,IBTSHL,IBTSHR,IBTXOR
+C
+      double precision EXPVAL,ELFLD,CSTRA,SCTRA,
+     &                 COORX,COORY,COORZ,HFGEL
+      DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
+     &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
+
 C
       CALL DZERO(SPRDNL,NCMAT)
       CALL DZERO(HFGEL,MXCOOR)
@@ -9893,11 +9912,32 @@ C        PMAT   - paramagnetic term
 C
 C***********************************************************************
       use codata
+C
+      implicit none
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h" 
 !#include "dcbprp.h" !added (problems including LONDON)
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "ibtfun.h"
+C
+      integer I,J,KATOM,IPRINT,LWORK,IATOM,ICOOR,
+     &        ISYMOP,IX,IY,JATOM,JX,JY,KCSTRA,KLAST,
+     &        KSCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
+     &        IBTSHL,IBTSHR,IBTXOR
+C
+      double precision D1,D2,D3,D4,THRESH,DP5,FAC,
+     &                 GEOM,AMASS,GVAL,DMAT,PMAT,
+     &                 WORK,ANGUMOM,AVEDIA,AVENUC,
+     &                 AVEPAR,AVETOT,CONST,EIGVAL,EIGVEC,
+     &                 FACTOT,GTRAND,GTRANN,GTRANP,OMEGA,
+     &                 SIGMAS,TINERT,DISOTP
+C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
@@ -9907,12 +9947,7 @@ C***********************************************************************
      &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
      &          GVAL(KATOM), GTRANP(3,3), PMAT(3,3,KATOM),
      &          DMAT(3,3,KATOM)
-#include "abainf.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "spinro.h"
-#include "orgcom.h"
-#include "ibtfun.h"
+
 C
 c iaa to check!
       DO I = 1, MXCENT
