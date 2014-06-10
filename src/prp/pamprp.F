@@ -1539,8 +1539,7 @@ C
 C     Spin-rotation
 C
       IF(SPINRO) THEN
-c iaa
-        CALL PRP_SPINRO(EXPVAL,ABLRF,ABCNV)!,WORK,KFREE,LFREE)
+        CALL PRP_SPINRO(EXPVAL,ABLRF,ABCNV)
       ENDIF
 C
 C
@@ -8924,6 +8923,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPINRO */
       SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+! iaa clean work, lwork, combine with spinro1
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define operators for spin-rotation constants
@@ -8970,7 +8970,7 @@ C
 C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
+      use codata
       implicit none
 
 #include "priunit.h"
@@ -8998,19 +8998,19 @@ C...common block for linear reponse
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,LWORK,!KFREE,LFREE,
+     &        IS2,ISCOOR,ISCORD1,ISECND,LWORK,
      &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
      &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,ISCOR1
 
-      DOUBLE PRECISION PFAC,WORK,D1,DL,DS,DM1
+      DOUBLE PRECISION PFAC,WORK,D1,DL,DS
 
       LOGICAL DOATOM(NUCIND)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 
 c iaa check "internal sign" of DS
-      PARAMETER(D1 = 1.0D0,DL = 1.0D0,DS = -0.5D0,DM1=-1.0D0)
+      PARAMETER(D1 = 1.0D0,DL = 1.0D0,DS = -0.5D0)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -9161,8 +9161,8 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
 C
-      PFAC(1)  = DM1
-      PFAC(2)  = DM1
+      PFAC(1)  = CVEL
+      PFAC(2)  = CVEL
       NPCOMP   = 2
 C
       ITOP = 3
@@ -9282,8 +9282,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SPINRO */
-c iaa
-      SUBROUTINE PRP_SPINRO(EXPVAL,ABLRF,ABCNV)!,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_SPINRO(EXPVAL,ABLRF,ABCNV)
 C***********************************************************************
 C
 C     Output routine for spin-rotation constant
@@ -9313,26 +9312,28 @@ C***********************************************************************
 #include "orgcom.h"  ! added
 #include "spinro.h"  ! added
 #include "iratdef.h"  ! added
-c iaa rewrited ibtfun.h
+#include "dgroup.h"   ! added
 #include "ibtfun.h" !"ibtfun_i_n.h"
 C
 C 
       logical, allocatable :: DOATOM(:)
-      double precision, allocatable :: TMAT(:)
-      double precision, allocatable :: NMAT(:)
-      double precision, allocatable :: DMAT(:)
-      double precision, allocatable :: PMAT(:,:,:,:)
-!      double precision, allocatable :: DMATLO(:)
-!      double precision, allocatable :: DMATRE(:)
-!      double precision, allocatable :: DMATREE(:)
-!      double precision, allocatable :: DMATREP(:)
-!      double precision, allocatable :: DMATREO(:)
+      double precision, allocatable :: TMAT(:,:,:)
+      double precision, allocatable :: DMAT(:,:,:)
+      double precision, allocatable :: PMATL(:,:,:,:)
+      double precision, allocatable :: PMATS(:,:,:,:)
+!      double precision, allocatable :: DMATLO(:,:,:)
+!      double precision, allocatable :: DMATRE(:,:,:)
+!      double precision, allocatable :: DMATREE(:,:,:)
+!      double precision, allocatable :: DMATREP(:,:,:)
+!      double precision, allocatable :: DMATREO(:,:,:)
       integer, allocatable :: IBUF(:)
       double precision, allocatable :: CSTRA(:)
       double precision, allocatable :: SCTRA(:)
-      double precision, allocatable :: TMPMAT(:,:,:)
+      double precision, allocatable :: TMPMATL(:,:,:)
+      double precision, allocatable :: TMPMATS(:,:,:)
+      double precision, allocatable :: TMDMAT(:)
 c
-      double precision, allocatable :: GEOM(:)
+      double precision, allocatable :: GEOM(:,:)
       double precision, allocatable :: MASS(:)
       integer, allocatable :: NAT(:)
       double precision, allocatable :: NUMIS(:)
@@ -9345,24 +9346,17 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
       PARAMETER (D2 = 2.0D0)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      LOGICAL TEST,ee, ep,occ,PLANAR, LINEAR  !DOATOM(NUCIND)
-!      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-!     &     ABCNV(NBFREQ,NLRBPT),TMPMAT(6,3*NUCDEP,2),TMDMAT(3*NUCDEP),
-!     &     DMAT(3,3,NUCDEP),DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
-!     &     DMATREE(3,3,NUCDEP),DMATREP(3,3,NUCDEP),
-!     &     DMATREO(3,3,NUCDEP),
-!     &     PMAT(3,3,NUCDEP,2),IBUFA(3*NUCDEP), IBUFEXP(3*NUCDEP),
-!     &     IBUFB(6),CSTRA(NUCDEP*NUCDEP*9),SCTRA(NUCDEP*NUCDEP*9),
-!     &     WORK(*),RATINF(3,5,NUCDEP), IATINF(3,NUCDEP),AMASS(NUCDEP),
- !    &     GEOM(NUCDEP,3),GVAL(NUCDEP),TMAT(3,3,NUCDEP),
-!     &     GTRANN(3,3), GTRAND(3,3),GTRANP1(3,3),GTRANP2(3,3)
 C
-      INTEGER IBUFA(3*NUCDEP), IBUFEXP(3*NUCDEP), IBUFB(6),I,IA,
-     &        IATOM, IB,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
-     &        JA, JATOM,JB,K,KA,KB,KFRSAV,KFREE,L,NA,NATOM,NB,NCMAT,
-     &        NEXP,NISO,NSCOOR, NSPEC
-      INTEGER ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,KLAST,LFREE
-
+      LOGICAL TEST,ee, ep,occ,PLANAR
+C
+      INTEGER IBUFA(3*NUCDEP), IBUFEXP(3*NUCDEP), I,IA,IB1,IB2,
+     &        IATOM,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
+     &        JA, JATOM,JB1,JB2,K,KA,KB1,KB2,KFRSAV,KFREE,L,NA,
+     &        NATOM,NB1,NB2,NCMAT,
+     &        NEXP,NISO,NSCOOR, NSPEC,
+     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,KLAST,LFREE,
+     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),NMAX
+C
       double precision RATINF(3,5,NUCDEP), IATINF(3,NUCDEP),DISOTP,
      &                 IBTAND,EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),ABND,
@@ -9379,27 +9373,27 @@ C
       NCMAT =  NUCDEP*9
 
       allocate(DOATOM(NUCIND))
-      allocate(TMAT(NCMAT))
-      allocate(NMAT(NCMAT))
-      allocate(DMAT(NCMAT))
-      allocate(PMAT(NCMAT,NCMAT,NCMAT,NCMAT))
-!      allocate(DMATLO(NCMAT))
-!      allocate(DMATRE(NCMAT))
-!      allocate(DMATREE(NCMAT))
-!      allocate(DMATREP(NCMAT))
-!      allocate(DMATREO(NCMAT))
+      allocate(TMAT(3,3,NUCDEP))
+      allocate(DMAT(3,3,NUCDEP))
+      allocate(PMATL(3,3,NUCDEP,2)) ! refears to L part of NSR for ee and ep contributions.
+      allocate(PMATS(3,3,NUCDEP,2)) ! refears to S part of NSR for ee and ep contributions.
+!      allocate(DMATLO(3,3,NUCDEP))
+!      allocate(DMATRE(3,3,NUCDEP))
+!      allocate(DMATREE(3,3,NUCDEP))
+!      allocate(DMATREP(3,3,NUCDEP))
+!      allocate(DMATREO(3,3,NUCDEP))
       allocate(IBUF(NCMAT))
-c
-      allocate(CSTRA(NCMAT*NCMAT))
-      allocate(SCTRA(NCMAT*NCMAT))
-      allocate(TMPMAT(2*NCMAT,2*NCMAT,2*NCMAT))
-C      allocate(TMDMAT(NCMAT))
-      allocate(GEOM(3*(NATOMS+NFLOAT)))
+      allocate(CSTRA(NUCDEP*NUCDEP*9))
+      allocate(SCTRA(NUCDEP*NUCDEP*9))
+      allocate(TMPMATL(3,3*NUCDEP,2))
+      allocate(TMPMATS(3,3*NUCDEP,2))
+      allocate(TMDMAT(3*NUCDEP))
+      allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
       allocate(NUMIS(NATOMS))
-      allocate(AMASS(JATOM))
-      allocate(GVAL(JATOM))
+      allocate(AMASS(NUCDEP))
+      allocate(GVAL(NUCDEP))
       allocate(DIAMA(9*JATOM))
       allocate(PARMA(4*9*JATOM))
 
@@ -9408,17 +9402,12 @@ C      allocate(TMDMAT(NCMAT))
 
       CALL SETATM(DOATOM,NATOM,-29)
 C
-      CALL DZERO(TMPMAT,4*NCMAT)
 C      CALL DZERO(TMDMAT,NCMAT)
-      CALL DZERO(DMAT,NCMAT)
 !      CALL DZERO(DMATLO,NCMAT)
 !      CALL DZERO(DMATRE,NCMAT)
 !      CALL DZERO(DMATREE,NCMAT)
 !      CALL DZERO(DMATREP,NCMAT)
       CALL DZERO(SPRNUC,NCMAT)
-      CALL DZERO(NMAT,NCMAT)
-      CALL DZERO(PMAT,2*NCMAT)
-      CALL DZERO(TMAT,NCMAT)
       CALL DZERO(GTRANT,3*NCMAT)
 C
 C--------------------------------------------------------------------
@@ -9499,21 +9488,37 @@ C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
         ENDIF
       END DO
       IF (NA.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO1: NA=',NA
-        CALL QUIT('PRP_SPINRO1:Wrong value of NA!')
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NA=',NA
+        CALL QUIT('PRP_SPINRO:Wrong value of NA!')
       ENDIF
 C
-C     The 3 L orbital- and 3 S spin- angular momentum directions as B operators in <<A;B>> :
-      NB = 0
-      DO I = 1, 6
+      NMAX=3
+C
+      IF (LINEAR) NMAX=1
+C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
+      NB1 = 0
+      DO I = 1, NMAX
         IF(IPSPINRO(I+MXCOOR).GT.0) THEN
-          NB = NB + 1
-          IBUFB(NB) = I
+          NB1 = NB1 + 1
+          IBUFB1(NB1) = I
         ENDIF
       END DO
-      IF (NB.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO1: NB=',NB
-        CALL QUIT('PRP_SPINRO1:Wrong value of NB!')
+      IF (NB1.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NB1=',NB1
+        CALL QUIT('PRP_SPINRO:Wrong value of NB1!')
+      ENDIF
+C
+C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
+      NB2 = 0
+      DO I = 1, NMAX
+        IF(IPSPINRO(I+NMAX+MXCOOR).GT.0) THEN
+          NB2 = NB2 + 1
+          IBUFB2(NB2) = I
+        ENDIF
+      END DO
+      IF (NB2.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NB2=',NB2
+        CALL QUIT('PRP_SPINRO:Wrong value of NB2!')
       ENDIF
 C
 C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 0 > :
@@ -9525,8 +9530,8 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
         ENDIF
       END DO
       IF (NEXP.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO1: NEXP=',NEXP
-        CALL QUIT('PRP_SPINRO1:Wrong value of NEXP!')
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NEXP=',NEXP
+        CALL QUIT('PRP_SPINRO:Wrong value of NEXP!')
       ENDIF
 C
 C--------------------------------------------------------------------
@@ -9544,15 +9549,18 @@ C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-c      DO ITYP = 1,NEXP
-c       JEXP = IBUFEXP(ITYP)
-c       KEXP = IPEFN(JEXP)
-c       TMDMAT(,JEXP/3+1) = EXPVAL(KEXP)
-c      ENDDO
-c       CALL DIASPR(EXPVAL,TMDMAT,CSTRA,SCTRA,IPRPRP)
-c            WRITE(LUPRI,'(/,26X,A,/)')
-c     &        'Mean value of NSR tensor for nucleus '
-c      CALL FCPRI (ELSPRD,'SIGMAS',CSTRA,SCTRA)
+!      CALL DZERO(DMAT,NCMAT)
+C iaa solve problems here
+!      DO ITYP = 1,NEXP
+!       JEXP = IBUFEXP(ITYP)
+!       KEXP = IPEFN(JEXP)
+c iaa here
+c       TMDMAT(JEXP/3+1) = EXPVAL(KEXP)
+!      ENDDO
+!       CALL DIASPR(EXPVAL,TMDMAT,CSTRA,SCTRA,IPRPRP)
+!            WRITE(LUPRI,'(/,26X,A,/)')
+!     &        'Mean value of NSR tensor for nucleus '
+!      CALL FCPRI (ELSPRD,'SIGMAS',CSTRA,SCTRA)
 C
 C--------------------------------------------------------------------
 C
@@ -9579,111 +9587,141 @@ C
       END IF
 C
 C
-C
       DO IFREQ = 1,NBFREQ
         CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
            WRITE(LUPRI,'(A,F15.8,A)')
      &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
         ENDIF
-        CALL DZERO(TMPMAT,2*NCMAT)
-        DO IB = 1,NB
-          JB = IBUFB(IB)
-          KB = IPSPINRO(MXCOOR+JB)
-          JB = IPTAX(JB,2)
+        CALL DZERO(TMPMATL,2*NCMAT)
+        CALL DZERO(TMPMATS,2*NCMAT)
+        DO IB1 = 1,NB1
+          JB1 = IBUFB1(IB1)
+          KB1 = IPSPINRO(MXCOOR+JB1)
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
 C...        First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
-     &         TMPMAT(JB,JA,1) = ABLRF(IFREQ,KA,KB,IABLRF_EE)
-C...        then extract the e-p "diamagnetic" contribution
+     &         TMPMATL(JB1,JA,1) = ABLRF(IFREQ,KA,KB1,IABLRF_EE)
+C...        then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
-     &         TMPMAT(JB,JA,2) = ABLRF(IFREQ,KA,KB,IABLRF_EP)
+     &         TMPMATL(JB1,JA,2) = ABLRF(IFREQ,KA,KB1,IABLRF_EP)
           ENDDO
         ENDDO
+
+        DO IB2 = 1,NB2
+          JB2 = IBUFB2(IB2)
+          KB2 = IPSPINRO(MXCOOR+NMAX+JB2)
+          DO IA = 1,NA
+            JA = IBUFA(IA)
+            KA = IPSPINRO(JA)
+C...        First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &         TMPMATS(JB2,JA,1) = ABLRF(IFREQ,KA,KB2,IABLRF_EE)
+C...        then extract the e-p "diamagnetic" contribution
+            IF (.NOT. XLR_SKIPEP)
+     &         TMPMATS(JB2,JA,2) = ABLRF(IFREQ,KA,KB2,IABLRF_EP)
+          ENDDO
+        ENDDO
+
 !IAA Work is needed here
-        IF (LONDON) THEN
-        ! ... different sign convention for London operators
-           CALL DSCAL(2*NCMAT,DM1,TMPMAT,1)
-           IF (IPRPRP .GT. 5) THEN
-              write(lupri,*) 'Changing sign on London contributions e-e'
-              call output(TMPMAT,1,NB,1,NA,NB,NA,-1,LUPRI)
-              write(lupri,*) 'Changing sign on London contributions e-p'
-              call output(TMPMAT(1,1,2),1,NB,1,NA,NB,NA,-1,LUPRI)
-           END IF
-        END IF
+c        IF (LONDON) THEN
+c        ! ... different sign convention for London operators
+c           CALL DSCAL(2*NCMAT,DM1,TMPMAT,1)
+c           IF (IPRPRP .GT. 5) THEN
+c              write(lupri,*) 'Changing sign on London contributions e-e'
+c              call output(TMPMAT,1,NB,1,NA,NB,NA,-1,LUPRI)
+c              write(lupri,*) 'Changing sign on London contributions e-p'
+c              call output(TMPMAT(1,1,2),1,NB,1,NA,NB,NA,-1,LUPRI)
+c           END IF
+c        END IF
 C
 C     Transform to C1 basis
 C
-        CALL DZERO(PMAT,2*NCMAT)
+        CALL DZERO(PMATL,2*NCMAT)
+        CALL DZERO(PMATS,2*NCMAT)
         CALL DZERO(TMAT,NCMAT)
         IF (.NOT. XLR_SKIPEE) THEN
           IF (IPRPRP.GE.2) THEN
             CALL HEADER('e-e response part of NSR'//
      &           ' in symmetry coordinates (kHz)',1)
-            CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+            CALL FCPRI (TMPMATL,'SIGMAS',CSTRA,SCTRA)
+            CALL FCPRI (TMPMATS,'SIGMAS',CSTRA,SCTRA)
           ENDIF
 C         .... extract the e-e response part into PMAT(...,1)
-          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+          CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
+          CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,3*NUCDEP,2,2)
 C         .... save e-e response part into TMAT
-          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,1),1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,1),1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,1),1,TMAT,1)
         END IF
+c iaa ... mirar con detalle
         IF (XLR_SKIPEP) THEN
-C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
+C       ... add the diamagnetic term,DMAT, to TMAT(contains paramagnetic terms)
             CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
         ELSE
 C       ... add (diamagnetic-NSNL)+London+reortho terms to the TMAT
           IF (IPRPRP.GE.2) THEN
              CALL HEADER('e-p response part of NSR'//
      &          ' in symmetry coordinates (kHz)',1)
-             CALL FCPRI (TMPMAT(1,1,2)+TMPMAT(4,1,2),'SIGMAS',
+             CALL FCPRI (TMPMATL(1,1,2),'SIGMAS',
+     &                   CSTRA,SCTRA)
+             CALL FCPRI (TMPMATS(1,1,2),'SIGMAS',
      &                   CSTRA,SCTRA)
           ENDIF
-C         ... extract the e-p response part into PMAT(...,2)
-          CALL TRADIP(TMPMAT(1,1,2)+TMPMAT(4,1,2),PMAT(1,1,1,2),
+c C         ... extract the e-p response part into PMAT(...,2)
+          CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the e-p response PMAT(...,2) into TMAT
-C         so the TMAT now contains total response
-          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,2),1,TMAT,1)
+          CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
+     &                CSTRA,SCTRA,3*NUCDEP,2,2)
+c C         ... add the e-p response PMAT(...,2) into TMAT
+c C         so the TMAT now contains total response
+          CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
+C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
+            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
         END IF
       END DO
 C--------------------------------------------------------------------
-C
 c iaa
-      CALL SPRRES(GEOM,AMASS,GVAL,DIAMA,PARMA,KLAST,LFREE,
+      CALL SPRRES(GEOM,AMASS,GVAL,DIAMA,PMATL,PMATS,KLAST,LFREE,
      &            JATOM,IPRPRP)
 C-------------------------------------------------------------------
 C
+ciaa maybe this print section will not be needed
+c
 C Final print section
 C
-      CALL AROUND('Summary of spin-rotation constant')
-      WRITE (LUPRI,'()')
-      WRITE (LUPRI,'(A/A/A/A)')
-     &      '@                  spin-rotation constants',
-     &      '@              -------------------------------',
-     &      '@atom          total          nuc          dia'//     
-     &      '            para',!//
-     &      '@-----------------------------------------------------'//
-     &      '----------' 
-C
-      IATOM = 0
-      DO 300 I = 1, NUCIND
-        DO 400 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-         IATOM = IATOM + 1
-          IF (DOATOM(I)) THEN
-             IF (LINEAR) THEN
-               WRITE (LUPRI,'(A,A,4F14.4)') '@',
-     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
-             END IF
-          END IF
-        END IF
- 400    CONTINUE
- 300  CONTINUE
-      WRITE(LUPRI,'(A,/)')
-     &        '@-----------------------------------------------------'//
-     &        '----------'
+!      CALL AROUND('Summary of spin-rotation constant')
+!      WRITE (LUPRI,'()')
+!      WRITE (LUPRI,'(A/A/A/A)')
+!     &      '@                  spin-rotation constants',
+!     &      '@              -------------------------------',
+!     &      '@atom          total          nuc          dia'//     
+!     &      '            para',!//
+!     &      '@-----------------------------------------------------'//
+!     &      '----------' 
+!      IATOM = 0
+!      DO 300 I = 1, NUCIND
+!        DO 400 ISYMOP = 0, MAXOPR
+!        IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+!         IATOM = IATOM + 1
+!          IF (DOATOM(I)) THEN
+!             IF (LINEAR) THEN
+!               WRITE (LUPRI,'(A,A,4F14.4)') '@',
+!     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
+!             ELSE
+!               WRITE (LUPRI,'(A,A,4F14.4)') '@',
+!     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
+!             END IF
+!          END IF
+!        END IF
+! 400    CONTINUE
+! 300  CONTINUE
+!      WRITE(LUPRI,'(A,/)')
+!     &        '@-----------------------------------------------------'//
+!     &        '----------'
 
       CALL QEXIT('PRP_SPINRO')
 
@@ -9698,9 +9736,9 @@ C
 
       deallocate(DOATOM)
       deallocate(TMAT)
-      deallocate(NMAT)
       deallocate(DMAT)
-      deallocate(PMAT)
+      deallocate(PMATL)
+      deallocate(PMATS)
 !      deallocate(DMATLO)
 !      deallocate(DMATRE)
 !      deallocate(DMATREE)
@@ -9709,8 +9747,9 @@ C
       deallocate(IBUF)
       deallocate(CSTRA)
       deallocate(SCTRA)
-      deallocate(TMPMAT)
-C      deallocate(TMDMAT)
+      deallocate(TMPMATL)
+      deallocate(TMPMATS)
+      deallocate(TMDMAT)
 
       RETURN
       END
@@ -9898,7 +9937,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sprres */
-      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMAT,WORK,LWORK,
+      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,WORK,LWORK,
      &                  KATOM,IPRINT)
 C***********************************************************************
 C
@@ -9927,33 +9966,63 @@ C
 #include "ibtfun.h"
 C
       integer I,J,KATOM,IPRINT,LWORK,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,KCSTRA,KLAST,
-     &        KSCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
+     &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,!KLAST,
+     &        SCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,IBTXOR
 C
       double precision D1,D2,D3,D4,THRESH,DP5,FAC,
-     &                 GEOM,AMASS,GVAL,DMAT,PMAT,
-     &                 WORK,ANGUMOM,AVEDIA,AVENUC,
-     &                 AVEPAR,AVETOT,CONST,EIGVAL,EIGVEC,
+     &                 GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,
+     &                 WORK,ANGUMOM,AVEDIA,AVEPAR,AVENUC,
+     &                 AVETOT,CONST,EIGVAL,EIGVEC,
      &                 FACTOT,GTRAND,GTRANN,GTRANP,OMEGA,
-     &                 SIGMAS,TINERT,DISOTP
+     &                 SIGMAS,TINERT,DISOTP,
+     &                 AVEPARLEE,AVEPARLEP,AVEPARSEE,AVEPARSEP,
+     &                 GTRANPLEE,GTRANPLEP,GTRANPSEE,GTRANPSEP
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
-      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINEAR, D12, D23 , LONDON
       DIMENSION ANGUMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
-     &          GVAL(KATOM), GTRANP(3,3), PMAT(3,3,KATOM),
-     &          DMAT(3,3,KATOM)
-
+     &          GVAL(KATOM), GTRANP(3,3), 
+     &          PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
+     &          DMAT(3,3,KATOM),
+     &          GTRANPLEE(3,3),GTRANPLEP(3,3),GTRANPSEE(3,3),
+     &          GTRANPSEP(3,3)
 C
-c iaa to check!
+!!! iaa from SHITRA in abamag.F -- DALTON
+C      integer NCOMP,ICOMP,IROW,MCOMP,NROW
+C!      DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP)
+C      CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
+C      double precision CSTRA,SCTRA,EXPVAL,STAVEC
+C      DO 10 ICOMP = 1, NCOMP
+C         WORD = LABINT(ICOMP)
+C         NSTNUM = WORD(:3)
+C         NSTDIR = WORD(8:8)
+C         CALL NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
+C         IF (INWORD .EQ. 'NSTCGOS') THEN
+C            ELSPRD(IPTAX(MCOMP,2),IROW) = ELSPRD(IPTAX(MCOMP,2),IROW)
+C     &                                  - EXPVAL(ICOMP)
+C         ELSE
+C            ELSPRD(IPTAX(MCOMP,2),IROW) = EXPVAL(ICOMP)
+C         END IF
+C!         STAVEC(IROW,MCOMP) = EXPVAL(ICOMP)
+C 10   CONTINUE
+C      IF (IPRINT .GT. 2) THEN
+C         IF (INWORD .eq. 'NSTCGOS') THEN
+C            CALL HEADER('Diamagnetic part of spin-rotation',-1)
+C            CALL FCPRI(ELSPRD,'SIGMA',CSTRA,SCTRA)
+C         END IF
+C      END IF
+!!!
+C
+c**** iaa to check
       DO I = 1, MXCENT
-          ISOTOP(I) = 1
+            ISOTOP(I) = 1
       END DO
-c
+c****
       LONDON = .FALSE.
       D12 = .FALSE.
       D23 = .FALSE.
@@ -9964,20 +10033,17 @@ C
 C     We need to transform the dia- and paramagnetic part
 C     of the spin-rotation constant
 C
-      CALL DAXPY(9*NUCDEP,D1,SIGMAS,1,ELSPRD,1)
-      KCSTRA = 1
-      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
-      KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
-      IF (KLAST .GT. LWORK) CALL STOPIT('SPRRES','TRADIP',KLAST,LWORK)
-      IF (.NOT.LONDON) THEN
-         CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
-         CALL DSCAL(9*NUCDEP,DP5,DMAT,1)
-      ELSE
-         CALL TRADIP(ELSPRD,DMAT,WORK(KCSTRA),WORK(KSCTRA),
-     &               3*NUCDEP,2,2)
-      END IF
-C iaa to solve problems with memory
- !     CALL TRADIP(ELSPRP,PMAT,WORK(KCSTRA),WORK(KSCTRA),3*NUCDEP,2,2)
+!      CALL DAXPY(9*NUCDEP,D1,SIGMAS,1,ELSPRD,1)
+c iaa
+c      IF (.NOT.LONDON) THEN
+c         CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
+c         CALL DSCAL(9*NUCDEP,DP5,DMAT,1)
+c      ELSE
+C iaa ... solve problems in output
+!!         CALL TRADIP(ELSPRD,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+c      END IF
+C iaa ... solve problems in output
+!      CALL TRADIP(ELSPRP,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
 C
 C     We add up the total spin-rotation constants. Also add nuclear
 C     and diamagnetic term into one total diamagnetic term
@@ -9986,8 +10052,12 @@ C
          DO 200 I = 1, 3
             ANGUMOM(I) = D1
             DO 200 J = 1, 3
-               TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM) + PMAT(I,J,IATOM)
-     &                           + SPRNUC(I,J,IATOM)/D2
+             TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM)  
+     &                         + PMATL(I,J,IATOM,1) 
+     &                         + PMATL(I,J,IATOM,2)
+     &                         + PMATS(I,J,IATOM,1) 
+     &                         + PMATS(I,J,IATOM,2)
+     &                         + SPRNUC(I,J,IATOM)
  200        CONTINUE
  99   CONTINUE
 C
@@ -10055,23 +10125,36 @@ C
                FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
                IF (ABS(TOTSPR(1,1,IATOM)) .GT. THRESH) THEN
                   AVETOT = TOTSPR(1,1,IATOM)*FACTOT
-                  AVENUC = SPRNUC(1,1,IATOM)*FACTOT/D2
-                  AVEPAR = PMAT(1,1,IATOM)*FACTOT
+                  AVENUC = SPRNUC(1,1,IATOM)*FACTOT
+                  AVEPARLEE = PMATL(1,1,IATOM,1)*FACTOT
+                  AVEPARLEP = PMATL(1,1,IATOM,2)*FACTOT
+                  AVEPARSEE = PMATS(1,1,IATOM,1)*FACTOT
+                  AVEPARSEP = PMATS(1,1,IATOM,2)*FACTOT
                   AVEDIA = DMAT(1,1,IATOM)*FACTOT
                ELSE
                   AVETOT = TOTSPR(2,2,IATOM)*FACTOT
-                  AVENUC = SPRNUC(2,2,IATOM)*FACTOT/D2
-                  AVEPAR = PMAT(2,2,IATOM)*FACTOT
+                  AVENUC = SPRNUC(2,2,IATOM)*FACTOT
+                  AVEPARLEE = PMATL(2,2,IATOM,1)*FACTOT
+                  AVEPARLEP = PMATL(2,2,IATOM,2)*FACTOT
+                  AVEPARSEE = PMATS(2,2,IATOM,1)*FACTOT
+                  AVEPARSEP = PMATS(2,2,IATOM,2)*FACTOT
                   AVEDIA = DMAT(2,2,IATOM)*FACTOT
                END IF
                CALL DZERO(GTRANT(1,1,IATOM),9)
                GTRANT(1,1,IATOM) = AVETOT
                GTRANT(2,2,IATOM) = AVETOT
                GTRANT(3,3,IATOM) = AVETOT
-               IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+C
+               AVEPAR=AVEPARLEE+AVEPARLEP+AVEPARSEE+AVEPARSEP
+C
+               IF (IPRINT .GE. 0) WRITE(LUPRI,'(8(1X,A,F12.4,/))')
      &              ' Total spin-rotation constant       :',AVETOT,
      &              ' Nuclear part of spin-rotation      :',AVENUC,
      &              ' Diamagnetic part of spin-rotation  :',AVEDIA,
+     &              ' << A ; L >>_ee part of SR          :',AVEPARLEE,
+     &              ' << A ; L >>_ep part of SR          :',AVEPARLEP,
+     &              ' << A ; S >>_ee part of SR          :',AVEPARSEE,
+     &              ' << A ; S >>_ep part of SR          :',AVEPARSEP,
      &              ' Paramagnetic part of spin-rotation :',AVEPAR
             END IF
  98      CONTINUE
@@ -10089,7 +10172,10 @@ C
                FACTOT = GVAL(IATOM)*FAC
                CALL DZERO(GTRANN,9)
                CALL DZERO(GTRAND,9)
-               CALL DZERO(GTRANP,9)
+               CALL DZERO(GTRANPLEE,9)
+               CALL DZERO(GTRANPLEP,9)
+               CALL DZERO(GTRANPSEE,9)
+               CALL DZERO(GTRANPSEP,9)
                DO 50 I = 1, 3
                DO 50 J = 1, 3
                   DO 60 IX = 1, 3
@@ -10100,11 +10186,17 @@ C
                         GTRANT(I,J,IATOM)=GTRANT(I,J,IATOM)+EIGVEC(IX,I)
      &                       *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
                         GTRANN(I,J) = GTRANN(I,J) + EIGVEC(IX,I)
-     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST/D2
+     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
                         GTRAND(I,J) = GTRAND(I,J) + EIGVEC(IX,I)
      &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
-                        GTRANP(I,J) = GTRANP(I,J) + EIGVEC(IX,I)
-     &                       *PMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                        GTRANPLEE(I,J) = GTRANPLEE(I,J) + EIGVEC(IX,I)
+     &                       *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
+                        GTRANPLEP(I,J) = GTRANPLEP(I,J) + EIGVEC(IX,I)
+     &                       *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+                        GTRANPSEE(I,J) = GTRANPSEE(I,J) + EIGVEC(IX,I)
+     &                       *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
+                        GTRANPSEP(I,J) = GTRANPSEP(I,J) + EIGVEC(IX,I)
+     &                       *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
  60               CONTINUE
  50            CONTINUE
                IF (IPRINT .GE. 0) THEN
