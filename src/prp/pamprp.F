@@ -9315,14 +9315,14 @@ C***********************************************************************
 C
 C 
       logical, allocatable :: DOATOM(:)
-      double precision, allocatable :: TMAT(:,:,:),DMAT(:,:,:),
+      double precision, allocatable :: TMAT(:,:,:),
      &                                 PMATL(:,:,:,:),PMATS(:,:,:,:),
      &                                 CSTRA(:),SCTRA(:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
-     &                                 TMDMAT(:),GEOM(:,:),MASS(:),
-     &                                 AMASS(:),GVAL(:)
+     &                                 GEOM(:,:),MASS(:),
+     &                                 AMASS(:),GVAL(:),ELFLD(:,:)
 C
-      integer, allocatable :: IBUF(:),NAT(:)
+      integer, allocatable :: NAT(:)
 C
       double precision D0,D1,DM1,D2,FAC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -9356,15 +9356,13 @@ C
 
       allocate(DOATOM(NUCIND))
       allocate(TMAT(3,3,NUCDEP))
-      allocate(DMAT(3,3,NUCDEP))
       allocate(PMATL(3,3,NUCDEP,2)) ! refears to L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! refears to S part of NSR for ee and ep contributions.
-      allocate(IBUF(NCMAT))
       allocate(CSTRA(NUCDEP*NUCDEP*9))
       allocate(SCTRA(NUCDEP*NUCDEP*9))
+      allocate(ELFLD(3,NUCDEP))
       allocate(TMPMATL(3,3*NUCDEP,2))
       allocate(TMPMATS(3,3*NUCDEP,2))
-      allocate(TMDMAT(3*NUCDEP))
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
@@ -9514,18 +9512,22 @@ C
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
 C-------------------------------------------------------------------
-C
 C     MEAN VALUE PART OF NSR TENSOR
-C
-      CALL DZERO(DMAT,NCMAT)
 C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
-        TMDMAT(JEXP) = EXPVAL(KEXP)
-      ENDDO
-C iaa
-!      CALL DIASPR(EXPVAL,TMDMAT,CSTRA,SCTRA,IPRPRP)
+        IF (MOD(JEXP,3).NE.0) THEN
+          ELFLD( MOD(JEXP,3) ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+        ELSE
+          ELFLD( 3 ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+        END IF
+      END DO
+!iaa REVISAR x q no se puede sacar este write!!
+      write(lupri,*) 'problemas por aca...'
+      CALL DZERO(SPRDNL,NCMAT)
+!
+      CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRPRP)
 C
 C--------------------------------------------------------------------
 C
@@ -9613,13 +9615,13 @@ C         so the TMAT now contains total response
           CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
           CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
         END IF
-C       ... add the diamagnetic term,DMAT, to TMAT
-            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
+C       ... add the diamagnetic term,SPRDNL, to TMAT
+            CALL DAXPY(9*NUCDEP,D1,SPRDNL,1,TMAT,1)
 C       ... add the nuclear term to TMAT
             CALL DAXPY(9*NUCDEP,D1,SPRNUC,1,TMAT,1)
       END DO
 C--------------------------------------------------------------------
-      CALL SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,
+      CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,
      &            JATOM,IPRPRP)
 C-------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
@@ -9631,15 +9633,13 @@ C-------------------------------------------------------------------
       deallocate(NAT)
       deallocate(DOATOM)
       deallocate(TMAT)
-      deallocate(DMAT)
       deallocate(PMATL)
       deallocate(PMATS)
-      deallocate(IBUF)
       deallocate(CSTRA)
       deallocate(SCTRA)
+      deallocate(ELFLD)
       deallocate(TMPMATL)
       deallocate(TMPMATS)
-      deallocate(TMDMAT)
 
       RETURN
       END
@@ -9774,11 +9774,14 @@ C
 C
 C     We start by sorting the electric field results
 C
-      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
-      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
-     &           EXPVAL,1,
-     &           SCTRA(1,1),3*NUCDEP,0.D0,
-     &           ELFLD,1)
+! iaa analizar con cuidado
+c*******************************************************
+!      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
+!      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
+!     &           EXPVAL,1,
+!     &           SCTRA(1,1),3*NUCDEP,0.D0,
+!     &           ELFLD,1)
+c*******************************************************
 C
 C     Then we construct the diamagnetic contribution
 C
@@ -9808,6 +9811,7 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
+
       RETURN
       END
 
@@ -9820,10 +9824,11 @@ C
 C     Analyze routine for nuclear spin-rotation constants
 C     This routine is modelled after SPRRES in DALTON
 C
-C     INPUT:
-C        TMAT   - total spin-rotation
-C        DMAT   - diamagnetic term (expectation value)
-C        PMAT   - paramagnetic term
+C   INPUT:
+C     DMAT           - diamagnetic term (expectation value) of NSR
+C     PMAT (L & S)   - paramagnetic term (L and S contribution) of NSR
+C
+C     June 2014
 C
 C***********************************************************************
       use codata
@@ -9862,27 +9867,6 @@ C
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINEAR, D12, D23 , LONDON
-C
-!!! iaa from SHITRA in abamag.F -- DALTON
-C      integer NCOMP,ICOMP,IROW,MCOMP,NROW
-C!      DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP)
-C      CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
-C      double precision CSTRA,SCTRA,EXPVAL,STAVEC
-C      DO 10 ICOMP = 1, NCOMP
-C         WORD = LABINT(ICOMP)
-C         NSTNUM = WORD(:3)
-C         NSTDIR = WORD(8:8)
-C         CALL NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
-C         IF (INWORD .EQ. 'NSTCGOS') THEN
-C            ELSPRD(IPTAX(MCOMP,2),IROW) = ELSPRD(IPTAX(MCOMP,2),IROW)
-C     &                                  - EXPVAL(ICOMP)
-C         ELSE
-C            ELSPRD(IPTAX(MCOMP,2),IROW) = EXPVAL(ICOMP)
-C         END IF
-C!         STAVEC(IROW,MCOMP) = EXPVAL(ICOMP)
-C 10   CONTINUE
-C      END IF
-!!!
 C
 c**** iaa to check
       DO I = 1, MXCENT
