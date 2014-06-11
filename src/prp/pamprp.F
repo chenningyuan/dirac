@@ -8937,13 +8937,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-!      DIMENSION WORK(LWORK)
       logical, allocatable :: DOATOM(:)
 C
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,!KFREE,LFREE,
+     &        IS2,ISCOOR,ISCORD1,ISECND,
      &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
      &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR
@@ -9240,7 +9239,6 @@ C      WRITE(LUPRI,'(1X,A)')
 C     & 'NOTE: You must set .USECM in the *NMR section '//
 C     & ' to get correct values of spin-rotation_tensor.'
 C
-C
 C     A operators
 C     ===========
 C
@@ -9317,30 +9315,14 @@ C***********************************************************************
 C
 C 
       logical, allocatable :: DOATOM(:)
-      double precision, allocatable :: TMAT(:,:,:)
-      double precision, allocatable :: DMAT(:,:,:)
-      double precision, allocatable :: PMATL(:,:,:,:)
-      double precision, allocatable :: PMATS(:,:,:,:)
-!      double precision, allocatable :: DMATLO(:,:,:)
-!      double precision, allocatable :: DMATRE(:,:,:)
-!      double precision, allocatable :: DMATREE(:,:,:)
-!      double precision, allocatable :: DMATREP(:,:,:)
-!      double precision, allocatable :: DMATREO(:,:,:)
-      integer, allocatable :: IBUF(:)
-      double precision, allocatable :: CSTRA(:)
-      double precision, allocatable :: SCTRA(:)
-      double precision, allocatable :: TMPMATL(:,:,:)
-      double precision, allocatable :: TMPMATS(:,:,:)
-      double precision, allocatable :: TMDMAT(:)
-c
-      double precision, allocatable :: GEOM(:,:)
-      double precision, allocatable :: MASS(:)
-      integer, allocatable :: NAT(:)
-      double precision, allocatable :: NUMIS(:)
-      double precision, allocatable :: AMASS(:)
-      double precision, allocatable :: GVAL(:)
-      double precision, allocatable :: DIAMA(:)
-      double precision, allocatable :: PARMA(:)
+      double precision, allocatable :: TMAT(:,:,:),DMAT(:,:,:),
+     &                                 PMATL(:,:,:,:),PMATS(:,:,:,:),
+     &                                 CSTRA(:),SCTRA(:),
+     &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
+     &                                 TMDMAT(:),GEOM(:,:),MASS(:),
+     &                                 AMASS(:),GVAL(:)
+C
+      integer, allocatable :: IBUF(:),NAT(:)
 C
       double precision D0,D1,DM1,D2,FAC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -9354,7 +9336,7 @@ C
      &        JA, JATOM,JB1,JB2,K,KA,KB1,KB2,KFRSAV,KFREE,L,NA,
      &        NATOM,NB1,NB2,NCMAT,
      &        NEXP,NISO,NSCOOR, NSPEC,
-     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,KLAST,LFREE,
+     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,IEXP,
      &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),NMAX
 C
       double precision RATINF(3,5,NUCDEP), IATINF(3,NUCDEP),DISOTP,
@@ -9377,11 +9359,6 @@ C
       allocate(DMAT(3,3,NUCDEP))
       allocate(PMATL(3,3,NUCDEP,2)) ! refears to L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! refears to S part of NSR for ee and ep contributions.
-!      allocate(DMATLO(3,3,NUCDEP))
-!      allocate(DMATRE(3,3,NUCDEP))
-!      allocate(DMATREE(3,3,NUCDEP))
-!      allocate(DMATREP(3,3,NUCDEP))
-!      allocate(DMATREO(3,3,NUCDEP))
       allocate(IBUF(NCMAT))
       allocate(CSTRA(NUCDEP*NUCDEP*9))
       allocate(SCTRA(NUCDEP*NUCDEP*9))
@@ -9391,24 +9368,13 @@ C
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
-      allocate(NUMIS(NATOMS))
       allocate(AMASS(NUCDEP))
       allocate(GVAL(NUCDEP))
-      allocate(DIAMA(9*JATOM))
-      allocate(PARMA(4*9*JATOM))
 
       CALL QENTER('PRP_SPINRO')
       CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
 
       CALL SETATM(DOATOM,NATOM,-29)
-C
-C      CALL DZERO(TMDMAT,NCMAT)
-!      CALL DZERO(DMATLO,NCMAT)
-!      CALL DZERO(DMATRE,NCMAT)
-!      CALL DZERO(DMATREE,NCMAT)
-!      CALL DZERO(DMATREP,NCMAT)
-      CALL DZERO(SPRNUC,NCMAT)
-      CALL DZERO(GTRANT,3*NCMAT)
 C
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
@@ -9536,31 +9502,30 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
 C
 C--------------------------------------------------------------------
 C
+C     NUCLEAR PART OF NSR TENSOR
+C
+      CALL DZERO(SPRNUC,NCMAT)
+C
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
-
+C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
-c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-!      CALL DZERO(DMAT,NCMAT)
-C iaa solve problems here
-!      DO ITYP = 1,NEXP
-!       JEXP = IBUFEXP(ITYP)
-!       KEXP = IPEFN(JEXP)
-c iaa here
-c       TMDMAT(JEXP/3+1) = EXPVAL(KEXP)
-!      ENDDO
-!       CALL DIASPR(EXPVAL,TMDMAT,CSTRA,SCTRA,IPRPRP)
-!            WRITE(LUPRI,'(/,26X,A,/)')
-!     &        'Mean value of NSR tensor for nucleus '
-!      CALL FCPRI (ELSPRD,'SIGMAS',CSTRA,SCTRA)
+      CALL DZERO(DMAT,NCMAT)
+C
+      DO IEXP = 1,NEXP
+        JEXP = IBUFEXP(IEXP)
+        KEXP = IPEFN(JEXP)
+        TMDMAT(JEXP) = EXPVAL(KEXP)
+      ENDDO
+C iaa
+!      CALL DIASPR(EXPVAL,TMDMAT,CSTRA,SCTRA,IPRPRP)
 C
 C--------------------------------------------------------------------
 C
@@ -9619,36 +9584,17 @@ C...        then extract the e-p contribution
 C...        First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
      &         TMPMATS(JB2,JA,1) = ABLRF(IFREQ,KA,KB2,IABLRF_EE)
-C...        then extract the e-p "diamagnetic" contribution
+C...        then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
      &         TMPMATS(JB2,JA,2) = ABLRF(IFREQ,KA,KB2,IABLRF_EP)
           ENDDO
         ENDDO
-
-!IAA Work is needed here
-c        IF (LONDON) THEN
-c        ! ... different sign convention for London operators
-c           CALL DSCAL(2*NCMAT,DM1,TMPMAT,1)
-c           IF (IPRPRP .GT. 5) THEN
-c              write(lupri,*) 'Changing sign on London contributions e-e'
-c              call output(TMPMAT,1,NB,1,NA,NB,NA,-1,LUPRI)
-c              write(lupri,*) 'Changing sign on London contributions e-p'
-c              call output(TMPMAT(1,1,2),1,NB,1,NA,NB,NA,-1,LUPRI)
-c           END IF
-c        END IF
-C
-C     Transform to C1 basis
 C
         CALL DZERO(PMATL,2*NCMAT)
         CALL DZERO(PMATS,2*NCMAT)
         CALL DZERO(TMAT,NCMAT)
+c
         IF (.NOT. XLR_SKIPEE) THEN
-          IF (IPRPRP.GE.2) THEN
-            CALL HEADER('e-e response part of NSR'//
-     &           ' in symmetry coordinates (kHz)',1)
-            CALL FCPRI (TMPMATL,'SIGMAS',CSTRA,SCTRA)
-            CALL FCPRI (TMPMATS,'SIGMAS',CSTRA,SCTRA)
-          ENDIF
 C         .... extract the e-e response part into PMAT(...,1)
           CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
           CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,3*NUCDEP,2,2)
@@ -9656,94 +9602,38 @@ C         .... save e-e response part into TMAT
           CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,1),1,TMAT,1)
           CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,1),1,TMAT,1)
         END IF
-c iaa ... mirar con detalle
-        IF (XLR_SKIPEP) THEN
-C       ... add the diamagnetic term,DMAT, to TMAT(contains paramagnetic terms)
-            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
-        ELSE
-C       ... add (diamagnetic-NSNL)+London+reortho terms to the TMAT
-          IF (IPRPRP.GE.2) THEN
-             CALL HEADER('e-p response part of NSR'//
-     &          ' in symmetry coordinates (kHz)',1)
-             CALL FCPRI (TMPMATL(1,1,2),'SIGMAS',
-     &                   CSTRA,SCTRA)
-             CALL FCPRI (TMPMATS(1,1,2),'SIGMAS',
-     &                   CSTRA,SCTRA)
-          ENDIF
-c C         ... extract the e-p response part into PMAT(...,2)
+        IF (.NOT.XLR_SKIPEP) THEN
+C         ... extract the e-p response part into PMAT(...,2)
           CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
           CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
-c C         ... add the e-p response PMAT(...,2) into TMAT
-c C         so the TMAT now contains total response
+C         ... add the e-p response PMAT(...,2) into TMAT
+C         so the TMAT now contains total response
           CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
           CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
-C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
-            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
         END IF
+C       ... add the diamagnetic term,DMAT, to TMAT
+            CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
+C       ... add the nuclear term to TMAT
+            CALL DAXPY(9*NUCDEP,D1,SPRNUC,1,TMAT,1)
       END DO
 C--------------------------------------------------------------------
-c iaa
-      CALL SPRRES(GEOM,AMASS,GVAL,DIAMA,PMATL,PMATS,KLAST,LFREE,
+      CALL SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,
      &            JATOM,IPRPRP)
 C-------------------------------------------------------------------
-C
-ciaa maybe this print section will not be needed
-c
-C Final print section
-C
-!      CALL AROUND('Summary of spin-rotation constant')
-!      WRITE (LUPRI,'()')
-!      WRITE (LUPRI,'(A/A/A/A)')
-!     &      '@                  spin-rotation constants',
-!     &      '@              -------------------------------',
-!     &      '@atom          total          nuc          dia'//     
-!     &      '            para',!//
-!     &      '@-----------------------------------------------------'//
-!     &      '----------' 
-!      IATOM = 0
-!      DO 300 I = 1, NUCIND
-!        DO 400 ISYMOP = 0, MAXOPR
-!        IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-!         IATOM = IATOM + 1
-!          IF (DOATOM(I)) THEN
-!             IF (LINEAR) THEN
-!               WRITE (LUPRI,'(A,A,4F14.4)') '@',
-!     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
-!             ELSE
-!               WRITE (LUPRI,'(A,A,4F14.4)') '@',
-!     &         NAMDEP(IATOM),AVETOT,AVENUC,AVEDIA,AVEPAR
-!             END IF
-!          END IF
-!        END IF
-! 400    CONTINUE
-! 300  CONTINUE
-!      WRITE(LUPRI,'(A,/)')
-!     &        '@-----------------------------------------------------'//
-!     &        '----------'
-
       CALL QEXIT('PRP_SPINRO')
 
       deallocate(AMASS)
       deallocate(GVAL)
-      deallocate(DIAMA)
-      deallocate(PARMA)
       deallocate(GEOM)
       deallocate(MASS)
       deallocate(NAT)
-      deallocate(NUMIS)
-
       deallocate(DOATOM)
       deallocate(TMAT)
       deallocate(DMAT)
       deallocate(PMATL)
       deallocate(PMATS)
-!      deallocate(DMATLO)
-!      deallocate(DMATRE)
-!      deallocate(DMATREE)
-!      deallocate(DMATREP)
-!      deallocate(DMATREO)
       deallocate(IBUF)
       deallocate(CSTRA)
       deallocate(SCTRA)
@@ -9761,7 +9651,7 @@ C
 C     Calculate nuclear contribution to spin-rotation constants
 C     K.Ruud, October-94
 C
-C     This subroutine is modelled based on DALTON NUCSPR
+C     This subroutine is modelled based on DALTON NUCSPR - June 2014
 C***********************************************************************
 C
       implicit none
@@ -9846,11 +9736,6 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
-C
-      IF (IPRINT .GE. 2) THEN
-        CALL HEADER('Nuclear contribution to spin-rotation constants',1)
-        CALL OUTPUT(SPRNUC,1,3,1,3*NUCDEP,3,MXCOOR,1,LUPRI)
-      END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -9880,14 +9765,12 @@ C
       integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT,
      &        IBTAND,IBTOR,IBTSHL,IBTSHR,IBTXOR
 C
-      double precision EXPVAL,ELFLD,CSTRA,SCTRA,
-     &                 COORX,COORY,COORZ,HFGEL
-      DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
-     &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
-
+      double precision EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
+     &                 CSTRA(3*NUCDEP,3*NUCDEP),
+     &                 SCTRA(3*NUCDEP,3*NUCDEP),
+     &                 COORX,COORY,COORZ
 C
       CALL DZERO(SPRDNL,NCMAT)
-      CALL DZERO(HFGEL,MXCOOR)
 C
 C     We start by sorting the electric field results
 C
@@ -9925,19 +9808,12 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
-C
-      IF (IPRINT .GE. 2) THEN
-        CALL HEADER('Diamagnetic contribution to '//
-     &              'spin-rotation constants',1)
-        CALL OUTPUT(SPRDNL,1,3,1,3*NUCDEP,3,MXCOOR,1,LUPRI)
-      END IF
       RETURN
- 1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sprres */
-      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,WORK,LWORK,
+      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,
      &                  KATOM,IPRINT)
 C***********************************************************************
 C
@@ -9957,7 +9833,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h" 
-!#include "dcbprp.h" !added (problems including LONDON)
+!#include "dcbprp.h" ! iaa: problems including LONDON
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -9966,31 +9842,26 @@ C
 #include "ibtfun.h"
 C
       integer I,J,KATOM,IPRINT,LWORK,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,!KLAST,
+     &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,
      &        SCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,IBTXOR
 C
       double precision D1,D2,D3,D4,THRESH,DP5,FAC,
-     &                 GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,
-     &                 WORK,ANGUMOM,AVEDIA,AVEPAR,AVENUC,
-     &                 AVETOT,CONST,EIGVAL,EIGVEC,
-     &                 FACTOT,GTRAND,GTRANN,GTRANP,OMEGA,
-     &                 SIGMAS,TINERT,DISOTP,
+     &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
+     &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
+     &                 DMAT(3,3,KATOM),
+     &                 ANGUMOM(3),AVEDIA,AVEPAR,AVENUC,
+     &                 AVETOT,CONST,EIGVAL(3),EIGVEC(3,3),
+     &                 FACTOT,GTRAND(3,3),GTRANN(3,3),OMEGA(3,3),
+     &                 SIGMAS,TINERT(9),DISOTP,
      &                 AVEPARLEE,AVEPARLEP,AVEPARSEE,AVEPARSEP,
-     &                 GTRANPLEE,GTRANPLEP,GTRANPSEE,GTRANPSEP
+     &                 GTRANPLEE(3,3),GTRANPLEP(3,3),GTRANPSEE(3,3),
+     &                 GTRANPSEP(3,3),GTRANP(3,3)
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINEAR, D12, D23 , LONDON
-      DIMENSION ANGUMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
-     &          EIGVAL(3), EIGVEC(3,3),
-     &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
-     &          GVAL(KATOM), GTRANP(3,3), 
-     &          PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
-     &          DMAT(3,3,KATOM),
-     &          GTRANPLEE(3,3),GTRANPLEP(3,3),GTRANPSEE(3,3),
-     &          GTRANPSEP(3,3)
 C
 !!! iaa from SHITRA in abamag.F -- DALTON
 C      integer NCOMP,ICOMP,IROW,MCOMP,NROW
@@ -10010,11 +9881,6 @@ C            ELSPRD(IPTAX(MCOMP,2),IROW) = EXPVAL(ICOMP)
 C         END IF
 C!         STAVEC(IROW,MCOMP) = EXPVAL(ICOMP)
 C 10   CONTINUE
-C      IF (IPRINT .GT. 2) THEN
-C         IF (INWORD .eq. 'NSTCGOS') THEN
-C            CALL HEADER('Diamagnetic part of spin-rotation',-1)
-C            CALL FCPRI(ELSPRD,'SIGMA',CSTRA,SCTRA)
-C         END IF
 C      END IF
 !!!
 C
