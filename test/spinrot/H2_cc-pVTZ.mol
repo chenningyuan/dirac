@@ -1,11 +1,11 @@
 INTGRL
 Hydrogen 2. Exp. bond length: 0.7416 A.
-cc-pVTZ Basis: H:6s4p.c=137.03604 au. Gauss.nucl.
+cc-pVTZ Basis: H:6s4p.
 C   2    0         A .10D-15                                               
        1.0    1    
-H       .000000000000000     0.3708     0.0000000000000       Isotope=1
+H      0.0000000000      0.0000000000     0.3708       Isotope=1
 LARGE BASIS cc-pVTZ
        1.0    1    
-H       .000000000000000    -0.3708     0.0000000000000       Isotope=1
+H      0.0000000000      0.0000000000    -0.3708       Isotope=1
 LARGE BASIS cc-pVTZ
 FINISH

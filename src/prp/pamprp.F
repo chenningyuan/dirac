@@ -1392,7 +1392,7 @@ C
 C     Spin-rotation constant
 C
       IF(SPINRO) THEN
-         CALL DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+         CALL DEF_SPINRO(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 
 ! gosia:
@@ -8922,8 +8922,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPINRO */
-      SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
-! iaa clean work, lwork, combine with spinro1
+      SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,IPRINT)
+! iaa combine with spinro1
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define operators for spin-rotation constants
@@ -8952,16 +8952,15 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
 C
-#include "memint_i_n.h"
       allocate(DOATOM(NUCIND))
       CALL SETATM(DOATOM,NATOM,-29)
-      CALL DEF_SPINRO1(DOATOM,WORK(KFREE),LFREE,IPRINT)
+      CALL DEF_SPINRO1(DOATOM,IPRINT)
       deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_spinro1 */
-      SUBROUTINE DEF_SPINRO1(DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPINRO1(DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operators for spin-rotation constants
@@ -8992,7 +8991,6 @@ c...common block for expectation values
 #include "dcbxlr.h"
 C...common block for linear reponse
 #include "dcbxpr.h"
-!#include "memint_i_n.h"
 
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,

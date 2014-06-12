@@ -1,11 +1,8 @@
 **DIRAC
 .TITLE
- Constante de spin-rotación
+ spin-rotation constant
 .WAVE FUNCTION
 .PROPERTIES
-**GENERAL
-.CVALUE
-137.0359998
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -16,27 +13,10 @@
 1 1 0
 .EVCCNV
 1.0E-7
-.MAXITR
-100
 .PRINT
 1
 **PROPERTIES
 .SPIN-R
 .PRINT
 1
-##################################################
-##################################################
-##################################################
-##################################################
-##################################################
-##################################################
-*LINEAR RESPONSE
-.INTFLG
-1 1 0
-.MAXRED
- 200
-.THRESH
- 1.0D-7
-.PRINT
-2
 *END OF
