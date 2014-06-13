@@ -8923,7 +8923,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPINRO */
       SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,IPRINT)
-! iaa combine with spinro1
+! iaa combine with DEF_SPINRO1
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define operators for spin-rotation constants
@@ -9235,7 +9235,23 @@ C
 C IAA: USECM is seted as default option, May 2014
 C      WRITE(LUPRI,'(1X,A)')
 C     & 'NOTE: You must set .USECM in the *NMR section '//
-C     & ' to get correct values of spin-rotation_tensor.'
+C     & ' to get correct values of spin-rotation tensor.'
+C
+C     Expectation values operators
+C     ============================
+C
+      CALL PRSYMB(LUPRI,'-',75,0)
+         WRITE(LUPRI,'(1X,A)')
+     &   '** Expectation values operators for spin-rotation **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOOR
+        INDOP1 = IPEFN(I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LEXPP(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
 C
 C     A operators
 C     ===========
@@ -9334,11 +9350,11 @@ C
      &        JA, JATOM,JB1,JB2,K,KA,KB1,KB2,KFRSAV,KFREE,L,NA,
      &        NATOM,NB1,NB2,NCMAT,
      &        NEXP,NISO,NSCOOR, NSPEC,
-     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,IEXP,
-     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),NMAX
+     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,IEXP,IBTAND,
+     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),NMAX, IATINF(3,NUCDEP)
 C
-      double precision RATINF(3,5,NUCDEP), IATINF(3,NUCDEP),DISOTP,
-     &                 IBTAND,EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+      double precision RATINF(3,5,NUCDEP),DISOTP,
+     &                 EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),ABND,
      &                 GTRANN(3,3), GTRAND(3,3),GTRANP1(3,3),
      &                 GTRANP2(3,3),
@@ -9351,7 +9367,6 @@ C
       NSCOOR = 3*NUCDEP
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
-
       allocate(DOATOM(NUCIND))
       allocate(TMAT(3,3,NUCDEP))
       allocate(PMATL(3,3,NUCDEP,2)) ! refears to L part of NSR for ee and ep contributions.
@@ -9368,10 +9383,9 @@ C
       allocate(GVAL(NUCDEP))
 
       CALL QENTER('PRP_SPINRO')
-      CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
 
+      CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
       CALL SETATM(DOATOM,NATOM,-29)
-C
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
 C     ***************************************
@@ -9497,7 +9511,6 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
       ENDIF
 C
 C--------------------------------------------------------------------
-C
 C     NUCLEAR PART OF NSR TENSOR
 C
       CALL DZERO(SPRNUC,NCMAT)
@@ -9512,18 +9525,24 @@ C
 C-------------------------------------------------------------------
 C     MEAN VALUE PART OF NSR TENSOR
 C
+      CALL DZERO(SPRDNL,NCMAT)
+C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
-        IF (MOD(JEXP,3).NE.0) THEN
-          ELFLD( MOD(JEXP,3) ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+        IF (LINEAR) THEN
+            ELFLD( 3 , 1 ) = EXPVAL(1)
+            ELFLD( 3 , 2 ) = EXPVAL(2)
         ELSE
-          ELFLD( 3 ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+          IF (MOD(JEXP,3).NE.0) THEN
+            ELFLD( MOD(JEXP,3) ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+          ELSE
+            ELFLD( 3 ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
+          END IF
         END IF
       END DO
 !iaa REVISAR x q no se puede sacar este write!!
-      write(lupri,*) 'problemas por aca...'
-      CALL DZERO(SPRDNL,NCMAT)
+      write(lupri,*) ''
 !
       CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRPRP)
 C
@@ -9560,6 +9579,7 @@ C
         ENDIF
         CALL DZERO(TMPMATL,2*NCMAT)
         CALL DZERO(TMPMATS,2*NCMAT)
+C
         DO IB1 = 1,NB1
           JB1 = IBUFB1(IB1)
           KB1 = IPSPINRO(MXCOOR+JB1)
@@ -9595,12 +9615,23 @@ C
         CALL DZERO(TMAT,NCMAT)
 c
         IF (.NOT. XLR_SKIPEE) THEN
-C         .... extract the e-e response part into PMAT(...,1)
-          CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
-          CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,3*NUCDEP,2,2)
-C         .... save e-e response part into TMAT
-          CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,1),1,TMAT,1)
-          CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,1),1,TMAT,1)
+          IF(LINEAR) THEN
+            PMATL(1,1,1,1)=TMPMATL(1,3,1)
+            PMATL(1,1,2,1)=TMPMATL(1,4,1)
+            PMATL(1,1,1,2)=TMPMATL(1,3,2)
+            PMATL(1,1,2,2)=TMPMATL(1,4,2)
+            PMATS(1,1,1,1)=TMPMATS(1,3,1)
+            PMATS(1,1,2,1)=TMPMATS(1,4,1)
+            PMATS(1,1,1,2)=TMPMATS(1,3,2)
+            PMATS(1,1,2,2)=TMPMATS(1,4,2)
+          ELSE
+C           .... extract the e-e response part into PMAT(...,1)
+            CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
+            CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,3*NUCDEP,2,2)
+C           .... save e-e response part into TMAT
+            CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,1),1,TMAT,1)
+            CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,1),1,TMAT,1)
+          END IF
         END IF
         IF (.NOT.XLR_SKIPEP) THEN
 C         ... extract the e-p response part into PMAT(...,2)
@@ -9618,6 +9649,8 @@ C       ... add the diamagnetic term,SPRDNL, to TMAT
 C       ... add the nuclear term to TMAT
             CALL DAXPY(9*NUCDEP,D1,SPRNUC,1,TMAT,1)
       END DO
+!
+
 C--------------------------------------------------------------------
       CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,
      &            JATOM,IPRPRP)
@@ -9860,6 +9893,7 @@ C
      &                 AVEPARLEE,AVEPARLEP,AVEPARSEE,AVEPARSEP,
      &                 GTRANPLEE(3,3),GTRANPLEP(3,3),GTRANPSEE(3,3),
      &                 GTRANPSEP(3,3),GTRANP(3,3)
+
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
@@ -9946,6 +9980,8 @@ C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
       IF (IPRINT .GE. 0) THEN
+        WRITE (LUPRI,'(/,1X,A)')' Results are valid only for '//
+     &                              'equilibrium geometry.'
         IF (LONDON) THEN
           WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
         ELSE
@@ -9995,15 +10031,17 @@ C
 C
                AVEPAR=AVEPARLEE+AVEPARLEP+AVEPARSEE+AVEPARSEP
 C
-               IF (IPRINT .GE. 0) WRITE(LUPRI,'(8(1X,A,F12.4,/))')
+               IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &              ' Total spin-rotation constant       :',AVETOT,
      &              ' Nuclear part of spin-rotation      :',AVENUC,
      &              ' Diamagnetic part of spin-rotation  :',AVEDIA,
-     &              ' << A ; L >>_ee part of SR          :',AVEPARLEE,
-     &              ' << A ; L >>_ep part of SR          :',AVEPARLEP,
-     &              ' << A ; S >>_ee part of SR          :',AVEPARSEE,
-     &              ' << A ; S >>_ep part of SR          :',AVEPARSEP,
      &              ' Paramagnetic part of spin-rotation :',AVEPAR
+               IF (IPRINT .GE. 2) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &              ' << A ; L >>_ee response part of SR :',AVEPARLEE,
+     &              ' << A ; L >>_ep response part of SR :',AVEPARLEP,
+     &              ' << A ; S >>_ee response part of SR :',AVEPARSEE,
+     &              ' << A ; S >>_ep response part of SR :',AVEPARSEP
+
             END IF
  98      CONTINUE
       ELSE
