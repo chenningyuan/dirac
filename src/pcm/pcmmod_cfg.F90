@@ -61,8 +61,8 @@ module pcmmod_cfg
           real(c_double) :: min_distance
           integer(c_int) :: der_order
           logical(c_bool) :: scaling
-          character(kind=c_char) :: radii_set(8)
           character(kind=c_char) :: restart_name(20)
+          character(kind=c_char) :: radii_set(8)
   end type
   
   type, bind(c) :: solverInput
@@ -78,8 +78,10 @@ module pcmmod_cfg
   contains
 
      subroutine host_input(cavity, solver, green) bind(c, name='host_input')
-! Performs syntactic checks on PCMSolver input and fills the data structures
-! holding input data
+     ! Performs syntactic checks on PCMSolver input and fills the data structures
+     ! holding input data
+     ! WARNING ! Do NOT change the order in which strings are passed since the
+     ! module relies on that
                                                            
      type(cavityInput) :: cavity
      type(solverInput) :: solver
@@ -87,28 +89,20 @@ module pcmmod_cfg
 
      integer :: i
 
-     do i = 1, size(cavity%cavity_type)
-        cavity%cavity_type(i)  = pcmmod_cavity_type(i:i)
-     end do
      cavity%patch_level  = pcmmod_patch_level
      cavity%coarsity     = pcmmod_coarsity
      cavity%area         = pcmmod_cavity_area
      cavity%min_distance = pcmmod_min_distance
      cavity%der_order    = pcmmod_der_order
      cavity%scaling      = pcmmod_scaling
-     do i = 1, size(cavity%radii_set)
-        cavity%radii_set(i)    = pcmmod_radii_set(i:i)
-     end do
-     do i = 1, size(cavity%restart_name)
-        cavity%restart_name(i) = pcmmod_restart_name(i:i)
-     end do
-
-     do i = 1, size(solver%solver_type)
-        solver%solver_type(i) = pcmmod_solver_type(i:i)
-     end do
-     do i = 1, size(solver%solvent)
-        solver%solvent(i)     = pcmmod_solvent(i:i)
-     end do
+     ! Pass the strings relevant to the cavity input section
+     call push_input_string(pcmmod_cavity_type//c_null_char)
+     call push_input_string(pcmmod_radii_set//c_null_char)
+     call push_input_string(pcmmod_restart_name//c_null_char)
+     
+     ! Pass the strings relevant to the solver input section
+     call push_input_string(pcmmod_solver_type//c_null_char)
+     call push_input_string(pcmmod_solvent//c_null_char)
 
      green%inside_type  = pcmmod_green_inside_type 
      green%outside_type = pcmmod_green_outside_type
