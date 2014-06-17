@@ -1588,6 +1588,10 @@
       if (kw_matches(word, '.RESTAR')) then
          call kw_read(word, pcmmod_restart_name)
       end if
+
+      if (kw_matches(word, '.MINRAD')) then
+         call kw_read(word, pcmmod_min_radius)
+      end if
       
       if (kw_matches(word, '.SOLVER')) then
          call kw_read(word, pcmmod_solver_type)
@@ -1595,6 +1599,34 @@
       
       if (kw_matches(word, '.SOLVNT')) then
          call kw_read(word, pcmmod_solvent)
+      end if
+
+      if (kw_matches(word, '.EQNTYP')) then
+         call kw_read(word, pcmmod_equation_type)
+      end if
+
+      if (kw_matches(word, '.MATSYM')) then
+              pcmmod_matrix_symmetrize = .true.
+      end if
+
+      if (kw_matches(word, '.CORREC')) then
+         call kw_read(word, pcmmod_correction)
+      end if
+
+      if (kw_matches(word, '.PROBER')) then
+         call kw_read(word, pcmmod_probe_radius)
+      end if
+
+      if (kw_matches(word, '.GINSID')) then
+         call kw_read(word, pcmmod_inside_type)
+      end if
+      
+      if (kw_matches(word, '.GOUTSI')) then
+         call kw_read(word, pcmmod_outside_type)
+      end if
+
+      if (kw_matches(word, '.EPSILO')) then
+         call kw_read(word, pcmmod_outside_epsilon)
       end if
 
       call check_whether_kw_found(word, kw_section)

@@ -43,15 +43,21 @@ module pcmmod_cfg
   real(c_double), public, save  :: pcmmod_cavity_area = 0.3
   real(c_double), public, save  :: pcmmod_min_distance = 0.1
   integer(c_int), public, save  :: pcmmod_der_order = 4
-  logical(c_bool), public, save  :: pcmmod_scaling = .true. 
+  logical(c_bool), public, save :: pcmmod_scaling = .true. 
   character(kind=c_char, len=8), public, save :: pcmmod_radii_set = 'bondi  '//c_null_char
   character(kind=c_char, len=20), public, save :: pcmmod_restart_name = 'cavity.npz         '//c_null_char
+  real(c_double), public, save  :: pcmmod_min_radius = 100.0
 ! solver specification *PCMSOL section
   character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
   character(kind=c_char, len=16), public, save :: pcmmod_solvent = 'water          '//c_null_char
+  character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
+  logical(c_bool), public, save :: pcmmod_matrix_symmetrize = .true.
+  real(c_double), public, save  :: pcmmod_correction = 0.0
+  real(c_double), public, save  :: pcmmod_probe_radius = 1.0
 ! green specification *PCMSOL section
-  integer(c_int), public, save :: pcmmod_green_inside_type = 0
-  integer(c_int), public, save :: pcmmod_green_outside_type = 0
+  character(kind=c_char, len=7), public, save :: pcmmod_inside_type = 'vacuum'//c_null_char
+  character(kind=c_char, len=22), public, save :: pcmmod_outside_type = 'uniformdielectric    '//c_null_char
+  real(c_double), public, save :: pcmmod_outside_epsilon = 1.0 
 
   type, bind(c) :: cavityInput
           character(kind=c_char) :: cavity_type(8)
@@ -63,16 +69,22 @@ module pcmmod_cfg
           logical(c_bool) :: scaling
           character(kind=c_char) :: restart_name(20)
           character(kind=c_char) :: radii_set(8)
+          real(c_double) :: min_radius
   end type
   
   type, bind(c) :: solverInput
           character(kind=c_char) :: solver_type(7)
           character(kind=c_char) :: solvent(16)
+          logical(c_bool)        :: matrix_symmetrize
+          character(kind=c_char) :: equation_type(11) 
+          real(c_double)         :: correction
+          real(c_double)         :: probe_radius
   end type
   
   type, bind(c) :: greenInput
-          integer(c_int) :: inside_type
-          integer(c_int) :: outside_type
+          character(kind=c_char) :: inside_type(7)
+          real(c_double)         :: outside_epsilon
+          character(kind=c_char) :: outside_type(22)
   end type
   
   contains
@@ -87,25 +99,30 @@ module pcmmod_cfg
      type(solverInput) :: solver
      type(greenInput)  :: green
 
-     integer :: i
-
      cavity%patch_level  = pcmmod_patch_level
      cavity%coarsity     = pcmmod_coarsity
      cavity%area         = pcmmod_cavity_area
      cavity%min_distance = pcmmod_min_distance
      cavity%der_order    = pcmmod_der_order
      cavity%scaling      = pcmmod_scaling
+     cavity%min_radius   = pcmmod_min_radius
      ! Pass the strings relevant to the cavity input section
      call push_input_string(pcmmod_cavity_type//c_null_char)
      call push_input_string(pcmmod_radii_set//c_null_char)
      call push_input_string(pcmmod_restart_name//c_null_char)
      
+     solver%matrix_symmetrize = pcmmod_matrix_symmetrize
+     solver%correction        = pcmmod_correction
+     solver%probe_radius      = pcmmod_probe_radius
      ! Pass the strings relevant to the solver input section
      call push_input_string(pcmmod_solver_type//c_null_char)
      call push_input_string(pcmmod_solvent//c_null_char)
+     call push_input_string(pcmmod_equation_type//c_null_char)
 
-     green%inside_type  = pcmmod_green_inside_type 
-     green%outside_type = pcmmod_green_outside_type
+     green%outside_epsilon = pcmmod_outside_epsilon
+     ! Pass the strings relevant to the green input section
+     call push_input_string(pcmmod_inside_type//c_null_char)
+     call push_input_string(pcmmod_outside_type//c_null_char)
                                                            
      end subroutine host_input
 
