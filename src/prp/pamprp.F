@@ -8991,11 +8991,12 @@ c...common block for expectation values
 #include "dcbxlr.h"
 C...common block for linear reponse
 #include "dcbxpr.h"
+#include "dcbgen.h"
 
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,LWORK,
+     &        IS2,ISCOOR,ISCORD1,ISECND,
      &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
      &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,ISCOR1
@@ -9158,8 +9159,8 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
 C
-      PFAC(1)  = CVEL
-      PFAC(2)  = CVEL
+      PFAC(1)  = CVAL
+      PFAC(2)  = CVAL
       NPCOMP   = 2
 C
       ITOP = 3
@@ -9877,7 +9878,7 @@ C
 #include "orgcom.h"
 #include "ibtfun.h"
 C
-      integer I,J,KATOM,IPRINT,LWORK,IATOM,ICOOR,
+      integer I,J,KATOM,IPRINT,IATOM,ICOOR,
      &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,
      &        SCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,IBTXOR
