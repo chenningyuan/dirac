@@ -9999,52 +9999,59 @@ C
             WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
      &                                  D1/EIGVAL(3)
          END IF
-         DO 98 IATOM = 1, NUCDEP
-            IF (GVAL(IATOM) .NE. 0.0D0) THEN
-               IF (IPRINT .GE. 0) THEN
-                  CALL HEADER('Spin-rotation constants (kHz) for   '//
-     &                        NAMDEP(IATOM),-1)
-                  WRITE (LUPRI,'(2X,A18,F6.2,/)')
-     &                 'Nuclear g-value  :',GVAL(IATOM)
-               END IF
-               FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
-               IF (ABS(TOTSPR(1,1,IATOM)) .GT. THRESH) THEN
-                  AVETOT = TOTSPR(1,1,IATOM)*FACTOT
-                  AVENUC = SPRNUC(1,1,IATOM)*FACTOT
-                  AVEPARLEE = PMATL(1,1,IATOM,1)*FACTOT
-                  AVEPARLEP = PMATL(1,1,IATOM,2)*FACTOT
-                  AVEPARSEE = PMATS(1,1,IATOM,1)*FACTOT
-                  AVEPARSEP = PMATS(1,1,IATOM,2)*FACTOT
-                  AVEDIA = DMAT(1,1,IATOM)*FACTOT
-               ELSE
-                  AVETOT = TOTSPR(2,2,IATOM)*FACTOT
-                  AVENUC = SPRNUC(2,2,IATOM)*FACTOT
-                  AVEPARLEE = PMATL(2,2,IATOM,1)*FACTOT
-                  AVEPARLEP = PMATL(2,2,IATOM,2)*FACTOT
-                  AVEPARSEE = PMATS(2,2,IATOM,1)*FACTOT
-                  AVEPARSEP = PMATS(2,2,IATOM,2)*FACTOT
-                  AVEDIA = DMAT(2,2,IATOM)*FACTOT
-               END IF
-               CALL DZERO(GTRANT(1,1,IATOM),9)
-               GTRANT(1,1,IATOM) = AVETOT
-               GTRANT(2,2,IATOM) = AVETOT
-               GTRANT(3,3,IATOM) = AVETOT
-C
-               AVEPAR=AVEPARLEE+AVEPARLEP+AVEPARSEE+AVEPARSEP
-C
-               IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &              ' Total spin-rotation constant       :',AVETOT,
-     &              ' Nuclear part of spin-rotation      :',AVENUC,
-     &              ' Diamagnetic part of spin-rotation  :',AVEDIA,
-     &              ' Paramagnetic part of spin-rotation :',AVEPAR
-               IF (IPRINT .GE. 2) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &              ' << A ; L >>_ee response part of SR :',AVEPARLEE,
-     &              ' << A ; L >>_ep response part of SR :',AVEPARLEP,
-     &              ' << A ; S >>_ee response part of SR :',AVEPARSEE,
-     &              ' << A ; S >>_ep response part of SR :',AVEPARSEP
-
-            END IF
- 98      CONTINUE
+!     Takes into account only linear molecules in one of the axes x, y or z
+         IF ( (SPRNUC(1,1,1).EQ.0).OR.(SPRNUC(2,2,1).EQ.0).OR.
+     &        (SPRNUC(3,3,1).EQ.0) ) THEN
+           DO 98 IATOM = 1, NUCDEP
+!     SR constants are defined only for nuclei with non-zero gvalue
+              IF (GVAL(IATOM) .NE. 0.0D0) THEN
+                 IF (IPRINT .GE. 0) THEN
+                    CALL HEADER('Spin-rotation constants (kHz) for  '//
+     &                          NAMDEP(IATOM),-1)
+                    WRITE (LUPRI,'(2X,A18,F6.2,/)')
+     &                   'Nuclear g-value  :',GVAL(IATOM)
+                 END IF
+                 FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
+                 IF (ABS(TOTSPR(1,1,IATOM)) .GT. THRESH) THEN
+                    AVETOT = TOTSPR(1,1,IATOM)*FACTOT
+                    AVENUC = SPRNUC(1,1,IATOM)*FACTOT
+                    AVEPARLEE = PMATL(1,1,IATOM,1)*FACTOT
+                    AVEPARLEP = PMATL(1,1,IATOM,2)*FACTOT
+                    AVEPARSEE = PMATS(1,1,IATOM,1)*FACTOT
+                    AVEPARSEP = PMATS(1,1,IATOM,2)*FACTOT
+                    AVEDIA = DMAT(1,1,IATOM)*FACTOT
+                 ELSE
+                    AVETOT = TOTSPR(2,2,IATOM)*FACTOT
+                    AVENUC = SPRNUC(2,2,IATOM)*FACTOT
+                    AVEPARLEE = PMATL(2,2,IATOM,1)*FACTOT
+                    AVEPARLEP = PMATL(2,2,IATOM,2)*FACTOT
+                    AVEPARSEE = PMATS(2,2,IATOM,1)*FACTOT
+                    AVEPARSEP = PMATS(2,2,IATOM,2)*FACTOT
+                    AVEDIA = DMAT(2,2,IATOM)*FACTOT
+                 END IF
+                 CALL DZERO(GTRANT(1,1,IATOM),9)
+                 GTRANT(1,1,IATOM) = AVETOT
+                 GTRANT(2,2,IATOM) = AVETOT
+                 GTRANT(3,3,IATOM) = AVETOT
+C  
+                 AVEPAR=AVEPARLEE+AVEPARLEP+AVEPARSEE+AVEPARSEP
+C  
+                 IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &               ' Total spin-rotation constant       :',AVETOT,
+     &               ' Nuclear part of spin-rotation      :',AVENUC,
+     &               ' Diamagnetic part of spin-rotation  :',AVEDIA,
+     &               ' Paramagnetic part of spin-rotation :',AVEPAR
+                 IF (IPRINT .GE. 2) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &               ' << A ; L >>_ee response part of SR :',AVEPARLEE,
+     &               ' << A ; L >>_ep response part of SR :',AVEPARLEP,
+     &               ' << A ; S >>_ee response part of SR :',AVEPARSEE,
+     &               ' << A ; S >>_ep response part of SR :',AVEPARSEP
+  
+              END IF
+ 98        CONTINUE
+         ELSE
+          CALL HEADER('Linear molecule has to be on x, y or z axis',-1)
+         END IF
       ELSE
          IF (IPRINT .GE. 0) THEN
             CALL HEADER
@@ -10059,6 +10066,7 @@ C
                FACTOT = GVAL(IATOM)*FAC
                CALL DZERO(GTRANN,9)
                CALL DZERO(GTRAND,9)
+               CALL DZERO(GTRANP,9)
                CALL DZERO(GTRANPLEE,9)
                CALL DZERO(GTRANPLEP,9)
                CALL DZERO(GTRANPSEE,9)
@@ -10084,6 +10092,8 @@ C
      &                       *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
                         GTRANPSEP(I,J) = GTRANPSEP(I,J) + EIGVEC(IX,I)
      &                       *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+                        GTRANP(I,J) = GTRANPLEE(I,J) + GTRANPLEP(I,J)
+     &                       + GTRANPSEE(I,J) + GTRANPSEP(I,J)
  60               CONTINUE
  50            CONTINUE
                IF (IPRINT .GE. 0) THEN
