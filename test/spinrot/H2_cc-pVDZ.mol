@@ -4,8 +4,8 @@ cc-pVTZ Basis: H:6s4p.
 C   2    0         A .10D-15                                               
        1.0    1    
 H      0.0000000000      0.0000000000     0.3708       Isotope=1
-LARGE BASIS cc-pVTZ
+LARGE BASIS cc-pVDZ
        1.0    1    
 H      0.0000000000      0.0000000000    -0.3708       Isotope=1
-LARGE BASIS cc-pVTZ
+LARGE BASIS cc-pVDZ
 FINISH
