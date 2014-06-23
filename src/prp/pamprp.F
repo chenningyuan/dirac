@@ -8921,46 +8921,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DEF_SPINRO */
+C  /* Deck def_spinrot */
       SUBROUTINE DEF_SPINRO(PNAME,PLABEL,PFAC,IPRINT)
-! iaa combine with DEF_SPINRO1
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C     Define operators for spin-rotation constants
-C
-C     Written by Agustin Aucar and Trond Saue Sep 2013
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-      implicit none
-
-#include "priunit.h"
-#include "mxcent.h"
-#include "nuclei.h"
-      logical, allocatable :: DOATOM(:)
-C
-      INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
-     &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
-     &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,
-     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
-     &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
-     &        IBTSHL,IBTSHR
-
-      DOUBLE PRECISION PFAC
-
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION PFAC(3)
-C
-      allocate(DOATOM(NUCIND))
-      CALL SETATM(DOATOM,NATOM,-29)
-      CALL DEF_SPINRO1(DOATOM,IPRINT)
-      deallocate(DOATOM)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_spinro1 */
-      SUBROUTINE DEF_SPINRO1(DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operators for spin-rotation constants
@@ -8970,7 +8932,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use codata
       implicit none
-
 #include "priunit.h"
 C
 #include "mxcent.h" 
@@ -9003,7 +8964,7 @@ C...common block for linear reponse
 
       DOUBLE PRECISION PFAC,WORK,D1,DL,DS
 
-      LOGICAL DOATOM(NUCIND)
+      logical, allocatable :: DOATOM(:)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 
@@ -9017,6 +8978,8 @@ C
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPINRO,6+MXCOOR)
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
 C
 C     Here we set up the operators needed for the expectation value
 C
@@ -9257,39 +9220,40 @@ C
 C     A operators
 C     ===========
 C
-        CALL PRSYMB(LUPRI,'-',75,0)
-         WRITE(LUPRI,'(1X,A)')
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
      &   '** A operators for spin-rotation **'
-        CALL PRSYMB(LUPRI,'-',75,0)
-        DO I = 1,NSCOOR
-          INDOP1 = IPSPINRO(I)
-          IF(INDOP1.GT.0) THEN
-            INDXPR = LLRAPU(INDOP1)
-            CALL WRIXPR(INDOP1,INDXPR)
-          ENDIF
-        ENDDO
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOOR
+        INDOP1 = IPSPINRO(I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRAPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
 C
 C
 C     B operators
 C     ===========
 C
-        CALL PRSYMB(LUPRI,'-',75,0)
-        IF (LONDON) THEN
-         WRITE(LUPRI,'(1X,A)')
+      CALL PRSYMB(LUPRI,'-',75,0)
+      IF (LONDON) THEN
+        WRITE(LUPRI,'(1X,A)')
      &   '** B operators for spin-rotation, LAO approach **'
-        ELSE
-         WRITE(LUPRI,'(1X,A)')
+      ELSE
+        WRITE(LUPRI,'(1X,A)')
      &   '** B operators for spin-rotation, CGO approach **'
+      ENDIF
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,6
+        INDOP1 = IPSPINRO(I+MXCOOR)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRBPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
         ENDIF
-        CALL PRSYMB(LUPRI,'-',75,0)
-        DO I = 1,6
-          INDOP1 = IPSPINRO(I+MXCOOR)
-          IF(INDOP1.GT.0) THEN
-            INDXPR = LLRBPU(INDOP1)
-            CALL WRIXPR(INDOP1,INDXPR)
-          ENDIF
-        ENDDO
-
+      ENDDO
+C
+      deallocate(DOATOM)
       CALL QEXIT('DEF_SPINRO1')
       RETURN
       END
