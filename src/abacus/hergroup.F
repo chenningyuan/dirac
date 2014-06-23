@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -933,6 +933,7 @@ C
 C     NOTE: An imaginary phase is inserted if necessary 
 C           to make all matrices time symmetric to accomodate
 C           the quaternion symmetry scheme of DIRAC.
+C           JM4TIM reports the time reversal symmetry without imaginary phase
 C
 C     The matrices are given in terms of their quaternion forms.
 C     The forms are obtained by a reordering of the 4-component matrices
@@ -990,6 +991,7 @@ C     ================
 C
       JM4REP(0) =  0
       JM4POS(0) =  1
+      JM4TIM(0) =  1
       M4COMB(0) =  '+00+'
 C
 C     1. i(alpha_z) --> (sigma_x)i
@@ -997,6 +999,7 @@ C     ============================
 C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
+      JM4TIM(1) = -1
       M4COMB(1) =  '0++0'
 C
 C     2. i(alpha_y) --> (sigma_x)j
@@ -1004,6 +1007,7 @@ C     ============================
 C
       JM4REP(2) =  ISYMAX(2,1)
       JM4POS(2) =  IYQ
+      JM4TIM(2) = -1
       M4COMB(2) =  '0++0'
 C
 C     3. i(alpha_x) --> (sigma_x)k
@@ -1011,6 +1015,7 @@ C     ============================
 C
       JM4REP(3) =  ISYMAX(1,1)
       JM4POS(3) =  IXQ
+      JM4TIM(3) = -1
       M4COMB(3) =  '0++0'
 C
 C     4. gamma_5  --> (sigma_x)
@@ -1018,6 +1023,7 @@ C     =========================
 C
       JM4REP(4) =  IXYZ
       JM4POS(4) =  1
+      JM4TIM(4) =  1
       M4COMB(4) =  '0++0'
 C
 C     5. i(Sigma_z) --> (I_2)i
@@ -1025,6 +1031,7 @@ C     ========================
 C
       JM4REP(5) =  ISYMAX(3,2)
       JM4POS(5) =  IZQ
+      JM4TIM(5) = -1
       M4COMB(5) =  '+00+'
 C
 C     6. i(Sigma_y) --> (I_2)j
@@ -1032,6 +1039,7 @@ C     ========================
 C
       JM4REP(6) =  ISYMAX(2,2)
       JM4POS(6) =  IYQ
+      JM4TIM(6) = -1
       M4COMB(6) =  '+00+'
 C
 C     7. i(Sigma_x) --> (I_2)k
@@ -1039,28 +1047,32 @@ C     ========================
 C
       JM4REP(7) =  ISYMAX(1,2)
       JM4POS(7) =  IXQ
+      JM4TIM(7) = -1
       M4COMB(7) =  '+00+'
 C
 C     8. beta --> (sigma_z)
 C     =====================
 C
-      JM4REP(8) = 0
-      JM4POS(8) = 1
-      M4COMB(8) = '+00-'
+      JM4REP(8) =  0
+      JM4POS(8) =  1
+      JM4TIM(8) =  1
+      M4COMB(8) =  '+00-'
 C
 C
 C     9. beta x gamma_5 --> (sigma_y)i
 C     ================================
 C
-      JM4REP(9) = IXYZ
-      JM4POS(9) = IYQ
-      M4COMB(9) = '0-+0'
+      JM4REP(9) =  IXYZ
+      JM4POS(9) =  IYQ
+      JM4TIM(9) =  1
+      M4COMB(9) =  '0-+0'
 C
 C     10. i(beta x Sigma_z) --> (sigma_z)i
 C     ====================================
 C     
       JM4REP(10) = ISYMAX(3,2)
       JM4POS(10) = IZQ
+      JM4TIM(10) = -1
       M4COMB(10) = '+00-'
 C
 C     11. i(beta x Sigma_y) --> (sigma_z)j
@@ -1068,6 +1080,7 @@ C     ====================================
 C
       JM4REP(11) = ISYMAX(2,2)
       JM4POS(11) = IYQ
+      JM4TIM(11) = -1
       M4COMB(11) = '+00-'
 C
 C     12. i(beta x Sigma_x) --> (sigma_z)k
@@ -1075,6 +1088,7 @@ C     =====================================
 C
       JM4REP(12) = ISYMAX(1,2)
       JM4POS(12) = IXQ
+      JM4TIM(12) = -1
       M4COMB(12) = '+00-'
 C
 C     13. i(beta x alpha_z) --> -(sigma_y)
@@ -1082,6 +1096,7 @@ C     ====================================
 C
       JM4REP(13) = ISYMAX(3,1)
       JM4POS(13) = 1
+      JM4TIM(13) = -1
       M4COMB(13) = '0-+0'
 C
 C     14. i(beta x alpha_y) --> -(sigma_y)j
@@ -1089,6 +1104,7 @@ C     ======================================
 C
       JM4REP(14) = ISYMAX(2,1)
       JM4POS(14) = IYQ
+      JM4TIM(14) = -1
       M4COMB(14) = '0-+0'
 C
 C     15. i(beta x alpha_x) --> -(sigma_y)k
@@ -1096,6 +1112,7 @@ C     ======================================
 C
       JM4REP(15) = ISYMAX(1,1)
       JM4POS(15) = IXQ
+      JM4TIM(15) = -1
       M4COMB(15) = '0-+0'
 C
 C     16. (beta - I_4)/2 
@@ -1103,13 +1120,13 @@ C     ==================
 C
       JM4REP(16) = 0
       JM4POS(16) = 1
+      JM4TIM(16) = 1
       M4COMB(16) = '000-'
 C
 C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
-C
 C
 C     1. P             * scalar operator
 C     ==================================

@@ -1,8 +1,0 @@
-quick
-ccsd.small.inp  H2O.mol --mw=64 --aw=130
-
-regular 
-ccsd.inp        H2O.mol --mw=64 --aw=130
-sf.scf.inp      H2O.mol  --outcmo
-so-ccsd.inp     H2O.mol  --mw=64 --aw=130  --incmo
-rm DFCOEF

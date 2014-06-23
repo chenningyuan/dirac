@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -134,11 +134,8 @@ C
 C     We have no information about the print level : make IPRINT zero
 C
       IPRINT = 0
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
-      END DO
-      CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+
+      CALL MEMGET('REAL',KBUF,N2TMT,WORK,KFREE,LFREE)
 C
 C     Get transformation matrix S(-1/2) to go to the orthogonal MO-basis
 C
@@ -158,7 +155,7 @@ C
 C
 C     Get transformation matrix S(+1/2) to go back to AO-basis
 C
-      CALL READT(LUTMAT,ISIZE,WORK(KBUF))
+      CALL READT(LUTMAT,N2TMT,WORK(KBUF))
       CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Tranform back to AO-basis

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,7 +21,7 @@
 
 ! this file by ulfek march 2008
 
-program DIRAC12_PROGRAM
+program dirac_program
 
   use os_utils
   use dft_cfg
@@ -30,6 +30,7 @@ program DIRAC12_PROGRAM
   use interface_mo
   use memory_allocator
   use machine_parameters
+  use dirac_cfg
 
 #ifdef USE_MPI_MOD_F90
   use mpi
@@ -176,7 +177,6 @@ program DIRAC12_PROGRAM
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
      call stopwatch(0,mytid)
-     if (doxml) call xml_close_file
      CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI
@@ -194,5 +194,4 @@ program DIRAC12_PROGRAM
    call interface_ao_clear()
    call interface_mo_clear()
 
-end program DIRAC12_PROGRAM
-!  -- end of main/main.F90 for dirac --
+end program

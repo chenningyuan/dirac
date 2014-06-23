@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -510,21 +510,37 @@ C
 C     Handle case of zero microiterations
 C     ===================================
 C     Set first coefficient for each frequency equal to one
-C     for getting non-zero respons function with zero
+C     for getting non-zero response function with zero
 C     microiterations
 C     (used for Sternheimer and/or uncoupled approx.)
 C
       IF(MAXITR.EQ.0.OR.UNCOUP) THEN
+        NZRED  = NTSIM
+        NCRED  = NCSIM
+        NERED  = NESIM
+        NPRED  = NPSIM
         IF (.NOT. UNCOUP) THEN
 C         ... EVECR set in subroutine XRSST2 for UNCOUP
           DO I = 1,NFREQ
             EVECR(1,I) = D1
           ENDDO
         END IF
-        NZRED  = NTSIM
-        NCRED  = NCSIM
-        NERED  = NESIM
-        NPRED  = NPSIM
+        IF(IPRXRS.GE.4) THEN
+          IF(NCSIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+          ENDIF
+          IF(NESIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NESIM,
+     &      ' Electronic (++) trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBOE),NESIM,NZXOPE)
+          ENDIF
+          IF(NPSIM.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)')NPSIM,
+     &      ' Electronic (-+) trial vectors'
+            CALL PRBVEC(LUPRI,WORK(KBOP),NPSIM,NZXOPP)
+          ENDIF
+         END IF
       ENDIF
 C
 C     **********************************************
@@ -571,7 +587,7 @@ C         Print section
      &     (BVTYP(I),':',ISIM(I),I=1,NVPAR)
           ENDIF
 C
-          IF(IPRXRS.GE.5) THEN
+          IF(IPRXRS.GE.4) THEN
             WRITE(LUPRI,'(/A)')' Before XRSSVC'
             IF(NCSIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
@@ -1081,9 +1097,6 @@ C        and metric.
 C
       IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                       WORK,KFREE,LFREE)
-
-C
-C
 C
 C     L I N E A R   R E S P O N S E   F U N C T I O N S
 C     =================================================
@@ -1330,7 +1343,6 @@ C
 C        Read old vector from LUBVEC
 C
          IREC = IREC + 1
-!        CALL READAC(LUBVEC,NBDIM,BVBUF,IREC)
          CALL READ_DX(LUBVEC,IREC,NBDIM,BVBUF)
          IF (IB .NE. 0) THEN
             IH   = IBTYP(2,IBVEC(IB))
@@ -1519,7 +1531,6 @@ C
          JOFF = KBOE
          DO I = 1,NESIM
             IREC = IREC + 1
-!           CALL READAC(LUBOE,NZXOPEQ,WORK(JOFF),IREC)
             CALL READ_DX(LUBOE,IREC,NZXOPEQ,WORK(JOFF))
             JOFF = JOFF + NZXOPEQ
          ENDDO
@@ -1539,7 +1550,6 @@ C
          JOFF = KBOP
          DO I = 1,NPSIM
             IREC = IREC + 1
-!           CALL READAC(LUBOP,NZXOPPQ,WORK(JOFF),IREC)
             CALL READ_DX(LUBOP,IREC,NZXOPPQ,WORK(JOFF))
             JOFF = JOFF + NZXOPPQ
          ENDDO
@@ -1559,7 +1569,6 @@ C
          JOFF = KBCI
          DO I = 1,NCSIM
             IREC = IREC + 1
-!           CALL READAC(LUBCI,NZCONFQ,WORK(JOFF),IREC)
             CALL READ_DX(LUBCI,IREC,NZCONFQ,WORK(JOFF))
             JOFF = JOFF + NZCONFQ
          ENDDO
@@ -2060,7 +2069,6 @@ C     Read in old vectors and multiply with all new sigma-vectors
 C     -----------------------------------------------------------
 C
       DO IREC = 1,IERED
-!       CALL READAC(LUBOE,NZXOPEQ,BVBUF,IREC)
         CALL READ_DX(LUBOE,IREC,NZXOPEQ,BVBUF)
         I  = IBEVC(IREC)
         IH = IBTYP(2,I)
@@ -2110,7 +2118,6 @@ C     Read in old vectors and multiply with all new sigma-vectors
 C     -----------------------------------------------------------
 C
       DO IREC = 1,IPRED
-!       CALL READAC(LUBOP,NZXOPPQ,BVBUF,IREC)
         CALL READ_DX(LUBOP,IREC,NZXOPPQ,BVBUF)
         I  = IBPVC(IREC)
         IH = IBTYP(2,I)
@@ -2187,7 +2194,6 @@ C
 C
          DO I = 1, IZRED
             IH = IBTYP(2,I)
-!           CALL READAC(LUSCI,NZCONFQ,BVBUF,I+1)
             CALL READ_DX(LUSCI,I+1,NZCONFQ,BVBUF)
             DO JN = 1, NCSIM
                J = IBCVC(JN+ICRED)
@@ -2203,7 +2209,6 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
                CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
@@ -2218,7 +2223,6 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
                CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
@@ -2233,7 +2237,6 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
                CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
@@ -2277,7 +2280,6 @@ C        trial-vectors
 C        ---------------------------------------------------------------
 C
          DO I = 1,IZRED
-!           CALL READAC(LUSOE,NZXOPEQ,BVBUF,I)
             CALL READ_DX(LUSOE,I,NZXOPEQ,BVBUF)
             IH = IBTYP(2,I)
             DO JN = 1,NESIM
@@ -2294,7 +2296,6 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
                CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
@@ -2309,7 +2310,6 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
                CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
@@ -2324,7 +2324,6 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
                CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
@@ -2371,7 +2370,6 @@ C        trial-vectors
 C        ----------------------------------------------------
 C
          DO I = 1,IZRED
-!           CALL READAC(LUSOP,NZXOPPQ,BVBUF,I)
             CALL READ_DX(LUSOP,I,NZXOPPQ,BVBUF)
             IH = IBTYP(2,I)
             DO JN = 1,NPSIM
@@ -2388,7 +2386,6 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
                CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
@@ -2403,7 +2400,6 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
                CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
@@ -2418,7 +2414,6 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
                CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
@@ -3679,9 +3674,7 @@ C
       ELSE IF (NBTYP .EQ. JBCNDX) THEN
          ITYP    = IPCP
          LUBVEC  = LUBCI
-C
-C     For CI record 1 is used for the CI ref. vector.
-C
+C        For CI record 1 is used for the CI ref. vector.
          IRECOFF = 1
       ELSE
          WRITE(LUPRI,'(A,A,I5)') 'XRSST2 ERROR: ',
@@ -3707,8 +3700,8 @@ C
         ENDDO
       ELSEIF(LINEQ) THEN
 C
-C        L I N E A R   R E S P O N S E   F U N C T I O N S
-C        =================================================
+C     L I N E A R   R E S P O N S E   F U N C T I O N S
+C     =================================================
 C
 C
         IF(RSREST) THEN
@@ -3750,38 +3743,8 @@ C
      &           '*** WARNING: No restart vectors found !'
           ENDIF
         ENDIF
-
         IF(DIAGHE) THEN
-C.........If the contribution to the norm of the property gradient
-C         from this parameter type is below threshold, then no
-C         trial vectors of this kind is generated
-          GPTMP = DNRM2(NBDIM,GP,1)
-          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-            NMDIM = NFREQ*NSTAT*NDAMP
-            CALL IZERO(IVEC,NMDIM)
-            IFREQ = 0 ! MI : initialize to avoind runtime failure..
-            DO IP = 1,NFREQ*NDAMP,NDAMP
-              IFREQ = IFREQ + 1
-              IM = IP + NFREQ*NDAMP
-              DO IDAMP = 0,NDAMP-1
-                IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
-                IBTYP(2,IBOFF+IP+IDAMP)     = IPX
-                IBVEC(NBPREV+IP+IDAMP)      = IBOFF+IP+IDAMP
-                IBTYP(1,IBOFF+IM+IDAMP)     = NBTYP
-                IBTYP(2,IBOFF+IM+IDAMP)     = IMX
-                IBVEC(NBPREV+IM+IDAMP)      = IBOFF+IM+IDAMP
-                IF(UNCOUP) THEN
-                  EVECR(IBOFF+IP+1,IP+1) = D1
-                ENDIF
-              ENDDO
-            ENDDO
-            GOTO 20
-          ENDIF
-          IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
-     &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
-          IFREQ = 0
           DO IP = 1,NFREQ*NDAMP,NDAMP
-            IFREQ = IFREQ + 1
             IM = IP + NFREQ*NDAMP
             DO IDAMP = 0,NDAMP-1
               IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
@@ -3790,11 +3753,24 @@ C         trial vectors of this kind is generated
               IBTYP(1,IBOFF+IM+IDAMP)     = NBTYP
               IBTYP(2,IBOFF+IM+IDAMP)     = IMX
               IBVEC(NBPREV+IM+IDAMP)      = IBOFF+IM+IDAMP
-CPP...........check this !
-              IF(UNCOUP) THEN
-                EVECR(IBOFF+IP+1,IP+1) = D1
-              ENDIF
+              IF(UNCOUP) EVECR(IBOFF+IP,IP) = D1
             ENDDO
+          ENDDO
+C.........If the contribution to the norm of the property gradient
+C         from this parameter type is below threshold, then no
+C         trial vectors of this kind is generated
+          GPTMP = DNRM2(NBDIM,GP,1)
+          IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
+     &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
+          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
+            NMDIM = NFREQ*NSTAT*NDAMP
+            CALL IZERO(IVEC,NMDIM)
+            GOTO 20
+          ENDIF
+          IFREQ = 0
+          DO IP = 1,NFREQ*NDAMP,NDAMP
+            IM = IP + NFREQ*NDAMP
+            IFREQ = IFREQ + 1
 C
 C           hjj+patrick:
 C           If partial gradient (e-e, e-p, or conf) is small compared to the
@@ -3806,11 +3782,10 @@ C
             IF(FREQ.EQ.D0) THEN
               DO IZ = 1,NZL
                 DO IVAR = 1,NDIM
-                  IF ( ABS(HDIAG(IVAR)) .GT. DLIM ) THEN
-                       BVEC(IVAR,IZ,IP) =
-     &                        -GP(IVAR,IZ)/HDIAG(IVAR)
+                  IF(ABS(HDIAG(IVAR)).GT.DLIM ) THEN
+                    BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)/HDIAG(IVAR)
                   ELSE
-                       BVEC(IVAR,IZ,IP) = - GP(IVAR,IZ)
+                    BVEC(IVAR,IZ,IP) = -GP(IVAR,IZ)
                   END IF
                 ENDDO
               ENDDO
@@ -3857,7 +3832,6 @@ C           Assume it is a `+' type trial vector
             IBTYP(1,IBOFF+NVEC) = NBTYP
             IBVEC(NBPREV+NVEC)  = IBOFF + NVEC
             IVEC(NVEC)          = 1
-!           CALL READAC(LUBVEC,NBDIM,BVEC(1,1,NVEC),I+IRECOFF)
             CALL READ_DX(LUBVEC,I+IRECOFF,NBDIM,BVEC(1,1,NVEC))
           END DO
           WRITE(LUPRI,'(/,1X,A,I2,3A)')
@@ -4367,7 +4341,7 @@ C/* Deck setrsp */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Set a default values for a number of variables of the response
-C     module such that they need to modified only in modules where they
+C     module such that they need to be modified only in modules where they
 C     are used.
 C
 C***********************************************************************

@@ -1,9 +1,0 @@
-$ERROR 1.E-6
-nlines 10:dg Alpha
-
-$ERROR 1.E-6
-nlines 28:Gamma =
-
-$ERROR 1.E-6
-From:Polarizability (au)
-To: total

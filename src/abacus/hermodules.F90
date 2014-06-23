@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,7 +48,8 @@
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0.0
+          REAL(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
+          REAL(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
           REAL(KIND=8)            :: nucexp=0.0
           TYPE(atom), POINTER     :: next
         END TYPE atom
@@ -103,6 +104,7 @@
           newatom%name=name
           IF (PRESENT(x)) newatom%x=x
           newatom%charge=find_charge(name)
+          newatom%bascharge=find_charge(name)
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
@@ -438,7 +440,7 @@
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
           CHARACTER(LEN=namelen)             :: name, prevname
-          REAL(KIND=8)                       :: charge, nucexp
+          REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
           CHARACTER(LEN=9) :: symtxt
 
@@ -598,6 +600,7 @@
 !               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
                 name=' '
                 charge=0.0
+                bascharge=0.0
                 nucexp=0.0
   
                 read(tmp_file,*,iostat=ios) name, charge
@@ -606,6 +609,16 @@
      &          "Invalid name or charge specified in *CENTERS"
                     CALL QUIT ('ERROR(readbasis): .NUCLEUS')
                 end if
+!               Try to read also element number so that we can use the basis set library (e.g. in
+!               counterpoise calculations)
+                backspace(tmp_file)
+                read(tmp_file,*,iostat=ios) name, charge, bascharge
+                if (ios.ne.0) then
+!                  User did not give two values, take the element number
+!                  equal to the charge
+                   bascharge=charge
+                   backspace(tmp_file)
+                end if
 
 !               Set charge information for all atoms of this type
                 mol=>firstatom
@@ -613,6 +626,7 @@
                   mol=>find_atom(mol,name)
                   IF (associated(mol)) THEN 
                     mol%charge=charge
+                    mol%bascharge=bascharge
                     mol%nucexp=nucexp
                     mol=>mol%next
                   ELSE
@@ -664,9 +678,9 @@
           
 !     Convert units
           IF(.NOT.(unitname=='bohr')) THEN
-            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
-            WRITE(LUPRI,*) 'Converting to atomic units with',           &
-     &                     ' conversion factor=', UNIT_CONVERSION 
+!            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
+!            WRITE(LUPRI,*) 'Converting to atomic units with',           &
+!     &                     ' conversion factor=', UNIT_CONVERSION 
             mol=>firstatom
             DO WHILE (ASSOCIATED(mol))
               mol%x=mol%x*UNIT_CONVERSION
@@ -812,6 +826,7 @@
 !               and writing them to the commonblocks
 
       use codata
+      use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
@@ -819,6 +834,7 @@
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+#include "symmet.h"
 
 !     COMMONBLOCKS
 #include "clsfmm.h"
@@ -864,6 +880,7 @@
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
@@ -933,6 +950,19 @@
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
 
+!       Clear the input buffer (if any) of the RDLINE functionality
+!       This makes sure a new line is read when RDLINE is called next
+        CALL RDLINE(infile)
+!       POSITION the input file.
+        IF (baspointer%name == 'DEFAULT') THEN
+           CALL POS_FILE(infile, lupri, linelen,                        &
+     &       '**MOLECULE', '*BASIS', '.DEFAULT')
+           CALL RDLINE(infile)
+        ELSE
+           CALL POS_FILE(infile, lupri, linelen,                        &
+     &       '**MOLECULE', '*BASIS', baspointer%name)
+        ENDIF
+
         SELECT CASE (baspointer%type)
         CASE ('NOBASIS','POINTCHARGE')
           IQM(basindex,1)=0
@@ -948,11 +978,7 @@
           END DO           
           BASNAM='Explicit'
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
-
-!     POSITION the input file.
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
-!     Additional check : read iqm once more
+!     Useful check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,1))                         &
      &         CALL QUIT ('Error in write_atomtypes')
@@ -988,13 +1014,11 @@
      &             ALPHA(1,IBLOCK(1),1),                                &
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
      &             NBLOCK,ISGEN(IBLOCK(1)),                             &
-     &             KAOVEC,KPRIM,mol%charge,mol%charge,                  &
+     &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
      &             1,DSM,BASREF(1,basindex,1))                         
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
@@ -1011,8 +1035,6 @@
      & "Well-tempered basis set typed explicitly in input file "
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
@@ -1053,11 +1075,27 @@
           IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
 !       We should typically go via this routine
             IBSFLAG=4
-            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &           INPTST,CNTBAS)
-            BASREF(1,basindex,2) = ' Derived from large component'
+!
+!           When uncontracted we generate the small component basis
+!           using the kinetic balance relation
+!           ...or...
+!           Make uncontracted small component basis
+!           set from kinetic balance.
+!           =======================================================
+!
+            IF(MDIRAC) THEN
+              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
+     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
+     &                    CNTBAS)
+            ELSE
+              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &             INPTST,CNTBAS)
+            
+              BASREF(1,basindex,2) = ' Derived from large component'
+            END IF
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN
@@ -1068,9 +1106,6 @@
             END DO            
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
-!     POSITION the input file.
-            CALL POS_FILE(infile, lupri, linelen,                       &
-     &           '**MOLECULE', '*BASIS', baspointer%name) 
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,2))                           &
@@ -1131,9 +1166,14 @@
           IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
         END DO
 
+!       This routine reads the next line to check whether an ECP is specified for this type
+        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
+
         typepointer=>typepointer%next
         
       END DO
+
+
 
       LINEAR = .FALSE.
       CLASS = 'N/A'
@@ -1186,6 +1226,12 @@
 !
 
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
+
+          CALL RECP_LNK_CHECKMOL(DOCART)
+          CALL RECP_LNK_IRREP(MAXREP)
+          CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,                    &
+     &            IQM,JCO,KATOM,KANG)
+         
 
           DEALLOCATE(JCO)
           DEALLOCATE(JCO2)

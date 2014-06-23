@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1356,7 +1356,7 @@ C     array of eigen- and omega values
       allocate(iomval(nprop_roots_krci))
 C
       CALL KRCIPRPANA(WORK(KXPRPKRCI),WORK(KXROOTS),WORK(KPRPCORE),
-     &                iomval,WORK(KFREE),LFREE)
+     &                iomval,WORK(KFREE),LFREE,MZ)
       CALL MEMREL('RPROP_KRCI',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     CI root selection based on the omega value
@@ -1536,7 +1536,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck KRCIPRPANA */
-      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,IOMVAL,WORK,LWORK)
+      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,IOMVAL,
+     &                      WORK,LWORK,MZ)
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
@@ -1570,18 +1571,18 @@ C
 #include "dipole.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
-      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
+      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
+     &                   NPROP_KRCI,MZ)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3)
       CHARACTER XLABEL*16
       LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
+      integer, intent(in)  :: mz
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
-C
-      MZ = MIN(NZ,2)
 C
 C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
@@ -1649,6 +1650,10 @@ C     =======================================================
 C
       IF( DOOSCILLST )THEN
 C
+!       WRITE(lupri,*) ' content of XPROPMAT'
+!       CALL WRTMATMN(XPROPMAT,1,NPROP_ROOTS_KRCI**2*Nprop_krci*mz,1,
+!    &       NPROP_ROOTS_KRCI**2*nprop_krci*mz,lupri)
+
 C       write title
         WRITE(LUPRI,'(/28X,A/28X,A/28X,A)') 
      & ' ********************************************************',
@@ -1668,6 +1673,10 @@ C       determine index for (x,y,z)
         XREAL = 0.0D0
         XCOMP = 0.0D0
 C
+        WRITE(LUPRI,'(/,1X,A,F14.10,A)')
+     &   ' ( 1 au =',debye,' Debye) TDM contributions with a norm'//
+     &   ' smaller than 1.0d-07 Debye are discarded (not printed).'
+
 C       ---------
 C       print TDM
 C       ---------
@@ -1679,17 +1688,15 @@ C       ---------
      & '    ________________________________________________________'//
      & '_______'
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
-          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
-            IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
+         DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+            DEIG  = EVECS(IVEC) - EVECS(JVEC)
+            IF( DEIG < 0.0d0 )THEN
               INIST = IVEC
               JFLST = JVEC
-            ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
-              GOTO 101
-            ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
+            ELSE
               INIST = JVEC
               JFLST = IVEC
             END IF
-            DEIG  = EVECS(JFLST) - EVECS(INIST)
             DO IPRP=1,3
 C             length gauge
               IF( MZ .eq. 2 )
@@ -1704,14 +1711,25 @@ C             length gauge
             END DO
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
+
+!           compute relative state number within a given symmetry irrep
+            inist_rel = inist
+            jflst_rel = jflst
+            do i = 1, isymst_in-1
+             inist_rel = inist_rel - NKRCI_CIROOTS(i)
+            end do
+            do i = 1, isymst_fl-1
+             jflst_rel = jflst_rel - NKRCI_CIROOTS(i)
+            end do
 C
 C           print only values above a given threshold - 1.0D-7
-            IF( (OSCLABS(1)+OSCLABS(2)+OSCLABS(3)) .lt. XTHRESH )
-     &         GOTO 101
+            IF( SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2))*debye 
+     &         < XTHRESH ) GOTO 101
 
-       WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,2X,1F12.8,2X 1F12.8)')
-     &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
-     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+       WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,1F14.8,1F14.8)')
+     &  '   * state',INIST_rel,'(',XREPEIG(ISYMST_IN),
+     &      ')         * state',
+     &      JFLST_rel,'(',XREPEIG(ISYMST_FL),')   ',
      &      OSCL(1),OSCL(2),OSCL(3),
      &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2)),
      &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2))*debye
@@ -1872,17 +1890,18 @@ C
       ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &        CHAR(IOFF+I),(DEBYE*(oscl(I)+eprop_core(ind_dip(i)))),
+     &                                    ' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
-     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+     &        (DEBYE*(oscl(I)+eprop_core(ind_dip(i))+DIPMN(I))),' Debye'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,5)
       ! print in a.u.
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &        CHAR(IOFF+I),(oscl(I)+eprop_core(ind_dip(i))),' a.u. ',
      &                   (DIPMN(I)),' a.u. ',
-     &        (oscl(I)+DIPMN(I)),' a.u.'
+     &        (oscl(I)+eprop_core(ind_dip(i))+DIPMN(I)),' a.u.'
       ENDDO
 
 

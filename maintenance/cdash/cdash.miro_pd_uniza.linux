@@ -3,64 +3,35 @@
 # cron prescription:
 # 10 00 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cmake buildup at "$timestamp ; DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.miro_pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64 > $DIRAC/maintenance/log_out.cdash_$timestamp 2>&1 || {echo "cront initiated cdash buildup failed at "$timestamp}
 
-# for crontab&queue system you have to set up enviroment !
-#export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-
-# STATIC GNU OpenMPI stuff
-export PATH=/home/ilias/bin/ompi_GNU_i32lp64_static/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/ompi_GNU_i32lp64/lib:$LD_LIBRARY_PATH
-
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
+source /opt/intel/bin/compilervars.sh intel64
 
 echo "PATH=$PATH"
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+
+echo -e "ifort : \c"; which ifort
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
 
 #   build dirs  #
-BUILD_OMPI_GNU_STATIC=build_ompi_gnu_static
-BUILD_OMPI_INTEL_STATIC=build_ompi_intel_static
+BUILD=build_intelmkl_i8_static
 
 # go to the local DIRAC directory
 cd $DIRAC
+git checkout release-13
+
+export DIRTIMEOUT="12m"
+export MATH_ROOT=/opt/intel/mkl
 
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-if [[ -d "$BUILD_OMPI_GNU_STATIC" ]]; then
-  echo "deleting previous build directory $BUILD_OMPI_GNU_STATIC"
-  /bin/rm -rf $BUILD_OMPI_GNU_STATIC
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
 fi
-pamadm -a --builddir=$BUILD_OMPI_GNU_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_GNU_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_gnu_ilp64_STATIC" --int64 --mpi --static -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_GNU_STATIC
-cd $BUILD_OMPI_GNU_STATIC
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
-
-
-#############################
-# own new Intel ompi static #
-#############################
-export PATH=/home/ilias/bin/ompi_i32lp64_intel_static/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/ompi_i32lp64_intel_static/lib:$LD_LIBRARY_PATH
-
-export MATH_ROOT=/opt/intel/mkl
-#
-
-cd $DIRAC
-
-echo "updated PATH=$PATH"
-echo "updated LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
-
-if [[ -d "$BUILD_OMPI_INTEL_STATIC" ]]; then
-  echo "deleting previous build directory $BUILD_OMPI_INTEL_STATIC"
-  /bin/rm -rf $BUILD_OMPI_INTEL_STATIC
-fi
-pamadm -a --builddir=$BUILD_OMPI_INTEL_STATIC
-./setup --fc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/ompi_i32lp64_intel_static/bin/mpiCC -D BUILDNAME="miro_pd_uniza.ompi_intel_MKL_ilp64_STATIC" --int64 --static --mpi -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON $BUILD_OMPI_INTEL_STATIC
-cd $BUILD_OMPI_INTEL_STATIC
+pamadm -a --builddir=$BUILD
+./setup --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="miro_pd_uniza.intelmkl_i8_static-release13" --int64 --static -D DART_TESTING_TIMEOUT=99999 $BUILD
+cd $BUILD
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild

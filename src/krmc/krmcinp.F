@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1453,8 +1453,6 @@ C
 C     Initialize parameter info  pointers to negative value (for "not defined")
 C
       KZCONF = -1
-      KZXOPE = -1
-      KZXOPP = -1
       LZCONF = -1
       LZXOPE = -1
       LZXOPP = -1

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -109,8 +109,6 @@ C
       LZXOPE = NZHOPE*2
       NZXOPP = 0
       LZXOPP = NZXOPP*2
-      CALL MEMGET('INTE',KZXOPE,LZXOPE,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KZXOPP,LZXOPP,WORK,KFREE,LFREE)
 C
 C     Write information to LUKRMC
 C

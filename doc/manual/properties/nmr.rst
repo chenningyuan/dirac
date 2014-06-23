@@ -23,7 +23,7 @@ origin and dipole origin are changed in order to have consistency.
     .GAUGEO
      0.0 0.0 0.0
 
-keyword(GO\_ANG)
+keyword(GO ANG)
 
 Same as :ref:`.GAUGEO` but
 reads coordinates in angstrom.

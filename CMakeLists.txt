@@ -23,18 +23,25 @@ option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                 
 option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
+option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
-option(ENABLE_TESTS           "Enable compilation of unit tests"                          OFF)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
+option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    ON)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
+
+option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
+option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -55,13 +62,15 @@ if(ENABLE_STATIC_LINKING)
        # ld-linkers, fix for older linkers
        set(NODYNEXPORT "-Wl,--no-export-dynamic")
     endif()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Bstatic ${NODYNEXPORT}")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    endif()
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
-# radovan: i don't think we need libstdc++
-# set(LIBS "stdc++")
-set(LIBS)
+set(EXTERNAL_LIBS)
 
 include(ConfigVersion)
 include(ConfigArchitecture)
@@ -72,12 +81,25 @@ include(ConfigDocumentation)
 include(ConfigExternal)
 include(ConfigGPU)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo) # has to come after ConfigVersion
+
+if(USE_BUILTIN_BLAS)
+    add_definitions(-DUSE_BUILTIN_BLAS)
+endif()
+if(USE_BUILTIN_LAPACK)
+    add_definitions(-DUSE_BUILTIN_LAPACK)
+endif()
 
 add_custom_command(
     OUTPUT
@@ -95,6 +117,7 @@ add_executable(
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
     ${PROJECT_BINARY_DIR}/unit-tests
@@ -109,9 +132,15 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
+# workaround for strange problem with cilkrts lib
+# intel does not ship the static version of it
+# and of some reason it gets detected and included in this variable
+# this then breaks static linking
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
+
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
-    set(LIBS xcfun ${LIBS})
+    set(EXTERNAL_LIBS xcfun ${EXTERNAL_LIBS})
 else()
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
@@ -129,33 +158,28 @@ if(ENABLE_PCMMOD)
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        -DCBLAS_ROOT=${CBLAS_ROOT}
+	#-DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
+	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
     )
     
     add_external(pcmsolver)
 
-    set(LIBS
+    set(EXTERNAL_LIBS
         stdc++
-        solver
-        green
-        cavity
-        metal
-        pedra
-        pwl
-        wem
-        wavcav
+	pcm
         getkw
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
 endif()
 
-#miro: to enable proper linking for pgCC we need the libstdc++ library
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    set(LIBS stdc++ ${LIBS})
+    # to enable proper linking for pgCC we need the libstdc++ library
+    set(EXTERNAL_LIBS stdc++ ${EXTERNAL_LIBS})
 endif()
 
 file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
@@ -233,6 +257,7 @@ if(ENABLE_GEN1INT)
 endif()
 
 add_dependencies(dirac run_pamadm)
+add_dependencies(dirac generate_binary_info)
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
@@ -270,6 +295,9 @@ if(ENABLE_UTILITIES)
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
+    if(ENABLE_MEM_TEST) # 
+        compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
+    endif()
 endif()
 
 foreach(
@@ -285,7 +313,7 @@ foreach(
     target_link_libraries(
         ${EXECUTABLE}
         dirac
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
@@ -302,17 +330,28 @@ foreach(
 
 endforeach()
 
+# give a nice message at the end
+include(Motivation)
+get_motivational_message(${DEVELOPMENT_CODE} msg)
+add_custom_target(final ALL COMMENT "Compilation successfully completed - ${msg}")
+set(_list_of_all_targets ${LIST_OF_EXECUTABLES})
+if(ENABLE_XCFUN)
+    set(_list_of_all_targets ${_list_of_all_targets} example_fortran funeval testall)
+endif()
+add_dependencies(final ${_list_of_all_targets})
+unset(_list_of_all_targets)
+
 #enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
 if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
 endif()
 
 # build unit tests
-if(ENABLE_TESTS)
+if(ENABLE_UNIT_TESTS)
     # set unit test libs
     set(UNIT_TEST_LIBS
         dirac
-        ${LIBS}
+        ${EXTERNAL_LIBS}
         )
     include(ConfigUnitTesting)
 endif()

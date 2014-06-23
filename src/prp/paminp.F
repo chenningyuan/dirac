@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -37,7 +37,9 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
          use london_helper
+#endif
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -131,7 +133,7 @@ C
       NDSOINT      = 0
       MGRAD        = .FALSE.
       ESRGTENS     = .FALSE.
-      ESRANISO     = .FALSE.
+      ESR_HFCC     = .FALSE.
       NPRP_WF      = 1
       PRP_WF(1)    = 'DHF '
       BXLAO        = .FALSE.
@@ -280,7 +282,7 @@ C&&&& NSTDIA diamagnetic contribution to shielding
 C&&&& ESR parameters
             DOESR = .TRUE.
             ESRGTENS = .TRUE.
-            ESRANISO = .TRUE.
+            ESR_HFCC = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& PVC Parity violation - chirality
@@ -370,8 +372,8 @@ C             do NOT activate picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
-            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
+            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP)
+            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP)
             GO TO 100
   131    CONTINUE 
 C&&&& .MAGOUT - specify the hard-output for the magnetizability
@@ -419,12 +421,14 @@ C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
+#ifdef MOD_LAO_REARRANGED
 C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
             DOXLR  = .TRUE.
             LONDON = .TRUE.
             call set_london_keywords('shiel2')
 !gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
 ! i will have to fix that...
+#endif
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -530,7 +534,7 @@ CMI ... changed for LAO-based magnetic properties
 #endif
          GO TO 200
     8 CONTINUE
-         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+         CALL XQRINP(WORD,.FALSE.)
          GO TO 200
 C     *STEX
     9 CONTINUE
@@ -566,7 +570,7 @@ CMI ... read again the input
 !
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
@@ -690,7 +694,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& OPERATOR: Define operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPREXP)
+     &                        IPREXP)
                   CALL OP1IND('EXPINP',INDEXP,LEXPP,NEXPP,INDXPR,
      &                        MAXEXP)
                   DOEXP = .TRUE.
@@ -821,7 +825,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprinp */
       SUBROUTINE XPRINP(LUCMDX,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                  WORK,LWORK,IPRINT)
+     &                  IPRINT)
 C***********************************************************************
 C
 ! PURPOSE:
@@ -930,7 +934,7 @@ C
       PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
-      DIMENSION PFAC(3),WORK(LWORK)
+      DIMENSION PFAC(3)
       CHARACTER   PLABEL(3)*8, PNAME*16
       LOGICAL     CLABEL
 C
@@ -1015,7 +1019,6 @@ C
 C     ************************
 C     *** Specify operator ***
 C     ************************
-C
 C
 C     Read property name
 C     ==================
@@ -1561,9 +1564,9 @@ C
 CMI   ... assign key variables ...
       INDXPR = NPRPS
 C     Property name
-      PRPNAM(NPRPS)  = PNAME
+      PRPNAM(INDXPR)  = PNAME
 C     Property type
-      IPRPTYP(NPRPS) = IPTYP
+      IPRPTYP(INDXPR) = IPTYP
 C     Pointers to property labels
       IF(IPTYP.EQ.0) THEN
         DO 300 I = 1,NPRPLBL
@@ -1576,14 +1579,14 @@ C         Check property label
         NPRPLBL = NPRPLBL + 1
         INDX    = NPRPLBL
   400   CONTINUE      
-        FACPRP(1,NPRPS)  = PFAC(1)
-        IPRPLBL(1,NPRPS) = INDX
+        FACPRP(1,INDXPR)  = PFAC(1)
+        IPRPLBL(1,INDXPR) = INDX
         PRPLBL(INDX) = PLABEL(1)
         PDOINT(INDX) = PCOMB
       ELSE
 CMI     ... (IPTYP.NE.0) operator has more components
         DO 600 J = 1,NPCOMP
-          FACPRP(J,NPRPS)  = PFAC(J)
+          FACPRP(J,INDXPR)  = PFAC(J)
           INDX = INDXPL(PLABEL(J),PCOMB,IPRINT)
           IF (INDX .LE. 0) THEN
             INDXPR = -1
@@ -1998,30 +2001,21 @@ C     Electric field gradient at the individual nuclei, cartesian
 C
       ELSE IF(LABINT(3:5).EQ.'EFG') THEN
         CLASLB = 'ELFGRDC'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H2') THEN
         CLASLB = 'RM1H2'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H2') THEN
         CLASLB = 'RM2H2'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H3') THEN
         CLASLB = 'RM1H3'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H3') THEN
         CLASLB = 'RM2H3'
-
-CMI ...contributions from RDSUSLL term
       ELSE IF(LABINT(3:7).EQ.'RDSUL') THEN
         CLASLB = 'RDSUSLL'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1RN') THEN
         CLASLB = 'RM1RN'
-
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
       ELSE IF(LABINT(4:7).EQ.'RNST') THEN
         CLASLB = 'RM1N1H '
-
 CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
       ELSE IF(LABINT(1:6).EQ.'CAP_RE') THEN
         CLASLB = 'CAP_RE  '
@@ -2212,19 +2206,13 @@ C
         IPRLREP(NPRPLBL) = INTREP(ICMP)
 !       .....  
         IF(SQUARE) THEN
-C
 C       Non - symmetric operator
-C
           IPRLTYP(NPRPLBL) = 0
         ELSEIF(ANTI) THEN
-C
 C       Anti-symmetric operator
-C
           IPRLTYP(NPRPLBL) = -1
         ELSE
-C
 C       Symmetric operator
-C
           IPRLTYP(NPRPLBL) =  1
         ENDIF
       ENDDO
@@ -2257,21 +2245,13 @@ C     INDXPR in COMMON /DCBPRP/.
 C
 C     The routine assumes Hermitian operators and will therefore
 C     consider symmetric operators purely real and antisymmetric operators
-C     purely imaginary. Non-symmetric operators results in error and
-C     termination.
+C     purely imaginary. Non-symmetric operators are handled by a special routine
+C     which terminates in error if the exception has not been added.
 C   
-C     If an operators involves more than one label, the logical variable
-C     SAMSYM is used to check that the components have identical symmetry
-C     under space and time.
-C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
-C     - routine assumed general operators which can be symmetric, antisymm. 
-C       and square
-C     - removing the program stop when indeterminate symmetry of operator
-C     - print out
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2309,79 +2289,32 @@ C     Matrix operator, JM4REP(JM4(1,ITYP))
       IAREP    = JM4REP(IAIND)
 C     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
-C     Total point gropu symmetry of the operator, first component..
+C     Total point group symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
 C
 C     Time reversal symmetry
 C     ======================
 C
 C     Matrix operator :
-C - assign IATIM according to the 
-C  IAIND = JM4(1,ITYP) = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
-C  JM4 is assigned in abacus/hergroup.F
-C
-C JM4(1,ITYP) = 0 ... scalar operator
-C               4 ... gamma5 P
-C               16..18 ????
-C
-C Miro: for determination of IATIm why not not use rather ITYP ?
-C
-      SKIP_JM4 = .TRUE.
-!     SKIP_JM4 = .FALSE.
-
-CMI ... catch possible exotic IAND...
-      IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
-        CALL QUIT('quit here due to IAIND !')
-      ENDIF
-
-CMI  remove this part (THEN block) if everythink goes well and keep only ELSE branch
-      IF (.NOT.SKIP_JM4) THEN
-
-      IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
-     &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
-C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA, i*BETA*GAMMA5
-        IATIM = 1
-      ELSE
-C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
-        IATIM = -1
-      ENDIF
-
-CMI    exception for the i*BETA*GAMMA5 operator
-       IF (ITYP.EQ.21) THEN
-         IATIM=+1 !
-         WRITE(LUPRI,'(2X,A)')
-     &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
-      ENDIF
-
-      ELSE
-!  -------------------------------------------------------------------------------------------------
-!   Simplification: determine IATIM according to ITYP parameter
-!   (this part of the code (ELSE block) is to be kept for the future)
-!
-!  scalar , gamma5, beta, i*betagamma5  matrix operators have IATIM=+1, the rest has IATIM=-1
-!  --------------------------------------------------------------------------------------------------
-       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19.OR.ITYP.EQ.21) THEN
-        IATIM=+1
-       ELSE ! the rest ....
-        IATIM=-1
-       ENDIF
-
-      ENDIF
-
-C     Scalar operator
-      IBTIM    = IPRLTYP(IBIND)
+      IATIM = JM4TIM(IAIND)
+C     Scalar operator :
+C     Here we use the following indirect argument:
+C     The operator should be Hermitian, so if the scalar operator is
+C     symmetric about the diagonal, then it is real and time symmetric.
+C     If the scalar operator is anti-symmetric, then it is imaginary
+C     and time anti-symmetric
+C     However, if the operator has no symmetry about the diagonal 
+C     we can not use this argument and has to add exceptions
+      IBTIM = IPRLTYP(IBIND)
+      IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
       ICTIM(1) = IATIM*IBTIM
-
-      IF (IPRINT.GE.15) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
-        WRITE(LUPRI,'(2X,4(A,I2))')
-     &  'IAIND=JM4(1,ITYP)',IAIND,' IBIND=IPRLBL(INDXPR)',IBIND,
-     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
-        WRITE(LUPRI,'(2X,1(A,I2))')
-     &  'ICTIM(1)=',ICTIM(1)
+        WRITE(LUPRI,*) '* Operator type: ',ITYP
+        WRITE(LUPRI,*) '* First matrix operator ',IAIND,IAREP,IATIM
+        WRITE(LUPRI,*) '* First scalar operator ',IBIND,IBREP,IBTIM
       ENDIF
-
 C
 C     Check against other components of operator
 C     ==========================================
@@ -2392,12 +2325,11 @@ C     ==========================================
         IBREP       = IPRLREP(IBIND)
         ICREP(ILBL) = IBTXOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
-        IATIM       = -1
-        IF(IAIND.EQ.0) IATIM = 1
+        IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
+        IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
         ICTIM(ILBL) = IATIM*IBTIM
         DIFTIM      = DIFTIM.AND.(ICTIM(ILBL).NE.ICTIM(1))
-
         IF (IPRINT.GE.15) THEN
           WRITE(LUPRI,'(2X,4(A,I2))')
      &  'IAIND=JM4(ILBL,ITYP)',IAIND,' IBIND=IPRLBL(ILBL,INDXPR)',IBIND,
@@ -2433,15 +2365,13 @@ C
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 
-CMI   ... assign point group symemtry - only one !
+CMI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
 CMI   ... assign time rev.symmetry
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 
       IF (IPRINT.GE.15) THEN
-        !CALL HEADER('Output from PRPSYM',-1)
-
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
      &  ' and operator type (1-',NOPTYP,
@@ -3043,6 +2973,29 @@ C
 C
       CALL QEXIT('MINPRP')
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+      CHARACTER*8 PRPLBL
+      INTEGER ITIM
+      IF(PRPLBL(4:7).EQ.'RNST'.OR.
+     &   PRPLBL(3:7).EQ.'RM2H3'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUL'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUS'.OR.
+     &   PRPLBL(1:7).EQ.'d|S>/dB') THEN
+         ITIM = -1
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.
+     &   PRPLBL(4:7).EQ.'NSNL'.OR.
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.
+     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.
+     &   PRPLBL(2:6).EQ.'RM1RN') THEN
+         ITIM = +1
+      ELSE
+        WRITE(6,*) 'ISCALAROP_TSYM ERROR :',PRPLBL
+        CALL QUIT('ISCALAROP_TSYM: Can not assign ITIM')
+      ENDIF
+      ISCALAROP_TSYM=ITIM
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

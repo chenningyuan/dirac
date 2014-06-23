@@ -1,0 +1,11 @@
+Units = AU
+Medium {
+                Solvent = Water
+}
+
+Cavity {
+                Type = GePol
+                Area = 357.106482748
+		Scaling = False
+                Mode = Implicit
+}

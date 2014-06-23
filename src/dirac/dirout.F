@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -30,7 +30,7 @@ C
 C***********************************************************************
       use dirac_cfg
 #ifdef PCM_MODULE
-      use pcm_interface
+      use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif
 
 #ifdef MOD_PEQM
@@ -163,7 +163,7 @@ C            leave this to authors of this part) Done, hjaaj.
         if (dirac_cfg_pcm) then
           write(lupri,'(3X,A,'//FMT//')')
      +  'Solvation energy                         :   ',get_pcm_energy()
-        ENDIF
+        end if 
 #endif
 
 #ifdef MOD_PEQM
@@ -241,6 +241,12 @@ C     energy virtuals.
 C
       CALL CHKHLG(EIG,IBEIG)
 C
+#if defined (PCM_MODULE)
+      if (dirac_cfg_pcm) then
+              call pcm_scf_finalize
+       write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
+      end if
+#endif
       RETURN
 C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
@@ -1910,7 +1916,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow4 */
+C/* Deck selowi */
       SUBROUTINE SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C

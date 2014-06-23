@@ -1,52 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-DIR_DOC=$1
-DIR_BUILD=$2
+# previous bash-script translated to this Python form by Ivan Hrasko
 
-DIR_TEMP=$DIR_BUILD/html_temp
-DIR_FINAL=$DIR_BUILD/html
+import re, sys, os, shutil, fnmatch, fileinput, subprocess
 
-rm -rf $DIR_TEMP
-cp -rL $DIR_DOC $DIR_TEMP
+DIR_DOC = os.path.abspath(sys.argv[1])
+DIR_BUILD = os.path.abspath(sys.argv[2])
 
-for file in `find ${DIR_TEMP}/manual -type f -name \*.rst`; do
+DIR_TEMP = os.path.join(DIR_BUILD,'html_temp')
+DIR_FINAL = os.path.join(DIR_BUILD,'html')
 
-    # replace:
-    # keyword(RABOOF)
-    # by:
-    # .. index:: .RABOOF
-    # .. _RABOOF:
-    #
-    # .RABOOF
-    # -------
-    sed -i 's/keyword(\([a-zA-Z 0-9_]\+\))/\.\. index:: \.\1\n\.\. _\.\1:\n\n\.\1\n----------/g' $file
+shutil.rmtree(DIR_TEMP,ignore_errors=True)
+shutil.copytree(DIR_DOC,DIR_TEMP)
 
-    # replace:
-    # starstar(RABOOF)
-    # by:
-    # .. index:: **RABOOF
-    # .. _RABOOF:
-    #
-    # ==========
-    # \*\*RABOOF
-    # ==========
-    sed -i 's/starstar(\([a-zA-Z 0-9_]\+\))/\.\. index:: \*\*\1\n\.\. _\*\*\1:\n\n==========\n\\\*\\\*\1\n==========/g' $file
+for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
+    for filename in fnmatch.filter(files,'*.rst'):
+        
+        #! replace:
+        #! keyword(RABOOF)
+        #! by:
+        #! .. index:: .RABOOF
+        #! .. _RABOOF:
+        #!
+        #! .RABOOF
+        #! -------
+        for line in fileinput.input(os.path.join(root,filename),inplace=True):
+			print re.sub(r'keyword\(([a-zA-Z 0-9_]+)\)','.. index:: .\g<1>\n.. _.\g<1>:\n\n.\g<1>\n----------',
+                         line[0:len(line)-1])
 
-    # replace:
-    # star(RABOOF)
-    # by:
-    # .. index:: **RABOOF
-    # .. _RABOOF:
-    #
-    # ========
-    # \*RABOOF
-    # ========
-    sed -i 's/star(\([a-zA-Z 0-9_]\+\))/\.\. index:: \*\1\n\.\. _\*\1:\n\n==========\n\\\*\1\n==========/g' $file
+        #! replace:
+        #! starstar(RABOOF)
+        #! by:
+        #! .. index:: **RABOOF
+        #! .. _RABOOF:
+        #!
+        #! ==========
+        #! \*\*RABOOF
+        #! ==========
+        for line in fileinput.input(os.path.join(root,filename),inplace=True):
+			print re.sub(r'starstar\(([a-zA-Z 0-9_]+)\)','.. index:: **\g<1>\n.. _**\g<1>:\n\n==========\n\\*\\*\g<1>\n==========',
+                                      line[0:len(line)-1])
 
-done
+        #! replace:
+        #! star(RABOOF)
+        #! by:
+        #! .. index:: **RABOOF
+        #! .. _RABOOF:
+        #!
+        #! ========
+        #! \*RABOOF
+        #! ========
+        for line in fileinput.input(os.path.join(root,filename),inplace=True):
+			print re.sub(r'star\(([a-zA-Z 0-9_]+)\)','.. index:: *\g<1>\n.. _*\g<1>:\n\n==========\n\\*\g<1>\n==========',
+                         line[0:len(line)-1])
 
-sphinx-build -b html $DIR_TEMP $DIR_FINAL
-
-rm -rf $DIR_TEMP
-
-exit 0
+SPHINX_CALL = 'sphinx-build -b html ' + DIR_TEMP + ' ' + DIR_FINAL
+subprocess.call(SPHINX_CALL,shell=True)        
+shutil.rmtree(DIR_TEMP,ignore_errors=True)

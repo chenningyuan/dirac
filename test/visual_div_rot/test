@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'r_x           r_y           r_z            scalar',
+      num_lines   = 7,
+      rel_tolerance   = 1.0e-5)
+
+test.run(['response_1z_bz.inp'], ['co.mol'], args='--get="DFCOEF PAMXVC"')
+
+inp_files = []
+inp_files.append('visual_1z_bz.inp')
+inp_files.append('visual_1z_bz_only_para.inp')
+inp_files.append('visual_divj.inp')
+inp_files.append('visual_divs.inp')
+inp_files.append('visual_j.inp')
+inp_files.append('visual_jdia.inp')
+inp_files.append('visual_jpara.inp')
+inp_files.append('visual_rotj.inp')
+inp_files.append('visual_rots.inp')
+inp_files.append('visual_s.inp')
+
+test.run(inp_files, ['co.mol'], f, args='--copy="DFCOEF PAMXVC"')
+
+# cleanup
+os.unlink('DFCOEF')
+os.unlink('PAMXVC')
+
+sys.exit(test.return_code)

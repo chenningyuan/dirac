@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -42,11 +42,14 @@ C***********************************************************************
       use memory_allocator
       use num_grid_cfg
       use interface_functional_read
-      use x2cmod_cfg
       use xmlout
 #ifdef PCM_MODULE
       use pcmmod_cfg
       use pcm_write
+#endif
+      use x2cmod_cfg
+#ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
 #endif
 
 #include "implicit.h"
@@ -150,8 +153,6 @@ C
 
 C     Start the xml output and echo the input to the xml output
       if (doxml) then
-         ! Can't begin xml output earlier because we don't know if it's on or off
-         call xml_begin('run','type="dirac-run"') ! closed in dirac.F
          call xml_begin('program')
          call xml_begin('name')
          write(luxml,'(A)') 'dirac'
@@ -168,7 +169,6 @@ C     Start the xml output and echo the input to the xml output
             call xml_embed_formatted('MOLECULE.XYZ','dirac-xyz')
          end if
          call xml_end('input')
-         call xml_begin('output') ! closed in dirac.F
       endif
 
 C
@@ -196,7 +196,7 @@ C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
 C
-      CALL GETLAB(WORK,LWORK,IPREAD)
+      CALL GETLAB(IPREAD)
 C
 C     Define Hamiltonian
 C
@@ -213,6 +213,7 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *AooSOC
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -230,10 +231,30 @@ C
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
       end if
+!     consistency check for atomic oo-order SOC contributions
+#ifdef MOD_AOOSOC
+      if(aoomod)then
+        write(lupri,*) 'Information about the oo-order SOC module:'
+        write(lupri,*) '* atomic oo-order SOC module active'
+        x2c_2c_mmf_mos = .false.
+        if(x2cmod_mmf)then
+          write(lupri,*) '  - generate 2e-SRCs/SOCs to be added to'//
+     &                   ' the X2C Hamiltonian (of a molecule)'
+          x2c_add_amfi   = -1
+          x2c_2c_mmf_mos = .true.
+        else
+          write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
+        end if
+        if(.not.x2c)then
+          call quit(' aooSOC does not make sense in NON-2c '//
+     &      ' relativistic runs')
+        end if
+      end if
+#endif
 ! RDR Polarizable Continuum Model calculation
 #ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
-         call report_after_pcm_input()
+         call report_after_pcm_input(lupri)
       end if
 #endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
@@ -319,9 +340,10 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
-      LOGICAL   NOGENINP
+      LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
+#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
@@ -337,22 +359,22 @@ C
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
-C     Initialise NOGENINP
+C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP   = .FALSE.
+      USER_STOL  = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      SKIP2E = .FALSE.
-      LOWJACO = .FALSE.
-      LOGMEMGET = .FALSE.
-      DOQJACO  = .FALSE.
-      RKBIMP_PRJTHR = 1.0D-5
+      SKIP2E     = .FALSE.
+      LOWJACO    = .FALSE.
+      LOGMEMGET  = .FALSE.
+      DOQJACO    = .FALSE.
+      RKBIMP_PRJTHR = 2.0D-5
 C
-C     Look for 2c. Hamiltonians
+C     Look for 2c. Hamiltonians, MDIRAC and more
 C
       CALL HAMSCAN
-
 C
 C     Read menu file
 C     ==============
@@ -442,6 +464,7 @@ C&&&& PCMOUT: Write coefficients to formatted DFPCMO
   108    CONTINUE
 C&&& LINDEP: Thresholds for linear dependence (eigenvalues of overlap matrix)
             READ(LUCMD,*) STOL(1),STOL(2)
+            USER_STOL = .TRUE.
             GO TO 100
   109    CONTINUE
 C&&&& SPHTRA: Embed transformation to spherical harmonics in
@@ -517,6 +540,15 @@ ctec we require that it is a direct calculation
          IGTDIR = 1
          IDFLAG = 15
       ENDIF
+
+!     InteRest uses a different normalization of small component
+!     from Hermit, we must therefore correct STOL(2) in order to
+!     get the desired threshold for linear dependence in LOWDIN module.
+
+      if(mdirac .and. .not.USER_STOL)then
+!       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
+        STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
+      end if
 C
 C     Print section
 C     =============
@@ -688,10 +720,9 @@ C
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
      &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
      &             '.XMLOUT','.xxxxxx'/
+c     .XMLOUT can be removed after adapting the tests, is now always active
 C
       NOSFCRASH=.FALSE.
-c     no xml output unless .XMLOUT
-      LUXML = -1
 C
 C     Read menu file
 C     ==============
@@ -778,10 +809,8 @@ C&&&& OPTIMIZE: Geometry optimization
 C&&&& MINIMIZE: Geometry optimization (tsaue: retained for backwards compatibility)
             GO TO 111
  113     CONTINUE
-C&&& XMLOUT  : Write output in xml format to separate file
-         call xml_open_file('dirac.xml')
+C&&& XMLOUT  : Retained for backwards compatibility (lv: is now always on)
          GOTO 100
-
 !       xxxxxx keyword
  114     continue
          goto 100
@@ -882,6 +911,9 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
+#ifdef MOD_AOOSOC
+       use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -916,7 +948,7 @@ C
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
-     &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
+     &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
@@ -994,7 +1026,6 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-CTROND      NOQCDHF   = .FALSE.
       NOQCDHF   = .TRUE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
@@ -1006,6 +1037,8 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
+!     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+      if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
@@ -1499,8 +1532,8 @@ C&&& MAX MICRO ITERATIONS: Maximum number of micro iterations for QC-DHF
                   READ(LUCMD,*) MXMICRO
                GO TO 100
    34          CONTINUE
-C&&& NOQCDHF: No QC DHF
-                  NOQCDHF = .TRUE.
+C&&& 2NDOPT: activate second-order optimization if regular SCF does not converge
+                  NOQCDHF = .FALSE.
                GO TO 100
    35          CONTINUE
 C&&& SKIPEE: no e-e rotations in 2nd order optimization
@@ -1800,7 +1833,9 @@ C
          NFROT_DHF  = NFRO_DHF(1)  + NFRO_DHF(2)
          NELECT_DHF = NELEC_DHF(1) + NELEC_DHF(2)
       END IF
-      IF(NASHT_DHF.EQ.0) AOC = .FALSE.
+      IF(NASHT_DHF.EQ.0) THEN
+        AOC     = .FALSE.
+      ENDIF
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
@@ -2012,11 +2047,11 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          END IF
       END IF
 C
-      IF (NOPEN.GT.0.AND.ZORA) THEN
-          WRITE(LUPRI,'(A)')
-     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
-          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
-      ENDIF
+CTROND      IF (NOPEN.GT.0.AND.ZORA) THEN
+CTROND          WRITE(LUPRI,'(A)')
+CTROND     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
+CTROND          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
+CTROND      ENDIF
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
       WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
@@ -2290,7 +2325,6 @@ CMI =====================================================================
          x2c        = .false.
 !        keep the x2cmod_x2c value in order to identify to which module
 !        to switch in dirscf.F --> subroutine PSIDHF
-!        x2cmod_x2c = .false.
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'//
@@ -4002,7 +4036,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.POLTST','.POLNRM','.REMREF','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4028,9 +4062,8 @@ C     Default is to project all occupied vectors onto all fragment vectors
       OWNBAS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
-      POLTST = .FALSE.
+      MAYER  = .FALSE.
       POLNRM = .FALSE.
-      REMREF = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -4106,18 +4139,15 @@ C&&& POLREF: Polarize reference orbitals
                   POLREF = .TRUE.
                GO TO 100
  9             CONTINUE
-C&&& POLTST: Check if polarization contributions are spanned by
-C            polarizaed atomic orbitals
-                  POLTST = .TRUE.
-                  POLNRM = .TRUE.
+C&&& MAYER: Polarize reference orbitals according to Mayers scheme
+                  MAYER  = .TRUE.
+                  OWNBAS = .TRUE.
                GO TO 100
  10            CONTINUE
 C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
-C&&& REMREF: Project out reference orbitals from polarized orbitals
-                  REMREF = .TRUE.
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4169,6 +4199,19 @@ C
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
+      IF(POLREF) THEN
+          WRITE(LUPRI,'(1X,A)') '* Reference orbitals will be polarized'
+      ENDIF
+      IF(MAYER) THEN
+        IF(OWNBAS) THEN
+          CALL QUIT
+     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+        ELSE
+          WRITE(LUPRI,'(1X,A,A)')
+     &      '* Reference orbitals will be polarized according to ',
+     &      ' a modified Mayer scheme'
+        ENDIF
+      ENDIF
       IF(OWNBAS) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Fragments are calculated in their individual bases !',
@@ -4191,24 +4234,7 @@ C
             ENDIF
           ENDDO
         ENDDO
-        IF(POLREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Reference orbitals will be polarized'
-        ENDIF
-        IF(REMREF) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Project out reference orbitals from polarized ones.'
-        ENDIF
-        IF(POLTST) THEN
-          WRITE(LUPRI,'(1X,A)')
-     &      '* Test if polarization contributions are spanned by ',
-     &      ' polarized reference orbitals.'
-        ENDIF
       ELSE
-        IF(POLREF.OR.POLTST) THEN
-          CALL QUIT
-     &     ('ANAINP: Polarization only possible with SELOWN=T')
-        ENDIF
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
@@ -4555,11 +4581,14 @@ C***********************************************************************
 #ifdef PCM_MODULE
       use pcmmod_cfg
 #endif
+#ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 64,NDIR = 9)
+      PARAMETER (NTABLE = 68,NDIR = 10)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4591,7 +4620,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   '/
+     &             '*PCM   ','*aooSOC'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4624,7 +4653,9 @@ C
 !                   57        58        59        60
      &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.DOSSSS','.TRSMIX'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
+!                   65        66        67        68
+     &            '.TRSMIX','xxxxxxx','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4649,12 +4680,13 @@ C
       DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
-      MOLMF3  = .FALSE.
+      X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
+      MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
@@ -4773,7 +4805,7 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164),I
+     &                161,162,163,164,165,166,167,168),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4797,7 +4829,7 @@ C&&&& ONESYS: Ignore two-electron operator
   103    CONTINUE
 C&&&& OPERATOR: Read in additional  operator, the print level is IPRGEN from the section **GENERAL
            CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                 WORK,LWORK,IPRGEN)
+     &                 IPRGEN)
            N1OPER = N1OPER + 1
            IF(N1OPER.GT.MAX1OPER) THEN
              WRITE(LUPRI,'(A)')
@@ -5081,8 +5113,10 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
             READ(LUCMD,*) INI2C
             GO TO 100
   135     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
+#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5117,9 +5151,11 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& MIXVAC: Alternative definition of vacuum polarisation
              VACPOL = .TRUE.
              MIXVAC = .TRUE.
+#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5134,9 +5170,11 @@ C&&& NOVREF: Do not generate reference vacuum
              VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
+#ifdef MOD_UNRELEASED
 C&&& POSVAC: Use positronic vacuum polarisation
              VACPOL = .TRUE.
              POSVAC = .TRUE.
+#endif
              GO TO 100
 
 !         .FDE
@@ -5282,9 +5320,10 @@ CMI&& Activate 4c-2c MO transformation
           x2c                   = .true.
           x2cmod_x2c            = .true.
           x2cmod_mmf            = .true.
+          x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          MOLMF3                = .TRUE.
+          X2CMMF                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
@@ -5297,8 +5336,17 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
             DOLVC = .FALSE.
             GO TO 100
   164     CONTINUE
+C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
+            MDIRAC=.TRUE.
+C..TODO: check for inconsistencies and add stops
+  165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
           TRS_MIX = .TRUE.
+  166     CONTINUE
+          GO TO 100
+  167     CONTINUE
+          GO TO 100
+  168     CONTINUE
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5314,9 +5362,6 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
       if (dirac_cfg_fde) then
          call fde_input_init(lupri,'DIRAC.OUT')
       end if 
-      
-
-CMI   ... needed for output
       GAUNT_SAVE = GAUNT
 
 !     take care of the correct choice of the X2C module
@@ -5324,17 +5369,9 @@ CMI   ... needed for output
 !     1. X2C+spinfree
 !     2. X2C+compare eigenvalues 4c-Hamiltonian <--> 2c-Hamiltonian
       if(x2c.and.spinfr)then
-!       disable new x2c module
-        x2c        = .false.
-        x2cmod_x2c = .false.
-!       enable old bss/x2c module (AMFI flags are taken care of via ibss)
-        iotc       = .true.
-        bss        = .true.
-        noprtr     = .true.
-        ibss       = 2999
-        twocompbss = .true.
-        twocomp    = .true.
         isorder_amfi_x2c = -1
+        x2c_add_amfi     = -1
+!     X2C+compare eigenvalues 4c-Hamiltonian <--> 2c-Hamiltonian
       else if(x2c.and.cmpeig)then
         write(lupri,'(a/)')
      &  ' *** Warning: the .cmpeig option is not implemented in'//
@@ -5696,6 +5733,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
      &       '   - parameter NZ set to one'
+      ELSE IF(MDIRAC) THEN
+        WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
+        WRITE(LUPRI,'(A)') 
+     &    '   Switching to the INTEREST integral package (M. Repisky)'
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
@@ -5703,6 +5744,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
+#ifdef MOD_UNRELEASED
       IF (VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
         IF(MIXVAC) THEN
@@ -5718,7 +5760,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
      &      '- no reference vacuum generated.'
         ENDIF
       ENDIF
-
+#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
@@ -6240,7 +6282,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9), I
+               GO TO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6308,6 +6350,11 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+   10 continue
+      ! this is a cheat so that *aooSOC section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
 C
     1 CONTINUE
 
@@ -6319,7 +6366,7 @@ C
 #endif
 
       IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.and..not.DO4C2C)THEN
-         CALL AMFI_RELSCF_INP(WORD,.TRUE.)
+         if(.not.spinfr) CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
 C
  500  CONTINUE
@@ -6355,8 +6402,7 @@ C        MI/Febr 2006 Added nonrelativistic kinetic
 C                     energy integrals (TWOCOMP=.true)
 C
 C***********************************************************************
-
-      use dirac_cfg
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -6368,6 +6414,7 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
       logical is_2c_rel_run
+      type(fde_import) :: itmp
 
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
@@ -6416,15 +6463,18 @@ C     (static) embedding pontential
 C     =============================
 C
 C
-      IF (dirac_cfg_fde) THEN
-         PNAME            = 'static emb. potential '
-         IPTYP            = 1
-         NPCOMP           = 1
-         PFAC(1)          = D1
-         PLABEL(1)        = 'FDEVEMB '
-         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_vemb) then
+            PNAME         = 'static emb. potential '
+            IPTYP         = 1
+            NPCOMP        = 1
+            PFAC(1)       = D1
+            PLABEL(1)     = 'FDEVEMB '
+            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
-         IPVEMB0          = INDXPR
+            IPVEMB0       = INDXPR
+         endif
       ENDIF
 
 
@@ -6447,7 +6497,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 20 ! for the new definition
+        IPTYP            = 22 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -7041,6 +7091,7 @@ C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
+#ifdef blubb
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND.
      &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.is_2c_rel_run) THEN
          DOLVC = .TRUE.
@@ -7050,6 +7101,7 @@ C     Check for possible ways of correcting..
      &     "   Activated SCC method (.LVCORR), "//
      &     "see L. Visscher TCA 98 (1997) 68."
       ENDIF
+#endif
 C
 C     Check for C1 symmetry if localization requested
 C
@@ -7967,7 +8019,6 @@ C
       TWOCOMP_SAVE    = TWOCOMP
       TWOCOMPBSS_SAVE = TWOCOMPBSS
       CNTMAT_SAVE     = CNTMAT
-
 C
 C     Read menu file
 C     ==============
@@ -8006,6 +8057,7 @@ C............variable telling that this is a 2-component relativistic calculatio
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE.
          IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
            ISDO2C4C =.TRUE.

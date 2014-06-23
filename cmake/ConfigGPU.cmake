@@ -32,10 +32,9 @@ if(ENABLE_CUDA)
             if (ENABLE_CULA) # both CUDA & CULA present
                 # "CULA is built on NVIDIA CUDAand NVIDIA CUBLAS", but it can also be linked against  newer CUDA libraries
                 # miro: we have two linking possibilities, explore them
-                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CULA_BLAS} ${CULA_CUDART} blas lapack) # employ solely own stuff from CULA ...
-                #target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CULA} ${CULA_FORTRAN} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas lapack) # employ some stuff from CUDA
+                target_link_libraries(gpu_test.x fortran_cuda ${EXTERNAL_LIBS} ${CULA} ${CULA_FORTRAN} ${CULA_BLAS} ${CULA_CUDART} blas lapack) # employ solely own stuff from CULA ...
             else() # linking against sole CUDA
-                target_link_libraries(gpu_test.x fortran_cuda ${LIBS} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas)
+                target_link_libraries(gpu_test.x fortran_cuda ${EXTERNAL_LIBS} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} blas)
             endif()
         else()
             message("-- CUDA library found, but can not be used with 64-bit integers!")

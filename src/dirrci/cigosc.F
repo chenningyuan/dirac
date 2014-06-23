@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -137,6 +137,7 @@ C
       INTREP = MOD(NELACT,2)
       CALL PRTOUT(0,INTREP,CI(KHR),CI(KHI))
       CALL CPUUSED(SEC5)
+      WRITE (6,*)    '====================='
       WRITE (6,1020) SEC5-SEC
  1000 FORMAT(///1X,'GOSCIP (Version 1.8)'//
      &' Today is :',T15,A10/' The time is :',T17,A8//)
@@ -943,11 +944,11 @@ C
       IF (IRRP.EQ.0) THEN
 C        Even number of electrons, boson irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,0.0D0,1,
-     &                DS,N2*N5,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND,xxdummy,-1)
       ELSE
 C        Odd number of electrons, fermion irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,0.0D0,1,
-     &                DS,N2*N5,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND,xxdummy,-1)
       ENDIF
 C
  1000 FORMAT(F17.8)
@@ -1178,7 +1179,7 @@ C
      &                (indk(inz),indl(inz),inz=1,nz),
      &                (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
       ENDIF
-      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','N4A',nuniq+nz)
+      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','   N4A',nuniq+nz)
       If (ikr.EQ.0) GoTo 40 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
 C-->  K|ia> = |ib> ; K|ib> = - |ia>
@@ -1315,7 +1316,7 @@ C
       OPEN(MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
       READ(MRCONEE) NSPACT,BREIT,ECORE,NFSYM,NZ,SPINFR
       REALAR = NZ .EQ. 1 .OR. SPINFR
-      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','N1',NSPACT)
+      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','    N1',NSPACT)
       READ(MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ(MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
       READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)

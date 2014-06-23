@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -732,7 +732,7 @@ C
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
                            IF (IOS.NE.0) THEN
-                             CALL QUIT('Error in reading sjjd393jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                            ENDIF
                            IF (IPRINT.GE.6) THEN
                              WRITE(LUPRI,*) 
@@ -919,20 +919,20 @@ C
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                              J - 1 + MAXEXP)
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading skdsjdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                ELSE
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                    J - 1 + MOD(INTEXP,MAXEXP))
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading s233jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                END IF
             ELSE
                READ (LUBAS,*,IOSTAT=IOS) 
      &         (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
                IF (IOS.NE.0) THEN
-                  CALL QUIT('error in reading 2s2adjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                ENDIF
             END IF
             J = J + MAXEXP
@@ -941,7 +941,7 @@ C
             READ (LUBAS,*,IOSTAT=IOS) 
      &       (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
             IF (IOS.NE.0) THEN
-              CALL QUIT('error in reading assjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
          END DO
       ELSE
@@ -1576,7 +1576,7 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          ELSE
             READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
             IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading ... ssjdjncncbhd')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
             IF (IPRINT.GE.10) THEN
              write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'

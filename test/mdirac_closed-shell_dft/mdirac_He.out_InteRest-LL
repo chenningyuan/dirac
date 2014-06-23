@@ -1,0 +1,1475 @@
+DIRAC pam run in /home/repisky/devel/latest/dirac-git-repo/test/mdirac_closed-shell_dft
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe,            Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeing University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe,            Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ 
+ 
+Compilation info
+----------------
+ 
+ System                   | Linux-2.6.38-11-generic
+ Processor                | i686
+ Internal math            | OFF
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/ia32/ifort
+ Fortran compiler version | ifort (IFORT) 12.0.4 20110427
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2
+ C flags                  |   -O0 -g3
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_c
+                          | ore.so;/opt/intel/mkl/lib/ia32/libmkl_intel.so;/op
+                          | t/intel/mkl/lib/ia32/libmkl_sequential.so;-Wl,--en
+                          | d-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/ia32/libmkl_l
+                          | apack95.a;-Wl,--end-group
+ Configuration time       | 2011-09-18 18:08:31.953493
+ Last commit rev          | 761858113b40f51ba60d2749eacd03153fd29a71
+ Last commit author       | Michal Repisky 
+ Last commit time         | Sun Sep 18 16:55:05 2011 +0200
+
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Fri Sep 23 15:26:15 2011
+     Host name              :                                         
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.WAVE F                                                                                             
+!.INPTES                                                                                            
+**GENERAL                                                                                           
+! We do not transform to spherical Cartesians                                                       
+.SPHTRA                                                                                             
+ 0 0                                                                                                
+**HAMILTONIAN                                                                                       
+!.ONESYS                                                                                            
+.MDIRAC                                                                                             
+!.LVCORR                                                                                            
+.PRINT                                                                                              
+5                                                                                                   
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONT                                                                                             
+.PRINT                                                                                              
+2                                                                                                   
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*DHFCAL                                                                                             
+.NOBNCR                                                                                             
+**END OF                                                                                            
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+He atom                                                                                             
+                                                                                                    
+C   1   0                                                                                           
+      2.    1                                                                                       
+He      0.0      0.0       0.0                                                                      
+LARGE BASIS 6-31G                                                                                   
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+ Print level in READIN:    2
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  He atom                                                                 
+                                                                          
+
+  Nuclear Gaussian exponent for atom of charge   2.000 :    1.1671538870D+09
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  He          1       2       4       4      L  - [4s|4s]                                                        
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                              4       4      L  - large components
+                              0       0      S  - small components
+  ----------------------------------------------------------------------
+  total:      1       2       4       4
+
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+                                Output from CAPOUT
+                                ------------------
+
+  Preparing formatted file "CAPINT.inp" for the CAP module.
+           1   38.4216340000000        1.00000000000000     
+           1   5.77803000000000        1.00000000000000     
+           1   1.24177400000000        1.00000000000000     
+           1  0.297964000000000        1.00000000000000     
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  CAPWRIBAS2: Contracted Orbitals again
+  -------------------------------------
+
+   1  He      s      1
+   2  He      s      2
+   3  He      s      3
+   4  He      s      4
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements                             References                                
+   --------                             ----------                                
+    H - He:  W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,         
+   Li - Ne:  2257 (1972). Note: Li and B come from J.D. Dill and J.A.             
+             Pople, J. Chem. Phys. 62, 2921 (1975).                               
+   Na - Ar:  M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon,      
+             D.J. DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982)          
+   K  - Zn:  V. Rassolov, J.A. Pople, M. Ratner and T.L. Windus, J. Chem. Phys.   
+             109, 1223 (1998)                                                     
+   **                                                                             
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   He       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    1
+ 
+He     0.0000000000   0.0000000000   0.0000000000
+  Nuclear repulsion energy :    0.000000000000
+
+
+                              Large Components Basis
+                              ----------------------
+
+
+
+  Orbital exponents and contraction coefficients
+  ----------------------------------------------
+
+
+  He     s      1  3.8421634000D+01    1.0000  0.0000  0.0000  0.0000
+   seg. cont.   2  5.7780300000D+00    0.0000  1.0000  0.0000  0.0000
+                3  1.2417740000D+00    0.0000  0.0000  1.0000  0.0000
+                4  2.9796400000D-01    0.0000  0.0000  0.0000  1.0000
+
+
+  Contracted Orbitals
+  -------------------
+
+   1  He      s      1
+   2  He      s      2
+   3  He      s      3
+   4  He      s      4
+
+
+ debug: nbasiaux =           0
+
+
+ Copy of input to READIN
+ -----------------------
+
+INTGRL                                                                          
+He atom                                                                         
+                                                                                
+C   1   0                                                                       
+      2.    1                                                                   
+He      0.0      0.0       0.0                                                  
+LARGE BASIS 6-31G                                                               
+
+
+
+
+                            **************************
+                            *** Output from SETDC1 ***
+                            **************************
+
+   Irrep  NTBAS  NBASL  NBASS  IBASL  IBASS 
+   -----------------------------------------
+   1  A        8      4      4      0      4
+   -----------------------------------------
+   Frep 1      8      4      4
+   -----------------------------------------
+   Total       8      4      4    Max      4
+
+   NNBBAST =     36  NNBBASX     36
+
+* Matrix offsets to symmetry
+
+ blocks (I2BBASX):
+   A    A    L  L           0   A    A    S  L           4   A    A    L  S          32   A    A    S  S          36
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    5
+ * Modified Dirac-Coulomb Hamiltonian
+   Switching to the INTEREST integral package (M. Repisky)
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Non-standard RKB projection:
+   1: Cartesian large components
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+GETCLS called for LABINT=OVERLAP 
+        assigned  CLASLB=OVERLAP
+
+  ** XPLDE1 before PR1DIR calling
+  INTTYP=***
+ CLASLB=OVERLAP
+ PLABEL=OVERLAP 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+
+  *** XPLDE1 after PR1DIR calling ***
+  INTTYP=  1
+ CLASLB=OVERLAP
+ PLABEL=OVERLAP 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+ NOPTYP=           1
+ LABINT(1-NOPTYP):           1 OVERLAP 
+
+GETCLS called for LABINT=XDIPVEL 
+        assigned  CLASLB=DIPVEL 
+
+  ** XPLDE1 before PR1DIR calling
+  INTTYP=***
+ CLASLB=DIPVEL 
+ PLABEL=XDIPVEL 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+
+  *** XPLDE1 after PR1DIR calling ***
+  INTTYP=  3
+ CLASLB=DIPVEL 
+ PLABEL=XDIPVEL 
+ ANTI= T
+ SQUARE= F
+ TRIANG= T
+ NOPTYP=           3
+ LABINT(1-NOPTYP):           1 XDIPVEL 
+ LABINT(1-NOPTYP):           2 YDIPVEL 
+ LABINT(1-NOPTYP):           3 ZDIPVEL 
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+ WARNING: *DHFCAL is deprecated, please use *SCF instead
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =   2
+   Charge of molecule    =   0
+   i.e. no. of electrons =   2
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    2 electrons in
+       1 orbitals in Fermion irrep 1
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+   SS-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+ 
+  Integral module InteRest is initialized
+  Last commit rev         | fc778f18ce5cae6d5d66d0b7f2f10b60b5fb1f63
+  Last commit author      | Michal Repisky 
+  Last commit time        | Sun Sep 18 15:09:00 2011 +0200
+ 
+  i =   1    index  =   1    offset =   0    lvalue =   1    origin =   1    norm =     0.10999D+02    exponent =     0.38422D+02    coefficient =     0.10999D+02
+  i =   2    index  =   2    offset =   1    lvalue =   1    origin =   1    norm =     0.26561D+01    exponent =     0.57780D+01    coefficient =     0.26561D+01
+  i =   3    index  =   3    offset =   2    lvalue =   1    origin =   1    norm =     0.83838D+00    exponent =     0.12418D+01    coefficient =     0.83838D+00
+  i =   4    index  =   4    offset =   3    lvalue =   1    origin =   1    norm =     0.28743D+00    exponent =     0.29796D+00    coefficient =     0.28743D+00
+ 
+  Total number of basis function shells:        4
+  Total number of spherical basis functions:    4
+  Total number of cartesian basis functions:    4 (used for calculation)
+ 
+
+
+                            **************************
+                            *** Output from LOWDI1 ***
+                            **************************
+
+
+
+                         GTOVLT: Overlap (metric) matrix:
+                         --------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       1.00000000     0.55358366     0.20555297     0.07306400     0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.55358366     1.00000000     0.66669052     0.28384201     0.00000000     0.00000000     0.00000000     0.00000000
+       3       0.20555297     0.66669052     1.00000000     0.70231108     0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.07306400     0.28384201     0.70231108     1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000     0.00153450     0.00022210     0.00001975     0.00000173
+       6       0.00000000     0.00000000     0.00000000     0.00000000     0.00022210     0.00023077     0.00005443     0.00000642
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.00001975     0.00005443     0.00004959     0.00001348
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.00000173     0.00000642     0.00001348     0.00001190
+ ==== End of matrix output ====
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 1.4D-01
+
+
+                  LOWGEN: Eigenvalues in Lowdin diagonalization:
+                  ----------------------------------------------
+
+
+              Column   1
+       1       2.29898780
+       2       1.11101609
+       3       0.45454094
+       4       0.13545516
+ ==== End of matrix output ====
+   L   A     * Deleted:          0
+       LOWGEN: Smallest ".LINDEP" test value of a kept orbital: 6.8D-06
+
+
+                  LOWGEN: Eigenvalues in Lowdin diagonalization:
+                  ----------------------------------------------
+
+
+              Column   1
+       1       0.00157184
+       2       0.00021030
+       3       0.00003780
+       4       0.00000684
+ ==== End of matrix output ====
+   S   A     * Deleted:          0
+
+
+              LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks)
+              -----------------------------------------------------
+
+   *** fermion corep 1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.23528361    -0.66826385    -0.85153174     0.58897032     0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.36703957    -0.30719563     0.79723160    -1.47960564     0.00000000     0.00000000     0.00000000     0.00000000
+       3       0.39018317     0.27762681     0.40472865     1.90177232     0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.30439237     0.53108812    -0.82190755    -1.10890033     0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000    24.87652917   -11.16538596    -5.19929436    -2.55191188
+       6       0.00000000     0.00000000     0.00000000     0.00000000     4.13919859    64.69293339    48.16671691    27.73520853
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.47119640    20.82605747  -142.18180058  -145.31024696
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.04863650     3.41282367   -62.41517518   352.63306671
+ ==== End of matrix output ====
+ GMOTRA: branch URKBAL
+ NESH(IFRP),NPSH(IFRP)           4           4
+
+
+                           *** Output from MKSAOMO ***
+                           ---------------------------
+
+  NZ=4 >>>> Dirac uses NZT=1
+  TWOC=.false. => Used four-component mode
+  ifsym=1/1 NFBAS(I,0)=  8
+  >>>> NPSH(I)=  4 NESH(I)=  4 NTMO(I)=  8 - NORB(I)=  8>>> used NREF=  8
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):     4
+No. of negative energy orbitals (NPSH):     4
+Total no. of orbitals           (NORB):     8
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+
+ ONEFCK: One-electron Fock matrix from the modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)
+ --------------------------------------------------------------------------------------------------
+
+ InteRest done one-electron Fock matrix
+
+
+ ONEFCK: One-electron Fock matrix from the modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)
+ --------------------------------------------------------------------------------------------------
+
+* Fermion ircop no.1/1
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1     -19.78280946    -8.30572978    -2.92148604    -1.02601552    57.63245100     8.34144266     0.74177701     0.06480873
+       2      -8.30572978    -7.67167063    -3.98631697    -1.57895736     8.34144266     8.66704500     2.04429188     0.24128159
+       3      -2.92148604    -3.98631697    -3.55648789    -1.96669942     0.74177701     2.04429188     1.86266100     0.50630277
+       4      -1.02601552    -1.57895736    -1.96669942    -1.74213558     0.06480873     0.24128159     0.50630277     0.44694600
+       5      57.63245100     8.34144266     0.74177701     0.06480873   -57.65268885    -8.34366415    -0.74196415    -0.06482488
+       6       8.34144266     8.66704500     2.04429188     0.24128159    -8.34366415    -8.66822524    -2.04450885    -0.24130542
+       7       0.74177701     2.04429188     1.86266100     0.50630277    -0.74196415    -2.04450885    -1.86277859    -0.50632794
+       8       0.06480873     0.24128159     0.50630277     0.44694600    -0.06482488    -0.24130542    -0.50632794    -0.44695982
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+
+########## START ITERATION NO.   1 ##########   Fri Sep 23 15:26:15 2011
+
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -6.911195D+00   5.935289D+00   2.437077D+00  -8.399910D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.935289D+00  -1.130662D+01  -6.811952D+00   2.180059D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.437077D+00  -6.811952D+00  -8.320297D+00   3.619544D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.399910D-01   2.180059D+00   3.619544D+00  -3.843330D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9524462159
+    2        -37575.3963614512
+    3        -37562.4670876983
+    4        -37559.1187414067
+    5            -1.9943689968
+    6            -0.1476649998
+    7             6.3145606505
+    8            59.2399529322
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00971038    -0.00807265     0.00488425     0.00181744    -0.95361171    -0.07546923    -0.24194210    -0.16188425
+       2      -0.02601837     0.01021292     0.00039389     0.00202853    -0.28371179     0.53352370     0.60074223     0.52266942
+       3      -0.03056654    -0.00408849     0.00456187    -0.00173110    -0.06204545    -0.71743796     0.00354766     0.69314191
+       4       0.01896328     0.01251345     0.00500289    -0.00080298    -0.07892853    -0.44146145     0.76172732    -0.46702430
+       5      -0.95396143     0.29298843    -0.04682425    -0.00458738    -0.00286995    -0.00227816    -0.00850679    -0.04261476
+       6       0.28313296     0.85352675    -0.43120499    -0.07041036    -0.00555229    -0.00491375    -0.01274432     0.01466460
+       7       0.08477624     0.41091681     0.79910725     0.43042180     0.00372745     0.00207778    -0.00930014     0.00450985
+       8       0.02326228     0.12827496     0.41620607    -0.89985963    -0.00014378     0.00421433    -0.00322885     0.00116155
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+It.   1    -3.988737993613      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Fri Sep 23
+
+########## START ITERATION NO.   2 ##########   Fri Sep 23 15:26:15 2011
+
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -5.345617D+00   5.154596D+00   2.408052D+00  -8.991595D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.154596D+00  -8.691771D+00  -6.019941D+00   2.263527D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.408052D+00  -6.019941D+00  -5.882103D+00   2.868308D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.991595D-01   2.263527D+00   2.868308D+00  -1.878478D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9451063348
+    2        -37575.3954674973
+    3        -37562.4669883333
+    4        -37559.1187302262
+    5            -0.7994377825
+    6             1.2003421790
+    7             8.8403825045
+    8            62.7463209773
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00970943    -0.00807211     0.00488406     0.00181739    -0.92740777    -0.20329192    -0.26773862    -0.16345236
+       2      -0.02601575     0.01021214     0.00039388     0.00202848    -0.37035156     0.45001471     0.61890674     0.52582845
+       3      -0.03056364    -0.00408814     0.00456170    -0.00173106     0.04657704    -0.71707384    -0.04116797     0.69351729
+       4       0.01896178     0.01251264     0.00500271    -0.00080296    -0.02336680    -0.49183977     0.73704689    -0.46235022
+       5      -0.95396118     0.29299002    -0.04682331    -0.00458707    -0.00235173    -0.00222282    -0.00843687    -0.04265907
+       6       0.28313403     0.85352650    -0.43120511    -0.07040892    -0.00455047    -0.00493365    -0.01320824     0.01459011
+       7       0.08477762     0.41091596     0.79910765     0.43042162     0.00351636     0.00314795    -0.00910545     0.00445479
+       8       0.02326296     0.12827592     0.41620530    -0.89985983    -0.00072665     0.00432526    -0.00300292     0.00114034
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   2 ##########   Fri Sep 23 15:26:15 2011
+
+It.   2    -2.743450231444     -1.25D+00  2.61D+00  7.52D-01               0.00000000s   LL SL SS       Fri Sep 23
+
+########## START ITERATION NO.   3 ##########   Fri Sep 23 15:26:15 2011
+
+    3 *** Differential density matrix. DCOVLP     = 0.8671
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -5.474195D+00   5.221155D+00   2.485715D+00  -8.768328D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.221155D+00  -9.014056D+00  -6.167808D+00   2.272427D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.485715D+00  -6.167808D+00  -6.129889D+00   3.001668D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.768328D-01   2.272427D+00   3.001668D+00  -2.034398D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9460941276
+    2        -37575.3955474195
+    3        -37562.4669901108
+    4        -37559.1187315030
+    5            -0.9104253973
+    6             1.1653280345
+    7             8.6012207249
+    8            62.2779865391
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00970957    -0.00807215     0.00488407     0.00181740    -0.92419301    -0.21960217    -0.26622054    -0.16304046
+       2      -0.02601612     0.01021221     0.00039389     0.00202848    -0.37714476     0.44810309     0.61682847     0.52507398
+       3      -0.03056403    -0.00408817     0.00456170    -0.00173106     0.05791314    -0.71651231    -0.03567083     0.69354819
+       4       0.01896196     0.01251272     0.00500271    -0.00080296    -0.01539857    -0.48736951     0.73962123    -0.46330605
+       5      -0.95396128     0.29298959    -0.04682353    -0.00458709    -0.00232269    -0.00231340    -0.00847619    -0.04264862
+       6       0.28313372     0.85352649    -0.43120532    -0.07040893    -0.00447550    -0.00509018    -0.01315545     0.01460744
+       7       0.08477732     0.41091627     0.79910766     0.43042136     0.00346357     0.00314402    -0.00912145     0.00446631
+       8       0.02326283     0.12827592     0.41620505    -0.89985995    -0.00079566     0.00429377    -0.00302899     0.00114437
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   3 ##########   Fri Sep 23 15:26:15 2011
+
+It.   3    -2.854325073214      1.11D-01 -3.05D-01  6.31D-02   DIIS   2    0.00000000s   LL SL SS       Fri Sep 23
+
+########## START ITERATION NO.   4 ##########   Fri Sep 23 15:26:15 2011
+
+    4 *** Differential density matrix. DCOVLP     = 1.0030
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -5.479957D+00   5.225676D+00   2.488366D+00  -8.736582D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.225676D+00  -9.026831D+00  -6.171361D+00   2.272588D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.488366D+00  -6.171361D+00  -6.140449D+00   3.006709D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.736582D-01   2.272588D+00   3.006709D+00  -2.041514D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9461300814
+    2        -37575.3955518076
+    3        -37562.4669901394
+    4        -37559.1187315650
+    5            -0.9140979779
+    6             1.1617300206
+    7             8.5894001370
+    8            62.2609048553
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00970957    -0.00807215     0.00488407     0.00181740    -0.92406197    -0.22057621    -0.26587948    -0.16302492
+       2      -0.02601613     0.01021221     0.00039389     0.00202848    -0.37738985     0.44802158     0.61675409     0.52505481
+       3      -0.03056404    -0.00408817     0.00456170    -0.00173106     0.05857337    -0.71647590    -0.03534667     0.69354696
+       4       0.01896197     0.01251273     0.00500271    -0.00080296    -0.01474871    -0.48705790     0.73982151    -0.46333509
+       5      -0.95396128     0.29298958    -0.04682354    -0.00458709    -0.00232313    -0.00231915    -0.00847615    -0.04264832
+       6       0.28313371     0.85352650    -0.43120531    -0.07040893    -0.00447424    -0.00510014    -0.01315146     0.01460795
+       7       0.08477731     0.41091627     0.79910766     0.43042137     0.00345821     0.00314322    -0.00912360     0.00446664
+       8       0.02326282     0.12827591     0.41620506    -0.89985995    -0.00080046     0.00429170    -0.00303061     0.00114450
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   4 ##########   Fri Sep 23 15:26:15 2011
+
+It.   4    -2.855361662257      1.04D-03 -2.89D-02  5.76D-03   DIIS   3    0.00000000s   LL SL SS       Fri Sep 23
+
+########## START ITERATION NO.   5 ##########   Fri Sep 23 15:26:15 2011
+
+    5 *** Differential density matrix. DCOVLP     = 1.0002
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -5.480050D+00   5.225617D+00   2.488422D+00  -8.736368D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.225617D+00  -9.026846D+00  -6.171427D+00   2.272593D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.488422D+00  -6.171427D+00  -6.140424D+00   3.006745D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.736368D-01   2.272593D+00   3.006745D+00  -2.041506D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9461302226
+    2        -37575.3955518014
+    3        -37562.4669901361
+    4        -37559.1187315656
+    5            -0.9142223592
+    6             1.1618370262
+    7             8.5894096965
+    8            62.2608383912
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00970957    -0.00807215     0.00488407     0.00181740    -0.92405912    -0.22058820    -0.26587946    -0.16302487
+       2      -0.02601613     0.01021221     0.00039389     0.00202848    -0.37739557     0.44801419     0.61675613     0.52505461
+       3      -0.03056404    -0.00408817     0.00456170    -0.00173106     0.05858332    -0.71647493    -0.03534901     0.69354700
+       4       0.01896197     0.01251273     0.00500271    -0.00080296    -0.01474123    -0.48706069     0.73981971    -0.46333528
+       5      -0.95396128     0.29298958    -0.04682354    -0.00458709    -0.00232311    -0.00231915    -0.00847616    -0.04264831
+       6       0.28313371     0.85352650    -0.43120531    -0.07040893    -0.00447418    -0.00510016    -0.01315147     0.01460796
+       7       0.08477731     0.41091627     0.79910766     0.43042137     0.00345816     0.00314330    -0.00912359     0.00446664
+       8       0.02326282     0.12827591     0.41620506    -0.89985995    -0.00080052     0.00429170    -0.00303060     0.00114450
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   5 ##########   Fri Sep 23 15:26:15 2011
+
+It.   5    -2.855366148053      4.49D-06 -1.30D-03  5.32D-05   DIIS   4    0.00000000s   LL SL SS       Fri Sep 23
+
+########## START ITERATION NO.   6 ##########   Fri Sep 23 15:26:15 2011
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+
+
+              DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized
+              ------------------------------------------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1    -5.480049D+00   5.225618D+00   2.488422D+00  -8.736368D-01   4.469475D+02   2.391791D+02  -8.235932D+01   1.546594D+01
+       2     5.225618D+00  -9.026846D+00  -6.171427D+00   2.272593D+00  -1.047213D+03  -3.805032D+01  -1.191580D+02   3.598638D+01
+       3     2.488422D+00  -6.171427D+00  -6.140425D+00   3.006745D+00  -1.046832D+03   5.268652D+02   5.192801D+01  -8.330209D+01
+       4    -8.736368D-01   2.272593D+00   3.006745D+00  -2.041507D+00   5.531143D+02  -5.250277D+02  -3.910944D+02  -1.823229D+02
+       5     4.469475D+02  -1.047213D+03  -1.046832D+03   5.531143D+02  -3.757074D+04   1.708402D+00   5.933859D-01   2.716474D-01
+       6     2.391791D+02  -3.805032D+01   5.268652D+02  -5.250277D+02   1.708402D+00  -3.756255D+04  -9.319707D-01  -3.341324D-01
+       7    -8.235932D+01  -1.191580D+02   5.192801D+01  -3.910944D+02   5.933859D-01  -9.319707D-01  -3.755995D+04  -5.149373D-01
+       8     1.546594D+01   3.598638D+01  -8.330209D+01  -1.823229D+02   2.716474D-01  -3.341324D-01  -5.149373D-01  -3.755890D+04
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+
+                  DFDIAG: Eigenvalues (normal diagonalization) :
+                  ----------------------------------------------
+
+   *** Fermion corep 1/1
+
+    1        -37648.9461302231
+    2        -37575.3955518017
+    3        -37562.4669901361
+    4        -37559.1187315655
+    5            -0.9142211819
+    6             1.1618355858
+    7             8.5894089065
+    8            62.2608380812
+
+
+                              DFDIAG: Eigenvectors :
+                              ----------------------
+
+   *** Fermion corep 1/1
+
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+              Column   1    Column   2    Column   3    Column   4    Column   5    Column   6    Column   7    Column   8
+       1       0.00970957    -0.00807215     0.00488407     0.00181740    -0.92405915    -0.22058811    -0.26587943    -0.16302487
+       2      -0.02601613     0.01021221     0.00039389     0.00202848    -0.37739551     0.44801427     0.61675611     0.52505461
+       3      -0.03056404    -0.00408817     0.00456170    -0.00173106     0.05858324    -0.71647494    -0.03534897     0.69354700
+       4       0.01896197     0.01251273     0.00500271    -0.00080296    -0.01474128    -0.48706064     0.73981974    -0.46333528
+       5      -0.95396128     0.29298958    -0.04682354    -0.00458709    -0.00232311    -0.00231915    -0.00847616    -0.04264831
+       6       0.28313371     0.85352650    -0.43120531    -0.07040893    -0.00447418    -0.00510016    -0.01315147     0.01460796
+       7       0.08477731     0.41091627     0.79910766     0.43042137     0.00345816     0.00314330    -0.00912359     0.00446664
+       8       0.02326282     0.12827591     0.41620506    -0.89985995    -0.00080052     0.00429170    -0.00303060     0.00114450
+ ==== End of matrix output ====
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B real part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+
+*** B imag part ***; NROW,NCOL,LRQ,LCQ:   8   8   8   8
+
+
+     Zero matrix.
+ ==== End of matrix output ====
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   6 ##########   Fri Sep 23 15:26:15 2011
+
+It.   6    -2.855366148777      7.24D-10 -2.50D-05  5.03D-07   DIIS   5    0.00000000s   LL SL SS       Fri Sep 23
+
+########## START ITERATION NO.   7 ##########   Fri Sep 23 15:26:15 2011
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+ Entering InteRest two-electron Fock matrix part
+ nz =            4 nfmat =            1
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00400000s
+
+########## END ITERATION NO.   7 ##########   Fri Sep 23 15:26:15 2011
+
+It.   7    -2.855366148777      4.80D-14  2.27D-07  1.74D-09   DIIS   5    0.00400000s   LL SL SS       Fri Sep 23
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -3.988737993613      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Bare nuclei    Fri Sep 23
+It.   2    -2.743450231444     -1.25D+00  2.61D+00  7.52D-01               0.00000000s   LL SL SS       Fri Sep 23
+It.   3    -2.854325073214      1.11D-01 -3.05D-01  6.31D-02   DIIS   2    0.00000000s   LL SL SS       Fri Sep 23
+It.   4    -2.855361662257      1.04D-03 -2.89D-02  5.76D-03   DIIS   3    0.00000000s   LL SL SS       Fri Sep 23
+It.   5    -2.855366148053      4.49D-06 -1.30D-03  5.32D-05   DIIS   4    0.00000000s   LL SL SS       Fri Sep 23
+It.   6    -2.855366148777      7.24D-10 -2.50D-05  5.03D-07   DIIS   5    0.00000000s   LL SL SS       Fri Sep 23
+It.   7    -2.855366148777      4.80D-14  2.27D-07  1.74D-09   DIIS   5    0.00400000s   LL SL SS       Fri Sep 23
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    7 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL SS     :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -2.8553661487768620
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     0.0000000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -2.8553661487768620
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+ -0.91422118194038  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+  1.16183558575054  ( 2)     8.58940890649342  ( 2)    62.26083808117868  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     1.16183559 au (symmetry E1 )
+  - E(HOMO) :    -0.91422118 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     2.07605677 au
+
+
+ 
+     Date and time (Linux)  : Fri Sep 23 15:26:15 2011
+     Host name              :                                         
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :       488.00
+  
+  Largest           1  allocations
+  
+      488.28 Mb at subroutine                                            for work array at main                        
+  
+  Peak memory usage    (Mb) :       488.00
+       reached at subroutine :                                           
+              for variable   : work array at main                        
+  
+ MEMGET high-water mark:     0.02 MB
+
+*****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 1949, majflt: 0, nvcsw: 1, nivcsw: 6, maxrss: 7336
+>>>> Total WALL time used in DIRAC: 0s
