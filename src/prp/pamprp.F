@@ -9542,10 +9542,7 @@ C
           END IF
         END IF
       END DO
-!iaa REVISAR x q no se puede sacar este write!!
-      write(lupri,*) ''
-!
-      CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRPRP)
+      CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,NCMAT,IPRPRP)
 C
 C--------------------------------------------------------------------
 C
@@ -9772,7 +9769,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diaspr */
-      SUBROUTINE DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,IPRINT)
+      SUBROUTINE DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,NCMAT,IPRINT)
 C***********************************************************************
 C
 C     Routine for calculating the diamagnetic contribution to the
@@ -9820,27 +9817,27 @@ C
       NATOM = 1
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               COORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-     &               - CMXYZ(1)
-               COORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-     &               - CMXYZ(2)
-               COORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
-     &               - CMXYZ(3)
-               SPRDNL(1,1,NATOM) = (ELFLD(2,NATOM)*COORY
-     &                           +  ELFLD(3,NATOM)*COORZ)
-               SPRDNL(2,2,NATOM) = (ELFLD(1,NATOM)*COORX
-     &                           +  ELFLD(3,NATOM)*COORZ)
-               SPRDNL(3,3,NATOM) = (ELFLD(1,NATOM)*COORX
-     &                           +  ELFLD(2,NATOM)*COORY)
-               SPRDNL(1,2,NATOM) =  ELFLD(2,NATOM)*COORX
-               SPRDNL(1,3,NATOM) =  ELFLD(3,NATOM)*COORX
-               SPRDNL(2,1,NATOM) =  ELFLD(1,NATOM)*COORY
-               SPRDNL(2,3,NATOM) =  ELFLD(3,NATOM)*COORY
-               SPRDNL(3,1,NATOM) =  ELFLD(1,NATOM)*COORZ
-               SPRDNL(3,2,NATOM) =  ELFLD(2,NATOM)*COORZ
-               NATOM = NATOM + 1
-            END IF
+         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            COORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+     &            - CMXYZ(1)
+            COORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+     &            - CMXYZ(2)
+            COORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+     &            - CMXYZ(3)
+            SPRDNL(1,1,NATOM) = (ELFLD(2,NATOM)*COORY
+     &                        +  ELFLD(3,NATOM)*COORZ)
+            SPRDNL(2,2,NATOM) = (ELFLD(1,NATOM)*COORX
+     &                        +  ELFLD(3,NATOM)*COORZ)
+            SPRDNL(3,3,NATOM) = (ELFLD(1,NATOM)*COORX
+     &                        +  ELFLD(2,NATOM)*COORY)
+            SPRDNL(1,2,NATOM) =  ELFLD(2,NATOM)*COORX
+            SPRDNL(1,3,NATOM) =  ELFLD(3,NATOM)*COORX
+            SPRDNL(2,1,NATOM) =  ELFLD(1,NATOM)*COORY
+            SPRDNL(2,3,NATOM) =  ELFLD(3,NATOM)*COORY
+            SPRDNL(3,1,NATOM) =  ELFLD(1,NATOM)*COORZ
+            SPRDNL(3,2,NATOM) =  ELFLD(2,NATOM)*COORZ
+            NATOM = NATOM + 1
+         END IF
  20      CONTINUE
  10   CONTINUE
 
