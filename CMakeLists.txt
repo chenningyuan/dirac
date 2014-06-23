@@ -254,6 +254,8 @@ if(ENABLE_GEN1INT)
         ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
         ${LIBS}
         )
+    set(EXTERNAL_LIBS ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a ${EXTERNAL_LIBS})
+    set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
 endif()
 
 add_dependencies(dirac run_pamadm)
@@ -317,6 +319,9 @@ foreach(
         )
     if(ENABLE_PCMMOD)
         add_dependencies(${EXECUTABLE} pcmsolver)
+    endif()
+    if(ENABLE_GEN1INT)
+        add_dependencies(${EXECUTABLE} ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a)
     endif()
     if(ENABLE_STATIC_LINKING)
         target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
