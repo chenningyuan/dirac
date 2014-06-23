@@ -1890,17 +1890,18 @@ C
       ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &        CHAR(IOFF+I),(DEBYE*(oscl(I)+eprop_core(ind_dip(i)))),
+     &                                    ' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
-     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+     &        (DEBYE*(oscl(I)+eprop_core(ind_dip(i))+DIPMN(I))),' Debye'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,5)
       ! print in a.u.
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &        CHAR(IOFF+I),(oscl(I)+eprop_core(ind_dip(i))),' a.u. ',
      &                   (DIPMN(I)),' a.u. ',
-     &        (oscl(I)+DIPMN(I)),' a.u.'
+     &        (oscl(I)+eprop_core(ind_dip(i))+DIPMN(I)),' a.u.'
       ENDDO
 
 
