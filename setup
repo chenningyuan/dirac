@@ -70,6 +70,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='show cmake command and exit [default: %(default)s]')
+    group.add_argument('--cmake',
+            action='store',
+            default='cmake',
+            help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
+            metavar='STRING')
     
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
@@ -182,8 +187,8 @@ def parse_input():
     return parser.parse_args()
 
 
-def check_cmake_exists():
-    p = subprocess.Popen('cmake --version',
+def check_cmake_exists(cmake_command):
+    p = subprocess.Popen('%s --version' % cmake_command,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
@@ -191,10 +196,10 @@ def check_cmake_exists():
         print('   This code is built using CMake')
         print('')
         print('   CMake is not found')
-        print('   get CMake at http://www.cmake.org/')
-        print('   on many clusters CMake is installed')
-        print('   but you have to load it first:')
-        print('   $ module load cmake')
+        print('   1) on some clusters CMake is installed')
+        print('      but you have to load it first:')
+        print('      $ module load cmake')
+        print('   2) if not, get CMake at http://www.cmake.org/')
         sys.exit()
 
 def translate_cmake(s):
@@ -216,10 +221,10 @@ def gen_cmake_command(args):
         command += ' CXX=%s' % args.cxx
 
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' %s' % args.cmake
     else:
         # fix for windows
-        command = ' cmake ' + command
+        command = ' %s ' % args.cmake + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
@@ -361,7 +366,7 @@ def run_cmake(command, build_path):
 
 def main(argv):
     args = parse_input()
-    check_cmake_exists()
+    check_cmake_exists(args.cmake)
     build_path = args.builddir
     if not args.show:
         setup_build_path(build_path)
