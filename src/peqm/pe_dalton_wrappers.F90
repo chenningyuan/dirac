@@ -31,6 +31,13 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     type(one_prop_t) :: prop_operator
     type(matrix), dimension(:), allocatable :: intmats
 
+    ! N-ary tree for geometric derivatives on bra center
+    type(nary_tree_t) nary_tree_bra
+    ! N-ary tree for geometric derivatives on ket center
+    type(nary_tree_t) nary_tree_ket
+    ! N-ary tree for geometric derivatives
+    type(nary_tree_t) nary_tree_total
+
     integer :: nbas
     integer :: i, j, k, x, y, z
     integer, dimension(3,ncomps) :: row2col
@@ -85,7 +92,27 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
 
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 
-
+    ! initializes the information of N-ary tree for geometric derivatives
+    ! in this case, there is no geometric derivatives, so we just use some
+    ! fake numbers to make this code be compiled
+    call NaryTreeCreate(num_atoms=6,               &  !this should be the number of atoms
+                        order_geo=0,               &  !order of geometric derivatives
+                        max_num_cent=1,            &  !number of differentiated centers, could be order_geo
+                        nary_tree=nary_tree_total, &
+                        info_geom=ierr)
+    if (ierr/=0) stop "failed to create nary_tree_total"
+    call NaryTreeCreate(num_atoms=6,             &  !this should be the number of atoms
+                        order_geo=0,             &  !order of geometric derivatives
+                        max_num_cent=1,          &  !number of differentiated centers, could be order_geo
+                        nary_tree=nary_tree_bra, &
+                        info_geom=ierr)
+    if (ierr/=0) stop "failed to create nary_tree_bra"
+    call NaryTreeCreate(num_atoms=6,             &  !this should be the number of atoms
+                        order_geo=0,             &  !order of geometric derivatives
+                        max_num_cent=1,          &  !number of differentiated centers, could be order_geo
+                        nary_tree=nary_tree_ket, &
+                        info_geom=ierr)
+    if (ierr/=0) stop "failed to create nary_tree_ket"
 
     select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
@@ -96,6 +123,18 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
             symmetric = .false.
             stop 'Integral matrices not symmetric!'
     end select
+
+    ! if there is geometric derivatives, the following subroutines should be called
+    !
+    !! gets the number of all unique geometric derivatives
+    !call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_unique_bgeo)
+    !call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_unique_kgeo)
+    !call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_unique_tgeo)
+
+    !then the number of matrices would be:
+    !
+    ! sets the number of integral matrices including property integrals and various derivatives
+    !num_matrices = num_prop*num_unique_bgeo*num_unique_kgeo*num_unique_tgeo
 
     allocate(intmats(num_prop), stat=ierr)
     if (ierr /= 0) stop 'Failed to allocate matrices.'
@@ -148,15 +187,23 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
 
     ! calculates the integrals, please refer to the comments in subroutine
 !    \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
-    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
-                                  one_prop=prop_operator, &
-                                  num_ints=num_prop,      &
-                                  val_ints=intmats,       &
-                                  num_dens=1,             &
-                                  io_viewer=io,           &
+    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,               &
+                                  one_prop=prop_operator,          &
+                                  nary_tree_bra=nary_tree_bra,     &  !geometric derivatives on bra center
+                                  nary_tree_ket=nary_tree_ket,     &  !geometric derivatives on ket center
+                                  nary_tree_total=nary_tree_total, &  !total geometric derivatives
+                                  num_ints=num_prop,               &
+                                  val_ints=intmats,                &
+                                  num_dens=1,                      &
+                                  io_viewer=io,                    &
                                   level_print=printlvl)
 
     call OnePropDestroy(one_prop=prop_operator)
+
+    ! frees space taken by N-ary trees for geometric derivatives
+    call NaryTreeDestroy(nary_tree=nary_tree_bra)
+    call NaryTreeDestroy(nary_tree=nary_tree_ket)
+    call NaryTreeDestroy(nary_tree=nary_tree_total)
 
     do i = 1, num_prop
         call MatNullify(A=intmats(i))
