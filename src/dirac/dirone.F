@@ -3678,14 +3678,17 @@ C
         CALL DZERO(SMAT,N2BAST)
         NBRP     = 4/NZ
         IOFF = 0
+        IF (TWOCOMP) THEN
+           IC_MAX = 1
+        ELSE
+           IC_MAX = 2
+        ENDIF
         DO I = 1,NFSYM
-          DO IC = 1,2
+          DO IC = 1,IC_MAX
             IP    = MOD(I+IC,NFSYM) + 1
             DO JSYM = 1,NBRP
               ISYM           = JFSYM(JSYM,IP)
               IREP           = ISYM - 1
-!fixme   irep can be < 0 in NONREL runs; miro-print warning
-              IF (IREP.LT.0) WRITE(LUPRI,*) 'WARNING: GTOVLT, IREP<0!'
               IF(NBBAS(IREP,IC).GT.0) THEN
                 ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
                 IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
@@ -3708,7 +3711,7 @@ C
 C     Scale SS-block
 C     ==============
 C
-      IF(SSMETR.NE.D1) THEN
+      IF(SSMETR.NE.D1 .AND. .NOT.TWOCOMP) THEN
         IOFF = 1
         DO I = 1,NFSYM
           JJ = IOFF + NFBAS(I,1)*(NFBAS(I,0)+1)
