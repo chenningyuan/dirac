@@ -1,5 +1,6 @@
   module intermediates_1b_2b
   use contraction
+  use wrapper_sorting
 
     implicit none
 
@@ -24,7 +25,10 @@
      real(8), intent(in) :: BUF1(*),BUF2(*),BUF3(*)
      real(8) :: ddot
      integer :: II, I, ND, IRP, N, X
-     real(8), allocatable :: tau(:)  
+     real(8), allocatable :: tau(:) 
+     character            :: vtrans
+!     character(*),dimension(*):: v_array, t_array, w_array      
+ 
 !---------------Common Blocks--------------------------------------
 #include "param.inc"
 #include "symm.inc"
@@ -54,7 +58,6 @@
    CALL GETVVOO (BUF3)
    CALL GETTAU  (T1,T2,tau)
 
-
    call contraction_442 (buf3, tau, ho, (/"h3","h1","p1","p2"/),(/"p1","p2","h2","h3"/),(/"h1","h2"/), &
            &        no, no, nvvot, A1, A1,buf2,buf1)
 
@@ -73,25 +76,63 @@
 !F_bar_mi = F_bar_mi + V(mn, ei) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
 
-      CALL GETVOOO (BUF1)
-      cALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
-      CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
-     &            BUF1,BUF2)
-      CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
 
-!     call getvooo (BUF3)
-!     call delint ('VOOO','DDDD',BUF3,0,0,0)
-!     call SRT1C1 (NREP,NVO,NOO,BUF3,BUF2)
-!     call SRT16 (NREP,MULTB,LFA,LFA,NO,NO,NV,NO,MVO,JVOOO,JJOO,JJVO,&
-!    &            BUF2,BUF1)
-!     call XGEMV ('N',NOO,NVO,A1,BUF1,NOO,T1,1,A1,HO,1)
+      CALL GETVOOO (BUF1)
+      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
+
+
+
+      CALL SRT1C1 (NREP,MVO,MOO,BUF1,BUF2)
+
+
+!      do x =1, NV2
+!       if (BUF2(x) > 1.0D-9) then
+!       write(58,*)BUF2(x)
+!       endif 
+!     enddo
+
+
+!     do irp = 1, nrep
+!      write(*,*)irp,'mvo=',mvo(irp),'nvo=',nvo(irp)
+!      write(*,*)irp,'moo=',moo(irp),'noo=',noot(irp)
+!      write(*,*)'value of NV2',NV2, 'value of VOOO dimension',mvo(irp)*moo(irp)
+!     enddo
+
+      CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MVO,JVOOO,JJVO,JJOO,&
+     &            BUF2,BUF3)
+
+!      do x =1, NV2
+!       if (BUF3(x) > 1.0D-9) then
+!       write(59,*)BUF3(x)
+!       endif 
+!     enddo
+
+    CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
+
+
+!--------part of old code-----------
+!     CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
+!    &            BUF1,BUF2)
+!     CALL SRT1C1 (NREP,MVO,MOO,BUF2,BUF3)
+
+!      do x =1, NV2
+!       if (BUF3(x) > 1.0D-9) then
+!       write(56,*)BUF3(x)
+!       endif 
+!     enddo
+
+
+!    CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
+!     CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !-----------------------------------------------------------------
 
-
       call contraction_222 (FVO, NFVO, T1, ndimt1, HO, 'C', 'N', 'N', &
            &        NO, NO, NV, A1, A1)
+  
+      call sort_22_unrestricted((/"h1","h3","h2","p1"/),(/"p1","h3"/),(/"h1","h2"/),vtrans)
+
 
 
 !      if (carith) call conjuga (NFVO,FVO,1) 

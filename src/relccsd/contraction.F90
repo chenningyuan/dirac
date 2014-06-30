@@ -78,6 +78,10 @@
    subroutine contraction_422 (varray, tarray, warray, vorder, torder, worder, &
            &        ext_v, ext_t, index_sum, dia_factor, dia_sum_factor,buf2,buf1)
 
+
+!---------------------notice---------------
+!              the calling routines are wrong. correct it asap.
+!------------------------------------------
      
 !----------calling variables-----------------------------------
     real(8), intent(in) :: varray(*), tarray(*)      
@@ -106,7 +110,7 @@
      &             tarray,BUF1)
       endif
 
-      CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1) 
+ !     CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1) 
   
     end subroutine
 

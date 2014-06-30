@@ -1196,6 +1196,123 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+! avijit. 
+      SUBROUTINE SRT36 (NREP,MULTB,FIRST,DOINV,
+     &                  IFIE,JFIE,KFIE,LFIE,NPAIR,
+     &                  OFF,OFF1,OFF2,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     BUF(I>J,KL:KLREP) <--> BUF(IL,KJ:KJREP=1)
+C     If (FIRST) take only the totally symmetric (first) irrep.
+C     If (DOINV) inverse sort.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST,DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IF (.NOT.DOINV) THEN
+         IF (FIRST) THEN
+            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+         ENDIF
+      ENDIF
+C
+      IJKL = 1
+      IJKL1= 1
+      DO IJREP = 1, NREP
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IF (IREP.LT.JREP) GOTO 10
+        DO J = 1, JFIE(JREP)
+         IMIN = 1
+         IF (IREP.EQ.JREP) IMIN = J + 1
+         DO I = IMIN, IFIE(IREP)
+          DO 20 LREP = 1, NREP
+           KREP = MULTB(LREP,IJREP+NREP,2)
+           KJREP = MULTB(KREP,JREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILKJ0 = OFF(ILREP) 
+     &          + (OFF2(IREP,LREP)+(I-1)*LFIE(LREP))*NPAIR(KJREP)
+           ILKJ0 = ILKJ0 + OFF1(KREP,JREP) + (J-1)*KFIE(KREP)
+
+!!         IKLJ0 = OFF(LJREP) 
+!!   &          + (OFF2(LREP,JREP)+L-1)*NPAIR(IKREP)
+!!         IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           IKLJ0 = OFF(IKREP) 
+     &          + (OFF1(IREP,KREP)+(I-1)*KFIE(KREP))*NPAIR(LJREP)
+           IKLJ0 = IKLJ0 + OFF2(LREP,JREP) + (J-1)*LFIE(LREP)
+
+            DO L = 1, LFIE(LREP)
+            IF (DOINV) THEN
+             CALL XCOPY(KFIE(KREP),BUF1(ILKJ0*RCW+1),1,BUF2(IJKL),1)
+             CALL XAXPY(KFIE(KREP),-A1,BUF1(IKLJ0*RCW+1),1,BUF2(IJKL),1)
+            ELSE
+             IF ((.NOT.FIRST).OR.(ILREP.EQ.1))
+     &          CALL XCOPY(KFIE(KREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
+!            IF ((.NOT.FIRST).OR.(LJREP.EQ.1)) THEN
+!               CALL XCOPY(KFIE(KREP),BUF1(IJKL),1,BUF2(IKLJ0*RCW+1),1)
+!               CALL XSCAL(KFIE(KREP),-A1,BUF2(IKLJ0*RCW+1),1)
+!            ENDIF
+            ENDIF
+            IJKL = IJKL + RCW * KFIE(KREP)
+            ILKJ0 = ILKJ0 + NPAIR(KJREP) * IFIE(IREP)
+!            IKLJ0 = IKLJ0 + NPAIR(IKREP) * JFIE(JREP)
+           ENDDO
+
+            DO K = 1, KFIE(KREP)
+            IF (DOINV) THEN
+             CALL XCOPY(KFIE(KREP),BUF1(ILKJ0*RCW+1),1,BUF2(IJKL),1)
+             CALL XAXPY(KFIE(KREP),-A1,BUF1(IKLJ0*RCW+1),1,BUF2(IJKL),1)
+            ELSE
+             IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) THEN
+                CALL XCOPY(LFIE(LREP),BUF1(IJKL1),1,BUF2(IKLJ0*RCW+1),1)
+                CALL XSCAL(LFIE(LREP),-A1,BUF2(IKLJ0*RCW+1),1)
+             ENDIF
+            ENDIF
+            IJKL1 = IJKL1 + RCW * LFIE(LREP)
+!            ILKJ0 = ILKJ0 + NPAIR(KJREP) * IFIE(IREP)
+            IKLJ0 = IKLJ0 + NPAIR(LJREP) * IFIE(IREP)
+            ENDDO
+
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      write(*,*)'value of IJKL', IJKL
+      write(*,*)'value of ILKJ', ILKJ0  
+      write(*,*)'value of IKLJ', IKLJ0  
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE SRT1R1 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NPAIR2,
      &                   OFF,OFF1,BUF1,BUF2)
 C
