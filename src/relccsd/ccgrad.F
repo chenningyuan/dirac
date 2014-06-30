@@ -724,7 +724,13 @@ C
       real(8), allocatable :: scratch(:)
       real(8), allocatable :: dv(:,:,:), occ(:)
 C
-      IF ( NOPRNT .ge. 5 )THEN
+!#define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
+      noprnt_local = 10
+#else
+      noprnt_local = noprnt
+#endif
+      IF ( NOPRNT_local .ge. 5 )THEN
          CALL HEADER(
      &               'MP2_NATORB_GEN: DMO :',-1)
          CALL PRQMAT(DMO,
@@ -774,7 +780,7 @@ C
 C
 C     debug print section
 C
-      IF ( NOPRNT .ge. 5 ) THEN
+      IF ( NOPRNT_local .ge. 5 ) THEN
          DO IFSYM = 1, NFSYM
            CALL HEADER(
      &     'MP2_NATORB_GEN: Eigenvectors :',-1)

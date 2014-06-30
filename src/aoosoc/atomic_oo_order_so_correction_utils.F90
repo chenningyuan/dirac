@@ -674,7 +674,7 @@ contains
        print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
        call quit( 'read_normalized_2e_soc: col dimension does not fit' )
      end if
-     if(nz_tmp   /= 4   )then
+     if(nz_tmp   /= nz   )then
        print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp
        call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
      end if
