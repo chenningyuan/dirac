@@ -9580,12 +9580,8 @@ c
           IF(LINEAR) THEN
             PMATL(1,1,1,1)=TMPMATL(1,3,1)
             PMATL(1,1,2,1)=TMPMATL(1,4,1)
-            PMATL(1,1,1,2)=TMPMATL(1,3,2)
-            PMATL(1,1,2,2)=TMPMATL(1,4,2)
             PMATS(1,1,1,1)=TMPMATS(1,3,1)
             PMATS(1,1,2,1)=TMPMATS(1,4,1)
-            PMATS(1,1,1,2)=TMPMATS(1,3,2)
-            PMATS(1,1,2,2)=TMPMATS(1,4,2)
           ELSE
 C           .... extract the e-e response part into PMAT(...,1)
             CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
@@ -9596,15 +9592,22 @@ C           .... save e-e response part into TMAT
           END IF
         END IF
         IF (.NOT.XLR_SKIPEP) THEN
-C         ... extract the e-p response part into PMAT(...,2)
-          CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
+          IF(LINEAR) THEN
+            PMATL(1,1,1,2)=TMPMATL(1,3,2)
+            PMATL(1,1,2,2)=TMPMATL(1,4,2)
+            PMATS(1,1,1,2)=TMPMATS(1,3,2)
+            PMATS(1,1,2,2)=TMPMATS(1,4,2)
+          ELSE
+C           ... extract the e-p response part into PMAT(...,2)
+            CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
-          CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
+            CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the e-p response PMAT(...,2) into TMAT
-C         so the TMAT now contains total response
-          CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
-          CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
+C           ... add the e-p response PMAT(...,2) into TMAT
+C           so the TMAT now contains total response
+            CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
+            CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
+          END IF
         END IF
 C       ... add the diamagnetic term,SPRDNL, to TMAT
             CALL DAXPY(9*NUCDEP,D1,SPRDNL,1,TMAT,1)
@@ -9767,7 +9770,7 @@ C
 C
 C     We start by sorting the electric field results
 C
-! iaa analizar con cuidado
+! iaa analice with symmetry
 c*******************************************************
 !      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
 !      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
