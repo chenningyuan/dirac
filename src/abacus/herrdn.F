@@ -2637,6 +2637,12 @@ C     ******************************************
 C
       CALL PRICAR(WORK,LWORK)
 C
+      IF (PEQM) THEN
+#if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+#endif
+         END IF
+C
  1010 FORMAT(11X,I3,' large AO-blocks of ',A1,' type')
  1020 FORMAT(11X,I3,' small AO-blocks of ',A1,' type')
       IF (IPREAD .GE. 2) THEN
@@ -4804,9 +4810,6 @@ C
 
       use codata
 
-      use polarizable_embedding, only: pe_read_potential, peqm,
-     &                                 pe_savden, pe_mep
-
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4968,13 +4971,6 @@ C
 C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(A,F18.12)')
      &   '  Nuclear repulsion energy :',POTNUC
-
-!edh: Reading a x.pot file
-!      if (peqm .or. pe_mep) then
-        call pe_read_potential(cord(:,1:natoms), charge(1:natoms))
-!      else if (pe_savden) then
-!        call pe_read_potential()
-!      end if
 
       RETURN
       END

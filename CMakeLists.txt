@@ -34,6 +34,7 @@ option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"  
 option(ENABLE_GEN1INT         "Enable Gen1Int library"                                    ON)
 option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
+option(ENABLE_PELIB           "Enable PE library"                                         ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
@@ -229,6 +230,13 @@ if(ENABLE_UNIT_TESTS)
         )
 endif()
 
+if(ENABLE_PELIB)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        src/peqm/pe_dirac_interfaces.F
+       )
+endif()
+
 # add binary_info.F90
 set(GENERATED_FILES
     ${GENERATED_FILES}
@@ -256,6 +264,40 @@ if(ENABLE_GEN1INT)
         )
     set(EXTERNAL_LIBS ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a ${EXTERNAL_LIBS})
     set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
+endif()
+
+if(ENABLE_PELIB)
+    set(PARENT_DEFINITIONS "-DBUILD_DIRAC")
+    if(ENABLE_GEN1INT)
+        set(PE_INTEGRAL_LIBRARY "GEN1INT")
+    endif()
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+        if(MPI_COMPILER_MATCHES)
+            set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DUSE_MPI_MOD_F90")
+        endif()
+    endif()
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DINTEGRAL_LIBRARY=${PE_INTEGRAL_LIBRARY}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
+        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+       )
+    add_definitions(-DBUILD_PELIB)
+    add_external(pelib)
+    add_dependencies(dirac pelib)
+    if(ENABLE_GEN1INT)
+        add_dependencies(pelib gen1int_interface)
+    endif()
+    set(EXTERNAL_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
+        ${EXTERNAL_LIBS}
+       )
 endif()
 
 add_dependencies(dirac run_pamadm)

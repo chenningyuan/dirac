@@ -4588,7 +4588,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 10)
+      PARAMETER (NTABLE = 68,NDIR = 11)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4620,7 +4620,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC'/
+     &             '*PCM   ','*aooSOC','*PEQM  '/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4655,7 +4655,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','xxxxxxx','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4761,6 +4761,8 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!jmho: deafult - no polarizable embedding
+      PEQM = .FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -5342,7 +5344,14 @@ C..TODO: check for inconsistencies and add stops
   165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
           TRS_MIX = .TRUE.
+!&&& PEQM: polarizable embedding
   166     CONTINUE
+#if defined (BUILD_PELIB)
+            PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
           GO TO 100
   167     CONTINUE
           GO TO 100
@@ -6271,6 +6280,11 @@ C
           ENDDO
         ENDIF
       ENDIF
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &  '* Environment is modeled using polarizable embedding scheme'//
+     &  ' (PE library)'
+      END IF
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6282,7 +6296,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6355,6 +6369,13 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+   11 CONTINUE
+#if defined (BUILD_PELIB)
+        CALL PE_IFC_INPUT_READER(WORD)
+#else
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+#endif
+        GO TO 200
 C
     1 CONTINUE
 
