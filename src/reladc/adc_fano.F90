@@ -222,7 +222,7 @@ CONTAINS
                      eajl,roooo,rvovo,mxno)
 !
 !  Purpose: Calculate decay widths using the FanoADC method.
-!           This is the controlling module for the real calculation.
+!           This is the controlling module for the complex calculation.
 !           This module is supposed to be tidied up. No other routines are
 !           to be added.
 !
@@ -370,6 +370,12 @@ CONTAINS
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     reladc_md_isfano   = .true.
     CALL FULLDIAC2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
+
+    IF (reladc_fano_nrgroups == 1) THEN                                 
+      do_partial = .false.                                              
+    ELSE                                                                
+      do_partial = .true.                                               
+    END IF
 
     ! Create the file holding the configurations of the 1h and 2h1p configurations
     CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,ladc-fin_max, &
