@@ -837,8 +837,8 @@
       print *, 'error: RD_SIRIFC not available in DIRAC'
       stop 1
 #else
-      call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
-                     len_work-NCMOT)
+!     call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
+!                    len_work-NCMOT)
 #endif
       if (.not.found) then
         stop "gen1int_host_get_cube>> CMO is not found on SIRIFC!"
@@ -1261,20 +1261,20 @@
       if (TRIANG(itest)) then
 #ifndef PRG_DIRAC
 !FIXME: the last argument is symmetric AO density matrix
-        call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
-                    int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
-                    NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
-                    wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
-                    wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
+!       call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
+!                   int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
+!                   NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
+!                   wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
+!                   wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
 #endif
       else
 #ifndef PRG_DIRAC
 !FIXME: the last argument is square AO density matrix
-        call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
-                    int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
-                    NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
-                    wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
-                    wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
+!       call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
+!                   int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
+!                   NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
+!                   wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
+!                   wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
 #endif
       end if
       deallocate(int_rep)
@@ -1704,8 +1704,8 @@
       print *, 'error: RD_SIRIFC not available in DIRAC'
       stop 1
 #else
-    call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
-                   len_left_wrk)
+!   call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
+!                  len_left_wrk)
 #endif
     if (.not.found) then
       stop "gen1int_host_get_dens>> CMO is not found on SIRIFC!"
@@ -1717,8 +1717,8 @@
       print *, 'error: RD_SIRIFC not available in DIRAC'
       stop 1
 #else
-      call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
-                     wrk_space(start_left_wrk), len_left_wrk)
+!     call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
+!                    wrk_space(start_left_wrk), len_left_wrk)
 #endif
       if (.not.found) then
         stop "gen1int_host_get_dens>> DV is not found on SIRIFC!"

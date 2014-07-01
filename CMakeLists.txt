@@ -267,6 +267,7 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
+    add_definitions(-DPRG_DIRAC)
     set(PARENT_DEFINITIONS "-DBUILD_DIRAC")
     if(ENABLE_GEN1INT)
         set(PE_INTEGRAL_LIBRARY "GEN1INT")
