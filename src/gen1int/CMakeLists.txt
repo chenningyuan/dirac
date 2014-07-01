@@ -1,4 +1,5 @@
 add_definitions(-DBUILD_GEN1INT)
+add_definitions(-DPRG_DIRAC)
 
 add_library(
     gen1int_interface
