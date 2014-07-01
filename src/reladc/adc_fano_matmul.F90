@@ -54,6 +54,8 @@ CONTAINS
     CHARACTER(3), PARAMETER               :: nmspec = 'FPS'
     CHARACTER(11)                         :: fn_trans
     INTEGER                               :: fh_trans
+    CHARACTER(3), PARAMETER               :: nmstie = 'STI'
+    CHARACTER(21)                         :: fn_stieltjes
     INTEGER                               :: ierror
     INTEGER                               :: channel
     INTEGER                               :: first, last, off
@@ -103,6 +105,12 @@ CONTAINS
         WRITE(fn_trans,'(a3,a1,i2)') nmspec,'.',i
       ELSE
         WRITE(fn_trans,'(a3,a2,i1)') nmspec,'.0',i
+      END IF
+! Choose file name for Stieltjes output
+      IF(i.GT.9) THEN
+        WRITE(fn_stieltjes,'(a3,a1,i2)') nmstie,'.',i
+      ELSE
+        WRITE(fn_stieltjes,'(a3,a2,i1)') nmstie,'.0',i
       END IF
 
 
@@ -181,7 +189,7 @@ CONTAINS
       WRITE(iw,*) 'Calling Stieltjes.'
       !e_init = in_energy(1,i)
       e_init = 0.0
-      CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
+      CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&
                      gammae,2004,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
@@ -190,15 +198,14 @@ CONTAINS
       WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
       total_gamma(i) = gammae * autoev
 !!
-!! To be removed as soon as Dirac has its own Stieltjes routine
 !!
-!      fh_trans = fhdiag
-!      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-!           ACTION='WRITE',iostat=ierror)
-!      WRITE(fh_trans,*) in_energy(1,i)
-!      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-!      CLOSE(fh_trans)
-!
+      fh_trans = fhdiag
+      OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+           ACTION='WRITE',iostat=ierror)
+      WRITE(fh_trans,*) in_energy(1,i)
+      WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+      CLOSE(fh_trans)
+
     END DO !loop over intial states
 
 
@@ -232,6 +239,12 @@ CONTAINS
             WRITE(fn_trans,'(a3,a1,i2,a1,a4)') nmspec,'.',i,'.',reladc_fano_labels(channel)
           ELSE
             WRITE(fn_trans,'(a3,a2,i1,a1,a4)') nmspec,'.0',i,'.',reladc_fano_labels(channel)
+          END IF
+! Choose file name of Stieltjes output
+          IF(i.GT.9) THEN
+            WRITE(fn_trans,'(a3,a1,i2,a1,a4)') nmstie,'.',i,'.',reladc_fano_labels(channel)
+          ELSE
+            WRITE(fn_trans,'(a3,a2,i1,a1,a4)') nmstie,'.0',i,'.',reladc_fano_labels(channel)
           END IF
 
 
@@ -316,7 +329,7 @@ CONTAINS
           WRITE(iw,*)
           !e_init = in_energy(1,i)
           e_init = 0.0
-          CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_trans,&
+          CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&
                          gammae,1000+channel,0)
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
@@ -324,14 +337,13 @@ CONTAINS
           WRITE(iw,*) 'Gamma = ', gammae*autoev, 'eV'
           partial_gamma(channel,i) = gammae*autoev
 !!
-!! To be removed as soon as Dirac has its own Stieltjes routine
 !!
-!          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
-!               ACTION='WRITE',iostat=ierror)
-!          WRITE(fh_trans,*) in_energy(1,i)
-!          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
-!          CLOSE(fh_trans)
-!
+          OPEN(fh_trans,FILE=fn_trans,STATUS='UNKNOWN',FORM='FORMATTED',    &
+               ACTION='WRITE',iostat=ierror)
+          WRITE(fh_trans,*) in_energy(1,i)
+          WRITE(fh_trans,'(1X,2ES25.15)') (e2h1p(ixx), 2*pi*t_mom(ixx)*t_mom(ixx), ixx=1,counter)
+          CLOSE(fh_trans)
+
         END DO ! end of loop over channels
       END DO   ! end of loop over initial states
 

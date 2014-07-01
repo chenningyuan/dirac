@@ -100,8 +100,8 @@ CONTAINS
 
     WRITE(IW,*)
     WRITE(IW,*) 'Construct the big ICRA lookup table'
-    WRITE(IW,123) bigicra
-    123 FORMAT (' ',9I8)
+!    WRITE(IW,123) bigicra
+!    123 FORMAT (' ',9I8)
     WRITE(IW,*)
 
   END SUBROUTINE make_bigicra

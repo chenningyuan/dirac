@@ -439,7 +439,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 ! Elke
-      WRITE(iw,*) 'after ccseti'
+!      WRITE(iw,*) 'after ccseti'
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
