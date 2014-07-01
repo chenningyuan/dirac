@@ -38,8 +38,6 @@ contains
 ! use unit_test_generator
   implicit none
 
-#include "unit-test.h"
-
   ! external variables
   character(*), intent(in) :: derstr
   integer,      intent(in) :: nder, nprint, lunit, npoints, ipoint

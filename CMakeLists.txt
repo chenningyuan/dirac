@@ -30,7 +30,6 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
-option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
@@ -88,7 +87,6 @@ include(ConfigMath)
 
 include(ConfigMPI)
 include(ConfigSafeGuards)
-include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo) # has to come after ConfigVersion
 
@@ -118,7 +116,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
-    ${PROJECT_BINARY_DIR}/unit-tests
     ${PROJECT_BINARY_DIR}
     )
 
@@ -213,13 +210,6 @@ endif()
 set(CPP)
 if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
-endif()
-
-if(ENABLE_UNIT_TESTS)
-    set(FREE_FORTRAN_SOURCES
-        ${FREE_FORTRAN_SOURCES}
-        src/gp/unit_testing.F90
-        )
 endif()
 
 # add binary_info.F90
@@ -330,23 +320,7 @@ if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
 endif()
 
-# build unit tests
-if(ENABLE_UNIT_TESTS)
-    # set unit test libs
-    set(UNIT_TEST_LIBS
-        dirac
-        ${EXTERNAL_LIBS}
-        )
-    include(ConfigUnitTesting)
-endif()
-
-# create unit tests (set header for unit testing)
-if(ENABLE_UNIT_TESTS)
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
-else()
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
-endif()
-
+include(ConfigTesting)
 include(ConfigPackaging)
 
 # give information about system, compiler flags, and size of static allocations

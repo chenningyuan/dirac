@@ -149,6 +149,10 @@ def parse_input():
             default=None,
             help='set the cmake generator [default: %(default)s]',
             metavar='STRING')
+    group.add_argument('--run-unit-tests',
+            action='store_true',
+            default=False,
+            help='Run unit tests [default: %(default)s]')
     
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -311,6 +315,9 @@ def gen_cmake_command(args):
 
     if args.generator:
         command += ' -G "%s"' % args.generator
+
+    if args.run_unit_tests:
+        command += ' -DRUN_UNIT_TESTS=TRUE'
 
     command += ' %s' % root_directory
 
