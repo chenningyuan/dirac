@@ -91,6 +91,12 @@
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
+      WRITE(IW,*)
+      WRITE(IW,*) 'This module is documented in:'
+      WRITE(IW,*) ' M. Pernpointner, J. Chem. Phys. 140, 084108 (2014).'
+      WRITE(IW,*) ' doi: 10.1063/1.4865964'
+      WRITE(IW,*)
+      WRITE(IW,*)
       IF(reladc_doxext) THEN
         WRITE(IW,*) 'Doing extended ADC-2'
       ELSE
