@@ -69,13 +69,9 @@ def main():
         dirac_modules[str(option)[2:]].include()
 
     list_of_tests = []
-    list_of_benchmarks = []
 
     def add_test(name, labels=''):
-        if 'benchmark' in labels:
-            list_of_benchmarks.append([name, labels])
-        else:
-            list_of_tests.append([name, labels])
+        list_of_tests.append([name, labels])
 
     # list of vital directories and files
     # these are always packaged
@@ -209,13 +205,13 @@ def main():
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
     add_test('esr', 'short;gascip;ci')
-# miro: here we go with benchmark tests
+
+    # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
     add_test('benchmark_gaunt', 'benchmark;gaunt')
     add_test('benchmark_mcscf_energy', 'benchmark;mcscf')
     add_test('benchmark_moltra_4or6', 'benchmark;moltra')
-#    add_test('benchmark_kallay_mrcc_interface', 'benchmark')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -593,20 +589,22 @@ def main():
     for test in list_of_tests:
         if 'long' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
-    # then tests that are neither short nor long
+    # then tests that are neither short nor long nor benchmark
     for test in list_of_tests:
-        if (not 'long' in test[1]) and (not 'short' in test[1]):
+        if (not 'long' in test[1]) and (not 'short' in test[1]) and (not 'benchmark' in test[1]):
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # finally short tests at the end
     for test in list_of_tests:
         if 'short' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
 
-    if list_of_benchmarks != []:
-        f.write('if(ENABLE_BENCHMARKS)\n')
-        for benchmark in list_of_benchmarks:
-            f.write('    dirac_test(%s "%s")\n' % (benchmark[0], benchmark[1]))
-        f.write('endif()\n')
+    # benchmark tests get own section, not run by default
+    f.write('if(ENABLE_BENCHMARKS)\n')
+    for test in list_of_tests:
+        if 'benchmark' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
     f.close()
 
     # write pamadm flags to file
