@@ -2637,12 +2637,6 @@ C     ******************************************
 C
       CALL PRICAR(WORK,LWORK)
 C
-      IF (PEQM) THEN
-#if defined(BUILD_PELIB)
-            CALL PE_IFC_INIT()
-#endif
-         END IF
-C
  1010 FORMAT(11X,I3,' large AO-blocks of ',A1,' type')
  1020 FORMAT(11X,I3,' small AO-blocks of ',A1,' type')
       IF (IPREAD .GE. 2) THEN

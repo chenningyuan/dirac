@@ -1292,10 +1292,6 @@ C*****************************************************************************
       use pcm_scf
 #endif
 
-#ifdef MOD_PEQM
-      use polarizable_embedding, only: pe_master
-#endif
-
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1323,13 +1319,8 @@ C
       character(12) :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
-#ifdef MOD_PEQM
-      real(8) :: Epe(1)
-      real(8), allocatable :: dlmat_triangle(:)
-      real(8), allocatable :: dsmat_triangle(:)
-      real(8), allocatable :: flmat_triangle(:)
-      real(8), allocatable :: fsmat_triangle(:)
-      logical :: ketlrg, bralrg, ketsml, brasml
+#ifdef BUILD_PELIB
+      REAL*8, DIMENSION(1) :: PE_NRG
 #endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
@@ -1521,92 +1512,15 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
-#ifdef MOD_PEQM
-      write(lupri,*) '*** Polarizable Embedding Playground ***'         
-!    edh: For large-large part (not needed for now) 
-!      ketlrg = .true. 
-!      bralrg = .true.      
-!      ketsml = .false.
-!      brasml = .false.
 
-!       edh: Its is neccesary to construct a triangular matrix for
-!       pe_module - DIRAC SCF uses square matrices (DALTON uses triangular)
-      allocate(dlmat_triangle(nnbbasx))
-      allocate(flmat_triangle(nnbbasx))
-      dlmat_triangle = 0.0d0
-      flmat_triangle = 0.0d0
- 
-! edh: Note that there is a factor 2 difference for diagonal elem.
-! in DALTON and DIRAC. For non-diagonal elem it is a factor 4. 
-      k = 1    
-      ! LL block
-      do i = 1, ntbas(1)
-         do j = 1, i
-            if (i == j) then
-                dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-            else
-                dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-            end if
-            k = k + 1
-         end do
-      end do
-      ! SS block
-      do i = ntbas(1) + 1, ntbas(0)
-         do j = 1, i
-            if (j > ntbas(1)) then
-               if (i == j) then
-                   dlmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j)
-               else
-                   dlmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j)
-               end if
-            end if
-            k = k + 1
-         end do
-      end do
-
-      call pe_master('fock', denmats=dlmat_triangle,
-     &               fckmats=flmat_triangle, nmats=1,
-     &               Epe=Epe,
-     &               dalwrk=work(kfree:kfree + lfree))
-      eqmmm = work(kfree)
-      ! F = F + M
-      ! LL block
-      k = 1
-      do i = 1, ntbas(1)
-         do j = 1, i
-            if (i == j) then ! edh: Conversion from DALTON to DIRAC
-               fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                  + flmat_triangle(k)
-            else
-            fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                               + flmat_triangle(k)
-            fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                               + flmat_triangle(k)
-            end if
-            k = k + 1 
-         end do
-      end do
-      ! SS block
-      do i = ntbas(1) + 1, ntbas(0)
-         do j = 1, i
-            if (j > ntbas(1)) then
-                if (i == j) then
-                   fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                      + flmat_triangle(k)
-               else
-                   fock((i-1)*ntbas(0) + j) = fock((i-1)*ntbas(0) + j)
-     &                                      + flmat_triangle(k)
-                   fock((j-1)*ntbas(0) + i) = fock((j-1)*ntbas(0) + i)
-     &                                      + flmat_triangle(k)
-               end if
-          end if 
-          k = k + 1
-         end do
-      end do
-
-      deallocate(dlmat_triangle)
-      deallocate(flmat_triangle)
+         ! add polarizable embedding contribution
+         IF (PEQM) THEN
+#ifdef BUILD_PELIB
+            WRITE(LUPRI,'(A)') '* Calling PE library'
+            CALL PE_IFC_FOCK(DMAT, FOCK, 1, PE_NRG)
+            WRITE(LUPRI,'(a,f12.8)') '* PE energy: ', PE_NRG
 #endif
+         END IF
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
@@ -1834,11 +1748,6 @@ C*****************************************************************************
       use pcm_scf
 #endif
 
-#ifdef MOD_PEQM
-      use polarizable_embedding, only: peqm, pe_master, Ees, Epol, 
-     &                                 Eelsav,lmul, lpol
-#endif
-
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
@@ -1858,7 +1767,7 @@ C
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
-     &          DMAT(N2BBASX,NZ,NFMAT), 
+     &          DMAT(N2BBASX,NZ,NFMAT),
      &          E(4,2,0:MXOPEN),WORK(LWORK)
       DATA M/'AR','AI','BR','BI'/
 c     besterg is the lowest energy we encountered so far
@@ -1867,11 +1776,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
-#ifdef MOD_PEQM
-      real*8, dimension(1) :: pe_energy
-      real(8), allocatable :: dmat_triangle(:)
-      logical :: lmuls
-#endif
+      REAL*8, DIMENSION(1) :: PE_NRG
       data besterg /1.0D100/
       save besterg
 C
@@ -1879,7 +1784,7 @@ C
       INUM = INUM + 1
 C
       LVCON = DOLVC.AND.
-     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR. 
+     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR.
      &          (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
@@ -1954,62 +1859,24 @@ C
 ! Add polarization energy to dhferg 
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
-      endif 
+      endif
 #endif
 
-#ifdef MOD_PEQM
-
-!     edh: Its is neccesary to construct a triangular matrix for
-!     pe_module - DIRAC SCF uses square matrices (DALTON uses
-!     triangular)
-      allocate(dmat_triangle(nnbbasx))
-      dmat_triangle = 0.0d0
-! Conversion of density matrix to triangular form: 
-
-      k = 1    
-      ! LL block
-      do i = 1, ntbas(1)
-         do j = 1, i
-            if (i == j) then
-                dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
-            else
-                dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
-            end if
-            k = k + 1
-         end do
-      end do
-      ! SS block
-      do i = ntbas(1) + 1, ntbas(0)
-         do j = 1, i
-            if (j > ntbas(1)) then
-            if (i == j) then
-                dmat_triangle(k) = 2.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
-            else
-                dmat_triangle(k) = 4.0d0*dmat((i-1)*ntbas(0) + j, 1, 1)
-            end if
-            end if
-            k = k + 1
-         end do
-      end do
-
-      call pe_master(runtype='energy', 
-     &               denmats=dmat_triangle,
-     &               nmats=1,dalwrk=work(kwork:lwork))
-
+      IF (PEQM) THEN
+#ifdef BUILD_PELIB
+        CALL PE_IFC_ENERGY(DMAT, PE_NRG)
+        DHFERG = DHFERG + PE_NRG(1)
+#endif
+      END IF
 !      write(lupri,*)'Eelsav in dirscf', Eelsav
 !      write(lupri,*), 'Epol in ERGCAL', Epol
 
-       Epe = sum(Ees(:,1)) + sum(Epol(:,1)) 
+!       Epe = sum(Ees(:,1)) + sum(Epol(:,1))
 !      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
 
 !     E2PART = 1/2*(Gij *Dij). As the DFT potential, Eel (Eelsav) from the 
 !     PE module is added to the E2PART: Here it is substracted again         
-      E2PART = E2PART - (0.5d0 * Eelsav)
-
-      dhferg = dhferg + Epe 
-
-      deallocate(dmat_triangle)
-#endif
+!      E2PART = E2PART - (0.5d0 * Eelsav)
 
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
@@ -2032,7 +1899,7 @@ C
 !        write (*,*) 'FDE energy: ',fde_energy
 !     endif
 
-      DHFERG = DHFERG + ELERGY 
+      DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
@@ -2071,13 +1938,13 @@ CMI      ... print out matrixes ...
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
-#ifdef MOD_PEQM
+#ifdef BUILD_PELIB
          WRITE(LUPRI,'(A,'//FMT//')')
-     +       'PE energy                          :   ',Epe 
+     +       'PE energy                          :   ',PE_NRG(1)
 #endif
 
          WRITE(LUPRI,'(A,'//FMT//')')
-     +       'Total energy                       :  ',DHFERG 
+     +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
             WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* 1-electron energy          :  ',E1PART

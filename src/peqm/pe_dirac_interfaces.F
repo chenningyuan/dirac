@@ -27,27 +27,134 @@
         call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
 
-      subroutine pe_ifc_fock(denmats, fckmats, nmats, energies)
+      subroutine pe_ifc_fock(dmat, fmat, energy)
         use polarizable_embedding, only: pe_master
-#include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
-        real*8, dimension(nmats), intent(out) :: energies
+#include "dcbbas.h"
+        real*8, dimension(n2bbasx), intent(in) :: dmat
+        real*8, dimension(n2bbasx), intent(inout) :: fmat
+        real*8, dimension(1), intent(out) :: energy
+        integer :: i, j, k, l
+        real*8, dimension(:), allocatable :: dspmat
+        real*8, dimension(:), allocatable :: fspmat
         call qenter('pe_ifc_fock')
-        call pe_master(runtype='fock', denmats=denmats, fckmats=fckmats,
-     &                 nmats=nmats, energies=energies)
+        allocate(dspmat(nnbbasx))
+        allocate(fspmat(nnbbasx))
+        dspmat = 0.0d0
+        fspmat = 0.0d0
+
+        k = 1
+        ! LL block
+        do i = 1, ntbas(1)
+            do j = 1, i
+                if (i == j) then
+                    dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
+                else
+                    dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
+                end if
+                k = k + 1
+            end do
+        end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                 if (i == j) then
+                     dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
+                 else
+                     dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
+                 end if
+              end if
+              k = k + 1
+           end do
+        end do
+
+        call pe_master(runtype='fock', denmats=dspmat, fckmats=fspmat,
+     &                 nmats=1, energies=energy)
+
+        ! LL block
+        k = 1
+        do i = 1, ntbas(1)
+           do j = 1, i
+              if (i == j) then
+                 fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
+     &                                    + fspmat(k)
+              else
+              fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
+     &                                 + fspmat(k)
+              fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
+     &                                 + fspmat(k)
+              end if
+              k = k + 1
+           end do
+        end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                  if (i == j) then
+                     fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
+     &                                        + fspmat(k)
+                 else
+                     fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
+     &                                        + fspmat(k)
+                     fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
+     &                                        + fspmat(k)
+                 end if
+            end if
+            k = k + 1
+           end do
+        end do
+
+        deallocate(dspmat)
+        deallocate(fspmat)
+
         call qexit('pe_ifc_fock')
+
       end subroutine pe_ifc_fock
 
-      subroutine pe_ifc_energy(denmats, nmats)
+      subroutine pe_ifc_energy(dmat, energy)
         use polarizable_embedding, only: pe_master
-#include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+#include "dcbbas.h"
+        real*8, dimension(n2bbasx), intent(in) :: dmat
+        real*8, dimension(1), intent(out) :: energy
+        integer :: i, j, k, l
+        real*8, dimension(:), allocatable :: dspmat
         call qenter('pe_ifc_energy')
-        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
+        allocate(dspmat(nnbbasx))
+        dspmat = 0.0d0
+
+        k = 1
+        ! LL block
+        do i = 1, ntbas(1)
+            do j = 1, i
+                if (i == j) then
+                    dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
+                else
+                    dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
+                end if
+                k = k + 1
+            end do
+        end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                 if (i == j) then
+                     dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
+                 else
+                     dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
+                 end if
+              end if
+              k = k + 1
+           end do
+        end do
+
+!        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
+        call pe_master(runtype='fock', denmats=dspmat, nmats=1,
+     &                 energies=energy)
+
         call qexit('pe_ifc_energy')
+
       end subroutine pe_ifc_energy
 
       subroutine pe_ifc_london(fckmats, nmats)

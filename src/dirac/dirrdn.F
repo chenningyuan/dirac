@@ -203,7 +203,14 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
-
+C
+C     Initialize PE library
+C
+      IF (PEQM) THEN
+#if defined(BUILD_PELIB)
+        CALL PE_IFC_INIT()
+#endif
+      END IF
 
 !     this is the new input reader
 !     contains:
