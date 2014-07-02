@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -118,6 +118,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 C
       use interface_to_mpi
+      use xmlout
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -520,6 +521,11 @@ C
       WRITE(IW,6077) DIAG
       WRITE(IW,6078) RMS
       WRITE(IW,6079) NIT
+      if (doxml) then
+         call xml_quantity('CC iterations used',NIT)
+         call xml_quantity('CC convergence',RMS,' ')
+         call xml_quantity('T1 diagnostic',DIAG,' ')
+      end if
 C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
@@ -2083,19 +2089,17 @@ C
 C---------------Executable code--------------------------------------
 C
       CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
-      CALL DELFCK ('VO','DD',BUF1)
+      CALL DELFCK ('VO','DD',BUF1) ! Only used in Fock space calculations
 C
-      CALL XDOTC(CECC1,NFVO,BUF1,1,T1,1)
+      CALL XDOTC(CECC1,NFVO,BUF1,1,T1,1) ! Non-zero only in non-canonical case
       ECC = CECC1(1)
       IF (CARITH) THEN
          IF (ABS(CECC1(2)).GT.ACCUR) 
      &      WRITE (IW,1000) 'T1',CECC1(2)
       ENDIF
 C
-c     print*,'T1 contribution to CC energy',ecc
-C
       CALL GETVVOO (BUF1)
-      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0) ! Only used in Fock space calculations
       CALL GETTAU  (T1,T2,BUF2)
 C
       CALL XDOTC(CECC2,NDIMT2,BUF1,1,BUF2,1)
@@ -2105,7 +2109,6 @@ C
      &      WRITE (IW,1000) 'T2',CECC2(2)
       ENDIF
 
-CMI  ... sum imaginary energies
       IF (CARITH) THEN
         ECCIM = CECC1(2) + CECC2(2)
       ENDIF
@@ -2239,7 +2242,9 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+                  WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                  CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
                   IF (CARITH) THEN
                      CT1(AI) = A0
@@ -2295,6 +2300,8 @@ C                 Check for small denominators, see comment above.
                         ATVAL = ABS(T2(ABIJ))
                      ENDIF
                      IF (ATVAL.GT.DHOLU) THEN
+             WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+             WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
                         CALL QUIT ('Zero or negative HOMO-LUMO gap')
                      ELSE
                        IF (CARITH) THEN

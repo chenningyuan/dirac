@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C  /* Deck ran1 */
@@ -210,12 +210,12 @@ C
       ELSE
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
-      IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'D'
+      IF((NDEC.LT.0).OR.(NDEC.GE.(NDIG-3))) THEN
+        MXFORM(1:1) = 'E'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
-        NDEC = NDIG - NDEC - 3
+        NDEC = NDIG - 3 - NDEC
       ENDIF
       IF(NDEC.LE.0) THEN
         WRITE(LUPRI,*) 'MXFORM out of boundaries...'
@@ -1583,7 +1583,7 @@ C        use F output format
 C        use 1PD output format
          LFMT = '(1P,A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = 'D15.8)'
+         RFMT = 'E15.8)'
       END IF
 C
 C LAST is the last column number in the row currently being printed
@@ -2188,6 +2188,31 @@ C
       ELSE
         CALL QUIT('EXTELM:Unknown FA '//FA//' of matrix A!')
       ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Extvec */
+      SUBROUTINE EXTVEC(AVEC,LDA,BVEC,LDB,NB,NVEC,IBR)
+C***********************************************************************
+C
+C     Extract elements of vectors A(LDA,NVEC) and
+C     insert into vector BVEC(LDB,NVEC) using 
+C     row array IBR.
+C
+C     Written by T.Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
+C
+      DO J = 1,NVEC
+        DO I = 1,NB
+          BVEC(I,J) = AVEC(IBR(I),J)
+        ENDDO
+      ENDDO
 C
       RETURN
       END
@@ -2994,15 +3019,12 @@ C
      &          TM2(LR2,LC2,*),IQTM2(*),
      &          BUF(LBUF)
       DIMENSION IQW(4)
-CMI   .... IPRINT threshold 
-      DATA IPRLIM / 200 /
-!     DATA IPRLIM /   4 /
-
 C
       CALL QENTER('QTRANS')
 C
 C     Add the results on to the contents of the MO matrix ?
 C
+!#define DEBUG
 #ifdef DEBUG
       print*, 'QTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
@@ -3010,6 +3032,7 @@ C
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
       print*, 'QTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#undef DEBUG
 #endif
 C
 C     Time reversal symmetry of F-matrix
@@ -3046,11 +3069,12 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
          
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.12) THEN
             CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
 
             WRITE(LUPRI,'(2X,A,4I2)')
      &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
+            WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
             CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
 
             WRITE(LUPRI,'(/2X,A,4I2)')
@@ -3064,7 +3088,7 @@ C
             CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = FC
+C         First part of transformation: W = Fao C
 C         ------------------------------------
 C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
@@ -3072,14 +3096,14 @@ C
      &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &               D0,IQW,BUF,NRAO,NCMO,NZW)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &      'QTRANS: First part transformation matrix W, W=FC;'//
      &      ' IQW=',(IQW(IZ),IZ=1,NZW)
             CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = (C+)W
+C         Second part of transformation: Fmo = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
@@ -3087,7 +3111,7 @@ C
      &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
      &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &     'QTRANS: Second part of transformation H,H=(C+).W; '//
      &     'IQMO=',(IQMO(IZ),IZ=1,NZMO)
@@ -3117,7 +3141,13 @@ C
      &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
      &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &        D0,IQW,BUF,NRMO,NCAO,NZW)
-C
+
+	  IF(IPRINT.GE.15) THEN
+        CALL HEADER('QTRANS:first part of transformation,W = (C+)F ',-1)
+        CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)       
+	  ENDIF
+	 
+C 
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
@@ -3127,8 +3157,9 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
+		
         IF(IPRINT.GE.11) THEN
-          CALL HEADER('QTRANS: AO-to-MO transformed matrix',-1)
+          CALL HEADER('QTRANS: Final AO-to-MO-transformed matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
 C
@@ -3138,6 +3169,14 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
+#ifdef DEBUG
+      print*, 'QTRANS: The MO matrix'
+      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
@@ -3169,7 +3208,7 @@ C
             CALL PRQMAT(TM2,NCAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = F(C+)
+C         First part of transformation: W = Fmo(C+)
 C
           CALL QGEMM(NRMO,NCAO,NCMO,D1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
@@ -3183,7 +3222,7 @@ C
             CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = CW
 C
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
@@ -3217,7 +3256,7 @@ C
             CALL PRQMAT(TM2,NCAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = CF
+C         First part of transformation: W = CFmo
 C
           CALL QGEMM(NRAO,NCMO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
@@ -3231,7 +3270,7 @@ C
             CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = W(C+)
+C         Second part of transformation: Fao = W(C+)
 C
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
      &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
@@ -3259,8 +3298,13 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
       use memory_allocator
 #include "implicit.h"
-      real(8), allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
+      real(8) :: FAO(LRAO,LCAO,NZAO)
+      real(8) :: FMO(LRMO,LCMO,NZMO)
+      real(8) :: TM1(LR1 ,LC1 ,NZTM1)
+      real(8) :: TM2(LR2 ,LC2 ,NZTM2)
+      integer :: IQAO(nzao),IQMO(nzmo),IQTM1(nztm1),IQTM2(nztm2)
+      real(8), allocatable :: work(:)
       integer IQW(4)
 C     find out how much buffer is needed in qtrans
       IF(TYP.EQ.'AOMO') THEN
@@ -6217,7 +6261,7 @@ C***********************************************************************
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
-      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
       TEMP=XDEV*XTANG
@@ -6397,49 +6441,6 @@ C***********************************************************************
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gatmat */
-      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
-C***********************************************************************
-C     This routine will transfer elements from matrix B to matrix A
-C     according to row and column pointers INDR and INDC
-C
-C	Written by T.Saue, March 2011
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION A(LDA,*),B(LDB,NC),INDR(NR),INDC(NC)
-      DO J = 1,NC
-        JJ = INDC(J)
-        DO I = 1,NR
-          II = INDR(I)
-          A(II,JJ)=B(I,J)
-        ENDDO
-      ENDDO
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
-C***********************************************************************
-C     Make reverse indexing for elements of ILIST.GE.0
-C     Written by T. Saue March 31 2011
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION ILIST(NI),JLIST(NJ)
-      J = 0
-      DO I = 1,NI
-      IF(ILIST(I).GE.0) THEN
-        J = J + 1
-        IF(J.GT.NJ) CALL QUIT('REVINDEX: Out of bounds !')
-        JLIST(J) = I
-      ENDIF
-      ENDDO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION SYMCHECK(A,LR,LC,N,NZ)
 C***********************************************************************
 C
@@ -6463,3 +6464,151 @@ C***********************************************************************
       SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
       RETURN
       END
+C  /* Deck indexi */
+      SUBROUTINE INDEXI(N,IARR,INDX)
+C***********************************************************************
+C
+C     This subroutine goes through an integer array IARR and returns the ordering
+C     index array INDX giving indices from smallest to largest
+C
+C     The array ARR is not touched.
+C
+C***********************************************************************
+      INTEGER N,INDX(N),M,NSTACK,IARR(N)
+      PARAMETER (M=7,NSTACK=50)
+      INTEGER I,IA,INDXT,IR,ITEMP,J,JSTACK,K,L,ISTACK(NSTACK)
+      DO J=1,N
+         INDX(J)=J
+      END DO
+      JSTACK=0
+      L=1
+      IR=N
+ 1    IF(IR-L.GE.M)THEN
+         K=(L+IR)/2
+         ITEMP=INDX(K)
+         INDX(K)=INDX(L+1)
+         INDX(L+1)=ITEMP
+         IF(IARR(INDX(L+1)).GT.IARR(INDX(IR)))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(IARR(INDX(L)).GT.IARR(INDX(IR)))THEN
+            ITEMP=INDX(L)
+            INDX(L)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(IARR(INDX(L+1)).GT.IARR(INDX(L)))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(L)
+            INDX(L)=ITEMP
+         ENDIF
+         I=L+1
+         J=IR
+         INDXT=INDX(L)
+         IA=IARR(INDXT)
+ 3       CONTINUE
+         I=I+1
+         IF(IARR(INDX(I)).LT.IA)GOTO 3
+ 4       CONTINUE
+         J=J-1
+         IF(IARR(INDX(J)).GT.IA)GOTO 4
+         IF(J.LT.I)GOTO 5
+         ITEMP=INDX(I)
+         INDX(I)=INDX(J)
+         INDX(J)=ITEMP
+         GOTO 3
+ 5       INDX(L)=INDX(J)
+         INDX(J)=INDXT
+         JSTACK=JSTACK+2
+         IF(JSTACK.GT.NSTACK)
+     $        CALL QUIT('NSTACK TOO SMALL IN INDEXI')
+         IF(IR-I+1.GE.J-L)THEN
+            ISTACK(JSTACK)=IR
+            ISTACK(JSTACK-1)=I
+            IR=J-1
+         ELSE
+            ISTACK(JSTACK)=J-1
+            ISTACK(JSTACK-1)=L
+            L=I
+         ENDIF
+      ELSE
+         DO J=L+1,IR
+            INDXT=INDX(J)
+            IA=IARR(INDXT)
+            DO I=J-1,1,-1
+               IF(IARR(INDX(I)).LE.IA)GOTO 2
+               INDX(I+1)=INDX(I)
+            END DO
+            I=0
+ 2          INDX(I+1)=INDXT
+         END DO
+         IF(JSTACK.EQ.0)RETURN
+         IR=ISTACK(JSTACK)
+         L=ISTACK(JSTACK-1)
+         JSTACK=JSTACK-2
+      ENDIF
+      GOTO 1
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cleanmat */
+      SUBROUTINE CLEANMAT(A,DTOL,N,LR,LC,NZ)
+C***********************************************************************
+C
+C     Subroutine CLEANMAT will set matrix elements below the given 
+C     threshold to zero
+C     Written by T. Saue Oct. 2 2013
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION A(LR,LC,NZ)
+      PARAMETER (D1=1.0D00, D0=0.0D00)
+      DO IZ = 1,NZ
+        DO J = 1,N
+          DO I = 1,N
+            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ) = D0
+          ENDDO
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Absolute_Overlap */
+      SUBROUTINE ABSOLUTE_OVERLAP(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                            CREF,NCOL,IREF,SMAT,AMAT,
+     &                            IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate overlap between vector set; 
+C     for readability report square of overlap
+C
+C     Written by T. Saue Oct 3 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      DO J = 1, NSEL
+        DO I = 1,NSEL
+           AMAT(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NSEL
+          DO I = 1,NSEL
+             AMAT(I,J,1) = AMAT(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+

@@ -1,3 +1,16 @@
+#ifdef USE_BUILTIN_LAPACK
+#define USE_BUILTIN_ZLAPACK
+#endif
+
+! ESSL LAPACK la(pa)cks almost everything
+! switch on own LAPACK until better solution is found
+#ifndef USE_BUILTIN_LAPACK
+#ifdef HAVE_ESSL_LAPACK
+#define USE_BUILTIN_ZLAPACK
+#endif
+#endif
+
+
 ! FILE : gp_zlapack.F
 !
 ! lapack complex16 routines, taken from the netlib site on 20080612
@@ -7,7 +20,7 @@
 !
 ! $Id$
 !
-#ifdef USE_OWN_LAPACK
+#ifdef USE_BUILTIN_ZLAPACK
       SUBROUTINE ZBDSQR( UPLO, N, NCVT, NRU, NCC, D, E, VT, LDVT, U,
      $                   LDU, C, LDC, RWORK, INFO )
 *
@@ -190052,9 +190065,8 @@ C                    SLARRF needs LWORK = 2*N
 *     End of CUPMTR
 *
       END
-#else
-! dummy routine, in case the compiler doesnt like empy files
+#endif /* USE_BUILTIN_ZLAPACK */
+
+      ! dummy routine to avoid empty file
       subroutine dummy_dirac_zlapack()
       end
-#endif
-

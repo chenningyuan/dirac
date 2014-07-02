@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,13 +16,13 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgeo */
-      SUBROUTINE PAMGEO(WORK,LWORK)
+      SUBROUTINE PAMGEO()
 C*****************************************************************************
 C
 C     Module for geometry optimization
@@ -59,6 +59,9 @@ C       We want the analytical gradient, check whether it is implemented
      &           .or. doluct
      &           .or. dokrmc
      &           .or. doluciar
+#if defined (PCM_MODULE)
+     &           .or. dirac_cfg_pcm
+#endif
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use NUMERICAL MOLECULAR GRADIENT',
@@ -66,16 +69,14 @@ C       We want the analytical gradient, check whether it is implemented
      *     //' function type).'
         ENDIF
       ENDIF
-      WRKDLM = 0.0D00
-      IWOFF  = 0
-      CALL OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      CALL OPTMIN()
 C
       CALL QEXIT('PAMGEO')
       RETURN
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck exedir */
-      SUBROUTINE EXEDIR(WORK,LWORK)
+      SUBROUTINE EXEDIR()
 C*****************************************************************************
 C
 C     (c) 1997/07/09 by J. Thyssen
@@ -87,7 +88,6 @@ C
 C*****************************************************************************
       use dirac_cfg
 #include "implicit.h"
-      DIMENSION WORK(LWORK)
       LOGICAL FIRST
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -109,6 +109,10 @@ C     To avoid readin twice in the 0. iteration skip
 C     the readin/setup.
 C
 C     Input and initialization
+
+C     Always do wave function (implicit .WAVE FUNCTION parameter)
+      DOPSI = .TRUE.
+
 C
       IF ( FIRST ) THEN
          FIRST = .FALSE.
@@ -118,14 +122,14 @@ C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
-         CALL PAMINP(WORK,LWORK)
+         CALL PAMINP()
          IF ( INPTES ) RETURN
 C
 C*****************************************************************************
 C*****  S E T U P  -  M O D U L E  *******************************************
 C*****************************************************************************
 C
-         CALL PAMSET(WORK,LWORK)
+         CALL PAMSET()
       END IF
 C
 C
@@ -133,25 +137,18 @@ C******************************************************************************
 C*****  G E T    W A V E    F U N C T I O N   *********************************
 C******************************************************************************
 C
-C     Always do wave function
-      DOPSI = .TRUE.
-C
-C
-      CALL PCMOIN(WORK,LWORK)
 C
 C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
 C
-      CALL PAMPSI(WORK,LWORK)
-      IF(DOACUT) CALL ACMOUT(WORK,LWORK)
-      IF(DOPUT) CALL PCMOUT(WORK,LWORK)
+      CALL PAMPSI()
 C
 C
 C*****************************************************************************
 C*****  A N A L Y S I S    M O D U L E  **************************************
 C*****************************************************************************
 C
-      IF(DOANA) CALL PAMANA(WORK,LWORK)
+      IF (DOANA) CALL PAMANA()
 C
 C
 C*****************************************************************************
@@ -159,13 +156,7 @@ C*****  R E S P O N S E    M O D U L E  **************************************
 C*****************************************************************************
 C
 C
-      IF (DOPRP) CALL PAMPRP(WORK,LWORK)
-C
-C*****************************************************************************
-C***** H E I N Z *************************************************************
-C*****************************************************************************
-C
-      IF(DOHEINZ) CALL HEINZ(WORK,LWORK)
+      IF (DOPRP) CALL PAMPRP()
 C
 C
       CALL FLSHFO(LUPRI)
@@ -179,7 +170,7 @@ C  /* Deck rgetccsd */
 C
 C     Get energy from RELCCSD
 C
-      CHARACTER CENERGY*40
+      CHARACTER CENERGY*50
 #include "../relccsd/results.inc" 
 #include "../relccsd/inpt.inc" 
       IF (DOCCSDT) THEN
@@ -188,12 +179,17 @@ C
          CENERGY = 'CCSD energy from RELCCSD'
       ELSE IF (DOMP2) THEN
          CENERGY = 'MP2 energy from RELCCSD'
+      ELSE IF (DOFSPC) THEN
+         CENERGY = '(IH-)Fock space CC energy for selected state'
       ELSE
          call quit('no energy from RELCCSD')
       END IF
+
+      RGETCCSD            = ETOT
+      if(dofspc) rgetccsd = efs(1)
+
       WRITE(LUPRI,'(2A,1P,E20.10)')
-     &   CENERGY,' = ',ETOT
-      RGETCCSD = ETOT
+     &   CENERGY,' = ',rgetccsd
       RETURN
       END
 C  /* Deck rgetccsd */

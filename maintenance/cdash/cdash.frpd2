@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# ------------------------ #
+# enviroment variables ... #
+# ------------------------ #
+
+# the directory where your DIRAC sits #
+DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
+
+# go to the local DIRAC directory
+cd $DIRAC
+git checkout release-13
+
+export DIRTIMEOUT="14m"
+
+BUILD_GNU=build_gnu_ilp64
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+./pamadm -a --builddir=$BUILD_GNU
+# configure step
+./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64-check-release13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
+cd $BUILD_GNU
+make ExperimentalUpdate
+make ExperimentalConfigure
+make ExperimentalBuild
+make ExperimentalTest
+make ExperimentalSubmit
+
+
+####  server's Intel compilers  ####
+if [[ -z $PROD_DIR ]]; then
+  source /home/ilias/intel/bin/compilervars.sh intel64
+  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+  export MATH_ROOT=/home/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+fi
+
+cd $DIRAC
+BUILD_INTEL=build_intelmkl_ilp64
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
+fi
+./pamadm -a --builddir=$BUILD_INTEL
+# configure step
+./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8_release-13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+cd $BUILD_INTEL
+make Experimental
+
+exit 0

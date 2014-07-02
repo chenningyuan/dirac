@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module visual
@@ -24,7 +24,7 @@ module visual
   use memory_allocator
   use visual_cfg
   use codata
-  use ao_eval
+  use dirac_ao_eval
   use interface_ao
   use matrix_defop_old
   use matrix_genop_old, only: copy_matrix_sym
@@ -430,7 +430,7 @@ contains
 !   initialize ao module
 !   ====================
 
-    call ao_eval_init(max_ao_g_order, &
+    call dirac_ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
                       .false.)
 

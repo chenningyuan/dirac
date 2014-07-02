@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !  new module for symmetry and GASpace handling of mo-spinors in KR/(KU?)-CI
@@ -64,6 +64,7 @@ module mospinor_info
    integer, allocatable, public :: ngsob(:,:)
 
    integer, allocatable, public :: imosp_dirac_counter1(:)
+   integer, allocatable, public :: imosp_dirac_mjub(:)
    integer, allocatable, public :: imosp_luci2dirac1(:)
 
 !  b. barred spinors
@@ -83,6 +84,7 @@ module mospinor_info
    integer, allocatable, public :: ngsob2(:,:)
 
    integer, allocatable, public :: imosp_dirac_counter2(:)
+   integer, allocatable, public :: imosp_dirac_mjb(:)
    integer, allocatable, public :: imosp_luci2dirac2(:)
 contains
 
@@ -112,10 +114,14 @@ contains
 
       call alloc(imosp_dirac_counter1,max_num_spinors,'dirac_mosp-counter1')
       call alloc(imosp_dirac_counter2,max_num_spinors,'dirac_mosp-counter2')
+      call alloc(imosp_dirac_mjub,    max_num_spinors,'dirac_mosp-mjub')
+      call alloc(imosp_dirac_mjb,     max_num_spinors,'dirac_mosp-mjb')
       call alloc(imosp_luci2dirac1   ,max_num_spinors,'luci2dirac-mosp-index1')
       call alloc(imosp_luci2dirac2   ,max_num_spinors,'luci2dirac-mosp-index2')
       imosp_dirac_counter1 = 0
       imosp_dirac_counter2 = 0
+      imosp_dirac_mjub     = 0
+      imosp_dirac_mjb      = 0
       imosp_luci2dirac1    = 0
       imosp_luci2dirac2    = 0
 
@@ -162,6 +168,8 @@ contains
 
       if (allocated(imosp_dirac_counter1)) call dealloc(imosp_dirac_counter1)
       if (allocated(imosp_dirac_counter2)) call dealloc(imosp_dirac_counter2)
+      if (allocated(imosp_dirac_mjub))     call dealloc(imosp_dirac_mjub)
+      if (allocated(imosp_dirac_mjb))      call dealloc(imosp_dirac_mjb)
       if (allocated(imosp_luci2dirac1   )) call dealloc(imosp_luci2dirac1)
       if (allocated(imosp_luci2dirac2   )) call dealloc(imosp_luci2dirac2)
 

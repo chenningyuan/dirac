@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -25,12 +25,15 @@
 ! balance basis.
 !
 ! written by sknecht july 2010
+!            sknecht august 2012 - added spinfree Hamiltonian
 !
 module x2c_get_h1inf2c_mo
 
   use x2c_fio
-  use x2c_utils, only:                 &
-      print_x2cmat
+  use x2c_utils,        only:         &
+      print_x2cmat,                   &
+      make_spinfree_h1_onmo,          &
+      get_boson_irrep_info
   use x2c_decoupling_mat
 
   implicit none
@@ -56,9 +59,9 @@ contains
                                 nfsym,                    &
                                 nz,                       &
                                 ipq_off,                  &
-                                is_fragment,              &
                                 x2c_file_scr,             &
                                 defining_h1mat,           &
+                                spinfree,                 &
                                 print_lvl)
 !**********************************************************************
 !
@@ -78,10 +81,10 @@ contains
      integer, intent(in)    :: nesh_dim(nfsym)
      integer, intent(in)    :: npsh_dim(nfsym)
      integer, intent(in)    :: ipq_off(4,0:7)
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: print_lvl
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
      integer                :: ioff_osh1
      integer                :: ioff_oeig
@@ -97,8 +100,19 @@ contains
      integer                :: i, j, ix
      character (len=12)     :: flabel
      character (len= 5)     :: flabel_tag
+     integer, allocatable   :: boson_info(:)
 !**********************************************************************
 !
+
+#ifdef spinfree_after_approach
+       if(spinfree)then
+         allocate(boson_info(norb_dim(1)+norb_dim(2)))
+         call get_boson_irrep_info(boson_info,  &
+                                   nfsym,       &
+                                   norb_dim,    &
+                                   print_lvl)
+       end if
+#endif
 
 !      initialize pointers for matrices and vectors
        ioff_osh1 = 1
@@ -121,7 +135,7 @@ contains
          if( norb_dim(i) > 0 )then
 
 !          set unique last part of the file ID
-           write(flabel_tag,'(i4,i1)') is_fragment,i
+           write(flabel_tag,'(i4,i1)') 1,i
 
 !          step 1: construct the decoupling matrix R in orthonormal MO basis
 !                  this step includes:
@@ -197,6 +211,22 @@ contains
                                            nz,                 &
                                            ipq_off(1,0),       &
                                            print_lvl)
+            
+#ifdef spinfree_after_approach
+           if(spinfree)then
+             call make_spinfree_h1_onmo(                               &
+                                        xmat(ioff_esh1),               & 
+                                        n1esh_f,                       & 
+                                        n1esh_f,                       & 
+                                        n1esh_f,                       & 
+                                        n1esh_f,                       & 
+                                        boson_info(ioff_oeig+n1psh_f), &
+                                        boson_info(ioff_oeig+n1psh_f), &
+                                        nz,                            &
+                                        print_lvl                      &
+                                       )
+           end if
+#endif
 
 !          debug print
            if(print_lvl > 1)then
@@ -214,6 +244,10 @@ contains
          ioff_eeig = ioff_eeig + n1esh_f
 
        end do
+
+#ifdef spinfree_after_approach
+       if(spinfree) deallocate(boson_info)
+#endif
 
   end subroutine get_h1_2c_onmo_bas
 

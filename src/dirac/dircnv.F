@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : dircnv.F
@@ -64,7 +64,7 @@ C             FMO   - Fock matrix in MO-basis
 C             FAO   - Fock matrix in AO-basis (FDao and FVao)
 C             DMAT  - Density matrix in AO-basis (DCao and DVao)
 C             TMAT  - MO-transformation matrix
-C             TINV  - Right index transformed overlap matrix; 
+C             TINV  - Right index transformed overlap matrix;
 C             correponds to the inverse of the transformation matrix
 C             FBUF  - work area
 C
@@ -163,11 +163,11 @@ C     upper limit for proceeding with post-HF calculations.
 C
 CMI ... when continuing the BSS-SCF after the DC-SCF,
 CMI      we have to reset the DHFCONV/DHFEXIT values before !
-      IF(ABS(CONVRG).LT.SCFCNV(1)) DHFCONV(1) = .TRUE.
-      IF(ABS(CONVRG).LT.SCFCNV(2)) DHFCONV(2) = .TRUE.
-      IF(DHFCONV(1).OR.(KITER.GT.MAXITR)) DHFEXIT = .TRUE.
+      DHFCONV(1) = ABS(CONVRG).LT.SCFCNV(1)
+      DHFCONV(2) = ABS(CONVRG).LT.SCFCNV(2)
+      DHFEXIT    = DHFCONV(1) .OR. (KITER.GT.MAXITR)
 
-C     
+C
 C     If wave function converged or DHFEXIT is true, then
 C     return to avoid an extra diagonalization of the Fock matrix.
 C
@@ -264,7 +264,8 @@ C
       DAMPON = DODAMP.AND.(.NOT.DIISON).AND.INTFLG.EQ.INTBUF
       IF(DAMPON) THEN
         CACC(1:4) = 'DAMP'
-        WRITE(CACC(5:8),'(F4.2)') DAMPFC
+        WRITE(CACC(5:7),'(I3)') INT(DAMPFC*100.0D0)
+        CACC(8:8) = '%'
         DNEW = D1 - DAMPFC
         CALL DSCAL(N2TMOTQ,DNEW  ,FMO,1)
         CALL DAXPY(N2TMOTQ,DAMPFC,FBUF,1,FMO,1)
@@ -284,7 +285,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diiser */
       SUBROUTINE DIISER(EVEC,FMO,FAO,DMAT,TINV,EBUF,TMAT,WORK,LWORK)
 C****************************************************************************
-C 
+C
 C  PURPOSE: Calculate the gradient (error) vector.
 C
 C  On input: DMAT, FAO, TMAT, TINV
@@ -479,7 +480,7 @@ C        minus those that are frozen
          DO 20 I = 1,NFSYM
             IF(NOCCMF(I).EQ.0) GOTO 20
             IF(IPRSCF.GE.3) THEN
-C             Transform Fock matrix to current orthonormal MO-basis      
+C             Transform Fock matrix to current orthonormal MO-basis
               CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
      &                NTMO(I),NTMO(I),
      &                FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
@@ -487,9 +488,9 @@ C             Transform Fock matrix to current orthonormal MO-basis
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRSCF)
-              KOFF = I2TMOT(I) + NPSHMF(I)*(NTMO(I)+1) + 1
-              CALL HEADER
-     &        ('DIISER: Fock matrix (occ-nesh) in current MO-basis',-1)
+              KOFF = I2TMOT(I) + NPSHMF(I)*NTMO(I) + 1
+              CALL HEADER('DIISER: '//
+     &         'Fock matrix (1:nesh,1:nocc) in current MO-basis',-1)
               WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
               CALL PRQMAT(EBUF(KOFF),NESHMF(I),NOCCMF(I),
      &                    NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -563,7 +564,7 @@ C
 C
       END IF
       IF(IPRSCF.GE.2) THEN
-C     Transform error vector to current orthonormal MO-basis      
+C     Transform error vector to current orthonormal MO-basis
         REWIND LUCMOS
         CALL READT(LUCMOS,N2TMOTQ,EBUF)
         DO 40 I = 1,NFSYM
@@ -580,9 +581,9 @@ C     Transform error vector to current orthonormal MO-basis
           CALL HEADER
      &       ('DIISER DIISMO: Error matrix in current MO-basis',-1)
           WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-          KOFF = KBUF + NPSHMF(I)*(NTMO(I)+1)
+          KOFF = KBUF + NPSHMF(I)*NTMO(I)
           IF(IPRSCF.GE.3) THEN
-            CALL PRQMAT(WORK(KOFF),NTMO(I),NTMO(I),
+            CALL PRQMAT(WORK(KOFF),NTMO(I),NOCCMF(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
           NDIM = NTMO(I)*NTMO(I)
@@ -602,8 +603,8 @@ C     Transform error vector to current orthonormal MO-basis
               ENDIF
               KOFF = KOFF + 1
             ENDDO
-            WRITE(6,'(A,I5,A,I5,E12.4)') 
-     &       'Occ. orb. ',J1, '  largest gradient partner: ',J2,
+            WRITE(LUPRI,'(A,I5,A,I5,E12.4)')
+     &       'Occ. orb. ',J1, ' largest gradient partner: ',J2,
      &        SQRT(GMAX)
           ENDDO
           CALL MEMREL('DIISER.MOerr',WORK,KWORK,KBUF,KFREE,LFREE)
@@ -621,8 +622,8 @@ C        --------------------------------------------
 C        total factor to get g norm         sqrt(2)
 C
       EVCVAL = SQRT(D2)*DNRM2(N2TMOTQ,EVEC,1)
-C     
-      IF (IPRSCF.GE.10) THEN
+C
+      IF (IPRSCF.GE.5) THEN
         CALL HEADER('DIISER: Resulting value of EVCVAL ',-1)
         WRITE(LUPRI,'(4X,A,D15.6)')
      &  '>>> EVCVAL = SQRT(D2)*DNRM2(N2TMOTQ,EVEC,1) = ',EVCVAL
@@ -787,10 +788,10 @@ C
            inquire(LUDIIS,exist=exists)
            if(DO4C2C)then
 !            stefan: if we delete the file here, the program crashes
-!            (because the file does not exist on disc) when 
+!            (because the file does not exist on disc) when
 !            we restart the 2c-SCF after we have done a 4c-SCF +
 !            transformation of the 4c-Fock operator.
-!            @ miro: did this ever work after your change 2007? 
+!            @ miro: did this ever work after your change 2007?
 !            i tried it also with older trunk versions and it did not...
              if(exists) CLOSE(LUDIIS)
            else
@@ -969,8 +970,8 @@ C
 C       Ill-conditioned matrix; delete oldest elements
 C
         IF (D1+BMCOND.EQ.D1) THEN
-          IF(IPRINT.GE.3) THEN
-            WRITE(LUPRI,'(A,1P,E9.3)') '*** WARNING *** B-cond:',BMCOND
+          IF(IPRINT.GE.2) THEN
+            WRITE(LUPRI,'(A,1P,E9.3)') '***  INFO  *** B-cond:',BMCOND
             WRITE(LUPRI,'(/A/)') 'B matrix:'
             CALL PRMUTC(BMAT,NELMBM,1,LUPRI)
           ENDIF
@@ -1134,3 +1135,4 @@ C
 C
       RETURN
       END
+! -- end of dirac/dircnv.F --

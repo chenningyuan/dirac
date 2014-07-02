@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
       SUBROUTINE GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
@@ -475,7 +475,8 @@ C
  999  CALL QEXIT('GET_XPROP_REOD_KRCI')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XPROP_KRCI(XPROPMAT,IHTYPE,IPROCLIST,IGROUPLIST,CIRUN)
+      SUBROUTINE XPROP_KRCI(XPROPMAT,IHTYPE,IPROCLIST,IGROUPLIST,CIRUN,
+     &                      MZ)
 C***********************************************************************
 C
 C     calculate property matrix. 
@@ -523,12 +524,14 @@ C information for property run
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
 #endif
 #include "parluci.h"
-      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
+     
+      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
+     &                   NPROP_KRCI,MZ)
       DIMENSION IPROCLIST(*), IGROUPLIST(*)
       CHARACTER CIRUN*6,FILELAB*8,FILELAB_REOD*8,RODLAB*2,x_NAME*800
       LOGICAL MCSCF, RUN_SHMEM_T, COPY_NEW_C, EX
       INTEGER*8 IL_KTCC8
-      integer mz
+      integer, intent(in) :: mz
 C
       CALL QENTER('XPROP_KRCI')
       NTESTX = 10
@@ -538,7 +541,6 @@ C     set memory mark
       CALL MEMMAR(KDUMMY,IDUM,'MARK  ',IDUM,'XPROP ')
 C
       RODLAB = 'RO'
-      MZ = MIN(NZ,2)
 C     set required variables
       IMEMCK  = 0
       INTIMP  = 7
@@ -772,13 +774,17 @@ C           debug print
             WRITE(LUWRT,*) ' symmetry of property    ==>', ISYM_T
             WRITE(LUWRT,*) ' symmetry of sigma state ==>', 
      &                       IDBGMULT(ICSM,ISYM_T)
+#ifdef VAR_MPI2
             WRITE(LUWRT,*) ' active sigma irrep      ==>', 
      &                       IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
+#endif
 #endif
             ISSM      = IDBGMULT(ICSM,ISYM_T)
             L_COMBI_S =   XISPSM(ISSM,ISSPC)
 C           which "active" S irrep?
+#ifdef VAR_MPI2
             IX_ST     = IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
+#endif
 C
 C           compute new sigma vector = T_prop x C
 C           -------------------------------------
@@ -799,6 +805,7 @@ C
 C           inner loop over all eigenstates
 #if defined (VAR_MPI2)
 C 
+!#define MOD_DEBUG
 #ifdef MOD_DEBUG
             WRITE(LUWRT,*) 'par - <S_ISSM|prop|C_ICSM> for C_#,IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
@@ -839,10 +846,10 @@ C                  operator
               IF(MZ.eq.2) CALL DSCAL(NPROP_ROOTS_KRCI,DMONE,WORK(KXI),1)
             END IF
 C
-            CALL DCOPY(NPROP_ROOTS_KRCI,WORK(KXR),1,
+            CALL DAXPY(NPROP_ROOTS_KRCI,1.0d0,WORK(KXR),1,
      &                 XPROPMAT(1,ISTATE_X,IPROP_X,1),1)
             IF( MZ .eq. 2 ) 
-     &      CALL DCOPY(NPROP_ROOTS_KRCI,WORK(KXI),1,
+     &      CALL DAXPY(NPROP_ROOTS_KRCI,1.0d0,WORK(KXI),1,
      &                 XPROPMAT(1,ISTATE_X,IPROP_X,2),1)
 C
 C           DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
@@ -859,9 +866,17 @@ C             WRITE(LUWRT,*) 'ISTATE_Y,ISTATE_X, PRPNAM(INDXPR) and'//
 C    &                       ' XPROPMAT(Y,X,PROP,2)',ISTATE_Y,ISTATE_X,
 C    &                        PRPNAM(INDXPR),
 C    &        XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2)
-C300        CONTINUE
+!           DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
+! stefan test: symmetrize
+!             xpropmat(istate_x,istate_y,iprop_x,1) = 
+!    &        xpropmat(istate_y,istate_x,iprop_x,1)   
+!             if(mz == 2)
+!    &        xpropmat(istate_x,istate_y,iprop_x,2) = 
+!    &        xpropmat(istate_y,istate_x,iprop_x,2)   
+!300        CONTINUE
 C           ^ end of inner loop over all eigenstates
 #else
+!#define MOD_DEBUG
 #ifdef MOD_DEBUG
             WRITE(LUWRT,*) 'seq - <S_ISSM|prop|C_ICSM> for C_#,IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
@@ -898,6 +913,7 @@ C
                 if(mz.eq.2) xpropmat(istate_y,istate_x,iprop_x,2) = 
      &                     -xpropmat(istate_y,istate_x,iprop_x,2)
               end if
+
 C
             end do
 C           ^ end of inner loop over all eigenstates
@@ -925,10 +941,22 @@ C
       IF( MYPROC .eq. MASTER) 
      &    CALL DCOPY(LXPRPKRCI,WORK(KXPROP_SCR),1,XPROPMAT,1)
 #endif
+
+!     symmetrize
+      DO I = 1, NPROP_ROOTS_KRCI
+        DO j = 1, NPROP_ROOTS_KRCI
+          DO k = 1, NPROP_KRCI
+            DO l = 1, mz
+              xpropmat(i,j,k,mz) = xpropmat(j,i,k,mz)
+            end do
+          end do
+        end do
+      end do
 C
 C     print section
 C     _____________
 C
+!#define MOD_DEBUG
 #ifdef MOD_DEBUG
       NTESTX = 10
 #else
@@ -953,7 +981,7 @@ C     set back to default
       DOSIGPROP = .FALSE.
 C      
       CALL QEXIT('XPROP_KRCI')
-!#undef MOD_DEBUG
+#undef MOD_DEBUG
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     end of file property_r.F

@@ -45,14 +45,12 @@ type :: PipekMezey_variales
   integer :: maxref
   real*8  :: prothr
   logical :: ownbas
-  character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
-  character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
   character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
 
 type( PipekMezey_flags     ), private :: PM
-type( PipekMezey_variales  ), private :: var
+type( PipekMezey_variales  ), private :: VAR
 
 ! Some global parameters
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
@@ -65,6 +63,9 @@ real*8,  save :: dinvmg4out
 real*8,  allocatable, save, private :: pmat(:,:,:,:), smat(:)
 real*8,  allocatable, save, private :: scoef(:,:,:), storec(:,:,:)
 integer, allocatable, save, private :: nfnuc(:), isel(:)
+
+character(len=6 ), allocatable, save, private :: VAR_reffil(:)    ! reffil(maxref)
+character(len=72), allocatable, save, private :: VAR_vecref(:,:)  ! vecref(2,maxref)
 
 contains
 
@@ -79,15 +80,11 @@ contains
 
   ! Internal variables
 
-  ! this parameter must match dimension of reffil and vecref in type PipekMezey_variales
-  integer, parameter :: maxref = 15
-
   logical :: tobe, twocomp, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit
   real*8  :: toterg, second
-  character*6  :: reffil(maxref)
   character*8  :: chdum
-  character*72 :: vecref(2,maxref), selmos
+  character*72 :: selmos
 
   integer, allocatable, dimension(:) :: itmp, indnao, ibeig
   real*8,  allocatable, dimension(:) :: cmo, eig
@@ -155,16 +152,12 @@ contains
   read(iunit,*) chdum,twocomp
   read(iunit,*) chdum,x2c
 
-  if(var%maxref /= maxref)then
-    write(var%lupri,'(a)')' WARNING: The maxref dimension in func_PipekMezey module and Dirac differ'
-    write(var%lupri,'(a,I4)')' maxref(Dirac) =',var%maxref
-    write(var%lupri,'(a,I4)')' maxref(func_PipekMezey module) =',maxref
-    stop
-  endif
+  allocate( VAR_reffil(var%maxref),   stat=ier ); call errall(ier,'init_func','VAR_reffil')
+  allocate( VAR_vecref(2,var%maxref), stat=ier ); call errall(ier,'init_func','VAR_vecref')
 
   do i=1,var%nrefs
-    read(iunit,*) reffil(i)
-    read(iunit,*) vecref(1,i)
+    read(iunit,*) VAR_reffil(i)
+    read(iunit,*) VAR_vecref(1,i)
   enddo
 
   ! indaoc routine
@@ -175,12 +168,6 @@ contains
 
   ! two component calculation
   var%h2comp = twocomp .or. x2c
-
-  do i=1,var%maxref
-    var%reffil(i)   = reffil(i)
-    var%vecref(1,i) = vecref(1,i)
-    var%vecref(2,i) = vecref(2,i)
-  enddo
 
   ! starting time
   var%timstr = second()
@@ -321,6 +308,9 @@ contains
   deallocate( smat   )
   deallocate( nfnuc  )
   deallocate( isel   )
+
+  deallocate( VAR_reffil )
+  deallocate( VAR_vecref )
 
   ! deallocate pointers
   deallocate( hmat   )
@@ -1110,8 +1100,8 @@ contains
       NORB = VAR%NORB(IFRP)
       NREFS= VAR%NREFS
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-      VECREF(:,:) = VAR%VECREF(:,:)
-      REFFIL(:)   = VAR%REFFIL(:)
+      VECREF(:,:) = VAR_VECREF(:,:)
+      REFFIL(:)   = VAR_REFFIL(:)
 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
@@ -1366,8 +1356,8 @@ contains
       PTOL  = VAR%PROTHR*DC
       LUPRI = VAR%LUPRI
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
-      VECREF(:,:) = VAR%VECREF(:,:)
-      REFFIL(:)   = VAR%REFFIL(:)
+      VECREF(:,:) = VAR_VECREF(:,:)
+      REFFIL(:)   = VAR_REFFIL(:)
 
 !     Make projection vector
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -28,7 +28,6 @@
 !
 module x2c_decoupling_mat
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils
 
@@ -381,7 +380,7 @@ contains
      integer                :: j
 !**********************************************************************
        
-       call alloc(temp_mat1,ndim_ab)
+       allocate(temp_mat1(ndim_ab))
        temp_mat1     = val_d0
 
        job_task      = 1
@@ -399,7 +398,7 @@ contains
 
        endif
 
-       call alloc(temp_mat2,ndim_ab)
+       allocate(temp_mat2(ndim_ab))
        temp_mat2 = val_d0
 
        call qchols(amat,ndim_ab,effective_dim,ndim_ab,               &
@@ -412,8 +411,8 @@ contains
              call print_x2cmtx(rmat,ndim_ab,ndim_ab,nz,ipq_off,'x2c - rmat',6)
            end if
 
-       call dealloc(temp_mat2)
-       call dealloc(temp_mat1)
+       deallocate(temp_mat2)
+       deallocate(temp_mat1)
 
   end subroutine solve_r_eq
 

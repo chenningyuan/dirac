@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module london_reorth_hb
@@ -26,11 +26,15 @@ module london_reorth_hb
   use dft_cfg
   use num_grid_gen
   use dirac_interface
+#ifdef MOD_LAO_REARRANGED
+  use london_helper  
+  use london_utils   
+#endif
 
   implicit none
 
   public london_reort_hb
-  public check_symmetry 
+!  public check_symmetry 
   save
 
   private
@@ -55,6 +59,7 @@ module london_reorth_hb
 #include "cbihr2.h"
 #include "dcbdhf.h"
 #include "shells.h"
+#include "dcbxlr.h"
 
 #include "infpar.h"
 
@@ -63,6 +68,7 @@ module london_reorth_hb
   integer, parameter :: max_nr_xyz_comp = 3
   integer            ::     nr_xyz_comp
 
+  integer, parameter :: file_unit = 137
   integer, parameter :: tbmo_unit = 71
   logical            :: debug_me
 
@@ -74,6 +80,9 @@ contains
 ! when London atomic orbitals are used:
 ! {T^B, H(0)} = {T^B, h(0)} + {T^B, L}
 ! please see two last terms in eq. (31) in JCP 131, 124119 (2009)
+
+! gosia: in connection-independent formulation, we calculate only:
+! -{S^B, L}
 
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
@@ -103,7 +112,8 @@ contains
     call alloc(tb_dmat, size_tb_dmat)
     tb_dmat = 0.0d0
 
-!   get (C+)(T^B)C
+!   get (C+)(T^B)C + c.c.
+!   gosia: if (lao_lr_rearrange) then it is (C+)(S^B)C written on tb_dmat
     call get_tb_dmat(tb_dmat, cmo, ibeig)
 
     size_fao = n2bbasxq*nr_xyz_comp
@@ -132,6 +142,7 @@ contains
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: fmat(n2orbxq, *)
+    !real(8), intent(inout)    :: fmat(n2orbxq, *)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -146,7 +157,7 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j, t, isymh, iz
-    logical :: ah
+    logical :: ah, ee, ep
     real(8) :: a
 !-----------------------------------------------------------------------
 
@@ -163,6 +174,12 @@ contains
                 lwork)
 
     call di_deselect_wrk(work, lwork)
+
+#ifdef MOD_LAO_REARRANGED
+    if (lao_lr_rearrange) then
+      call get_m_ij(fmo)
+    end if
+#endif
 
     call alloc(tb,  n2orbxq)
     tb = 0.0d0
@@ -191,7 +208,9 @@ contains
         call prqmat(fmat(1, icomp), &
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
-        call check_symmetry(fmat(1, icomp), norbt)
+#ifdef MOD_LAO_REARRANGED
+        call check_symmetry(fmat(1, icomp), norbt, nz)
+#endif
       end if
 
       call dzero(tb, n2orbxq)
@@ -214,6 +233,9 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+!!!TEST
+!      call test_new_routines(tb)
 
 ! write to TBMO file, to be reused in visual
 ! ------------------------------------------
@@ -239,9 +261,20 @@ contains
                      nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
+! in lao_lr_rearrange take only 'ai' blocks:
+#ifdef MOD_LAO_REARRANGED
+      if (lao_lr_rearrange) then
+        ee = .true.
+        ep = .true.
+        if (xlr_skipep .or. .not. doeprn) ep = .false.
+        if (xlr_skipee) ee = .false.
+        call get_m_ai(tb, ee, ep)
+      end if
+#endif
+
 ! get final result to buf
 
-!      call dzero(buf, n2orbxq)
+      call dzero(buf, n2orbxq)
 
 !     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
 !     it is set in getfck
@@ -258,6 +291,7 @@ contains
                 fmo,             &
                 buf,             &
                 iprprp)
+
       debug_me = .false.
       if (debug_me) then
         write(*, *) 'buf in get_ftb after ttra, icomp = ', icomp
@@ -265,7 +299,6 @@ contains
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
-
 
 !     add result to fmat
       call daxpy(n2orbxq,        &
@@ -286,8 +319,9 @@ contains
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
 
-        call check_symmetry(fmat, norbt)
-
+#ifdef MOD_LAO_REARRANGED
+        call check_symmetry(fmat, norbt, nz)
+#endif
       end if
 
     end do
@@ -340,6 +374,9 @@ contains
 
 !gosia fixme parallel run
     call my_get_npos(npos)
+!
+! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
+!
     call alloc(npos_array, npos)
     npos_array(1:npos) = 0
 
@@ -509,7 +546,6 @@ contains
 !                     --------------------------------
                       iprprp)
 
-
       debug_me = .false.
       if (debug_me) then
         write(*, *) 'fao in do_ao_to_mo after qtrans, icomp, i = ', icomp, i
@@ -521,7 +557,6 @@ contains
                     norbt, norbt, norbt, norbt, &
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
-
 
       end do
     end do
@@ -562,6 +597,8 @@ contains
       call di_select_wrk(work, lwork)
 
 !     get T^B_icomp matrix into tb
+!     gosia: if lao_lr_rearrange, then here we read in 'dS/dB' integrals
+!     it was set in pammag.F in def_d1hblond subroutine
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
@@ -575,6 +612,22 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+#ifdef MOD_LAO_REARRANGED
+      if (lao_lr_rearrange) then
+!       we only need occ-occ block of S^B matrix, so zero-out the rest:
+        call get_m_ij(tb) 
+      end if
+#endif
+
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'tb matrix in MO basis in get_tb_dmat'
+        call prqmat(tb, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
 
       lwork = len_f77_work
       kfree = 1
@@ -599,27 +652,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-  subroutine check_symmetry(mat, ndim)
-    integer, intent(in) :: ndim
-    real(8), intent(in) :: mat(ndim, ndim, *)
-    real(8) :: a
-    integer :: i, j, iz
-
-    a = 0.0d0
-    do iz = 1, nz
-      do i = 1, ndim - 1
-        do j = i + 1, ndim
-          a = a + (dabs(mat(i, j, iz)) - dabs(mat(j, i, iz)))
-        end do
-      end do
-    end do
-    a = a/dfloat(((ndim*ndim - ndim)/2)*nz)
-    write(*, *) 'symmetry mat: ', a
-
-  end subroutine
-
-
 
       SUBROUTINE GET_NPOS(NPOS)
 #include "implicit.h"

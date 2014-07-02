@@ -1,3 +1,17 @@
+#ifdef USE_BUILTIN_LAPACK
+#define USE_BUILTIN_DLAPACK
+#endif
+
+! ESSL LAPACK la(pa)cks almost everything
+! switch on own LAPACK until better solution is found
+#ifndef USE_BUILTIN_LAPACK
+#ifdef HAVE_ESSL_LAPACK
+#define USE_BUILTIN_DLAPACK
+#endif
+#endif
+
+
+
 ! FILE : gp_dlapack.F
 !
 ! lapack double routines, taken from the netlib site on 20080612
@@ -7,7 +21,7 @@
 !
 ! $Id$
 !
-#ifdef USE_OWN_LAPACK
+#ifdef USE_BUILTIN_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,
      $                   WORK, IWORK, INFO )
 *
@@ -218767,9 +218781,8 @@ CIBM           PREFER SCALAR
 *     End of STZRZF
 *
       END
-#else
-! dummy routine, in case the compiler doesnt like empy files
+#endif /* USE_BUILTIN_DLAPACK */
+
+      ! dummy routine to avoid empty file
       subroutine dummy_dirac_dlapack()
       end
-#endif
-

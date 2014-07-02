@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -28,13 +28,14 @@
       SUBROUTINE CIEIG5_REL(INICI,EROOTS,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
      &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOTS,LUINCI,
+     &           istart_nroot,
      &           IPRT,NPRDET,IPNTR,NP1,NP2,NQ,
      &           SCR1,ISCR1,SCR2,T_CC,T_BUFF,
      &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
      &           NCLS,
-     &           IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &           IRC,IDCOMH,IHAM12,
      &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
@@ -98,7 +99,7 @@ CSK#endif
 * In order to treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
 
-          NFINDM = MIN(NDIM,4*NROOTS)
+          NFINDM = MIN(NDIM,istart_nroot+3*nroots)
 #if defined (VAR_MPI2)
           CALL FNDMND_PAR_REL(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                        ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
@@ -113,7 +114,7 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
           IBASE = 1
           TEST = 1.0D-10
 *
-          DO 100 IROOTS = 1, NROOTS
+          DO 100 IROOTS = 1, istart_nroot 
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
@@ -195,8 +196,8 @@ c           ISCR1(1) = 16
       IFAC = 1
       IF(IRC.EQ.2) IFAC = 2
 C
-      MEIG = MRNRM + (MXCIIT+1)*NROOTS
-      MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + NROOTS)
+      MEIG = MRNRM + (MXCIIT+1)*istart_nroot
+      MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + istart_nroot)
       IF(IRC.EQ.2) THEN
         MAPROJI = MAPROJ +  MAXVEC*(MAXVEC+1)/2
       ELSE
@@ -206,8 +207,7 @@ C
       MWORK = MAVEC + MAXVEC ** 2*IFAC*IFAC
       MLFRSC = MWORK + MAXVEC*(MAXVEC+1)*IFAC*IFAC
 C
-C     new complex hermitian matrix diagonalizer
-      IF( IRC .eq. 2)THEN
+C     new real/complex hermitian matrix diagonalizer
 C     +1 added for safety reasons
 C     double complex!
       LCWORK  = IRC * (2*MAXVEC + MAXVEC**2 + 1)
@@ -218,7 +218,6 @@ C     +1 added for safety reasons
 C     double complex!
       LAMATC = IRC * MAXVEC * MAXVEC
       LEIGVL = MAXVEC
-      END IF
 C
 *
       IF( IPRT .GE. 5 ) THEN
@@ -230,6 +229,10 @@ C
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'CIEIG5')
       call memmar(KRNRM,MEIG-1,'ADDL  ',2,'KRNRMS')
       call memmar(KEIG,MAPROJ-MEIG,'ADDL  ',2,'KEIGS ')
+C     new stuff for real/complex hermitian matrix diagonalizer
+      call memmar(KAMATC,LAMATC,'ADDL  ',2,'KAMATC')
+      call memmar(KRWORK,LRWORK,'ADDL  ',2,'KRWORK')
+      call memmar(KEIGVL,LEIGVL,'ADDL  ',2,'KEIGVL')
       if (IRC.eq.1) then
         call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
      &              2,'KAPROJ')
@@ -238,19 +241,18 @@ C
         call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
 C
 C       new stuff for complex hermitian matrix diagonalizer
-        call memmar(KAMATC,LAMATC,'ADDL  ',2,'KAMATC')
         call memmar(KCWORK,LCWORK,'ADDL  ',2,'KCWORK')
-        call memmar(KRWORK,LRWORK,'ADDL  ',2,'KRWORK')
-        call memmar(KEIGVL,LEIGVL,'ADDL  ',2,'KEIGVL')
         call memmar(KIWORK,LIWORK,'ADDL  ',1,'KIWORK')
 C
 C       ... initialize
-        CALL DZERO(WORK(KAMATC),LAMATC)
         CALL DZERO(WORK(KCWORK),LCWORK)
-        CALL DZERO(WORK(KRWORK),LRWORK)
-        CALL DZERO(WORK(KEIGVL),LEIGVL)
         CALL IZERO(WORK(KIWORK),LIWORK)
       end if
+C       ... initialize
+      CALL DZERO(WORK(KAMATC),LAMATC)
+      CALL DZERO(WORK(KRWORK),LRWORK)
+      CALL DZERO(WORK(KEIGVL),LEIGVL)
+
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
       
@@ -287,7 +289,7 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
         END IF
 #endif
 #if defined CODE_NOT_WORKING
-        CALL COMHAM(VEC1,VEC2,NDIM,T_CC,SIGDEN_ROUTE)
+        CALL COMHAM(VEC1,VEC2,NDIM,T_CC)
 #endif
       END IF
 *
@@ -299,7 +301,7 @@ C       REAL DAVIDSON solver
         call micdv4_enlmd_rel_par(T_CC,T_BUFF,VEC1,VEC2,
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,NROOTS,
-     &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
+     &                  MAXVEC,istart_nroot,WORK(KAPROJ),WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  IPNTR,LBLK,EIGSHF,THRES_E,
      &                  IBLOCKL,NPARBLOCK,NUM_BLOCKS,
@@ -308,17 +310,19 @@ C       REAL DAVIDSON solver
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,
      &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST,
-     &                  IT_TTPL,IT_TTOL)
+     &                  IT_TTPL,IT_TTOL,
+     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL))
 *
 #else
 *
         call micdv4_enlmd_rel(T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,LU3,LU4,LU5,LUDIA,NROOTS,
-     &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
+     &                  MAXVEC,istart_nroot,WORK(KAPROJ),WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
-     &                  LBLK,EIGSHF,THRES_E)
+     &                  LBLK,EIGSHF,THRES_E,
+     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL))
 *
 #endif
         IROOTHOMING = 0
@@ -329,11 +333,11 @@ C     Complex DAVIDSON solver
 C
         CALL CMICDV_PAR(VEC1,VEC2,WORK(KRNRM),
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
-     &                  NROOTS,MAXVEC,NROOTS,
+     &                  NROOTS,MAXVEC,istart_nroot,
      &                  T_CC,T_BUFF,WORK(KAPROJI),WORK(KAPROJ),
      &                  WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
-     &                  LBLK,EIGSHF,IHAM12,SIGDEN_ROUTE,
+     &                  LBLK,EIGSHF,IHAM12,
      &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATCH,
@@ -347,11 +351,12 @@ C
 *
         CALL CMICDV(VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
      &              SCR2(1),MXCIIT,
-     &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOTS,MAXVEC,NROOTS,
+     &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOTS,MAXVEC,
+     &              istart_nroot,
      &              T_CC,T_BUFF,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &              IHAM12,SIGDEN_ROUTE,THRES_E,WORK(KAMATC),
+     &              IHAM12,THRES_E,WORK(KAMATC),
      &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
 *
 #endif
@@ -360,6 +365,104 @@ C
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
 *
       CALL QEXIT('CIEIG5')
+      END
+
+      SUBROUTINE EIGEN_NEW(HR,NDIM,EIGVAL,EIGVEC,AMATC,RWORK,EVL)
+C***********************************************************************
+C
+C     find the eigenvalues and eigenvectors of a real symmetric matrix HR 
+!     using the general hermitian solver routine DSYEV
+C
+C
+C     OUTPUT: 
+C             - eigenvalues in EIGVAL
+C             - eigenvectors in EIGVEC where
+C               real coefficients are stored from EIGVEC(1   ,  IVEC) 
+C                                              to EIGVEC(NDIM,  IVEC)
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+C     INPUT
+      DIMENSION HR(NDIM*(NDIM+1)/2)
+C     OUTPUT
+      DIMENSION EIGVAL(NDIM)
+      DIMENSION EIGVEC(NDIM,NDIM)
+C     scratch for LAPACK solver
+      DOUBLE PRECISION   RWORK(*), EVL(*)
+      DOUBLE PRECISION   AMATC(NDIM,*)
+      CHARACTER*1 JOBZ, UPLO
+
+      NTEST = 00
+      IF(NTEST.GT.00) THEN
+        WRITE(LUPRI,'(/A )') ' ======================'
+        WRITE(LUPRI,'( A )') '  WELCOME to EIGEN_new '
+        WRITE(LUPRI,'( A/)') ' ======================'
+      END IF
+C
+C     initialize
+      DO ICOL = 1, NDIM
+        DO JROW = 1, NDIM
+          AMATC(JROW,ICOL) = 0.0d0
+        END DO
+      END DO
+C
+C     fill the lower triangular part of matrix AMATC
+      DO IROW = 1, NDIM
+        DO ICOL = 1, IROW
+          AMATC(IROW,ICOL) = HR(IROW*(IROW-1)/2 + ICOL)
+#ifdef MOD_DEBUG
+          WRITE(LUPRI,*) ' IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HR(..)',
+     &    IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HR(IROW*(IROW-1)/2 + ICOL)
+          WRITE(LUPRI,*) ' IROW, ICOL, AMATC(IROW,ICOL)',
+     &                     IROW, ICOL, AMATC(IROW,ICOL)
+#endif
+        END DO
+      END DO
+C
+C     diagonalize real hermitian matrix AMATC(NDIM,NDIM)
+C     - get eigenvalues and eigenvectors
+      JOBZ   = 'V'
+      UPLO   = 'L'
+      INFO   =  0
+      LADIM  = NDIM
+C     +1 added for safety reasons
+      LRWORK = 1 + 5*NDIM + 2*NDIM**2 + 1
+C
+C     call library routine
+      CALL DSYEV( JOBZ, UPLO, LADIM, AMATC, LADIM, EVL, RWORK, LRWORK, 
+     &            INFO )
+      IF(INFO.NE.0) THEN
+         WRITE(LUPRI,'(/A,I4)') ' *** ERROR in EIGEN_NEW: info code'//
+     &                  ' NOT zero from DSYEV:',INFO
+         CALL QUIT ('*** Error in EIGEN_NEW (lapack DSYEV) ***')
+      ENDIF
+C
+C     eigenvalues in EVL(NDIM) - copy to EIGVAL
+      CALL DZERO(EIGVAL,NDIM)
+      CALL DCOPY(NDIM,EVL,1,EIGVAL,1)
+C
+C     eigenvectors in AMATC - insert into EIGVEC(NDIM,NDIM)
+      CALL DZERO(EIGVEC,NDIM**2)
+      DO I = 1, NDIM
+        DO J = 1, NDIM
+C          real part
+           EIGVEC(J,I)      = AMATC(J,I)
+        END DO
+      END DO
+C
+C     debug print section 
+      IF( NTEST .ge. 10 )THEN
+        WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvalues'
+        CALL WRTMATMN(EIGVAL,1,NDIM,1,NDIM,LUPRI)
+        WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvectors'
+        CALL WRTMATMN(EIGVEC,NDIM,NDIM,NDIM,NDIM,LUPRI)
+      END IF
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CEIGEN_NEW(HR,HI,NDIM,EIGVAL,EIGVEC,AMATC,CWORK,
@@ -677,7 +780,7 @@ CTF     end do
      &                  T_CC,T_BUFF,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &                  IHAM12,SIGDEN_ROUTE,
+     &                  IHAM12,
      &                  CONVLIM,AMATC,CWORK,RWORK,EVL,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
@@ -728,7 +831,6 @@ CTF     end do
 #endif
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
-      character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, FILELAB*8
       LOGICAL CONVER,RTCNV(NROOT),EXSTOP
 *
@@ -2306,7 +2408,7 @@ C      END IF
      &                  LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV)
+     &                  E_CONV,AMATC,RWORK,EVL)
 *
 * Davidson algorithm , requires two blocks in core
 * Multi root version
@@ -2351,10 +2453,11 @@ C      END IF
 #include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
-       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXVEC,MAXIT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION H0(*),IPNTR(1)
        DIMENSION H0SCR(*),T_CC(*), T_BUFF(*)
+       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -2424,20 +2527,22 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
        END IF
 *. Diagonalize initial projected matrix
        CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
-       CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
-       DO 20 IROOT = 1, NROOT
-         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
-   20  CONTINUE
-*
+!      CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       CALL EIGEN_NEW(WORK(KAPROJ),NINVEC,EIG(1,1),AVEC,AMATC,
+     &                RWORK,EVL)
+
+!      DO 20 IROOT = 1, NROOT
+!        EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+!  20  CONTINUE
 
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
          WRITE(LUWRT,'(5F18.13)')
-     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
+     &   ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
        END IF
        IF( IPRT  .GE. 5 ) THEN
          WRITE(LUWRT,*) ' Initial set of eigen values (no shift) '
-         CALL WRTMAT(EIG(1,1),1,NROOT,MAXIT,NROOT)
+         CALL WRTMAT(EIG(1,1),1,NROOT,NROOT,MAXIT)
        END IF
        NVEC = NINVEC
        IF (MAXIT .EQ. 1 ) GOTO  901
@@ -2461,11 +2566,10 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
        IADD = 0
        CONVER = .TRUE.
        DO 100 IROOT = 1, NROOT
-         EIGAPR = EIG(ITER-1,IROOT)
+         EIGAPR = EIG(IROOT,ITER-1)
 *
          CALL REWINE(LU1,-1)
          CALL REWINE(LU2,-1)
-         EIGAPR = EIG(ITER-1,IROOT)
          DO 60 IVEC = 1, NVEC
            FACTOR = AVEC((IROOT-1)*NVEC+IVEC)
            IF(IVEC.EQ.1) THEN
@@ -2499,7 +2603,7 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
 *
          IF(RNORM.LT. TEST .OR. 
      &      (ITER.GT.2.AND.
-     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+     &      ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.E_CONV)) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.
@@ -2655,15 +2759,18 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       NVEC = NVEC + IADD
       write(LUWRT,*) 'Dimension of projected matrix:',NVEC
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
-      CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
-      DO 160 IROOT = 1, NROOT
-        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
- 160  CONTINUE
+!     CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
+      CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
+     &               RWORK,EVL)
+
+!     DO 160 IROOT = 1, NROOT
+!       EIG(IROOT,ITER) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+!160  CONTINUE
 *
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
          WRITE(LUWRT,'(5F18.13)')
-     &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+     &   ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
          WRITE(LUWRT,'(A)') ' Norm of Residuals (Previous it) '
          WRITE(LUWRT,'(5F18.13)')
      &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
@@ -2672,7 +2779,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(LUWRT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(LUWRT,'(2X,E13.7)') (EIG(IROOT,ITER),IROOT = 1, NROOT)
         CALL WRTMAT(AVEC,NVEC,NROOT,MAXVEC,NROOT)
       END IF
 *
@@ -2725,7 +2832,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
         CALL SETVEC(APROJ,0.0D0,NVEC*(NVEC+1)/2)
         DO 420 IROOT = 1, NROOT
-          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(IROOT,ITER)
   420   CONTINUE
 *
       END IF
@@ -2762,7 +2869,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
           WRITE(LUWRT,*)
      &    '============================================'
           WRITE(LUWRT,*)
-          FINEIG(IROOT) = EIG(ITER,IROOT)
+          FINEIG(IROOT) = EIG(IROOT,ITER)
           IF (RTCNV(IROOT)) THEN
              WRITE(6,1190) IROOT,FINEIG(IROOT)+EIGSHF
           ELSE
@@ -2782,7 +2889,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
  1310     FORMAT
      &    (/,'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
- 1330     WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
@@ -2791,7 +2898,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
         write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
         write(LUWRT,*)
         DO IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
           IF (RTCNV(IROOT)) THEN
              WRITE(6,1190) IROOT,FINEIG(IROOT)
           ELSE
@@ -2817,7 +2924,7 @@ C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       IF( MYPROC .eq. MASTER ) THEN
         DO I = 1, NROOT
-           FINEIG(I) = EIG(ITER,I)+EIGSHF
+           FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
         WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)

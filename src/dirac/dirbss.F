@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
        SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
@@ -2620,7 +2620,7 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
       CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRINT)
 
-      CALL GTOVLT(TBUF,D0)
+      CALL GTOVLT(TBUF,D0,IPRINT)
 
       CVAL2 = CVAL*CVAL
 
@@ -2768,7 +2768,7 @@ C
 #include "memint.h"
 
 C     Get AO_LL overlap matrix , S(LL), WITH SS part ZEROED, into VMAT
-      CALL GTOVLT(VMAT,D0)
+      CALL GTOVLT(VMAT,D0,IPRINT)
 
       IOFF = 1
       JOFFESH = 0
@@ -5518,7 +5518,7 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
 
 C      ... diagonalize the H2c in MO(ee) basis !
 !       DOJACO is defined in dcbgen.h, only for real matrixes
-       IF (DOJACO.AND.NZ.EQ.1) THEN
+       IF (DOJACO) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
      &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
@@ -8068,9 +8068,9 @@ C#include "dcbham.h"
 
 C ... get full S matrix into TMAT
       IF (.NOT.Le) THEN
-        CALL GTOVLT(TMAT,D1)
+        CALL GTOVLT(TMAT,D1,IPRINT)
       ELSE
-        CALL GTOVLT(TMAT,D0)
+        CALL GTOVLT(TMAT,D0,IPRINT)
       ENDIF
 
 C ...  transform S to the MO's          :   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
@@ -8595,7 +8595,8 @@ C
       CHARACTER*(*) LABINT(*)
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
-      CHARACTER*16 AFN
+      CHARACTER*20 AFN
+      CHARACTER*3 file_tag
 #include "amfi_if.h"
 c     logical dirbss_verbose
 
@@ -8603,31 +8604,40 @@ c     logical dirbss_verbose
 #include "memint.h"
 
 c     dirbss_verbose = .false.
+      iprint_save = iprint
+!     iprint      = 5
 
+      CALL HEADER('Output from AMFIIN',-1)
       IF (IPRINT.GE.3) THEN
-      CALL HEADER('*** Output from AMFIIN ***',-1)
-      write(lupri,*) 'NUCIND=',NUCIND
-      write(lupri,*) 'NLRGSH=',NLRGSH
-      write(lupri,*) 'charge:',(charge(i),i=1,nucind)
-      write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
-      write(lupri,*) 'Total number of centers:',NUCDEP
+      write(lupri,*) '# individual centers   : ',NUCIND
+      write(lupri,*) '# of large-comp. shells: ',NLRGSH
+      write(lupri,*) 'charge of atoms        : ',(charge(i),i=1,nucind)
+      write(lupri,*) 'Total number of atoms  : ',NUCDEP
 C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
-      WRITE(LUPRI,'(2X,A)') 'Total list of nucleis:'
       ENDIF
 
-      IX = 1
-      DO I=1,NUCIND
-      DO J=1,NUCDEG(I)
-       IZTNUCS(IX) = NINT(CHARGE(I))
-       IF (IPRINT.GE.3) THEN
-        write(lupri,*) IX,'. nuclei of charge:',IZTNUCS(IX) 
-       ENDIF
-       IX = IX + 1
-      ENDDO
-      ENDDO
+      ix      = 1
+      icenter = 0
+      do I=1,NONTYP
+        ndeg = 0
+        do J=1,NONT(I)
+          icenter     = icenter + 1
+          ndeg        = ndeg + nucdeg(icenter)
+          do k = 1, nucdeg(icenter)
+            IZTNUCS(IX) = NINT(CHARGE(icenter))
+            IX          = IX + 1
+          end do
+        end do
+        if(iprint.ge.3) then
+          write(lupri,*) 'atomtype:',i,
+     &    ' ==> # nuclei of charge ',IZTNUCS(IX-1), 
+     &    ' ==',ndeg
+     &     
+        endif
+      end do
 
 C    .. make ready the IPTYPAO, INDXLM,IPNUC
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'AMFIIN: List of shells of the system:' 
       ENDIF
@@ -8654,7 +8664,7 @@ C        ... find out the nuclei
          ENDDO
 
          IF (IPRINT.GE.3) THEN
-          write(lupri,'(A,I2,A,I2,A,D12.6,A,I2,A,I2,A,I2,A,I3)')
+          write(lupri,'(A,I2,A,I2,A,D10.4,A,I2,A,I2,A,I2,A,I3)')
      &  'Shell L=',NHKT(ISHELL),
      &  ' ICENT=',NCENT(ISHELL),' charge:',CHARGE(ICENT),
      &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
@@ -8775,9 +8785,34 @@ C          write(lupri,*) 'IX set to:',IX
           INDXLM(IX+8)=INDX
           IPNUC (IX+8)=INUCPOS
 
-          IX = IX + 9
-        ELSE
-          CALL QUIT('AMFI ONLY UP TO g FUNCTIONS!')
+          IX            = IX + 9
+
+        else if(l.eq.6.or.l.eq.7.or.l.eq.8)then
+
+          select case(l)
+            case(6) ! h
+             is_degeneracy = 11
+             ilast_IPTYPAO = 25
+            case(7) ! i
+             is_degeneracy = 13
+             ilast_IPTYPAO = 35
+            case(8) ! j
+             is_degeneracy = 15
+             ilast_IPTYPAO = 47
+          end select
+          do jjj = 1, is_degeneracy
+            ilast_IPTYPAO     = ilast_IPTYPAO + 1
+            IPTYPAO(IX+jjj-1) = ilast_IPTYPAO
+            INDXLM (IX+jjj-1) = INDX
+            IPNUC  (IX+jjj-1) = INUCPOS
+          end do
+          IX = IX + is_degeneracy
+          write(lupri,*) 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, j, ... shells '
+        else
+          write(lupri,*) 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from k, l, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
@@ -8859,8 +8894,8 @@ C     ... skip text
       READ(LUTMP2,*) 
 C     ... read number of unique nuclei
       READ(LUTMP2,*) NUNUC
-      write(lupri,'(/2X,A,I2)')
-     &'*** MNF.INP - read number of unique nuclei:',NUNUC
+      write(lupri,'(/A,I2)')
+     &'  *** number of unique nuclei (from file MNF.INP):',NUNUC
 
       TOTDIFX=D0
       TOTDIFY=D0
@@ -8871,25 +8906,42 @@ C
 C                 The cycle for AMFI over unique nuclei
 C
 C *************************************************************************
-      DO IATOM = 1, NUNUC
+      icenter = 0 
+      ndeg    = 0
+      DO IATOM = 1, NUNUC ! note: NUNUC == NONTYP (atomic types)
 
        READ(LUTMP2,*) ICHARGE
-       WRITE(LUPRI,'(/2X,A,I2,A,I5)')
-     &   '>>> AMFI is going to calculate ',
-     & IATOM,'. unique nucleus of charge ',ICHARGE
+       WRITE(LUPRI,'(/A,I2,A,I5)')
+     &   '  *** calculate AMFI for atom type',
+     & IATOM,' with atomic charge ',ICHARGE
 
-C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
-       NICHARGE = 0
-       INDXMINCH=0
-       DO I = 1, NUCDEP
-        IF (IZTNUCS(I).EQ.ICHARGE) THEN
-          NICHARGE=NICHARGE+1
-          INDXMINCH=I
-         ENDIF
-       ENDDO
+C      ... determine total number of nuclei of type IATOM with charge ICHARGE
+       CALL IZERO(IANUCS,NUCDEP)
+       NICHARGE        = 0
+       INDXMINCH       = 100000000 ! that is an unbelievable large # of atoms in a Dirac run -> sknecht feb 2013 fixme: challenge me!
+       icenter_tmp     = 0
+       DO I = 1, NONT(IATOM)
+         icenter       =     icenter     + 1
+         icenter_tmp   =     icenter_tmp + 1
+         do j = 1, nucdeg(icenter)
+!          print *, 'icenter, ndeg, j, iz...',
+!    &               icenter, ndeg, j, IZTNUCS(ndeg+j)
+           IF(IZTNUCS(ndeg+j) == ICHARGE)THEN
+             NICHARGE         = NICHARGE + 1
+             INDXMINCH        = min(ndeg+j,INDXMINCH)
+             IANUCS(NICHARGE) = ndeg     + j
+           ENDIF
+         END DO
+         ndeg          = ndeg        + nucdeg(icenter)
+       END DO
+
        IF (NICHARGE.EQ.0) THEN
-        CALL QUIT('AMFIIN: The nucleus does not exist is system!')
+        CALL QUIT('AMFIIN: atom type with given charge not found!')
        ENDIF 
+       IF (INDXMINCH > NUCDEP) THEN
+        CALL QUIT('AMFIIN: atom type index out of bounds!')
+       ENDIF 
+
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
 
@@ -8902,24 +8954,9 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
           CALL FLSHFO(LUPRI)
        endif
 
-C      ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
-C       use IANUCS(1-NUCDEP)
-        CALL IZERO(IANUCS,NUCDEP)
-        IX = 0
-        DO I=1,NUCDEP
-         IF (ICHARGE.EQ.IZTNUCS(I)) THEN
-           IX = IX + 1
-           IANUCS(IX)=I
-         ENDIF
-        ENDDO
-        IF (IX.NE.NICHARGE) THEN
-          CALL QUIT('AMFIIN: nuclei do not correspond !')
-        ENDIF
-
-        WRITE(LUPRI,'(/2X,A,$)')
-     &  '    *** AMFIIN: corresponding DIRAC nuclei :'
-        WRITE(LUPRI,*) (IANUCS(I),I=1,NICHARGE)
-        CALL FLSHFO(LUPRI)
+       WRITE(LUPRI,'(A,i4)')
+     &   '  *** number of nuclei with identical atom type:',nicharge
+       CALL FLSHFO(LUPRI)
 
 C ... now find out if all these (AMFI) nuclei are to be skipped...
        NOAMFC = .FALSE.
@@ -8930,16 +8967,43 @@ C ... now find out if all these (AMFI) nuclei are to be skipped...
          ENDDO
        ENDDO
        IF (IXC.EQ.NICHARGE) NOAMFC = .TRUE.
+       ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
+       if(icharge-iachnuc < 2)then
+         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
+     &                  ' or hydrogen-like 1e-systems.'//
+     &                  ' AMFI is skipped.'
+         NOAMFC = .TRUE.
+       end if
 
 C     ... file name for AMFI integrals of center
+!      FIXME: name tag of file cannot be charge otherwise we do not allow to have different basis sets 
+!      on atoms with the same charge (which will be assigned different atom types)
+!      sknecht - feb 2013
+!      mi/aug2013: oups,right ! fix is below
+       nuc_indx=icenter - icenter_tmp + 1
+       write(LUPRI,'(3x,a,i2)') 'unique nuclei index:',nuc_indx
+       if(nuc_indx < 10)then
+         file_tag=CHRNOS(nuc_indx)
+       else if(nuc_indx < 100)then
+         file_tag=CHRNOS(nuc_indx/10)//CHRNOS(MOD(nuc_indx,10))
+       else if(nuc_indx < 1000)then
+         file_tag=CHRNOS(nuc_indx/100)//
+     &            CHRNOS(MOD(nuc_indx,100)/10)//
+     &            CHRNOS(MOD( MOD(nuc_indx,100), 10))
+       else
+        CALL QUIT('AMFIIN: nucl.indx > 1000! This is not supported!')
+       end if
+
        IF (ICHARGE.LT.10) THEN
-        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)//'.'//file_tag
        ELSE IF (ICHARGE.LT.100) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/10)//CHRNOS(MOD(ICHARGE,10))
+     &                     //'.'//file_tag
        ELSE IF (ICHARGE.LT.1000) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
      &                       CHRNOS(MOD(ICHARGE,100)/10)//
      &                       CHRNOS(MOD( MOD(ICHARGE,100), 10) )
+     &                      //'.'//file_tag
        ELSE
         CALL QUIT('AMFIIN: nucl.charge > 1000! This is not supported!')
        ENDIF
@@ -8949,8 +9013,8 @@ C     ... file name for AMFI integrals of center
      &   '    *** This (AMFI) unique nuclei is not to be calculated !'//
      &   ' Only pass (to read input basis) through the AMFI routine.'
        ELSE
-         WRITE(LUPRI,'(2X,A,A)')
-     &   '    *** AMFIIN: The file name with AMFI integrals: ',AFN
+         WRITE(LUPRI,'(2A)')
+     &   '  *** file with AMFI integrals for this center: ',AFN
        ENDIF
 
 C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
@@ -8961,8 +9025,6 @@ C    &  '...this file does not exist, AMFI is utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ELSE 
-          WRITE(LUPRI,'(4X,A)')
-     &  '...this file does exist, AMFI is not utilized ! '
           CALL GPOPEN(LUMNFPRP,AFN,'OLD',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ENDIF
@@ -8970,17 +9032,15 @@ C    &  '...this file does not exist, AMFI is utilized ! '
 C      ... find out the correct index of nuclear exponent
        EXPNUCL=D0
        IF (GAUNUC) THEN
-        IATOM1 = 0
-        DO J = 1, NUCIND
-          IF (NINT(CHARGE(J)).EQ.ICHARGE) IATOM1=J
-        ENDDO
-        IF (IATOM1.EQ.0) THEN
-         CALL QUIT('AMFIIN: IATOM1 not found')
+        
+        IF( (icenter - icenter_tmp + 1) == 0 )THEN
+         CALL QUIT('AMFIIN: atom type minimum index == 0')
         ELSE
-         if (IPRINT.GE.3) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
-     &        CHARGE(IATOM1),ICHARGE,
-     &   ' nucl. exponent:',GNUEXP(IATOM1)
-         EXPNUCL = GNUEXP(IATOM1)
+         if (IPRINT.GE.3) write(lupri,*) ' indx=',
+     &   icenter - icenter_tmp + 1,' CHARGE=',
+     &   CHARGE(icenter - icenter_tmp + 1),ICHARGE,
+     &   ' nucl. exponent:',GNUEXP(icenter - icenter_tmp + 1)
+         EXPNUCL = GNUEXP(icenter - icenter_tmp + 1)
         ENDIF
 
 C     ... gauss.nucleus (for SO1) does not work in AMFI !!!!
@@ -8994,8 +9054,8 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
-     &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+     &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
@@ -9003,7 +9063,7 @@ C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       REWIND (LUMNFPRP)
 
       READ(LUMNFPRP) xa
-C    numballcart... total no of functions per centre...
+C    numballcart... total no of functions per unique center...
       READ(LUMNFPRP) numballcart
 
 C  ... allocate memmory for this AMFI center
@@ -9012,25 +9072,35 @@ C  ... allocate memmory for this AMFI center
       CALL MEMGET('REAL',KSOY,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOZ,length3,WORK,KFREE,LFREE)
 
+!     call dzero(work(KSOX),length3)
+!     call dzero(work(KSOY),length3)
+!     call dzero(work(KSOZ),length3)
+
 !     CALL MEMCHK('after AMFI 2',WORK,1)
 
       if (IPRINT.GE.3) WRITE(LUPRI,'(/,2X,A)')
      & 'AMFI order of (centre specific) basis function: '
       DO I = 1, numballcart
         READ(LUMNFPRP) IPTA(I),INDXLMA(I)
-        if (IPRINT.GE.3)
-     &    write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
+        if (IPRINT.GE.3) then
+          write(lupri,'(a,i3,a,a4,a,i3,a)')
+     &    ' amfi fu no:',I,' type(indx):',LABINT(IPTA(I)),
      &                '(',INDXLMA(I),')'
+       endif
       ENDDO
 
       READ(LUMNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
 
-      if (IPRINT.GE.3) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
-     &     (ncontrac(I),I=0,Lhigh)
+      if (IPRINT.GE.3) THEN
+        write(lupri,'(1x,a,i2,a,6i4)') 'Lhigh=',Lhigh,' ncontrac:',
+     &  (ncontrac(I),I=0,Lhigh)
+      endif
+
       iscontr=0
       DO I=0,Lhigh
        iscontr=iscontr+(ncontrac(I)*(I+I+1))
       ENDDO
+
       IF (iscontr.NE.numballcart) THEN
         write(lupri,*) 'iscontr,numballcart:',iscontr,numballcart
         CALL QUIT('AMFIIN: iscontr <> numballcart!!')
@@ -9046,20 +9116,35 @@ C       ... prepare the mapping array AMFI-H2C basis functions...
             ISONLIST=(IPTA(J).EQ.IPTYPAO(K)).AND.
      &             (INDXLMA(J).EQ.INDXLM(K)).AND.
      &              (IANUCS(I).EQ.IPNUC(K))
+
+           ! write(lupri,*) IPTA(J),IPTYPAO(K)
+           ! write(lupri,*) INDXLMA(J),INDXLM(K)
+           ! write(lupri,*) IANUCS(I),IPNUC(K)
+           ! write(lupri,*) 'ISONLIST=',ISONLIST
+
           IF (K.LT.NSPH.AND..NOT.ISONLIST) GOTO 23 
+
           IF (K.EQ.NSPH.AND..NOT.ISONLIST) THEN
-           CALL QUIT('AMFIIN: isonlist 1')
+            WRITE(LUPRI,*) 'I,J,K:',I,J,K
+            WRITE(LUPRI,*) 'NICHARGE,numballcart:',NICHARGE,numballcart
+            DO K1=1,NSPH
+              WRITE(LUPRI,'(1x,a,i3)') 'K1=',K1
+              WRITE(LUPRI,*) '   IPTA,IPTYPAO:',IPTA(K1),IPTYPAO(K1)
+              WRITE(LUPRI,*) 'INDXLMA, INDXLM:',INDXLMA(K1),INDXLM(K1)
+              WRITE(LUPRI,*) 'IANUCS(I),IPNUC:',IANUCS(I),IPNUC(K1)
+            ENDDO
+            CALL QUIT('AMFIIN: mapping failed ...')
           ELSE IF (ISONLIST.AND.K.LE.NSPH) THEN
             JI=J+(numballcart*(I-1))
             IAMFU(JI) = K 
           ELSE
-           CALL QUIT('AMFIIN: isonlist 2')
+           CALL QUIT('AMFIIN: mapping failed 2 ...')
           ENDIF
         ENDDO
         ENDDO
 
 C   ... write out mapping function correspondance....
-       IF (IPRINT.GE.3) THEN
+       IF (IPRINT.GE.2) THEN
         write(lupri,'(/A)')
      &  '***** Mapping spherical atomic basis'//
      &  ' functions "AMFI - H2c" *****'
@@ -9079,6 +9164,7 @@ C   ... write out mapping function correspondance....
      & ( IANUCS(I).NE.IPNUC(IAMFU(IX)) )                 .OR.
      & ( LABINT(IPTA(J)).NE.LABINT(IPTYPAO(IAMFU(IX))) ) .OR.
      & ( INDXLMA(J).NE.INDXLM(IAMFU(IX)) )   )  THEN
+         write(LUPRI,*) 'NICHARGE,numballcart=',NICHARGE,numballcart
          CALL QUIT(
      &   'AMFIIN: No compatibilities between H2cS_AO and AMFI !')
         ENDIF
@@ -9087,6 +9173,8 @@ C   ... write out mapping function correspondance....
 
 C     if (dirbss_verbose) write(lupri,*)
       READ(LUMNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
+!     write(lupri,*) ' xpart: ',
+!    &               (WORK(KSOX+irun),irun=0,length3-1)
       READ(LUMNFPRP) ya
       READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
       READ(LUMNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
@@ -9123,7 +9211,9 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
        ISREMOVED = 0
        DO K=1,NAMFA
-         IF (IANUCS(IANUC).EQ.IAMFA(K)) ISREMOVED = 1 
+         IF (IANUCS(IANUC).EQ.IAMFA(K))then
+          ISREMOVED = 1 
+         end if
        ENDDO
 
        IF (ISREMOVED.NE.0) THEN
@@ -9137,33 +9227,48 @@ CMI   if (dirbss_verbose) write(lupri,*)
 
         IX = 0
         DO  I = 1, numballcart
-        DO  J = 1, I
+        DO 111 J = 1, I
 C       ... get SO integrals from AMFI  
          SOXINT=-WORK(KSOX+IX)
          SOYINT=-WORK(KSOY+IX)
          SOZINT=-WORK(KSOZ+IX)
+!        if(IPTYPAO(IX+1) .gt. 25)then
+!          SOXINT = 0.0d0
+!          SOYINT = 0.0d0
+!          SOZINT = 0.0d0
+!        end if
 C      ... indexes of H2CAO(I1,J1,2-4)
        I1 = IAMFU(I+(numballcart*(IANUC-1)))
        J1 = IAMFU(J+(numballcart*(IANUC-1)))
 
+       if((DABS(SOXINT) < THRNULL).and.
+     &    (DABS(SOYINT) < THRNULL).and.
+     &    (DABS(SOZINT) < THRNULL))then
+         ix = ix + 1
+         goto 111
+       end if
+
+       if(iprint >= 5) write(lupri,*) ' hamiltonian indices 1 and 2',
+     &                                  i1,j1
+
 C      ... print out AMFI integrals
        IF (IPRINT.GE.3) THEN
         IF (DABS(SOXINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'X amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|X|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOXINT
         ENDIF
 
         IF (DABS(SOYINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Y amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOYINT
         ENDIF
 
         IF (DABS(SOZINT).GT.THRNULL) THEN
-          write(lupri,*) 'amfi unzero contrib: <',
+          write(lupri,*) 'Z amfi unzero contrib: <',
      &   LABINT(IPTA(I)),'(',INDXLMA(I),')',
      &  '[',IANUCS(IANUC),']','|Y|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
      &   '[',IANUCS(IANUC),']> ',SOZINT
@@ -9261,6 +9366,12 @@ C  ==================================================
 C      ... add AMFI contribution to the H2CAO
 C        when onlytra=.false.
 C  ==================================================
+!       print *, 'H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT',
+!    &            H2SAO(I1,J1,IZPOS),  H2SAO(J1,I1,IZPOS), SOZINT
+!       print *, 'H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT',
+!    &            H2SAO(I1,J1,IYPOS),  H2SAO(J1,I1,IYPOS), SOYINT
+!       print *, 'H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT',
+!    &            H2SAO(I1,J1,IXPOS),  H2SAO(J1,I1,IXPOS), SOXINT
         H2SAO(I1,J1,IZPOS) = H2SAO(I1,J1,IZPOS) + SOZINT 
         H2SAO(I1,J1,IYPOS) = H2SAO(I1,J1,IYPOS) + SOYINT 
         H2SAO(I1,J1,IXPOS) = H2SAO(I1,J1,IXPOS) + SOXINT 
@@ -9270,7 +9381,7 @@ C  ==================================================
         H2SAO(J1,I1,IXPOS) = H2SAO(J1,I1,IXPOS) - SOXINT 
        ENDIF
        IX = IX + 1
-      ENDDO
+ 111  continue
       ENDDO
       ENDIF
       if (IPRINT.GE.3) 
@@ -9304,6 +9415,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
 
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
+      iprint = iprint_save
 
       CALL QEXIT('AMFIIN')
       RETURN
@@ -9883,6 +9995,8 @@ C
 !    ... all atomic centers are included for the AMFI contribution
       ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
       ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
+      NAMFA    = 0
+      call izero(iamfa,nucdep)
 !     order of Amfi contributions 
       ISORDER_AMFI_in = -1
 C
@@ -9937,7 +10051,7 @@ C&&&  .AMFICH:    Get the artificial charge of the molecule
                  READ(LUCMD,*) IMFCH
                  GO TO 100
  5               CONTINUE
-C&&& .NOAMFC: specify centers for AMFI which only are to be added to the BSS+AMFI Hamiltonian
+C&&& .NOAMFC: specify centers for which AMFI is not to be added to the BSS/X2C Hamiltonian
                  ALLAMFA = .FALSE.
                  READ(LUCMD,*) NAMFA
                  READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
@@ -10036,7 +10150,6 @@ C ... take care of AMFI centers if specified in the input
               IZX=1
              ENDIF
            ENDDO
-           IF (IZX.EQ.0) write(lupri,*)
           ENDDO
           ENDDO
 C          ... do some check of entering values of NAMFA,IAMFA

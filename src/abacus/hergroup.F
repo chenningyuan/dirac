@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE : hergroup.F
@@ -130,7 +130,7 @@ C
               IF (IBTXOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
                  NAXIS  = NAXIS + 1
                  IPTAXI = IPTAXI + 1
-                 IPTAX(ICOOR,ITYPE) = IPTAXI
+                 IPTAX (ICOOR,ITYPE)      = IPTAXI
                  IPTXYZ(NAXIS,IREP,ITYPE) = ICOOR
               END IF
   210      CONTINUE
@@ -268,13 +268,12 @@ C             it works !!!
 C
       IGROUP = MIN(7,NINT((4*NROTS+8*NINVC+6*NREFL)/3.0))
       GROUP  = GROUPS(IGROUP)
-
-c     export it to ARGOS
-c     ==================
-#ifdef MOD_ECP
+C
+C     export it to ECP module
+C     =======================
+C
       ndptag = ndptags(IGROUP)
       IGRPAG = IGROUP
-#endif
 C
 C     Generate character table
 C     ========================
@@ -409,11 +408,9 @@ C
           WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,I3,1X))')
      &      REP(I),'|',(IXVAL(JSOP(J),I),J=0,MAXREP)
 c           
-c     For ARGOS
-c     =========
-#ifdef MOD_ECP
+c     For ECP module
+c     ==============
             itypag(i) = REP(I)
-#endif            
 c    
   130   CONTINUE
 C
@@ -936,6 +933,7 @@ C
 C     NOTE: An imaginary phase is inserted if necessary 
 C           to make all matrices time symmetric to accomodate
 C           the quaternion symmetry scheme of DIRAC.
+C           JM4TIM reports the time reversal symmetry without imaginary phase
 C
 C     The matrices are given in terms of their quaternion forms.
 C     The forms are obtained by a reordering of the 4-component matrices
@@ -993,6 +991,7 @@ C     ================
 C
       JM4REP(0) =  0
       JM4POS(0) =  1
+      JM4TIM(0) =  1
       M4COMB(0) =  '+00+'
 C
 C     1. i(alpha_z) --> (sigma_x)i
@@ -1000,6 +999,7 @@ C     ============================
 C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
+      JM4TIM(1) = -1
       M4COMB(1) =  '0++0'
 C
 C     2. i(alpha_y) --> (sigma_x)j
@@ -1007,6 +1007,7 @@ C     ============================
 C
       JM4REP(2) =  ISYMAX(2,1)
       JM4POS(2) =  IYQ
+      JM4TIM(2) = -1
       M4COMB(2) =  '0++0'
 C
 C     3. i(alpha_x) --> (sigma_x)k
@@ -1014,6 +1015,7 @@ C     ============================
 C
       JM4REP(3) =  ISYMAX(1,1)
       JM4POS(3) =  IXQ
+      JM4TIM(3) = -1
       M4COMB(3) =  '0++0'
 C
 C     4. gamma_5  --> (sigma_x)
@@ -1021,6 +1023,7 @@ C     =========================
 C
       JM4REP(4) =  IXYZ
       JM4POS(4) =  1
+      JM4TIM(4) =  1
       M4COMB(4) =  '0++0'
 C
 C     5. i(Sigma_z) --> (I_2)i
@@ -1028,6 +1031,7 @@ C     ========================
 C
       JM4REP(5) =  ISYMAX(3,2)
       JM4POS(5) =  IZQ
+      JM4TIM(5) = -1
       M4COMB(5) =  '+00+'
 C
 C     6. i(Sigma_y) --> (I_2)j
@@ -1035,6 +1039,7 @@ C     ========================
 C
       JM4REP(6) =  ISYMAX(2,2)
       JM4POS(6) =  IYQ
+      JM4TIM(6) = -1
       M4COMB(6) =  '+00+'
 C
 C     7. i(Sigma_x) --> (I_2)k
@@ -1042,28 +1047,32 @@ C     ========================
 C
       JM4REP(7) =  ISYMAX(1,2)
       JM4POS(7) =  IXQ
+      JM4TIM(7) = -1
       M4COMB(7) =  '+00+'
 C
 C     8. beta --> (sigma_z)
 C     =====================
 C
-      JM4REP(8) = 0
-      JM4POS(8) = 1
-      M4COMB(8) = '+00-'
+      JM4REP(8) =  0
+      JM4POS(8) =  1
+      JM4TIM(8) =  1
+      M4COMB(8) =  '+00-'
 C
 C
 C     9. beta x gamma_5 --> (sigma_y)i
 C     ================================
 C
-      JM4REP(9) = IXYZ
-      JM4POS(9) = IYQ
-      M4COMB(9) = '0-+0'
+      JM4REP(9) =  IXYZ
+      JM4POS(9) =  IYQ
+      JM4TIM(9) =  1
+      M4COMB(9) =  '0-+0'
 C
 C     10. i(beta x Sigma_z) --> (sigma_z)i
 C     ====================================
 C     
       JM4REP(10) = ISYMAX(3,2)
       JM4POS(10) = IZQ
+      JM4TIM(10) = -1
       M4COMB(10) = '+00-'
 C
 C     11. i(beta x Sigma_y) --> (sigma_z)j
@@ -1071,6 +1080,7 @@ C     ====================================
 C
       JM4REP(11) = ISYMAX(2,2)
       JM4POS(11) = IYQ
+      JM4TIM(11) = -1
       M4COMB(11) = '+00-'
 C
 C     12. i(beta x Sigma_x) --> (sigma_z)k
@@ -1078,6 +1088,7 @@ C     =====================================
 C
       JM4REP(12) = ISYMAX(1,2)
       JM4POS(12) = IXQ
+      JM4TIM(12) = -1
       M4COMB(12) = '+00-'
 C
 C     13. i(beta x alpha_z) --> -(sigma_y)
@@ -1085,6 +1096,7 @@ C     ====================================
 C
       JM4REP(13) = ISYMAX(3,1)
       JM4POS(13) = 1
+      JM4TIM(13) = -1
       M4COMB(13) = '0-+0'
 C
 C     14. i(beta x alpha_y) --> -(sigma_y)j
@@ -1092,6 +1104,7 @@ C     ======================================
 C
       JM4REP(14) = ISYMAX(2,1)
       JM4POS(14) = IYQ
+      JM4TIM(14) = -1
       M4COMB(14) = '0-+0'
 C
 C     15. i(beta x alpha_x) --> -(sigma_y)k
@@ -1099,6 +1112,7 @@ C     ======================================
 C
       JM4REP(15) = ISYMAX(1,1)
       JM4POS(15) = IXQ
+      JM4TIM(15) = -1
       M4COMB(15) = '0-+0'
 C
 C     16. (beta - I_4)/2 
@@ -1106,13 +1120,13 @@ C     ==================
 C
       JM4REP(16) = 0
       JM4POS(16) = 1
+      JM4TIM(16) = 1
       M4COMB(16) = '000-'
 C
 C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
-C
 C
 C     1. P             * scalar operator
 C     ==================================
@@ -1262,7 +1276,7 @@ C
       JCOM(1,19)= 1
 C       
 C         
-C     20. iS.P         * dot-product of sigma and vector operator
+C     20. iS.P   * off-diagonal dot-product of sigma and vector operator
 C     ==================================
 C
       MCMP(20)   =  3
@@ -1276,14 +1290,54 @@ C
 C
 C     21.    i*BETA*GAMMA5 * scalar operator
 C     ===========================================
-C     occupies imaginary part of the LS block
+C     occupies (as imaginary elements) off-diagonal block (0+-0)
+C     carries symmetry of gamma5 (xyz)
 C
-      MCMP(21)  = 1
-      !JM4 (1,21)= 0  ! wrong !
-      !JM4 (1,21) =  3   ! im(ab), x-quaternion
-      JM4 (1,21) =  4   ! symmetry of gamma5 
-      JCOM(1,21)= 1
+      MCMP(21)    =  1
+      JM4 (1,21)  =  4 
+      JCOM(1,21)  =  1
+
+C     22. (iS.P)d   * new diagonal dot-product of sigma and vector operator
+C     composed of i[Sigma_x]Px + i[Sigma_y]Py + i[Sigma_z]Pz (+00+)
+C     =======================================================================
+C
+      MCMP(22)   =  3
+      JM4 (1,22) =  7
+      JM4 (2,22) =  6
+      JM4 (3,22) =  5
+      JCOM(1,22) =  1
+      JCOM(2,22) =  1
+      JCOM(3,22) =  1
 
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION IQFROMPQ(IBSYM,IFSYM,IC,IZ)
+C***********************************************************************
+C
+C     Give quaternion unit corresponding to symmetry-packed one
+C     IBSYM is index of boson irreps of fermion ircop IFSYM
+C     Written by T. Saue April 10 2013
+C
+C***********************************************************************
+#include "implicit.h"
+C
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dgroup.h"
+      DIMENSION III(2)
+#include "dcbibt.h"
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C.....find the boson irrep that corresponds to index IBSYM of IFSYM for component IC
+      ITMP     = MOD(IFSYM+IC,2) + 1
+      ITMP     = JFSYM(IBSYM,ITMP) - 1
+      ITMP     = IBTXOR(ITMP,III(IC))
+      ITMP     = IPQTOQ(IZ,ITMP)
+      IQFROMPQ = IQMAP(ITMP)
       END
 C --- end of hergroup.F ---

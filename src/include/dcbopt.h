@@ -21,10 +21,6 @@
 !
 !     OPT_INDSTR - inactive/active/secondary orbitals
 !     
-!     KZCONF    - pointer to configurational parameters
-!     KZXOPE    - pointer to orbital e-e parameters
-!     KZXOPP    - pointer to orbital e-p parameters
-!
 !     MOPT_MXMICRO   - maximum micro iterations
 !     MOPT_MXMACRO   - maximum macro iterations
 !
@@ -67,7 +63,7 @@
      &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
-     &        NMAX_SYM, nopen_mc
+     &        NMAX_SYM, nopen_mc, ISVRONO(2)
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -81,21 +77,21 @@
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
-     &                NMAX_SYM, nopen_mc
+     &                NMAX_SYM, nopen_mc, ISVRONO
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       E_LVCORR_MC,THR_CVEC
+     &       E_LVCORR_MC,THR_CVEC, threci
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                E_LVCORR_MC,THR_CVEC
+     &                E_LVCORR_MC,THR_CVEC, threci
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)
@@ -106,17 +102,18 @@
       LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT, NATOLCR
       LOGICAL CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD, CINT_SPLIT
       LOGICAL GENFOCK, CHCKPT_WRT, CPBLCK_FILE, TRA_NATO, CINT_LOWSRT
-      LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save
+      LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save, save_reordered_nos
+      LOGICAL fcidump
 !     cana_mcscf means: analysis of mcscf reference vector in a separate 
 !                       ci run (after mcscf convergence)
-!     stano/radovan: OPT_MKCNST is not used anywhere
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
-     &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
+     &                OPT_NOCI, OPT_UCIBOS,             DONR, FROZCI,   &
      &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR,   &
      &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
      &                CINT_SPLIT, GENFOCK, CHCKPT_WRT, CPBLCK_FILE,     &
      &                TRA_NATO, OPT_CHCKJZ, CINT_LOWSRT, spinfr_krmc,   &
-     &                cana_mcscf, no1pdens_save
+     &                cana_mcscf, no1pdens_save, save_reordered_nos,    &
+     &                fcidump
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP
@@ -125,8 +122,8 @@
       COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR,&
      &                OPT_DELSTR
 
-      INTEGER KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
-      COMMON /DCMOPT/ KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
+      INTEGER         KZCONF, LZCONF, LZXOPE, LZXOPP
+      COMMON /DCMOPT/ KZCONF, LZCONF, LZXOPE, LZXOPP
 
 !     lzconf is integer length of WORK(KZCONF) etc.
 !

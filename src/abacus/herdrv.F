@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -1058,11 +1058,11 @@ C     be on unit LUONEL. Parameter .TRUE. in call indicates that
 C     LUONEL must be written.
 C
 #ifdef PRG_DIRAC
-      CALL READIN(WORK,LWORK,.FALSE.)
+      CALL READIN(.FALSE.)
 #else
       OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &      FILE='AOONEINT')
-      CALL READIN(WORK,LWORK,.TRUE.)
+      CALL READIN(.TRUE.)
       IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
 #endif

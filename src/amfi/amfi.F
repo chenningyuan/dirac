@@ -190,10 +190,11 @@ cbs   read the input
      *ifinite,EXP_FIN,DOEXIT) 
 
 CMI   IF (EXAMF.and.amfi_verbose) THEN
-      IF (EXAMF.and.IPR_AMFI.GE.1) THEN
-       WRITE(LUPRI,*)
-     & 'Leaving AMFI, because AOPROPER_MNF.xx file exist!'
-       RETURN
+      IF(EXAMF)THEN
+        WRITE(LUPRI,*)
+     &  ' skip explicit AMFI - reading AMFI integrals from file'//
+     &  ' AOPROPER_MNF.xxx!'
+        RETURN
       ENDIF
 
 CMI    .... when AOPROPER file exit, leave the AMFI !
@@ -205,6 +206,8 @@ CMI    if (amfi_verbose) then
           WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
           WRITE(LUPRI,*) 'AMFI: charge of atom IACH=',IACH
           WRITE(LUPRI,'(A,F18.7)') 'AMFI: the speed of light:',CVEL
+          if(ifinite >  0) 
+     &    write(lupri,*) ' using finite nucleus in AMFI'
        endif
        IF (DOEXIT) THEN
         IF (IC_AMFI.EQ.2.OR.IC_AMFI.EQ.3.OR.

@@ -2145,7 +2145,6 @@ C#include "memint.h"
 *.Local memory
 *
 *.  Largest NOCTPA*NOCTPB
-      print*,'entering LCISPC_KRCC'
 C     CALL MEMCHK_KRCC(WORK)
       MXNOCAB = 0
       DO IMS2 = 1, NMS2VAL
@@ -2155,16 +2154,11 @@ C     CALL MEMCHK_KRCC(WORK)
         MXNOCAB = MAX(MXNOCAB,NOCAB)
       END DO
 C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
-      print*,'MXNOCAB',MXNOCAB
       CALL MEMGET('REAL',KLIOIO,MXNOCAB,WORK,KFREE,LFREE)
-      print*,'KFREE,LFREE',KFREE,LFREE
-      CALL TEST_ARRAY(WORK(KLIOIO),MXNOCAB)
+C     CALL TEST_ARRAY(WORK(KLIOIO),MXNOCAB)
 C     CALL MEMCHK_KRCC(WORK)
-      print*,'after KLIOIO'
 *
-      print*,'NSMST',NSMST
       CALL MEMGET('REAL',KLBLTP,NSMST,WORK,KFREE,LFREE)
-      print*,'after KLBLTP'
 *. Obtain array giving symmetry of sigma v reflection times string
 *. symmetry.
 *. Array defining symmetry combinations of internal strings
@@ -2177,7 +2171,6 @@ C     CALL MEMCHK_KRCC(WORK)
       MXSOOB = 0
 C     CALL MEMCHK_KRCC(WORK)
 *. Loop over MS2 spaces
-      print*,'NMS2VAL,NICISP',NMS2VAL,NICISP
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
         IBTP = IST_FOR_DT(2,IMS2)
@@ -3322,13 +3315,15 @@ C End Lasse
       INTEGER IOCMIN(MXPNGAS),IOCMAX(MXPNGAS),IREFOCCLSE(MXPNGAS)
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.100) THEN
          WRITE(6,*)  ' OCCLS in action '
          WRITE(6,*) ' =================='
          WRITE(6,*) ' ICISPC = ', ICISPC
       END IF
 *. Largest and smallest accumulated occupations
+      print*,'ICMBSPC(1,ICISPC),ICISPC',ICMBSPC(1,ICISPC),ICISPC
+      print*,'LCMBSPC(ICISPC)',LCMBSPC(ICISPC)
       DO IGAS = 1, NGAS
         KMIN = IGSOCCX(IGAS,1,ICMBSPC(1,ICISPC))
         KMAX = IGSOCCX(IGAS,2,ICMBSPC(1,ICISPC))
@@ -3421,122 +3416,18 @@ C
 C A possiblitity to do mixed core-valence in cas space is now allowed
 C Assumption at the moment is core space 1 and cas space 3
 C
-          IF(INOCOVA.EQ.0) THEN
-            NOCCLS = NOCCLS + 1
-            IF(IWAY.EQ.2) THEN
-              IF(NTEST.GE.1000) THEN
-                WRITE(6,*) ' Another allowed class : '
-                CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-              END IF
-              CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
+          NOCCLS = NOCCLS + 1
+          IF(IWAY.EQ.2) THEN
+            IF(NTEST.GE.1000) THEN
+              WRITE(6,*) ' Another allowed class : '
+              CALL IWRTMA(IOC,1,NGAS,1,NGAS)
+            END IF
+            CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
 *
-              IF(I_DO_BASSPC.EQ.1) THEN
-              IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-              END IF
+            IF(I_DO_BASSPC.EQ.1) THEN
+            IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
+            END IF
 *
-            END IF
-          ELSE IF(INOCOVA.EQ.1) THEN !Do the check
-C Find max mixed core valence excitation
-            IMAXMIX = IOCMAX(1) - IOCMIN(1)
-C Find reference OCCLSE
-            IREFOCCLSE(1) = IOCMAX(1)
-            DO IGAS= 2,NGAS-1
-              IREFOCCLSE(IGAS) = IOCMAX(IGAS) - IOCMAX(IGAS-1)
-            END DO
-            IREFOCCLSE(NGAS) = 0
-C Find current mixed excitation
-            IMIX = IREFOCCLSE(1) - IOC(1)
-            IF(IMIX.GE.1) THEN
-              DO IGAS = 2,NGAS
-                IF(IREFOCCLSE(IGAS).EQ.0) THEN
-                  EXIT
-                ELSE
-                  IMIX = IMIX + IREFOCCLSE(IGAS) - IOC(IGAS)
-                END IF
-              END DO
-            ELSE
-              IMIX = 0
-            END IF
-C           print*,'IMIX',IMIX
-            IF(IMAXMIX.GE.IMIX) THEN
-              IPASS = 1
-            ELSE
-              IPASS = 0
-            END IF
-            IF(IPASS.EQ.1) THEN
-              NOCCLS = NOCCLS + 1
-              IF(IWAY.EQ.2) THEN
-                IF(NTEST.GE.1000) THEN
-                  WRITE(6,*) ' Another allowed class : '
-                  CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-                END IF
-                CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
-*
-                IF(I_DO_BASSPC.EQ.1) THEN
-                  IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-                END IF
-*
-              END IF
-            END IF
-          ELSE
-C Here the mixed core-valence correlation in cas comes in
-C Find max mixed core valence excitation
-            IMAXMIX  = IOCMAX(1) - IOCMIN(1)
-            IMAXMIX2 = IOCMAX(3) - IOCMIN(3)
-C Find reference OCCLSE
-            IREFOCCLSE(1) = IOCMAX(1)
-            DO IGAS= 2,NGAS-1
-              IREFOCCLSE(IGAS) = IOCMAX(IGAS) - IOCMAX(IGAS-1)
-            END DO
-            IREFOCCLSE(NGAS) = 0
-C Find current mixed excitation
-            IMIX = IREFOCCLSE(1) - IOC(1)
-            IF(IMIX.GE.1) THEN
-              DO IGAS = 2,NGAS
-                IF(IREFOCCLSE(IGAS).EQ.0) THEN
-                  IF(IMIX.GT.IMAXMIX) THEN
-C Here the 3. space is skipped in counting for IMIX
-                    DO IIGAS = IGAS+1,NGAS
-                      IF(IOC(IIGAS).NE.0) THEN
-C In case of 4+ spaces (and then virtuals are split)
-                        IMIX = IMAXMIX + 1
-                        EXIT
-                      ELSE
-C This will be an allowed excitation
-                        IMIX = IMAXMIX
-                      END IF
-                    END DO
-                  ELSE
-                    EXIT
-                  END IF
-                ELSE
-                  IMIX = IMIX + IREFOCCLSE(IGAS) - IOC(IGAS)
-                END IF
-              END DO
-            ELSE
-              IMIX = 0
-            END IF
-C           print*,'IMIX',IMIX
-            IF(IMAXMIX.GE.IMIX) THEN
-              IPASS = 1
-            ELSE
-              IPASS = 0
-            END IF
-            IF(IPASS.EQ.1) THEN
-              NOCCLS = NOCCLS + 1
-              IF(IWAY.EQ.2) THEN
-                IF(NTEST.GE.1000) THEN
-                  WRITE(6,*) ' Another allowed class : '
-                  CALL IWRTMA(IOC,1,NGAS,1,NGAS)
-                END IF
-                CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
-*
-                IF(I_DO_BASSPC.EQ.1) THEN
-                  IBASSPC(NOCCLS) = IBASSPC_FOR_CLS(IOC)
-                END IF
-*
-              END IF
-            END IF
           END IF
         END IF
       END IF
@@ -3677,6 +3568,54 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
 *
           MX_EXC_LEVEL = MAX(MX_EXC_LEVEL,NCREA)
           IF(NCREA+NANNI.NE.0) THEN
+* Inserting a NOCOVA check - Lasse
+* This will eliminate the OBEX type of operators a set by NOCOVA
+            IF(ABS(INOCOVA).GE.1) THEN
+* At the moment it is assumed that:
+* First GAS is the core
+* Second GAS the valence occupied
+* Third GAS the valence unoccupied
+* Fourth GAS and beyond virtuals
+*
+              IF(IANNI(1).GE.1) THEN
+* We can now perhaps eliminate
+                IANNITOT = 0
+                DO JGAS = 1,NGAS
+* Will give the excitation rank
+                  IANNITOT = IANNITOT + IANNI(JGAS)
+                END DO
+                IVIRT = 0
+                DO JGAS = 4,NGAS
+* Will give the number of virtual indices outside the valence
+                  IVIRT = IVIRT + ICREA(JGAS)
+                END DO
+                IF(IVIRT.NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
+* Eliminate the core to virtuals (Done by not storing it)
+                  IF(NTEST.GE.100) THEN
+                    WRITE(6,*) ' Eliminated a core virtual '
+                    WRITE(6,*) ' Creation part,  Annihilation  part '
+                    WRITE(6,*) ' ==================================='
+                    WRITE(6,'(16I4,16I4)')
+     &                   (IANNI(I),I=1, NGAS),(ICREA(I),I=1, NGAS)
+                  END IF
+                  CYCLE
+                END IF
+* See if we also want to eliminate core to valence
+                IF(INOCOVA.GT.0) THEN !can be eliminated for negative NOCOVA
+                  IF(ICREA(3).NE.0.AND.IANNITOT.GT.ABS(INOCOVA)) THEN
+* Eliminate the core to valence (Done by not storing it)
+                    IF(NTEST.GE.100) THEN
+                      WRITE(6,*) ' Eliminated a core valence '
+                      WRITE(6,*) ' Creation part,  Annihilation  part '
+                      WRITE(6,*) ' ==================================='
+                      WRITE(6,'(16I4,16I4)')
+     &                     (IANNI(I),I=1, NGAS),(ICREA(I),I=1, NGAS)
+                    END IF
+                    CYCLE
+                  END IF
+                END IF
+              END IF
+            END IF
             NOBEX_TP = NOBEX_TP + 1
             IF(IFLAG.NE.1) THEN
               LCOBEX_TP(NOBEX_TP) = NCREA
@@ -4162,16 +4101,16 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX_CC : NSPOBEX_TP = ', NSPOBEX_TP
       END DO
 *     ^ End of loop over IAB
 * Temp fix for He
-      NAOBEX_TP = NAOBEX_TP + 1
-      NBOBEX_TP = NBOBEX_TP + 1
-      IAOBEX_TP(1,NAOBEX_TP) = 0
-      IAOBEX_TP(2,NAOBEX_TP) = 2
-      IAOBEX_TP(3,NAOBEX_TP) = 1
-      IAOBEX_TP(4,NAOBEX_TP) = 0
-      IBOBEX_TP(1,NBOBEX_TP) = 0
-      IBOBEX_TP(2,NBOBEX_TP) = 2
-      IBOBEX_TP(3,NBOBEX_TP) = 1
-      IBOBEX_TP(4,NBOBEX_TP) = 0
+C     NAOBEX_TP = NAOBEX_TP + 1
+C     NBOBEX_TP = NBOBEX_TP + 1
+C     IAOBEX_TP(1,NAOBEX_TP) = 0
+C     IAOBEX_TP(2,NAOBEX_TP) = 2
+C     IAOBEX_TP(3,NAOBEX_TP) = 1
+C     IAOBEX_TP(4,NAOBEX_TP) = 0
+C     IBOBEX_TP(1,NBOBEX_TP) = 0
+C     IBOBEX_TP(2,NBOBEX_TP) = 2
+C     IBOBEX_TP(3,NBOBEX_TP) = 1
+C     IBOBEX_TP(4,NBOBEX_TP) = 0
 *
       NTEST = 00
       IF(NTEST.GE.3) THEN
@@ -4397,7 +4336,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 0003
+      NTEST = 0000
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' IDIM_TCC : ISYM = ', ISYM
@@ -4412,6 +4351,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       MX_TBLK_AS = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
+       LENGTH2 = 0
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP
        IF(NTEST.GE.100) CALL WRT_SPOX_TP_CC_KRCC(ITSOSO_TP(1,ITSS_TP),1)
 *. Occupation to group translation
@@ -4420,7 +4360,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+2*NGAS,ITSS_TP),IAA_GRP,1)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+3*NGAS,ITSS_TP),IAB_GRP,1)
 *
-       if (NTEST.ge.50) then
+       if (NTEST.ge.500) then
          write(6,*) ' Output from OCC_TO_GRP : '
          write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
          write(6,*) ' ICA_GRP : ',(ICB_GRP(I),I=1,NGAS,1)
@@ -4433,6 +4373,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
        NEL_AA = IELSUM(ITSOSO_TP(1+2*NGAS,ITSS_TP),NGAS)
        NEL_AB = IELSUM(ITSOSO_TP(1+3*NGAS,ITSS_TP),NGAS)
 *
+C      print*,'LENGTH outside',LENGTH
        IBTSOSO_TP(ITSS_TP) = LENGTH + 1
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
@@ -4466,8 +4407,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
              END IF
 *
-             LENGTH = LENGTH + LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             LENGTH2 = LENGTH2 + LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            LENGTH2 = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LLEN = LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH = LENGTH + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LENGTH2 = LENGTH2 + LLEN !LEN_CA*LEN_CB*LEN_AA*LEN_AB
+C            print*,'LLEN,LENGTH,LENGTH2',LLEN,LENGTH,LENGTH2
              if (NTEST.ge.1000) then
                write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
                write(6,*) 'LENGTH2 ',LENGTH2
@@ -4593,8 +4537,12 @@ C       CALL MEMCHK_KRCC(WORK)
       IP = 1
       IH = 0
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
-      IKRFLIPMAX = NACTEL !Set it to this value for all
+      IKRFLIPMAX = MIN(2+MK2DEL,MX_EXC_LEVEL)
+C Set it to this value for all. Since we cannot have intermediates of 
+C higher particle rank than T it does not matter that NACTEL is too 
+C large since there will be no operators for this.
+C     IKRFLIPMAX = NACTEL 
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       print*,'IKRFLIPMAX',IKRFLIPMAX
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
@@ -4673,7 +4621,8 @@ C     IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
 *
       IP = 0
       IH = 1
-C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4752,7 +4701,8 @@ C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
       IP = 1
       IH = 1
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,MX_EXC_LEVEL)
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4832,6 +4782,7 @@ C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
       IH = 0
 C     IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
 C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4910,7 +4861,8 @@ C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IP = 0
       IH = 2
 C     IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+2*MK2DEL,MX_EXC_LEVEL)
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -4989,7 +4941,8 @@ C     IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
       IP = 1
       IH = 2
 C     IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
-C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,MX_EXC_LEVEL)
+      IF(MK2INT.EQ.1) IKRFLIPMAX = MK2DEL ! If 'normal' restrictions works this needs to be dublicated for all intermediates
       IHOLEATOT = NGAS+1
       IHOLEBTOT = NGAS+1
       IPARTATOT = NGAS+1
@@ -5062,6 +5015,9 @@ C     IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
 *
       CALL MEMCHK_KRCC(WORK)
       CALL MEMREL('INT12',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+* NINTER20 not counted since not in use
+      ITOTTYPE = NINTER10 + NINTER01 + NINTER11 + NINTER02 + NINTER12
+      WRITE(6,*) ' Total number of intermediate types',ITOTTYPE
 *
       RETURN
       END
@@ -6319,6 +6275,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
 * Stay inside GAS
 * Correct number of holes and particles
 * Cannot exceede Kramers flip 
+* Stay within the restrictions from min max occupation in GAS
 * Notice this is passed down since a restriction 
 * on the Kramers Flip for T will not give the same 
 * restriction on the way for an Intermediate operator
@@ -6406,9 +6363,30 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END DO
       END DO
-      IF(IH.NE.NHOLE.AND.IP.NE.NPART) RETURN
+      IF(IH.NE.NHOLE.OR.IP.NE.NPART) RETURN
       IF(NTEST.EQ.100) WRITE(6,*) " right number of holes ",NHOLE,NPART
-      
+*
+* Ensure that the GAS restraints is obeyed 
+* Keep this in mind for spin. There may be changes
+* First the virtuals
+      NCGAS = 0
+      DO IGAS=NGAS,1,-1
+* Only count creators in the virtual space
+        IF(IHPVGAS(IGAS).EQ.1) EXIT
+        IMXNELGS = MXNELGS(IGAS)
+Calculate the number of CA and CB in GAS
+        NCGAS = NCGAS + IOP(IGAS+0*NGAS) + IOP(IGAS+1*NGAS)
+        IF(NCGAS.GT.IMXNELGS) RETURN
+      END DO
+* Now the occupied
+      NAGAS = 0
+      DO IGAS=1,NGAS
+        IF(IHPVGAS(IGAS).EQ.2) EXIT
+        IMXNELGS = IGSOCCX(IGAS,2,1)-IGSOCCX(IGAS,1,1)
+Calculate the number of AA and AB in GAS
+        NAGAS = NAGAS + IOP(IGAS+2*NGAS) + IOP(IGAS+3*NGAS)
+        IF(NAGAS.GT.IMXNELGS) RETURN
+      END DO
 *
 * Is this an allowed operator in the GAS.
 * For all indices yet to be contracted rules are different
@@ -7192,7 +7170,7 @@ C
 *.Output
       INTEGER ISPCOMP_ACT(4*NGAS,*)
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ACT_SPOEX....: Orbital excitation '
         CALL IWRTMA(IOBEX_TP,1,2*NGAS,1,2*NGAS)
@@ -7479,11 +7457,9 @@ C     Double group
 *
 * Find the number of operators with given N,Mk,Mub
 *
-      print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
-C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
       END DO
 *
       IF(NTEST.GE.100) THEN
@@ -7620,6 +7596,26 @@ C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
           WRITE(6,*) ' Number of AB  = ',NAB
         END IF
       END IF
+*
+      RETURN
+      END
+
+      SUBROUTINE REDEFINE_MAPPING_FOR_T(NEWORDER,ISOX_TO_OX,NDIM)
+*
+* Just a little routine to restore some mapping between SOX and OX after
+* the sorting of the cluster operator
+*
+#include "implicit.inc"
+*
+      INTEGER NEWORDER(NDIM),ISOX_TO_OX(NDIM)
+* local scratch
+      INTEGER ISCRATCH(NDIM)
+*
+      DO I=1,NDIM
+        ISCRATCH(I) = ISOX_TO_OX(NEWORDER(I))
+      END DO
+*
+      CALL ICOPVE(ISCRATCH,ISOX_TO_OX,NDIM)
 *
       RETURN
       END

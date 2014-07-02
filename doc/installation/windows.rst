@@ -1,91 +1,70 @@
 ﻿
-Installation on Windows 7
-=========================
+.. _windows_users:
 
 
-DIRAC is working mostly under the Linux/Unix operating systems. 
-Regarding the Windows system, the code is able to run under the *CygWin* enviroment 
-which has all necessary Linux substitutes.
+DIRAC on Windows
+================
 
-Thanks the *CMake* buildup system it is possible to install the DIRAC software
-in the Windows operating system. We have tested it under the Windows 7 version.
-
+We offer support for the Microsoft Windows 7/8 operating system.
 
 Dependencies
 ------------
 
-The user has to provide his Windows machine with this software:
-1. CMake (www.cmake.org).
-2. The MinGW program suite ("Minimalist GNU for Windows") with GNU compilers and Linux commands  (www.mingw.org).
-3. The Python programming language of version at least 2.7 (www.python.org).
-4. In addtion, the developper has to install also the Git suite (http://git-scm.com)
+1. The CMake system (http://www.cmake.org).
 
-The CMake suite can not be used when shell command (sh.exe) in the same %PATH% enviroment variable.
-Therefore please avoid having both "...\\Git\\bin" and "...\\MinGW\\msys\\1.0\\bin" in your %PATH% as these are 
-creating conflict with CMake ! 
+2. The MinGW program suite ("Minimalist GNU for Windows"), containing  GNU compilers and various Linux commands. 
+   For 32-bit  Windows operating systems, use http://www.mingw.org, for 64-bit Windows, employ MinGW64 - http://tdm-gcc.tdragon.net.
+   If you want to use  the MinGW64 suite, check that *"C:\\MinGW64\\bin"* is before the 32-bit version, *"C:\\MinGW\\bin"*, 
+   in the %PATH% environmental variable.
 
-The MinGW (GNU) compilers and related tools are reachable through the system %PATH% variable
-(you find "...\\MinGW\\bin" and this gives no conflict with CMake),
-the same for Python and CMake.
-See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues
+   The MinGW(64) compilers and related Linux-like tools are reachable through the
+   system %PATH% variable (you find strings like *"...\\MinGW\\bin"*, or
+   *"...\\MinGW64\\bin"* in the %PATH% environmental variable and this gives no
+   conflict with CMake).  The same holds for the Python script and the CMake
+   systen.  See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
 
-Documentation
+3. The Python programming language of version at least 2.7 (http://www.python.org).
+   We recommend to install the 32-bit version of Python also on 64-bit machines as not all packages needed for the development are
+   at disposal in  64-bit versions. 
+   Check that the *%Path%* Windows environmental variable points to both Python and its scripts -
+   is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
+
+   **Important:** Upon installing Python for all users on the Windows computing server it happens that registers are not
+   under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
+   See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
+
+
+
+Installation and running
+------------------------
+
+Configuration, installation and own execution of DIRAC is possible from the Windows (DOS) command line. 
+Windows operating systems are generating executables with the ".exe" suffix, like dirac.x.exe.
+
+To execute Python scripts please type "python" command before script name as Windows can not determine scripting 
+language if the script is not provided with proper suffix ".py".
+
+Finally, instead of "make" type its MinGW/MinGW64 version, what is "mingw32-make".
+
+
+Build examples
 --------------
 
-To be able to generate documentation, one has to download the *Sphinx* (http://sphinx.pocoo.org/) 
-package for Windows. Sphinx can be installed with the help of Python *setuptools* (http://pypi.python.org/pypi/setuptools).
+For specifying one or more parameters for Python scripts (either in the
+".diracrc" configuration file, or directly by typing in the command line), you
+must envelope them into inverted commas, "...".  For example::
 
-Likewise we recommend to install the 32-bit version of Python also on 64-bit machines 
-as you will also need *matplotlib* (http://matplotlib.sourceforge.net/)
-and *numpy* (http://numpy.scipy.org/) packages 
-which might not be at disposal for  64-bit version.
+  --scratch="C:\Users\<username>\tmp"
 
-Make sure that the *Path* Windows environmental variable cpoints to Python and its related scripts,
-for example ...C:\Python27;C:\Python27\Scripts;...
+Configure DIRAC::
 
-Git & PuTTy (developpers)
---------------------------
+  C:\Users\<username>\dirac>python setup --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" --int64  
 
-We recommend PuTTy package tools for handling SSH keys and connection tools.
-The best is the PuTTy self installer, see
-http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
+Compile the executable (in the default *build* directory)::
 
-Make sure that you have your own pair of SSH keys (private, public). You can generate them
-with the PuTTyGen generator which writes private key in ppk-format.
+  cd build
+  C:\Users\<username>dirac\build>mingw32-make dirac.x
 
-As the Git program under Windows make sure that during Git installation the system %PATH% variable in not modified !
-Due to this issue for launching git.exe you have to type the full path, so we recommend to
-install the  Git package on C: disk so that you get the shortest path, "C:\\Git\\bin\\git.exe".
+Run the test set::
 
-Ensure that the plink.exe file is pointed out through the "GIT_SSH" environmental variable furing Git installation. 
-
-For dowloading/uploading from/to the DIRAC repository you have to have the PuTTy "Pageant" authentication agent running with loaded private key, 
-while the public Windows machine key has to sit on the proper repo.ctcc.no user account place.
-
-For comfortable commits  with git you should set up the editor. 
-For popular Notepad++ setting for git follow 
-http://stackoverflow.com/questions/10564/how-can-i-set-up-an-editor-to-work-with-git-on-windows::
-
-  C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
-
-The "pageant" agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions) 
-onto server which are provided with users's public key. Pageant can be activated during the Windows startup.
-
-
-Usage
------
-
-Currently the installation and run is made from the Windows command prompt.
-For example::
- 
-  C:\Users\milias\Documents\Work\Dirac_git\trunk>python pamadm -a
-  C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make dirac.x
-  C:\Users\milias\Documents\Work\Dirac_git\trunk>python runtest --tests=cosci_energy --verbose
-  C:\Users\milias\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
-
-
-Remarks
---------
-
-So far we tested sequential buildup with the MinGW suite of compilers. 
-One has to investigate Open MPI parallelization, and trying other compilers.
+  C:\Users\<username>\dirac\build>ctest

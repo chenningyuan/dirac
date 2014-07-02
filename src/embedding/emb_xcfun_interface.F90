@@ -1,5 +1,6 @@
+
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,14 +17,13 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module emb_xcfun_interface
+module fde_xcfun_interface
 
-   use xcfun
-   use xc_max_block_length
-   use xc_mpi
+   use xcfun_1_0
+   use fde_max_block_length
 
    implicit none
 
@@ -140,8 +140,8 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
 
-      write(*, '(a)') '* Using the automatic differentiation xc functional:'
-      write(*, '(a)') '   (weight: functional)'
+!     write(*, '(a)') '* Using the automatic differentiation xc functional:'
+!     write(*, '(a)') '   (weight: functional)'
 
       hfx_out  = 0.0d0
       mu_out   = 0.0d0
@@ -174,72 +174,17 @@ contains
            f%w(XC_LYPC  ) = f%w(XC_LYPC  ) + w
         end if
 
-        w = get_weight(word_array(i), 'b3lyp')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_SLATERX   ) = f%w(XC_SLATERX   ) + 0.80d0*w
-           f%w(XC_BECKECORRX) = f%w(XC_BECKECORRX) + 0.72d0*w
-           f%w(XC_VWN5C     ) = f%w(XC_VWN5C     ) + 0.19d0*w
-           f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
-           hfx_out = hfx_out + 0.2d0*w
-        end if
-
-        w = get_weight(word_array(i), 'bhandh')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_SLATERX   ) = f%w(XC_SLATERX   ) + 0.5d0*w
-           f%w(XC_LYPC      ) = f%w(XC_LYPC      ) +       w
-           hfx_out = hfx_out + 0.5d0*w
-        end if
-
         w = get_weight(word_array(i), 'pp86')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_PW86X) = f%w(XC_PW86X) + w
            f%w(XC_P86C)  = f%w(XC_P86C)  + w
         end if
 
-        w = get_weight(word_array(i), 'm05')
-        if (dabs(w) > tiny(0.0d0)) then
-           h = 0.28d0
-!radovan:  notice the difference of the x weight in m05 and m06
-!          it seems that the hfx modification is already absorbed
-!          in the parameters of m06x
-!          this is not the case for m05x
-           f%w(XC_M05X) = f%w(XC_M05X) + w*(1.0d0 - h)
-           f%w(XC_M05C) = f%w(XC_M05C) + w
-           hfx_out = hfx_out + h*w
-        end if
-
-        w = get_weight(word_array(i), 'm06')
-        if (dabs(w) > tiny(0.0d0)) then
-           h = 0.27d0
-           f%w(XC_M06X) = f%w(XC_M06X) + w
-           f%w(XC_M06C) = f%w(XC_M06C) + w
-           hfx_out = hfx_out + h*w
-        end if
-
-        w = get_weight(word_array(i), 'm06l')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_M06LX) = f%w(XC_M06LX) + w
-           f%w(XC_M06LC) = f%w(XC_M06LC) + w
-        end if
-
-        w = get_weight(word_array(i), 'm06-l')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_M06LX) = f%w(XC_M06LX) + w
-           f%w(XC_M06LC) = f%w(XC_M06LC) + w
-        end if
-
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbe'
+!         write(*, '(f10.6, a)') w, ': pbe'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
-        end if
-
-        w = get_weight(word_array(i), 'pbe0')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_PBEX) = f%w(XC_PBEX) + 0.75d0*w
-           f%w(XC_PBEC) = f%w(XC_PBEC) +        w
-           hfx_out = hfx_out + 0.25d0*w
         end if
 
         w = get_weight(word_array(i), 'kt1')
@@ -272,13 +217,13 @@ contains
 
         w = get_weight(word_array(i), 'kin_pw91')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': kin_pw91'
+!         write(*, '(f10.6, a)') w, ': kin_pw91'
           f%w(XC_PW91K) = f%w(XC_PW91K) + w
         end if
 
         w = get_weight(word_array(i), 'kin_tf')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': kin_tf'
+!         write(*, '(f10.6, a)') w, ': kin_tf'
           f%w(XC_TFK) = f%w(XC_TFK) + w
         end if
 
@@ -289,50 +234,19 @@ contains
 
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbex'
+!         write(*, '(f10.6, a)') w, ': pbex'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
 
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
-          write(*, '(f10.6, a)') w, ': pbec'
+!         write(*, '(f10.6, a)') w, ': pbec'
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
 
         w = get_weight(word_array(i), 'lypc')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_LYPC) = f%w(XC_LYPC) + w
-        end if
-
-        w = get_weight(word_array(i), 'hfx')
-        if (dabs(w) > tiny(0.0d0)) then
-           hfx_out = hfx_out + w
-        end if
-
-        w = get_weight(word_array(i), 'ldaerfx')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_LDAERFX) = f%w(XC_LDAERFX) + w
-        end if
-
-        w = get_weight(word_array(i), 'ldaerfc')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_LDAERFC) = f%w(XC_LDAERFC) + w
-        end if
-
-        w = get_weight(word_array(i), 'ldaerfc_jt')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_LDAERFC_JT) = f%w(XC_LDAERFC_JT) + w
-        end if
-
-        w = get_weight(word_array(i), 'mu')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_RANGESEP_MU) = w
-           mu_out = mu_out + w
-        end if
-
-        w = get_weight(word_array(i), 'beta')
-        if (dabs(w) > tiny(0.0d0)) then
-           beta_out = beta_out + w
         end if
 
         w = get_weight(word_array(i), 'slaterx')
@@ -359,7 +273,7 @@ contains
 
       deallocate(word_array)
 
-      write(*, '(a)')
+!     write(*, '(a)')
 
 !     check that not all weights are zero
       h = 0.0d0
@@ -538,7 +452,7 @@ contains
          derv(k, d0000000) = f%output(1, k)
 
          if (order == 0) then
-               call my_quit('get_functional_derv: order 0; probably programming error')
+               call fde_quit('get_functional_derv: order 0; probably programming error')
          end if
 
          if (order > 0) then
@@ -603,7 +517,7 @@ contains
 
          if (order > 2) then
                if (do_alda_real .or. do_alda_imag) then
-                  call my_quit('get_functional_derv: xcfun alda qr not implemented')
+                  call fde_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
                if (fun_is_lda(f)) then
                   derv(k, d2000000) = f%output(XC_D20, k)
@@ -632,12 +546,12 @@ contains
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
                else if (fun_is_tau_mgga(f)) then
-                  call my_quit('get_functional_derv: tau mgga qr not implemented')
+                  call fde_quit('get_functional_derv: tau mgga qr not implemented')
                end if
          end if
 
          if (order > 3) then
-               call my_quit('get_functional_derv: order too high')
+               call fde_quit('get_functional_derv: order too high')
          end if
 
       end do
@@ -682,13 +596,6 @@ contains
 !     --------------------------------------------------------------------------
 
       if (.not. f%xcfun_id_is_set) then
-#ifdef VAR_MPI
-         if (parallel_xc) then
-            call xc_mpi_bcast(f%w)
-            call xc_mpi_bcast(f%id)
-            call xc_mpi_bcast(f%xcfun_id_is_set)
-         end if
-#endif
          f%id = xc_new_functional()
          call xc_set_mode(f%id, XC_VARS_NS)
 

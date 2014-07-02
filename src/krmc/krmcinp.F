@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 !***********************************************************************
@@ -78,7 +78,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.GAS SH','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
@@ -101,19 +101,19 @@ C     Initialize /CBLKRMC/
 C     ===================
 C
       DO I = 1,NMCFLAG
-         MCFLAG(I)  = .FALSE.
+         MCFLAG(I)            = .FALSE.
       END DO
-      KRMC_SKIPEE   = .FALSE.
-      KRMC_SKIPEP   = .FALSE.
+      KRMC_SKIPEE             = .FALSE.
+      KRMC_SKIPEP             = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
-     &  KRMC_SKIPEP = .TRUE.
-      KRMC_NOCI     = .FALSE.
-      KRMC_UCIBOS   = .FALSE.
-      KRMC_MKCNST   = .FALSE.
-      KRMC_CHCKJZ   = .FALSE.
-      IF(LINEAR) KRMC_CHCKJZ = .TRUE.
-      KRMC_no1pdens = .FALSE.
+     &  KRMC_SKIPEP           = .TRUE.
+      KRMC_NOCI               = .FALSE.
+      KRMC_UCIBOS             = .FALSE.
+      KRMC_CHCKJZ             = .FALSE.
+      IF(LINEAR) KRMC_CHCKJZ  = .TRUE.
+      KRMC_no1pdens           = .FALSE.
+      krmc_save_reordered_nos = .false.
 !     initialize logical flag for new full-ci input 
       KRMC_full_ci  = .false.
 C
@@ -139,6 +139,8 @@ C
       NKRMC_MK2DEL    = -1
       NKRMC_MINMK2    = -1
       NKRMC_MAXMK2    = -1
+      IKRMC_SVRONO(1) =  0
+      IKRMC_SVRONO(2) =  0
 C
 C     Initialize /CBRKRMC/
 C     ===================
@@ -157,7 +159,7 @@ C
          NKRMCSSH(I) = 0
          NKRMCPSH(I) = 0
          NKRMCFRO(I) = 0
-         DO J = 1, MXMCGAS
+         DO J = 1, MXGAS
             NKRMCGSH(I,J) = 0
          END DO
       END DO
@@ -308,7 +310,7 @@ C&&& GASSH: GAS setup
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRMCGAS
-                  IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+                  IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
                      CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                         'illegal value of NKRMCGAS')
                   END IF
@@ -381,7 +383,7 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRMCGAS
-               IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+               IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                     'illegal value of NKRMCGAS')
                END IF
@@ -549,10 +551,13 @@ C                 the m_j values of each orbital
                  KRMC_CHCKJZ = .FALSE.
                GO TO 100
  34            CONTINUE
-C&&&  .xxxxxx  -- xxx
+C&&&  .SVRONO  -- save reordered NOs rather than the original NOs
+               krmc_save_reordered_nos = .true.
                GO TO 100
  35            CONTINUE
-C&&&  .xxxxxx  -- xxx
+C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+               krmc_save_reordered_nos = .true.
+               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -706,7 +711,6 @@ C
 C
 C             MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
 C
-              KRMC_MKCNST = .TRUE.
               NKRMC_MINMK2 = NKRMC_MK2REF - NKRMC_MK2DEL
               NKRMC_MAXMK2 = NKRMC_MK2REF + NKRMC_MK2DEL
 C
@@ -1449,8 +1453,6 @@ C
 C     Initialize parameter info  pointers to negative value (for "not defined")
 C
       KZCONF = -1
-      KZXOPE = -1
-      KZXOPP = -1
       LZCONF = -1
       LZXOPE = -1
       LZXOPP = -1

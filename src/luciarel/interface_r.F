@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -114,10 +114,10 @@ C
       CALL QENTER('idistdrv')
 *
       NTESTL = 00
-      NTEST = max(iprtra,NTESTL)
+      NTEST = max(iprtra/100,NTESTL)
 !     NTEST = 000
 *
-      IF( NTEST .ge. 1 ) THEN
+      IF( NTEST .ge. 5 ) THEN
       WRITE(LUWRT,*) ' ************************************************'
       WRITE(LUWRT,*) ' *                                              *'
       WRITE(LUWRT,*) ' *  Transformer man                             *'
@@ -318,7 +318,7 @@ C
 ************************************************
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
-      if (NTEST.ge.1) then
+      if (NTEST.ge.7) then
        write(LUWRT,*)
        write(LUWRT,*) '********************************************'
        write(LUWRT,*) '* Distributing MOLTRA transformed          *'
@@ -629,7 +629,7 @@ C
       integer :: is_zero
 *
       NTESTL = 0000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
 !     NTEST = 1
  
 !     constant
@@ -728,13 +728,13 @@ C     NOINT_FILE = .TRUE.
             write(LUWRT,*) 'Current type: ',IXTP
             call abend2('Quitting.')
           end if
-!         if (NTEST.ge.1) then
+          if (NTEST.ge.1) then
             write(LUWRT,*) '======================'
             write(LUWRT,*) 'Processing type ',IXTP
             write(LUWRT,*) '======================'
             write(LUWRT,*) 'ISOBEX partition:'
             call iwrtma(ISOBEX(1,1,IXTP),NGAS,4,NGAS,4)
-!         end if
+          end if
 *
 * write statement about next integral type (to file)
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
@@ -792,10 +792,10 @@ C     NOINT_FILE = .TRUE.
             ISMCAEND = NIRR_PN
           end if
 *
-!         if (NTEST.ge.5.and.IRI.eq.1) then
+          if (NTEST.ge.5.and.IRI.eq.1) then
             write(LUWRT,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
             write(LUWRT,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
-!         end if
+          end if
 *
 * Symmetry loops
           do ISM_C=ISMCSTA,ISMCEND,1
@@ -804,14 +804,14 @@ C     NOINT_FILE = .TRUE.
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-!               if (NTEST.ge.2000.and.IRI.eq.1) then
+                if (NTEST.ge.2000.and.IRI.eq.1) then
                   write(LUWRT,*) 'Creator symm.      :',ISM_C
                   write(LUWRT,*) 'Annihilator symm.  :',ISM_A
                   write(LUWRT,*) 'Creator alpha symm.:',ISM_CA
                   write(LUWRT,*) 'Creator beta symm. :',ISM_CB
                   write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
                   write(LUWRT,*) 'Annihi. beta symm. :',ISM_AB
-!               end if
+                end if
 *
 *. Generate strings of these symmetries
 *. obtain strings
@@ -1205,7 +1205,7 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-                              if (NTEST.ge.1) then
+                              if (NTEST.ge.4) then
                                  write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)')
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',
      &                              (INDEX(M),M=1,4),
@@ -1333,7 +1333,8 @@ C
 !#define LUCI_DEBUG
 !     NTESTL = 5000
       NTESTL = 0000
-      NTEST = max(NTESTL,IPRNT)
+      NTEST = max(NTESTL,IPRNT/1000)
+      NTEST = 0
  
 !     constant
       is_zero = 0
@@ -1364,7 +1365,7 @@ C     NOINT_FILE = .TRUE.
       if(ISPINFREE.eq.1.or.nz.eq.1) IRILP = 1
 !
 !     open ASCII file for checking integral sorting information
-      if (NTEST.ge.1) then
+      if (NTEST.ge.2) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
           open(unit=LUINGR,file=NLUSC94_MPI(1:LUSC94_MPIL),
@@ -1402,7 +1403,7 @@ C     NOINT_FILE = .TRUE.
 !     Loop over real/imaginary part
 !
       do IRI=1,IRILP,1
-        if (NTEST.ge.1) then
+        if (NTEST.ge.2) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
             if (IRI.eq.1.and.NTEST.ge.2) write(LUWRT,*) 'REAL LOOP'
             if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
@@ -1412,8 +1413,11 @@ C     NOINT_FILE = .TRUE.
         end if
         ITPSV = 0
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1) 
-     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
+          if (NTEST.ge.1)then
+            write(LUINGR,'(A)') 'INTEGRAL FILE'
+            call dump_integral_info(f1,f2,IRI,nasht/2,NASHT,nz,
+     &                              irilp,ipqtoq(1,0),luingr)
+          end if
         end if
 
  
@@ -1441,9 +1445,9 @@ C     NOINT_FILE = .TRUE.
 *
 * write statement about next integral type (to file)
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-            if (NTEST.ge.1) 
+            if (NTEST.ge.2) 
      &          call integral_type(ISOBEX(1,1,IXTP),NGAS,ITPSV,LUINGR)
-            if (NTEST.ge.1) 
+            if (NTEST.ge.2) 
      &        write(LUINGR,'(A,I5)') 'Type ',IXTP
           end if
 *
@@ -1907,8 +1911,10 @@ C    &             ' at ',ICOUNT_I8
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):
+!#ifdef BLUBB
                             IF(.NOT. NOINT_FILE )
      &                         write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
+!#endif
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
@@ -1919,7 +1925,14 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-                              if (NTEST.ge.1) then
+
+#ifdef DMRG_DEBUG
+!                           DMRG DEBUG: no 2e-ints...
+                            if(icnt > 2) T(ICOUNT_I8) = 0.0d0
+!                           DMRG DEBUG: no 2e-ints...
+#endif
+
+                              if (NTEST.ge.2) then
                                 write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)') 
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',
      &                              (INDEX(M),M=1,4),
@@ -1928,10 +1941,10 @@ C FIXME !! Uncommented sign here!!
      &                              'INTEGRALs: YINT,YXINT,YINT-YXINT',
      &                                          YINT,YXINT,YINT-YXINT
 *                               write integral to file (for debugging):
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
-                                write(LUINGR,'(2x,a,2i5)')
-     &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+!                               write(LUINGR,'(2x,a,2i5)')
+!    &                          'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
                                 if (IXCH.eq.0) then
                                   write(LUINGR,'(I4,4X,4I3,1F18.14)') 
      &                                  ICOUNT_I8,INDEX(1),
@@ -1973,14 +1986,14 @@ C FIXME !! Uncommented sign here!!
 *       ^ End loop over excitation types
       end do
 *     ^ End loop over real/imaginary
-      if (NTEST.ge.1.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
+      if (NTEST.ge.2.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
      &   close(LUINGR)
       close(LUINSV)
       NALLINT = ICOUNT_I8 - 1
 C
  300  CONTINUE
 C
-      if (NTEST.ge.1) then
+      if (NTEST.ge.2) then
         write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
         write(LUWRT,*) '  Total number of integrals   : ',NALLINT
         write(LUWRT,*) '  Number of diagonal integrals: ',NDIAINT
@@ -2001,6 +2014,50 @@ C
 *
 #undef LUCI_DEBUG
       end
+***********************************************************************
+      subroutine dump_integral_info(h1,h2ac,iri,nashth,nasht,nz,
+     &                              irilp,ipqtoq,luwrt)
+
+!     dump all 1e/2e integrals on file INTEGRALS in nice format
+
+      implicit none
+!     input
+      real(8), intent(in)    :: h1((2*nasht)**2 * irilp)
+      real(8), intent(in)    :: h2ac(nashth,nashth,
+     &                              (nashth*(nashth+1))/2,nz,*)
+      integer, intent(in)    :: iri, irilp,nashth, nasht, nz, luwrt
+      integer, intent(in)    :: ipqtoq(4,0:7)
+
+!     scratch
+      integer                :: i, j , ii, jj
+
+      write(luwrt,'(/A)')' print of unsorted integrals from MOLTRA'
+      write(luwrt,'(A/)')' ---------------------------------------'
+
+      ! 1e-integrals
+      write(luwrt,'(a/)') ' list of 1e-integrals'
+      write(luwrt,'(a)' ) ' indices         elements       '
+      write(luwrt,'(a)' ) '--------------------------------'
+      do i = 1, nasht
+        do j = 1, nasht
+          ii = i
+          jj = j
+          if(i > nashth) ii = -(i-nashth)
+          if(j > nashth) jj = -(j-nashth)
+          write(luwrt,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,h1(((iri-1)*((nasht)**2))+(j-1)*nasht + i)
+        end do  
+      end do 
+
+      ! 2e-integrals
+      write(luwrt,'(/A)')' list of 2e-integrals in (NZ,3) format'
+      call prdnz3(h2ac(1,1,1,1,1),nashth,(nashth*(nashth+1))/2,nz,
+     &            ipqtoq(1,0),luwrt)
+
+      write(luwrt,'(/A)')' start of sorted integrals for KRCI'
+      write(luwrt,'(A/)')' ----------------------------------'
+
+      end 
 ***********************************************************************
 
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,NASHT,NNASHX,H2AC,IPRNT)
@@ -2029,8 +2086,8 @@ C
         INDEX_LOC(IL) = INDEX(IL)
       end do
 *
-      NTESTL = 0
-      NTEST = max(NTESTL,IPRNT)
+      NTESTL = 000
+      NTEST = max(NTESTL,IPRNT/100)
 *
       if (IRI.eq.1) then
         MZ = 1
@@ -2248,7 +2305,24 @@ C***********************************************************************
       WRITE(6,*) '  Compound index dimension: ',NNASHX
       WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
       WRITE(6,*) '1-el. integral array in GETIND_NTS:'
-      CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+!     CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+      if(iri == 1)then
+        write(6,'(a/)') ' real part of 1e-integrals'
+      else
+        write(6,'(a/)') ' imaginary part of 1e-integrals'
+      end if
+      write(6,*) ' indices         elements       '
+      write(6,*) '--------------------------------'
+      do i = 1, nasht * 2
+        do j = 1, nasht * 2
+          ii = i
+          jj = j
+          if(i > nasht) ii = -ii
+          if(j > nasht) jj = -jj
+          write(6,'(i4,i4,5x,1E19.12)') 
+     &    jj,ii,DMFC(((IRI-1)*n2ashx2)+(j-1)*nasht*2 + i)
+        end do  
+      end do  
 #endif
 !#undef LUCI_DEBUG
 !
@@ -2304,7 +2378,7 @@ C***********************************************************************
       write(6,*) '1-electron integral.'
       write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
 #endif
-!#undef LUCI_DEBUG
+#undef LUCI_DEBUG
       end
 ***********************************************************************
 

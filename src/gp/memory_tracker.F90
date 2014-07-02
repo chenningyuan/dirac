@@ -320,11 +320,17 @@
                endif
 
                actualTopListSize = min(topListsize,memTracking%n_created)
-               if (mytid.eq.0) then
-                write (*,*) ' '
-                write (*,*) ' Dynamical Memory Usage Summary' 
-                write (*,*) ' '
 
+               write (*,*) ' '
+!              if (mytid.eq.1) then
+!               write (*,*) ' Dynamical Memory Usage Summary for Slave(s)'
+!              elseif (mytid.eq.0) then 
+!               write (*,*) ' Dynamical Memory Usage Summary for Master'
+!              endif
+
+               if (mytid.eq.0) then
+                write (*,*) ' Dynamical Memory Usage Summary'
+                write (*,*) ' '
                 write (*,'(a,f12.2)') '  Mean allocation size (Mb) : ',meanMemory
                 if (.false.) then
                 write (*,*) ' '

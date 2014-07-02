@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module numoper_integrals
@@ -195,7 +195,7 @@ module numoper_integrals
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use interface_ao_specific
-         use ao_eval
+         use dirac_ao_eval
 
          implicit none
          logical :: doint(4)
@@ -225,7 +225,7 @@ module numoper_integrals
          enddo
 
          call interface_ao_write()
-         call ao_eval_init(0, 0, .false.)
+         call dirac_ao_eval_init(0, 0, .false.)
 
          ndim = n_ao
          call alloc(ao,ndim)

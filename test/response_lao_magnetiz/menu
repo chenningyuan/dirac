@@ -1,7 +1,0 @@
-quick
-LiH.dc_ukb.suscp_lao_go=cm.inp LiH.lsym.dir.mol 
-LiH.dc_rkb.suscp_nolao.inp     LiH.lsym.dir.mol 
-
-regular
-LiH.dc_rkb.suscp_lao_go=cm.inp LiH.lsym.dir.mol 
-LiH.levyle.suscp_lao_go=cm.inp LiH.lsym.dir.mol 

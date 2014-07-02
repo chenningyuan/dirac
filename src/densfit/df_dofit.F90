@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module Varlengths
@@ -87,7 +87,7 @@ use densfit_common
 !
 ! ==== Local variables ===>
 !
-  integer(KINT)                 :: n_fit, n_fit_A, n_fit_B
+  integer(KINT)                 :: n_fit, n_fit_A, n_fit_B, info
   real(KREAL), allocatable      :: fit_coefficients(:), weight_matrix(:,:), weight_vector(:)
   type(center_definition)       :: definition_center_A, definition_center_B
 !
@@ -245,6 +245,7 @@ use densfit_common
 ! definition_center  : Structure with all the relevant information
 !
   integer(KINT), intent(out)                :: ierr
+  integer(KINT), intent(in )                :: ld_DM, n_fit
   type(center_definition), intent(in)       :: definition_center_A, definition_center_B
   real(KREAL), intent(in)                   :: Density_AB(ld_DM,*)
   real(KREAL), intent(out)                  :: weight_matrix(n_fit,n_fit), weight_vector(n_fit)

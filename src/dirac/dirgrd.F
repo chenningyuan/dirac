@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -2618,7 +2618,7 @@ C     Get total density matrix
 C
       CALL GENDEN(DSO,WORK(KCMO),1,IPRINT)
       IF (NASHT.GT.0) THEN
-         IF (NOPEN .GE. 1) THEN
+         IF (NOPEN > 1) THEN
             CALL QUIT('GETDSO only implemented for one open shell')
          END IF
          CALL MEMGET('REAL',KDVSO,N2BBASXQ,WORK,KFREE,LFREE)

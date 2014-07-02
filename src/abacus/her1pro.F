@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C  /* Deck pr1int */
@@ -160,7 +160,7 @@ C     **************************
 C     ***** Integral types *****
 C     **************************
 C
-      CALL PR1DIR(WORK(KLAST),LWRK,WORD,INTTYP,NOPTYP,INTREP,
+      CALL PR1DIR(WORD,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,WORK(KATOM),NATOM,NBAST,NELMNT,IPRINT)
 C
@@ -231,7 +231,7 @@ C
       RETURN
       END
 C  /* Deck pr1dir */
-      SUBROUTINE PR1DIR(WORK,LWORK,WORD,INTTYP,NOPTYP,INTREP,
+      SUBROUTINE PR1DIR(WORD,INTTYP,NOPTYP,INTREP,
      &                  ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &                  SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 C
@@ -284,7 +284,7 @@ C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
      &          EFDIR*1
-      DIMENSION WORK(LWORK), INTREP(*), INTADR(*)
+      DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
 #include "symmet.h"
@@ -646,7 +646,7 @@ C
          INTTYP = 12
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of diamagnetic spin-orbit integrals.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,
      &               TRIANG)
          ANTI = .FALSE.
@@ -2962,9 +2962,13 @@ C
                            ELSE
                               ISCOOR = 3*NUCDEP*(ISCOR1 - 1) + ISCOR2
                            END IF
-                           LABINT(ITYP) = 'DSO '
-     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           LABINT(ITYP) = 'DS'
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
                            INTREP(ITYP)   = 0
                            INTADR(ISCOOR) = ITYP
                         END IF

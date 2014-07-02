@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -63,12 +63,12 @@ contains
      integer, intent(in)           :: sigma_fh
      integer, intent(inout)        :: off_state_file_glb
      integer, intent(in)           :: mz
-     character (len=2), intent(in) :: state_file_extension
+     character (len=3), intent(in) :: state_file_extension
 !----------------------------------------------------------------------
      real(8)                :: propval_real_tmp
      real(8)                :: propval_imag_tmp
      integer                :: state_fh
-     character (len=13)     :: state_file_name
+     character (len=14)     :: state_file_name
 !**********************************************************************
       
                  propval_real_tmp = val_d0
@@ -79,7 +79,7 @@ contains
 !        step 1: open state vector file
 !        ------------------------------------------------------------------------------
          state_fh = 15
-         write(state_file_name,'(a11,a2)') 'KRCI_CVECS.',state_file_extension
+         write(state_file_name,'(a11,a3)') 'KRCI_CVECS.',state_file_extension
          open(unit=state_fh,file=state_file_name,status='old',action="readwrite",     &
               form='unformatted',position='rewind')
 

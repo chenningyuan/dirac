@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -71,8 +71,9 @@ C        Print orbital strings
 C
          DO I = 1, 4
             DO J = 1,NFSYM
+               K = LNBLNK(SZTRA(J,I))
                WRITE(LUPRI,'(A,I2,A,I2,2A)')
-     &            '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)
+     &         '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)(1:K)
             END DO
          END DO
       END IF
@@ -165,20 +166,13 @@ C
       ISMXZERO = 0
       DO I = 1, 4
          DO J = 1,NFSYM
+           IF( SZTRA(J,I) .eq. TESTSTRING ) ISZERO = ISZERO + 1
            ISMXZERO = ISMXZERO + 1
          END DO
       END DO
 C
-C     check string
-C
-      DO I = 1, 4
-         DO J = 1,NFSYM
-           IF( SZTRA(J,I) .eq. TESTSTRING ) ISZERO = ISZERO + 1
-         END DO
-      END DO
-C
       IF( ISZERO .eq. ISMXZERO )THEN
-        WRITE(LUPRI,*) ' Empty orbital string detected !!!'
+        WRITE(LUPRI,*) ' ERROR: All orbital strings are empty !!!'
         WRITE(LUPRI,*) ' 4-index transformation will be erroneous.'
         WRITE(LUPRI,*) ' Check parameter MXCORB (maxorb.h) '//
      &                   'and try to increase.'
@@ -186,10 +180,11 @@ C
         CALL QUIT('*** ERROR in INISZT *** ' //
      &        'Empty string array SZTRA detected' )
       ELSE IF( ISZERO .lt. ISMXZERO .AND. ISZERO .gt. ISZERO_FINAL)THEN
+        IF (IPROPT .GT. 4) THEN
         WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' partial empty orbital string detected!'
-        WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' 4-index could be erroneous.'
+        END IF
       ELSE IF( ISZERO .eq. ISZERO_FINAL )THEN
 C
 C       WRITE(LUPRI,*) ' succesful test'
@@ -691,7 +686,8 @@ C
       ITRA_INTFLG = INTFLG
       ITRA_INTFL2 = INTFLG
       ITRA_INTFL4 = INTFLG
-      IPRTRA = IPRINT - 2
+      IPRTRA = IPRINT - 5
+      if(iprtra < 0) iprtra = 0
 C TODO debug : extra print because no integrals for Levy-Leblond
 C              /hjaaj aug 2002
 C     print*,'+++++++++++++++++++++++++++++++++++++'

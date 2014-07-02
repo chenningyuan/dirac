@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,24 +16,27 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : krmcopt.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
-      SUBROUTINE PSIOPT(WFTYP,WFCONV,WORK,LWORK)
+      SUBROUTINE PSIOPT(WFTYP,WFCONV)
 C***********************************************************************
 C
 C     Driver routine to PSIOP1
 C     Get second order optimized wave function.
-C     Either DHF or KR-MCSCF...
+C     Either DHF or KR-MCSCF... (WFTYP = 'SCF   ' or 'MCSCF ')
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -41,7 +44,6 @@ C***********************************************************************
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
-      DIMENSION WORK(LWORK)
 C
 #include "maxorb.h"
 #include "dcbidx.h"
@@ -56,8 +58,11 @@ C
 C
       LOGICAL EX
       INTEGER RENAME
+      real(8), allocatable :: WORK(:)
 C
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PSIOPT')
 C
       CALL QENTER('PSIOPT')
 C
@@ -154,7 +159,7 @@ C     ***************************************************
 C
 C
       CALL SETDCBIDX()
-      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
 C
 #if defined (VAR_MPI2)
@@ -272,6 +277,7 @@ c     CLOSE(LUKRM3,STATUS='DELETE')
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='DELETE')
       CLOSE(LUITFO,STATUS='DELETE')
 C
+      call dealloc(WORK)
       CALL QEXIT('PSIOPT')
       RETURN
       END
@@ -596,15 +602,25 @@ C
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
          IF (IPROPT .GE. 1) THEN
-            IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+              IDENSLR_STATE = 1
+              NATOLCR       = .TRUE.
               IPRNO = 3*IPROPT
-              CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+              CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,
+     &             WORK,KFREE,LFREE)
+              CALL MEMGET2('REAL','UNO  ',KUNO  ,N2ASHXQ,
+     &             WORK,KFREE,LFREE)
+
+C             erase old occupation numbers
+              CALL DZERO(WORK(KOCCNO),NORBT)
+              CALL DZERO(WORK(KUNO),N2ASHXQ)
+
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
-            END IF
+              IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+                IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+              END IF
          END IF
 C
          CALL FLSHFO(LUPRI)
@@ -760,17 +776,6 @@ C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
 C
-C     calculate 1-particle density to be exported on file - default
-      if(.not.no1pdens_save)then
-        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
-     &  ' matrix calculated for the converged MCSCF wave function'//
-     &  ' to file.'
-        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
-        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &             .false.,.false.,.true.,IPRNO,WORK,KFREE,LFREE)
-        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
-      end if
 C
 C
  3000 CONTINUE
@@ -778,6 +783,18 @@ C
       CPUTID = SECTID(CPUTOT2-CPUTOT1)
       WALLTID = SECTID(WALLTOT2-WALLTOT1)
       WRITE(LUPRI,9300) CPUTID,WALLTID
+
+C     calculate 1-particle density to be exported on file - default
+      if(.not.no1pdens_save)then
+        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
+     &  ' matrix calculated for the (converged) MCSCF wave function'//
+     &  ' to file.'
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &             .false.,MOISNO,.true.,1,WORK,KFREE,LFREE)
+        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
 C
  9300 FORMAT(/'>>> TOTAL CPU (WALL) TIME IN KR-MCSCF: ',A,'(',A,')')
 C
@@ -983,7 +1000,7 @@ C
          CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
       END IF
 C
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 5) THEN
          CALL HEADER('rGRAD: gradient:',-1)
          CALL RPRKAP(GOEE,GOEP,JXOPE,NZHOPE,
      &               JXOPP,NZXOPP,NZ,IPQTOQ(1,0),LUPRI)
@@ -1063,18 +1080,6 @@ C
          IF (NZCONF .GT. 0) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
       END IF
 C
-C
-C     As a temporary solution for calculating 1st order properties
-C     we save the total density matrix: DC + DV
-C
-      CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL DCSCT(WORK(KDC))
-      IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDV,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL DVSCT(DV,WORK(KDV))
-         CALL DAXPY(N2ORBXQ,D1,WORK(KDV),1,WORK(KDC),1)
-      END IF
-      CALL WRTKRMC(LUKRM3,'DTMO    ',WORK(KDC),N2ORBXQ)
 C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -1272,7 +1277,7 @@ C           TODO FIXME: check trace of PV
 C
          END IF
 C     END IF
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPROPT .GE. 7 ) THEN
          IF (CALCDV) THEN
             WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
             CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1363,7 +1368,7 @@ C
       LOGICAL NOFV
       LOGICAL FNDLAB
       DIMENSION IQBF(4)
-      DIMENSION IOPSST(2,MXMCGAS+2,2),NOPSST(2,MXMCGAS+2,2)
+      DIMENSION IOPSST(2,MXGAS+2,2),NOPSST(2,MXGAS+2,2)
 C
 C
 #include "memint.h"
@@ -1555,7 +1560,7 @@ C
 
 
 C
-      IF ( IPROPT .GE. 5 ) THEN
+      IF ( IPROPT .GE. 10 ) THEN
          WRITE(LUPRI,9005)
          IF ( NISHT .GT. 0 ) THEN
             WRITE(LUPRI,9006) 'FCao'
@@ -1579,7 +1584,7 @@ C
       IF (NASHT .GT. 0) CALL DZERO(FV,N2ORBXQ)
       DO 100 I = 1,NFSYM
          IF (NORB(I) .EQ. 0) GOTO 100
-         IF (IPROPT .GE. 5) WRITE(LUPRI,9010) I
+         IF (IPROPT .GE. 10) WRITE(LUPRI,9010) I
          CALL QTRANS('AOMO','S',D0,
      &               NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &               WORK(KFCAO+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,
@@ -1590,7 +1595,7 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 5) THEN
+         IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1606,7 +1611,7 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 5) THEN
+         IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1658,6 +1663,7 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "frame.h"
@@ -1670,6 +1676,9 @@ C
 #include "memint.h"
 C
       CALL QENTER('rGETFC')
+
+      IPRINT_local = IPROPT
+      IF (X2CMMF) IPRINT_local = max(2,IPRINT_local)
 C
 C
 C     ***************************************************
@@ -1677,51 +1686,65 @@ C     *** Get 1-electron Fock matrix ********************
 C     ***************************************************
 C
       CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL DIRH1(WORK(KH1AO),IPROPT,WORK(KFREE),LFREE)
+      CALL DIRH1(WORK(KH1AO),IPRINT_local,WORK(KFREE),LFREE)
 C
+C     ***************************************************
+C     *** Get 2-electron Fock matrix ********************
+C     ***************************************************
+C
+      CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
       IF (NISHT .GT. 0) THEN
-C
-         CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
-C
-         CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
-C
+
          NFMAT = 1
 
          call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
          call SetIntTaskArrayDimension(NPOS,PARCAL)
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 
-C        ***************************************************
-C        *** Get one-electron density matrices *************
-C        ***************************************************
-C
-C        Construct DCAO
-C
-         CALL DENSTY(WORK(KDCAO),CMO,IPROPT)
-C
-C        ***************************************************
-C        *** Get 2-electron Fock matrices ******************
-C        ***************************************************
-C
+C        Construct one-electron density matrix DCAO
+
+         CALL DENSTY(WORK(KDCAO),CMO,IPRINT_local)
+
          CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &        WORK(KFCAO),WORK(KDCAO),
      &        NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
-C
+      ELSE
+         CALL DZERO(WORK(KFCAO),N2BBASXQ)
+         CALL DZERO(WORK(KDCAO),N2BBASXQ)
+      END IF
+
+C     if x2c_mmf, add the mmf two-electron Fock matrix
+
+      IF (X2CMMF) THEN
+         CALL MEMGET('REAL',KF2MMF,N2BBASXQ,WORK,KFREE,LFREE)
+         open(lux2c,file='DFFCK_mmf',status='old',form='unformatted',
+     &        access='sequential',action='readwrite',
+     &        position='rewind')
+         CALL REAFCK(lux2c,WORK(KF2MMF),.TRUE.,1)
+         close(lux2c, status='keep')
+         CALL DAXPY(N2BBASXQ,-1.0D0,WORK(KH1AO),1,WORK(KF2MMF),1)
+         EMMF2E = DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KF2MMF),1)  ! see "same as" below
+         CALL DAXPY(N2BBASXQ,1.0D0,WORK(KF2MMF),1,WORK(KFCAO),1)
+      ELSE
+         EMMF2E = 0.0D0
+      END IF
 C
 C        1-electron inactive energy
-C        (factor D2: DCao normed to 1 (not 2))
+C        (factor D2: DCao normalized to 1 (not 2))
 C
          ECORE = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
-         IF (IPROPT .GE. 4)
-     &        WRITE(LUPRI,9000) 1,ECORE
+         IF (IPRINT_local .GE. 2) WRITE(LUPRI,9000) 1,ECORE
 C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          EMCMY2E =            DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
 !same as EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
-         IF (IPROPT .GE. 4)
-     &        WRITE(LUPRI,9000) 2,EMCMY2E
+         IF (IPRINT_local .GE. 2) THEN
+            WRITE(LUPRI,9000) 2,EMCMY2E - EMMF2E
+            IF (X2CMMF) WRITE(LUPRI,9007) EMMF2E
+         END IF
          ECORE = ECORE + EMCMY2E
 C
 C        ***************************************************
@@ -1730,21 +1753,18 @@ C        ***************************************************
 C
          CALL DAXPY(N2BBASXQ,D1,WORK(KFCAO),1,WORK(KH1AO),1)
 C
-      ELSE
-         ECORE = D0
-      END IF
 C
 C     add the LVCORR energy correction to the ECORE energy
 C     (will be zero if DOLVC .false.) /Sep 2011 hjaaj
       ECORE    = ECORE + POTNUC + E_LVCORR_MC
       ECORE_LR = ECORE
-      IF (IPROPT .GE. 4) THEN
+      IF (IPRINT_local .GE. 2) THEN
           WRITE(LUPRI,9001) POTNUC
           IF (E_LVCORR_MC .ne. 0.0D0) WRITE(LUPRI,9002) E_LVCORR_MC
           WRITE(LUPRI,9004) ECORE
       END IF
 C
-      IF ( IPROPT .GE. 10 ) THEN
+      IF ( IPRINT_local .GE. 10 ) THEN
          WRITE(LUPRI,9006) 'FCao'
          CALL PRQMAT(WORK(KH1AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -1754,6 +1774,7 @@ C
  9002 FORMAT(/' (rGETFC) LVCORR correction     : ',F25.15)
  9004 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
  9006 FORMAT(/'  rGETFC: ',A,' fock matrix')
+ 9007 FORMAT(/' (rGETFC) 2-electron mmf energy : ',F25.15)
 C
 C     ***************************************************
 C     *** Transform to MO basis *************************
@@ -1771,8 +1792,8 @@ C
      &               NZ,IPQTOQ(1,0),
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
-     &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 6) THEN
+     &               WORK(KFREE),LFREE,IPRINT_local)
+         IF (IPRINT_local .GE. 10) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
@@ -1824,7 +1845,7 @@ C
       INQUIRE (FILE='DFFCK1', EXIST=EX)
       IF (EX) THEN
          CALL OPNFIL(LUFCK1,'DFFCK1','OLD','DIRH1')
-         CALL REAFCK(LUFCK1,H1AO,.FALSE.,1)
+         CALL REAFCK(LUFCK1,H1AO,.TRUE.,1)
          CLOSE(LUFCK1)
       ELSE
 C
@@ -1838,7 +1859,7 @@ C
 C
       END IF
       IF ( IPRINT .GE. 10 ) THEN
-         WRITE(LUPRI,'(/A)') ' (DIRH1) H1 in AO basis'
+         WRITE(LUPRI,'(/A,L5)') ' (DIRH1) H1 in AO basis', EX
          CALL PRQMAT(H1AO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      $        NZ,IPQTOQ(1,0),LUPRI)
       END IF
@@ -1848,7 +1869,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsetwop */
-      SUBROUTINE RSETWOP(WORK,KFREE,LFREE)
+      SUBROUTINE RSETWOP(WFTYP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -1863,14 +1884,12 @@ C     Output:
 C        KZCONF   - work address of info about CI determinants
 C        LZCONF   - integer length of WORK(KZCONF)
 C
-C        KZXOPE   - work address of NZHOPE electron-electron rotations
-C        NZXOPE   - number of -"- (non-redundant)
-C        NZHOPE   - number of -"-  incl. redundant active-active rotations
-C        LZXOPE   - integer length of WORK(KZXOPE)
+C        NZXOPE   - number of ++ orb rotations (non-redundant)
+C        NZHOPE   - number of ++ orb rotations  incl. redundant active-active rotations
+C        LZXOPE   - integer length of ++ orb rotations
 C
-C        KZXOPP   - work address of NZXOPP electron-positron rotations
-C        NZXOPP   - number of -"-
-C        LZXOPP   - integer length of WORK(KZXOPP)
+C        NZXOPP   - number of +- orb rotations
+C        LZXOPP   - integer length of +- orb rotations
 C
 C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : July 2002 hjaaj
@@ -1884,6 +1903,8 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxash.h"
 C
+      CHARACTER WFTYP*(*)
+C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1893,6 +1914,7 @@ C
 C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
+
 C
       CALL QENTER('RSETWOP')
 C
@@ -1936,6 +1958,9 @@ C     *** Configurational parameters ********************
 C     ***************************************************
 C
       CALL RSETCI(OPT_CIPROGRAM,WORK,KFREE,LFREE)
+      IF (WFTYP(1:3) .NE. 'SCF' .AND. NZCONF .LE. 0) THEN
+         GO TO 9000
+      END IF
 C
 C     ***************************************************
 C     *** Orbital parameters ****************************
@@ -1944,11 +1969,11 @@ C
       CALL IZERO(NOROT,NORBT)
 C
       NDSHT = 0
-      NVSHT  = 0
+      NVSHT = 0
 C
       WRITE(LUPRI,'(/A)') ' (RSETWOP) Orbital classes:'
       DO I = 1,NFSYM
-         WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
+         IF (NFSYM.GT.1) WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
          IF (NISH(I).GT.0) THEN
             WRITE(OPT_INDSTR(1,I),'(I4,A2,I4)')
      &         1,'..',NISH(I)
@@ -2077,13 +2102,13 @@ C
          END DO
       END DO
       IF (IPROPT .ge. 4 .AND. NDSHT .gt. 0) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(RSETWOP) V and IDXV2G'
+         WRITE(LUPRI,'(/A)')
+     &        ' (RSETWOP) V and IDXV2G'
          DO I = 1, NVSHT
            WRITE(LUPRI,'(8X,I6,I11)') I, IDXV2G(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(RSETWOP) D and IDXD2G'
+         WRITE(LUPRI,'(/A)')
+     &        ' (RSETWOP) D and IDXD2G'
          DO I = 1, NDSHT
            WRITE(LUPRI,'(8X,I6,I11)') I, IDXD2G(I)
          END DO
@@ -2091,12 +2116,16 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+
+      IF (WFTYP(1:5) .NE. 'KR-CI') THEN     ! no orbital rotation vectors for CI
+         
+C
 C     Always totally symmetric rotations (=> JOPSY = 1)
 C
       JOPSY = 1
       GASWF = NGAS_DC.GT.1
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
-     &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
+     &     NZXOPE,NZHOPE,NZXOPP,
      &     IPROPT)
 C
 C
@@ -2119,9 +2148,11 @@ C
      &                    IREDJOB,1)
 C
       END IF
+
+      END IF ! (WFTYP(1:5) .NE. 'KR-CI')
 C
-C     Define LZXOPE to integer length of work(KZXOPE)
-C     Define LZXOPP to integer length of work(KZXOPP)
+C     Define LZXOPE to integer length of ++ orb rotations
+C     Define LZXOPP to integer length of +- orb rotations
 C
       LZXOPE = 2*NZHOPE
       LZXOPP = 2*NZXOPP
@@ -2145,7 +2176,7 @@ C     write information to LUKRMC
 C
       CALL RSET_KRMC(WORK)
 C
-      CALL FLSHFO(LUPRI)
+ 9000 CALL FLSHFO(LUPRI)
       CALL QEXIT('RSETWOP')
       RETURN
       END
@@ -2366,6 +2397,16 @@ C        A non-trivial number of CI rotations.
 C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
+         if(fcidump .and. USE_CIPROGRAM .NE. 'GASCIP' ) THEN
+           call quit('fcidump option only for GASCIP available')
+         end if
+
+         if(fcidump)then
+           NZCONF = 1
+           LZCONF = 0
+           CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
+           GOTO 999
+         end if
 C
          IF ( USE_CIPROGRAM .EQ. 'GASCIP' ) THEN
 C
@@ -2419,7 +2460,7 @@ C
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
 C
          ELSE IF ( USE_CIPROGRAM .EQ. 'KRCC' ) THEN
-            WRITE(6,*) 'IT is ok'
+            WRITE(LUPRI,*) 'KRCC: IT is ok'
             NZCONF = 1
             LZCONF = 0
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
@@ -2440,7 +2481,7 @@ C
 C
       END IF
 C
-      MZ = MIN(NZ,2)
+ 999  MZ = MIN(NZ,2)
       NZCONFQ = MZ*NZCONF
 C
       CALL GETTIM(CPU2,WLL2)
@@ -2453,8 +2494,7 @@ C
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
       IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
-         WRITE(LUPRI,'(/A)') ' Error: no determinants !'
-         CALL QUIT('Error: no determinants !')
+         WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C
 C
@@ -2540,7 +2580,7 @@ C       get orbital symmetry values - either from a previous MCSCF or HF run
         END IF
 C
 C       debug print
-        IF( IPRINT .ge. 2 )THEN
+        IF( IPRINT .ge. 7 )THEN
           WRITE(LUPRI,*) ' DEBUG info: symmetry-info vector of orbitals'
           CALL IWRTMAMN(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
         END IF
@@ -2590,7 +2630,7 @@ C
       DIMENSION FC(*),FCAC(*)
 C
       CALL QENTER('RGETAC')
-      IF (IPRINT .GE. 5) CALL HEADER('Output from rGETAC',-1)
+      IF (IPRINT .GE. 7) CALL HEADER('Output from rGETAC',-1)
 C
       IF (NASHT .EQ. 0) GOTO 9999
 C
@@ -2610,7 +2650,7 @@ C
 C
 C     Print FCAC
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 7) THEN
          CALL HEADER('rGETAC: FCAC matrix',-1)
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -2661,7 +2701,7 @@ C
 C
 C     Print FCAC
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 8) THEN
          write(lupri,*) 'n2asht',N2ASHT
          CALL HEADER('rEnract: FCAC matrix',-1)
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
@@ -2858,6 +2898,8 @@ C
 C     Generate start vectors
 C
 C     Input:
+C        ISTART
+C        IWRT
 C
 C     Output: None
 C
@@ -2936,12 +2978,12 @@ C
      &        ' (ROPTST)  Control parameter   (ISTART) =',ISTART,
      &        '           Orbital start guess (IROST)  =',IROST,
      &        '           Config. start guess (IRCIST) =',IRCIST,
-     &        '           Write CMO & CREF (IWRT)      =',IWRT
+     &        '           Write CMO & CREF    (IWRT)   =',IWRT
       END IF
 C
 C     For KRMCSCF, LUKRM5 will be KRMCOLD from an old MCSCF calculation,
 C         if available.
-C     For KRCI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
+C     For KR-CI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
 C         from an old MCSCF calculation, if either is available.
 C     (Aug 08, SK+HJAaJ)
 C
@@ -2975,7 +3017,7 @@ C
      &                   KRM5_NAME(1:LKRM5_NAME)
                END IF
 C
-               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+               IF ( MOPT_MXMACRO .EQ. -1 ) THEN
                  WRITE(LUPRI,'(/A)')
      &                ' (ROPTST)  Starting CI calculation' //
      &                ' from MC/CI natural orbitals! '
@@ -3138,7 +3180,8 @@ C
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I2)') ' Coefficients ( after GS), irrep ',I
+            WRITE(LUPRI,'(A,I3)')
+     &         ' Coefficients (after Gram-Schmidt), irrep',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -3487,7 +3530,6 @@ C     Output: CREF - CI vector
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3520,9 +3562,15 @@ C
 C     Diagonalize the full CI matrix now.
 C     This is of course only possible for sufficiently small CI's.
 C
-      IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 1000) THEN
-         WRITE(LUPRI,'(//2A)')
-     &      ' Are you mad? Full CI with ',NZCONF,' determinants?',
+!     fcidump: generate FCIDUMP file and return
+      if(fcidump)then
+        call fcidump_driver(CMO,WORK,KFREE,LFREE,IPROPT)
+        goto 1000
+      end if
+
+      IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 100000) THEN
+         WRITE(LUPRI,'(//A,I9,A/A)')
+     &      ' Are you mad? Full CI with',NZCONF,' determinants?',
      &      ' Using MAXCIT = 3 instead!'
          MAXCIT = 3
       END IF
@@ -3535,11 +3583,10 @@ C           MAXCIT Davidson CI iterations.
 C
             CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            RTHRCI = OPT_THRGRD
-            CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
+            THRGCI = 0.1D0 * SQRT(THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,
-     &                         OPT_CIPROGRAM,
+     &                         IOPT_ISTATE,ICONV_TOT,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
@@ -3550,8 +3597,7 @@ C
             CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_ISTATE,THRPCI,
-     &                           OPT_CIPROGRAM,IPROPT,
-     &                           WORK,KFREE,LFREE)
+     &                           IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,
@@ -3590,7 +3636,8 @@ C
          END IF
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
-         WRITE(6,*) 'NEED TO PASS CHECK'
+         IF (IPROPT.GT.5)
+     &      WRITE(LUPRI,*) 'KRCC: Skipping CI, will do CC ;-)'
       ELSE
          WRITE(LUPRI,'(//3A)')
      &        '*** ERROR in RCIST ***' //
@@ -3605,21 +3652,17 @@ C     General allocation for NO generation
 C
       IDENSLR_STATE = 0
       IPRNO = 3*IPROPT
-      IF( (OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR) .OR.
-     &     OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
-        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
-      END IF
+      IF( NATOLCR ) THEN
+        CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','UNO',  KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
 C
-      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
-C
-         WRITE(LUPRI,'(//A/A/A)')
+        WRITE(LUPRI,'(//A/A/A)')
      &'  *************************************************************',
      &'  ************* Natural orbital occupation numbers ************',
      &'  *************************************************************'
 C
 C
-         DO ICNON = 1, NCIROOT
+        DO ICNON = 1, NCIROOT
 C
 C         erase old occupation numbers
           CALL DZERO(WORK(KOCCNO),NORBT)
@@ -3644,10 +3687,6 @@ C        do NOT set back for KR-CI - we might do more than one symmetry
 C
          IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
-      ELSE IF( OPT_CIPROGRAM .EQ. 'GASCIP' )THEN
-C
-         CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
       END IF
 C
 1000  CONTINUE
@@ -3702,6 +3741,10 @@ C
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
       DIMENSION IOPTTB(-1:2)
       DATA IOPTTB / 0,0,0,0 /
+      integer, allocatable :: save_pp(:)
+      integer, allocatable :: save_pn(:)
+      integer, allocatable :: compress_pp(:)
+      integer, allocatable :: compress_pn(:)
 C
       CHARACTER SZTRA(4,2)*200
 C
@@ -3737,19 +3780,49 @@ C
 C        Compress orbital rotations.
 C        (this will destroy GPOE and GPOP but that's OK).
 C
-         CALL MEMGET('INTE',KZXOPE_SAV,NZHOPE*2,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KZXOPP_SAV,NZXOPP*2,WORK,KFREE,LFREE)
-         CALL ICOPY(NZHOPE*2,get_orbital_rotation_indices_pp(),1,
-     &              WORK(KZXOPE_SAV),1)
-         CALL ICOPY(NZXOPP*2,get_orbital_rotation_indices_pn(),1,
-     &              WORK(KZXOPP_SAV),1)
+         if (nzhope > 0) then
+            allocate(save_pp(nzhope*2))
+            allocate(compress_pp(nzhope*2))
+            call icopy(nzhope*2,
+     &                 get_orbital_rotation_indices_pp(), 1,
+     &                 save_pp, 1)
+            call icopy(nzhope*2,
+     &                 get_orbital_rotation_indices_pp(), 1,
+     &                 compress_pp, 1)
+         else
+            allocate(save_pp(1))
+            allocate(compress_pp(1))
+         end if
+
+         if (nzxopp > 0) then
+            allocate(save_pn(nzxopp*2))
+            allocate(compress_pn(nzxopp*2))
+            call icopy(nzxopp*2,
+     &                 get_orbital_rotation_indices_pn(), 1,
+     &                 save_pn, 1)
+            call icopy(nzxopp*2,
+     &                 get_orbital_rotation_indices_pn(), 1,
+     &                 compress_pn, 1)
+         else
+            allocate(save_pn(1))
+            allocate(compress_pn(1))
+         end if
 C
 C        Remove rotations.
 C
-         CALL RMROT(NOROTC,GOEE,get_orbital_rotation_indices_pp(),
+         CALL RMROT(NOROTC,GOEE,compress_pp,
      &              NZXOPE,NZHOPE,
-     &              GOEP,get_orbital_rotation_indices_pn(),
+     &              GOEP,compress_pn,
      &              NZXOPP,IPROPT,WORK(KFREE),LFREE)
+
+         call update_orbital_rotation_indices(nzhope,
+     &                                        nzxope,
+     &                                        nzxopp,
+     &                                        compress_pp,
+     &                                        compress_pn)
+
+         deallocate(compress_pp)
+         deallocate(compress_pn)
 C
          NZXOPPQ = NZXOPP*NZ
          NZXOPEQ = NZXOPE*NZ
@@ -3876,12 +3949,12 @@ C
      &     NZVAR1, NZVARQ1,NZCONF1,NZCONFQ1,
      &     NZXOPT1,NZXOPTQ1,NZXOPE1,NZXOPEQ1,NZXOPP,NZXOPPQ,
      &     NZHOPE,
-     &     KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
+     &     KZCONF,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
      &     MCTYPE,OPT_NOPFQ,OPT_NOFQX,JTRLVL)
 C
 C
 C
-      NREDM = 3 * (MOPT_MXMICRO+2)
+      NREDM  = 3 * (MOPT_MXMICRO+2)
       NEXSIM = 1
       CALL MEMGET('REAL',KIBTYP,2*NREDM     ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KIBCVC,NREDM       ,WORK,KFREE,LFREE)
@@ -3932,12 +4005,14 @@ C
          NZXOPEQ = NZXOPEQ_SAV
          NZHOPEQ = NZHOPEQ_SAV
 
-         CALL ICOPY(NZHOPE*2,WORK(KZXOPE_SAV),1,
-     &              get_orbital_rotation_indices_pp(),1)
-         CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,
-     &              get_orbital_rotation_indices_pn(),1)
-        
-C
+         call update_orbital_rotation_indices(nzhope,
+     &                                        nzxope,
+     &                                        nzxopp,
+     &                                        save_pp,
+     &                                        save_pn)
+
+         deallocate(save_pp)
+         deallocate(save_pn)
       END IF
 C
       CALL MEMREL('DIRNR.after XRSCTL',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -3952,7 +4027,7 @@ C  /* Deck tdcbxlr */
      &     NZXOPT_OPT,NZXOPTQ_OPT,NZXOPE_OPT,NZXOPEQ_OPT,
      &     NZXOPP_OPT,NZXOPPQ_OPT,
      &     NZHOPE_OPT,
-     &     KZCONF_OPT,KZXOPE_OPT,KZXOPP_OPT,THR,CIPROGRAM,
+     &     KZCONF_OPT,THR,CIPROGRAM,
      &     EMC,IOPTTB,MCTYPE_OPT,OPT_NOPFQ,OPT_NOFQX,JOPT_JTRLVL)
 C***********************************************************************
 C
@@ -4059,8 +4134,6 @@ C
 C     pointers...
 C
       KZCONF = KZCONF_OPT
-      KZXOPE = KZXOPE_OPT
-      KZXOPP = KZXOPP_OPT
 C
 C     units...
 C
@@ -4132,7 +4205,7 @@ C
      &               get_orbital_rotation_indices_pn(),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-      IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
+      IF (IPROPT .GE. 10 .AND. NZCONF .GT. 0) THEN
          WRITE(LUPRI,'(A)') ' (GTNORB) CI delta vector'
          CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,
      &        OPT_CIPROGRAM,THRPCI,LUPRI)
@@ -4440,7 +4513,7 @@ C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
       DIMENSION IBTYP(2,*)
 C
-      IF ( IPROPT .GE. 20 ) THEN
+      IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)')
      &        ' (RSNRPRD) Reduced solution vector '
          CALL OUTPUT(EVECR,1,NZRED,1,1,NREDM,1,1,LUPRI)
@@ -4504,7 +4577,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcsol */
-      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+!     SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL_old(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4586,6 +4660,197 @@ C
      &        STPL,DLVLSH
 #endif
       END IF
+C
+C     Iterations finished.
+C
+ 200  CONTINUE
+      RBETA = STPL
+      EVALR = DLVLSH
+      IPAR = INERTIA(3)
+      IF (IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/A,I3,A,F15.8)')
+     &        ' (KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
+     &        DLVLSH
+      END IF
+      IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
+         IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(A,F12.5,A)')
+     &           ' (KRMCSOL) Solution vector'
+            CALL PRIRVC(EVECR,NZRED,IBTYP)
+         ENDIF
+         WRITE(LUPRI,'(/3X,A,F12.5)')
+     &      '* Reduced matrix. Level shift:',DLVLSH
+         WRITE(LUPRI,'(5X,A,I5)')
+     &        '* Number of positive eigenvalues:',INERTIA(1),
+     &        '* Number of zero     eigenvalues:',INERTIA(3),
+     &        '* Number of negative eigenvalues:',INERTIA(2)
+      ENDIF
+C
+      DINFO(22) = DLVLSH
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcsol */
+!     SUBROUTINE KRMCSOL_new_to_come(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+     &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C     Written by J. Thyssen - Nov 22 2000
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
+C
+      PARAMETER (DLVLSTEP = 0.2D0)
+C
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbkrmc_itinfo.h"
+#include "dcbibn.h"
+C
+      DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
+      DIMENSION REDGP(NREDM), EVECR(NREDM)
+      DIMENSION IBTYP(2,*), INERTIA(3)
+      DIMENSION WORK(*)
+      PARAMETER (STPL_EP_MAX = 0.0100D0)
+C
+      IF (IOPT_ISTATE .NE. 1)
+     &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
+C
+      RTRMAX = RTRUST*RTTOL
+      RTRMIN = RTRUST/RTTOL
+      STPL_EP_MIN = STPL_EP_MAX/RTTOL
+C
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(/A,2I5,L10/A,3F15.10)')
+     &   ' KRMCSOL entry. NZRED, NPRED, DONR:',NZRED,NPRED,DONR,
+     &   '             RTTOL, RTRMAX, RTRMIN:',RTTOL,RTRMAX,RTRMIN
+      END IF
+C
+      CALL DUNIT(REDS,NREDM)
+      DLVLMAX = D0
+      DLVLMIN = D0
+      DLVLSH  = D0
+      INCREASE_SHIFT = 0 ! 0=unknown, >0=increase, <0=decrease
+      ITER = 0
+      STPL = D0
+C
+C
+C     Start bisection iterations to find level-shift
+C     ----------------------------------------------
+C
+ 100  CONTINUE
+      STPL_OLD = STPL
+      CALL XRSLINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
+     &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
+      ITER = ITER + 1
+      STPL = DP5 * DNRM2(NZRED,EVECR,1)
+      STPL_CI = D0
+      STPL_EE = D0
+      STPL_EP = D0
+      IF (NPRED .GT. 0) THEN
+         DO I = 1, NZRED
+            IF (IBTYP(1,I) .EQ. JBCNDX) THEN
+               STPL_CI = STPL_CI + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBENDX) THEN
+               STPL_EE = STPL_EE + EVECR(I)**2
+            ELSE IF (IBTYP(1,I) .EQ. JBPNDX) THEN
+               STPL_EP = STPL_EP + EVECR(I)**2
+            ELSE
+               CALL QUIT('unknown IBTYP')
+            END IF
+         END DO
+         STPL_CI = DP5 * SQRT(STPL_CI)
+         STPL_EE = DP5 * SQRT(STPL_EE)
+         STPL_EP = DP5 * SQRT(STPL_EP)
+      END IF
+      INONPOS = INERTIA(2) + INERTIA(3)
+      IF (IPRINT .GE. 5)
+     &   WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
+     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
+     &   'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
+C
+C     Save electronic Hessian's index for zero level shift
+C     (used in RCNVTHR below)
+C
+      IF (ITER .EQ. 1) THEN
+         STPL_NR = STPL
+         JHESSIAN = INONPOS - NPRED
+         IF (IPRINT .GE. 5) WRITE(LUPRI,'(A,I5)')
+     &      ' KRMCSOL Newton-Raphson. JHESSIAN',JHESSIAN
+C
+         IF (DONR) GOTO 200 ! Do not iterate if Newton-Raphson is requested.
+C
+         IF (STPL_NR .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX
+     &       .OR. JHESSIAN .NE. 0) THEN
+            IF (JHESSIAN .GT. 0 .OR. NPRED .EQ. 0) THEN
+               INCREASE_SHIFT = -1
+            ELSE IF (JHESSIAN .LT. 0) THEN
+               INCREASE_SHIFT = 1
+            ELSE ! JHESSIAN .eq. 0 .and. NPRED .gt. 0
+               INCREASE_SHIFT = 1 ! TODO not always correct!!!! (I think)
+            END IF
+         ELSE
+            GO TO 200 ! Newton-Raphson is optimal
+         END IF
+
+      END IF
+C
+      IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX .OR.    ! too long step
+     &    INONPOS .NE. NPRED ) THEN                              ! wrong number of negative eigenvalues
+         IF (ITER .LE. 2 .AND.
+     &       STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
+            INCREASE_SHIFT = -INCREASE_SHIFT
+            DLVLMAX = D0
+            DLVLMIN = D0
+         END IF
+         IF (INCREASE_SHIFT .GT. 0) THEN
+            DLVLMIN = DLVLSH
+            IF (DLVLMAX .NE. D0) THEN
+               DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+            ELSE
+               DLVLSH  = DLVLSH + DLVLSTEP
+            END IF
+         ELSE IF (INCREASE_SHIFT .LT. 0) THEN
+            DLVLMAX = DLVLSH
+            IF (DLVLMIN .NE. D0) THEN
+               DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+            ELSE
+               DLVLSH  = DLVLSH - DLVLSTEP
+            END IF
+         ELSE
+            call quit('KRMCSOL: INCREASE_SHIFT=0 not programmed yet')
+         END IF
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
+     &      'krmcsol: steplen (>?), new level shift', STPL,DLVLSH
+      ELSE IF ( DLVLSH .EQ. 0.0D0 .OR.                                 ! Newton step
+     &          (STPL .GE. RTRMIN .AND. INONPOS .EQ. NPRED) .OR.       ! restricted step too short
+     &           STPL_EP .GE. STPL_EP_MIN )                            ! e-p in allowed range
+     &   THEN ! step accepted
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,1P,2G20.10)')
+     &      'krmcsol: steplen accepted, level shift', STPL,DLVLSH
+         GOTO 200
+      ELSE
+         IF (INCREASE_SHIFT .GT. 0) THEN
+            DLVLMAX = DLVLSH
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         ELSE IF (INCREASE_SHIFT .LT. 0) THEN
+            DLVLMIN = DLVLSH
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         ELSE
+            call quit('KRMCSOL b: INCREASE_SHIFT=0 not programmed yet')
+         END IF
+         IF (IPRINT .GE. 5) write(LUPRI,'(A,I5,1P,2G20.10)')
+     &      'krmcsol: inonpos, steplen (<), new level shift',
+     &      inonpos,STPL,DLVLSH
+      END IF
+      IF (ITER .GT. 100) CALL QUIT('KRMSOL: iterations not converged')
+      GOTO 100
 C
 C     Iterations finished.
 C
@@ -4863,7 +5128,7 @@ C
      &     WORK(KEVECR),WORK(KIBTYP),
      &     WORK(KIBEVC),WORK(KIBPVC),WORK(KIBCVC),NPRED)
 C
-      IF (IPROPT .GE. 20) THEN
+      IF (IPROPT .GE. 5) THEN
          WRITE(LUPRI,'(/A,3I4)')
      &        ' (RNRBSTP1) NZRED, NREDM, NPRED ',NZRED, NREDM, NPRED
          WRITE(LUPRI,'(A)') ' (RNRBSTP1) Reduced Hessian'
@@ -6231,26 +6496,30 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMC_NODE_DRIVER(WORK,LWORK)
+      SUBROUTINE KRMC_NODE_DRIVER()
 C
 C     KR-MCSCF driver routine for the slaves
 C
 C     Last revision: S. Knecht           - June  2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      IMPLICIT REAL*8(A-H,O-Z)
+      use memory_allocator
 C
+#include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION WORK(LWORK)
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
       LOGICAL KRMCEND
+
+      real(8), allocatable :: WORK(:)
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in KRMC_NODE_DRIVER')
 #include "memint.h"
 C
       KFRSAV = KFREE
@@ -6295,5 +6564,6 @@ C     LUCIAREL run is finished for the slaves ...
 C
       CLOSE (IKRMCPARF,STATUS='KEEP')
 C
+      call dealloc(WORK)
       END
 #endif

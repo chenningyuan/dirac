@@ -148,10 +148,36 @@ C      end do
      &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8),
      &     WORK,KFREE,LFREE)
       END IF
+C
+C New addition by Lasse. Calculate the energy
+C
+      CALL FOCK_ENERGY(ESOMETHING,T,NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE))
 *
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
       CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE FOCK_ENERGY(ECC,T,NTOOB,DIA_AL,DIA_BL)
+*
+* Should be made 
+*
+#include "implicit.inc"
+      DIMENSION T(*),DIA_AL(NTOOB),DIA_BL(NTOOB)
+      INTEGER IDUM(2)
+*
+      ECC = 0.0D0
+*
+      IDUM(1) = 1
+      IDUM(2) = 4
+      DO I=1,2
+        ECC = T(IDUM(I)) + DIA_AL(I) + ECC
+        print*,'T(IDUM(I)),DIA_AL(I),DIA_BL(I),I,ECC',
+     &          T(IDUM(I)),DIA_AL(I),DIA_BL(I),I,ECC
+      END DO
+      print*,'ECC',ECC
 *
       RETURN
       END
@@ -244,9 +270,9 @@ C     INTEGER IOBSM(*),LOBSM(*)
       CALL SETVEC(FI_AL,ZERO,NORBT)
       CALL SETVEC(FI_BE,ZERO,NORBT)
 *
-      NTEST = 100
-      print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
-      print*,'NORBT',NORBT
+      NTEST = 00
+C     print*,'ISYMPACK,NSMOB',ISYMPACK,NSMOB
+C     print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
         CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
@@ -583,7 +609,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 000
+      NTEST = 00
       IT = 0
 C     print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS
@@ -761,7 +787,7 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.EQ.100) THEN
         WRITE(6,*) ' Start index = ',ISTART
         WRITE(6,*) ' End index = ',IEND
@@ -806,7 +832,7 @@ C
 C
 C Calculate absolute offset off integral with help from relative
 C
-        print*,'IPOS,IFETCH',IPOS,IFETCH
+C       print*,'IPOS,IFETCH',IPOS,IFETCH
         XOUT(IPOS) = XINT(IFETCH)
       END DO
 *

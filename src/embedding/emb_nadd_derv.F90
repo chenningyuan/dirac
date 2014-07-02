@@ -3,10 +3,8 @@ module fde_nadd_derv
 
       use fde_types
 
-#ifdef MOD_UNRELEASED
-
-      use xc_max_block_length
-      use emb_xcfun_interface
+      use fde_max_block_length
+      use fde_xcfun_interface
 
       public fde_initialize_nadd_functionals
       public fde_print_nadd_functionals
@@ -501,8 +499,6 @@ module fde_nadd_derv
          endif
          
      end subroutine get_xcke_fun_derv
-
-#endif /* MOD_UNRELEASED */
 
 end module fde_nadd_derv
 

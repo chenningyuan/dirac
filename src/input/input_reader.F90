@@ -30,13 +30,16 @@ module input_reader
       module procedure kw_read_r3
       module procedure kw_read_r4
       module procedure kw_read_ivec
+      module procedure kw_read_ivec_all
+      module procedure kw_append_ivec
    end interface
 
    integer, parameter :: max_nr_kw   = 200
    integer, parameter :: line_length = 80
+   integer, parameter :: wrong_file_unit = -123456
 
    integer :: nr_available_kw
-   integer :: file_unit
+   integer :: file_unit = wrong_file_unit
    logical :: kw_found
 
    character(kw_length) :: available_kw_list(max_nr_kw)
@@ -49,6 +52,10 @@ contains
    end subroutine
 
    integer function get_file_unit()
+      if (file_unit == wrong_file_unit) then
+         print *, 'error: file_unit in input_reader has not been set'
+         stop 1
+      end if
       get_file_unit = file_unit
    end function
 
@@ -165,7 +172,7 @@ contains
 
       ! radovan: please do not change to star
       !          otherwise "3,5" is read as "3"
-      read(file_unit, '(a)', err=1) c
+      read(get_file_unit(), '(a)', err=1) c
       return
 
 1     call kw_read_error(kw_input)
@@ -177,7 +184,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       integer,              intent(out) :: i
 
-      read(file_unit, *, err=1) i
+      read(get_file_unit(), *, err=1) i
       return
 
 1     call kw_read_error(kw_input)
@@ -189,7 +196,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       integer,              intent(out) :: i1, i2, i3
 
-      read(file_unit, *, err=1) i1, i2, i3
+      read(get_file_unit(), *, err=1) i1, i2, i3
       return
 
 1     call kw_read_error(kw_input)
@@ -201,7 +208,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       real(8),              intent(out) :: r
 
-      read(file_unit, *, err=1) r
+      read(get_file_unit(), *, err=1) r
       return
 
 1     call kw_read_error(kw_input)
@@ -213,7 +220,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       real(8),              intent(out) :: r1, r2
 
-      read(file_unit, *, err=1) r1, r2
+      read(get_file_unit(), *, err=1) r1, r2
       return
 
 1     call kw_read_error(kw_input)
@@ -225,7 +232,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       real(8),              intent(out) :: r1, r2, r3
 
-      read(file_unit, *, err=1) r1, r2, r3
+      read(get_file_unit(), *, err=1) r1, r2, r3
       return
 
 1     call kw_read_error(kw_input)
@@ -237,7 +244,7 @@ contains
       character(kw_length), intent(in)  :: kw_input
       real(8),              intent(out) :: r1, r2, r3, r4
 
-      read(file_unit, *, err=1) r1, r2, r3, r4
+      read(get_file_unit(), *, err=1) r1, r2, r3, r4
       return
 
 1     call kw_read_error(kw_input)
@@ -251,7 +258,61 @@ contains
       integer,              intent(in)  :: k
       integer                           :: j
 
-      read(file_unit, *,err=1) (v(j), j=1,k)
+      read(get_file_unit(), *,err=1) (v(j), j=1,k)
+      return
+
+1     call kw_read_error(kw_input)
+
+   end subroutine
+
+   subroutine kw_read_ivec_all (kw_input, v)
+
+      character(kw_length), intent(in)  :: kw_input
+      integer,              intent(out) :: v(:)
+      integer                           :: i, j, start
+      character(line_length)            :: line
+
+      read(get_file_unit(),'(a)',err=1) line
+      start = verify(line,' ,;') ! finds first non-separator character
+
+      j = 1
+      do  while (len_trim(line) > 0 .and. start /= 0)
+         read (line,*,err=1) v(j)
+         j = j + 1
+         do i = 1, start         ! blank out the part that we already read
+            line(i:i) = ' '
+         end do
+         start = verify(line,' ,;')
+      end do
+
+      return
+
+1     call kw_read_error(kw_input)
+
+   end subroutine
+
+   subroutine kw_append_ivec(kw_input, v, filled, k)
+
+      character(kw_length), intent(in)    :: kw_input
+      integer,              intent(inout) :: v(:)
+      integer,              intent(in)    :: k
+      integer,              intent(inout) :: filled
+      integer                             :: j
+      integer, allocatable, dimension(:)  :: temp
+
+
+      allocate(temp(k))
+      read(get_file_unit(), *,err=1) (temp(j), j=1,k)
+
+      do j=1, k
+        if (all(v/=temp(j))) then
+          filled    = filled + 1
+          v(filled) = temp(j)
+        end if
+      end do
+
+      deallocate(temp)
+
       return
 
 1     call kw_read_error(kw_input)
@@ -263,8 +324,8 @@ contains
       character(kw_length), intent(in) :: kw_input
       character(line_length)           :: line
 
-      backspace file_unit
-      read(file_unit, *) line
+      backspace get_file_unit()
+      read(get_file_unit(), *) line
 
       write(*, *) 'error in input line:'
       write(*, *) line

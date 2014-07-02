@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -43,7 +43,6 @@
 *
       use mospinor_info
       use symmetry_setup_krci
-      use interface_to_mpi
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
@@ -137,7 +136,7 @@ C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
       DIAGONAL_ALLOC = .FALSE.
 C
 CSK   NTEST = 3
-      IF(NTEST.GE.3) THEN
+      IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ====================================='
         WRITE(LUWRT,*) ' Control has been transferred to GASCI'
@@ -170,9 +169,11 @@ C
        END IF
 CSK    NTEST = 0
 C
-      ECORE = ECORE_KRMC
+!     already done one routine up
+!     ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
-      write(LUWRT,*) ' Number of determinants/combinations  ',NDET
+      IF(NTEST > 25) 
+     &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET
 C     transfer NDET to common block LUCIPARREL
       L_COMBI     = NDET
       L_COMBI_MAX = NDET
@@ -206,6 +207,15 @@ C
 C     transfer to LUCIPARREL
       IRC_SAVE = IRC
 C
+!     define whether it is a fresh CI (== 0) or a restart (== 1)
+      istart_nroot =  1 * nroot
+      IF(IRESTR.EQ.0) THEN
+        INICI             = 0
+        istart_nroot =  min(6 * nroot,MXCIV_CI-nroot,ndet)
+!old SK istart_nroot =  nroot
+      ELSE
+        INICI             = -1
+      END IF
 C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
@@ -383,17 +393,17 @@ C
      &                         WORK(KNODELIST),1)
 C
         CALL CALC_OFF_MPI_FILE('ILU1  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                         WORK(KNODELIST),MXCIV_CI+NROOT)
+     &                         WORK(KNODELIST),MXCIV_CI+istart_nroot)
 C
         CALL CALC_OFF_MPI_FILE('ILU2  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                         WORK(KNODELIST),MXCIV_CI+NROOT)
+     &                         WORK(KNODELIST),MXCIV_CI+istart_nroot)
 C
 C       initialize general offset for ILUC
         MY_LUC_OFF = 0
 C
 C       length for allocation of file arrays
-        IALL_LU1 = ( MXCIV_CI + NROOT ) * MY_ACT_BLK2
-        IALL_LU2 = ( MXCIV_CI + NROOT ) * MY_ACT_BLK2
+        IALL_LU1 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+        IALL_LU2 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
         IALL_LUC = NUM_BLOCKS2
 C
 C       allocate file arrays
@@ -537,12 +547,7 @@ c
 c
 c     transfer control to optimization routine
 c
-      MINST = 1
-      IF(IRESTR.EQ.0) THEN
-        INICI = 0
-      ELSE
-        INICI = -1
-      END IF
+      MINST  = 1
       NPRDET = 0
 C
 C     restart from previous vector(s)
@@ -674,8 +679,8 @@ C             H is a hermitian matrix...
               CALL COPVCD_PAR_BDRIV_DIA_REL2(IDIA,LUDIA,WORK(KVEC1),
      &                                       WORK(KNODELIST),NUM_BLOCKS,
      &                                       WORK(KBLOCKLIST),
-     &                                       global_communicator,LBLK,IIONE,
-     &                                       MY_DIA_OFF)
+     &                                       global_communicator,
+     &                                       LBLK,IIONE,MY_DIA_OFF)
             END IF
 C           ^ CIRUN .eq. SIGMAD
  405    CONTINUE
@@ -690,7 +695,7 @@ C
             end if
 C
 C           allocate some scratch space
-            NFINDM = min(NVAR,4*NROOT)
+            NFINDM = min(ndet,istart_nroot+3*nroot)
             call alloc(scratch_dav1, 4*NFINDM+1)
             call alloc(iscratch_dav1,5*NFINDM)
             call alloc(scratch_dav2, NROOT)
@@ -698,14 +703,14 @@ C
             CALL CIEIG5_REL(INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &                      MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,
      &                      LUSC34,LUSC35,NVAR,NBLK,NROOT,MXCIV_CI,
-     &                      MAXIT,MXROOT,LUCIVI,IPRNT,
+     &                      MAXIT,MXROOT,LUCIVI,istart_nroot,IPRNT,
      &                      NPRDET,pert_dummy,MXP1,MXP2,MXQ,
      &                      scratch_dav1,iscratch_dav1,scratch_dav2,
      &                      WORK(KT_CC),T_BUFF,ECORE,ICISTR,LBLK,
      &                      IDIAG,THRES_E,NBATCH,WORK(KPCLBT),
      &                      WORK(KPCLEBT),WORK(KPCIBT),INIDEG,
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
-     &                      IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),
      &                      IPROCLIST,IGROUPLIST
 #if defined (VAR_MPI2)
@@ -924,6 +929,13 @@ C
 C
         END IF ! natural orbital occupation numbers
 C
+        if(is_ana_mcscf)then
+!         right hand-side vector to LUSC61
+          CALL COPVCDC(LUC,LUSC61,WORK(KVEC1),1,IRC,LBLK)
+!         left hand-side vector on LUSC62
+          CALL COPVCDC(LUC,LUSC62,WORK(KVEC1),1,IRC,LBLK)          
+        end if
+
 C       prepare vector files for pure dens. matrix calc. run (parallel)
 C       ---------------------------------------------------------------
 #if defined (VAR_MPI2)

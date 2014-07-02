@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -109,8 +109,6 @@ C
       LZXOPE = NZHOPE*2
       NZXOPP = 0
       LZXOPP = NZXOPP*2
-      CALL MEMGET('INTE',KZXOPE,LZXOPE,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KZXOPP,LZXOPP,WORK,KFREE,LFREE)
 C
 C     Write information to LUKRMC
 C
@@ -203,17 +201,19 @@ C
 !        assign pointer to CI vectors which is in the argument list of this subroutine and needs to be
 !        passed upwards to the calling routine.
          K_EIGVEC = K_EIGVXX
-      call memchk('before RCISTD',work,1)
+
          CALL GASCIP_RCISTD(N_CIROOTS,THR_CI,MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
-     &                     WORK(KZCONF),CMO,
-     &                     IOPT_ISTATE,OPT_CIPROGAM,
+     &                     WORK(KZCONF),CMO, IOPT_ISTATE, ICONV_TOT,
      &                     IPROPT, WORK(KFREE),LFREE)
-      call memchk('after RCISTD',work,1)
-C      SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
-C     &                        ECI,CVECS,NDET,IDET,CMO,
-C     &                        ISTATE,CIPROG,IPRINT,
-C     &                        WORK,LWORK)
+
+C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
+C     &                     ECI,CVECS,NDET,IDET,CMO,
+C     &                     ISTATE,ICONV_TOT,IPRINT, WORK,LWORK)
+
+         IF (ICONV_TOT .LE. 0) THEN
+            CALL QUIT('ESR CI not converged.')
+         END IF
 
        
 C
@@ -253,8 +253,8 @@ C debug TODO remove again:
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
      &                     IPROPT,WORK,KFREE,LFREE)
-C         CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
-C     &                         IPRINT,WORK,LWORK)
+C        CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
+C     &                    IPRINT,WORK,LWORK)
 
       END IF
 C           

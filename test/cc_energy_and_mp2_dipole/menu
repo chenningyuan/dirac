@@ -1,5 +1,0 @@
-quick
-ccsd.small.inp H2O.mol --mw=120 --aw=130
-
-regular 
-ccsd.inp       H2O.mol --mw=120 --aw=130

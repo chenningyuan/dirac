@@ -557,7 +557,7 @@ def check_original_molfile_content_and_get_num_fragments(mol_file_lines):
 
     if mol_file_lines[3].split()[0] != 'C':
         print ' *** error in reading the molecular basis set input: the file has a wrong format. ***'
-        print '     please consult the Dirac-Wiki (http://wiki.chem.vu.nl/dirac/index.php/Manual:Basis:MOL) for more help.'
+        print '     please consult http://www.diracprogram.org for more help.'
         print '     the first character in line 4 is %s rather than C'\
                     % mol_file_lines[3].split()[0]
         sys.exit()

@@ -462,7 +462,7 @@ C
       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
       CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)
       CALL SETDCBIDX()
-      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL RSETWOP('KR-CI',WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
 
 C
@@ -512,18 +512,22 @@ C
             END IF
          END IF
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
+* Stupid routine to see if the 4-index transformation should be done
+      CALL AN_IDIOT(NO4IDX)
 * Transformation 
       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBEIG),NORBT)
 C
+      IF(NO4IDX.EQ.0) THEN
       CALL RTRACTL(WORK(KCMO),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
 C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C no need for these calls. Lasse 2012
 C     CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
 C     CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
       CALL MEMCHK('cemory2',WORK,KCMO)
+      END IF
 *
 *
 * Calculate NASHT
@@ -584,6 +588,17 @@ C    &               WORK(KFREE),LFREE,IPROPT)
       RETURN
       END
 *
+      SUBROUTINE AN_IDIOT(I)
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+*
+      I = NO4IDX
+*
+      RETURN
+      END
+*
 * Driver routine for distribution of DIRAC integrals to
 * double group GAS lists
 *   Routine using excitation operator sequence for integral
@@ -603,8 +618,12 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 * 
 *  Added array IOFFINTTYPE for integral fetching in effecient CC code. Lasse
 *
-* Demoslished and revised for KRCC Lasse 2010
+* Demolished and revised for KRCC Lasse 2010
 * Now all integrals are coulomb - exchange
+*
+* Made an ugly fix when reading in the integrals from the ADUCCA code
+* since there are changes in the signs from the old to the new code
+* which i do not know how to handle - Lasse 2013
 *
 *----------------------------------------------
 *
@@ -648,7 +667,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       NTESTL = 1
 C     NTEST = max(NTESTL,IPRNT)
-      NTEST = 2
+      NTEST = 1
 *
 * Constants
       IZERO = 0
@@ -694,7 +713,8 @@ C       CALL MEMCHK_KRCC(WORK)
       if (NTEST.ge.1) then
         LUINGR = LUSC81
         open(unit=LUINGR,file='INTEGRALS',
-     &       status='UNKNOWN',form='FORMATTED',iostat=ios)
+     &       status='REPLACE',form='FORMATTED',iostat=ios)
+        print*,'ios,LUSC81,LUINGR',ios,LUSC81,LUINGR
         if(ios.ne.0) then
           call abend2('problem with file integrals')
         end if
@@ -711,6 +731,15 @@ C       CALL MEMCHK_KRCC(WORK)
         call abend2('problem with file indices')
       end if
       rewind(LUINSV)
+*
+* Ugly fix to see if the integrals are there from the ARDUCCA code
+*
+      IMPORT_ARDUCCA = 0
+      CALL IMPORT_ARDUCCA_INTEGRALS(T,IMPORT_ARDUCCA)
+      IF(IMPORT_ARDUCCA.EQ.1) THEN
+        WRITE(6,*) ' INTEGRALS TAKEN FROM ARDUCCA'
+      END IF
+C       CALL MEMCHK_KRCC(WORK)
 *
 * Loop over real/imaginary part
       ICOUNT = 1
@@ -892,6 +921,7 @@ C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                     do I_AA=1,NSTR_AA,1
                       do I_CB=1,NSTR_CB,1
                         do I_CA=1,NSTR_CA,1
+                          IF(IMPORT_ARDUCCA.EQ.0) THEN
 *
 * Notes:
 *  1) Standard notation in second quantization for 2-el. ints is:
@@ -1060,10 +1090,12 @@ C                         print*,'writing out IXCH',IXCH
 C                             print*,'I_ADD(IRUN),IRUN',I_ADD(IRUN),IRUN
                             end do
                             ELSE
+C           write(6,'(A,6X,4I3)') '1 INDEX array: ',(I_ADD(ID),ID=1,4,1)
                             I_ADD(1) = INDEX(1)*LABEL(1,IXTP)
                             I_ADD(4) = INDEX(2)*LABEL(2,IXTP)
                             I_ADD(3) = INDEX(3)*LABEL(3,IXTP)
                             I_ADD(2) = INDEX(4)*LABEL(4,IXTP)
+C           write(6,'(A,6X,4I3)') '2 INDEX array: ',(I_ADD(ID),ID=1,4,1)
                             END IF
 C                           print*,'IRI,NZ',IRI,NZ
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
@@ -1104,6 +1136,7 @@ C                           print*,'IRI,NZ',IRI,NZ
 *
 C                           print*,'IRI,NZ',IRI,NZ
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
+C           write(6,'(A,6X,4I3)') '3 INDEX array: ',(INDEX(ID),ID=1,4,1)
                               call getint_sigden_KRCC(YINT,INDEX(1),
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT,
      &                                  WORK,KFREE,LFREE)
@@ -1142,6 +1175,7 @@ C                          print*,'IXCH',IXCH
 *                           for use in diagonal routine (saving memory):
                             write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
                           end if
+                          END IF
                           ICOUNT = ICOUNT + 1
                           ICOUNT2 = ICOUNT2 + 1
                         end do
@@ -1157,7 +1191,7 @@ C                          print*,'IXCH',IXCH
                           ELSE IF(IXTPCOUNT.LT.2*NSPOBEX_TP) THEN
                           IOFFINTTYPE(IXTPCOUNT+1) = ICOUNT
                           END IF
-C                    print*,'IXTPCOUNT,ICOUNT,IXTP',IXTPCOUNT,ICOUNT,IXTP
+C     print*,'IXTPCOUNT,ICOUNT,IXTP',IXTPCOUNT,ICOUNT,IXTP
                       end do
 *                     ^ End loop over beta creation strings
                     end do
@@ -1187,7 +1221,7 @@ C an increasing number for the next HTYPE in IOFFINTTYPE
       CALL NXT_NUM_GE_NUM_MINUS_ONE(IOFFINTTYPE,2*NSPOBEX_TP)
 *
 C     CALL MEMCHK_KRCC(WORK)
-      NTEST = 00
+      NTEST = 100
       if (NTEST.ge.1) then
         write(6,*) ' DIST_INTS_SIGDEN reporting   : '
         write(6,*) '  Total number of integrals   : ',NALLINT
@@ -1198,6 +1232,18 @@ C     CALL MEMCHK_KRCC(WORK)
         END DO
         DO I=1,NSPOBEX_TP
           WRITE(6,*) ' INTEGRAL OFFSET ',IOFFINTTYPE(I),' FOR HTYPE ',I
+        END DO
+      END IF
+      ICHECK = 1
+      IF(ICHECK.EQ.1) THEN
+        open(unit=54,file='INTE',
+     &       status='REPLACE',form='FORMATTED',iostat=ios)
+        if(ios.ne.0) then
+          call abend2('problem with file integrals')
+        end if
+        rewind(54)
+        DO I=1,NALLINT
+        WRITE(54,*) T(I)
         END DO
       END IF
 *
@@ -1211,7 +1257,7 @@ C Routine to see if there has been a change in the type of integral
 C
 #include "implicit.inc"
 C from 1 to
-      NTEST = 100
+      NTEST = 00
       ICHANGE = 0
       IF(ISUM.NE.IISUM) ICHANGE = 1
 C
@@ -1983,3 +2029,107 @@ C
      &     'NXY    = ',NXY
       CALL QUIT('*** ERROR in RGTETH2 *** Error reading integral file')
       END
+*
+      SUBROUTINE IMPORT_ARDUCCA_INTEGRALS(T,IMPORT_ARDUCCA)
+*
+* Import sorted integrals from the ARDUCCA code
+*
+* Made automated restart from LU_ARDUCCA (KRCC_INTEGRALS) if it is there
+* Also checks for formatted or unformatted file
+*
+* Lasse,2013 
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "clunit.inc"
+*. Integrals to be defined
+      DIMENSION T(*)
+      LOGICAL YN
+      CHARACTER(LEN=2) UNFORM
+*
+* Automated restart if LU_ARDUCCA (KRCC_INTEGRALS) exits
+      INQUIRE(FILE='KRCC_INTEGRALS',EXIST=YN)
+      IF(YN) THEN
+        INQUIRE(FILE='KRCC_INTEGRALS',UNFORMATTED=UNFORM)
+        IF(UNFORM(1:2).EQ.'UN') THEN
+          I_FORMATTED = 0
+        ELSE
+          I_FORMATTED = 1
+        END IF
+* Now we know that we improt integrals
+        IMPORT_ARDUCCA = 1
+      ELSE
+        IMPORT_ARDUCCA = 0
+      END IF
+          I_FORMATTED = 1
+      print*,'I_FORMATTED',I_FORMATTED
+*
+      IF(IMPORT_ARDUCCA.EQ.1) THEN
+        WRITE(6,*) ' Reading in integrals from ', LU_ARDUCCA
+        IF(I_FORMATTED.EQ.1) THEN
+*. Formatted
+          OPEN(Unit=LU_ARDUCCA,File='KRCC_INTEGRALS',
+     &     Status='UNKNOWN',Form='FORMATTED')
+          CALL REWINO(LU_ARDUCCA)
+          READ(LU_ARDUCCA,*) NINT
+          READ(LU_ARDUCCA,*) (T(I),I=1,NINT)
+C         DO I = 1, NINT
+C           READ(LU_ARDUCCA,*) T(I)
+C         END DO
+        ELSE
+*. Unformatted
+          OPEN(Unit=LU_ARDUCCA,File='KRCC_INTEGRALS',
+     &     Status='UNKNOWN',Form='UNFORMATTED',IOSTAT=IOS)
+        IF(IOS.NE.0) THEN
+          call abend2('problem with file krcc_integrals')
+        END IF
+          CALL REWINO(LU_ARDUCCA)
+          READ(LU_ARDUCCA) NINT
+          READ(LU_ARDUCCA) (T(I),I=1,NINT)
+C         print*,'NINT',NINT
+C         DO I = 1, NINT
+C           READ(LU_ARDUCCA) T(I)
+C           print*,'T,I',T(I),I
+C         END DO
+        END IF
+        CLOSE(LU_ARDUCCA)
+      END IF
+*
+      IF(IMPORT_ARDUCCA.EQ.1) THEN
+        WRITE(6,*) ' A set of integrals have been found '
+        WRITE(6,*) ' This is a restarted calculation '
+      END IF
+*
+      NTEST = 00
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' Initial set of integrals '
+        WRITE(6,*) ' ======================== '
+        WRITE(6,*)
+        WRITE(6,*) ' Number of integrals read ',NINT
+        WRITE(6,*)
+        DO I=1,NINT
+          WRITE(6,*) T(I)
+        END DO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE DIFFF(VEC1,VEC2,NDIM)
+*
+#include "implicit.inc"
+      DIMENSION VEC1(NDIM), VEC2(NDIM)
+*
+      ITOOMUCH = 0
+      AERROR = 1.0E-10
+      DO I=1,NDIM
+        DIFF = VEC1(I)-VEC2(I)
+        print*,'DIFFFF',DIFF,VEC1(I),VEC2(I)
+        IF(ABS(DIFF).GE.AERROR) THEN
+         ITOOMUCH = ITOOMUCH + 1
+        END IF
+      END DO
+      IF(ITOOMUCH.GE.1) THEN
+       print*,'SOMETHING IS WRONG',ITOOMUCH
+       stop 'loll'
+      END IF
+      END 

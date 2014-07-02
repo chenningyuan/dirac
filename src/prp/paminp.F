@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : paminp.F
@@ -37,7 +37,9 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-
+#ifdef MOD_LAO_REARRANGED
+         use london_helper
+#endif
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -85,13 +87,11 @@ C
 !                    33        34        35        36
      &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.EFFDE2','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
 
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
-C
-      NJOBS = 0
 C
 C     Initialize /CBIPRP/
 C     ===================
@@ -133,29 +133,25 @@ C
       NDSOINT      = 0
       MGRAD        = .FALSE.
       ESRGTENS     = .FALSE.
-      ESRANISO     = .FALSE.
-      NPRPWF       = 1
-      PRPWF(1)     = 'DHF'
+      ESR_HFCC     = .FALSE.
+      NPRP_WF      = 1
+      PRP_WF(1)    = 'DHF '
       BXLAO        = .FALSE.
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
       EFFDEN       = .FALSE.
       EFFDE2       = .FALSE.
 
-
-CMI Activate the  picture change transformations
-C   of four-component property matrixes 
+CMI Activate picture change transformations
+C   of four-component property matrices 
 C   for the two-component (BSS) infinite order.
 C TODO with TS/HJJ: BSS spin-free picture change transformation
 !     set compulsory default values for X2C module.
       NOPCT = .FALSE.
-      IF(X2C.or.(BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.
-     &   IBSS.GE.109)))THEN
+      IF (X2C .or.
+     &   (BSS.AND.(IBSS.GE.99.OR.IBSS.EQ.009.OR.IBSS.GE.109))) THEN
         DOPCT = .TRUE.
 C       ... by default DO the picture change transformation
-        NOPCT = .FALSE.
-        WRITE(LUPRI,'(/3X,A/)')
-     &'PRPINP: Picture change transformation of properties activated !'
       ELSE
         DOPCT = .FALSE.
       ENDIF
@@ -286,7 +282,7 @@ C&&&& NSTDIA diamagnetic contribution to shielding
 C&&&& ESR parameters
             DOESR = .TRUE.
             ESRGTENS = .TRUE.
-            ESRANISO = .TRUE.
+            ESR_HFCC = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& PVC Parity violation - chirality
@@ -316,15 +312,20 @@ C&&&& EFN: Electric field at nuclei
             GOTO 100
   121    CONTINUE
 C&&&& WAVE FUNCTIONS - define which wave functions we should use
-            READ(LUCMD,*) NPRPWF
-            IF (NPRPWF .LT. 1 .OR. NPRPWF .GT. MXPRPWF) THEN
-               WRITE(LUPRI,'(1X,2A,I10)')
-     &              '*** ERROR in PRPINP *** ',
-     &              'Illegal value for NPRPWF: ',NPRPWF
+            IF (NPRP_WF .GT. 0) THEN
+               WRITE(LUPRI,'(//2A/A/,(10X,A4))')
+     &         ' WARNING, list of wave functions for properties '//
+     &         'reset under ',WRDSRC,' Old list which is discarded:',
+     &         (PRP_WF(I), I=1, NPRP_WF)
+            END IF
+            READ(LUCMD,*) NPRP_WF
+            IF (NPRP_WF .LT. 1 .OR. NPRP_WF .GT. MXPRP_WF) THEN
+               WRITE(LUPRI,'(/3A,I10)') ' *** ERROR for ',WRDSRC,
+     &            ' *** Illegal value for .WAVE FU : ',NPRP_WF
                CALL QUIT('*** ERROR in PRPINP ***')
             END IF
-            DO I = 1, NPRPWF
-               READ(LUCMD,'(1X,A4)') PRPWF(I)
+            DO I = 1, NPRP_WF
+               READ(LUCMD,'(1X,A4)') PRP_WF(I)
             END DO
             GOTO 100
  122     CONTINUE
@@ -354,7 +355,7 @@ CMI ... at present it is not implemented
             DOXLR = .TRUE.
             GO TO 100
   127    CONTINUE 
-C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
+C&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
             GO TO 100
@@ -371,8 +372,8 @@ C             do NOT activate picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
-            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
+            CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP)
+            CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP)
             GO TO 100
   131    CONTINUE 
 C&&&& .MAGOUT - specify the hard-output for the magnetizability
@@ -420,12 +421,19 @@ C&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             EFFDE2 = .TRUE. 
          GO TO 100
   140    CONTINUE
-C&&&& XXXXXX
+#ifdef MOD_LAO_REARRANGED
+C&&&& SHIEL2, calculate shielding+london, but with rearranged terms
+            DOXLR  = .TRUE.
+            LONDON = .TRUE.
+            call set_london_keywords('shiel2')
+!gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
+! i will have to fix that...
+#endif
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+         WRITE (LUPRI,'(/3A/)') ' ERROR: Prompt "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in PRPINP.')
       END IF
@@ -435,12 +443,12 @@ C     Print section
 C     =============
 C
       CALL TITLER('Property module','*',129)
-      WRITE(LUPRI,'(1X,A,I3)') '* Print level:',IPRPRP
-      WRITE(LUPRI,'(2A)')   ' * Input label:',WRDSRC
-      WRITE(LUPRI,'(1X,A)')
-     &     '* Properties calculated for the following wave functions: '
-      DO I = 1, NPRPWF
-         WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
+      WRITE(LUPRI,'(A,I4)') ' * Print level:',IPRPRP
+      WRITE(LUPRI,'(2A)')   ' * Input label: ',WRDSRC
+      WRITE(LUPRI,'(A)')
+     &     ' * Properties calculated for the following wave functions:'
+      DO I = 1, NPRP_WF
+         WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
 
 CMI ...for magnetic susceptibility, NMR shielding constants and rotational
@@ -456,20 +464,22 @@ CMI   g_tensors operator centers might be changed
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
 
+      IF (X2C .OR. BSS) THEN
       IF (DOPCT) THEN
-       IF (.NOT.NOPCT) THEN
-         WRITE(LUPRI,'(2X,A)') 
-     & '...perform the picture change transformation of the'//
-     & ' four-comp. property operators'
-       ELSE
-         WRITE(LUPRI,'(2X,A)') 
-     & '...do NOT perform the picture change transformation of the'//
-     & ' four-comp. property operators - take only LL block(s)'
-       ENDIF
+        IF (.NOT.NOPCT) THEN
+          WRITE(LUPRI,'(A)') 
+     & ' * Perform 4c->2c picture change transformation of'//
+     & ' the four-component property operators'
+        ELSE
+          WRITE(LUPRI,'(A)') 
+     & ' * Do NOT perform 4c->2c picture change transformation of'//
+     & ' the four-comp. property operators - take only LL block(s)'
+        ENDIF
       ELSE
-        WRITE (LUPRI,'(1X,A)')
-     &  '* do NOT perform the picture change transformation of the'//
-     &  ' four-component property operators'
+        WRITE (LUPRI,'(A)')
+     & ' * Do NOT perform 4c->2c picture change transformation of'//
+     & ' the four-component property operators'
+      ENDIF
       ENDIF
 C
 C     Process input for various program sections
@@ -488,43 +498,43 @@ C
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
-         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
-         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in PRPINP.')
+         WRITE (LUPRI,'(/3A/)') ' Directory "',WORD,'" is not valid'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' directory keywords',LUPRI)
+         CALL QUIT('Illegal directory keyword in PRPINP.')
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
-     *                        ' out of order.'
+         WRITE (LUPRI,'(/3A/)')
+     &      ' Prompt in keyword "',WORD,'" illegal or out of order'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in PRPINP, error in prompt.')
       END IF
     2 CONTINUE
-        CALL EXPINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL EXPINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     3 CONTINUE
-        CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     4 CONTINUE
-        CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
     5 CONTINUE
-        CALL GRDINP(WORD,.FALSE.)
-        GO TO 200
+         CALL GRDINP(WORD,.FALSE.)
+         GO TO 200
 
 !     *NMR
     6 CONTINUE
 CMI ... changed for LAO-based magnetic properties
-        CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+         CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
+         GO TO 200
 
     7 CONTINUE
 #ifdef MOD_ESR
-        CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
+         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
 #else
-        CALL QUIT('*ESR    not included in this version')
+         CALL QUIT('*ESR    not included in this version')
 #endif
-        GO TO 200
+         GO TO 200
     8 CONTINUE
-         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+         CALL XQRINP(WORD,.FALSE.)
          GO TO 200
 C     *STEX
     9 CONTINUE
@@ -560,7 +570,7 @@ CMI ... read again the input
 !
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
@@ -575,7 +585,7 @@ C .... check the change of the gauge origin ....
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-       WRITE (LUPRI,'(1X,A,3F18.10)')
+         WRITE (LUPRI,'(1X,A,3F18.10)')
      &     '* Operator center:', (ORIGIN(I),I=1,3),
      &     '* Gauge origin   :', (GAGORG(I),I=1,3),
      &     '* Dipole origin  :', (DIPORG(I),I=1,3)
@@ -624,7 +634,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
-     &            '.PRPCAN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPCAN','.EPOLE ','.MPOLE ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -659,7 +669,6 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -685,7 +694,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& OPERATOR: Define operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPREXP)
+     &                        IPREXP)
                   CALL OP1IND('EXPINP',INDEXP,LEXPP,NEXPP,INDXPR,
      &                        MAXEXP)
                   DOEXP = .TRUE.
@@ -704,8 +713,34 @@ C&&&& PRPCAN: Generate canonical occupied property orbitals
                PRPCAN = .TRUE.
                GO TO 100
     6          CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     7          CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L (zero by time reversal symmetry)
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NEXPP+NDEG).GT.MAXEXP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'EXPINP: Pointer array LEXPP ',
+     &           'out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NEXPP+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LEXPP(NEXPP+1),IPREXP)
+               DOEXP=.TRUE.
+               NEXPP = NEXPP + NDEG
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -790,13 +825,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprinp */
       SUBROUTINE XPRINP(LUCMDX,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                  WORK,LWORK,IPRINT)
+     &                  IPRINT)
 C***********************************************************************
 C
-C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
-C  Last revision: May 14 1996 - tsaue
-C                 Febr. 2011   M Ilias (TRS_FLIP)
-C
+! PURPOSE:
 C  Assign a new property operator based on the input
 C  and the /XCBPRP/ list.
 C
@@ -863,10 +895,14 @@ C
 C   19. BETA   
 C       [beta]P * beta times scalar operator
 C
-C   20 .is occupied - iS.P         * dot-product of sigma and vector operator
+C   20 .SIGMADOT 
+C       iS.P * OFF-DIAGONAL dot-product of sigma and vector operator
 C
 C   21. iBETAGAM
 C       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
+C
+C   22 .DSIGMADOT 
+C       iS.P * DIAGONAL dot-product of sigma and vector operator
 C   
 C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
@@ -881,8 +917,14 @@ C     2   Property labels (to be found on file)
 C     3   Class label
 C     4   Separate factor for each component
 C     5   Common factor for all components
-C     6   Keyword to force the time-reversal symmetry flip
+!
+!
+C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
+C  Last revision: May 14 1996 - tsaue
+C                 Sept. 2012   M Ilias 
 C
+!
+!
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -892,21 +934,21 @@ C
       PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
-      DIMENSION PFAC(3),WORK(LWORK)
+      DIMENSION PFAC(3)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL, TRS_FLIP
+      LOGICAL     CLABEL
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
-     &           'TRS_FLIP',
+     &           '        ',
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
+     &           'SIGMADOT', 'iBETAGAM', 'DSIGMADO', 'XXXXXXXX',
      &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
@@ -921,7 +963,6 @@ C
       PFAC(2) = D1
       PFAC(3) = D1
       CLABEL  = .FALSE.
-      TRS_FLIP = .FALSE.
       !mi - position of the Fock operator in the TABKW list, or "border" index
       I_FOCKMAT=6
 C
@@ -979,7 +1020,6 @@ C     ************************
 C     *** Specify operator ***
 C     ************************
 C
-C
 C     Read property name
 C     ==================
 C
@@ -1018,7 +1058,7 @@ C          =================================================
 C
            IF ( I .GT. I_FOCKMAT ) THEN
 C             (the first five entries in TABKW are not operator types)
-CMI      ---- assignement of IPTYP needed in further routines -----
+CMI      ---- assignement of the IPTYP is needed in other routines -----
               IPTYP = I - I_FOCKMAT
               NLABEL= 0
               NFAC  = 0
@@ -1040,14 +1080,10 @@ C
               ITRXPR = 1
            END IF
  
-           ! ... initialize ...
-           TRS_FLIP=.FALSE.
-           ! write(LUPRI,*) 'operatorik:',I,KEYWD(1:LKW)
-
-!mi     ...jump on operator types according to the variable I prepared above, I : 1-26
+!mi     ...jump on operator types according to the variable I prepared above, I : 1-27
 !           4-8 are operators characteritics, TABKW(1-5)
            GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,1,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1,3,1,3), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1066,7 +1102,7 @@ C&&&&    Two components: [XYZ]AVECTOR
 C          note that the minus in the second component
 C          is introduced later
          GO TO 300
-C&&&&    Three components: ALPHADOT
+C&&&&    Three components: ALPHADOT, SIGMADOT, DSIGMADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1089,10 +1125,8 @@ C&&&     Multiply with current value of the speed of light, CMULT
            PFAC(2) = PFAC(2)*CVAL
            PFAC(3) = PFAC(3)*CVAL
          GO TO 300
-C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
+C&&&     
     8    CONTINUE
-           TRS_FLIP=.TRUE.
-           IKW=6
          GO TO 300
          !GO TO 100
 C
@@ -1143,11 +1177,6 @@ C        IKW .eq. 5 :  Common factor for all components
          PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
 
-!         TRS_FLIP
-      ELSE IF (IKW .EQ. 6) THEN
-         write(LUPRI,*) 'TRS_FLIP !'
-         TRS_FLIP=.TRUE.
-         IKW=1
 C
 C     Unknown IKW
 C     ===========
@@ -1190,15 +1219,10 @@ CHJMAERKE: implement interpretation of class keyword
      &     'initial values: INDXPR=',INDXPR,
      &    ' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
          ENDIF
-CMI      ... assign remaining parameters
+CMI      ... assign remaining parameters in dedicated subroutine
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-         IF (TRS_FLIP) THEN
-           ! miro: perform the time-reversal symmetry flip of the operaror
-           CALL OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                            INDXPR,ISYXPR,ITRXPR,IPRINT)
-           TRS_FLIP=.FALSE.
-         ENDIF
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+
          IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
      &      '*** Output from XPRINP after XPRIND ***'
@@ -1271,31 +1295,11 @@ C
  9999 CALL QEXIT('XPRTKN')
       RETURN
       END
-      SUBROUTINE OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-! Perform the operator time-reversal symmetry flip (thanks to TRS_FLIP characteritics)
-!
-! Called by XPRINT
-!
-! M.Ilias, Banska Bystrica, February 2011
-!
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
-      CHARACTER PNAME*16
-      DIMENSION PFAC(NPCOMP)
-      WRITE(LUPRI,*)
-     &'Flipping time reversal symmetry for the selected operator ',
-     & PNAME
-      IPRPTIM(INDXPR) =  - IPRPTIM(INDXPR)
-      RETURN
-      END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
 C*********************************************************************** 
 C
 C  Given a 4-component operator this routine returns an index
@@ -1312,7 +1316,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      DIMENSION PFAC(NPCOMP)
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1366,8 +1370,7 @@ C========================================================================
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C=========================================================================
-      CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
-     &            WORK,LWORK,IPRINT)
+      CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
 C
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
@@ -1383,8 +1386,7 @@ C       ... i.e. FOCKMAT
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpradd */
-      SUBROUTINE XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
-     &                  WORK,LWORK,IPRINT)
+      SUBROUTINE XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
 C***********************************************************************
 C
 C  Add property to list of properties in COMMON block XCBPRP
@@ -1403,7 +1405,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      DIMENSION PFAC(NPCOMP)
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1415,7 +1417,7 @@ C
 CMI ... needs CVAL
 #include "dcbgen.h"
 
-      CHARACTER*4 PCOMB
+      CHARACTER*4 PCOMB, PCOMB_SAVE
 C     ... the four characters in PCOMB define inclusion of the
 C         LL, SL, LS, and SS blocks of one-electron operators.
 C
@@ -1442,8 +1444,8 @@ CMI (&TEC): RM1H1/RM2H1 is first/second London derivative of BETAMAT
          PCOMB = '000+'
 CMI/HJAaJ
 C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
-C      to get compatibility with DALTON
-C     ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
+C      to get compatibility with DALTON, plus doubled factor
+!  nonrelativistic adaptation has to be set up explicitly 
       ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.RDSUSLLMOD) THEN
 C ... fix the LS block for the LevyLe option
          PCOMB = '00+0'
@@ -1460,8 +1462,9 @@ C ... fix the LS block for the LevyLe option
 C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
-           CALL QUIT('XPRADD: Illegal IPTYP (not 1-20)!')
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.22) THEN
+           WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
+           CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
      &          1,1,1,3,3,3,4,4,4,3,4,4),IPTYP
@@ -1491,7 +1494,7 @@ C
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 C
-C        "i BETA ALPHA" and "i BETA GAMMA5" :
+C        "i BETA ALPHA" and "i BETA GAMMA5" , miro: also SIGMADOT
 C
     4    PCOMB = '0+-0'
          GO TO 100
@@ -1513,16 +1516,39 @@ CLV ... same thing for ZORA!
       END IF
 
 CMI ... inform about the assigned PCOMB
-      IF (IPRINT .GE. 6) THEN
-         WRITE(LUPRI,'(A,A4)') '  assigned PCOMB:',PCOMB
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(1X,A,A4)')
+     &   'for this operator assigned PCOMB:',PCOMB
       END IF
 
 !     ...  assign proper factor for EDM  ...
       IF (PLABEL(1).EQ.'EDM') THEN
         PFAC(1) = -4.0D0 * CVAL * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  'EDM operator: operator strenght multiplied by -4*CVAL,'
+     &  '4c EDM2 operator: strength multiplied by -4*CVAL,'
      & //' PFAC(1)=', PFAC(1)
+      ENDIF
+
+! miro 7 June 2012 exception: for PLABEL(1:5)="e_EDM" assign PCOMB(1:1)='0'
+      IF (PNAME(1:5).EQ.'e_EDM') THEN
+         !todo: hard assign 000+ structure
+         IF (PCOMB.NE.'+00+') THEN 
+           PCOMB = '+00+' ! assig as for SIGMA type of operator
+           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
+         ENDIF
+         PCOMB_SAVE = PCOMB
+         PCOMB(1:1)='0'
+         WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "Operator ",PNAME,
+     &   'changed 4-component matrix structure: ',
+     &   PCOMB_SAVE," --> ",PCOMB
+         ! adjust the operator strenght
+         DO I=1,NPCOMP
+           PFAC_TEMP = PFAC(I)
+           PFAC(I)=2.0d0*PFAC_TEMP
+           write(LUPRI,'(3X,I1,A,D7.2,A,D7.2)')
+     &     I,'.factor of ',PFAC_TEMP,
+     &     ' multiplied by 2, giving ', PFAC(I)
+         ENDDO
       ENDIF
 
 C
@@ -1538,9 +1564,9 @@ C
 CMI   ... assign key variables ...
       INDXPR = NPRPS
 C     Property name
-      PRPNAM(NPRPS)  = PNAME
+      PRPNAM(INDXPR)  = PNAME
 C     Property type
-      IPRPTYP(NPRPS) = IPTYP
+      IPRPTYP(INDXPR) = IPTYP
 C     Pointers to property labels
       IF(IPTYP.EQ.0) THEN
         DO 300 I = 1,NPRPLBL
@@ -1553,15 +1579,15 @@ C         Check property label
         NPRPLBL = NPRPLBL + 1
         INDX    = NPRPLBL
   400   CONTINUE      
-        FACPRP(1,NPRPS)  = PFAC(1)
-        IPRPLBL(1,NPRPS) = INDX
+        FACPRP(1,INDXPR)  = PFAC(1)
+        IPRPLBL(1,INDXPR) = INDX
         PRPLBL(INDX) = PLABEL(1)
         PDOINT(INDX) = PCOMB
       ELSE
 CMI     ... (IPTYP.NE.0) operator has more components
         DO 600 J = 1,NPCOMP
-          FACPRP(J,NPRPS)  = PFAC(J)
-          INDX = INDXPL(PLABEL(J),PCOMB,WORK,LWORK,IPRINT)
+          FACPRP(J,INDXPR)  = PFAC(J)
+          INDX = INDXPL(PLABEL(J),PCOMB,IPRINT)
           IF (INDX .LE. 0) THEN
             INDXPR = -1
             WRITE (LUPRI,'(3A)')
@@ -1579,7 +1605,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck indxpl */
-      INTEGER FUNCTION INDXPL(PLABEL,PCOMB,WORK,LWORK,IPRINT)
+      INTEGER FUNCTION INDXPL(PLABEL,PCOMB,IPRINT)
 C***********************************************************************
 C
 C     9-Mar-1995 hjaaj
@@ -1656,8 +1682,7 @@ C
       CLSCMB(NPRPCLS) = PCOMB
       CLSCAL(NPRPCLS) = .TRUE.
       IORDCL(NPRPCLS) = IORDER
-      CALL XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
-     &                WORK,LWORK,IPRINT)
+      CALL XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,IPRINT)
       INDXPL = INDX
  9999 CONTINUE
       CALL QEXIT('INDXPL')
@@ -1779,7 +1804,7 @@ C
 C
 C     Diamagnetic spin-orbit integrals
 C
-      ELSE IF(LABINT(1:3).EQ.'DSO') THEN
+      ELSE IF(LABINT(1:2).EQ.'DS') THEN
         CLASLB = 'DSO    '
 C
 C     Half-derivative overlap integrals
@@ -1976,30 +2001,21 @@ C     Electric field gradient at the individual nuclei, cartesian
 C
       ELSE IF(LABINT(3:5).EQ.'EFG') THEN
         CLASLB = 'ELFGRDC'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H2') THEN
         CLASLB = 'RM1H2'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H2') THEN
         CLASLB = 'RM2H2'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H3') THEN
         CLASLB = 'RM1H3'
-CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H3') THEN
         CLASLB = 'RM2H3'
-
-CMI ...contributions from RDSUSLL term
       ELSE IF(LABINT(3:7).EQ.'RDSUL') THEN
         CLASLB = 'RDSUSLL'
-CMI
       ELSE IF(LABINT(2:6).EQ.'RM1RN') THEN
         CLASLB = 'RM1RN'
-
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
       ELSE IF(LABINT(4:7).EQ.'RNST') THEN
         CLASLB = 'RM1N1H '
-
 CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
       ELSE IF(LABINT(1:6).EQ.'CAP_RE') THEN
         CLASLB = 'CAP_RE  '
@@ -2015,9 +2031,12 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
         CLASLB = 'CAPD_VD' 
-CMI  EDM operator
+CMI  EDM2 operator, see Refs. [Nataraj2007]_, [Mukherjee2009]_
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
+!    original  e_EDM operator of Flambaum
+      ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
+        CLASLB = 'E_EDM'
 C
 C     Unknown LABINT
 C   
@@ -2038,8 +2057,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpldef */
-      SUBROUTINE XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
-     &                  WORK,LWORK,IPRINT)
+      SUBROUTINE XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,IPRINT)
 C***********************************************************************
 C
 C     Define property label: symmetries etc..
@@ -2050,6 +2068,7 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2058,11 +2077,16 @@ C
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-      CHARACTER PLABEL*8,CLASLB*7,PCOMB*4,LABINT(15*MXCENT)*8
-      DIMENSION WORK(LWORK)
+#include "dcbprl.h"
+#include "cbiher.h"
+      CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
+      LOGICAL ANTI, TRASPH, SOLVNT, SQUARE, LABERR
+      integer, allocatable :: INTREP(:)
+      integer, allocatable :: INTADR(:)
+      logical, allocatable :: DOATOM(:)
+      character (len=8), allocatable :: LABINT(:)
 C
       CALL QENTER('XPLDEF')
-#include "memint.h"
 C
       MAXTYP = 15*MXCENT
       IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
@@ -2070,49 +2094,11 @@ C
       ELSE
          NINTAD = MAXTYP
       END IF
-C     Memory allocation
-      CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINTAD,NINTAD,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM ,NUCIND,WORK,KFREE,LFREE)
-C
-      CALL XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,WORK(KINTRP),
-     &            WORK(KINTAD),LABINT,INDX,WORK(KATOM),
-     &            WORK(KFREE),LFREE,IPRINT)
-C
-      CALL QEXIT('XPLDEF')      
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck xplde1 */
-      SUBROUTINE XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,INTREP,INTADR,
-     &           LABINT,INDX,DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define property label: symmetries etc..
-C
-C    Entering: PLABEL
-C
-C
-C     Written by T.Saue May 14 1996
-C     Last revision: May 14 1996 - tsaue
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "dcbprl.h"
-#include "cbiher.h"
-#include "nuclei.h"
-C#include "maxorb.h"
-C#include "symmet.h"
-
-      LOGICAL ANTI, TRASPH, SOLVNT, SQUARE,LABERR,
-     &        DOATOM(*)
-      CHARACTER PLABEL*8,CLASLB*7,LABINT*8,PCOMB*4
-      DIMENSION INTREP(*),INTADR(*),LABINT(*),WORK(LWORK)
-      CALL QENTER('XPLDE1')
-C
+C.....Memory allocation
+      call alloc(INTREP,MAXTYP,id='INTREP in XPLDEF')
+      call alloc(INTADR,NINTAD,id='INTADR in XPLDEF')
+      allocate(DOATOM(NUCIND))
+      allocate(LABINT(MAXTYP))
 C
 C     Get information on this class of integrals
 C
@@ -2157,10 +2143,7 @@ C
         CALL SETATM(DOATOM,NATOM,-99)
         CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
-        DO I = 1,NUCIND
-          DOATOM(I) = .TRUE.
-        ENDDO
-
+        CALL LSET(NUCIND,.TRUE.,DOATOM)
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
           WRITE(LUPRI,*)
@@ -2178,7 +2161,7 @@ C
         ENDIF
 
        ! ... call abacus routine...
-        CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
+        CALL PR1DIR(CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 
@@ -2223,19 +2206,13 @@ C
         IPRLREP(NPRPLBL) = INTREP(ICMP)
 !       .....  
         IF(SQUARE) THEN
-C
 C       Non - symmetric operator
-C
           IPRLTYP(NPRPLBL) = 0
         ELSEIF(ANTI) THEN
-C
 C       Anti-symmetric operator
-C
           IPRLTYP(NPRPLBL) = -1
         ELSE
-C
 C       Symmetric operator
-C
           IPRLTYP(NPRPLBL) =  1
         ENDIF
       ENDDO
@@ -2250,9 +2227,12 @@ C
         WRITE(LUPRI,'(19X,A8)') (LABINT(I),I=2,NOPTYP)
         CALL QUIT('XPLDE1:  error - operator label not found')
       ENDIF
-
-C
-      CALL QEXIT('XPLDE1')
+C.....Deallocate memory
+      call dealloc(INTREP)
+      call dealloc(INTADR)
+      deallocate(DOATOM)
+      deallocate(LABINT)
+      CALL QEXIT('XPLDEF')      
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2265,21 +2245,13 @@ C     INDXPR in COMMON /DCBPRP/.
 C
 C     The routine assumes Hermitian operators and will therefore
 C     consider symmetric operators purely real and antisymmetric operators
-C     purely imaginary. Non-symmetric operators results in error and
-C     termination.
+C     purely imaginary. Non-symmetric operators are handled by a special routine
+C     which terminates in error if the exception has not been added.
 C   
-C     If an operators involves more than one label, the logical variable
-C     SAMSYM is used to check that the components have identical symmetry
-C     under space and time.
-C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
-C     - routine assumed general operators which can be symmetric, antisymm. 
-C       and square
-C     - removing the program stop when indeterminate symmetry of operator
-C     - print out
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2313,91 +2285,36 @@ C
 C     Point group symmetry
 C     ====================
 C
-C     Matrix operator
+C     Matrix operator, JM4REP(JM4(1,ITYP))
       IAREP    = JM4REP(IAIND)
-C     Scalar operator
+C     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
-C     Total point gropu symmetry of the operator, first component..
+C     Total point group symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
 C
 C     Time reversal symmetry
 C     ======================
 C
 C     Matrix operator :
-C - assign IATIM according to the 
-C  IAIND = JM4(1,ITYP) = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
-C  JM4 is assigned in abacus/hergroup.F
-C
-C JM4(1,ITYP) = 0 ... scalar operator
-C               4 ... gamma5 P
-C               16..18 ????
-C
-C Miro: for determination of IATIm why not not use rather ITYP ?
-C
-      SKIP_JM4 = .TRUE.
-!     SKIP_JM4 = .FALSE.
-
-CMI ... catch possible exotic IAND...
-      IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
-        CALL QUIT('quit here due to IAIND !')
-      ENDIF
-
-CMI  remove this part (THEN block) if everythink goes well and keep only ELSE branch
-      IF (.NOT.SKIP_JM4) THEN
-
-      IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
-     &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
-C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
-        IATIM = 1
-      ELSE
-C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
-        IATIM = -1
-      ENDIF
-
-CMI    exception for the i*BETA*GAMMA5 operator
-      IF (ITYP.EQ.21) THEN
-        IATIM=-1 !
-         WRITE(LUPRI,'(2X,A)')
-     &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
-!    &    'FYI: i*BETA*GAMMA5 operator' 
-      ENDIF
-
-      ELSE
-!  -------------------------------------------------------------------------------------------------
-!   Simplification branch:
-!       ...only  scalar , gamma5, and beta matrix operators have IATIM=+1, the rest has IATIM=-1
-! FYI: only this part (ELSE block) is to be kept for the future
-!  --------------------------------------------------------------------------------------------------
-       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
-        IATIM=+1
-       ELSE ! the rest ....
-        IATIM=-1
-       ENDIF
-
-      ENDIF
-
-CMI - TODO force change of the time rev.symm. if wanted
-!     IF (IPRPTYP(INDXPR).EQ.2.OR.
-!    &   IPRPTYP(INDXPR).EQ.3.OR.IPRPTYP(INDXPR).EQ.4) THEN
-!       IATIM=+1
-!       WRITE(LUPRI,*) 'forcing IATIM=1 for IPRPTYP(INDXPR)!'
-!     ENDIF
-
-
-C     Scalar operator
-      IBTIM    = IPRLTYP(IBIND)
+      IATIM = JM4TIM(IAIND)
+C     Scalar operator :
+C     Here we use the following indirect argument:
+C     The operator should be Hermitian, so if the scalar operator is
+C     symmetric about the diagonal, then it is real and time symmetric.
+C     If the scalar operator is anti-symmetric, then it is imaginary
+C     and time anti-symmetric
+C     However, if the operator has no symmetry about the diagonal 
+C     we can not use this argument and has to add exceptions
+      IBTIM = IPRLTYP(IBIND)
+      IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
       ICTIM(1) = IATIM*IBTIM
-
-      IF (IPRINT.GE.15) THEN
+      IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
-        WRITE(LUPRI,'(2X,4(A,I2))')
-     &  'IAIND=',IAIND,' IBIND=',IBIND,
-     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
-        WRITE(LUPRI,'(2X,1(A,I2))')
-     &  'ICTIM(1)=',ICTIM(1)
+        WRITE(LUPRI,*) '* Operator type: ',ITYP
+        WRITE(LUPRI,*) '* First matrix operator ',IAIND,IAREP,IATIM
+        WRITE(LUPRI,*) '* First scalar operator ',IBIND,IBREP,IBTIM
       ENDIF
-
 C
 C     Check against other components of operator
 C     ==========================================
@@ -2408,11 +2325,19 @@ C     ==========================================
         IBREP       = IPRLREP(IBIND)
         ICREP(ILBL) = IBTXOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
-        IATIM       = -1
-        IF(IAIND.EQ.0) IATIM = 1
+        IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
+        IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
         ICTIM(ILBL) = IATIM*IBTIM
         DIFTIM      = DIFTIM.AND.(ICTIM(ILBL).NE.ICTIM(1))
+        IF (IPRINT.GE.15) THEN
+          WRITE(LUPRI,'(2X,4(A,I2))')
+     &  'IAIND=JM4(ILBL,ITYP)',IAIND,' IBIND=IPRLBL(ILBL,INDXPR)',IBIND,
+     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
+        WRITE(LUPRI,'(2X,1(A,I2))')
+     &  'ICTIM(ILBL)=',ICTIM(ILBL)
+        ENDIF
+
    20 CONTINUE
 !     error message
       IF(DIFSYM.OR.DIFTIM) THEN
@@ -2440,14 +2365,13 @@ C
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 
-CMI   ... assign symmetries
+CMI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
+CMI   ... assign time rev.symmetry
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 
       IF (IPRINT.GE.15) THEN
-        !CALL HEADER('Output from PRPSYM',-1)
-
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
      &  ' and operator type (1-',NOPTYP,
@@ -2536,7 +2460,7 @@ C
       GOTO 30
       ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,
-     &       13,14,15,16,17,18,19,20,21), ITYP
+     &       13,14,15,16,17,18,19,20,21,22), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2618,11 +2542,15 @@ C
       GOTO 200
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'SIGMADOT : [sigma.P]'
+     &   'SIGMADOT, offdiagonal : [sigma.P]'
       GOTO 200
    21 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'BETAGAMMA5 : i[beta gamma5]P'
+      GOTO 200
+   22 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'SIGMADOT, diagonal : [sigma.P]'
       GOTO 200
 C
   200 CONTINUE
@@ -2662,13 +2590,15 @@ C  /* Deck op1ind */
       SUBROUTINE OP1IND(OP1KEY,IND1OP,IPR1OP,N1OPER,INDXPR,MAX1OP)
 C***********************************************************************
 C
-C     INDXPR points to an operator in XCBPRP. Search through
-C     IPR1OP for elements pointing to this operator. If not found,
-C     extend the list by one element.
+C     INDXPR points to an operator in XCBPRP. 
+C     Search through pointer array IPR1OP for elements pointing 
+C     to this operator. If not found, extend the list by one element.
+C     The program is stopped if the array goes out of the bound MAX1OP.
+C     On output IND1OP will be the index of the operator in the 
+C     pointer array IPR1OP, N1OPER the current number of operators
+C     in the list.
 C
 C     Written by T.Saue June 28 1996
-C     Last revision: July 8 1996
-C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2869,7 +2799,6 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -3038,12 +2967,35 @@ C***********************************************************************
 C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
-         CALL PAMPRP(WORK,LWORK)
+         CALL PAMPRP()
 C
       END IF
 C
       CALL QEXIT('MINPRP')
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+      CHARACTER*8 PRPLBL
+      INTEGER ITIM
+      IF(PRPLBL(4:7).EQ.'RNST'.OR.
+     &   PRPLBL(3:7).EQ.'RM2H3'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUL'.OR.
+     &   PRPLBL(3:7).EQ.'RDSUS'.OR.
+     &   PRPLBL(1:7).EQ.'d|S>/dB') THEN
+         ITIM = -1
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.
+     &   PRPLBL(4:7).EQ.'NSNL'.OR.
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.
+     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.
+     &   PRPLBL(2:6).EQ.'RM1RN') THEN
+         ITIM = +1
+      ELSE
+        WRITE(6,*) 'ISCALAROP_TSYM ERROR :',PRPLBL
+        CALL QUIT('ISCALAROP_TSYM: Can not assign ITIM')
+      ENDIF
+      ISCALAROP_TSYM=ITIM
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

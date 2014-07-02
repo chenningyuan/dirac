@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -85,6 +85,8 @@ C     Set default cutoff in eV
       STEX_CUTOFF = STEX_CUTOFFEV/XTEV
 C     Screening (-1 means not set here)
       STEX_SCRFCK = -1.0D0
+C     Print level
+      STEX_PRINT=0
 
 C     Add diplen and dipvel to DCBPRP
       PNAME(1) = 'XDIPLEN '
@@ -96,7 +98,7 @@ C     Add diplen and dipvel to DCBPRP
       NSTXOP = 0
       DO I=1,STEX_NR_OP
          CALL XPRIND(PNAME(I),1,1,1.0D0,PNAME(I),INDXPR,STEX_OP_SYM(I),
-     &        STEX_OP_TIM(I),WORK,LWORK,0)
+     &        STEX_OP_TIM(I),0)
          CALL OP1IND('STXDOP',IND1OP,STEX_OP_IND,NSTXOP,INDXPR
      $        ,STEX_NR_OP)
       END DO
@@ -1175,8 +1177,7 @@ C
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
      &     ' <f_l>/3   <f_v>/3     f_lx      f_ly  '//
      &     '    f_lz      f_vx      f_vy      f_vz'
-      WRITE(LUPRI,*) '------------------------------------------------'/
-     $     /'----------------------------------------------------'
+      WRITE(LUPRI,'(160A1)') ('-',I=1,160)
       DERG = REFERG - GSERG
 C     Check sum rule for oscillator strengths
       SUML = 0.0D0
@@ -1193,7 +1194,7 @@ C     Velocity gauge
      &           PRPGRAD(1,1,1,IPRP+3))
             OSCV(IPRP) = 2.0D0*ABS(XMOM)**2/(EVAL(IVEC) + DERG)
          ENDDO
-         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+         WRITE(LUPRI,'(1I5,1F16.8,8(3X,E14.6))')
      &        IVEC,(EVAL(IVEC) + DERG)*27.211383,
      &        (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
      &        (OSCV(1)+OSCV(2)+OSCV(3))/3.0D0,

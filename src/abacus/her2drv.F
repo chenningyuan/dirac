@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -382,9 +382,11 @@ C
          REWIND LUPAO
       END IF
       IF (SUSCEP) THEN
-         IF (.NOT.NOPV) REWIND LUPAO
-         IF (.NOT.NOPV) REWIND LUPAS
-CMI ... we are intering more loops (LL,LS,SS integrals) and thus we need
+         IF (.NOT.NOPV) THEN
+            REWIND LUPAO
+            REWIND LUPAS
+         ENDIF
+CMI ... we are entering more loops (LL,LS,SS integrals) and thus we need
 CMI     to accumulate integral contributions
 CMI      CALL DZERO(SUS2EL,9)
       END IF
@@ -4180,7 +4182,7 @@ C
 C
 C     Magnetic field derivatives
 C
-      ELSE IF (ABS(ITYPE) .EQ. 5) THEN
+      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. -5) THEN
          DOPREP(ISYMAX(1,2)) = .TRUE.
          DOPREP(ISYMAX(2,2)) = .TRUE.
          DOPREP(ISYMAX(3,2)) = .TRUE.
@@ -4346,7 +4348,7 @@ C
 C     h) Derivatives with respect to magnetic field
 C     =============================================
 C
-      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. - 5) THEN
+      ELSE IF (ITYPE .EQ. 5 .OR. ITYPE .EQ. -5) THEN
          LONDON = .TRUE.
          MAXDER = MAXDIF
          IF (MAXDER .EQ. 2) SUSCEP = .TRUE.

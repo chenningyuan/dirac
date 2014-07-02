@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 ***********************************************************************
@@ -618,7 +618,6 @@ C
         mjorb_vec = 0
         luxxx = -1
         INQUIRE(FILE='KRMCSCF',opened=EX_open,number=luxxx)
-        print *, 'ex, ex_open is ...',ex, ex_open, luxxx
         IF( .not. EX_open)THEN
           luxxx = 98
           CALL OPNFIL(luxxx,'KRMCSCF','UNKNOWN','ana mj')
@@ -1217,6 +1216,9 @@ CSK...6-jul-07      LBLOCK = MAX(L2BLOCK,L0BLOCK)
 CSK...6-jul-07 new
       L3BLOCK = MIN(LBLOCK,L3BLOCK)
 CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
+!u2T  LSCR12 = MAX(LBLOCK,2*LSCR2)
+!     LSCR12 = MAX(LBLOCK,2*LSCR2,lcsblk)
+!     this ought to be fine ; no lcsblk
       LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
 C     
@@ -1642,7 +1644,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
         write(luwrt,'(a)')
      &'  ============================================= '
         do ici = 1, ncmbspc
-          write(luwrt,'(1p,4g22.12)') (xispsm(ii,ici),ii=1,nsmci)
+          write(luwrt,'(1p,5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
         end do
       end if
 
@@ -3278,6 +3280,7 @@ COLD  MIN1A = MIN1_T
 *
 * For relativistic program
       use symmetry_setup_krci
+      use krci_cfg
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3379,6 +3382,10 @@ CSK  &                   LTEST_BLOCK, L2BLOCK, L_COMBI
       IF( I_SET_L2BLOCK .gt. 1 .or. I_USE_PC .eq. 0 ) THEN
        LBLOCK = MAX(LBLOCK,LCSBLK)
       END IF
+!     add restriction (if desired) for a max LBLOCK (to get some U2 calcs running...)
+      if(krci_cfg_max_vec_block > 0 )then
+        LBLOCK = krci_cfg_max_vec_block
+      end if
       IF( I_SET_L2BLOCK .ge. 1 )
      &  WRITE(LUWRT,*) '  LBLOCK set to:',LBLOCK
 #if defined LUCI_DEBUG
@@ -3618,6 +3625,7 @@ C
 *
 * For relativistic program
       use symmetry_setup_krci
+      use krci_cfg
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3710,6 +3718,11 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+!     add restriction (if desired) for a max LBLOCK (to get some U2
+!     calcs running...)
+      if(krci_cfg_max_vec_block > 0 )then
+        LBLOCK = krci_cfg_max_vec_block
+      end if
 *
       IF( I_SET_L2BLOCK .eq. 2 ) RETURN
 *
@@ -3881,6 +3894,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *
 * For relativistic program
       use symmetry_setup_krci
+      use krci_cfg
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3975,6 +3989,11 @@ csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+!     add restriction (if desired) for a max LBLOCK (to get some U2
+!     calcs running...)
+      if(krci_cfg_max_vec_block > 0 )then
+        LBLOCK = krci_cfg_max_vec_block
+      end if
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -120,7 +120,13 @@ C
          NSTR2T = NSTR2T + NSTR(IREPI,0,2)
       ENDDO
 
-      Allocate (LSORT(3,NFPCK12T,0:7))
+      Allocate (LSORT(3,NFPCK12T,0:7),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*) 
+     &  'Integer allocation LSORT(3,NFPCK12T,0:7) failed, where'//
+     & 	' NFPCK12T=',NFPCK12T
+		call quit('Integer allocation LSORT(3,NFPCK12T,0:7) failed')
+	  endif
       CALL DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
      &                  LSORT,IPRINT)
 C
@@ -152,21 +158,57 @@ C
 C
 C     Make index arrays to translate pair index to individual indices
 C
-      Allocate (INDXKR12(NFPCK12T,2))
-      Allocate (INDXB12 (NFPCK12T,2))
-      Allocate (INDXB34 (NFPCK34T,2))
-
+      Allocate (INDXKR12(NFPCK12T,2),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*) 
+     &  'Integer allocation INDXKR12(NFPCK12T,2) failed, where'//
+     & 	' NFPCK12T=',NFPCK12T
+		call quit('Integer allocation INDXKR12(NFPCK12T,2) failed!')
+	  endif
+      Allocate (INDXB12 (NFPCK12T,2),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*) 
+     &  'Integer allocation INDXB12(NFPCK12T,2) failed, where'//
+     & 	' NFPCK12T=',NFPCK12T
+		call quit('Integer allocation INDXB12(NFPCK12T,2) failed!')
+	  endif	
+      Allocate (INDXB34 (NFPCK34T,2),stat=istat)
+	  If (istat.ne.0) then
+	    Write(LUPRI,*) 
+     &  'Integer allocation INDXB34(NFPCK12T,2) failed, where'//
+     & 	' NFPCK12T=',NFPCK12T
+		call quit('Integer allocation INDXB34(NFPCK12T,2) failed!')
+	  endif
+	  
       CALL MKINDXKR (NSTR,.FALSE.,INDXKR12)
  
 !     FIXME: out-of-bounds access possible when no inversion symmetry present
 !    &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
-      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
+!    miro: easy fix
+      I_KIBE11=KIBE(1,1)
+      IF (KIBE(1,1).EQ.0) I_KIBE11=1
+      I_KIBE21=KIBE(2,1)
+      IF (KIBE(2,1).EQ.0) I_KIBE21=1
+      I_KIBE12=KIBE(1,2)
+      IF (KIBE(1,2).EQ.0) I_KIBE12=1
+      I_KIBE22=KIBE(2,2)
+      IF (KIBE(2,2).EQ.0) I_KIBE22=1
+      CALL MKINDXB (NSTR,WORK(I_KIBE11),WORK(I_KIBE21),
+     &              WORK(I_KIBE12),WORK(I_KIBE22),
      &              .FALSE.,INDXB12)
 !     FIXME: out-of-bounds access possible when no inversion symmetry present
 !    &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
-      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
-     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
+!    miro: easy fix
+      I_KIBE13=KIBE(1,3)
+      IF (KIBE(1,3).EQ.0) I_KIBE13=1
+      I_KIBE23=KIBE(2,3)
+      IF (KIBE(2,3).EQ.0) I_KIBE23=1
+      I_KIBE14=KIBE(1,4)
+      IF (KIBE(1,4).EQ.0) I_KIBE14=1
+      I_KIBE24=KIBE(2,4)
+      IF (KIBE(2,4).EQ.0) I_KIBE24=1
+      CALL MKINDXB (NSTR,WORK(I_KIBE13),WORK(I_KIBE23),
+     &              WORK(I_KIBE14),WORK(I_KIBE24),
      &              .FALSE.,INDXB34)
 C
 C     Perform the second half transformation
@@ -274,8 +316,16 @@ C***********************************************************************
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
 C
-      Allocate (RGBUF(MEM))
-      Allocate (IGBUF(2,MEM))
+      Allocate (RGBUF(MEM),stat=istat)
+	  If (istat.ne.0) then
+	   Write(LUPRI,*) "Real*8 allocation of RGBUF(MEM) failed,MEM=",MEM
+	   Call Quit('Real*8 allocation of RGBUF(MEM) failed')
+	  EndIf
+      Allocate (IGBUF(2,MEM),stat=istat)
+	  If (istat.ne.0) then
+	   Write(LUPRI,*) "Integer allocation of IGBUF(MEM) failed,MEM=",MEM
+	   Call Quit('Integer allocation of IGBUF(MEM) failed')
+	  EndIf	  
       CALL GETTIM(CPUBEF,WALLBEF)
       DO IC = 1, 2
 CLV:Gaunt       DO IC = 1, 3

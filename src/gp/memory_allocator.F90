@@ -40,6 +40,11 @@
          use allocator_track_if
          use allocator_eh
 
+         use allocator_internal_A_1d_C  
+         use allocator_internal_A_2d_C  
+         use allocator_internal_A_3d_C 
+         use allocator_internal_A_4d_C 
+
          use allocator_internal_A_1d_R  
          use allocator_internal_A_2d_R  
          use allocator_internal_A_3d_R 
@@ -49,6 +54,11 @@
          use allocator_internal_A_2d_I  
          use allocator_internal_A_3d_I 
          use allocator_internal_A_4d_I 
+
+         use allocator_internal_P_1d_C  
+         use allocator_internal_P_2d_C  
+         use allocator_internal_P_3d_C 
+         use allocator_internal_P_4d_C 
 
          use allocator_internal_P_1d_R  
          use allocator_internal_P_2d_R  
@@ -60,6 +70,8 @@
          use allocator_internal_P_3d_I 
          use allocator_internal_P_4d_I 
                   
+         use allocator_legacy_dirac
+
          implicit none
          
          private
@@ -72,6 +84,9 @@
 
          public allocator_set_max
          public allocator_get_max
+
+         public legacy_lwork_get
+         public legacy_lwork_set
 
 ! making some stuff public
          public allocator_get_available_mem
@@ -86,6 +101,10 @@
          public allocator_get_arraysize
 
          interface alloc
+            module procedure alloc_A_normal_1d_C
+            module procedure alloc_A_normal_2d_C
+            module procedure alloc_A_normal_3d_C
+            module procedure alloc_A_normal_4d_C
             module procedure alloc_A_normal_1d_R
             module procedure alloc_A_normal_2d_R
             module procedure alloc_A_normal_3d_R
@@ -94,6 +113,10 @@
             module procedure alloc_A_normal_2d_I
             module procedure alloc_A_normal_3d_I
             module procedure alloc_A_normal_4d_I
+            module procedure alloc_A_sliced_1d_C
+            module procedure alloc_A_sliced_2d_C
+            module procedure alloc_A_sliced_3d_C
+            module procedure alloc_A_sliced_4d_C
             module procedure alloc_A_sliced_1d_R
             module procedure alloc_A_sliced_2d_R
             module procedure alloc_A_sliced_3d_R
@@ -105,6 +128,10 @@
          end interface alloc
 
          interface allocp
+            module procedure alloc_P_normal_1d_C
+            module procedure alloc_P_normal_2d_C
+            module procedure alloc_P_normal_3d_C
+            module procedure alloc_P_normal_4d_C
             module procedure alloc_P_normal_1d_R
             module procedure alloc_P_normal_2d_R
             module procedure alloc_P_normal_3d_R
@@ -113,6 +140,10 @@
             module procedure alloc_P_normal_2d_I
             module procedure alloc_P_normal_3d_I
             module procedure alloc_P_normal_4d_I
+            module procedure alloc_P_sliced_1d_C
+            module procedure alloc_P_sliced_2d_C
+            module procedure alloc_P_sliced_3d_C
+            module procedure alloc_P_sliced_4d_C
             module procedure alloc_P_sliced_1d_R
             module procedure alloc_P_sliced_2d_R
             module procedure alloc_P_sliced_3d_R
@@ -125,6 +156,10 @@
 
 
          interface dealloc
+            module procedure dealloc_A_1d_C
+            module procedure dealloc_A_2d_C
+            module procedure dealloc_A_3d_C
+            module procedure dealloc_A_4d_C
             module procedure dealloc_A_1d_R
             module procedure dealloc_A_2d_R
             module procedure dealloc_A_3d_R
@@ -136,6 +171,10 @@
          end interface dealloc
 
          interface deallocp
+            module procedure dealloc_P_1d_C
+            module procedure dealloc_P_2d_C
+            module procedure dealloc_P_3d_C
+            module procedure dealloc_P_4d_C
             module procedure dealloc_P_1d_R
             module procedure dealloc_P_2d_R
             module procedure dealloc_P_3d_R

@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2011 by the authors of DIRAC.
+ *     Copyright (c) 2013 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -17,26 +17,10 @@
  *
  *     For information on how to get a license, as well as the
  *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://dirac.chem.vu.nl
+ *     DIRAC program, see: http://www.diracprogram.org
  */
 /* dirac_copyright_end */
 
-/*
- *
- * FILE    : gpc.c
- *
- * frac2i:
- *
- * Take string with a fraction (e.g. either 1/2 or 0.5)
- * Written by J. Thyssen - Jan 28 1998
- *
- *
- * sysinf:
- *
- * Print info about system to stdout
- * Written by J. Thyssen - Feb 9 1998
- *
- */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -226,117 +210,6 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 }
 
 
-/*
-  Workaround for buggy fortran SYSTEM() on some
-  platforms (intel fortran 8.x-9.x)
-*/
-int csystem_(const char *cmd, fortran_int_t cmdlen)
-{
-  int i;
-  char *s;
-  s = malloc(cmdlen+1);
-  for (i=0;i<cmdlen;i++)
-    s[i] = cmd[i];
-  s[cmdlen] = 0;
-  i = system(cmd);
-  free(s);
-  return i;
-}
-
-#ifdef VAR_IFORT
- /* extra routines needed by intel's ifc compiler which does not
- * provide them itself.
- * Pawel Salek, pawsa@theochem.kth.se, 2002.01.31
- */
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/times.h>
-#include <time.h>
-#include <unistd.h>
-
-void unlink_(char * fname, fortran_int_t len)
-{
-  int i;
-  for(i=len; i>0 && !isspace(fname[i]); i--)
-    ;
-  fname[i] = '\0';
-  unlink(fname);
-}
-
-void getenv_(const char* str, char* val, fortran_int_t strl, fortran_int_t vall)
-{
-  char name[32];
-  char *envv;
-  int i;
-
-  if(strl>sizeof(name)-1) {
-    printf("gpc.c:getenv(): input string too long (I suck!)\n");
-    return;
-  }
-  strncpy(name, str, strl);
-  name[strl] = '\0';
-
-  if( (envv=getenv(name)) != NULL)
-    strncpy(val, envv, vall);
-  else val[0] = '\0';
-
-  for(i=strlen(val); i< vall; i++)
-    val[i] = ' ';
-}
-
-void system_(char* str, fortran_int_t len)
-{    
-    char *buf = alloca(len+1);
-    buf[len] = 0;
-    strncpy(buf,str,len);
-    printf("VAR_IFORT defined. Ignoring call system(%s)\n",buf);
-}
-
-void flush_(fortran_int_t* lu)
-{
-  /* no flushing */
-}
-
-float etime_(float* et)
-{
-  static int ticksclk = -1;
-  struct tms tm;
-
-  times(&tm);
-  if(ticksclk<0) ticksclk = sysconf(_SC_CLK_TCK);  
-  et[0] = tm.tms_utime/(double)ticksclk;
-  et[1] = tm.tms_stime/(double)ticksclk;
-  return et[0] + et[1];
-}
-
-void fdate_(char* dt, fortran_int_t dtlen)
-{
-  time_t curr_time;
-  time(&curr_time);
-  strncpy(dt, ctime(&curr_time), 24);
-}
-
-int time_(void)
-{ 
-  return (int)time(NULL);
-}
-
-void hostnm_(char* buf, fortran_int_t buflen)
-{
-  int i;
-  gethostname(buf, buflen);
-  /* printf("Hostname: '%s' (%d)\n", buf, buflen); */
-  for(i=strlen(buf); i<buflen; i++)
-    buf[i] = ' ';
-}
-
-double* malloc_(fortran_int_t cnt)
-{
-  return malloc(cnt);
-}
-#endif /* VAR_IFORT */
-
 /* Try to cause a segmentation fault, to enable debuggers to
    trap this and inspect the program.
 */
@@ -379,14 +252,3 @@ int high_water_mark_(void)
 {
   return mem_high - mem_start;
 }
-
-/* 
-Make break of given amount of seconds. Call if no Fortran SLEEP() intrinsic.
-*/
-void make_pause_(int *sec)
-{
-  printf("making pause of %d seconds\n",*sec);
- // sleep(*sec);
-  return;
-}
-

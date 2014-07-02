@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
       SUBROUTINE PRPTPA(WORK,LWRK)
@@ -260,7 +260,7 @@ C     =====================
 C
          IF (NEXCSYM(JSYMOP).GT.0) THEN
             CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXQR)
+     &                  IPRXQR)
             IF (NZCONF.EQ.0) THEN
                NEXMAX = NZXOPE
             ELSE
@@ -388,7 +388,7 @@ C
       DO IS = 1,NFC
          JOPSY = IFERE
          CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &               WORK,KFREE,LFREE,IPRXQR)
+     &               IPRXQR)
          MZYEE = MAX(MZYEE,2*NZXOPE)
          MZYEP = MAX(MZYEP,2*NZXOPP)
       END DO
@@ -1070,7 +1070,7 @@ C
       JSYMOP = JSYM
       JTIMOP = ITIM
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            IPRXQR)
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(INDEX,FREQ,IREC)

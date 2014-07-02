@@ -1,5 +1,6 @@
+
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +17,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module fde_mod
@@ -25,40 +26,13 @@ module fde_mod
    use fde_cfg
    use fde_data
    use fde_io
-   use fde_exportPotentials
-!  use fde_import
-   use FDE_ImportPotentials
-   use fde_integrate
-
-   use fde_inputDirac
-   use fde_eval_dirac
-
-   interface fde_init
-      module procedure fdeini
-   end interface
-
-   interface fde_input
-      module procedure fdeinp
-   end interface
-
-
-#ifdef MOD_UNRELEASED
-!  interface fde_cleanup_density_matrix
-!     module procedure fde_free_dmat_dirac
-!  end interface
-
-   interface fde_calculate_embpot
-      module procedure fde_calculate_vemb_dirac
-   end interface
-
-!  interface fde_calculate_embrsp
-!     module procedure fde_calculate_lr_dirac
-!  end interface
-
-!  interface fde_calculate_embqrp
-!     module procedure fde_calculate_qr_dirac
-!  end interface
-
+   use fde_export_data
+   use fde_evaluators
+   use fde_input
+#ifdef PRG_DIRAC
+   use fde_input_dirac
+#else
+   use fde_input_dalton
 #endif
 
 end module fde_mod

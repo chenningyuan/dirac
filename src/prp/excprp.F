@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C***********************************************************************
@@ -519,7 +519,7 @@ C
       END
 !
 !
-      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS, WORK, LWRK)
+      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS)
 C*****************************************************************************
 C
 C     Input handling for excited state properties calculation
@@ -545,7 +545,6 @@ C*****************************************************************************
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
       INTEGER KEYWID, SETTINGS, LWRK
-      REAL*8 WORK(LWRK)
       LOGICAL DOFLAG
       LOGICAL lstateOK
       INTEGER LFREE, KFREE, DUMMY, DUMMY2, OPINDEX
@@ -627,15 +626,15 @@ C*****************************************************************************
 !        set the A operators to the x,y,z-dipole operators
          OPNAME = 'XDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
          OPNAME = 'YDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
          OPNAME = 'ZDIPLEN'
          CALL XPRIND(OPNAME,1,1,D1,OPNAME(1:8),OPINDEX,DUMMY,
-     &        DUMMY2,WORK(KFREE),LFREE,IPRXQR)
+     &        DUMMY2,IPRXQR)
          CALL OP1IND('NAQROP',DUMMY,LAQROP,NAQROP,OPINDEX,MAXLQR)
 !     keyword: .EXCPRP
       ELSE IF (KEYWID .eq. 2) THEN

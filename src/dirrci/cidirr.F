@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,12 +16,15 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
-      SUBROUTINE PAMCIM (CI,MCORE)
+      SUBROUTINE PAMCIM ()
 C
+
+      use memory_allocator
+
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 C     ====================================================================
@@ -108,6 +111,11 @@ C
 #include "files.inc"
 #include "param.inc"
       LOGICAL DONE
+
+      real(8), allocatable :: CI(:)
+
+      call legacy_lwork_get(MCORE)
+      call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE
 #if defined (SYS_CRAY) || defined (SYS_T3D)
@@ -120,6 +128,7 @@ C
       IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
+      call dealloc(CI)
 C
 C     Clean up : Throw away Scratch Files 
 C
@@ -141,9 +150,9 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      REAL*8 CI(*)
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
 C
@@ -180,9 +189,6 @@ C
       DO 10 J3 = 0, MAXE3
       J2 = NELEC - J1 - J3
       IF (J2.LT.0.OR.J2.GT.NORBR(2)) GO TO 10
-CTROND      NCDET = NOVERI(NORBR(1),J1)
-CTROND      NCDET = NOVERI(NORBR(2),J2) * NCDET
-CTROND      NCDET = NOVERI(NORBR(3),J3) * NCDET
       NCDET = BICO(NORBR(1),J1)
       NCDET = BICO(NORBR(2),J2) * NCDET
       NCDET = BICO(NORBR(3),J3) * NCDET
@@ -291,9 +297,9 @@ C
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      real*8  CI(*)
       LOGICAL ENDRUN
 c
       MVEC = 0
@@ -1912,8 +1918,6 @@ C
 C
       RETURN
 C
-!radovan: unreachable
-10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
       END
 C
       SUBROUTINE MAKIDS (ILIND,IRIND,IJREC,JLIND,JRIND,
@@ -2342,7 +2346,7 @@ C
     1 OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
       READ (MRCONEE) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
       REALAR = NZ.EQ.1.OR.SPINFR
-      IF (NORB.GT.N3) CALL Q2JOB(3,'P.ORBSIN','N3',NORB)
+      IF (NORB.GT.N3) CALL Q2JOB(3,'P.ORBSIN','    N3',NORB)
       READ (MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
       READ (MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
@@ -2813,8 +2817,6 @@ C
 
       CHECK_INTS = .FALSE.
 CMI   CHECK_INTS = .TRUE.
-C
-CTROND      REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
       KLS = 0
@@ -2840,11 +2842,7 @@ CTROND      REALAR = .TRUE.
       Read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
       IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
       ENDIF
-      IF (REALAR) THEN
-         DO I = 1, M1
-            RKLI(I) = 0.0
-         ENDDO
-      ENDIF
+      IF (REALAR) CALL DCOPY(M1,0.0,0,RKLI,1)
       OPEN (MRCTWOE,FILE=FNAM(8),FORM='UNFORMATTED')
    10 REWIND (MDCINT)
       READ (MDCINT)
@@ -2854,10 +2852,8 @@ CTROND      REALAR = .TRUE.
       MINTB = 0
       MAX = MM
       IF (BREIT) MAX = MAX * 2
-      DO 20 IJKL = 1, MAX
-      TIR (IJKL) = 0.D0
-      TII (IJKL) = 0.D0
-   20 CONTINUE
+      CALL DCOPY(MAX,0.D0,0,TIR,1)
+      CALL DCOPY(MAX,0.D0,0,TII,1)
 C
 C     -------------------------
 C     READ IN COULOMB INTEGRALS
@@ -2891,13 +2887,9 @@ C
       ENDIF
 
       IF (CHECK_INTS) THEN
-CMI     write(6,*) 'read MDCINT indexes, integrals;  indk, indl, rklr: '
         write(6,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NZ
         do i = 1, nz
-CMI      write(6,'(2x,a,i4,a,i4,a,i4,a,f16.6)')
-CMI  &   'i=',i,' indk(i)=',indk(i),
-CMI  &   ' indl(i)=',indl(i),' rklr(i)=',rklr(i)
-         write(6,*) indk(i),indl(i),rklr(i)
+          write(6,*) indk(i),indl(i),rklr(i)
         enddo
       ENDIF
 
@@ -3537,8 +3529,8 @@ C     Make natural spinors does not work for DIRAC (only for MOLFDIR)
       IF (NORBRT.NE.NORB) CALL Q2JOB (2,'SUM(NORBR).NE.NORB',' ',0)
       IF (NELEC.EQ.0)     CALL Q2JOB (2,'NELEC.EQ.0',' ',0)
       IF (NELEC.GT.NORB)  CALL Q2JOB (2,'NELEC.GT.NORB',' ',0)
-      IF (NELEC.GT.N4)    CALL Q2JOB (3,'P.USERIN','N4',NELEC)
-      IF (NROOTS.GT.N8)   CALL Q2JOB (3,'P.USERIN','N8',NROOTS)
+      IF (NELEC.GT.N4)    CALL Q2JOB (3,'P.USERIN','    N4',NELEC)
+      IF (NROOTS.GT.N8)   CALL Q2JOB (3,'P.USERIN','    N8',NROOTS)
       RETURN
       END
 C
@@ -3551,9 +3543,10 @@ C
 #include "symm.inc"
 #include "files.inc"
 #include "iterat.inc"
-#include "memory.inc"
 #include "mempoint.inc"
 C
+      REAL*8 CI(*)
+
       DIMENSION OV(N2)
 C
       CALL REAVEC (CI(IPVR),CI(IPVI),CI(IPDR),CI(IPDI),CI(IPIL))

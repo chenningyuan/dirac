@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -616,7 +616,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG,WORK,KFREE,LFREE)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -640,8 +640,9 @@ C***********************************************************************
 #include "dcbmp2no.h"
 #include "infpar.h"
 C
-      DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
+      DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
 C
 C---------------Local variables--------------------------------------
 C
@@ -649,17 +650,15 @@ C
 C
       CALL QENTER('MP2_NATORB')
 C
-      KFRSAV=KFREE
-C
 C     memory allocation
 C     -----------------
-      CALL MEMGET('REAL',KCMO_NAT,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCC_NAT,NESHT,WORK,KFREE,LFREE)
+      allocate(CMO_NAT(NASHT*NASHT*NZ))
+      allocate(OCC_NAT(NESHT))
 C
 C     initialize
 C
-      CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
-      CALL DZERO(WORK(KOCC_NAT),NESHT)
+      CALL DZERO(CMO_NAT,NASHT*NASHT*NZ)
+      CALL DZERO(OCC_NAT,NESHT)
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -667,8 +666,7 @@ C     ---------------------------------------
 C
 C     calculate NO occ. num. 
 C     ----------------------
-      CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
-     &                    WORK,KFREE,LFREE,NOPRNT)
+      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
 C
 C     save nat. orb. occ. num. and transform. matrix to file 
 C     ------------------------------------------------------
@@ -684,22 +682,22 @@ C
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
-        CALL WRTKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NOOCC',WORK(KOCC_NAT),NESHT)
+        CALL WRTKRMC(LUKRMC,'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
+        CALL WRTKRMC(LUKRMC,'MP2NOOCC',OCC_NAT,NESHT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
 C
 C     memory deallocation
 C     -------------------
-      CALL MEMREL('MP2_NATORB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      deallocate(OCC_NAT)
+      deallocate(CMO_NAT)
 C
       CALL QEXIT('MP2_NATORB')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,WORK,KFREE,
-     &                          LFREE,NOPRNT)
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
 C***********************************************************************
 C
 C     diagonalize second order density matrix DMO
@@ -719,69 +717,94 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "../moltra/dcbtr3.h"
 C
-      DIMENSION OCC_NAT(*), CMO_NAT(NORBT,NESHT,NZ)
-      DIMENSION DMO(NORBT,NORBT,*), WORK(*)
+      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ)
+      DIMENSION DMO(NORBT,NORBT,*)
+      real(8), allocatable :: scratch(:)
+      real(8), allocatable :: dv(:,:,:), occ(:)
 C
-      IF ( NOPRNT .ge. 5 )THEN
+!#define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
+      noprnt_local = 10
+#else
+      noprnt_local = noprnt
+#endif
+      IF ( NOPRNT_local .ge. 5 )THEN
          CALL HEADER(
      &               'MP2_NATORB_GEN: DMO :',-1)
          CALL PRQMAT(DMO,
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-C
-      IOFF2 = 1
-C
-      DO IFSYM = 1, NFSYM  
-C
-        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
-C
-        IF(DOJACO) THEN
-           CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
-     &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF1,IOFF2,1),
-     &                 WORK(KFREE),LFREE)
-        ELSE
-           CALL QDIAG(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
-     &                OCC_NAT(IOFF2),1,
-     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),
-     &                WORK(KFREE),LFREE,IERR)
-CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
-CSK        CALL HEADER(
-CSK  &     'MP2_NATORB_GEN: Eigenvalues unsorted:',-1)
-CSK        WRITE(LUPRI,'(I5,F25.10)')
-CSK  &     (J,OCC_NAT(IOFF2-1+J),J=1,NESH(IFSYM)) 
-C          reorder eigenvalues and eigenvectors: descending order ==>
-C          IORDER = - 1
-           IORDER = - 1
-           CALL QORDER3(NESH(IFSYM),OCC_NAT(IOFF2),
-     &                  CMO_NAT(IOFF1,IOFF2,1),
-     &                  NORBT,NESH(IFSYM),NESH(IFSYM),NZ,IORDER)
-        ENDIF
-        IOFF2 = IOFF2 + NESH(IFSYM)
-      END DO
+
+      allocate(occ(nasht))
+      allocate(dv(nasht,nasht,nz))
+      dv  = 0
+      occ = 0
+      do i = 1,nfsym
+        do j = 1, nash(i)
+          do k = 1, nash(i)
+            do iz = 1, nz
+              dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
+     &                         iorb(i)+npsh(i)+niocc(i)+k,
+     &                         iz)
+            end do
+          end do
+        end do
+      end do
+
+      IF (NZ .EQ. 1) THEN
+         IJOB = 1
+         IORDER = 0
+         IPACK = 0
+         lfree = ((nasht*(nasht+1))/2)+2*nasht+16
+         allocate(scratch(lfree))
+
+         CALL RSJACO(NASHT,NASHT,NASHT,DV,occ,
+     &               IJOB,IORDER,IPACK,cmo_nat,scratch,lfree)
+
+         deallocate(scratch)
+
+      ELSE
+         MATZ = 1
+         CALL QDIAG90(NZ,NASHT,DV,NASHT,NASHT,
+     &                occ,MATZ,cmo_nat,NASHT,NASHT,IERR)
+         IF (IERR .NE. 0) THEN
+            WRITE(LUPRI,'(/,1X,2A,I4)')
+     &           '*** ERROR in MP2_NATORB_GEN ***: ',
+     &           'QDIAG failed with error code ',IERR
+            CALL QUIT('*** ERROR in MP2_NATORB_GEN ***')
+         END IF
+      END IF
 C
 C     debug print section
 C
-      IOFF2 = 1
-      IF ( NOPRNT .ge. 5 ) THEN
+      IF ( NOPRNT_local .ge. 5 ) THEN
          DO IFSYM = 1, NFSYM
-           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
            CALL HEADER(
      &     'MP2_NATORB_GEN: Eigenvectors :',-1)
            WRITE(LUPRI,*) ' fermionic irrep', IFSYM
-           CALL PRQMAT(CMO_NAT(IOFF1,IOFF2,1),
-     &                 NORBT,NESH(IFSYM),NORBT,NESH(IFSYM),
+           CALL PRQMAT(CMO_NAT(1+iash(ifsym),1+iash(ifsym),1),
+     &                 nasht,nash(IFSYM),nasht,nash(IFSYM),
      &                 NZ,IPQTOQ(1,0),LUPRI)
-           IOFF2 = IOFF2 + NESH(IFSYM)
          END DO
       ENDIF
 C
 C     MP2 - nat. orb. occ. num.
 C
-      IOFF2 = 1
+      ioff  = 1
+      ioff2 = 1
+      do i = 1, nfsym
+        occ_nat(ioff:(ioff+niocc(i)-1)) = 2.0d0
+        occ_nat((ioff+niocc(i)):(ioff+niocc(i)+nash(i)-1)) = 
+     &       occ(ioff2:(ioff2+nash(i)-1))
+        ioff  = ioff  + nesh(i) 
+        ioff2 = ioff2 + nash(i) 
+      end do
 C
       IF ( NOPRNT .ge. 3 ) THEN
+        IOFF2 = 1
         DO I = 1, NFSYM
            NOCCI = NESH(I)
            IF (NOCCI .EQ. 0) THEN
@@ -794,6 +817,10 @@ C
            IOFF2 = IOFF2 + NESH(I)
         END DO
       END IF
+
+!     release memory
+      deallocate(dv)
+      deallocate(occ)
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -845,10 +872,8 @@ C
       DO IFSYM = 1, NFSYM  
         IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
 C
+!       WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1), nozg
 C       zero 'wrong' offdiagonal terms for frozen orbs
-C
-CSK        WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
-C
         IF( .NOT. NOZG )THEN
           DO IZ = 1, NZ
             CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
@@ -856,6 +881,7 @@ C
         END IF
 C
         IOCC_A = 0
+!       print *, 'NOCC(IFSYM)',NOCC(IFSYM)
         DO I = 1, NOCC(IFSYM)
            DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
      &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -147,7 +147,7 @@ use memory_allocator
       integer                :: LBATS_MC(NBLOCK), I1BATS_MC(NBLOCK)
       integer                :: IBATS_MC(8,NBLOCK)
 
-      if (NTEST.ge.5) then
+      if (NTEST.ge.100) then
         write(6,*) ' '
         write(6,*) ' +++++++++++++++++++++++++++++++ '
         write(6,*) '  SAVEVCDC called.               '
@@ -174,14 +174,14 @@ use memory_allocator
         if (IRI.eq.2) call itods(-1,1,-1,LU)
 !
         JBATABS = 0
-        if (NTEST.ge.10) write(6,*) '  REAL/IMAG = ',IRI
+        if (NTEST.ge.100) write(6,*) '  REAL/IMAG = ',IRI
         DO IMK2 = 1, NMK2VAL
 !
 ! Loop over batches of sigma for this MK2 projection value
           do JBATS = 1,NBAT_MS2_MC(IMK2)
             JBATABS = JBATABS + 1
 !
-            if (NTEST.ge.10) then
+            if (NTEST.ge.100) then
                WRITE(6,*)
                WRITE(6,*) ' Start of writing of batch ', JBATABS
                write(6,'(2X,A,I3)') ' for MK2 value number ',IMK2
@@ -190,7 +190,7 @@ use memory_allocator
 !
             LS = LEBATS_MC(JBATABS)
             LENGTH = LENGTH + LS
-            if (NTEST.ge.10.and.LS.gt.0) then
+            if (NTEST.ge.100.and.LS.gt.0) then
               WRITE(6,*) ' **********************************'
               WRITE(6,*) ' * Array containing current batch *'
               WRITE(6,*) ' **********************************'

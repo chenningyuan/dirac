@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -167,7 +167,7 @@ C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,NFFOPER,
      &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
@@ -180,7 +180,8 @@ CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00,
+     &                 STATE_E_FSCC
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
@@ -191,6 +192,7 @@ CMI   ... add sector selectives MAXITxy's
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+
 C
 C     if running MP2-NO module use special input
 C
@@ -218,7 +220,7 @@ C
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-C     
+
 C     Note that reading this namelist may override the Dirac style input. Leave 
 C     this at the discretion of the user for the moment.
       READ (IN,RELCCSD,END=2,ERR=1)
@@ -266,22 +268,22 @@ C
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
 C     Switch on evaluation of property output if necessary
-      IF (SPFR.AND.DOMP2G) 
-     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
+         IF (SPFR) 
+     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
-          IPRPWF = 0
-          DO I = 1, NPRPWF
-             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
           END DO
-          IF (IPRPWF.EQ.0) THEN
-             IF (NPRPWF .GE. MXPRPWF) THEN
-                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
              ELSE
-                NPRPWF = NPRPWF + 1
-                IPRPWF = NPRPWF
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
              END IF
-             PRPWF(IPRPWF) = 'MP2 '
+             PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
       MXDIMGR = MAXDIM
@@ -292,7 +294,7 @@ C     Input for the linear response calculation.
 C
       NAOPER = 1
       NBOPER = 1
-      NFREQ = 1
+      NFREQ  = 1
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
@@ -310,8 +312,8 @@ C
     7 CALL QUIT('Error exit while reading namelist CCSOPR')
     8 CONTINUE
       MXDIMRP = MAXDIM
-      MXITRP = MAXIT
-      NTOLRP = NTOL
+      MXITRP  = MAXIT
+      NTOLRP  = NTOL
 C
 C     Input for the excitation energy calculation.
 C
@@ -356,6 +358,8 @@ CMI   ...provide with default values
       MAXIT10=relcc_fs_max10_iterations 
       MAXIT11=relcc_fs_max11_iterations 
       MAXIT20=relcc_fs_max20_iterations 
+!     stefan: select state sorted by energy for numerical gradient calculation   
+      STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
 CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)
@@ -480,6 +484,7 @@ C
       USEOE   = .TRUE.
       NORECMP = .FALSE.
       ADD_FINITE_FIELD = .FALSE.
+      NFFOPER=0
       DO IOPER = 1, MAXOP
          FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_STRENGTHS(1,IOPER) = 0.D0
@@ -490,10 +495,14 @@ C
       GOTO 14
    13 CALL QUIT('Error exit while reading namelist CCSORT')
    14 CONTINUE
+      IF (ADD_FINITE_FIELD.AND.NFFOPER.EQ.0) THEN
+        CALL QUIT('You did not specify the NFFOPER parameter'//
+     &' in the CCSORT input list when you want finite field operators!')
+      ENDIF
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
-      if(molmf3)then
+      if(X2CMMF)then
         if(.not.relcc_use_orbital_energies) 
      &          relcc_use_orbital_energies = .true.
         if(.not.relcc_no_recompute) 
@@ -523,6 +532,12 @@ C
 C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
+
+      if (DOENER.AND.DOFSPC) then
+         relcc_do_energy = .false.
+         DOENER = .FALSE.
+      endif
+
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE
@@ -531,15 +546,13 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (CC_ALONE)
-      SUBROUTINE CCMAIN (MAXCORE,IUNIN,IUNUT,CA,INTFCE)
-#else
-      SUBROUTINE CCMAIN (CC,MAXCORE,IUNIN,IUNUT,CA,INTFCE)
-#endif
+      SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
       use memory_allocator
       use allocator_parameters, only : klongint, kreal 
       use interface_to_mpi
+      use relcc_cfg
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -573,12 +586,6 @@ C     CC is the static memory  (when called as subroutine)
 C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
-#if defined (CC_ALONE)
-      This construction works for most systems
-      REAL*8, ALLOCATABLE:: CC(:)
-#else
-      REAL*8 CC(MAXCORE)
-#endif
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
@@ -588,7 +595,8 @@ C
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
-      integer :: verbose = 0
+      integer :: verbose    = 0
+      integer :: ncore_elec = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -639,24 +647,29 @@ C     Memory and I/O setup section
 C     ----------------------------
 C
       call allocator_get_available_mem(total_mem_new)
-#if defined (VAR_MPI) && defined (VAR_IFORT)
-!mi: control printout because of "forrtl: error (65): floating invalid"
-      print *,'check: total_mem_new=',total_mem_new
-#endif
+
+! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
+! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
       maxcor = nint((total_mem_new/8.0d0),kind(8))
+
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
 C     Read symmetry information
 C
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input from file (old namelist) / transfer input (new style) from relcc_cfg
+
+!     sync co-workers and master with variables from new input...
+#ifdef VAR_MPI
+      call relcc_sync_cw()
+#endif
 C
       CALL CCINPT (IN,IW)
 C
@@ -708,12 +721,30 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+
+!     total charge of the system
+      call get_charge_cc(mycharge,nelect,ncore_elec)
+C
+C     Write output in xml format
+C
+      if (doxml) then
+         call xml_begin('task','type="RELCCSD"')
+         call xml_begin('input')
+         call xml_quantity('Number of spinors',NSP)
+         call xml_quantity('Number of correlated electrons',NELECT)
+         call xml_quantity('Number of virtual spinors',NSP-NELECT)
+         call xml_end('input')
+         call xml_begin('output')
+      endif
+
 C
       if ( maxcor .gt. 0) then
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1004) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
       else
-      WRITE (IW,1414) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1414) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
 C     
@@ -722,45 +753,41 @@ C     ---------------------------------------------------
 C
       ICALC = 1
       ALLOC_ME = .FALSE.
-      KFREE = 1
-      LFREE = MAXCOR
 C 
       MXCORR1 = 0
 
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
+      CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
 
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
       IF (DOENER) THEN
          MXCORR1 = 0
-         CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
+         CALL CCENER (ICALC,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOFOPR) THEN
          MXCORR1 = 0
-         CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
+         CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOSOPR) THEN
          MXCORR1 = 0
-         CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+         CALL CCHESS (ICALC,MXCORR1,EPS,NSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
       IF (DOFSPC) THEN
          MXCORR1 = 0
-         CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
-     &               IREPSP,IREPSPI)
+         CALL CCFSPC(ICALC,MXCORR1,EPS1,EPS,NSP,IREPSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
 C excitation energy code (e.g. rpa) is disabled
 C     IF (DOEXCIT) THEN
 C        MXCORR1 = 0
-C        CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+C        CALL CCEXC (ICALC,MXCORR1,EPS,NSP,IREPSPI)
 C        MXCORR = MAX(MXCORR,MXCORR1)
 C     ENDIF
 C
@@ -768,13 +795,6 @@ C MXCORR is a cumulative maximum of individual memory requirements
 C and MAXCOR is the fixed maximum of core memory available on this
 C node. ===> if any subroutine would need more core memory we quit.
 
-C
-C  Allocate the memory and check if it is a standalone version
-C
-#if defined (CC_ALONE)
-      ALLOCATE (CC(MXCORR))
-#endif
-C
       WRITE (IW,1001) MXCORR
 C
       CALL GETTIM(CPU2,WALL2)
@@ -789,11 +809,9 @@ C     ----------------------
 C
       ICALC = 2
       ALLOC_ME = .TRUE.
-      KFREE = 1
-      LFREE = MXCORR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
-      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
+      IF (DOSORT) CALL CCSETI (ICALC,MXCORR,EPS,
      &                         NSP,IREPSP,IREPSPI)
 
       CALL XTIME(5,2,'Sorting of integrals          ')
@@ -804,7 +822,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOENER) CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
+      IF (DOENER) CALL CCENER (ICALC,MXCORR,EPS)
       CALL GETTIM(CPU2,WALL2)
       CPUE = CPUE + CPU2 - CPU1
       CPU1 = CPU2
@@ -812,8 +830,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,
-     &            LFREE,MXCORR,EPS)
+      IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
       CALL GETTIM(CPU2,WALL2)
       CPUFO = CPUFO + CPU2 - CPU1
       CPU1 = CPU2
@@ -821,8 +838,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOSOPR) CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                         NSP,IREPSPI)
+      IF (DOSOPR) CALL CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
       CALL GETTIM(CPU2,WALL2)
       CPUSO = CPUSO + CPU2 - CPU1
       CPU1 = CPU2
@@ -830,8 +846,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 C
-      IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                         NSP,IREPSP,IREPSPI)
+      IF (DOFSPC) CALL CCFSPC(ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
       CALL GETTIM(CPU2,WALL2)
       CPUFS = CPUFS + CPU2 - CPU1
       CPU1 = CPU2
@@ -877,6 +892,11 @@ C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
 C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
+C
 C     Let us synchronize all processes! 
 C
 C SK-- 21-08-07: jobs on my x86-64 platform finish now properly when
@@ -898,15 +918,16 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1000  FORMAT (/" Total memory available :",T50,I15," MB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
+     &        T50,I15," 8-byte words")
 1002  FORMAT (" Not enough memory, increase to at least",
-     &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
+     &        T50,I15," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -919,6 +940,7 @@ C
      &        /" Memory limit (MWord) not set in Dirac but by the OS"
      &        /" Interface used       :",T40,A10//)
 1004  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -1382,6 +1404,7 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
+!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
 C
@@ -1881,8 +1904,7 @@ C
      &       //T40,8(1X,A4))
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                   NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -1920,7 +1942,6 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
 C
@@ -1943,17 +1964,15 @@ Caspg, replacing memget
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
       real (kind=kreal)   :: total_mem_new = 0
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=8)        :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
       integer         :: freemem = 0
 C
 C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
-      KFRSAV=KFREE
-      LFRSAV=LFREE
 C
       call allocator_get_words_inuse(start_mem_use)
 C
@@ -2034,8 +2053,6 @@ C
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
-         KFREE = KFRSAV
-         LFREE = LFRSAV
          GOTO 450
       ENDIF
 C
@@ -2055,7 +2072,7 @@ C
      &            IREPSPI,a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
-     &            a_FVV,BREIT,SRTALL,INTERFACE,CC)
+     &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
@@ -2082,13 +2099,13 @@ C
       call dealloc(a_VTA , id="vta" )
 C
       RETURN
-1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
+      SUBROUTINE CCENER (ICALC,MXCORR,EPS)
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
-
+      use xmlout
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2126,7 +2143,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       REAL*8 TOL
       LOGICAL ALLOC_ME
@@ -2147,11 +2163,11 @@ c
      &                             a_TAU3(:), a_T2T(:)
 c
       real(kind=kreal)    :: total_mem_new   = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0 
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr  
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0 
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr  
       integer         :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -2243,6 +2259,11 @@ C
 C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+
+C     Report Hartree-Fock SCF energy that is used (added to correlation energy)
+      if (doxml) then
+          call xml_quantity('SCF energy',ESCF,'Hartree')
+      end if
 C
 C  Solve relativistic MP2 equations
 C
@@ -2260,6 +2281,9 @@ C
          IMSTAT(4) = 3
          CALL CCDUMP
    10    CONTINUE
+         if (doxml) then
+            call xml_quantity('MP2 energy',ESCF+EMP2,'Hartree')
+         end if
       ENDIF
 C
 C  Solve relativistic CCSD equations
@@ -2272,6 +2296,8 @@ C
          WRITE (IW,1008) MXITCC,MXDIMCC,10.0D0**(-NTOLCC)
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
+
+
          TOL = 10.0D0**(-NTOLCC)
 C
 C        Initialize T1 and T2 amplitudes
@@ -2310,6 +2336,10 @@ C
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+
+         if (doxml) then
+            call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
+         end if
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -2332,7 +2362,6 @@ C
          ENDIF
 C
  421     CONTINUE
-         call dealloc(a_S2  )
          call dealloc(a_AZ  )
          call dealloc(a_H   )
          call dealloc(a_HO  )
@@ -2389,6 +2418,12 @@ C
      &                a_BUF1,a_BUF2,a_BUF3,a_TAU3,
      &                a_VVVO,a_VVOO,a_VOOO)
          CALL XTIME(5,2,'CCSD(T) evaluation            ')
+
+         if (doxml) then
+       call xml_quantity('CCSD+T energy',ESCF+ECCSD+ET1,'Hartree')
+       call xml_quantity('CCSD(T) energy',ESCF+ECCSD+ET1+ET2,'Hartree')
+       call xml_quantity('CCSD-T energy',ESCF+ECCSD+ET1+ET3,'Hartree')
+         end if
 C
 C     This is a restart point : update status.
 C
@@ -2414,9 +2449,10 @@ C
       call dealloc(a_T1  , id="fvo")
       call dealloc(a_T2  , id="fvo")
       call dealloc(a_S1  , id="s1")
+      call dealloc(a_S2  , id="s2")
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Energy calculations"
      &        /" MP2 module active :",T44,L1
      &        /" CCSD module active :",T44,L1
@@ -2432,8 +2468,7 @@ C
 1012  FORMAT (/' Skipping CCSD(T) calculation')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,
-     &                   MXCORR,EPS)
+      SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2480,7 +2515,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
@@ -2500,16 +2534,18 @@ C
      &                             a_BUF3(:),a_FVV(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: work_memsize
 C
 C---------------Executable code--------------------------------------
 C
       call allocator_get_words_inuse(start_mem_use)
+      call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'
@@ -2606,7 +2642,12 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW
 C
 C     Allocate now also this remaining work array
 C
@@ -2713,17 +2754,17 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-      NBUF3 = freemem / RCW
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+      NBUF3 = (freemem - work_memsize) / RCW 
 C
 C     Allocate now also this remaining work array
 C
       call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 C
-C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
-C
-      KFREE = 1
-      LFREE = NBUF3*RCW 
-
       call allocator_get_words_inuse(current_mem_use)
       mxcorr = current_mem_use - start_mem_use
 
@@ -2739,15 +2780,14 @@ C
 C         this means that, for the time being, we can deallocate everything? 
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
-             IF (ICALC.EQ.2) CALL DIRNOD2(a_BUF3,NBUF3)
-             RETURN
+             IF (ICALC.EQ.2) CALL DIRNOD2()
+             goto 431
           ENDIF
 #endif
 C
 C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
-
 C
 C        Get amplitude part of density matrix
 C
@@ -2776,13 +2816,10 @@ C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
           IPRINT_NO = 1
-          KFREE1=1
-          LFREE1=NBUF3*RCW
+          call dealloc(a_BUF3, id="buf3") 
 C
-          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
+          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
-C
-c        CALL MEMCHK('mp2g 2.1',CC,1)
 C
 C        Release the slaves (in case of parallel runs)
 C
@@ -2794,7 +2831,7 @@ C
          ENDDO
 #endif
  431  CONTINUE
-         call dealloc(a_BUF3, id="buf3")
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       ENDIF
 C
       call dealloc( a_FOO, id="foo")
@@ -2815,7 +2852,7 @@ C
 
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Gradient calculations with the old MP2 module"
      &        //" Z-vector equations are done in MO basis:"
      &        /" Maximum number of iterations :",T40,I5
@@ -2830,8 +2867,7 @@ C
      &         " Check that you specified DOENER and DOCCSD !")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                   NSP,IREPSPI)
+      SUBROUTINE CCHESS (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2859,7 +2895,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
       DIMENSION IREPSPI(*)
 C
@@ -2890,11 +2925,11 @@ C
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -2993,7 +3028,7 @@ C
       call dealloc( a_CBUF , id="cbuf"  )
 
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Propagator (RPA) module"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
@@ -3003,8 +3038,7 @@ C
      &        " at frequency :",F15.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                  NSP,IREPSPI)
+      SUBROUTINE CCEXC (ICALC,MXCORR,EPS,NSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3032,7 +3066,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3061,11 +3094,11 @@ C
      &                                         a_FREQD(:)
 
       real(kind=kreal)       :: total_mem_new = 0
-      integer(kind=klongint) :: current_mem_use = 0
-      integer(kind=klongint) :: start_mem_use   = 0
-      integer(kind=klongint) :: mxcor   = 0
-      integer(kind=klongint) :: mxcr    = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: current_mem_use = 0
+      integer(kind=8)        :: start_mem_use   = 0
+      integer(kind=8)        :: mxcor   = 0
+      integer(kind=8)        :: mxcr    = 0
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
@@ -3146,7 +3179,7 @@ C
       call dealloc( a_BUF2  , id="buf2"  )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Excitation energy module (RPA)"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of reduced space :",T40,I5
@@ -3155,8 +3188,7 @@ C
      &        /" Calculate",I3," excitation energies for irrep ",A4)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
-     &                  NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCFSPC (ICALC,MXCORR,EPS1,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -3181,7 +3213,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CC(*)
       REAL*8 EPS1(*),EPS(*)
       DIMENSION IREPSP(*),IREPSPI(*)
 C
@@ -3215,7 +3246,7 @@ c
      &                             a_EIGENVECTORS(:,:)
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
-      integer(kind=klongint) :: mxcorr
+      integer(kind=8)        :: mxcorr, mxcorr1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3240,8 +3271,6 @@ CMI ... more print out
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
       MXCORR = 0
 C
 C  Set up symmetry tables and parallel distribution list
@@ -3253,8 +3282,7 @@ C
 C     Ask for the memory requirements of the modules
 C
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
+      CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
 C
 C     Set restart on sorted integrals to false
@@ -3317,15 +3345,12 @@ C
 C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
-      write (*,*) 'debug, kind buf3 :',kind(a_BUF3)
 
       call allocator_get_available_mem(total_mem_new)
       mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
-         KFREE = KFRSAV
-         LFREE = LFRSAV
 C
 C        Reset symmetry tables to normal (single reference CC use)
 C
@@ -3427,7 +3452,7 @@ C
       call dealloc( a_BUF3, id="buf3" )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I20," 8-byte words")
 1007  FORMAT (//" Fock space CCSD Energy calculations",
      &        /" Module written by Ephraim Eliav & Luuk Visscher, ",
      &         "July 1999")
@@ -3827,7 +3852,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
+      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
@@ -3847,6 +3872,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
+      integer ncore_elec
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3861,17 +3887,27 @@ C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
+      integer   :: spinor_info(5,2)
 C
 C---------------Executable code--------------------------------------
 C
-C     Read symmetry information (master node only)
+C     Read symmetry and spinor information (master node only)
+C
+      spinor_info(1:5,1:2) = 0
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP)
+     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+     &                 (spinor_info(1,irp),irp=1,nfsym), 
+     &                 (spinor_info(2,irp),irp=1,nfsym), 
+     &                 (spinor_info(3,irp),irp=1,nfsym), 
+     &                 (spinor_info(4,irp),irp=1,nfsym), 
+     &                 (spinor_info(5,irp),irp=1,nfsym)
+       ncore_elec = 0
+       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
@@ -3939,6 +3975,24 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table  -----------------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  inverse multiplication table  ---------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
+
 C
 C     Get rid of offset for boson reps
 C
@@ -3954,6 +4008,23 @@ C
             MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
          ENDDO
       ENDDO
+
+c     write(*,*)
+c     write(*,*) '--------------------------------------------'
+c     write(*,*) '---  multiplication table (no offset) ------'
+c     write(*,*) '--------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+c     ENDDO
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  inverse multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C
@@ -4394,4 +4465,17 @@ C
 C
       RETURN
       END
+
+      subroutine get_charge_cc(mycharge,nelect_cc,ncore_elec_cc)
+      implicit none
+      integer, intent(inout) :: mycharge
+      integer, intent(in)    :: nelect_cc
+      integer, intent(in)    :: ncore_elec_cc
+      integer                :: charge
+      charge   = 0
+      call rmolchr(charge)
+      mycharge = charge - (ncore_elec_cc + nelect_cc)
+!     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
+!    & charge, ncore_elec_cc, nelect_cc, mycharge
+      end subroutine
 

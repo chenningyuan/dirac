@@ -1,9 +1,0 @@
-gs.inp LiH-c1.mol --outcmo 
-cp DFCOEF DFCOEF.GS
-
-ion.inp LiH-c1.mol --incmo --outcmo  
-mv DFCOEF DFCOEF.ION
-mv DFCOEF.GS DFCOEF
-
-stex.inp LiH-c1.mol --incmo --copy=DFCOEF.ION 
-rm DFCOEF.ION DFCOEF

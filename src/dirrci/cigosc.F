@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -137,6 +137,7 @@ C
       INTREP = MOD(NELACT,2)
       CALL PRTOUT(0,INTREP,CI(KHR),CI(KHI))
       CALL CPUUSED(SEC5)
+      WRITE (6,*)    '====================='
       WRITE (6,1020) SEC5-SEC
  1000 FORMAT(///1X,'GOSCIP (Version 1.8)'//
      &' Today is :',T15,A10/' The time is :',T17,A8//)
@@ -410,13 +411,13 @@ C
 CSK   REAL*8 E(N2),EE(N2*N2,2)
 C
 CSK
-      call alloc(e, n2)
-      call alloc(ee,n2*n2,2)
+      call alloc(e, n2, id="e")
+      call alloc(ee,n2*n2,2, id="ee")
 CSK
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
 CSK
-      call dealloc(ee)
-      call dealloc(e)
+      call dealloc(ee, id="ee")
+      call dealloc(e, id="e")
 CSK
       RETURN
       END
@@ -847,9 +848,9 @@ C
       MXMAX=100
 !.q
 !SK
-      call alloc(IRPS, N2*N5)
-      call alloc(INDX, N2*N5)
-      call alloc(IND,  N5)
+      call alloc(IRPS, N2*N5, id="irps")
+      call alloc(INDX, N2*N5, id="indx")
+      call alloc(IND,  N5,    id="ind")
       IRPS = 0
       INDX = 0
       IND  = 0
@@ -859,7 +860,12 @@ C
       READ(5,POPAN,END=100)
  100  IF (IRP.EQ.0) GOTO 110
       NDETI(IRP)=NDET
-      IF (IPRNT.LT.5) RETURN
+      IF (IPRNT.LT.5) then
+         call dealloc(IRPS, id="irps at low print level")
+         call dealloc(INDX, id="indx at low print level")
+         call dealloc(IND,  id="ind at low print level")
+         return 
+      endif
 C
 C     ------------------------------------------------
 C     PRINT POPULATION ANALYSIS FOR REPRESENTATION IRP
@@ -917,7 +923,10 @@ C
           ENDIF
  40       CONTINUE
  30     CONTINUE
-      RETURN
+      call dealloc(IRPS)
+      call dealloc(INDX)
+      call dealloc(IND)
+      return
 C
 C     ------------------------------------
 C     PRINT COMPRESSED LIST OF EIGENVALUES
@@ -935,11 +944,11 @@ C
       IF (IRRP.EQ.0) THEN
 C        Even number of electrons, boson irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,0.0D0,1,
-     &                DS,N2*N5,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND,xxdummy,-1)
       ELSE
 C        Odd number of electrons, fermion irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,0.0D0,1,
-     &                DS,N2*N5,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND,xxdummy,-1)
       ENDIF
 C
  1000 FORMAT(F17.8)
@@ -1008,9 +1017,9 @@ C
  1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
 #endif /* ego */
 CSK
-      call dealloc(IRPS)
-      call dealloc(INDX)
-      call dealloc(IND)
+      call dealloc(IRPS, id="irps at the end of the routine")
+      call dealloc(INDX, id="indx at the end of the routine")
+      call dealloc(IND,  id="ind at the end of the routine")
 CSK
       RETURN
       END
@@ -1170,7 +1179,7 @@ C
      &                (indk(inz),indl(inz),inz=1,nz),
      &                (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
       ENDIF
-      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','N4A',nuniq+nz)
+      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','   N4A',nuniq+nz)
       If (ikr.EQ.0) GoTo 40 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
 C-->  K|ia> = |ib> ; K|ib> = - |ia>
@@ -1307,7 +1316,7 @@ C
       OPEN(MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
       READ(MRCONEE) NSPACT,BREIT,ECORE,NFSYM,NZ,SPINFR
       REALAR = NZ .EQ. 1 .OR. SPINFR
-      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','N1',NSPACT)
+      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','    N1',NSPACT)
       READ(MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
       READ(MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
       READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)

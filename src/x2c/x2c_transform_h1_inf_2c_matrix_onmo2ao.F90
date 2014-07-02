@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -29,15 +29,11 @@
 !
 module x2c_h1inf2c_mo2ao
 
-  use memory_allocator
   use x2c_fio
   use x2c_utils, only:                 &
       construct_saomo_overlap_half_tr, &
-      pick_LL_block_saao_bas,          &
       print_x2cmat
-  use x2c_cb_interface, only:          &
-      sel_wrk_x2c,                     &
-      desel_wrk_x2c
+  use picture_change_operations
 
   implicit none
 
@@ -65,8 +61,8 @@ contains
                                     ioff_aomx,              &
                                     nfsym,                  &
                                     nz,                     &
+                                    nzt,                    &
                                     ipq_off_in,             &
-                                    is_fragment,            &
                                     is_final_ham_lvl,       &
                                     add_amfi_contrib,       &
                                     is_len_wrk,             &
@@ -102,8 +98,8 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
-     integer, intent(in)    :: is_fragment
      integer, intent(inout) :: is_final_ham_lvl
      integer, intent(in)    :: basic_h1mat
      integer, intent(in)    :: add_amfi_contrib
@@ -116,7 +112,7 @@ contains
      logical, intent(in)    :: spherical_on
      logical, intent(in)    :: fragment_x2c
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      integer                :: lwrk
      integer                :: i
      integer                :: n1esh_f
@@ -124,7 +120,6 @@ contains
      integer                :: nr_sph
      integer                :: ioff_h1_inf_2cmoON
      integer                :: ioff_tramat
-     integer                :: is_fragment_tmp
      character (len=12)     :: flabel
 !**********************************************************************
 
@@ -145,8 +140,8 @@ contains
                                             norb_dim,             &
                                             naosh_all,            &
                                             nz,                   &
+                                            nzt,                  &
                                             nfsym,                &
-                                            is_fragment,          &
                                             ipq_off_in,           &
                                             x2c_file_scr)
 
@@ -209,20 +204,14 @@ contains
 
 !      step 4: store h1_inf_2c in SA-AO basis on file (tag i = 0: marks data storage of "gerade+ungerade" (if nfsym > 1))
 !      ------------------------------------------------------------------------------
-       i = 0
 
 !      are we going to add atomic-mean-field corrections in a subsequent step?
        if(add_amfi_contrib > 0)then
 
 !        set (intermediate) pointer to Hamiltonian integral type - final adaption after AMFI step
          is_final_ham_lvl = 5
-         if(.not.fragment_x2c)then
-           is_fragment_tmp  = 0
-         else
-           is_fragment_tmp  = is_fragment
-         end if
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOa',is_fragment_tmp,i
+         write(flabel,'(a7,i4,i1)') 'h12cAOa',1,0
 !                                          ^
 !                                          |
 !                                          a ("amfi preparation"); label will be
@@ -234,35 +223,39 @@ contains
 !        set pointer to Hamiltonian integral type 
          if(.not.fragment_x2c)then
            is_final_ham_lvl = 1
-           is_fragment_tmp  = 0
          else
            is_final_ham_lvl = 2
-           is_fragment_tmp  = is_fragment
          end if
 
-         write(flabel,'(a7,i4,i1)') 'h12cAOn',is_fragment_tmp,i
+         if(basic_h1mat == 2)then ! basic h1-mat == 4c-fock operator, aka "mmf"
+
+            ! We first save the full 4c Fock matrix (the "F" in "h12cAOF") transformed to
+            ! X2C basis in 4c storage mode because we use it later to get the canonical 2c
+            ! MOs before all AO and MO index vectors are changed to 2c (i.e. e.g. ntbas(2) = 0 etc.)
+            ! Below (label "h12cAOn") we save the 2c storage mode part, i.e. the "++" part, for
+            ! use as the X2c one-electron operator and mmf two-electron operator.
+
+            write(flabel,'(a7,i4,i1)') 'h12cAOF',1,0
+            call x2c_write(flabel,h1_2cinf_saao,naosh_ls**2*nz,x2c_file_glb)
+
+!           debug print
+            if(print_lvl > 1)then
+              do i = 1, nfsym
+                nbas1_f  = naosh_all(i)
+                call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),      &
+                   'x2c - h1_2nd_2c-AO',6,.true.)
+              end do
+            end if
+
+         end if ! basic_h1mat
+
+         write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
 !                                          ^
 !                                          |
 !                                          n ("no amfi") == final Hamiltonian integrals
 
-         if(basic_h1mat == 2)then ! basic h1-mat == 4c-fock operator
-
-           do i = 1, nfsym
-             nbas1_f  = naosh_all(i)
-             if(naosh_all(i) > 0)then
-               write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
-               call x2c_write(flabel,h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_glb)
-!              debug print
-               if(print_lvl > 1)then
-                 call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),      &
-                                  'x2c - h1_2nd_2c-AO',6,.true.)
-               end if
-             end if
-           end do
-
-         else
-
-!          select LL-block of h1_inf_2c
+!        select LL-block of h1_inf_2c
+           call dzero(scr_mat2,naosh_ls**2*nz)
            call pick_LL_block_saao_bas(h1_2cinf_saao,       &
                                        scr_mat2,            &
                                        naosh_L,             &
@@ -283,17 +276,15 @@ contains
   
 !            set pointer to WORK array and allow full length for allocations
              lwrk = is_len_wrk
-             call sel_wrk_x2c(wrk,lwrk) 
+             allocate(wrk(lwrk))
              call sph_iotc(scr_mat2,h1_2cinf_saao,nr_sph,print_lvl,wrk,lwrk)
 !            reset pointer to WORK array
-             call desel_wrk_x2c(wrk,lwrk)
+             deallocate(wrk)
 
              call x2c_write(flabel,h1_2cinf_saao,nr_sph**2  * nz,x2c_file_glb)
            else
              call x2c_write(flabel,scr_mat2     ,nr_ao_L**2 * nz,x2c_file_glb)
            end if
-
-         end if ! basic_h1mat
 
        end if ! amfi contributions 
 

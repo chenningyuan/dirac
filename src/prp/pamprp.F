@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,19 +16,19 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
-      SUBROUTINE PAMPRP(WORK,LWORK)
+      SUBROUTINE PAMPRP()
 C***********************************************************************
 C
-C     Driver for PAMPR1.
+C     Driver for PAMPRP_1.
 C
-C     Loop over wave functions and call PAMPR1 for each of them.
+C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
@@ -37,41 +37,38 @@ C***********************************************************************
 #include "mxcent.h"
 C
 C Used in common blocks:
-C dcbprp.h: NPRPWF, PRPWF(*)
+C dcbprp.h: NPRP_WF, PRP_WF(*)
 C
 #include "dcbprp.h"
-C
-      DIMENSION WORK(LWORK)
 C
       CHARACTER WF*4
 C
       CALL QENTER('PAMPRP')
-#include "memint.h"
 C
       CALL TITLER('Property module','*',125)
       WRITE(LUPRI,9000)
  9000 FORMAT(//,
      &     3X,'This is output from the Dirac property module:',/,
      &    /3X,'HF & DFT first order properties',/,
-     &     3X,'Trond Saue',//,
+     &     6X,'Trond Saue',//,
      &     3X,'First-order ESR properties',/,
-     &     3X,'Hans Joergen Aa. Jensen and Anette Noerager',//,
+     &     6X,'Hans Joergen Aa. Jensen et al.',//,
      &     3X,'MP2 first order properties:',/,
-     &     3X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
+     &     6X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
      &       ,' and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.',//
      &     3X,'KR-RPA second-order properties',/,
-     &     3X,'Hans Joergen Aa. Jensen and Trond Saue',//,
+     &     6X,'Hans Joergen Aa. Jensen and Trond Saue',//,
      &     3X,'KR-QR third order properties',/,
-     &     3X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
+     &     6X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
      &     3X,'Molecular gradient',/,
-     &     3X,'Joern Thyssen',//,
+     &     6X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
-     &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
+     &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
-      DO I = 1, NPRPWF
-         WF = PRPWF(I)
+      DO I = 1, NPRP_WF
+         WF = PRP_WF(I)
 C
-         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
+         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
@@ -85,7 +82,7 @@ C
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
-         CALL PAMPR1(WF,WORK,LWORK)
+         CALL PAMPRP_1(WF)
       END DO
 C
       CALL QEXIT('PAMPRP')
@@ -93,7 +90,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampr1 */
-      SUBROUTINE PAMPR1(WF,WORK,LWORK)
+      SUBROUTINE PAMPRP_1(WF)
 C***********************************************************************
 C
 C     NOTE
@@ -117,15 +114,17 @@ C
 C     This note is not to be removed or altered.
 C
 C     Written by T.Saue June 24 1996
-C     The last revision: 1997/09/15 - jth (addition of gradient code)
+C     Revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
 
+      use memory_allocator
       use dirac_cfg
 #ifdef MOD_OPENRSP
       use openrsp_main
 #endif
       use fde_mod
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -138,14 +137,15 @@ C
 #include "dcborb.h"
 #include "dcbpsi.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
-      logical :: export_n,export_gn,export_vc
 C
-      CALL QENTER('PAMPR1')
+      CALL QENTER('PAMPRP_1')
 C
+      call legacy_lwork_get(LWORK)
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in PAMPRP_1')
 C
 C     Make sure common block dcbidx is set
 C
@@ -156,8 +156,8 @@ C*****  M O L E C U L A R    G R A D I E N T ***************************
 C***********************************************************************
 C
       IF (MGRAD) THEN
-         IF (WF .NE. 'DHF') THEN
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF') THEN
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Molecular gradient not implemented for ' // WF )
          END IF
          CALL RMOLGRD(WORK(KFREE),LFREE)
@@ -197,10 +197,10 @@ C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
       IF (DOXPP) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
          ELSE
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'PP excitation energies not implemented for ' // WF )
          END IF
       END IF
@@ -210,10 +210,10 @@ C*****  L I N E A R   R E S P O N S E  *********************************
 C***********************************************************************
 C
       IF(DOXLR) THEN
-         IF (WF. EQ. 'DHF') THEN
+         IF (WF. EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
             CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
          ELSE
-            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+            CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
      &           'Linear response not implemented for ' // WF )
          END IF
       ELSE
@@ -227,9 +227,9 @@ C*****  Q U A D R A T I C   R E S P O N S E  ***************************
 C***********************************************************************
 C
       IF (DOXQR .OR. DOTPA .OR. DOEXCPRP) THEN
-         IF (WF. NE. 'DHF') 
-     &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
-     &        'Quadratic response not implemented for ' // WF )
+         IF (WF .NE. 'DHF' .AND. WF .NE. 'HF' .AND. WF .NE. 'DFT')
+     &      CALL QUIT('*** ERROR in PAMPRP_1 *** ' //
+     &         'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
@@ -265,9 +265,10 @@ C
 C JHS 17 apr 2008
 C
 #ifdef MOD_UNRELEASED
-      if (dirac_cfg_fde) then
+      if (dirac_cfg_fde_export) then
 #ifdef MOD_XML
-         call fde_export_write_data_to_file(wf)
+         CALL TITLER('Output FDE data to XML file','*',118)
+         call fde_export_to_file(wf)
 #endif
       END IF
 #endif
@@ -282,14 +283,14 @@ C
 #endif
 
 C
-CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('PAMPR1')
+      call dealloc(WORK)
+      CALL QEXIT('PAMPRP_1')
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dipol */
-      SUBROUTINE DEF_DIPOLE(INDDIP,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DIPOLE(INDDIP,IPRINT)
 C***********************************************************************
 C
 C     Define dipole moment operator
@@ -304,7 +305,7 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION INDDIP(3),WORK(LWORK),PFAC(3)
+      DIMENSION INDDIP(3),PFAC(3)
 C
 C
       PNAME     = 'Dipole length: X'
@@ -313,7 +314,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(1),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(1),ISYXPR,ITRXPR,IPRINT)
 C
       PNAME      = 'Dipole length: Y'
       IPTYP      = 1
@@ -321,7 +322,7 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(2),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(2),ISYXPR,ITRXPR,IPRINT)
 C
       PNAME      = 'Dipole length: Z'
       IPTYP      = 1
@@ -329,7 +330,7 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDDIP(3),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDDIP(3),ISYXPR,ITRXPR,IPRINT)
 C
       IF(IPRINT.GE.1) THEN
         DO I = 1,3
@@ -346,7 +347,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_quadru */
-      SUBROUTINE DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_QUADRU(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define quadrupole moment operator
@@ -361,7 +362,7 @@ C***********************************************************************
 #include "dcbxpr.h"
 #include "dcbexp.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'Quadrupole moment'
@@ -373,7 +374,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XXTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XXQUAD',IPQUADRU(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: XY'
@@ -382,7 +383,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XYTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XYQUAD',IPQUADRU(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: XZ'
@@ -391,7 +392,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XZQUAD',IPQUADRU(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: YY'
@@ -400,7 +401,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YYTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YYQUAD',IPQUADRU(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: YZ'
@@ -409,7 +410,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YZQUAD',IPQUADRU(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'Quadrupol m.: ZZ'
@@ -418,7 +419,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'ZZTHETA '
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZZQUAD',IPQUADRU(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
 C     Print section
@@ -439,7 +440,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_epolar */
-      SUBROUTINE DEF_EPOLAR(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EPOLAR(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
@@ -458,7 +459,7 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbxlr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
 #include "dcbibt.h"
 C
       CALL QENTER('DEF_EPOLAR')
@@ -469,7 +470,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(1,1) = INDOP1
       CALL OP1IND('XEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -481,7 +482,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(2,1) = INDOP1
       CALL OP1IND('YEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -493,7 +494,7 @@ C
       PFAC(1)   = D1
       PLABEL(1) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(3,1) = INDOP1
       CALL OP1IND('ZEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
@@ -534,7 +535,7 @@ C  Print section
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFN */
-      SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field 
@@ -548,21 +549,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFNINT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_EFN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efn1 */
-      SUBROUTINE DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C*****************************************************************************
 C
 C     Define electric field at individual nuclei
@@ -585,7 +585,7 @@ C*****************************************************************************
 #include "dcbexp.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
       ITYP = 0
@@ -608,7 +608,7 @@ C
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
      &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
@@ -631,7 +631,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFG */
-      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field gradient
@@ -646,21 +646,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
 C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-30)
-      CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
-      SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define electric field gradient
@@ -676,7 +675,7 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -708,7 +707,7 @@ C
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
      *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
@@ -730,7 +729,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_PVC */
-      SUBROUTINE DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_PVC(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -744,21 +743,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     PVC: INTTYP = 62
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_PVC1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_pvc */
-      SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -776,7 +774,7 @@ C***********************************************************************
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -815,7 +813,7 @@ C....             Point charge
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   ENDIF
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('PVC   '
      *                 ,IPPVC(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
@@ -837,7 +835,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFT */
-      SUBROUTINE DEF_EFT(PNAME,PLABEL,PFAC,TRLESS,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFT(PNAME,PLABEL,PFAC,TRLESS,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electric field third derivatives
@@ -853,26 +851,24 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   TRLESS
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EFTINT: INTTYP = 52 or INTTYP = 53
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KDATOM),NATOM,52)
+         CALL SETATM(DOATOM,NATOM,52)
       ELSE
-         CALL SETATM(WORK(KDATOM),NATOM,53)
+         CALL SETATM(DOATOM,NATOM,53)
       END IF
-      CALL DEF_EFT1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                TRLESS,WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
-      SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,
-     &                    WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,IPRINT)
 C***********************************************************************
 C
 C     Define operator for fourth derivative nuclear attraction
@@ -890,7 +886,7 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND),TRLESS
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -938,7 +934,7 @@ Ctec
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   IF (TRLESS) THEN
                      CALL OP1IND(
      &                  CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
@@ -976,7 +972,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSPN */
-      SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for indirect spin-spin coupling
@@ -990,21 +986,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_SPNSPN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSP1 */
-      SUBROUTINE DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SPNSP1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for indirect spin-spin coupling
@@ -1028,7 +1023,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -1095,7 +1090,7 @@ C
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('XSPNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
               IPSPNSPN(1,ISCOR1) = INDOP1
 C
@@ -1195,6 +1190,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
+      use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1208,7 +1206,11 @@ C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
       IF (XLR_SKIPEP) THEN
 C      .... NMR shieldings
+#ifdef MOD_LAO_REARRANGED
+         IF (SHIELD.OR.shielding_rearrange) THEN
+#else
          IF (SHIELD) THEN
+#endif
             DOEXP = .TRUE.
             NSTDIA = .TRUE.
          END IF
@@ -1230,7 +1232,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Dipole moment'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_DIPOLE(INDDIP,WORK,LWORK,IPRPRP)
+        CALL DEF_DIPOLE(INDDIP,IPRPRP)
         CALL OP1IND('XDIPOL',IPDIPOLE(1),LEXPP,NEXPP,INDDIP(1),MAXEXP)
         CALL OP1IND('YDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDDIP(2),MAXEXP)
         CALL OP1IND('ZDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDDIP(3),MAXEXP)
@@ -1242,7 +1244,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Quadrupole moments'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_QUADRU(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric fields at nuclei
@@ -1251,7 +1253,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric field at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric field gradients at nuclei
@@ -1260,7 +1262,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric field gradients'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electronic density at nuclei
@@ -1269,7 +1271,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_RHONUC(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Parity violation - Chirality
@@ -1278,7 +1280,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Parity violation - Chirality'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_PVC(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Non-traceless electric field third derivatives
@@ -1288,7 +1290,7 @@ C
         WRITE(LUPRI,'(1X,A)')
      &     'Non-traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,WORK,LWORK,IPRPRP)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,IPRPRP)
       ENDIF
 C
 C     Traceless electric field third derivatives
@@ -1298,7 +1300,7 @@ C
         WRITE(LUPRI,'(1X,A)')
      &     'Traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,WORK,LWORK,IPRPRP)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,IPRPRP)
       ENDIF
 C
 C     Nuclear quadrupole coupling
@@ -1307,7 +1309,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Nuclear quadrupole moments'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Electric polarizabilities
@@ -1316,7 +1318,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Electric dipole polarizabilities'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EPOLAR(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EPOLAR(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Diamagnetic spin-orbit
@@ -1326,44 +1328,59 @@ C
         WRITE(LUPRI,'(1X,A)')
      &    'NMR diamagnetic spin-orbit contribution:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_DSO(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Indirect spin-spin coupling
 C
       IF(SPNSPN) THEN
-        CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
-C     Magnetizabilities
+C     Magnetizabilities (magnetic susceptibilities), relaxation,expectation value,
+C     and if wished, diamagnetic terms
 C
       IF(MSUSCP) THEN
-        CALL DEF_MSUSCP(WORK,LWORK)
+        CALL DEF_MSUSCP()
       ENDIF
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
-      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+#ifdef MOD_LAO_REARRANGED
+      IF (SHIELD .OR. shielding_rearrange .OR.
+     &    ESRGTENS .OR. ESR_HFCC) THEN
+#else
+      IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
+#endif
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Optical rotation
 C
       IF (OPTROT) THEN
-        CALL DEF_OPTROT(WORK,LWORK,IPRPRP)
+        CALL DEF_OPTROT(IPRPRP)
       ENDIF
 C
 C
 C     PV contribution to NMR shielding
-      IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD(WORK,LWORK)
+      IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD()
 C     PV contribution to spin-spin coupling
-      IF(PVC_SPINSPIN) CALL DEFINE_PVC_SPINSPIN(WORK,LWORK)
+      IF(PVC_SPINSPIN) CALL DEFINE_PVC_SPINSPIN()
 C
 C
 C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
-        CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPREXP)
+        CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,IPREXP)
+#ifdef MOD_LAO_REARRANGED
+      ELSE IF (SHIELD .OR. shielding_rearrange) THEN
+#else
+      ELSE IF (SHIELD) THEN
+#endif
+      ! message has relevance if wanted NMR shieldings
+        WRITE(LUPRI,'(2X,A)')
+     &  '...Aucars diamagnetic'//
+     &  ' contribution to NMR shieldings not calculated.'
       ENDIF
 C
       IF (ROTG) THEN
@@ -1375,7 +1392,7 @@ C
 ! only for one component of magnetic field, i = x, y or z 
 ! i need it temporarily in visual
       IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
-        CALL DEF_BLAO(WORK, LWORK, IPRPRP)
+        CALL DEF_BLAO(WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Effective electronic densities at the nuclei - new code
@@ -1384,7 +1401,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFFDEN(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
 C     Effective electronic densities at the nuclei - old code
@@ -1393,7 +1410,7 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Effective electronic density at nuclei'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_EFF_DEN2(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 
       RETURN
@@ -1408,6 +1425,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
+      use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1581,11 +1601,20 @@ C
      &      'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',76,0)
       IOFF = ICHAR('w')
+      ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
      &        CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
      &        (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',76,0)
+      ! print in a.u.
+      DO I = 1,3
+         WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+     &        CHAR(IOFF+I),(DIPME(I)),' a.u. ',
+     &                   (DIPMN(I)),' a.u. ',
+     &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
@@ -1610,19 +1639,18 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
       LOGICAL CORR
 C
       KFRSAV = KFREE
-C
-C     Allocate memory
-C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,-30)
-      CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,WORK(KATOM),WORK(KAXIS),
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,DOATOM,WORK(KAXIS),
      &               WORK(KTEMP))
+      deallocate(DOATOM)
       CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -1854,19 +1882,21 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL CORR
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
 C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-30)
-      CALL PRP_EFG1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL PRP_EFG1(EXPVAL,EXP_CORR,DOATOM,WORK(KAXIS),WORK(KTEMP),
      &              CORR,IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -2039,12 +2069,8 @@ C
 C     print header
 C     ============
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,'(A)') '@   Elements of the electric dipole'
-      WRITE(LUPRI,'(A)') '@   polarizability tensor'
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(/A/)')
+     &   '@   Elements of the electric dipole polarizability tensor'
 C
       DO IFREQ = 1,NBFREQ
         CALL DZERO(TMPMAT,9)
@@ -2054,11 +2080,8 @@ C       print frequency
 C       ===============
 C
         IF(.NOT.(NBFREQ.EQ.1)) THEN
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A3,A10,F15.8,A5)') '@  ',
-     &                         'frequency', BFREQ(IFREQ), 'a.u.'
-          WRITE(LUPRI,'(A)') '@'
-          WRITE(LUPRI,*)
+          WRITE(LUPRI,'(/A,F15.8,A/)')
+     &       '@  frequency', BFREQ(IFREQ), ' a.u.'
         ENDIF
 C
 C
@@ -2071,7 +2094,7 @@ C
             KJ = IPEPOLAR(J,1)
 C
 C           e-e
-            TMPMAT(I,J) = -D1*ABLRF(IFREQ,KI,KJ,2)
+            TMPMAT(I,J) = -ABLRF(IFREQ,KI,KJ,2)
 C
 C           don't look for e-p in case of XLR_SKIPEP
             IF(.NOT.XLR_SKIPEP) THEN
@@ -2189,12 +2212,13 @@ C
 C
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL   TRLESS
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM    ,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTEMP    ,15*NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP_CORR,15*NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KNUC     ,15*NUCDEP,WORK,KFREE,LFREE)
@@ -2202,13 +2226,14 @@ C
       CALL MEMGET('REAL',KCORR    ,15*NUCDEP,WORK,KFREE,LFREE)
 C
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KATOM),NATOM,52)
+         CALL SETATM(DOATOM,NATOM,52)
       ELSE
-         CALL SETATM(WORK(KATOM),NATOM,53)
+         CALL SETATM(DOATOM,NATOM,53)
       END IF
-      CALL PRP_EFT1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KTEMP),
+      CALL PRP_EFT1(EXPVAL,EXP_CORR,DOATOM,WORK(KTEMP),
      &              WORK(KTMP_CORR),WORK(KEL),WORK(KNUC),WORK(KCORR),
      &              TRLESS,CORR)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       RETURN
@@ -2723,21 +2748,23 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTEMP,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KMPV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIS,NUCDEP,WORK,KFREE,LFREE)
 C
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-62)
-      CALL PRP_PVC1(EXPVAL,WORK(KATOM),WORK(KMPV),WORK(KQV),
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL PRP_PVC1(EXPVAL,DOATOM,WORK(KMPV),WORK(KQV),
      &              WORK(KIS),WORK(KTEMP),IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -2868,6 +2895,7 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       IF(XLR_SKIPEP) THEN
         IC = 2
@@ -2880,7 +2908,7 @@ C
       NSCOOR  = NUCDEP*3
       N2SCOR  = NSCOOR*NSCOOR
       NNDEP   = NUCDEP*(NUCDEP+1)/2
-      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,IC*N2SCOR,WORK,KFREE,LFREE)
@@ -2889,11 +2917,12 @@ C
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
+      CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
-     &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &                DOATOM,WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &                WORK(KIBUF),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_SPNSPN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -3384,7 +3413,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dso */
-      SUBROUTINE DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DSO(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic spin-orbit operator
@@ -3397,22 +3426,21 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     DSOINT: INTTYP = 12
 C     (-12: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-12)
-      CALL DEF_DSO1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_DSO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-12)
+      CALL DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_DSO1 */
-      SUBROUTINE DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DSO1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic spin-orbit operator
@@ -3436,7 +3464,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -3474,15 +3502,24 @@ C
                         ISCOR2 = IPTCNT(3*(IATOM2-1)+ICOOR2,IREPO,2)
                         IF (ISCOR2 .GT. 0) THEN
                            NDSOIN = NDSOIN + 1
-                           PNAME = 'DSO '//NAMN(IATOM1)
-     &                      //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                      //NAMN(IATOM2)
-     &                      //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
-                           PLABEL(1) = 'DSO '
-     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           PNAME = 'DS'
+     &                       //NAMN(IATOM1)
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //NAMN(IATOM2)
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
+                           PLABEL(1) = 'DS'
+     &                       //CHRNOS(ISCOR1/100)
+     &                       //CHRNOS(MOD(ISCOR1,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR1,100),10))
+     &                       //CHRNOS(ISCOR2/100)
+     &                       //CHRNOS(MOD(ISCOR2,100)/10)
+     &                       //CHRNOS(MOD(MOD(ISCOR2,100),10))
                            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                         INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                         INDXPR,ISYXPR,ITRXPR,IPRINT)
                            IF(IPRINT.GE.1) THEN
                              CALL WRIXPR(NDSOIN,INDXPR)
                            ENDIF
@@ -3521,11 +3558,12 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
       DIMENSION EXPVAL(*),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       NSCOOR  = NUCDEP*3
       N2SCOR  = NSCOOR*NSCOOR
       NNDEP   = NUCDEP*(NUCDEP+1)/2
-      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,N2SCOR   ,WORK,KFREE,LFREE)
@@ -3534,11 +3572,12 @@ C
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
 C     (-12: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-12)
+      CALL SETATM(DOATOM,NATOM,-12)
       CALL PRP_DSO1(EXPVAL,
-     &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &              DOATOM,WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
      &              WORK(KIBUF),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_DSO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -3662,8 +3701,8 @@ C
       DO I = 1,NDSOIN
         IOP = IPDSO(I)
         IPL = IPRPLBL(1,LEXPP(IOP))
-        READ(PRPLBL(IPL)(5:6),'(I2)') IA
-        READ(PRPLBL(IPL)(7:8),'(I2)') IB
+        READ(PRPLBL(IPL)(3:5),'(I3)') IA
+        READ(PRPLBL(IPL)(6:8),'(I3)') IB
         SPNMAT(IA,IB) = EXPVAL(IOP)
         SPNMAT(IB,IA) = EXPVAL(IOP)
       ENDDO
@@ -3813,14 +3852,15 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK)
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_SHIELD1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEF_SHIELD1(DOATOM,WORK(KFREE),LFREE,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3828,7 +3868,7 @@ C  /* Deck def_shield1 */
       SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
-C     Define operators for shieldings
+C     Define operators for shieldings or ESR
 C     DEF_SPNSP1 by T. Saue used as skeleton
 C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
@@ -3837,9 +3877,12 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
+      use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &          DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -3931,14 +3974,18 @@ C
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+#ifdef MOD_LAO_REARRANGED
+              IF (SHIELD .OR. shielding_rearrange) THEN
+#else
               IF (SHIELD) THEN
+#endif
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
               END IF
-              IF (ESRANISO) THEN
-                CALL OP1IND('ESRANISO',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
+              IF (ESR_HFCC) THEN
+                CALL OP1IND('ESR_HFCC',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
                 IPESR(ISCOR1,1) = INDOP1
               END IF
 
@@ -3965,12 +4012,14 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
      &                          CHRNOS(ITHIRD)//LABEL//
      &                          CHRXYZ(ICOORP2)
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                          INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-                    IF(IPRINT.GE.1) THEN
+     &                          INDXPR,ISYXPR,ITRXPR,IPRINT)
+                    IF (IPRINT.GE.5) THEN
+                       !  print out assigned operators of wanted property
+                       write(LUPRI,'(4X,A)')
+     &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
                     ENDIF
-                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,
-     &                          INDXPR,MAXEXP)
+                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,INDXPR,MAXEXP) 
                     IPRNST(NNSTIN) = IPIND
                  END DO
               END IF
@@ -3983,16 +4032,15 @@ C
 C     Define right hand operators
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
-
       IF (LONDON) THEN
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+        CALL DEF_D1HBLOND(1,IPRINT)
       ELSE
 C
-C         Conventional atomic orbitals
+C  Conventional atomic orbitals (common gauge origin approach)
 C
       NCOMP = 2
-      PFAC(1)  = -DMI2*CVAL
-      PFAC(2)  = -DMI2*CVAL
+      PFAC(1)  = DMI2*CVAL
+      PFAC(2)  = DMI2*CVAL
       PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
@@ -4001,7 +4049,7 @@ C     PNAME     = 'MAGFLDX'
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4011,7 +4059,7 @@ C     PNAME     = 'MAGFLDX'
          IPTYP    =  13
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('X g_1 magfield',IPESR(1+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4021,7 +4069,7 @@ C        Sigma_X:
          IPTYP    =  10
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('x spin',IPSIGMA(1),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 #if !defined (XH4)
@@ -4032,7 +4080,7 @@ C     PNAME     = 'MAGFLDY'
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4042,7 +4090,7 @@ C     PNAME     = 'MAGFLDY'
          IPTYP    =  14
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('Y g_1 magfield',IPESR(2+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4052,7 +4100,7 @@ C        Sigma_Y:
          IPTYP    =  11
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 C Z component of B-field
@@ -4062,7 +4110,7 @@ C     PNAME     = 'MAGFLDZ'
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       IF (SHIELD) CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IF (ESRGTENS) THEN
@@ -4072,7 +4120,7 @@ C     PNAME     = 'MAGFLDZ'
          IPTYP    =  15
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('Z g_1 magfield',IPESR(3+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
@@ -4082,7 +4130,7 @@ C        Sigma_Z:
          IPTYP    =  12
          PLABEL(1) = 'OVERLAP '
          CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('z spin',IPSIGMA(3),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 #endif
@@ -4090,17 +4138,17 @@ C        Sigma_Z:
 C
 C     Print section for NMR shielding:
 C
+#ifdef MOD_LAO_REARRANGED
+      IF (SHIELD .OR. shielding_rearrange) THEN
+#else
       IF (SHIELD) THEN
-        CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(A)') ' NMR shieldings:'
-        CALL PRSYMB(LUPRI,'=',75,0)
+#endif
 C
 C     A operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(A)') ' ** A operators for shielding **'
-        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** A operators for NMR shielding **'
         DO I = 1,NSCOOR
           INDOP1 = IPSHIELD(I)
           IF(INDOP1.GT.0) THEN
@@ -4114,7 +4162,15 @@ C     B operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(A)') ' ** B operators for shielding or ESR **'
+        !WRITE(LUPRI,'(A)') ' ** B operators for NMR shielding or ESR **'
+        IF (LONDON) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for NMR shielding, LAO approach **'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for NMR shielding, CGO approach **'
+        ENDIF
+        CALL PRSYMB(LUPRI,'-',75,0)
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,3
           INDOP1 = IPSHIELD(I+MXCOOR)
@@ -4141,9 +4197,10 @@ C
         ENDDO
       END IF
 C
-      IF (ESRANISO) THEN
+      IF (ESR_HFCC) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(A)') ' ** ESR anisotropy operators **'
+        WRITE(LUPRI,'(A)')
+     &     ' ** ESR nuclear hyperfine coupling operators **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
           INDOP1 = IPESR(I,1)
@@ -4160,7 +4217,7 @@ C
       IF (LONDON) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
-     & ' ** NMR shieldings expectation values (London) **'
+     & ' ** NMR shieldings expectation values, LAO **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NNSTIN
           INDOP1 = IPRNST(I)
@@ -4176,7 +4233,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OSCILL */
-      SUBROUTINE DEF_OSCILL(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OSCILL(IPRINT)
 C***********************************************************************
 C
 C     Define operator for oscillator strength calculations
@@ -4202,7 +4259,7 @@ C
 C
 #ifdef CODE_NOT_WORKING
       CHARACTER PNAME(6)*16, PLABEL(6)*8
-      DIMENSION WORK(LWORK),PFAC(6),IOP(6)
+      DIMENSION PFAC(6),IOP(6)
 C
 C     define operator type, factor, name and label
 C
@@ -4231,20 +4288,20 @@ C     three components of dipole length integrals
       PLABEL(6) = 'ZDIPVEL'
       DO II = 1, 6
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
 #endif
       CHARACTER PNAME(3)*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 C     define operator type, factor, name and label
 C
       NPCOMP = 1
-      PFAC(1)  = D1
-      PFAC(2)  = D1
-      PFAC(3)  = D1
+      PFAC(1)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(2)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
+      PFAC(3)  = 1.0d0 ! we introduce the factor -1.0d0 later in src/krmc/krmccan.F to enforce our "local" dipole length operator
 C     three components of dipole length integrals
       PNAME(1)  = 'X dipole length'
       PNAME(2)  = 'Y dipole length'
@@ -4257,14 +4314,14 @@ C     three components of dipole length integrals
       PLABEL(3) = 'ZDIPLEN'
       DO II = 1, 3
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OMEGAQUANT */
-      SUBROUTINE DEF_OMEGAQUANT(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OMEGAQUANT(IPRINT)
 C***********************************************************************
 C
 C     Define operator for determination of omega quantum numbers
@@ -4289,7 +4346,7 @@ C
 #include "pgroup.h"
 C
       CHARACTER PNAME(2)*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2),IOP(2)
+      DIMENSION PFAC(2),IOP(2)
 C
 C     define operator type, factor, name and label
 C
@@ -4305,14 +4362,14 @@ C     define s_z and l_z as j_z = s_z + l_z
       PLABEL(2) = 'ZANGMOM'
       DO II = 1, 2
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
-     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &              INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
-      SUBROUTINE DEFINE_PVC_SHIELD(WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================
 C     define operators for 
 C     PV contribution to NMR shielding
@@ -4326,21 +4383,17 @@ C-----------------------------------------------------------------------
 #include "mxcent.h"
 #include "nuclei.h"
 C
-      DIMENSION WORK(LWORK)
-#include "memint.h"
-C
-C
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-62)
-      CALL DEFINE_PVC_SHIELD_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
-      CALL MEMREL('DEFINE_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
-C
+      logical, allocatable :: DOATOM(:)
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEFINE_PVC_SHIELD_SUB(DOATOM)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SPINSPIN */
-      SUBROUTINE DEFINE_PVC_SPINSPIN(WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SPINSPIN()
 C=======================================================================
 C     define operators for 
 C     PV contribution to spin-spin coupling
@@ -4354,21 +4407,20 @@ C-----------------------------------------------------------------------
 #include "mxcent.h"
 #include "nuclei.h"
 C
-      DIMENSION WORK(LWORK)
+      logical, allocatable :: DOATOM(:)
 #include "memint.h"
 C
 C
-      CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
-      CALL DEFINE_PVC_SPINSPIN_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
-      CALL MEMREL('DEFINE_PVC_SPINSPIN',WORK,1,KFREE,KFREE,LFREE)
-C
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL DEFINE_PVC_SPINSPIN_SUB(DOATOM)
+      deallocate(DOATOM)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD_SUB */
-      SUBROUTINE DEFINE_PVC_SHIELD_SUB(DOATOM,WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SHIELD_SUB(DOATOM)
 C=======================================================================
 C     define operators for
 C     PV contribution to NMR shielding
@@ -4399,9 +4451,7 @@ C
       LOGICAL   DOATOM(NUCIND)
       CHARACTER PNAME*16,
      &          PLABEL(3)*8
-      DIMENSION WORK(LWORK),
-     &          PFAC(3),
-     &          IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
@@ -4429,7 +4479,7 @@ C     x - component
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XSHIELB',IP_PVC_SHIELD(1+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4439,7 +4489,7 @@ C     y - component
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YSHIELB',IP_PVC_SHIELD(2+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4449,7 +4499,7 @@ C     z - component
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZSHIELB',IP_PVC_SHIELD(3+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
@@ -4503,7 +4553,7 @@ C
                 IPTYP = IOP(IXYZ)
                 PNAME(5:5) = CHRNOS(IXYZ)
                 CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
-     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
                 CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
@@ -4522,7 +4572,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SPINSPIN_SUB */
-      SUBROUTINE DEFINE_PVC_SPINSPIN_SUB(DOATOM,WORK,LWORK)
+      SUBROUTINE DEFINE_PVC_SPINSPIN_SUB(DOATOM)
 C=======================================================================
 C     define operators for
 C     PV contribution to spin-spin coupling
@@ -4553,9 +4603,7 @@ C
       LOGICAL   DOATOM(NUCIND)
       CHARACTER PNAME*16,
      &          PLABEL(3)*8
-      DIMENSION WORK(LWORK),
-     &          PFAC(3),
-     &          IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
 #include "ibtfun.h"
@@ -4610,7 +4658,7 @@ C
      &                     //CHRNOS(ITHIRD)//' '
 C
               CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
-     &                    INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('XSPNA',INDEXB,LLRBPU,NLRBPT,INDXPR,MAXLLR)
               IP_PVC_SPINSPIN(1,ISCOOR) = INDEXB
               CALL WRIXPR(INDEXB,INDXPR)
@@ -4668,7 +4716,7 @@ C
                 IPTYP = IOP(IXYZ)
                 PNAME(5:5) = CHRNOS(IXYZ)
                 CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
-     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
                 CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
@@ -4687,14 +4735,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA */
-      SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic contribution to shieldings
 C     (based on the Sternheimer approximation, see
 C      Aucar et al., JCP 110 (1999) 6208) )
-C     Written by T. Enevoldsen Oct. 1997
-C    MI&HJJ 2003,2004
+!
+!     Written by T. Enevoldsen Oct. 1997,
+!     updates by MI&HJJ 2003,2004
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4703,23 +4752,23 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
 #include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     NSTDIACGO: INTTYP = 38
 C     (-38: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-38)
-      CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_NSTDIA',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-38)
+      CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
 C
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA1 */
-      SUBROUTINE DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NSTDIA1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define diamagnetic contribution to shieldings
@@ -4745,7 +4794,7 @@ C
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND),SAME
       CHARACTER PNAME*16, PLABEL(3)*8, LABEL*4
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 
@@ -4771,7 +4820,6 @@ C  always do control print out
        ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-C
       NNSTIN  = 0
       IPTYP   = 1
       NPCOMP  = 1
@@ -4781,41 +4829,39 @@ C     Irreps
 C
       DO 100 IREPO = 0, MAXREP
 C
-C        Atoms
+C       Atoms
 C
-         DO 200 IATOM1 = 1, NUCIND
-            IF (DOATOM(IATOM1)) THEN
-               MXATM2 = NUCIND
-               IF (TRIANG) MXATM2 = IATOM1
+        DO 200 IATOM1 = 1, NUCIND
+        IF (DOATOM(IATOM1)) THEN
+          MXATM2 = NUCIND
+          IF (TRIANG) MXATM2 = IATOM1
 C
-C              Cartesian directions
+C         Cartesian directions
 C
-               DO 500 ICOOR1 = 1, 3
-                  ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
-                  IF (ISCOR1 .GT. 0) THEN
-                     DO 600 ICOOR2 = 1, 3
-                        NNSTIN = NNSTIN + 1
-                        IFIRST = ISCOR1/100
-                        ISECND = MOD(ISCOR1,100)/10
-                        ITHIRD = MOD(MOD(ISCOR1,100),10)
-                        PNAME = LABEL//NAMN(IATOM1)//CHRNOS(IFIRST)
-     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)
-     &                       //CHRXYZ(ICOOR2)
-                        PLABEL(1) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
-     &                       CHRNOS(ITHIRD)//LABEL//CHRXYZ(ICOOR2)
-                        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-                        IF(IPRINT.GE.0) THEN
-                           CALL WRIXPR(NNSTIN,INDXPR)
-                        ENDIF
-                        CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,
-     &                       INDXPR,MAXEXP)
-                        IPNSTDIA(NNSTIN) = IPIND
- 600                 CONTINUE
-                  END IF
- 500           CONTINUE
+          DO 500 ICOOR1 = 1, 3
+            ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
+            IF (ISCOR1 .GT. 0) THEN
+              DO 600 ICOOR2 = 1, 3
+                NNSTIN = NNSTIN + 1
+                IFIRST = ISCOR1/100
+                ISECND = MOD(ISCOR1,100)/10
+                ITHIRD = MOD(MOD(ISCOR1,100),10)
+                PNAME = LABEL//NAMN(IATOM1)//CHRNOS(IFIRST)
+     &                  //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                  //CHRXYZ(ICOOR2)
+                PLABEL(1) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                      CHRNOS(ITHIRD)//LABEL//CHRXYZ(ICOOR2)
+                CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
+                IF(IPRINT.GE.0) CALL WRIXPR(NNSTIN,INDXPR)
+                CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,
+     &                      INDXPR,MAXEXP)
+                IPNSTDIA(NNSTIN) = IPIND
+ 600          CONTINUE
             END IF
- 200     CONTINUE
+ 500      CONTINUE
+        END IF
+ 200    CONTINUE
  100  CONTINUE
 
       CALL QEXIT('DEF_NSTDIA1')   
@@ -4824,7 +4870,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_msuscp */
-      SUBROUTINE DEF_MSUSCP(WORK,LWORK)
+      SUBROUTINE DEF_MSUSCP()
 C****************************************************************************
 C
 C    PURPOSE: 
@@ -4853,19 +4899,16 @@ C
 #include "dcbsusc.h"
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_MSUSCP')
-#include "memint.h"
-
+C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
      &  'DEF_MSUSCP: Magnetic susceptibility'
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(1X,A)')
      &  '- with London atomic orbitals (LAO).'
-#endif
        ELSE  
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
@@ -4890,12 +4933,10 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
-#if defined MOD_MAGNETIZ
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
-       CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
-#endif
+       CALL DEF_D1HBLOND(2,LPRINT)  
       ELSE ! Conventional AO
 C      ... XAVECTOR
        IOP(1) = 5
@@ -4915,7 +4956,7 @@ C      PNAME     = 'MAGFLDX'
        PLABEL(1) = 'ZDIPLEN'
        PLABEL(2) = 'YDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,1),LLRBPU,NLRBPT,INDXPR
@@ -4928,7 +4969,7 @@ C      PNAME     = 'MAGFLDY'
        PLABEL(1) = 'XDIPLEN'
        PLABEL(2) = 'ZDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,2),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
@@ -4940,7 +4981,7 @@ C      PNAME     = 'MAGFLDZ'
        PLABEL(1) = 'YDIPLEN'
        PLABEL(2) = 'XDIPLEN'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('XFIELDA',IPMSUSC(1,3),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
        CALL OP1IND('XFIELDB',IPMSUSC(2,3),LLRBPU,NLRBPT,INDXPR
@@ -4961,13 +5002,11 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,3
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
-#endif
        ELSE
        INDOP1 = IPMSUSC(1,I)
        IF(INDOP1.GT.0) THEN
@@ -4986,13 +5025,11 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1, 3
        IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
          DO J = 1, 4
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
      &'Including g(B) and {T(1),H(0)} terms. ' 
-#endif
        ELSE
         INDOP1 = IPMSUSC(2,I)
         IF(INDOP1.GT.0) THEN
@@ -5018,7 +5055,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XXSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XXDSUSC',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-XY'
@@ -5027,7 +5064,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XYSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XYDSUSC',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-XZ'
@@ -5036,7 +5073,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XZDSUSC',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-YY'
@@ -5045,7 +5082,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YYSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YYDSUSC',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-YZ'
@@ -5054,7 +5091,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YZDSUSC',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
       PNAME     = 'DSUSC_CGO-ZZ'
@@ -5063,7 +5100,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'ZZSUSCGO'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZZDSUSC',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
 C      Print section for CGO diamag.susceptibilities
@@ -5071,7 +5108,7 @@ C    ==================================================
 C
       IF(IPRINT.GE.1) THEN
         WRITE(LUPRI,'(1X,A)')
-     & 'Diamagnetic susceptibility expectation value terms (no LAO):'
+     & 'Diamagnetic susceptibility expectation value terms (CGO):'
         DO I = 1, 6
           INDXPR = LEXPP(IPDSUSC(I))
           CALL PRSYMB(LUPRI,'.',75,0)
@@ -5083,21 +5120,23 @@ C
       ENDIF
 
       ELSE IF ((.NOT.MSUSCDIA).AND.(.NOT.LONDON)) THEN
-C    ... DO not calculate exp. value - diamag.term 
-C        which is fully  involved in paramag. term when using URKBAL !
+C  ... Do not calculate exp. value - diamag.term 
+C  which is fully  involved in paramag. term when rotating electrons and positrons
 
         DOEXP = .FALSE. 
         WRITE(LUPRI,'(1X,A)')
-     & 'Diamagnetic susceptibility expectation value term'//
+     & 'Diamagnetic CGO susceptibility expectation value term'//
      & ' is  not calculated (MSUSCDIA=.false.)!'
 
-C ... the case of London orbitals - do always calculate the exp.value !
+! ... London atomic orbitals - always calculate the expectation value
       ELSE IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
 C  ... Here take care of one-electron terms 
 C ... first 3 terms from the <r r~ hd> - RM2H1+RM2H2+RM2H3
 C  ... 6 terms  Qmn.<r r~ beta' c^2>.Qmn - 6 diagonal operators
 C     RM2H1 terms, IPDSUSC(1-6)
+
+!MI note, Oct.2012: factor -1/2 = (1/4)*(-2),where 1/4 is from integral
+! definition (1/4Q_MN<rr^T h_D>Q_MN),-2 is in beta' prescription
 
         PNAME     = 'LAO-XXRM2H1'
         IPTYP     = 1
@@ -5105,7 +5144,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H1',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H1'
@@ -5114,7 +5153,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H1',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H1'
@@ -5123,7 +5162,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2XZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H1',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H1'
@@ -5132,7 +5171,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2YY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H1',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H1'
@@ -5141,7 +5180,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2YZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H1',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H1'
@@ -5150,17 +5189,18 @@ C     RM2H1 terms, IPDSUSC(1-6)
         PFAC(1)   = DM2*CVAL*CVAL
         PLABEL(1) = 'dS/dB2ZZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RM2H2 terms, IPDSUSC(7-12)
+!MI note,Oct.2012: in abacus(routine RM2H2) they already have factor 1/4
         PNAME     = 'LAO-XXRM2H2'
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = D1
         PLABEL(1) = 'XXRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H2',IPDSUSC(7),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H2'
@@ -5169,7 +5209,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'XYRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H2',IPDSUSC(8),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H2'
@@ -5178,7 +5218,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'XZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H2',IPDSUSC(9),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H2'
@@ -5187,7 +5227,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'YYRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H2',IPDSUSC(10),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H2'
@@ -5196,7 +5236,7 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'YZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H2',IPDSUSC(11),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H2'
@@ -5205,11 +5245,12 @@ C ... RM2H2 terms, IPDSUSC(7-12)
         PFAC(1)   = D1
         PLABEL(1) = 'ZZRM2H2'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H2',IPDSUSC(12),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C -----------------------------------
 C ... RM2H3 terms, IPDSUSC(13-18)
+! MI note, Oct.2012: factor of 1/4 is in corresponding abacus routine RM2H3
 C -----------------------------------
         PNAME     = 'LAO-XXRM2H3'
         IPTYP     = 8
@@ -5221,7 +5262,7 @@ C -----------------------------------
         PLABEL(2) = 'XXRM2H3Y'
         PLABEL(3) = 'XXRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H3',IPDSUSC(13),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XYRM2H3'
@@ -5234,7 +5275,7 @@ C -----------------------------------
         PLABEL(2) = 'XYRM2H3Y'
         PLABEL(3) = 'XYRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H3',IPDSUSC(14),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-XZRM2H3'
@@ -5247,7 +5288,7 @@ C -----------------------------------
         PLABEL(2) = 'XZRM2H3Y'
         PLABEL(3) = 'XZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H3',IPDSUSC(15),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YYRM2H3'
@@ -5260,7 +5301,7 @@ C -----------------------------------
         PLABEL(2) = 'YYRM2H3Y'
         PLABEL(3) = 'YYRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H3',IPDSUSC(16),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-YZRM2H3'
@@ -5273,7 +5314,7 @@ C -----------------------------------
         PLABEL(2) = 'YZRM2H3Y'
         PLABEL(3) = 'YZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H3',IPDSUSC(17),LEXPP,NEXPP,INDXPR,MAXEXP)
 
         PNAME     = 'LAO-ZZRM2H3'
@@ -5286,17 +5327,20 @@ C -----------------------------------
         PLABEL(2) = 'ZZRM2H3Y'
         PLABEL(3) = 'ZZRM2H3Z'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H3',IPDSUSC(18),LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
-C ... off-diagonal terms need to be symmetrized !
+C ... off-diagonal tensor elements have to be symmetrized !
+! see abacus/RDSUSAN, where they are multiplied with 1/2 factor
         IF (RDSUSLLMOD) THEN
+           ! factor for Dalton-nonrelatic form
            FACLL = -2.0D0
         ELSE
 !radovan:  why is this factor different?
 !          in which situation is this needed?
-!miro: this is to be carefully examined
+!miro: this is to be carefully examined, at least this is
+! factor of the full relativistic form of the RDSUSLL operator
            FACLL = -1.0D0
         ENDIF
 
@@ -5308,7 +5352,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'XXRDSULZ'
         PLABEL(2) = 'XXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRDSUL',IPDSUSC(19),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5320,7 +5364,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'XYRDSULX'
         PLABEL(2) = 'XYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRDSUL',IPDSUSC(20),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5332,7 +5376,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'XZRDSULY'
         PLABEL(2) = 'XZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRDSUL',IPDSUSC(21),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5344,7 +5388,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'YXRDSULZ'
         PLABEL(2) = 'YXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YXRDSUL',IPDSUSC(22),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5356,7 +5400,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'YYRDSULX'
         PLABEL(2) = 'YYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRDSUL',IPDSUSC(23),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5368,7 +5412,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'YZRDSULY'
         PLABEL(2) = 'YZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRDSUL',IPDSUSC(24),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5380,7 +5424,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'ZXRDSULZ'
         PLABEL(2) = 'ZXRDSULY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZXRDSUL',IPDSUSC(25),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5392,7 +5436,7 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'ZYRDSULX'
         PLABEL(2) = 'ZYRDSULZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZYRDSUL',IPDSUSC(26),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5404,22 +5448,24 @@ C ... off-diagonal terms need to be symmetrized !
         PLABEL(1) = 'ZZRDSULY'
         PLABEL(2) = 'ZZRDSULX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRDSUL',IPDSUSC(27),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
-C-----------------------------------------------------------------
-C ... RDSUSNL terms,  pointers in IPDSUSC(28-33)
-C   are TRUE diamagnetic terms according to the Sternheim  
-C-----------------------------------------------------------------
-C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
-       IF (MSUSCDIA) THEN
+!-----------------------------------------------------------------
+! RDSUSNL terms,  pointers  IPDSUSC(28-33),
+! represent gauge-origin independent Sternheim diamagnetic term 
+! for LAO-magnetizabilities
+!
+! include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
+!-----------------------------------------------------------------
+      IF (MSUSCDIA) THEN
         PNAME     = 'LAO-XXRDSUSNL'
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = D1
         PLABEL(1) = 'XXDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXDSUSN',IPDSUSC(28),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5429,7 +5475,7 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         PFAC(1)   = D1
         PLABEL(1) = 'XYDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYDSUSN',IPDSUSC(29),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5439,7 +5485,7 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         PFAC(1)   = D1
         PLABEL(1) = 'XZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZDSUSN',IPDSUSC(30),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5449,7 +5495,7 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         PFAC(1)   = D1
         PLABEL(1) = 'YYDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYDSUSN',IPDSUSC(31),
      &                LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5459,7 +5505,7 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         PFAC(1)   = D1
         PLABEL(1) = 'YZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZDSUSN',IPDSUSC(32),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
@@ -5469,79 +5515,76 @@ C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
         PFAC(1)   = D1
         PLABEL(1) = 'ZZDSUSNL'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZDSUSN',IPDSUSC(33),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-C ... we need also DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
+C ... for diamagnetic terms, we also need DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
 
-      PNAME     = 'DSUSC_CGO-XX'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XXSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XXDSUSC',IPDSUSC(34),LEXPP,NEXPP,INDXPR,MAXEXP)
+        PNAME     = 'DSUSC_CGO-XX'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XXSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('XXDSUSC',IPDSUSC(34),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-XY'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XYSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XYDSUSC',IPDSUSC(35),LEXPP,NEXPP,INDXPR,MAXEXP)
+        PNAME     = 'DSUSC_CGO-XY'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XYSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('XYDSUSC',IPDSUSC(35),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-XZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'XZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XZDSUSC',IPDSUSC(36),LEXPP,NEXPP,INDXPR,MAXEXP)
+        PNAME     = 'DSUSC_CGO-XZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'XZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('XZDSUSC',IPDSUSC(36),LEXPP,NEXPP,INDXPR,MAXEXP)
 C
-      PNAME     = 'DSUSC_CGO-YY'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'YYSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YYDSUSC',IPDSUSC(37),LEXPP,NEXPP,INDXPR,MAXEXP)
+        PNAME     = 'DSUSC_CGO-YY'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'YYSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('YYDSUSC',IPDSUSC(37),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+        PNAME     = 'DSUSC_CGO-YZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'YZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('YZDSUSC',IPDSUSC(38),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+        PNAME     = 'DSUSC_CGO-ZZ'
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC(1)   = DM1
+        PLABEL(1) = 'ZZSUSCGO'
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+        CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
+
+      ENDIF ! of MSUSCDIA
 C
-      PNAME     = 'DSUSC_CGO-YZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'YZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YZDSUSC',IPDSUSC(38),LEXPP,NEXPP,INDXPR,MAXEXP)
-C
-      PNAME     = 'DSUSC_CGO-ZZ'
-      IPTYP     = 1
-      NPCOMP    = 1
-      PFAC(1)   = DM1
-      PLABEL(1) = 'ZZSUSCGO'
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('ZZDSUSC',IPDSUSC(39),LEXPP,NEXPP,INDXPR,MAXEXP)
-       ENDIF
-C
-C      Print section for LAO exp.values susceptibilities
+C       Print section for LAO exp.values magnetizabilities
 C    =======================================================
 C
        IF(IPRINT.GE.1) THEN
-         WRITE(LUPRI,'(2X,A)') 'DEF_MSUSCP'//
-     &': Expec.value terms term for the magnet. susc with LAO:'
-         IF (MSUSCDIA) THEN 
-           NOP_DSUSC=39
-         ELSE 
-           NOP_DSUSC=27
-         ENDIF
-         DO I = 1, NOP_DSUSC
+         WRITE(LUPRI,'(2X,A)') '*** Expectation value terms '//
+     &'for magnetizabilities with LAO ***'
+         NTERMS_EXP=27
+         DO I = 1, NTERMS_EXP
            INDXPR = LEXPP(IPDSUSC(I))
            CALL PRSYMB(LUPRI,'.',75,0)
            WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
@@ -5549,8 +5592,24 @@ C
            CALL PRSYMB(LUPRI,'.',75,0)
            CALL WRIXPR(I,INDXPR)
          ENDDO
+         IF (MSUSCDIA) THEN 
+           WRITE(LUPRI,'(2X,A)') '*** Aucars diamagnetic terms '//
+     &'for magnetizabilities with LAO ***'
+           NTERMS_EXP_DIAMAG=39
+           DO I = NTERMS_EXP+1,NTERMS_EXP_DIAMAG
+             INDXPR = LEXPP(IPDSUSC(I))
+             CALL PRSYMB(LUPRI,'.',75,0)
+             WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+             CALL PRSYMB(LUPRI,'.',75,0)
+             CALL WRIXPR(I,INDXPR)
+           ENDDO
+         ELSE
+           WRITE(LUPRI,'(2X,A)') 'No Aucars diamagnetic terms '//
+     &     'for magnetizabilities with LAO. Good so.'
         ENDIF
-#endif
+
+       ENDIF
       ENDIF
 
       CALL QEXIT('DEF_MSUSCP')
@@ -5609,12 +5668,9 @@ C=============================================================================
       CALL DZERO(SUS2EL,9)
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
-
 C     ... evaluate expectation value terms first
       IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
         CALL EXPVSUSLO(WORK(KFREE),LFREE)
-#endif
       ENDIF
 
       KFRSAV = KFREE
@@ -5622,13 +5678,11 @@ C     ... evaluate expectation value terms first
 
       IF (.NOT.XLR_SKIPEP.AND.MSUSCDIA) THEN
          IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           WRITE(LUPRI,'(2X,A)')
      &  'For LAO & e-p rotations the diamag.term is not (yet) defined !'
           WRITE(LUPRI,'(2X,A)')
      &  'MSUSCDIA for magnetizabilities is set to .false. ! '
           MSUSCDIA=.FALSE.
-#endif
          ENDIF
       ENDIF
 
@@ -5636,35 +5690,32 @@ C     ... evaluate expectation value terms first
       CALL DZERO(SUSDIA_EX,9)
 
       IF (.NOT.LONDON) THEN
-       IF (MSUSCDIA) THEN
-        IJ = 0
-        DO I = 1, 3
-        DO J = I, 3
-          IJ = IJ + 1
-          IJX = IPDSUSC(IJ) 
-          IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
-     &   "PRP_MSUSCP: NEXPP is exceeded!"
-         IF (XLR_SKIPEP) THEN
+        IF (MSUSCDIA) THEN
+          IJ = 0
+          DO I = 1, 3
+          DO J = I, 3
+            IJ = IJ + 1
+            IJX = IPDSUSC(IJ) 
+            IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
+     &   "     PRP_MSUSCP: NEXPP is exceeded!"
+           IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
-         ELSE                
-          SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-          SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
-         ENDIF
-        ENDDO
-        ENDDO
+             SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
+             SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
+           ELSE                
+             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
+           ENDIF
+          ENDDO
+          ENDDO
 
-        IF (XLR_SKIPEP.AND.IPRPRP.GE.1) THEN
-         CALL HEADER('Expectation values part of susceptibilities',-1)
-         CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
-         CALL FLSHFO(LUPRI)
-        ENDIF 
-
-       ENDIF 
-
+          IF (XLR_SKIPEP.AND.IPRPRP.GE.1) THEN
+           CALL HEADER('Expectation values part of susceptibilities',-1)
+           CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
+           CALL FLSHFO(LUPRI)
+          ENDIF 
+        ENDIF ! IF (MSUSCDIA) THEN
       ELSE IF (LONDON) THEN 
-#if defined MOD_MAGNETIZ
 C ... accumulate one-electron expectation values into SUSDIA
 C.......................................................................................
 C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
@@ -5672,22 +5723,23 @@ C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSU
 C
         CALL DZERO(SUSDIA,9)
         IJ = 0
-        NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3
+        NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3: second magnetic derivatives of the Dirac Hamiltonian
         DO K = 1, NEXPVALTERMS
         DO I = 1, 3
         DO J = I, 3 
           IJ = IJ + 1
           IJX = IPDSUSC(IJ) 
           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
-     &   SUSDIA(IPTAX(J,2),IPTAX(I,2))  
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = 
-     &   SUSDIA(IPTAX(J,2),IPTAX(I,2))
+     &    SUSDIA(IPTAX(J,2),IPTAX(I,2))  
+          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = SUSDIA(IPTAX(J,2),IPTAX(I,2))
         ENDDO
         ENDDO
         ENDDO
 
 C -------------------------------------------------------
-C  ...  RDSUSLL - 9 terms which have to be symmetrized 
+C     RDSUSLL - first magnetic derivative of London magnetic dipole operator
+C     These are 9 tensor terms, of which nondiagonal
+C     have to be symmetrized according to derived formulas
 C -------------------------------------------------------
 C
 C      ...  EXPVAL(IPDSUSC(19..27))
@@ -5697,7 +5749,7 @@ C              22  23  24
 C              25  26  27
 C
 
-C       ...     symmetrize off-diagonal terms ...
+C  ...   so, symmetrize resulting off-diagonal RDSUSLL terms ...
         PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
         PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
         PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
@@ -5717,26 +5769,26 @@ C ......... store RDSUSLL symmetrized off-diagonal terms ...
         EXPVAL(IPDSUSC(24))=PLLYZ
         EXPVAL(IPDSUSC(26))=PLLYZ
 
-C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as well
-        IF (IPRPRP.GE.2) THEN
+C    ... control print-out of both symmetrized and nosymmetrized RDSUSLL terms
+        IF (IPRPRP.GE.3) THEN
          WRITE(LUPRI,'(/,10X,A)')
-     &   'RDSUSLL contributions to the expect.values:'
+     &   'RDSUSLL contributions to the one-electron expectation values:'
          WRITE(LUPRI,'(A)')
      &   '-----------------------------------------------------------'//
      &   '------------'
          WRITE(LUPRI,'(4X,A)')
-     &   ' Operator             '//
-     &   '  symmetrized       diff. from unsymmetrized'
+     &   ' Operator          nonsymmetrized (original)'//
+     &   '                   symmetrized (for results)   '
          IIC = 1
          DO II = 19, 27
            INDXPR = LEXPP(IPDSUSC(II))
-           WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
-     &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),
-     &     ( EXPVAL(IPDSUSC(II))-EXPVAL_NS(IIC) )
+           WRITE(LUPRI,'(2X,A16,1X,D15.8,4X,D15.8)')
+     &     PRPNAM(INDXPR),EXPVAL_NS(IIC),EXPVAL(IPDSUSC(II))
            IIC = IIC + 1
          ENDDO
         ENDIF
 
+        ! store the RDSUSLL expectation value contributions
         DO I = 1, 3
         DO J = 1, 3 
          IJ = IJ + 1
@@ -5746,23 +5798,23 @@ C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as w
         ENDDO
         ENDDO
 
-C ----------------------------------------------------------------------
-C         LAST 6 true diamagnetic terms (RDSUSNL) 
-C ----------------------------------------------------------------------
+C ------------------------------------------------------------------------------
+C  LAST 6 Aucars (Sternheim) diamagnetic terms, RDSUSNL, extracted if wanted
+C ------------------------------------------------------------------------------
         IF (MSUSCDIA) THEN  
-         DO I = 1, 3
-         DO J = I, 3 
-          IJ = IJ + 1
-         IJX = IPDSUSC(IJ) 
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
+          DO I = 1, 3
+          DO J = I, 3 
+           IJ = IJ + 1
+           IJX = IPDSUSC(IJ) 
+           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
-          SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
+           SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
-C         ... save them only when e-p rotations are active!
-          IF (.NOT.XLR_SKIPEP) THEN
-            SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX)
-            SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX)
-          ENDIF
+C          ... save them only when e-p rotations are active!
+           IF (.NOT.XLR_SKIPEP) THEN
+             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX)
+           ENDIF
          ENDDO
          ENDDO
 
@@ -5770,14 +5822,14 @@ C ... This is needed for compatibility with Dalton
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
-         IJX = IPDSUSC(IJ) 
+          IJX = IPDSUSC(IJ) 
           SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
           SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
          ENDDO
-        ENDIF
+       ENDIF
 
-C ... Write output - always print out partial results
+! ...  Write output - always print out partial results for compatibility with Dalton
        IF (IPRPRP.GE.0) THEN
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
@@ -5800,7 +5852,6 @@ C
         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
         CALL FLSHFO(LUPRI)
        ENDIF
-#endif
       ENDIF
 C------------------------------------------------------------
 C  ... get relaxation parts of susceptibilities
@@ -5819,7 +5870,6 @@ C ... extract the relaxation (response) part of magnetic susceptibilities...
 C ===========================================================================
        DO IB = 1,3
          IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
           IBX = IPLONDON(1,IB)
           READ (PRPNAM((IBX)),'(4X,A1)') JCB
           JB = ICONVXYZ(JCB)
@@ -5829,7 +5879,6 @@ C ===========================================================================
            write(lupri,*) 'got JCB=',JCB
            CALL QUIT('PRP_MSUSCP: wrong extracted number in LAO !')
           ENDIF
-#endif
          ELSE
           IBX = IPMSUSC(2,IB)
 CMI  ...    extract first character, like 'X magnetic field'
@@ -5846,42 +5895,37 @@ CMI  ...    extract first character, like 'X magnetic field'
          KB = IPMSUSC(2,JB)
          DO IA = 1, 3
           IF (LONDON) THEN
-#if defined MOD_MAGNETIZ
-           IAX = IPLONDON(1,IA)
-           READ (PRPNAM((IAX)),'(4X,A1)') JCA
-           JA = ICONVXYZ(JCA)  
-#endif
+            IAX = IPLONDON(1,IA)
+            READ (PRPNAM((IAX)),'(4X,A1)') JCA
+            JA = ICONVXYZ(JCA)  
           ELSE
-           IAX = IPMSUSC(1,IA)
-           READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
-           JA = ICONVXYZ(JCA)
-           IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
-           write(lupri,*)
-     &    'PRP_MSUSCP: operator..',PRPNAM(LLRAPU(IA))
-           write(lupri,*) 'extracted JCA,JA=',JCA,JA
-           CALL QUIT('PRP_MSUSCP: wrong extracted number !')
-           ENDIF
+            IAX = IPMSUSC(1,IA)
+            READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
+            JA = ICONVXYZ(JCA)
+            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
+              write(lupri,*)
+     &        'PRP_MSUSCP: operator..',PRPNAM(LLRAPU(IA))
+              write(lupri,*) 'extracted JCA,JA=',JCA,JA
+              CALL QUIT('PRP_MSUSCP: wrong extracted number !')
+            ENDIF
           ENDIF
           ! store the relaxation part
           KA = IPMSUSC(1,IA)
           SUSREL(IPTAX(IB,2),IPTAX(IA,2)) = ABLRF(IFREQ,KA,KB,1)
           IF (.NOT.XLR_SKIPEP) THEN
-C   .... save e-e "paramagnetic" and e-p "diamagnetic"
-C        contributions from the linear response function
+C          save e-e "paramagnetic" and e-p "diamagnetic"
+C          contributions from the linear response function
            SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),1) = ABLRF(IFREQ,KA,KB,2)
            SUSREL_EP(IPTAX(IB,2),IPTAX(IA,2),2) = ABLRF(IFREQ,KA,KB,3)
           ENDIF
          ENDDO
        ENDDO
 
-C    .... DALTON type of output
+         CALL HEADER('Relaxation part of susceptibilities',-1)
          IF (LONDON) THEN  
-#if defined MOD_MAGNETIZ
-          CALL HEADER('Relaxation',-1)
+C    .... DALTON type of output
           CALL POLPRI(SUSREL,'   ',-2)
-#endif
          ELSE
-          CALL HEADER('Relaxation part of susceptibilities',-1)
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
          ENDIF
          AVERAG = (SUSREL(1,1) + SUSREL(2,2) + SUSREL(3,3))/D3
@@ -5891,7 +5935,7 @@ C ....write out e-e and e-p contributions...
           CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
      &      ' contributions (au):',1)
           DO IROW = 1, 3
-           WRITE(LUPRI,'(2X,I1,1X,3F12.8,3X,3F12.8)')
+           WRITE(LUPRI,'(2X,I1,1X,3F20.12,3X,3F20.12)')
      &       IROW,(SUSREL_EP(IROW,ICOL,2),ICOL=1,3),
      &            (SUSREL_EP(IROW,ICOL,1),ICOL=1,3)
           ENDDO
@@ -5902,7 +5946,7 @@ C ....write out e-e and e-p contributions...
           WRITE(LUPRI,'(/,1X,A,F12.6,4X,A,F12.6)')
      &    'e-p "diamagnetic" contribution:',AVERAG_EP,
      &    'e-e "paramagnetic":',AVERAG_EE
-C        ... write out MSUSCDIA diamagnetic terms for comparison
+!        ... write out MSUSCDIA diamagnetic terms for comparison
           IF (MSUSCDIA) THEN
            CALL HEADER('.MSUSCD diamagnetic term for comparison '//
      &                 'with e-p "diamagnetic" term (au):',1)
@@ -5937,21 +5981,19 @@ C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
             SUSTOT(I,J)  = SUSDIA(I,J) + SUSREL(I,J)
          ENDDO
          ENDDO
-       ELSE 
-#if defined MOD_MAGNETIZ
+      ELSE 
 C        ... the case with London atomic orbitals ...
          DO I = 1, 3
          DO J = 1, 3
            DIASUSC(I,J) = DIASUSC(I,J) + SUSCOM(I,J)
-           SUSTOT(I,J)  = SUSTOT(I,J) + SUSREL(I,J)
-     &                                + SUSDIA(I,J)
-     &                                + SUS2EL(I,J)
-     &                                + SUSFS (I,J)
-     &                                + SUSFSY(I,J)
+           SUSTOT(I,J)  = SUSTOT(I,J) + SUSREL(I,J) ! response part
+     &                                + SUSDIA(I,J) ! one-electron expectation values
+     &                                + SUS2EL(I,J) ! two-electron expectation values
+     &                                + SUSFS (I,J) ! high-order renormalization terms
+     &                                + SUSFSY(I,J) ! low-order renormalization terms
            PARSUS(I,J) = SUSTOT(I,J) - DIASUSC(I,J)
          ENDDO
          ENDDO
-#endif
       ENDIF
 
 C
@@ -6021,17 +6063,14 @@ C
          WRITE (LUPRI,'(/,1X,A)')
      &  ' Calculations without London atomic orbitals.'
       ELSE
-#if defined MOD_MAGNETIZ
          WRITE (LUPRI,'(/,1X,A)')
      &  ' London atomic orbitals used in calculations.'
-#endif
       END IF
 
 CMI   ...there are three defferent types of the magnetizability output 
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
-         write(lupri,'(3X,A)') '...magnetizability output 1...'
          WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
      &      ' Magnetizability:           ',    AVE,' (au), ',
      &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
@@ -6052,7 +6091,6 @@ CMI  ====================================================================
          ANI = PAR - PER
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
-         write(lupri,'(3X,A)') '...magnetizability output 2...'
          WRITE (LUPRI,'(6(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6077,7 +6115,6 @@ CMI  ====================================================================
          ANI2 = PVAL(2) - (PVAL(1) + PVAL(3))/D2
          CALL HEADER('Magnetizabilities           '
      &             //'         au          SI         cgs',1)
-         write(lupri,'(3X,A)') '...magnetizability output 3...'
          WRITE (LUPRI,'(5(1X,A,3F12.4,/))')
      &      ' Isotropic magnetizability: ',AVE, SI*AVE*1.0D31, CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
@@ -6145,11 +6182,16 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
+      logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATRE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREE,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREP,NCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMATREO,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,2*NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDISO,NUCDEP,WORK,KFREE,LFREE)
@@ -6159,18 +6201,20 @@ C
       CALL MEMGET('REAL',KSKEW,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSPAN,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMAT,2*NCMAT,WORK,KFREE,LFREE)
 C
-C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
+C     (SETATM code -29: accept .SELECT specification)
+      allocate(DOATOM(NUCIND))
+      CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
-     &     WORK(KDMATLO),
+     &     WORK(KDMATLO),WORK(KDMATRE),WORK(KDMATREE),WORK(KDMATREP),
+     &     WORK(KDMATREO),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
-     &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
+     &     DOATOM,WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_SHIELD',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -6178,9 +6222,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD1 */
       SUBROUTINE PRP_SHIELD1(EXPVAL,ABLRF,TMPMAT,TMAT,
-     &      DMATLO,DMAT,PMAT,TISO
-     &     ,DISO,PISO,ANIS,ASYM,SKEW,SPAN,IBUFA
-     &     ,DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
+     &      DMATLO,DMATRE,DMATREE,DMATREP,DMATREO,DMAT,PMAT,TISO,
+     &      DISO,PISO,ANIS,ASYM,SKEW,SPAN,IBUFA,
+     &      DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Output routine for NMR shieldings
@@ -6191,6 +6235,10 @@ C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
+      use london_helper
+#endif
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -6202,11 +6250,13 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
+#include "dcbnmr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
-      LOGICAL TEST,DOATOM(NUCIND)
+      LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
-     &     DMATLO(3,3,NUCDEP),
+     &     TMPMAT(3,3*NUCDEP,2),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
+     &     DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
+     &     DMATREE(3,3,NUCDEP),DMATREP(3,3,NUCDEP),DMATREO(3,3,NUCDEP),
      &     PMAT(3,3,NUCDEP,2),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
      &     ANIS(NUCDEP),ASYM(NUCDEP),SKEW(NUCDEP),SPAN(NUCDEP),
      &     IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
@@ -6220,325 +6270,369 @@ C
       CALL QENTER('PRP_SHIELD1')
 C 
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
+
+#ifdef MOD_LAO_REARRANGED
+! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged 
+! equation (Eq. 40-42 in JCP 131, 124119 (2009))
+      if (shielding_rearrange) then
+        write(*, *) 'NMR shielding tensor calculated ',
+     &               'from rearranged equations ',
+     &               '(Eq.40-42 in JCP 131, 124119 (2009))'
+      end if
+! if .LAOMOD, then NMR shielding is calculated from rearranged equations
+! but also LR equations are modified  
+      if (lao_lr_rearrange) then
+        write(*, *) 'NMR shielding rearranged, LR equations in LAO ',
+     &               'basis are rearranged too (fully connection-',
+     &               'independent approach)'
+      end if
+#endif
+
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
-      NCMAT = 9*NUCDEP
+      NCMAT  = 9*NUCDEP
       CALL DZERO(TMPMAT,NCMAT)
       CALL DZERO(DMAT,NCMAT)
       CALL DZERO(DMATLO,NCMAT)
+      CALL DZERO(DMATRE,NCMAT)
+      CALL DZERO(DMATREE,NCMAT)
+      CALL DZERO(DMATREP,NCMAT)
       CALL DZERO(TMAT,NCMAT)
       CALL DZERO(PMAT,2*NCMAT)
-
-      IF (.NOT.XLR_SKIPEP.AND.NSTDIA) THEN
-         IF (LONDON) THEN
-          WRITE(LUPRI,'(2X,A)')
-     &  'For LAO & e-p rotations the diamag.term is not (yet) defined !'
-          WRITE(LUPRI,'(2X,A)')
-     &  'NSTDIA set to .false. ! '
-          NSTDIA=.FALSE.
-         ENDIF
-      ENDIF
 C--------------------------------------------------------------------------
+C     NSTDIA: Nuclear Shielding Tensor DIAmagnetic contribution
 C     Extract Diamagnetic approximation if calculated
 C     (used for total shielding if e-p rotations are not included)
 C       -- this becomes the
 C     A**2 diamagnetic operator in the non-relativistic limit
 C     (ref: Aucar et al., JCP 110 (1999) 6208) /hjaaj Mar 2003
 C
-C ... extract diamag. term only for e-e rotations in lin.response function
-C     IF(NSTDIA.AND.XLR_SKIPEP) THEN
       IF(NSTDIA) THEN
-         DO I = 1,NNSTIN
-            IOP = IPNSTDIA(I)
-            IPL = IPRPLBL(1,LEXPP(IOP))
+        DO I = 1,NNSTIN
+          IOP = IPNSTDIA(I)
+          IPL = IPRPLBL(1,LEXPP(IOP))
 CMI       ... take care of the correct form of PRPLBL(IPL) name
-            READ(PRPLBL(IPL)(1:3),'(I3)') IA
-            IB = MOD(I+2,3) + 1
-            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
-         ENDDO
-         IF (IPRPRP.GE.2) THEN
-C         ...for what do we have calculated diamagnetic terms
+          READ(PRPLBL(IPL)(1:3),'(I3)') IA
+          IB = MOD(I+2,3) + 1
+          TMPMAT(IPTAX(IB,2),IA,1) = EXPVAL(IOP)
+        ENDDO
+        IF(IPRPRP.GE.2) THEN
+C        ...for what do we have calculated diamagnetic terms
           IF (XLR_SKIPEP) THEN
             CALL HEADER('Diamagnetic part of shielding'//
-     &    ' in symmetry coordinates (ppm)',1)
+     &      ' in symmetry coordinates (ppm)',1)
           ELSE
             CALL HEADER('Diamagnetic terms for comparison'//
-     &    ' with e-p "diamagnetic" in symmetry coordinates (ppm)',1)
+     &      ' with e-p "diamagnetic" in symmetry coordinates (ppm)',1)
           ENDIF
-            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
-C        ... DMAT contains extracted diamagnetic part (NSCO or NSNL)
-         IF ( (LONDON.AND.XLR_SKIPEP).OR.(.NOT.LONDON) ) THEN
-            CALL TRADIP(TMPMAT,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C        ENDIF
-         ELSE
-C        ... DMATLO contains extracted 'diamagnetic' term (NSNL)
-          CALL TRADIP(TMPMAT,DMATLO,CSTRA,SCTRA,3*NUCDEP,2,2)
-         ENDIF
-      END IF
-
+          CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+        ENDIF
+C       ... extract the diamagnetic part into DMAT
+        CALL TRADIP(TMPMAT,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+      END IF ! IF(NSTDIA) THEN
 C ------------------------------------------------------
 C  Get the London orbital contributions to the exp.value
 C  ... these are RNST terms
 C ------------------------------------------------------
       IF(LONDON) THEN
-         CALL DZERO(TMPMAT,NCMAT)
-         CALL DZERO(PMAT,NCMAT)
-         DO I = 1,NNSTIN
-            IOP = IPRNST(I)
-            IPL = LEXPP(IOP)
+        CALL DZERO(TMPMAT,NCMAT)
+        CALL DZERO(PMAT  ,NCMAT)
+        DO I = 1,NNSTIN
+          IOP = IPRNST(I)
+          IPL = LEXPP(IOP)
 CMI ... take care of the correct form of PRPLBL(IPL) name
-            READ(PRPNAM(IPL)(10:11),'(I2)') IA
-            IB = MOD(I+2,3) + 1
-            TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
-         ENDDO
-         IF (IPRPRP.GE.2) THEN
-            CALL HEADER('London part of shielding (exp.value)'//
-     &           ' in symmetry coordinates (ppm)',1)
-            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
-C         ... extract London part of shielding into the PMAT
-         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the London exp.value parts of shield. to to the DMAT
-         CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
+          READ(PRPNAM(IPL)(10:11),'(I2)') IA
+          IB = MOD(I+2,3) + 1
+          TMPMAT(IPTAX(IB,2),IA,1) = -EXPVAL(IOP)
+        ENDDO
+        IF (IPRPRP.GE.2) THEN
+          CALL HEADER('London part of shielding (exp.value)'//
+     &               ' in symmetry coordinates (ppm)',1)
+          CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+        ENDIF
+C       ... extract London part of shielding into the PMAT
+        CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+C       ... add the London exp.value parts of shield. to DMATLO
+CTROND: DCOPY is not needed, use DMATLO directly
+        CALL DAXPY(NCMAT,D1,PMAT,1,DMATLO,1)
       END IF
-
 C--------------------------------------------------------------------
 C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
-         CALL MEMGET('REAL',KW,3*N2ORBXQ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KCON,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDMAT,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL DZERO(TMPMAT,NCMAT)
-         CALL DZERO(PMAT,NCMAT)
+
+#ifdef MOD_LAO_REARRANGED
+        if (SEPTEP) then
+
+         if (.not. XLR_SKIPEE) then
+! occ-occ:
+           ee = .false.
+           ep = .false.
+           occ = .true.
+           CALL DZERO(TMPMAT,NCMAT)
+           CALL DZERO(PMAT,NCMAT)
+           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
+           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREO,1)
+          
+! e-occ:
+           ee = .true.
+           ep = .false.
+           occ = .false.
+           CALL DZERO(TMPMAT,NCMAT)
+           CALL DZERO(PMAT,NCMAT)
+           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
+           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
+
+         end if
+         if (DOEPRN .and. .not. XLR_SKIPEP) then
+! p-occ:
+           ee = .false.
+           ep = .true.
+           occ = .false.
+           CALL DZERO(TMPMAT,NCMAT)
+           CALL DZERO(PMAT,NCMAT)
+           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
+           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
+
+         end if
+
+        end if
+#endif
+
+        CALL DZERO(TMPMAT,NCMAT)
+        CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
+!  ...  gosia: if connection-independent formulation of shieldings,
+!  ...  then the -{S^B, h(mK)} expectation value is calculated here
 !todo from Trond's email:
 !check the use of GETCON in  PRP_SHIELD1(pamprp.F). Can it be completely removed ?
-         CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
-     &               WORK,KFREE,LFREE,IPRPRP)
-CMI   ...  sign convention !!!
-         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
-         IF (IPRPRP.GE.2) THEN
-          CALL HEADER('Reorthonormalization part of the '// 
-     &  'shielding (expect.value) in symmetry coordinates (ppm)',1)
-          CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
-C         ... extract the reorthonormalization part into the PMAT
-         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the reorthonormalization terms to the DMAT
-         CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
-      END IF
+! gosia: no, it's one of contributions to NMR shielding
+        CALL MEMGET('REAL',KW   ,3*N2ORBXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCON ,N2ORBXQ  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KDMAT,N2ORBXQ  ,WORK,KFREE,LFREE)
+        CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
+     &              WORK,KFREE,LFREE,IPRPRP)
+        CALL MEMREL('PRP_SHIELD1_GETCON',WORK,1,KW,KFREE,LFREE)
+CMI ... sign convention !!!
+        CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+        IF (IPRPRP.GE.2) THEN
+#ifdef MOD_LAO_REARRANGED
+          if (lao_lr_rearrange .or. shielding_rearrange) then
+            CALL HEADER('Contribution to the shielding from overlap '// 
+     &      'magnetic derivative (expect.value) in symmetry '//
+     &      'coordinates (ppm)',1)
+            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          else
+#endif
+            CALL HEADER('Reorthonormalization part of the '// 
+     &      'shielding (expect.value) in symmetry coordinates (ppm)',1)
+            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
+#ifdef MOD_LAO_REARRANGED
+          end if
+#endif
+        ENDIF
+C       ... extract the reorthonormalization part into the PMAT
+        CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+C       ... add the reorthonormalization terms to DMATRE
+CTROND...DAXPY not needed !!!! use dmatre directly
+        CALL DAXPY(NCMAT,D1,PMAT,1,DMATRE,1)
+      END IF ! (LONDON.AND.(.NOT.NOORTH))
 C
 C     *** Extract shieldings ***
 C
-C  The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
-C
+C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
       NA = 0
-      NB = 0
       DO I = 1,NSCOOR
-         IF(IPSHIELD(I).GT.0) THEN
-            NA = NA + 1
-            IBUFA(NA) = I
-         ENDIF
+        IF(IPSHIELD(I).GT.0) THEN
+          NA = NA + 1
+          IBUFA(NA) = I
+        ENDIF
       END DO
 CMI/HJ internal consistency check
       IF (NA.LE.0) THEN
-       WRITE(LUPRI,'(2X,A,I2)')
-     & 'PRP_SHIELD1: NA=',NA
-       CALL QUIT('PRP_SHIELD1:Wrong value of NA!')
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SHIELD1: NA=',NA
+        CALL QUIT('PRP_SHIELD1:Wrong value of NA!')
       ENDIF
-
-C    The 3 B field directions as B operators in <<A;B>> :
+C     The 3 B field directions as B operators in <<A;B>> :
+      NB = 0
       DO I = 1, 3
-         IF(IPSHIELD(I+MXCOOR).GT.0) THEN
-            NB = NB + 1
-            IBUFB(NB) = I
-         ENDIF
+        IF(IPSHIELD(I+MXCOOR).GT.0) THEN
+          NB = NB + 1
+          IBUFB(NB) = I
+        ENDIF
       END DO
       IF (NB.LE.0) THEN
-       WRITE(LUPRI,'(2X,A,I2)')
-     & 'PRP_SHIELD1: NB=',NB
-       CALL QUIT('PRP_SHIELD1:Wrong value of NB!')
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_SHIELD1: NB=',NB
+        CALL QUIT('PRP_SHIELD1:Wrong value of NB!')
       ENDIF
 C
 C     Fill shielding matrices
 C
       IF (XLR_SKIPEE) THEN
-         IF (XLR_SKIPEP) THEN
-           IABLRF_EE = -999999999
-           IABLRF_EP = -999999999
-         ELSE
-           IABLRF_EE = -999999999
-           IABLRF_EP = 2
-         END IF
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EE = -999999999
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EE = -999999999
+          IABLRF_EP = 2
+        END IF
       ELSE
-         IF (XLR_SKIPEP) THEN
-           IABLRF_EE = 2
-           IABLRF_EP = -999999999
-         ELSE
-           IABLRF_EE = 2
-           IABLRF_EP = 3
-         END IF
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EE = 2
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EE = 2
+          IABLRF_EP = 3
+        END IF
       END IF
 #if defined (XH4)
       WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
 #endif
       DO IFREQ = 1,NBFREQ
-C
-         CALL PRSYMB(LUPRI,'-',72,2)
-         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
-            WRITE(LUPRI,'(A,F15.8,2X,A)')
-     &           '*** Frequency    :',BFREQ(IFREQ),'a.u.'
-         ENDIF
-
-         CALL DZERO(TMPMAT,2*NCMAT)
-         DO IB = 1,NB
-CTROND           IBINDEX = LLRBPU(IPSHIELD(MXCOOR+IBUFB(IB)))
-CTROND           IF (LONDON) THEN
-CTROND             READ (PRPNAM(IBINDEX),'(4X,A1)') CJB
-CTROND             JB = ICONVXYZ(CJB)
-CTROND             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
-CTROND               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
-CTROND               write(lupri,*) 'extracted CJB,JB:',CJB,JB
-CTROND               CALL QUIT('PRP_SHIELD1: wrong index !')
-CTROND             ENDIF
-CTROND           ELSE
-CMI  ...     first character, like 'X magnetic field'
-CTROND
-CTROND             WRITE(6,*) 'test..',PRPNAM(IBINDEX)
-CTROND             READ (PRPNAM(IBINDEX),'(A1)') CJB 
-CTROND            !write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
-CTROND             JB = ICONVXYZ(CJB)
-CTROND             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
-CTROND               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
-CTROND               write(lupri,*) 'extracted CJB,JB:',CJB,JB
-CTROND               CALL QUIT('PRP_SHIELD1: wrong index !')
-CTROND             ENDIF
-CTROND           ENDIF
-            JB = IBUFB(IB)
-            KB = IPSHIELD(JB+MXCOOR)
-            DO IA = 1,NA
-               JA = IBUFA(IA)
-               KA = IPSHIELD(JA)
-C...           First extract the e-e contribution
-               IF (.NOT. XLR_SKIPEE) TMPMAT(IPTAX(JB,2),JA) =
-     &            -ABLRF(IFREQ,KA,KB,IABLRF_EE)
-C...           then extract the e-p "diamagnetic" contribution
-               IF (.NOT. XLR_SKIPEP) TMPMAT(IPTAX(JB,2),JA+NCMAT) =
-     &            -ABLRF(IFREQ,KA,KB,IABLRF_EP)
-            ENDDO
-         ENDDO
+        CALL PRSYMB(LUPRI,'-',72,2)
+        IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           WRITE(LUPRI,'(A,F15.8,A)')
+     &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
+        ENDIF
+        CALL DZERO(TMPMAT,2*NCMAT)
+        DO IB = 1,NB
+          JB = IBUFB(IB)
+          KB = IPSHIELD(MXCOOR+JB)
+          JB = IPTAX(JB,2)
+          DO IA = 1,NA
+            JA = IBUFA(IA)
+            KA = IPSHIELD(JA)
+C...        First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &         TMPMAT(JB,JA,1) = ABLRF(IFREQ,KA,KB,IABLRF_EE)
+C...        then extract the e-p "diamagnetic" contribution
+            IF (.NOT. XLR_SKIPEP)
+     &         TMPMAT(JB,JA,2) = ABLRF(IFREQ,KA,KB,IABLRF_EP)
+          ENDDO
+        ENDDO
+        IF (LONDON) THEN
+        ! ... different sign convention for London operators
+           CALL DSCAL(2*NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP .GT. 5) THEN
+              write(lupri,*) 'Changing sign on London contributions e-e'
+              call output(TMPMAT,1,NB,1,NA,NB,NA,-1,LUPRI)
+              write(lupri,*) 'Changing sign on London contributions e-p'
+              call output(TMPMAT(1,1,2),1,NB,1,NA,NB,NA,-1,LUPRI)
+           END IF
+        END IF
 #if defined (XH4)
-         TMPMAT(2,8)  = TMPMAT(1,4)
-         TMPMAT(2,9)  = TMPMAT(1,6)
-         TMPMAT(2,10) = TMPMAT(1,7)
-         TMPMAT(2,11) = TMPMAT(1,5)
-         TMPMAT(3,12) = TMPMAT(1,4)
-         TMPMAT(3,13) = TMPMAT(1,6)
-         TMPMAT(3,15) = TMPMAT(1,7)
-         TMPMAT(3,14) = TMPMAT(1,5)
-         TMPMAT(2,8+NCMAT)  = TMPMAT(1,4+NCMAT)
-         TMPMAT(2,9+NCMAT)  = TMPMAT(1,6+NCMAT)
-         TMPMAT(2,10+NCMAT) = TMPMAT(1,7+NCMAT)
-         TMPMAT(2,11+NCMAT) = TMPMAT(1,5+NCMAT)
-         TMPMAT(3,12+NCMAT) = TMPMAT(1,4+NCMAT)
-         TMPMAT(3,13+NCMAT) = TMPMAT(1,6+NCMAT)
-         TMPMAT(3,15+NCMAT) = TMPMAT(1,7+NCMAT)
-         TMPMAT(3,14+NCMAT) = TMPMAT(1,5+NCMAT)
+        TMPMAT(2,8,1)  = TMPMAT(1,4,1)
+        TMPMAT(2,9,1)  = TMPMAT(1,6,1)
+        TMPMAT(2,10,1) = TMPMAT(1,7,1)
+        TMPMAT(2,11,1) = TMPMAT(1,5,1)
+        TMPMAT(3,12,1) = TMPMAT(1,4,1)
+        TMPMAT(3,13,1) = TMPMAT(1,6,1)
+        TMPMAT(3,15,1) = TMPMAT(1,7,1)
+        TMPMAT(3,14,1) = TMPMAT(1,5,1)
+        TMPMAT(2,8,2)  = TMPMAT(1,4,2)
+        TMPMAT(2,9,2)  = TMPMAT(1,6,2)
+        TMPMAT(2,10,2) = TMPMAT(1,7,2)
+        TMPMAT(2,11,2) = TMPMAT(1,5,2)
+        TMPMAT(3,12,2) = TMPMAT(1,4,2)
+        TMPMAT(3,13,2) = TMPMAT(1,6,2)
+        TMPMAT(3,15,2) = TMPMAT(1,7,2)
+        TMPMAT(3,14,2) = TMPMAT(1,5,2)
 #endif
 C
-C     Transform to non-symmetry basis
+C     Transform to C1 basis
 C
-         CALL DZERO(PMAT,2*NCMAT)
-         CALL DZERO(TMAT,NCMAT)
-         IF (.NOT. XLR_SKIPEE) THEN
-            IF (IPRPRP.GE.2) THEN
-               CALL HEADER('e-e response part of shielding'//
-     &            ' in symmetry coordinates (ppm)',1)
-               CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
-            ENDIF
-C           .... extract the e-e response part into PMAT(...,1)
-            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C           .... save e-e response part into TMAT
-            CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,1),1,TMAT,1)
-         END IF
-CMI/HJ  ... include diamagnetic(=Sternheimer) term if XLR_SKIPEP
-C       ... include London exp.value correction to paramagnetic term if LONDON
-         IF (XLR_SKIPEP) THEN
+        CALL DZERO(PMAT,2*NCMAT)
+        CALL DZERO(TMAT,NCMAT)
+        IF (.NOT. XLR_SKIPEE) THEN
+          IF (IPRPRP.GE.2) THEN
+            CALL HEADER('e-e response part of shielding'//
+     &           ' in symmetry coordinates (ppm)',1)
+            CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+          ENDIF
+C         .... extract the e-e response part into PMAT(...,1)
+          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+C         .... save e-e response part into TMAT
+          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,1),1,TMAT,1)
+        END IF
+C       ... include London + reorthonormalization to total shielding
+        IF (LONDON) THEN
+          CALL DAXPY(9*NUCDEP,D1,DMATLO,1,TMAT,1)
+          CALL DAXPY(9*NUCDEP,D1,DMATRE,1,TMAT,1)
+        ENDIF
+        IF (XLR_SKIPEP) THEN
 C       ... add the diamagnetic term(s),DMAT, to TMAT(contains paramagnetic terms)
             CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
-         ELSE
+        ELSE
 C       ... add (diamagnetic-NSNL)+London+reortho terms to the TMAT
-            IF (LONDON) CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
-            IF (IPRPRP.GE.2) THEN
-               CALL HEADER('e-p response part of shielding'//
-     &            ' in symmetry coordinates (ppm)',1)
-               CALL FCPRI (TMPMAT(1,1+NCMAT),'SIGMAS',CSTRA,SCTRA)
-            ENDIF
-C          ... extract the e-p response part into PMAT(...,2)
-            CALL TRADIP(TMPMAT(1,1+NCMAT),PMAT(1,1,1,2),
-     &                  CSTRA,SCTRA,3*NUCDEP,2,2)
-C          ... add the e-p response PMAT(...,2) into TMAT
-C           so the TMAT now contains total response
-            CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,2),1,TMAT,1)
-         END IF
+          IF (IPRPRP.GE.2) THEN
+             CALL HEADER('e-p response part of shielding'//
+     &          ' in symmetry coordinates (ppm)',1)
+             CALL FCPRI (TMPMAT(1,1,2),'SIGMAS',CSTRA,SCTRA)
+          ENDIF
+C         ... extract the e-p response part into PMAT(...,2)
+          CALL TRADIP(TMPMAT(1,1,2),PMAT(1,1,1,2),
+     &                CSTRA,SCTRA,3*NUCDEP,2,2)
+C         ... add the e-p response PMAT(...,2) into TMAT
+C         so the TMAT now contains total response
+          CALL DAXPY(9*NUCDEP,D1,PMAT(1,1,1,2),1,TMAT,1)
+        END IF
 C
 C     Analyze results
 C
-C ... for analyzing e-p "diamagnetic" contribution 
-C  NoLONDON - DMAT contains pure diamagnetic term,NSCO
-C  LONDON - DMAT contains London+reortho terms
-         IF (LONDON.AND..NOT.XLR_SKIPEP) 
-C    &    CALL DCOPY(NCMAT,DMATLO,1,DMAT,1)
-     &    CALL DAXPY(NCMAT,D1,DMAT,1,DMATLO,1)
-
-         IATOM = 0
-         DO 100 I = 1, NUCIND
-            DO 200 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-                  IATOM = IATOM + 1
-                  IF (DOATOM(I)) THEN
-                     CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
-     &                 DMATLO(1,1,IATOM),
-     &                 PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
-     &                 TISO(IATOM),DISO(IATOM),
-     &                 PISO(IATOM),ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
-     &                 SPAN(IATOM),NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1),
-     &                 IPRPRP)
-                  END IF
-               END IF
- 200        CONTINUE
- 100     CONTINUE
+        IATOM = 0
+        DO 100 I = 1, NUCIND
+          DO 200 ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IATOM = IATOM + 1
+            IF (DOATOM(I)) THEN
+              CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
+     &             DMATLO(1,1,IATOM),DMATRE(1,1,IATOM),
+     &             DMATREE(1,1,IATOM), DMATREP(1,1,IATOM),
+     &             DMATREO(1,1,IATOM),
+     &             PMAT(1,1,IATOM,1),PMAT(1,1,IATOM,2),
+     &             TISO(IATOM),DISO(IATOM),PISO(IATOM),
+     &             ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
+     &             SPAN(IATOM),NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1),
+     &             IPRPRP)
+            END IF
+          END IF
+ 200      CONTINUE
+ 100    CONTINUE
 C
-         CALL AROUND('Summary of chemical shieldings')
-         WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
-     &        'state Nuc.Magn.Res. 2 (1993), 285'
-         WRITE (LUPRI,'()')
-         WRITE (LUPRI,'(A/A/A/A)')
-     &        '@            isotropic shielding',
-     &        '@        ----------------------------',
-     &        '@atom          total          dia         para'//     
-     &        '            skew'//
-     &        '            span            anis            asym',
-     &        '@-----------------------------------------------------'//
-     &        '-----------------------'
+        CALL AROUND('Summary of chemical shieldings')
+        WRITE (LUPRI,'(A)') ' Definitions from J.Mason, Solid '//
+     &      'state Nuc.Magn.Res. 2 (1993), 285'
+        WRITE (LUPRI,'()')
+        WRITE (LUPRI,'(A/A/A/A)')
+     &      '@            isotropic shielding',
+     &      '@        ----------------------------',
+     &      '@atom          total          dia         para'//     
+     &      '            skew'//
+     &      '            span            anis            asym',
+     &      '@-----------------------------------------------------'//
+     &      '-----------------------'
 
-         IATOM = 0
-         DO 300 I = 1, NUCIND
-            DO 400 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
-                  IATOM = IATOM + 1
-                  IF (DOATOM(I)) THEN
-                      WRITE (LUPRI,'(A,A,7F14.4)') '@',
-     &                 NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM)
-     &                 ,SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)
-                   END IF
-               END IF
- 400        CONTINUE
- 300     CONTINUE
-         WRITE(LUPRI,'(A,/)')
+        IATOM = 0
+        DO 300 I = 1, NUCIND
+          DO 400 ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+            IATOM = IATOM + 1
+            IF (DOATOM(I)) THEN
+              WRITE (LUPRI,'(A,A,7F14.4)') '@',
+     &        NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM),
+     &        SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)
+            END IF
+          END IF
+ 400      CONTINUE
+ 300    CONTINUE
+        WRITE(LUPRI,'(A,/)')
      &        '@-----------------------------------------------------'//
      &        '-----------------------'
 C
@@ -6548,7 +6642,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck SHIANA */
-      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,PMATEE,PMATEP,
+      SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,DMATRE,DMATREE,DMATREP,
+     &                  DMATREO,PMATEE,PMATEP,
      &                  AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
@@ -6556,6 +6651,13 @@ C
 C     Analyze routine for NMR shieldings
 C     This routine is modelled after SHIANA in DALTON
 C
+C     INPUT:
+C        TMAT   - total shielding 
+C        DMAT   - diamagnetic term if calculated as expectation value
+C        DMATLO - London term
+C        DMATRE - reorthonormalization term
+C        PMATEE - e-e (++) - contribution to response function
+C        PMATEP - e-p (+-) - contribution to response function
 C     Written by T.Enevoldsen Nov. 14 1997
 C
 CMI/Dec '04  DMATLO is reserved for future use
@@ -6571,39 +6673,44 @@ C***********************************************************************
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
-     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3),
+     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
+     &          DMATRE(3,3),DMATREE(3,3),DMATREP(3,3),DMATREO(3,3),
      &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
       CALL DSCAL(9,FACTOR,DMATLO,1)
+      CALL DSCAL(9,FACTOR,DMATRE,1)
+      CALL DSCAL(9,FACTOR,DMATREE,1)
+      CALL DSCAL(9,FACTOR,DMATREP,1)
+      CALL DSCAL(9,FACTOR,DMATREO,1)
       CALL DSCAL(9,FACTOR,PMATEE,1)
       CALL DSCAL(9,FACTOR,PMATEP,1)
-
-C     .... total shielding
+C     Total shielding
       AVETOT = (TMAT(1,1) + TMAT(2,2) + TMAT(3,3))/D3
+C     Diamagnetic part
       IF (XLR_SKIPEP) THEN
-C        ... use NSTDIA expectation value approximation
+C     ... use NSTDIA expectation value approximation
          AVEDIA = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
       ELSE
-C        ... use result of e-p response equations
-C        AVEDIA = (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
-        IF (.NOT.LONDON) THEN
-         AVEDIA  = (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
-         AVEDIA2 = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
-        ELSE
-         AVEDIA  = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
-         AVEDIA1 = (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
-         AVEDIA2 = (DMATLO(1,1) + DMATLO(2,2) + DMATLO(3,3))/D3
+C     ... use result of e-p response equations
+        AVEDIA  = (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
+        IF(NSTDIA) THEN
+          AVEDIA2 = (DMAT(1,1) + DMAT(2,2) + DMAT(3,3))/D3
         ENDIF
       END IF
-      IF (.NOT.LONDON) THEN
-        AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
-      ELSE
-        AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
-     &         + (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3
+      IF(LONDON) THEN
+C       ...add London + reorthonormalization contribution
+          AVEDIA1 = (DMATLO(1,1) + DMATLO(2,2) + DMATLO(3,3))/D3
+          AVEDIA3 = (DMATRE(1,1) + DMATRE(2,2) + DMATRE(3,3))/D3
+          AVEDIA3E = (DMATREE(1,1) + DMATREE(2,2) + DMATREE(3,3))/D3
+          AVEDIA3P = (DMATREP(1,1) + DMATREP(2,2) + DMATREP(3,3))/D3
+          AVEDIA3O = (DMATREO(1,1) + DMATREO(2,2) + DMATREO(3,3))/D3
+          AVEDIA  = AVEDIA + AVEDIA1 + AVEDIA3
       ENDIF
+C     Paramagnetic part
+      AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
 C
 C     Parameters calculated in accordance with J.Mason, Solid State
 C     Nuc.Magn.Resonance, 2 (1993), 285
@@ -6637,115 +6744,124 @@ C
       SKEW  = D3*(AVETOT - PVAL(IY))/SPAN
       ANIS = PVAL(IZ) - (PVAL(IX) + PVAL(IY))/D2
       ASYM = (PVAL(IY) - PVAL(IX))/(PVAL(IZ) - AVETOT)
-C This is done to avoid numerical insatbilities
+C This is done to avoid numerical instabilities
       IF (ABS(SPAN).LT.THCLR) THEN
-         SPAN = D0
-         SKEW = D0
-         ANIS = D0
-         ASYM = D1
+        SPAN = D0
+        SKEW = D0
+        ANIS = D0
+        ASYM = D1
       ELSE
-         IF (ABS(PVAL(IY)-PVAL(IX)).LT.THCLR) THEN
-            SKEW = D1
-         END IF
-         IF (ABS(PVAL(IZ)-PVAL(IY)).LT.THCLR) THEN
-            SKEW = -D1
-         END IF
+        IF (ABS(PVAL(IY)-PVAL(IX)).LT.THCLR) THEN
+          SKEW = D1
+        END IF
+        IF (ABS(PVAL(IZ)-PVAL(IY)).LT.THCLR) THEN
+          SKEW = -D1
+        END IF
       END IF
       IF (ABS((PVAL(IZ) - AVETOT)).LT.THCLR) ASYM = D1
 C
       IF (IPRINT.GE.1) THEN
-      CALL TITLER('Chemical shielding for '//NAME//':','=',1)
-      WRITE (LUPRI,'(5(/,1X,A,F12.4,A))')
+        CALL TITLER('Chemical shielding for '//NAME//':','=',1)
+        WRITE (LUPRI,'(5(/,1X,A,F12.4,A))')
      &   ' Shielding constant:',AVETOT,' ppm',
      &   ' Anisotropy:        ',ANIS,  ' ppm',
      &   ' Span:              ',SPAN,  ' ppm',
      &   ' Asymmetry:         ',ASYM,  '    ',
      &   ' Skew:              ',SKEW,  '    '
-      CALL HEADER('Total shielding tensor (ppm):',1)
-      WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
-      DO 400 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F15.8)')
+        CALL HEADER('Total shielding tensor (ppm):',1)
+        WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+        DO ICOOR = 1,3
+          WRITE (LUPRI,'(2X,A6,3F15.8)')
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
-  400 CONTINUE
+        ENDDO
 C
-C     IF (XLR_SKIPEP.OR.LONDON) THEN
-      IF (XLR_SKIPEP) THEN
+        IF(XLR_SKIPEP) THEN
 C   XLR_SKIPEP: Diamagnetic contribution (Sternheimer approx.)
-         CALL HEADER('Diamagnetic and paramagnetic contributions (ppm):'
-     &      ,1)
-         WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
+          CALL HEADER
+     &    ('Diamagnetic and paramagnetic contributions (ppm):',1)
+          WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
-         DO ICOOR = 1, 3
+          DO ICOOR = 1, 3
             WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
      &         (DMAT(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
-         END DO
-         WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
+          END DO
+          WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
      &          ' Diamagnetic contribution:',AVEDIA,
      &          ' Paramagnetic: ',AVEPAR
-      ELSE
+        ELSE
 C   ... make separate print out of e-e and e-p response contributions
-         CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
+          CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
      &      ' contributions (ppm):',1)
-         WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X)/)')
+          WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X)/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
-         DO ICOOR = 1, 3
+          DO ICOOR = 1, 3
             WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
-     &         (PMATEP(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
-         END DO
-         IF (.NOT.LONDON) THEN
-           AVEDIAX=AVEDIA
-           AVEPARX=AVEPAR
-         ELSE
-           AVEDIAX=AVEDIA1
-           AVEPARX=AVEPAR-AVEDIA1
-         ENDIF
-         WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
-     &          ' e-p "diamagnetic" contribution:',AVEDIAX,
-     &          ' e-e "paramagnetic": ',AVEPARX
-         IF (NSTDIA) THEN
-            IF (.NOT.LONDON) THEN
+     &            (PMATEP(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
+          END DO
+          WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
+     &          ' e-p "diamagnetic" contribution:',AVEDIA,
+     &          ' e-e "paramagnetic": ',AVEPAR
+          IF (NSTDIA) THEN
+            IF (LONDON) THEN
+              CALL HEADER('.NSTDIA London diamagnetic term '//
+     &       'for comparison  with e-p "diamagnetic" term (ppm):',1)
+            ELSE
               CALL HEADER('.NSTDIA CGO diamagnetic term '//
      &        ' for comparison with e-p "diamagnetic" term (ppm):',1)
-            ELSE
-              CALL HEADER('.NSTDIA London diamagnetic term '//
-     &        'for comparison  with e-p "diamagnetic" term (ppm):',1)
-            ENDIF
-            WRITE (LUPRI,'(15X,3(A,9X)/)')
-     &       'Bx', 'By', 'Bz'
+            END IF
+            WRITE (LUPRI,'(15X,3(A,9X)/)') 'Bx', 'By', 'Bz'
             DO ICOOR = 1, 3
-             IF (.NOT.LONDON) THEN
-               WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
-     &           (DMAT(K,ICOOR),K=1,3)
-             ELSE 
-               WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
-     &           (DMATLO(K,ICOOR),K=1,3)
-             ENDIF
+              WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+     &             (DMAT(K,ICOOR),K=1,3)
             END DO
-            WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
+            WRITE (LUPRI,'(/A,F14.6)')
      &          ' .NSTDIA diamagnetic contribution, for comparison:',
      &          AVEDIA2
-         END IF
-      END IF
+          ENDIF
+        ENDIF
+        IF(LONDON) THEN
+          CALL HEADER('London contributions (ppm):',1)
+          DO ICOOR = 1, 3
+            WRITE (LUPRI,'(2X,A6,3F11.4)') NAMEX(ICOOR),
+     &            (DMATLO(K,ICOOR),K=1,3)
+          END DO
+          WRITE (LUPRI,'(/A,F14.6)') ' London contribution:',AVEDIA1
+          CALL HEADER('Reorthonormalization contributions (ppm):',1)
+          DO ICOOR = 1, 3
+            WRITE (LUPRI,'(2X,A6,3F11.4)') NAMEX(ICOOR),
+     &            (DMATRE(K,ICOOR),K=1,3)
+          END DO
+          WRITE (LUPRI,'(/A,F14.6)') 
+     &    ' Reorthonormalization contribution:',AVEDIA3
+          if (SEPTEP) then
+           write(LUPRI,'(/A,F14.6)') '...from "occ-e" blocks of T = ',
+     &                                AVEDIA3E
+           write(LUPRI,'(/A,F14.6)') '...from "occ-p" blocks of T = ', 
+     &                                AVEDIA3P
+           write(LUPRI,'(/A,F14.6)') '...from "occ-occ" blocks of T = ', 
+     &                                AVEDIA3O
+          end if
+        ENDIF
 C
-      CALL HEADER
+        CALL HEADER
      &   ('Antisymmetric and traceless symmetric parts (ppm):',1)
-      WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
+        WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
-      DO 600 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+        DO 600 ICOOR = 1, 3
+          WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
      &         (ANTI(K,ICOOR),K=1,3), (SYM(K,ICOOR),K=1,3)
-  600 CONTINUE
-      CALL HEADER('Principal values and axes:',1)
-      DO 700 I = 1, 3
-         IF (PVAL(I) .GE. D0) THEN
+  600   CONTINUE
+        CALL HEADER('Principal values and axes:',1)
+        DO 700 I = 1, 3
+          IF (PVAL(I) .GE. D0) THEN
             SGN = '  +'
-         ELSE
+          ELSE
             SGN = '  -'
-         END IF
-         WRITE (LUPRI,'(2X,A,I1,2X,F12.6,A,F8.2,A,F7.2,A,3X,3F10.6)')
+          END IF
+          WRITE (LUPRI,'(2X,A,I1,2X,F12.6,A,F8.2,A,F7.2,A,3X,3F10.6)')
      &      NAME,I,PVAL(I) + AVETOT,'  =',AVETOT,SGN,
      &      ABS(PVAL(I)),':', (AXES(J,I),J=1,3)
-  700 CONTINUE
+  700   CONTINUE
       END IF
       RETURN
       END
@@ -7094,19 +7210,21 @@ C
 #include "nuclei.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL CORR
+      logical, allocatable :: DOATOM(:)
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KEFN ,9*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
 C
 C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KATOM),NATOM,-29)
-      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),
+      CALL SETATM(DOATOM,NATOM,-29)
+      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),DOATOM,
      &              CORR,IPRPRP)
+      deallocate(DOATOM)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -7243,7 +7361,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_RHONUC */
-      SUBROUTINE DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_RHONUC(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for electronic density at nuclei
@@ -7257,20 +7375,19 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     INTTYP = 9: One-electron Fermi contact integrals
-      CALL SETATM(WORK(KDATOM),NATOM,-9)
-      CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-9)
+      CALL DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_RHONU1 */
-      SUBROUTINE DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define electronic density at nuclei
@@ -7289,7 +7406,7 @@ C***********************************************************************
       PARAMETER (DFAC = D4*GFAC*PI/D3)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
@@ -7313,7 +7430,7 @@ C
      &                            //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                            //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
             CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                   INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                   INDXPR,ISYXPR,ITRXPR,IPRINT)
             CALL OP1IND('RHONUC',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
           END IF
         END IF
@@ -7369,7 +7486,7 @@ C X componete of B-field
          PLABEL(1) = 'ZDIPLEN'
          PLABEL(2) = 'YDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,1),LLRBPU,NLRBPT,INDXPR
@@ -7381,7 +7498,7 @@ C Y componete of B-field
          PLABEL(1) = 'XDIPLEN'
          PLABEL(2) = 'ZDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,2),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,2),LLRBPU,NLRBPT,INDXPR
@@ -7392,7 +7509,7 @@ C Z componete of B-field
          PLABEL(1) = 'YDIPLEN'
          PLABEL(2) = 'XDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
          CALL OP1IND('XFIELDA',IPROTG(1,3),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
          CALL OP1IND('XFIELDB',IPROTG(2,3),LLRBPU,NLRBPT,INDXPR
@@ -7748,9 +7865,7 @@ C
          CALL HEADER(
      &   'Diamagnetic contribution * proton mass * moment of inertia',
      &   -1)
-C        CALL POLPRI(GFACDI,'   ',-2)
          CALL POLPRI(GFACDIA,'   ',-2)
-CMI      AVEDIA = (GFACDI(1,1) + GFACDI(2,2) + GFACDI(3,3))/D3
          AVEDIA = (GFACDIA(1,1) + GFACDIA(2,2) + GFACDIA(3,3))/D3
          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEDIA
 C
@@ -8026,7 +8141,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
-      LOGICAL IS_SQUARE, IS_PCTRA
+      LOGICAL IS_PCTRA
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
 C
@@ -8036,20 +8151,16 @@ C
 C     ... allocate for LL-only operator 
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
       REWIND (LU1INT)
-
 C     ... run over all operators in the list
       DO I = 1, NPRPS
-
 C       ... get info if this operator has to be picture change transformed
         CALL DECIDEPCTR(IS_PCTRA,PRPNAM(I),IPRINT)
-
         IREP = IPRPSYM(I) - 1
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,*)
@@ -8062,42 +8173,13 @@ C       ... get info if this operator has to be picture change transformed
      &      'Operator need NOT to be picture change transformed.'
           ENDIF
         ENDIF
-
-        IF (IPRPTIM(I).EQ.0) THEN
-          IDIMENS = N2BBASX
-          IS_SQUARE = .TRUE.
-        ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
-          IDIMENS = NNBBASX
-          IS_SQUARE = .FALSE.
-        ELSE
-          CALL QUIT('PROP2BSS: wrong parameter ! ')
-        ENDIF
-C
-C       Memory allocation
-C
-        CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-
 C       ... get the operator either in the full four-component form, 
 C       .... or already in  the picture change transformed shape
 C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
-        IF (IS_SQUARE) THEN
-          CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ELSE
-          CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ENDIF
-C     ... deallocate the memory...
-        CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
-
+        CALL PRPMSAO(INDXPR,VMAT,WORK(KFIRST),WORK(KFREE),LFREE,IPRINT)   
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
-
 C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
@@ -8149,7 +8231,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_OPTROT */
-      SUBROUTINE DEF_OPTROT(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OPTROT(IPRINT)
 C***********************************************************************
 C
 C     Define operator for optical rotation; based on DEF_SHIELD
@@ -8162,15 +8244,12 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "nuclei.h"
-      DIMENSION WORK(LWORK)
-C
-#include "memint.h"
-      CALL DEF_OPTROT1(WORK(KFREE),LFREE,IPRINT)
+      CALL DEF_OPTROT1(IPRINT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_optrot1 */
-      SUBROUTINE DEF_OPTROT1(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_OPTROT1(IPRINT)
 C***********************************************************************
 C
 C     Define operator for optical rotation; based on DEF_SHIELD
@@ -8180,7 +8259,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0,DMI2 = -0.5D0)
+      PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -8198,7 +8277,7 @@ C
 #include "dcbnmr.h"
 #include "chrxyz.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -8212,7 +8291,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(1,1) = INDOP1
 C
@@ -8222,7 +8301,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(2,1) = INDOP1
 C
@@ -8232,7 +8311,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
       IPEPOLAR(3,1) = INDOP1
 C
@@ -8241,7 +8320,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+        CALL DEF_D1HBLOND(1,IPRINT)
       ELSE
 C
 C     Conventional atomic orbitals
@@ -8263,7 +8342,7 @@ C X component of B-field
       PLABEL(1) = 'ZDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
      &             LLRBPU,NLRBPT,INDXPR,MAXLLR)
 #if !defined (XH4)
@@ -8273,7 +8352,7 @@ C Y component of B-field
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C Z component of B-field
@@ -8282,7 +8361,7 @@ C Z component of B-field
       PLABEL(1) = 'YDIPLEN'
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
 #endif
@@ -8419,7 +8498,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &          DMI2 = -0.5D0,DI2 = +0.5D00,DM1 = - 1.0D0)
+     &          DI2 = +0.5D00,DM1 = - 1.0D0)
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -8501,7 +8580,7 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFF_DEN2(PNAME,PLABEL,PFAC,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8512,20 +8591,18 @@ C**********************************************************
 #include "nuclei.h"
 
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     (-99: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-99)
-      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFF_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-99)
+      CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN  
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,
-     &               IPRINT)
+      SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
@@ -8539,7 +8616,7 @@ C**********************************************************
       PARAMETER (D1 = 1.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
@@ -8563,7 +8640,7 @@ C
      &                              //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                              //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                     INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND('EFFDEN',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
           END IF
@@ -8573,7 +8650,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFFDEN */
-      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFFDEN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
 C     Define operator for effective density at nuclei
@@ -8590,21 +8667,20 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
+      logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+      allocate(DOATOM(NUCIND))
 C     PVC: INTTYP = 62
 C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_EFFDEN',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL SETATM(DOATOM,NATOM,-62)
+      CALL DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_effden1 */
-      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFFDEN1(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
 C***********************************************************************
 C
 C     Define operator for parity violation - chirality
@@ -8622,7 +8698,7 @@ C***********************************************************************
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -8656,7 +8732,7 @@ C
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('PVC   '
      &                 ,IPEFFDEN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
                END IF
@@ -8677,3 +8753,160 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_EPOLE(L,IPEPOL,IPRINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Define electric Cartesian multipole operators of order L
+C     For given L there are (L+2)(L+1)/2 linearly
+C     independent Cartesian operators specified by powers (NX,NY,NZ)
+C     of the Cartesian coordinates. They can therefore be generated by
+C     looping over the lower triangle of a square matrix of dimension L+1.
+C     The loop below is inspired by the routine CARPOW, but simplified
+C     by starting rows and columns by index zero. From an element (a,b) of
+C     such a shifted matrix the values of the power triplet is given by
+C
+C     NX = L-a, NY =  a - b , NZ = b
+C
+C     Note that this routine does not check if IPEPOL goes out of 
+C     bounds. This has to be done outside the routine.
+C
+C     Written by Trond Saue March 29 3013
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
+      DIMENSION IPEPOL(*)
+      CHARACTER PNAME*16, PLABEL*8
+C
+      IPTYP       = 1
+      NPCOMP      = 1
+      PFAC        = -1.0D0
+      PLABEL(1:2) = 'CM'
+      PNAME       = 'EpolL'//CHRNOS(L/10)//CHRNOS(MOD(L,10))
+     &              //'X00Y00Z00'
+      II = 0
+      DO IA = 0,L
+        NX = L - IA
+        DO IB = 0,IA
+          II = II + 1
+          NY = IA - IB
+          NZ = IB
+          PLABEL(3:8) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+          PNAME( 9:10) = PLABEL(3:4)
+          PNAME(12:13) = PLABEL(5:6)
+          PNAME(15:16) = PLABEL(7:8)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            IPEPOL(II),ISYXPR,ITRXPR,IPRINT)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_MPOLE(L,IPMPOL,IPRINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Define magnetic Cartesian multipole operators of order L
+C
+C     The general formula is
+C
+C       L/(L+1)*x^(NX)*y^(NY)*z^(NZ)*(RVEC times JVEC)_q
+C
+C     where the Cartesian powers (NX,NY,NZ) sum to L-1, 
+C     RVEC is the position vector and JVEC the operator for the
+C     current density vector. In the relativistic domain the current
+C     density vector is -c*ALPHAVEC, where the sign comes from
+C     the electron charge, c is the speed of light and ALPHAVEC is the
+C     vector of Dirac alpha matrices.
+C
+C     A magnetic multipole of order L is symmetric in all indices 
+C     except q, so there are 3(L+1)L/2 linearly independent Cartesian operators 
+C     specified by the powers (NX,NY,NZ) of the Cartesian coordinates. 
+C     They can therefore be generated by looping over the lower triangle 
+C     of a square matrix of dimension L.
+C     The loop below is inspired by the routine CARPOW, but simplified
+C     by starting rows and columns by index zero. Let LM = L - 1. 
+C     From an element (a,b) of such a shifted matrix the values of the 
+C     power triplet is given by
+C
+C     NX = LM-a, NY =  a - b , NZ = b
+C
+C     Note that this routine does not check if IPMPOL goes out of 
+C     bounds. This has to be done outside the routine.
+C
+C     Written by Trond Saue March 29 3013
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
+#include "dcbgen.h"
+      DIMENSION IPMPOL(*),PFAC(2)
+      CHARACTER PNAME*16, PLABEL(2)*8,Q(3)
+C
+      NPCOMP      = 2
+      PFAC(1)     = CVAL*L/(L+1)
+      PFAC(2)     = PFAC(1)
+      PLABEL(1)(1:2) = 'CM'
+      PLABEL(2)(1:2) = 'CM'
+      PNAME       = 'MpolL'//CHRNOS(L/10)//CHRNOS(MOD(L,10))
+     &              //'X00Y00Z00'
+      LM = L-1
+      II = 0
+      DO IA = 0,LM
+        NX = LM - IA
+        DO IB = 0,IA
+          NY = IA - IB
+          NZ = IB
+          PNAME( 9:10) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+          PNAME(12:13) = CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+          PNAME(15:16) = CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+C.........X-component
+          II = II + 1
+          IPTYP = 5 ! XAVECTOR
+          PNAME(5:5) = 'X'
+          NQ = NZ+1
+          PLABEL(1)(3:8) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                   //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                   //CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+          NQ = NY+1
+          PLABEL(2)(3:8) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                   //CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+     &                   //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            IPMPOL(II),ISYXPR,ITRXPR,IPRINT)
+C.........Y-component
+          II = II + 1
+          IPTYP = 6 ! YAVECTOR
+          PNAME(5:5) = 'Y'
+          NQ = NX+1
+          PLABEL(1)(3:8) = CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+     &                   //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                   //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+          NQ = NZ+1
+          PLABEL(2)(3:8) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                   //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                   //CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            IPMPOL(II),ISYXPR,ITRXPR,IPRINT)
+C.........Z-component
+          II = II + 1
+          IPTYP = 7 ! ZAVECTOR
+          PNAME(5:5) = 'Z'
+          NQ = NY+1
+          PLABEL(1)(3:8) = CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                   //CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+     &                   //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+          NQ = NX+1
+          PLABEL(2)(3:8) = CHRNOS(NQ/10)//CHRNOS(MOD(NQ,10))
+     &                   //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                   //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            IPMPOL(II),ISYXPR,ITRXPR,IPRINT)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+

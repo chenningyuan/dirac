@@ -10,7 +10,7 @@
 !       must do a 'make depend' followed by 'make'.
 !
       INTEGER MAXLLR, MAXFLR
-      PARAMETER (MAXLLR = 45, MAXFLR = 20)
+      PARAMETER (MAXLLR = 60, MAXFLR = 60)
 !
 ! ----- VARIABLES:
 !

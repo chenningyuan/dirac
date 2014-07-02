@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -62,7 +62,15 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, 
      &                   Q, QEFF, ISET, DSM, BASREF)
+#ifdef USE_MPI_MOD_F90
+       use mpi
+#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+#ifndef USE_MPI_MOD_F90
+#include "mpif.h"
+#endif
+#endif
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
@@ -92,6 +100,7 @@ C
       CHARACTER BASTMP*80, BASSAV*80
       CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
+      logical :: is_pople_basis_set
 #ifdef PRG_DIRAC
 C     Define a maximum number of primitives that can go in one block
 C     for UNCONTRACTED basis sets. The value given is for s-functions
@@ -122,13 +131,50 @@ C      except for 2c NR calculations
       TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
       TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
       IF(TEST.AND.(.NOT.UNCONT)) THEN
+#ifdef VAR_MPI
+!     print only from one process
+      if (mytid == 0) then
+#endif
         WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
      &   '*** WARNING (BASLIB) : Decontracting basis set',
      &   ' - nuclear charge: ',INTQ,
      &   ' - basis file    : ',BASNAM,
      &   'Reason: DIRAC cannot yet create proper small component basis',
      &   '        for contracted large component basis when Z > 36'
+#ifdef VAR_MPI
+      end if
+#endif
       ENDIF
+
+      ! for windows we keep "-star" basis set files and not "*" files
+      ! now we will translate a possible "*" basis set input
+      ! first find out whether basis set is a pople basis
+      is_pople_basis_set = .false.
+      if (index(basnam, '3-21') > 0) then
+         is_pople_basis_set = .true.
+      end if
+      if (index(basnam, '6-31') > 0) then
+         is_pople_basis_set = .true.
+      end if
+      if (is_pople_basis_set) then
+         ! replace possible "*" by "-star"
+         index_star = index(basnam, '*')
+         if (index_star > 0) then
+            do i = len(basnam), index_star+5, -1
+               basnam(i:i) = basnam(i-4:i-4)
+            end do
+            basnam(index_star:index_star+4) = '-star'
+         end if
+         ! replace possible second "*" by "-star"
+         index_star = index(basnam, '*')
+         if (index_star > 0) then
+            do i = len(basnam), index_star+5, -1
+               basnam(i:i) = basnam(i-4:i-4)
+            end do
+            basnam(index_star:index_star+4) = '-star'
+         end if
+      end if
+
 
       IF (ISET .EQ. 2) THEN
 C jan 2000 hjaaj:
@@ -686,7 +732,7 @@ C
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
                            IF (IOS.NE.0) THEN
-                             CALL QUIT('Error in reading sjjd393jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                            ENDIF
                            IF (IPRINT.GE.6) THEN
                              WRITE(LUPRI,*) 
@@ -873,20 +919,20 @@ C
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                              J - 1 + MAXEXP)
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading skdsjdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                ELSE
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                    J - 1 + MOD(INTEXP,MAXEXP))
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading s233jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                END IF
             ELSE
                READ (LUBAS,*,IOSTAT=IOS) 
      &         (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
                IF (IOS.NE.0) THEN
-                  CALL QUIT('error in reading 2s2adjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                ENDIF
             END IF
             J = J + MAXEXP
@@ -895,7 +941,7 @@ C
             READ (LUBAS,*,IOSTAT=IOS) 
      &       (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
             IF (IOS.NE.0) THEN
-              CALL QUIT('error in reading assjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
          END DO
       ELSE
@@ -1158,7 +1204,8 @@ C
          WRITE (LUPRI,'(A)')
      +        'NB! Basis Huckel must be available to use Huckel guess!'
       END IF
-      CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found. Check whether DIRAC '//
+     &          'can locate basis set libraries.')
 C
 C Error messages 
 C
@@ -1168,8 +1215,10 @@ C
      &   ' IOSTAT =',IOERR
       CALL QUIT('I/O error in FINDEL in HERBAS')
  200  CONTINUE
-      WRITE (LUPRI,'(/I3,2A)') INTQ,
-     &     ' is an unsupported element for basis ',BASNAM
+      WRITE (LUPRI,'(//A,I5,2A/A//)')
+     &' ERROR: Nuclear charge',INTQ,
+     &   ' is an unsupported element for basis ',BASNAM,
+     &' ERROR: You must choose another basis set, or enter it manually.'
       CALL QUIT('Unsupported element in HERBAS')
       END 
 C/* Deck finnqd */
@@ -1388,7 +1437,8 @@ C
          END DO
   300    WRITE (LUPRI,'(/,3A)')
      +      'Basis "',STRING(1:LSTR),'" doesn''t exist'
-         CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found. Check whether DIRAC '//
+     &          'can locate basis set libraries.')
       END IF
 C
 C Error messages 
@@ -1526,7 +1576,7 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          ELSE
             READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
             IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading ... ssjdjncncbhd')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
             IF (IPRINT.GE.10) THEN
              write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'

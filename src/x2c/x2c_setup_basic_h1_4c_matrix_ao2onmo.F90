@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
@@ -28,13 +28,13 @@
 !
 module x2c_h1mat_base
 
-  use memory_allocator
   use x2c_fio
   use x2c_cb_interface, only:         &
-      sel_wrk_x2c,                    &
-      desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
-  use x2c_utils, only: print_x2cmat
+  use x2c_utils, only:                &
+      print_x2cmat,                   &
+      make_spinfree_h1_onmo,          &
+      get_boson_irrep_info
   use x2c_def_h1_4c, only:            &
       get_h1_4c_saao_basis,           &
       get_h1_4c_on_basis
@@ -61,12 +61,14 @@ contains
                                  ioff_aomx,            &
                                  nfsym,                &
                                  nz,                   &
+                                 nzt,                  &
                                  ipq_off_in,           &
                                  basic_h1mat,          &
                                  is_len_wrk,           &
-                                 is_fragment,          &
                                  x2c_file_scr,         &
                                  linear_sym,           &
+                                 mdirac,               &
+                                 spinfree,             &
                                  print_lvl)
 !**********************************************************************
 !
@@ -91,24 +93,27 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: basic_h1mat
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
-     integer                :: ioff_osh1       
+     integer                :: ioff_osh1
+     integer                :: ioff_osh2
      integer                :: ioff_ao_o_sh1   
      integer                :: ioff_ao_ao_sh1
      integer                :: i       
      integer                :: norb1_f       
      integer                :: nbas1_f
      integer                :: ndim_ao 
+     integer                :: mz
      character (len=12)     :: flabel
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
+     integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
 !      step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat
@@ -126,9 +131,11 @@ contains
                                  norb_dim,               &
                                  nfsym,                  &
                                  nz,                     &
+                                 nzt,                    &
                                  ipq_off_in,             &
                                  basic_h1mat,            &
                                  linear_sym,             &
+                                 mdirac,                 &
                                  is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)
@@ -139,8 +146,23 @@ contains
 !              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !      ------------------------------------------------------------------------------
 
+       mz = nz
+       if (nfsym == 2) then
+         allocate(boson_info(norb_dim(1)+norb_dim(2)))
+       else
+         allocate(boson_info(norb_dim(1)))
+       endif
+       if(spinfree)then
+         call get_boson_irrep_info(boson_info,  &
+                                   nfsym,       &
+                                   norb_dim,    &
+                                   print_lvl)
+         mz = 1
+       end if
+
 !      initialize matrix offsets
        ioff_osh1      = 1
+       ioff_osh2      = 1
        ioff_ao_o_sh1  = 1
        ioff_ao_ao_sh1 = 1
 
@@ -162,7 +184,7 @@ contains
          if( norb_dim(i) > 0 )then
 
 !          debug print
-           if(print_lvl > 1)then
+           if (print_lvl >= 3) then
              call print_x2cmat(h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,nbas1_f,nz,ipq_off_in(1,0),      &
                               'x2c - h1_4c-basic-saao',6)
            end if
@@ -174,21 +196,27 @@ contains
                                    nbas1_f,                           &
                                    norb1_f,                           &
                                    nz,                                &
+                                   mz,                                &
+                                   nzt,                               &
                                    ipq_off_in,                        &
+                                   spinfree,                          &
+                                   boson_info(ioff_osh2),             &
                                    print_lvl)
-
          end if
 
 !        store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
-         write(flabel,'(a7,i4,i1)') 'h1_4cON',is_fragment,i
+         write(flabel,'(a7,i4,i1)') 'h1_4cON',1,i
          call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
 
 !        update offsets for matrices
-         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
          ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
          ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
+         ioff_osh2      = ioff_osh2      + norb1_f
 
        end do
+
+       deallocate(boson_info)
 
   end subroutine x2c_get_h1_mat_base
 

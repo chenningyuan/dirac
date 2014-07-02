@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -259,14 +259,6 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
-C     LV   Deactivated this filesplitting option, should be obsolete now. 
-C     If the lines below are still commented out in 2013, please delete altogether !
-C
-C     We may exceed the maximum file length. Check it in the following
-C     routine !
-C
-C     CALL MDINTN (NZKL)
-
 C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
@@ -348,9 +340,12 @@ C
             MKL = - IREPKLB(1,I) - IREPKLB(2,I)
          ENDIF
 !        write(lupri,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
-!        IF (MIJ+MKL.NE.0)
+!        IF (MIJ+MKL/=0)
 !    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
-!    &   '(linzero): removed integral(',i,')',FMAT(I)
+!    &   '(linzero): removed integral(',iclass,')',FMAT(I)
+!        IF (MIJ+MKL==0)
+!    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
+!    &   '(linzero): kept integral(',iclass,')',FMAT(I)
          IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
       ENDDO
 C
@@ -365,7 +360,6 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -386,10 +380,10 @@ C
          RCW = 2
       ENDIF
 C
-      call alloc(FTMAT,NKL,RCW)
-      call alloc(  RKL,NKL,RCW)
-      call alloc(INDK ,NKL)
-      call alloc(INDL, NKL)
+      allocate(FTMAT(NKL,RCW))
+      allocate(  RKL(NKL,RCW))
+      allocate(INDK(NKL))
+      allocate(INDL(NKL))
 C
       IF (SPINFR) THEN
 C
@@ -522,10 +516,10 @@ C
 C
       ENDIF ! spinfree
 C
-      call dealloc(FTMAT)
-      call dealloc(RKL)
-      call dealloc(INDK)
-      call dealloc(INDL)
+      deallocate(FTMAT)
+      deallocate(RKL)
+      deallocate(INDK)
+      deallocate(INDL)
 C
       RETURN
       END

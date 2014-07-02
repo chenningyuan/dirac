@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,28 +16,39 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
 !
 ! module containing the selection of the defining matrix "h1" from which 
 ! the decoupling matrix shall be extracted.
 !
-! written by sknecht june 2010
+! written by sknecht   june 2010 - original implementation
+!
+!            sknecht august 2012 - added InteRest interface for 1-e Hamiltonian 
+!                                - added test support for X2C-spinfree (before the decoupling)
+!                                  simply activate "x2c_spinfree_" in the next line
+!#define x2c_spinfree_before_4c_to_2c
+!                                  default for X2C-spinfree is "after the decoupling"
 !
 module x2c_def_h1_4c
 
-  use memory_allocator
+#ifdef MOD_INTEREST
+      use module_interest_interface
+#endif
+  use x2c_import_exportC1
   use x2c_fio
   use x2c_cb_interface, only:         &
-      sel_wrk_x2c,                    &
-      desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
+!#ifdef x2c_spinfree_before_4c_to_2c
+      make_spinfree_h1_onmo,          &
+      get_boson_irrep_info,           &
+!#endif
       read_4cfock_operator_x2c,       &
+      get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
-  use x2c_import_exportC1
 
   implicit none
 
@@ -63,12 +74,14 @@ contains
                                      ioff_aomx,            &
                                      nfsym,                &
                                      nz,                   &
+                                     nzt,                  &
                                      ipq_off_in,           &
                                      defining_h1mat,       &
                                      is_len_wrk,           &
-                                     is_fragment,          &
                                      x2c_file_scr,         &
                                      linear_sym,           &
+                                     mdirac,               &
+                                     spinfree,             &
                                      print_lvl)
 !**********************************************************************
 !
@@ -90,27 +103,30 @@ contains
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
-     integer, intent(in)    :: is_fragment
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
-     integer                :: ioff_osh1       
+     integer                :: ioff_osh1
+     integer                :: ioff_osh2
      integer                :: ioff_ao_o_sh1   
      integer                :: ioff_ao_ao_sh1
      integer                :: i       
      integer                :: norb1_f       
      integer                :: nbas1_f
      integer                :: ndim_ao
+     integer                :: mz
      real(8)                :: mydummy(2)
      character (len=12)     :: flabel
      logical                :: skip_step1 = .false.
      logical                :: fndlab12
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
+     integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
 !     step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
@@ -130,9 +146,11 @@ contains
                                 norb_dim,               &
                                 nfsym,                  &
                                 nz,                     &
+                                nzt,                    &
                                 ipq_off_in,             &
                                 defining_h1mat,         &
                                 linear_sym,             &
+                                mdirac,                 &
                                 is_len_wrk,             &
                                 x2c_file_scr,           &
                                 print_lvl)
@@ -145,9 +163,23 @@ contains
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !     ------------------------------------------------------------------------------
+      mz = nz
+      if (nfsym == 2) then
+        allocate(boson_info(norb_dim(1)+norb_dim(2)))
+      else
+        allocate(boson_info(norb_dim(1)))
+      endif
+      if(spinfree)then
+        call get_boson_irrep_info(boson_info,  &
+                                  nfsym,       &
+                                  norb_dim,    &
+                                  print_lvl)
+        mz = 1
+      end if
 
 !     initialize matrix offsets
       ioff_osh1      = 1
+      ioff_osh2      = 1
       ioff_ao_o_sh1  = 1
       ioff_ao_ao_sh1 = 1
 
@@ -164,6 +196,9 @@ contains
           ndim_ao        = naosh_ls
         end if
 
+!       call print_x2cmat( tra_mat_4cAOMO(ioff_ao_o_sh1),nbas1_f,norb1_f,nz,ipq_off_in,'blubb sf aomo',6)
+!       call print_x2cmat( h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,ndim_ao,nz,ipq_off_in,'blubb sf h1aoba',6)
+
         if( norb_dim(i) > 0 )then
 
           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
@@ -173,17 +208,24 @@ contains
                                   nbas1_f,                           &
                                   norb1_f,                           &
                                   nz,                                &
+                                  mz,                                &
+                                  nzt,                               &
                                   ipq_off_in,                        &
+                                  spinfree,                          &
+                                  boson_info(ioff_osh2),             &
                                   print_lvl)
-
         end if
+!       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
 !       update offsets for matrices
-        ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+        ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz 
         ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
+        ioff_osh2      = ioff_osh2      + norb1_f
 
       end do
+
+      deallocate(boson_info)
 
   end subroutine x2c_get_h1_defining_mat
 
@@ -196,9 +238,11 @@ contains
                                   norb_dim,               &
                                   nfsym,                  &
                                   nz,                     &
+                                  nzt,                    &
                                   ipq_off_in,             &
                                   defining_h1mat,         &
                                   linear_sym,             &
+                                  mdirac,                 &
                                   is_len_wrk,             &
                                   x2c_file_scr,           &
                                   print_lvl)
@@ -223,14 +267,16 @@ contains
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: norb_dim(nfsym)
      integer, intent(in)    :: nz
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: defining_h1mat
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: mdirac
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: wrk(:)
      integer                :: lwrk
 !**********************************************************************
 
@@ -239,15 +285,21 @@ contains
 
        if(defining_h1mat == 0)then
 
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
-
-         call reset_x2c_cb_onefck(.false.)
-         call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
-         call reset_x2c_cb_onefck(.true.)
-
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
+         if(mdirac)then
+#ifdef MOD_INTEREST
+           h1_saao_bas(1:naosh_ls**2*nz) = 0.0d0
+           call process_kinetic_energy_integrals_4comp( h1_saao_bas )
+           call process_nuclear_attraction_integrals_4comp( h1_saao_bas ) 
+#endif
+         else
+#ifdef PRG_DIRAC
+           allocate(wrk(lwrk))
+           call reset_x2c_cb_onefck(.false.)
+           call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+           call reset_x2c_cb_onefck(.true.)
+           deallocate(wrk)
+#endif
+         end if
 
        else if(defining_h1mat == 1)then
 !        HUCKEL start guess...
@@ -263,25 +315,25 @@ contains
                                   norb_dim,           &
                                   nfsym,              &
                                   nz,                 &
+                                  nzt,                &
                                   ipq_off_in,         &
                                   linear_sym,         &
-                                  lwrk,               &
+                                  mdirac,             &
                                   x2c_file_scr,       &
                                   print_lvl)
 
        else if(defining_h1mat == 3)then
-!        set pointer to WORK array
-         call sel_wrk_x2c(wrk,lwrk)
 
+#ifdef PRG_DIRAC
 !        Free-particle matrix
+         allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
+         deallocate(wrk)
+#endif
 
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
        end if
-
 
   end subroutine get_h1_4c_saao_basis
 
@@ -294,9 +346,10 @@ contains
                                  norb_dim,               &
                                  nfsym,                  &
                                  nz,                     &
+                                 nzt,                    &
                                  ipq_off_in,             &
                                  linear_sym,             &
-                                 lwrk,                   &
+                                 mdirac,                 &
                                  x2c_file_scr,           &
                                  print_lvl)
 !**********************************************************************
@@ -320,11 +373,12 @@ contains
      integer, intent(in)          :: naosh_all(nfsym)
      integer, intent(in)          :: norb_dim(nfsym)
      integer, intent(in)          :: nz
+     integer, intent(in)          :: nzt
      integer, intent(in)          :: ipq_off_in(4,0:7)
      logical, intent(in)          :: linear_sym
+     logical, intent(in)          :: mdirac
      integer, intent(in)          :: x2c_file_scr
      integer, intent(in)          :: print_lvl
-     integer, intent(in)          :: lwrk
 !----------------------------------------------------------------------
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
@@ -336,9 +390,8 @@ contains
      character (len=12)           :: flabel
      character (len=28)           :: debug_string
      logical                      :: fndlab12
-     real(8), pointer             :: wrk(:)
 !**********************************************************************
-
+ 
 !     dummy center/fragment counter
       j = 1
 
@@ -351,7 +404,7 @@ contains
 
 !         read the 4c-fock operator in SA-AO basis from file (label == h1_4cAO)
           nbas1_f = naosh_all(i)
-          write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
+          write(flabel,'(a7,i4,i1)') 'h14csAO',1,i
 
           if(nbas1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f**2 * nz
@@ -375,7 +428,7 @@ contains
                                         op_mat_on_file,    &
                                         print_lvl)
         end if
-        if(x2c_fock_saao_basis) goto 100
+        if(x2c_fock_saao_basis) goto 100 ! debug option - can be activated in the input
 
 !       step 2: 4c-fock_onmo (LS sorted) --> 4c-fock_onmo_nonlin LS sorted
 !       ------------------------------------------------------------------
@@ -405,6 +458,7 @@ contains
                                                  norb1_f,                   &
                                                  nz,                        &
                                                  nz,                        &
+                                                 nz,                        &
                                                  ipq_off_in,                &
                                                  'MOAO',                    &
                                                  'S',                       &
@@ -422,21 +476,29 @@ contains
 
 !       step 3: get half-transformed overlap matrix Sao
 !       -----------------------------------------------
-!       set pointer to WORK array
-        call sel_wrk_x2c(wrk,lwrk)
-
         ioff_ao_o_sh1 = 1
         do i = 1, nfsym
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
-          write(flabel,'(a7,i4,i1)') '4cAOMOo',j,i
-          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1),nbas1_f*norb1_f*nz,x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
+          write(flabel,'(a7,i4,i1)') '4cAOMOo',1,i
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,h1_saao_bas(ioff_ao_o_sh1), &
+                                          nbas1_f * norb1_f * nzt, x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do
-        call mksaomo(scrmat2,h1_saao_bas,.false.,print_lvl,wrk,lwrk)
 
-!       reset pointer to WORK array
-        call desel_wrk_x2c(wrk,lwrk)
+        call get_saomo_x2c(                &
+                           scrmat2,        &
+                           h1_saao_bas,    &
+                           naosh_ls,       &
+                           naosh_all,      &
+                           norb_dim,       &
+                           ioff_aomat_x,   &
+                           nfsym,          &
+                           nz,             &
+                           nzt,            &
+                           ipq_off_in,     &
+                           mdirac,         &
+                           print_lvl)
 
 !       step 4: 4c-fock_onmo_nonlin LS sorted --> 4c-fock_saao
 !       ------------------------------------------------------
@@ -458,6 +520,7 @@ contains
                                                nbas1_f,                        &
                                                nz,                             &
                                                nz,                             &
+                                               nzt,                            &
                                                ipq_off_in,                     &
                                                'MOAO',                         &
                                                'S',                            &
@@ -468,7 +531,7 @@ contains
           end if
 
 !         save on file x2cscr for re-use as defining h1
-          write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
+          write(flabel,'(a7,i4,i1)') 'h14csAO',1,i
           call x2c_write(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
 !         debug print
           if(print_lvl > 2)then
@@ -478,8 +541,14 @@ contains
 
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
           ioff_osh1      = ioff_osh1      + norb1_f * norb1_f * nz
-          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+          ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         end do
+
+        !> dump the full Fock matrix in AO basis to file (if needed later)
+        open(81,file='4cf1f2AO',status='replace',form='unformatted',         &
+              access='sequential',action='write',position='rewind')
+        write(81) (h1_saao_bas(i),i=1,naosh_ls*naosh_ls*nz)
+        close(81,status="keep")
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
 !       ------------------------------------------------------------------------------------------------------------
@@ -487,9 +556,9 @@ contains
         do i = 1, nfsym
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
-          write(flabel,'(a7,i4,i1)') '4cAOMOr',j,i
-          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f * norb1_f * nz,x2c_file_scr)
-          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
+          write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
+          if(nbas1_f * norb1_f > 0) call x2c_read(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f*nzt,x2c_file_scr)
+          ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nzt
         end do
 
       end if ! if fndlab12('h1_4cAO   11') --> h1_4cAO already exists on file x2cscr
@@ -503,8 +572,12 @@ contains
                                 naosh_ls,               &
                                 nbas1_f,                &
                                 norb1_f,                &
-                                nz,                     &
+                                nz1,                    &
+                                nz2,                    &
+                                nzt,                    &
                                 ipq_off_in,             &
+                                spinfree,               &
+                                boson_info,             &
                                 print_lvl)
 !**********************************************************************
 !
@@ -516,12 +589,16 @@ contains
      real(8), intent(inout) :: h1_onmo_bas(*)
      real(8), intent(inout) :: h1_saao_bas(*)
      real(8), intent(inout) :: tra_mat_4cAOMO(*)
+     integer, intent(in)    :: boson_info(*)
      integer, intent(in)    :: nbas1_f
      integer, intent(in)    :: norb1_f
      integer, intent(in)    :: naosh_ls
-     integer, intent(in)    :: nz
+     integer, intent(in)    :: nz1
+     integer, intent(in)    :: nz2
+     integer, intent(in)    :: nzt
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: print_lvl
+     logical, intent(in)    :: spinfree
 !----------------------------------------------------------------------
 
 !      h1_4cON = V+ * h1_4cao * V
@@ -532,12 +609,30 @@ contains
                                           nbas1_f,               &
                                           norb1_f,               &
                                           naosh_ls,              &
-                                          nz,                    &
-                                          nz,                    &
+                                          nz1,                   &
+                                          nz2,                   &
+                                          nzt,                   &
                                           ipq_off_in,            &
                                           'AOMO',                &
                                           'S',                   &
                                           print_lvl) 
+
+!#ifdef x2c_spinfree_before_4c_to_2c
+!       test the spinfree-before scheme by Miro and HJAAJ
+        if(spinfree)then
+          call make_spinfree_h1_onmo(                            &
+                                     h1_onmo_bas,                & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     norb1_f,                    & 
+                                     boson_info,                 &
+                                     boson_info,                 &
+                                     nz1,                        &
+                                     print_lvl                   &
+                                    )
+        end if
+!#endif
 
   end subroutine get_h1_4c_on_basis
 !**********************************************************************

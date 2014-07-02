@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C FILE    : hersym.F
@@ -118,7 +118,7 @@ C ***********************************************************
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
-
+#include "memint.h"
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 7
@@ -168,27 +168,19 @@ C
      &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
          IF (.NOT. NOMOVE) THEN
+C..........Turn molecule
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
          IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
             if (mytid == mparid) then
-               call prnarr(text, mxcent, atmarr)
-               print *, ''
-               print *, 'Centered and rotated coordinates'
-               print *, 'in xyz format (angstrom)'
-               print *, '--------------------------------'
-               print *, ''
-               write(*, '(i0)') nuclp
-               print *, ''
-               do i = 1, nuclp
-                  IZ_VAL = NINT( atmarr(5, i) )
-                  write(*, '(a4, 3f14.8)') namn(IZ_VAL),
-     &                                     atmarr(1, i)*xtang,
-     &                                     atmarr(2, i)*xtang,
-     &                                     atmarr(3, i)*xtang
-               end do
-               print *, ''
+               CALL MEMGET('INTE',KIBUF,NUCLP,WORK,KFREE,LFREE)
+               CALL MEMGET('REAL',KBUF ,NUCLP,WORK,KFREE,LFREE)
+               CALL DCOPY(NUCLP,ATMARR(5,1),MXCENT+1,WORK(KBUF),1)
+               CALL INDEXX(NUCLP,WORK(KBUF),WORK(KIBUF))
+               call prnarr2(text, mxcent, atmarr,work(kibuf))
+               CALL MEMREL('FNDSYM.centrot',WORK,KWORK,KIBUF,
+     &                     KFREE,LFREE)
             end if
          ELSE
             WRITE (LUPRI,'(/A/)') 
@@ -252,7 +244,6 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
-
          NUCIND = NINT(ATMARR(1,0))
          IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
 
@@ -362,6 +353,36 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          DO 200 I=1,NINT(ARR(1,0))
             WRITE (LUPRI,11) NINT(ARR(4,I)),(ARR(J,I), J=1,3),
      &                       NINT(ARR(6,I))
+ 11	    FORMAT ( I5, T10, 3F15.8,T60,I3)
+ 200     CONTINUE
+         RETURN
+      END
+C  /* Deck prnarr */
+      SUBROUTINE PRNARR2(TEXT, MXM, ARR, IARR)
+C ::::::::::::::::::::::::::::::::::::::::::::::
+C ::                                          ::
+C ::       Prints all elements of array       ::
+C ::       according to ordering              ::
+C ::                                          ::
+C ::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+         CHARACTER*40 TEXT
+         CHARACTER*40 UNDER
+         DIMENSION ARR(6,0:MXM),IARR(MXM)
+         UNDER = '----------------------------------------'
+         I = 40
+ 10      CONTINUE
+         IF ((I .GE. 1) .AND. (TEXT(I:I) .EQ. ' ')) THEN
+            I = I - 1
+            GOTO 10
+         END IF
+         UNDER((I+1):40) = '                                        '
+         WRITE(LUPRI,'(/1X,A/1X,A)') TEXT, UNDER
+         DO 200 I=1,NINT(ARR(1,0))
+            II = IARR(I)
+            WRITE (LUPRI,11) NINT(ARR(4,II)),(ARR(J,II), J=1,3),
+     &                       NINT(ARR(6,II))
  11	    FORMAT ( I5, T10, 3F15.8,T60,I3)
  200     CONTINUE
          RETURN
@@ -1059,7 +1080,7 @@ C ::: Then we go through the rest, trying to find each atoms mirror image :::
             IF (IUSED(I) .EQ. 0) THEN
                J = I + 1
  350           CONTINUE
-!radovan: test dft_ao_eval goes out of bounds
+!radovan: test dft_dirac_ao_eval goes out of bounds
 !Array reference out of bounds for array 'atmarr', upper bound of dimension 2 exceeded (3 > 2)
                IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N) .AND.
      &              (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
@@ -1767,7 +1788,7 @@ C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
-C ::: and we chosse to skip their determination.              :::
+C ::: and we choose to skip their determination.              :::
          IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
             CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
          ELSE

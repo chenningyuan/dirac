@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -59,13 +59,13 @@ C
       ELSE
 C
          IF (NASHT .EQ. 0) THEN
-            CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)      
+            CALL MEMGET2('REAL','FAO',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
          ELSE
-            CALL MEMGET('REAL',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)      
+            CALL MEMGET2('REAL','FAO',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)
          END IF
-         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
          IF(SPINFR) THEN
-           CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+           CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
          ELSE
            KBEIG = KFREE
          ENDIF
@@ -111,11 +111,10 @@ C***********************************************************************
        use dft_cfg
        use xcint_main
        use fde_mod
-       use fde_integrate
        use num_grid_gen
        use num_grid_cfg
 #ifdef PCM_MODULE
-       use pcm_interface
+      use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 
 #include "implicit.h"
@@ -137,7 +136,8 @@ C
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
-
+      real(8), allocatable :: xc_matrix(:, :, :)
+      real(8), allocatable :: fock_pcm(:, :, :)
 
 C
 #include "ibtfun.h"
@@ -187,8 +187,8 @@ C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
         ILLINT = IBTAND(INTFLG,1)
         ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/3,1)
-        IGTINT = IBTAND(INTFLG/4,1)
+        ISSINT = IBTAND(INTFLG/4,1)
+        IGTINT = IBTAND(INTFLG/8,1)
         WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
@@ -197,7 +197,7 @@ C
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -232,69 +232,62 @@ C          Hermitian operator
       ENDIF
 
 
-
-
 !       construct xc contribution
 !       =========================
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
            call generate_num_grid(fao)
+#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
+#endif
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
+           allocate(xc_matrix(ntbas(0), ntbas(0), nz))
+           xc_matrix = 0.0d0
            call integrate_xc(xc_mat_dim               = ntbas(0),
      &                        xc_nz                    = nz,
      &                        xc_dmat_0                = fao,
      &                        xc_nr_dmat               = 0,
      &                        xc_nr_fmat               = 1,
-     &                        xc_fmat                  = fmo,
+     &                        xc_fmat                  = xc_matrix,
      &                        xc_do_potential          = .true.,
      &                        xc_do_overlap_diagnostic = 
      &                           dft_cfg_overlap_diagnostic)
+           call daxpy(n2bbasxq, 1.0d0, xc_matrix, 1, fmo, 1)
+           deallocate(xc_matrix)
         end if
 
-#ifdef MOD_UNRELEASED
-!!!!!!
-        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde) then
+           call fde_get_import_info(itmp)
 !
 ! here we should not skip the following call, even if we don't
 ! want the fde contributions to response, since it will be
 ! necessary to start by adding the contributions from the potential 
 ! to the fmat
 !
-!       if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-        if (itmp%im_frozen.and.itmp%im_update_vemb) then
+           if (itmp%im_frozen.and.itmp%im_update_vemb) then
+              if (.not.dirac_cfg_dft_calculation) then
+                 call genden(fao, cmo, 1, iprint)
+              endif
 
-           if (.not.dirac_cfg_dft_calculation) then
-              call genden(fao, cmo, 1, iprint)
+!             call fde_set_nz(nz)
+              call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
+
+              write (*,*) 'FDE Fock contributions (re)calculated'
+           else if (itmp%im_vemb) then
+              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
            endif
-
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
-     &                       fde_nz                 = nz,
-     &                       fde_dmat_0             = fao, 
-     &                       fde_nr_dmat            = 0,
-     &                       fde_nr_fmat            = 1,
-     &                       fde_fmat               = fmo,
-     &                       fde_do_potential       = .true.)
-
-         write (*,*) 'FDE Fock matrix contributions (re)calculated'
-        else if (itmp%im_vemb) then
-         write (*,*) 'FDE Fock matrix contributions (in AOPROPER) added'
         endif
-!!!!!
-#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -309,10 +302,23 @@ CJTH check this
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
+           call genden(fao, cmo, 1, iprint)
+! Generate the total MEP and ASC, we are doing response
+! so pcm_energy_driver is not called...
+! fao is the AO density matrix
+           call compute_mep_asc(fao, work(kfree), lfree)
+           write(lupri,'(a)') '* Calling pcm_oper_ao_driver to get '//
      &                    'J + X(D) contribution.'
+           allocate(fock_pcm(ntbas(0), ntbas(0), nz))
+           fock_pcm = 0.0d0
 ! fmo is the Fock matrix in AO basis, fao is the density matrix
-           call pcm_fock_driver(fmo, fao, work(kfree), lfree)
+           call pcm_oper_ao_driver(fock_pcm, 'TotASC'//char(0), 
+     &          work(kfree), lfree)
+           call daxpy(n2bbasx, -1.0d0, fock_pcm, 1, fmo, 1)
+!     print *, "FOCK_PCM"
+!     call prqmat(fock_pcm, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                      nz, ipqtoq(1,0), 6)
+           deallocate(fock_pcm)
         endif 
 #endif       
 
@@ -398,7 +404,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck REDPAR */
-      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
+      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JXOPE,JXOPP,
      &                  NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
      &                  NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
      &                  WORK,KFREE,LFREE,IPRINT)
@@ -423,7 +429,7 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
-     &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
+     &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
       LOGICAL LBIT
 C
       KFRSAV = KFREE
@@ -573,7 +579,7 @@ C
 C     Allocate buffer areas
 C     =====================
 C
-      CALL MEMGET('INTE',KIND ,MXFBAS,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NIND',KIND ,MXFBAS,WORK,KFREE,LFREE)
       CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
@@ -848,7 +854,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -857,7 +863,14 @@ C
 C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
-#include "implicit.h"
+
+      use orbital_rotation_indices, only: setxop
+      use conf_parameters, only: allocate_conf_array
+
+      implicit none
+
+      integer, intent(in) :: iprint
+
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -866,8 +879,8 @@ C
 C
       CHARACTER INDSTR(3,2)*72
       LOGICAL   SKIPEE,SKIPEP
-      DIMENSION WORK(*)
       LOGICAL GASWF
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('XRSPAR')
 C
@@ -877,8 +890,10 @@ C
       NZCONF   = 0
       NZCONFQ  = NZCONF *NZ
 C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
-      CALL MEMGET('REAL',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
-C
+
+      call allocate_conf_array(nzconfq)
+
+
 C     Orbital parameters
 C     ==================
 C
@@ -889,19 +904,16 @@ C     but is not defined for DHF/DFT yet (only for KRMC now)
 C     hjaaj June 2001: GASWF should be based on either
 C     MCSCF common block or that this WF is not KRMC
 C
-      CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
-      CALL IZERO(WORK(KNOROT),NORBT)
+      allocate(norot(norbt))
+      norot = 0
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
-C     No CALL MEMREL here!!!!
-C     NZXOPE, NZHOPE, NZXOPP and the
-C     pointers KZXOPE and KXZOPP are defined in SETXOP
-C     THEY MUST NOT BE RELEASED WITH MEMREL !
-C     We must p.t. live with KNOROT allocation ...
-C
+      deallocate(norot)
 C===TODO end
+
+
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP
@@ -920,5 +932,4 @@ C
       END IF
 C
       CALL QEXIT('XRSPAR')
-      RETURN
       END

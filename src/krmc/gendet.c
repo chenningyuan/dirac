@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2011 by the authors of DIRAC.
+ *     Copyright (c) 2013 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -17,7 +17,7 @@
  *
  *     For information on how to get a license, as well as the
  *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://dirac.chem.vu.nl
+ *     DIRAC program, see: http://www.diracprogram.org
  */
 /* dirac_copyright_end */
 
@@ -97,10 +97,10 @@ cgendet ( integer *pnElec, integer *pnAsht,
 
   /*
    *
-   *  INTEGER*4 IEL, NASHT, NSTR, NGAS, NGSP(1:2), MAXSTR
-   *  INTEGER*8 ISTR(1:MAXSTR), MSKGAS(1:NGAS)
+   *  INTEGER   IEL, NASHT, NSTR, NGAS_DC, nGASTOT, nGASSpc(1:2), MAXSTR
+   *  INTEGER*8 JSTR(1:MAXSTR), MSKGAS(1:NGAS)
    *  CALL CGENDET(IEL,NASHT,NSTR,JSTR,
-   * &             NGAS,NGASTOT,MSKGAS,NGSPC,MAXSTR)
+   * &             NGAS_DC,nGASTOT,MSKGAS,nGASSpc,MAXSTR)
    *
    */
 
@@ -167,9 +167,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
 	   (*j)++;
        }
        else {
-	 printf ("*** ERROR in CGENDET1 *** "
-		 "Too many strings: %i! "
-		 "Allocate more memory!\n", *j );
+	 printf ("*** ERROR in CGENDET1 *** Too many strings: %i! Allocate more memory!\n", *j );
 	 quit( "*** ERROR in CGENDET1 ***", 25 );
        }
      }

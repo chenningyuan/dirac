@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -706,7 +706,7 @@ C
 C
 C     Print section
 C
-      IF(IPRXRS.GE.5) THEN
+      IF(IPRXRS.GE.8) THEN
         WRITE(LUPRI,'(A)') 'DMOLI3: Input B-matrix:'
         CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &                IPQTOQ(1,IREP),LUPRI)
@@ -803,7 +803,7 @@ C
          CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
       END IF
 C
-      IF(IPRXRS.GE.5) THEN
+      IF(IPRXRS.GE.8) THEN
         CALL HEADER(
      &     'DMOLI3: Non-symmetrized AO modified density matrix',-1)
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
@@ -827,7 +827,7 @@ C
 C
 C     Print section
 C
-      IF(IPRXRS.GE.5) THEN
+      IF(IPRXRS.GE.8) THEN
         CALL HEADER('DMOLI3: Symmetrized AO modified density matrix',-1)
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
@@ -1843,7 +1843,7 @@ C
       PARAMETER(DTOL=1.0D-10,D0=0.0D0)
 C
       DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
-     &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
+     &          IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
 C
 C
       IF    (NBTYP.EQ.JBCNDX) THEN
@@ -2219,7 +2219,11 @@ C
      &          RNORM(NVPAR,MFREQ*NDAMP),XNORM(MFREQ*NDAMP,NVPAR),
      &          RCNV(*),WORK(*)
 C
-      IF(IPRXRS.GE.3) CALL HEADER('Output from XRSNE1',-1)
+      IF (IPRXRS.GE.3) THEN
+         CALL HEADER('Output from XRSNE1',-1)
+         WRITE(LUPRI,'(A,2L10,I5)') 'STATIC, FKRMC, MFREQ',
+     &      STATIC,FKRMC,MFREQ
+      END IF
 C
 C     ***********************************
 C     ***** Form solution vectors X *****
@@ -2345,7 +2349,7 @@ C           Print section
             CALL DZERO(XNORM(1,IPCP),NCSIM)
           ENDIF
         ENDIF
-      ELSE ! from IF(STATIC) THEN
+      ELSE ! not (STATIC)
 C
 C       In frequency-dependent case, the resultant X-vectors
 C       split into X(+) and X(-).
@@ -2590,7 +2594,7 @@ C
             CALL DZERO(XNORM(1,IPCM),MFREQ)
           ENDIF
         ENDIF
-      ENDIF ! from IF(STATIC) THEN
+      ENDIF ! from IF(STATIC) THEN ... ELSE ...
 C
       NTSIM = NESIM + NPSIM + NCSIM
 C
@@ -3344,6 +3348,7 @@ C***********************************************************************
 C
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
       PARAMETER(DLIM = 1.0D-6)
+!     PARAMETER(DLIM = 1.0D-3) sk+hjaaj test
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -3416,13 +3421,14 @@ C         X(+) - vector
             BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
             IF (JBTYP .EQ. JBCNDX) THEN
               IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
-              THRBVEC = ABS(BVEC(IVAR,1,IP))/1.0D1
+              THRBVEC = ABS(BVEC(IVAR,1,IP))*1.0D-1
 CHJ           THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
 CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
               THRBVEC = THRZER
+!sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ
               DO IVAR = 1,NVAR
@@ -3437,6 +3443,7 @@ C
      &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG(IVAR))
                   ELSE
                     BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
+!sk+hjaaj test      BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP) / DLIM
                   END IF
                 ELSE
                   BVEC(IVAR,IZ,IP) = D0
@@ -3694,7 +3701,7 @@ C
             CALL FULMAT('A',NASHT,NASHT,DVT(1,IZ,ICSIM))
          END DO
 C
-         IF ( IPRXRS .GE. 5 ) THEN
+         IF ( IPRXRS .GE. 10 ) THEN
             WRITE(LUPRI,'(1X,A,I3)')
      &           '(XRSTDM) DV density matrix no. ',ICSIM
             CALL PRQMAT(DVT(1,1,ICSIM),NASHT,NASHT,NASHT,NASHT,NZ,
@@ -3811,7 +3818,7 @@ C
       END IF
 C
  100  CONTINUE
-      IF ( IPRXRS .GE. 5 ) THEN
+      IF ( IPRXRS .GE. 10 ) THEN
          CALL HEADER('XRSDM: DV density matrix',-1)
          CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
          CALL HEADER('XRSDM: PV density matrix',-1)
@@ -3972,14 +3979,18 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
+        use london_helper
+#endif
         use dirac_cfg
         use dft_cfg
         use xcint_main
         use fde_mod
-        use fde_integrate
+        use fde_dirac_matrices_integration
         use num_grid_gen
 #ifdef PCM_MODULE
-        use pcm_interface
+        use pcm_linear_response, only: pcm_oit_asc
+        use pcmmod_cfg
 #endif
         use orbital_rotation_indices
 
@@ -4006,6 +4017,10 @@ C
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
+#if defined (PCM_MODULE)
+      real(8), allocatable ::mep_oit_asc(:, :, :)
+#endif
+
 C
 C
       CALL QENTER('GMOLITX1')
@@ -4032,7 +4047,7 @@ C
       CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
      &     WORK,KFREE,LFREE)
 C
-      IF (IPRXRS.GE. 5) WRITE(LUPRI,'(/A,I3)')
+      IF (IPRXRS.GE. 10) WRITE(LUPRI,'(/A,I3)')
      &     ' (GMOLITX1) Number of density matrices:',NDMAT
 C
 C
@@ -4095,20 +4110,20 @@ C
 
         end if
 
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+        if (dirac_cfg_fde_response) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_frozen) then
 
-           if (.not.dirac_cfg_dft_calculation) then
+              if (.not.dirac_cfg_dft_calculation) then
 !         generate standard density matrix
-              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
-              call genden(work(kbuf), cmo, 1, iprxrs)
-           endif
+                 call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+                 call genden(work(kbuf), cmo, 1, iprxrs)
+              endif
 
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
+              call fde_dirac_set_isymop(isymop)
+              call fde_dirac_set_ihrmop(ihrmop)
+              call fde_dirac_emb_matrices_via_integration(       
+     &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
      &                       fde_dmat_0             = work(kbuf),
      &                       fde_nr_dmat            = ndmat,
@@ -4120,13 +4135,13 @@ C
      &                       fde_dmat_ih_sym        = ihrmop,
      &                       fde_response_order_mo = 1)
 
-          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+              call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-          write (*,*) 'FDE response contributions included'
-        else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
-          write (*,*) 'FDE response contributions not included'
+              write (*,*) 'FDE response contributions included'
+           else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
+              write (*,*) 'FDE response contributions not included'
+           endif
         endif
-#endif
 C
 C     Add solvent contributions
 C     -------------------------
@@ -4144,11 +4159,25 @@ C
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_fock_driver to get '//
-     &               'b-transformed polarization charges.'
+           if (pcmmod_skipoit) then
+              write(lupri,'(a)') '* Skipping formation of '//
+     &          'One-Index Transformed electronic polarization charges.'
+           else
+              write(lupri,'(a)') '* Calling pcm_oit_asc to get '//
+     &          'One-Index Transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-           call pcm_fock_driver(fao, fmo, work(kfree), lfree)
+              allocate(mep_oit_asc(ntbas(0), ntbas(0), nz))
+              mep_oit_asc = 0.0d0
+              call pcm_oit_asc(mep_oit_asc, fmo, ndmat, 
+     &         work(kfree), lfree)
+              call daxpy(n2bbasx, -1.0d0, mep_oit_asc, 1, fao, 1)
+!           print *, "Contraction of MEP and pertubed ASC: MEP_OIT_ASC"
+!           print *, "mep_oit_asc"
+!           call prqmat(mep_oit_asc, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                       nz, ipqtoq(1,0), 6 
+              deallocate(mep_oit_asc)
+           endif
         endif 
 #endif      
  
@@ -4177,7 +4206,7 @@ C
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &        WORK(KFREE),LFREE)
-         IF ( IPRXRS .GE. 8) THEN
+         IF ( IPRXRS .GE. 10) THEN
             WRITE(LUPRI,9010) I
             CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &           NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
@@ -4209,7 +4238,7 @@ C
 !radovan: jrep seems to be irep of kappa
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
-            IF ( IPRXRS .GE. 8) THEN
+            IF ( IPRXRS .GE. 10) THEN
                WRITE(LUPRI,9011) 'e-e inactive QCX', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
@@ -4252,7 +4281,7 @@ C
             IAOMAT = IAOMAT + 1
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
-            IF ( IPRXRS .GE. 8) THEN
+            IF ( IPRXRS .GE. 10) THEN
                WRITE(LUPRI,9011) 'e-p inactive QCX', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
@@ -4377,7 +4406,7 @@ C        --------------------
 C
          CALL DZERO(BMAT, N2ORBXQ)
          CALL DVSCT(DVT(IDVTOFF),BMAT)
-         IF (IPRXRS .GT. 8) THEN
+         IF (IPRXRS .GT. 10) THEN
             WRITE(LUPRI,'(/A,I5)')
      &           '* DMOLITX1: Full DVT matrix no.:',I
             CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -4392,7 +4421,7 @@ C
          CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
 #endif
-         IF (IPRXRS .GT. 8) THEN
+         IF (IPRXRS .GT. 10) THEN
             WRITE(LUPRI,'(/A,I5)')
      &           '* DMOLITX1: DVT(AO) matrix no.:',I
             CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
@@ -4453,7 +4482,7 @@ C
             ENDDO
             CALL DSCAL(N2ORBXQ,DM1,BMAT,1)
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I3,A,I3)')
      &              '* DMOLITX1: Scattered inactive (e-e)'//
      &              ' trial vector no.:',I,' of',NESIM
@@ -4465,7 +4494,7 @@ C           Backtransform to MO basis and (anti)symmetrize.
 C
             CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(3(A,I3))')
      &              '* DMOLITX1: Modified inactive (e-e) matrix no.:',I,
      &              ' of',NESIM,' - hermiticity:',IH
@@ -4514,7 +4543,7 @@ C
                IZOFF = IZOFF + N2ORBX
             ENDDO
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLITX1: Scattered active (e-e)'//
      &              ' trial vector no.:',I
@@ -4562,7 +4591,7 @@ C
 !              IZOFF = IZOFF + N2ORBX
 !           ENDDO
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLI: BT * DV (e-e) vector no.:',I
                CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -4575,7 +4604,7 @@ C
 C
 C           Print section
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLI: Modified active (e-e) matrix no.:',I
                CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
@@ -4626,7 +4655,7 @@ C
             ENDDO
             CALL DSCAL(N2ORBXQ,DM1,BMAT,1)
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I3,A,I3)')
      &              '* DMOLITX1: Scattered inactive'//
      &              ' (e-p) trial vector no.:',I,' of',NPSIM
@@ -4638,7 +4667,7 @@ C           Backtransform to AO basis
 C
             CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLITX1: Modified inactive (e-p) matrix no.:',I
                CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
@@ -4679,7 +4708,7 @@ C
                IZOFF = IZOFF + N2ORBX
             ENDDO
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLITX1: Scattered (e-p)'//
      &              ' trial vector no.:',I
@@ -4702,7 +4731,7 @@ C
      &           D0,IPQTOQ(1,0),BMAT,NORBT,NORBT,NZ)
             CALL MEMREL('active e-p',WORK,1,KFRSAV,KFREE,LFREE)
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLITX1: DV * B (e-p) vector no.:',I
                CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -4716,7 +4745,7 @@ C
 C
 C           Print section
 C
-            IF(IPRXRS.GE.8) THEN
+            IF(IPRXRS.GE.10) THEN
                WRITE(LUPRI,'(A,I5)')
      &              '* DMOLITX1: Modified active (e-p) matrix no.:',I
                CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
@@ -5764,7 +5793,7 @@ C
 C
 C     Print section
 C
-      IF(IPRXRS.GE.5) THEN
+      IF(IPRXRS.GE.8) THEN
         CALL HEADER('FMOLI3: F-G-matrix',-1)
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI)

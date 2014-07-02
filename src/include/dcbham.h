@@ -23,6 +23,7 @@
 !     VEXTPJ     - Hamiltonian embedded in molecular field projections
 !     NOSMLV     - No small nuclear attraction integrals
 !     URKBAL     - Unrestricted kinetic balance
+!     MDIRAC     - modified Dirac Hamiltonian
 !     LEVYLE     - Levy-Leblond Hamiltonian
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
@@ -31,7 +32,7 @@
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
 !     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
-!     MOLMF3     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
+!     X2CMMF     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS
@@ -97,6 +98,9 @@
 !                  included in DFT calculations.
 !     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
 !                  constructing direct products of spin and spatial symmetries
+!
+!    TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
+!
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -129,7 +133,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -140,8 +144,8 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
-     &                ecpcalc,                                          &
+     &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
+     &                ecpcalc,MDIRAC,TRS_MIX,                           &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

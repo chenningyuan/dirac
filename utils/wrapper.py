@@ -89,7 +89,7 @@ be deleted at the end of a run.
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','cavity.off','PEDRA.OUT', 'PCM_mep_asc']
+    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP','cavity.off','PEDRA.OUT', 'PCM_mep_asc', 'molec_dyadic.dat', 'cavity.inp', 'dumped1.dat', 'dumped2.dat', 'create_cavity.out']
 
     # Detect file types in args from the file names, set up job name
     molpath = None
@@ -316,7 +316,7 @@ class Wrapper:
                 else:
                     print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
                     sys.exit(1)
-                    t.extractall(path=self.tmppath)
+                t.extractall(path=self.tmppath)
             except:
                 print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
                 raise

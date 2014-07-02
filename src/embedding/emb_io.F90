@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,12 +16,11 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 module fde_io
 
-   use memory_allocator
    use fde_cfg
       
    private
@@ -53,7 +52,7 @@ module fde_io
                  ACCESS = 'SEQUENTIAL',  &
                  FILE   =  name)
          else
-            call quit("File not found!")
+            call fde_quit("File not found!")
          endif
      end subroutine fde_open_file
 
@@ -88,11 +87,11 @@ module fde_io
     READ(file,*) npoints
     
     if (associated(points)) nullify(points)
-    call allocp(points,4,npoints,id="grid_points")
+    allocate(points(4,npoints))
     
     if (present(vc)) then
        if (associated(vc)) nullify(vc)
-       call allocp(vc,npoints,id="potential")
+       allocate(vc(npoints))
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
        END DO
@@ -127,9 +126,9 @@ module fde_io
     READ(file,*) npoints, nprop
 
     if (associated(points)) nullify(points)
-    call allocp(points,4,npoints, id="grid_points")
+    allocate(points(4,npoints))
     if (associated(properties)) nullify(properties)
-    call allocp(properties,nprop,npoints, id="properties_on_grid")
+    allocate(properties(nprop,npoints))
 
     DO i=1,npoints
        READ(file,*) points(:,i),properties(:,i)

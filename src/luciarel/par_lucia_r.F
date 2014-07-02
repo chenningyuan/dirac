@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2011 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
+!      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
 C
@@ -1740,7 +1740,7 @@ C
       INTEGER(KIND=df_MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
       LOGICAL EX
 #include "parluci.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 #include "dcbkrci.h"
       ILU1_IOFFX = 0
       MULTX      = 0
@@ -2820,7 +2820,7 @@ C
 #include "infpar.h"
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxmcgas.h"
+#include "mxgas.h"
 #include "dcbkrmc.h"
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU7BL,PLU5BL, PLUCBL
       CHARACTER*10 PDIA, PLU1, PLU2, PLU3, PLU4, PLU5, PLU6, PLU7, PLUC
@@ -6323,7 +6323,7 @@ C
      &                      IROOT,LUIN1LIST,LUIN2LIST,LUOUTLIST,
      &                      NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                      MY_IOFF_LUIN1,MY_IOFF_LUIN2,MY_IOFF_LUOUT,
-     &                      SCRRED,NVEC,LUIN1,LUIN2,LUOUT)
+     &                      SCRRED,NVEC,LUIN1,LUIN2,LUOUT,MAXVEC)
 C
 C     Written by  S. Knecht         - June 4 2007
 C
@@ -6347,7 +6347,7 @@ C
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
-      DIMENSION RNRM(MAXIT,*), EIG(MAXIT,*)
+      DIMENSION RNRM(MAXIT,*), EIG(MAXVEC,MAXIT)
       DIMENSION SCRRED(*)
       LOGICAL CONVER, RTCNV(*)
       INTEGER(KIND=df_MPI_OFFSET_KIND) MY_IOFF_LUIN1
@@ -6513,7 +6513,7 @@ C
 C     check for convergence
 C
       IF(RNORM.LT. TEST .OR. (ITER.GT.2.AND. 
-     &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+     &  ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.E_CONV)) THEN
 C
         RTCNV(IROOT) = .TRUE.
       ELSE
