@@ -973,7 +973,8 @@ C
       INFO_STRING(2) =
      &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
       INFO_STRING(3) =
-     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T  &END                    '
+!    &'&CCFOPR           NOZG=T, DONATORB=T DOMP2GOLD=T &END         '
+     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T             &END         '
 
       OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
