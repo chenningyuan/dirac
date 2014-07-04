@@ -632,17 +632,21 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(IW,DOINCORE)
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!! this is the main driver routine for the Lanczos routines  !!!!!
+!!!!!! now also working with dynamic memory allocation  !!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
 
       use adc_mat      !obtain matrix parameters via descriptor file
       use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
-      REAL*8  CC(*)
-      INTEGER KFREE,LFREE
-      INTEGER IW
-      LOGICAL DOINCORE
+      INTEGER                            ::  IW
+      LOGICAL                            ::  DOINCORE
 C
 C---------------Description--------------------------------------------
 C
@@ -680,26 +684,34 @@ c *** for infofile
       INTEGER IVALID   ! number of valid elements for Lanczos incore diagonalization.
 c
 c *** others
-      LOGICAL ALLOC_ME,LFLAG,CARITH
+      LOGICAL LFLAG,CARITH
       COMPLEX*16 CDUMMY
       REAL*8 RDUMMY
       INTEGER NINCWORDS
 C
-C---------------Local variables--------------------------------------
+C--------------- common variables--------------------------------------
 C
       COMMON/MATCHUNKS/NBUFS
-c
+C
+C--------------- arrays for dynamical memory allocation, replacing memopts
+C
+      integer, allocatable, dimension(:)    :: WRK_IDI, WRK_IDJ,
+     &          WRK_IND, WRK_IVX, WRK_LSP, WRK_MLT, WRK_OI, WRK_OJ
+
+      real*8, allocatable, dimension(:)     :: WRK_AEV, WRK_BUF,
+     &     WRK_DIAG, WRK_EVL, WRK_IDR, WRK_OEV, WRK_P, WRK_R,
+     &     WRK_RWORK1, WRK_T, WRK_WORK1, WRK_ZEV, WRK_Z
 C
 C---------------Executable code--------------------------------------
-C
-!     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
-      KFRSAV=KFREE
-      CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
 c
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
+      IF(DOINCORE) THEN
+        write(iw,*) 'Incore Lanczos currently not supported.'
+        DOINCORE = .false.
+      ENDIF
 c
 c  transfer required parameters from matrix descriptor module
 c  to actual modules.
@@ -742,8 +754,6 @@ c this is the absolute lower bound to which we will return as soon as the
 c diagonalization has been finished. We must not go further down because
 c some buffers are needed in the calling code.
 c
-      KFREESAVE=KFREE
-      ALLOC_ME=.TRUE.
       NP = NOCC
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
@@ -753,19 +763,17 @@ c
 !  if repacking was successful we work from here with smaller ADC matrix
 !  (in the double ionization case).
 !
-      IF(DOINCORE) THEN
-        IF(IOLDNEW.eq.1) THEN
-          WRITE(IW,*) 'Incore calculation for the old-format'
-          WRITE(IW,*) 'ADC matrix not possible. Switching back to'
-          WRITE(IW,*) 'Out of core diagonalization'
-          DOINCORE = .FALSE.
-        ELSE
-          WRITE(IW,*) 'Trying (partial) incore diagonalization.'
-        ENDIF
-      ENDIF
+!     IF(DOINCORE) THEN
+!       IF(IOLDNEW.eq.1) THEN
+!         WRITE(IW,*) 'Incore calculation for the old-format'
+!         WRITE(IW,*) 'ADC matrix not possible. Switching back to'
+!         WRITE(IW,*) 'Out of core diagonalization'
+!         DOINCORE = .FALSE.
+!       ELSE
+!         WRITE(IW,*) 'Trying (partial) incore diagonalization.'
+!       ENDIF
+!     ENDIF
 
-      WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
-      WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP,3=EXC):',IONIZLEVEL
@@ -805,70 +813,60 @@ C
       ITAP6=INFOHANDLE+6    ! free handle
 
       N=2*NP+1
-      CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  1 done.' 
+      allocate(WRK_IVX(N))
       N=(2*NP+1)*LADC*RCW
-      CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  2 done.' 
+      allocate(WRK_P(N))
       N=(NP+1)*NITER*RCW
-      CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  3 done.' 
+      allocate(WRK_T(N))
       N=LADC*RCW
-      CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  4 done.' 
-      CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  5 done.' 
+      allocate(WRK_R(N))
+      allocate(WRK_DIAG(N))
       N=INTBUF*RCW
-      CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  6 done.' 
+      allocate(WRK_BUF(N))
       N=INTBUF
-      CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  7 done.' 
-      CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  8 done.' 
-      CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
-      write(*,*) 'allocation  9 done.' 
+      allocate(WRK_OI(N))
+      allocate(WRK_OJ(N))
 c
 c  remember memory pointers before we do the huge incore parts.
 c
-      IF(DOINCORE) THEN
-        KINCSAV = KFREE
-        WRITE(IW,*) 'Memory pointers before incore diag:',
-     &               KFREE,LFREE
-        WRITE(IW,*) 'Saving free memory:',KINCSAV
-        WRITE(IW,*) 'Available buffer for incore diag:'
-        WRITE(IW,*) (LFREE-10),' words'
-        if(RCW.eq.1) then
-           N=(LFREE - 10)/3
-           WRITE(IW,*) 'We can store',N,' real numbers'
-        else
-           N=(LFREE - 10)/4
-           WRITE(IW,*) 'We can store',N,' complex numbers'
-        endif
-        IF(N.lt.INTBUF) THEN
-          WRITE(IW,*) 'Buffer for inc. diag too small!'
-          WRITE(IW,*) 'Switching back to out-of-core diag.'
-          DOINCORE = .FALSE.
-        ELSE
-          CALL MEMOPT('REAL',WRK_IDR,N*RCW,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMCHK('ICD',CC,KFRSAV)
-          NINCWORDS = N
-          IF(CARITH) THEN
-            CALL INITINCORE_C(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
-     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
-     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
-     &                        IVALID)
-          ELSE
-            CALL INITINCORE_R(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
-     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
-     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
-     &                        IVALID)
-          ENDIF
-        ENDIF
-      ENDIF
-C
+!     IF(DOINCORE) THEN
+!       KINCSAV = KFREE
+!       WRITE(IW,*) 'Memory pointers before incore diag:',
+!    &               KFREE,LFREE
+!       WRITE(IW,*) 'Saving free memory:',KINCSAV
+!       WRITE(IW,*) 'Available buffer for incore diag:'
+!       WRITE(IW,*) (LFREE-10),' words'
+!       if(RCW.eq.1) then
+!          N=(LFREE - 10)/3
+!          WRITE(IW,*) 'We can store',N,' real numbers'
+!       else
+!          N=(LFREE - 10)/4
+!          WRITE(IW,*) 'We can store',N,' complex numbers'
+!       endif
+!       IF(N.lt.INTBUF) THEN
+!         WRITE(IW,*) 'Buffer for inc. diag too small!'
+!         WRITE(IW,*) 'Switching back to out-of-core diag.'
+!         DOINCORE = .FALSE.
+!       ELSE
+!         CALL MEMOPT('REAL',WRK_IDR,N*RCW,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMCHK('ICD',CC,KFRSAV)
+!         NINCWORDS = N
+!         IF(CARITH) THEN
+!           CALL INITINCORE_C(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+!    &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+!    &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+!    &                        IVALID)
+!         ELSE
+!           CALL INITINCORE_R(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+!    &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+!    &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+!    &                        IVALID)
+!         ENDIF
+!       ENDIF
+!     ENDIF
+!
 C  enter real resp. complex Band Lanczos iterations
 C  for symmetric resp. Hermitian matrices
 C  In the first run: no eigenvectors because no eigenvalues are
@@ -876,43 +874,41 @@ C  available
 C
       LFLAG = .FALSE.
 
-      IF(DOINCORE.EQV..true.) THEN
+!     IF(DOINCORE.EQV..true.) THEN
+!       IF(CARITH.EQV..TRUE.) THEN
+!       CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                   CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                   CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
+!    &                   CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+!    &                   INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                   cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+!       CALL MEMCHK('AFTER COMPLEX INCORE-LANCZOS',CC,KFRSAV)
+!       ELSE
+!       CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
+!    &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+!    &          INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &          cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+!       CALL MEMCHK('AFTER REAL INCORE-LANCZOS',CC,KFRSAV)
+!       ENDIF
+!       CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+!       WRITE(IW,*)  'Memory after incore Lanczos released.'
+!     ELSE 
         IF(CARITH.EQV..TRUE.) THEN
-        CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                   CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                   CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
-     &                   CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
-     &                   INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                   cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
-        CALL MEMCHK('AFTER COMPLEX INCORE-LANCZOS',CC,KFRSAV)
-        ELSE
-        CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
-     &          INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &          cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
-        CALL MEMCHK('AFTER REAL INCORE-LANCZOS',CC,KFRSAV)
-        ENDIF
-        CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
-        WRITE(IW,*)  'Memory after incore Lanczos released.'
-      ELSE 
-        IF(CARITH.EQV..TRUE.) THEN
-        CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+        CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &          WRK_P, WRK_T, WRK_R,
+     &          WRK_DIAG, CDUMMY, CDUMMY, WRK_BUF,
+     &          WRK_OI, WRK_OJ, CDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-        CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
         ELSE
-        CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+        CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &          WRK_P, WRK_T, WRK_R,
+     &          WRK_DIAG, RDUMMY, RDUMMY, WRK_BUF,
+     &          WRK_OI, WRK_OJ, RDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-        CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
         ENDIF
-      ENDIF
+!     ENDIF
 C
 C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
@@ -923,22 +919,20 @@ C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
 C  This file handle is used for storing the T eigenvector matrix
 C
       N=NITER
-      CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_EVL(N))
       N=NITER*NITER*RCW
-      CALL MEMOPT('REAL',WRK_ZEV,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_ZEV(N))
       N=4*NITER*RCW
-      CALL MEMOPT('REAL',WRK_WORK1,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_WORK1(N))
       N=6*NITER
-      CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_RWORK1(N))
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
-     &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
-        CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,WRK_T,WRK_EVL,
+     &           WRK_ZEV,WRK_WORK1,WRK_RWORK1)
       ELSE
-        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
-     &           CC(WRK_ZEV),CC(WRK_RWORK1))
-        CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,WRK_T,WRK_EVL,
+     &           WRK_ZEV,WRK_RWORK1)
       ENDIF
 c
 c remove spurious/multiple eigenvalues and
@@ -949,29 +943,27 @@ c
      &     ACCESS='DIRECT',RECL=IRECL,STATUS='UNKNOWN')
 
       N=2*NP*NITER*RCW
-      CALL MEMOPT('REAL',WRK_Z,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_Z(N))
       N=NITER
-      CALL MEMOPT('INTE',WRK_IND,N,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',WRK_MLT,N,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',WRK_LSP,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_IND(N))
+      allocate(WRK_MLT(N))
+      allocate(WRK_LSP(N))
 
       IF(CARITH) THEN
          CALL ZBLANA(IW,KREP,niter,np,nocc,ionizlevel,
-     &        cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &        cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &        wrk_evl,wrk_zev,wrk_z,
+     &        wrk_t,wrk_ind,wrk_mlt,wrk_lsp,
      &        ITAP5,ITAP6,EVLLIM,NMSPEC)
       ELSE
          CALL RBLANA(IW,KREP,niter,np,nocc,ionizlevel,
-     &        cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &        cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &        wrk_evl,wrk_zev,wrk_z,
+     &        wrk_t,wrk_ind,wrk_mlt,wrk_lsp,
      &        ITAP5,ITAP6,EVLLIM,NMSPEC)
       ENDIF
 c
 c  close configuration file
 c
       CLOSE(ITAP6)
-
-      CALL MEMCHK('AFTER BLANA routines',CC,KFRSAV)
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
 c NGT is the actual number of nonspurious/unique eigenvalues.
@@ -986,9 +978,9 @@ c
       IF(NEIGENV.GT.0) THEN
 
         N=LADC*NEIGENV*RCW
-        CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(WRK_AEV(N))
         N=LADC*RCW
-        CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(WRK_OEV(N))
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix
@@ -997,53 +989,52 @@ c  file 1 and 2 (the ADC matrix/diag files) are still open.
 c
         LFLAG = .TRUE.
 
-        IF(DOINCORE.EQV..true.) THEN
+!       IF(DOINCORE.EQV..true.) THEN
+!         IF(CARITH.EQV..TRUE.) THEN
+!           CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+!    &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+!    &                       CC(WRK_EVL),LFLAG, INTBUF,
+!    &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+!    &                       ivalid)
+!         ELSE
+!           CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+!    &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+!    &                       CC(WRK_EVL),LFLAG, INTBUF,
+!    &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+!    &                       ivalid)
+!         ENDIF
+!         CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+!         WRITE(IW,*)  'Memory after incore Lanczos released.'
+!       ELSE
           IF(CARITH.EQV..TRUE.) THEN
-            CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                       CC(WRK_EVL),LFLAG, INTBUF,
-     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
-     &                       ivalid)
-          ELSE
-            CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                       CC(WRK_EVL),LFLAG, INTBUF,
-     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
-     &                       ivalid)
-          ENDIF
-          CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
-          WRITE(IW,*)  'Memory after incore Lanczos released.'
-        ELSE
-          IF(CARITH.EQV..TRUE.) THEN
-            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                    CC(WRK_EVL),LFLAG, INTBUF,
+            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &                    WRK_P, WRK_T, WRK_R,
+     &                    WRK_DIAG, WRK_ZEV, WRK_AEV,
+     &                    WRK_BUF,WRK_OI, WRK_OJ,
+     &                    WRK_EVL,LFLAG, INTBUF,
      &                    ITAP1, ITAP2, ITAP3)
           ELSE
-            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                    CC(WRK_EVL),LFLAG, INTBUF,
+            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &                    WRK_P, WRK_T, WRK_R,
+     &                    WRK_DIAG, WRK_ZEV, WRK_AEV,
+     &                    WRK_BUF,WRK_OI, WRK_OJ,
+     &                    WRK_EVL,LFLAG, INTBUF,
      &                    ITAP1, ITAP2, ITAP3)
           ENDIF
-        ENDIF
-      ENDIF
+!       ENDIF    ! doincore
+      ENDIF    !neigenv.gt.o
 c
 c  close and delete the (diag) and the packed ADC matrix file
 c
       CLOSE(ITAP1,STATUS='DELETE')
       IF(IOLDNEW.EQ.1) CLOSE(ITAP2,STATUS='DELETE')
 
-      CALL MEMREL('ADC-memrel',CC,KFRSAV,KFREESAVE,KFREE,LFREE)
 c
 c  from here the file handles itap1 - itap3 are available again and we
 c  can perform the detailed analysis of the long ADC eigenvectors together

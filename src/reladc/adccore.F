@@ -617,6 +617,7 @@ C
       complex*16 zdotc
 
       integer*8 :: ivmax
+
 C ***********************************************************************
 C ************* Local arrays to be allocated dynamically  ***************
 C ***********************************************************************
@@ -984,6 +985,11 @@ C
           WRITE(IW,1042)
         ENDIF
       ENDIF
+
+ 1040 FORMAT (/5X,"Retrieving Q_kl data ...")
+ 1041 FORMAT (/5X,"Q_kl successfully loaded")
+ 1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
+
 C
 C  if we do ADC-3 we need the Q_kl in  **ALL** symmetries ==> we have to
 C  loop over all symmetries for the corresponding entities. This is due
@@ -1306,7 +1312,16 @@ c
       write(iw,*) 'Program calculates',icount-1,' symmetries.'
       write(iw,*)
       
+! *********************************
+! *****  main symmetry loop  ******
+! *********************************
+
       DO 900 IRPLOOP=1,NREP
+
+! *********************************
+! *****  main symmetry loop  ******
+! *********************************
+
         IF(sipreps(IRPLOOP).EQ.0) GOTO 900
         IF(sipreps(IRPLOOP).GT.NREP) THEN
            WRITE(IW,*) 'Chosen Symmetry',sipreps(IRPLOOP),
@@ -1343,14 +1358,8 @@ c
      & " ***"/" ***"/" ******************************************"//)
 C
 C  Write the ADC files into the corresponding files. 
+C  Each symmetry is diagonalized immediately.
 C
-c       IF(KREP.GT.9) THEN
-c         WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP     ! diag elem.
-c         WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP     ! Packed ADC mat
-c       ELSE
-c         WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP    ! diag elem.
-c         WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP    ! Packed ADC mat
-c       ENDIF
 
         WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
         WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
@@ -1547,25 +1556,6 @@ C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-c     ...... old data written to infofile
-c
-c         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-c         WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
-c         WRITE(ITAPADC,'(I1)')  RCW                !RCW
-c         N=1
-c         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
-c         WRITE(ITAPADC,'(I12)') LADC               !LADC
-c         WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
-c         WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
-c         WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
-c         WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
-c         WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
-c         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
-c         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
-c         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
-
-
           reladc_md_iobase      = ITAPADC
           reladc_md_ionizl      = IONIZLEVEL
           reladc_md_ioldnew     = 1
@@ -1586,7 +1576,7 @@ c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in t
 c
 c  call Lanczos diagonalizer. 
 c
-          CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+          CALL DIAG_LANC(IW,DOINCORE)
 c
           WRITE(IW,*)
           WRITE(IW,*) '       ------------------------------'
@@ -1604,14 +1594,25 @@ c
 C
 C                   ******************************
 C                   ***      END USER LOOP     ***
+C                   ***      DEALLOCATIONS     ***
 C                   ******************************
-C
-C
- 175  FORMAT (" Deviation from symmetry for ADC matrix in irrep ",
-     &          I6, E18.10/" Sparsity (%) ",F5.1)
- 1040 FORMAT (/5X,"Retrieving Q_kl data ...")
- 1041 FORMAT (/5X,"Q_kl successfully loaded")
- 1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
+!
+!
+      deallocate(CKKS, BUF1A, BUF1B, BUF4, BUF5A, BUF5B, EAJL, 
+     &           ICRA, ADCL, DIAG, BUFIO, BUFY1, IOI, IOJ)
+!
+      IF(ADCLEVEL.GE.2) THEN
+        deallocate(OOLT, BUFO1, BUF9A)
+      ENDIF
+!
+      IF(ADCLEVEL.EQ.3) THEN
+        deallocate(CKKSA, FKKS, BUF1C, BUF1D, BUF5C, BUF9B, BUF9C,
+     &    BUFO2, BUFO3, BUFU1, BUFU2, BUFU3, BUFU4, BUFW1, BUFW2,
+     &    BUFW3, BUFW4, BUFX1, EJAB, ADIAG1, ADIAG2, BDIAG1, BDIAG2,
+     &    BUFQOO, BUFQVO, BUFQVOI, BUFQVOA, BUFQVV, BUFBOO, BUFBVO,
+     &    BUFXVO, BUFYVO, BUFBVV, BUFXVV, BUFIVV, BUFBVO2, BUFSIG,
+     &    CSIGM, ICRB, IPIVOT, VVLT)
+      ENDIF
 C
       RETURN
       END
