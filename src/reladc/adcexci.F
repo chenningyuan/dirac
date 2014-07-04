@@ -10,15 +10,16 @@
 !                       AUTHOR: M.Pernpointner
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCEXC_MAIN (IW,IOBASE,EPS)
+      SUBROUTINE ADCEXC_MAIN (IW,memory_info,IOBASE,EPS)
       use adc_cfg
       use adc_mat
  
       IMPLICIT INTEGER(A-Z)
 
-      integer iw       ! I/O file handle for screen output
-      integer IOBASE   ! I/O base file handle, all purposes
-      real*8  eps(*)   ! array of spinor energies, assumed size array!
+      integer iw             ! I/O file handle for screen output
+      integer memory_info    ! I/O file handle for screen output
+      integer IOBASE         ! I/O base file handle, all purposes
+      real*8  eps(*)         ! array of spinor energies, assumed size array!
 !
 !---------------Common Blocks--------------------------------------
 !
@@ -80,6 +81,8 @@
 ! |
 ! |
 ! |
+      memory_info = -1
+
       WRITE(IW,*)
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*) '*** '
