@@ -991,8 +991,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck READMP2NAT */
-      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT)
+      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT,ibeig)
 C***********************************************************************
 C
 C     Read MP2-NO coefficients and occupations numbers from file 
@@ -1004,20 +1003,22 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), EIG(*), EIG_NAT(*)
+      DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
+      character(len=8) :: label
 C
 C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
       CALL REAKRMC(LUKRMC,'NEWNATOC',EIG_NAT,NESHT)
+      label(1:8) = 'IBEIG   '
+      if(linear) label(1:8) = 'MJVEC   '
+      call ireakrmc(lukrmc,label(1:8),ibeig,norbt)
 C
       IOFF2 = 1
 C
