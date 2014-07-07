@@ -390,13 +390,12 @@ C          ... initialize
            CALL IZERO(WORK(KIBEIG),NORBT)
 C          ... MP2 NO coefficients
            CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NASHT*NASHT*NZ)
+C          ... boson irrep info (or mj-values if linear symmetry is available)
+           CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
      &                 XDUMMY,2,WORK,KFREE,LFREE)
-           REWIND(LUCOEF)
-           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
-     &                 XDUMMY,8,WORK,KFREE,LFREE)
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -410,8 +409,11 @@ C          --------------
 C
 C          save to disk
 C          ------------
-           CALL WRTKRMC(LUKRMC,'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
-           CALL WRTKRMC(LUKRMC,'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           label(1:8) = 'IBEIG   '
+           if(linear) label(1:8) = 'MJVEC   '
+           CALL IWRTKRMC(LUKRMC,label(1:8),work(kibeig),NORBT)
 C
 C          release memory
 C          --------------

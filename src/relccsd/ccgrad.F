@@ -637,6 +637,7 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 C
@@ -660,10 +661,10 @@ C     initialize
 C
       CALL DZERO(CMO_NAT,NASHT*NASHT*NZ)
       CALL DZERO(OCC_NAT,NESHT)
-      ibeig = 0
+      ibeig(1:norbt) = 0
 
 !     !> read ibeig (info array on boson irreps) from DFCOEF
-      if( linear )then
+      if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
         close(lucoef,STATUS='KEEP')
@@ -691,8 +692,9 @@ C
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
-        CALL WRTKRMC(LUKRMC,'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NOOCC',OCC_NAT,NESHT)
+        CALL WRTKRMC(LUKRMC, 'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
+        CALL WRTKRMC(LUKRMC, 'MP2NOOCC',OCC_NAT,NESHT)
+        CALL IWRTKRMC(LUKRMC,'IBEIGORI',ibeig,NORBT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
