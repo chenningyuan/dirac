@@ -729,15 +729,13 @@ C              only. dimensions 2*MVO(1) * 2*MVO(1)
 c
 c   save the original memory space for the diagonalizers
 
-      write(iw,*) '  #############################################'
-      write(iw,*) '  #############################################'
-      write(iw,*) '  #######  we are in adcsngl_main '
-      write(iw,*) '  #############################################'
-      write(iw,*) '  #############################################'
-      write(iw,*) '  rcw:',rcw
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #######  we are in adcsngl_main '
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  rcw:',rcw
 
-!     KFRSAV=KFREE
-!     LFRSAV=LFREE
       IONIZLEVEL=1
 c
 c  determine necessary dimension for the all-purpose arrays
@@ -905,30 +903,6 @@ C  *******************
      &              IVMAX/(1024*1024)
       ENDIF
 C
-C  If only memory requirements are requested we print the 
-C  information and return.
-C  ATT the large VVVV buffers can not be allocated at this stage
-C  because they will be freed and replaced by VOVV buffers mutually.
-C  We therefore test, if there is enough memspace for these buffers
-C  when it comes to a real allocation.
-C
-!     IF(ICALC.EQ.1) THEN
-!       MXCORR=KFREE+IVMAX
-
-!       WRITE(IW,*)
-!       WRITE(IW,*) '-------------------------------------------'
-!       WRITE(IW,*) '-- ADC memory usage summary'
-!       WRITE(IW,*) '-------------------------------------------'
-!       WRITE(IW,*)
-!       WRITE(IW,*) 'Static memory provided during calc:',MXCORR
-!       WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
-!       WRITE(IW,*) 'Words available:',LFREE - IVMAX
-
-!       RETURN
-!     ENDIF
-C
-C----------------------------------------------------------------------
-C-------------- from here a real allocation took place and we ---------
 C----------------------------------------------------------------------
 C------------------------------- START ADC CALCULATION ----------------
 C----------------------------------------------------------------------
@@ -988,28 +962,10 @@ C
  1040 FORMAT (/5X,"Retrieving Q_kl data ...")
  1041 FORMAT (/5X,"Q_kl successfully loaded")
  1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
-
 C
-C  if we do ADC-3 we need the Q_kl in  **ALL** symmetries ==> we have to
-C  loop over all symmetries for the corresponding entities. This is due
-C  to the coupling of symmetries in the b_pq calculation !
-C
-C  start Q_kl calculation if JSTAT=1 and ADC-3 is requested
-C  if DOCONST = FALSE then NO constant diagrams will be calculated
-C  only the other ADC-3 contributions will be inserted.
-C
-
-      IF( (ADCLEVEL.EQ.3).AND.
-     &    (JSTAT.EQ.1)   .AND.
-     &    (DOCONST.EQV..TRUE.)   ) THEN
-
-        CALL XCOPY(MOO(1),A0,0,BUFQOO,1)
-        CALL XCOPY(MVO(1),A0,0,BUFQVO,1)
-        CALL XCOPY(MVO(1),A0,0,BUFQVOI,1)
-        CALL XCOPY(MVO(1),A0,0,BUFQVOA,1)
-        CALL XCOPY(MVV(1),A0,0,BUFQVV,1)
-c
-c  if we work in real symmetries we have degenerate
+C  we have to determine symmiter variable that determines kind of
+C  Kramers degeneracy depending on variable NZ
+c  If we work in real symmetries we have degenerate
 c  Kramers pairs. We can therefore skip one Kramers partner
 c  and copy the corresponding Qkl array. 
 C  In the case of complex symmetries (C_s C_i C_1) we have to
@@ -1028,34 +984,55 @@ c  In case of spinfree or Levy-Leblond calculations we have
 c  bosonic irreps exclusively, therefore real arithmetic
 c  and an irrep step of 1 (GROUPTYPE = 8)
 c
-        CALL PST('Starting calculation of constant diagrams+')
-        IF(NZ.eq.1) THEN
-          IF(SPFR.eqv..FALSE.) THEN
-            SYMMITER = 2
-            WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
-            WRITE(IW,*) 'Only one Kramers partner calculated!'
-          ELSE
-            SYMMITER = 1
-            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No Kramers skipping'
-          ENDIF
-        ELSE IF(NZ.eq.2) THEN
-          IF(SPFR.eqv..FALSE.) THEN
-            SYMMITER = 2
-            WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
-            WRITE(IW,*) 'Only one Kramers partner calculated!'
-          ELSE
-            SYMMITER = 1
-            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No Kramers skipping'
-          ENDIF
-        ELSE IF(NZ.eq.4) THEN
-          SYMMITER = 1
-          WRITE(IW,*) 'Quaternionic fermionic group. No Kramers pairs.'
-          WRITE(IW,*) 'Each symmetry treated explicitly.'
+      IF(NZ.eq.1) THEN
+        IF(SPFR.eqv..FALSE.) THEN
+          SYMMITER = 2
+          WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
+          WRITE(IW,*) 'Only one Kramers partner calculated!'
         ELSE
-          CALL QUIT('NZ unassigned. Should not happen!')
+          SYMMITER = 1
+          WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+          WRITE(IW,*) 'No Kramers skipping'
         ENDIF
+      ELSE IF(NZ.eq.2) THEN
+        IF(SPFR.eqv..FALSE.) THEN
+          SYMMITER = 2
+          WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
+          WRITE(IW,*) 'Only one Kramers partner calculated!'
+        ELSE
+          SYMMITER = 1
+          WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+          WRITE(IW,*) 'No Kramers skipping'
+        ENDIF
+      ELSE IF(NZ.eq.4) THEN
+        SYMMITER = 1
+        WRITE(IW,*) 'Quaternionic fermionic group. No Kramers pairs.'
+        WRITE(IW,*) 'Each symmetry treated explicitly.'
+      ELSE
+        CALL QUIT('NZ unassigned. Should not happen!')
+      ENDIF
+
+C
+C  if we do ADC-3 we need the Q_kl in  **ALL** symmetries ==> we have to
+C  loop over all symmetries for the corresponding entities. This is due
+C  to the coupling of symmetries in the b_pq calculation !
+C
+C  start Q_kl calculation if JSTAT=1 and ADC-3 is requested
+C  if DOCONST = FALSE then NO constant diagrams will be calculated
+C  only the other ADC-3 contributions will be inserted.
+C
+
+      IF( (ADCLEVEL.EQ.3).AND.
+     &    (JSTAT.EQ.1)   .AND.
+     &    (DOCONST.EQV..TRUE.)   ) THEN
+
+        CALL PST('Starting calculation of constant diagrams+')
+
+        CALL XCOPY(MOO(1),A0,0,BUFQOO,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVO,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVOI,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVOA,1)
+        CALL XCOPY(MVV(1),A0,0,BUFQVV,1)
 
 c------------------------------------------------------------
 c---------- loop over symmetries for the Qkl calculation ----
@@ -1260,8 +1237,6 @@ C  from here all the blocks for the ADC(2) and ADC(2x) calculations
 C  are generated and combined (if requested) with the previously
 C  Sigma(infty) contributions.
 C  the loop is over the user-requested symmetries !
-C
-C  hereby we have a little change in the very latest RELADC for DIRAC12:
 C
 C  If the user does not enter any specific symmetries,
 C  RELADC determines all symmetries there is work to be done for. Only if user
