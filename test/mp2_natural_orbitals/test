@@ -13,7 +13,7 @@ f.add(from_string = ' Natural orbital occupation numbers, symmetry  1',
       num_lines   = 6,
       rel_tolerance   = 1.0e-6)
 
-test.run(['hf.inp' ], ['cinv.mol'], f)
+test.run(['hf.inp' ], ['cinfv.mol'], f)
 test.run(['hf.inp' ], ['c2v.mol'], f)
 test.run(['f2.inp' ], ['dinfh.mol'], f)
 
