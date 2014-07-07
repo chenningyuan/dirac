@@ -1420,39 +1420,176 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbgen.h"
 #include "dcbtr3.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       DIMENSION DMOM(NFOO,IRCW)
       DIMENSION NO(NREP)
+      integer, allocatable :: ibeig(:)
+      integer, allocatable :: idxu2g(:,:)
+      integer              :: nash_x(1:nfsym)
 C
 C
       CALL DZERO(DMO,NORBT*NORBT*NZ)
 C
+!     !> read ibeig (info array on boson irreps) from DFCOEF
+      allocate(ibeig(norbt),idxu2g(norbt,nrep))
+      ibeig(1:norbt)         = 0
+      idxu2g(1:norbt,1:nrep) = 0
+      nash_x(1:nfsym)        = 0
+
+      if(nfsym == 1)then
+        do j = 1, nrep,2
+          nash_x(1) = nash_x(1) + no(j)
+        end do
+      else if(nfsym == 2)then
+        do i = 1, nfsym 
+          if(i == 1)then
+             do j = 1, nrep/2,2
+               nash_x(i) = nash_x(i) + no(j)
+             end do
+          else if(i == 2)then
+             do j = nrep/2+1,nrep,2
+               nash_x(i) = nash_x(i) + no(j)
+             end do
+          end if
+        end do
+      end if
+      if( linear .or. spinfr )then
+        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        close(lucoef,STATUS='KEEP')
+      end if
+
+      if(nfsym == 1)then
+        indx_loop = 0
+        do j = 1, nrep,2
+          indx_loop = indx_loop + 1
+          if(no(j) > 0)then
+            orbc = 0
+            is_symm = 0
+            if(linear)then
+              !> get mj-value
+              is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+            else if(spinfr)then
+              is_symm = mod(indx_loop,2)+1 - 1
+            end if
+            do i = 1, nash_x(1)
+              if(is_symm == ibeig(iorb(1)       +
+     &                            npsh(1)       + 
+     &                            NDMOQC(2,1,1) +
+     &                            i))then
+                orbc = orbc + 1
+                IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+              end if
+            end do
+          end if
+        end do
+      else if(nfsym == 2)then
+        do k = 1, nfsym 
+          indx_loop = 0
+          if(k == 1)then
+            do j = 1, nrep/2,2
+              indx_loop = indx_loop + 1
+              if(no(j) > 0)then
+                orbc = 0
+                is_symm = 0
+                if(linear)then
+                  !> get mj-value
+                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+                else if(spinfr)then
+                  is_symm = mod(indx_loop,2)+1 - 1
+                end if
+                do i = 1, nash_x(k)
+                  if(is_symm == ibeig(iorb(k)       +
+     &                                npsh(k)       + 
+     &                                NDMOQC(2,k,1) +
+     &                                i))then
+                    orbc = orbc + 1
+                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                  end if
+                end do
+      print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
+              end if
+            end do
+          else if(k == 2)then
+            do j = nrep/2+1,nrep,2
+              indx_loop = indx_loop + 1
+              if(no(j) > 0)then
+                orbc = 0
+                is_symm = 0
+                if(linear)then
+                  !> get mj-value
+                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+                else if(spinfr)then
+                  is_symm = mod(indx_loop,2)+1 - 1
+                end if
+                do i = 1, nash_x(k)
+                  if(is_symm == ibeig(iorb(k)       +
+     &                                npsh(k)       + 
+     &                                NDMOQC(2,k,1) +
+     &                                i))then
+                    orbc = orbc + 1
+                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                  end if
+                end do
+      print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
+              end if
+            end do
+          end if
+        end do
+      end if
+    
       IF(NZ.NE.4) THEN
          IOFF1 = 0
          IOFF2 = 0
          IOFF4 = 0
+         if(nfsym == 1)then
+           orbc = 1
+           do j = 1, nrep,2
+             CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+     &                              dmo,norbt,norbt,idxu2g(1,j),
+     &                              1)
+           orbc = orbc + 2*no(j)**2
+           end do
+         else if(nfsym == 2)then
+           do k = 1, nfsym 
+             if(k == 1)then
+               orbc = 1
+               do j = 1, nrep/2,2
+                 CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+     &                                  dmo,norbt,norbt,idxu2g(1,j),
+     &                                  1)
+                 orbc = orbc + 2*no(j)**2
+               end do
+             else if(k == 2)then
+               do j = nrep/2+1,nrep,2
+                 CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+     &                                  dmo,norbt,norbt,idxu2g(1,j),
+     &                                  1)
+                 orbc = orbc + 2*no(j)**2
+               end do
+             end if
+           end do
+         end if
+
+         deallocate(ibeig,idxu2g)
+
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
          DO IFSYM = 1, NFSYM
             IOFF1 = IOFF1 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-            IJ = 1
-            DO I = 1, NO(NFSYM+IOFF4)
-               CALL DCOPY(NO(IFSYM+IOFF4),       DMOM(IJ+ioff2,1),1,
-     &                                     DMO(1+IOFF1,I+IOFF1,1),1)
-               IJ = IJ + NO(IFSYM+IOFF4)
-            ENDDO
-            IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
                IJ = 1
                DO I = 1, NO(IFSYM+IOFF4)
                   CALL DCOPY(NO(IFSYM+IOFF4),       DMOM(IJ+IOFF2,2),1,
      &                                        DMO(1+IOFF1,I+IOFF1,2),1)
                   IJ = IJ + NO(IFSYM+IOFF4)
                ENDDO
-            ENDIF
             IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
-            IOFF2 = IOFF2 + 2*NO(IFSYM)*NO(IFSYM)
             IOFF4 = IOFF4 + 1
+            IOFF2 = IOFF2 + 2*no(ifsym)+no(ifsym)
          ENDDO
+         ENDIF
       ELSE
          IOFF1 = 0
          IOFF2 = 0
@@ -1565,6 +1702,45 @@ C     k
 C
       RETURN
       END
+      SUBROUTINE MATGAT_symm_relcc(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+     &                             NZ)
+C***********************************************************************
+C
+C     Construct BMAT from AMAT elements using IDX and ibeig arrays.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*)
+      real(8), parameter :: threshold = 1.0d-16
+C
+!     print *, 'MATGAT_symm start is_symm ==> ',is_symm
+
+      DO IZ = 1, NZ
+         do 5 J = 1, NCA
+            JJ = IDX(J) 
+            print *, ' JJ ==> ',JJ
+            do 10 K = 1, NRA
+               KK = IDX(K)
+               print *, ' KK ==> ',KK
+               if(abs(AMAT(K,J,IZ)).lt.threshold)then
+                 BMAT(KK,JJ,IZ) = 0.0d0
+               else
+                 BMAT(KK,JJ,IZ) = AMAT(K,J,IZ)
+                 print *, 'amat,k,j ',amat(k,j,iz),k,j
+               end if
+ 10         continue
+  5      continue
+      END DO
+!     print *, 'MATGAT_symm end  is_symm ==> ',is_symm
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dmp2ao */
       SUBROUTINE DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)

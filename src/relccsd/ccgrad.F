@@ -71,6 +71,9 @@ C----------------------------------------------------------------------
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF1)
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,S2,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,-A1,BUF1,BUF2,A1,DOO,NREP)
+      do i = 1, nfoo
+        print *, 'doo(i',i,')',doo(i) 
+      end do
 C----------------------------------------------------------------------
 C D(I,J) = D(I,J) - T(C,I) * L(C,J) 
 C----------------------------------------------------------------------
@@ -642,7 +645,7 @@ C***********************************************************************
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
-      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:), ibeig(:)
 C
 C---------------Local variables--------------------------------------
 C
@@ -654,11 +657,20 @@ C     memory allocation
 C     -----------------
       allocate(CMO_NAT(NASHT*NASHT*NZ))
       allocate(OCC_NAT(NESHT))
+      allocate(ibeig(norbt))
 C
 C     initialize
 C
       CALL DZERO(CMO_NAT,NASHT*NASHT*NZ)
       CALL DZERO(OCC_NAT,NESHT)
+      ibeig = 0
+
+!     !> read ibeig (info array on boson irreps) from DFCOEF
+      if( linear )then
+        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        close(lucoef,STATUS='KEEP')
+      end if
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -666,7 +678,7 @@ C     ---------------------------------------
 C
 C     calculate NO occ. num. 
 C     ----------------------
-      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C
 C     save nat. orb. occ. num. and transform. matrix to file 
 C     ------------------------------------------------------
@@ -690,14 +702,13 @@ C
 C
 C     memory deallocation
 C     -------------------
-      deallocate(OCC_NAT)
-      deallocate(CMO_NAT)
+      deallocate(OCC_NAT,CMO_NAT,ibeig)
 C
       CALL QEXIT('MP2_NATORB')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C***********************************************************************
 C
 C     diagonalize second order density matrix DMO
@@ -710,6 +721,7 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -717,15 +729,26 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "dcbidx.h"
 #include "../moltra/dcbtr3.h"
 C
-      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ)
+      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ), ibeig(norbt)
       DIMENSION DMO(NORBT,NORBT,*)
       real(8), allocatable :: scratch(:)
       real(8), allocatable :: dv(:,:,:), occ(:)
-C
-!#define DEBUG_MP2_NO
+      real(8), allocatable :: cmo_nat_all(:)
+      integer :: lwork = 0
+      real(8), allocatable :: work(:)
+
+#define DEBUG_MP2_NO
 #ifdef DEBUG_MP2_NO
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK-norbt**2*nz,id='WORK in GMOTRA')
+      KFRSAV = KFREE
+
       noprnt_local = 10
 #else
       noprnt_local = noprnt
@@ -738,21 +761,71 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
 
-      allocate(occ(nasht))
-      allocate(dv(nasht,nasht,nz))
-      dv  = 0
-      occ = 0
+      allocate(occ(nasht),dv(nasht,nasht,nz),cmo_nat_all(norbt**2*nz))
+      dv          = 0
+      occ         = 0
+      cmo_nat_all = 0
+      iashi       = 0
       do i = 1,nfsym
         do j = 1, nash(i)
+          iashi         = iashi  + 1
+          IDXU2G(IASHI) = iorb(i)+ npsh(i) + niocc(i) + j
           do k = 1, nash(i)
             do iz = 1, nz
-              dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
-     &                         iorb(i)+npsh(i)+niocc(i)+k,
-     &                         iz)
+!             dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
+!    &                         iorb(i)+npsh(i)+niocc(i)+k,
+!    &                         iz)
             end do
           end do
         end do
       end do
+
+#ifdef DEBUG_MP2_NO
+      !> set index array idxu2g
+      
+      !> find max j_z value
+      max_loop = 1
+      if(linear) max_loop = iimax(norbt,ibeig,1)
+      print *, 'max_loop is ...',max_loop
+      print *, 'nasht    is ...',nasht
+      print *, 'ibeig    is ...',ibeig(1:norbt)
+      print *, 'idxu2g   is ...',idxu2g(1:norbt)
+      
+
+!     extract a-a part of dmo
+
+      do indx_loop = 1, max_loop
+
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+        print *, 'is_symm is...',is_symm
+
+        CALL MATGAT_symm(dmo,norbt,norbt,dv,nasht,
+     &                   nasht,idxu2g,ibeig,is_symm,nz)
+      end do
+
+      !> diagonalize
+      CALL DIAG_piv2fock('A',dv,occ,cmo_nat,
+     &                   idxu2g,ibeig,work(kfree),lwork)
+
+!     insert new matrix block into transformation matrix
+      do indx_loop = 1, max_loop
+
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+        CALL MATSCT_symm(cmo_nat_all,NORBT,NORBT,cmo_nat,
+     &                   NASHT,NASHT,IDXU2G,ibeig,is_symm,NZ)
+      end do
+
+      call dealloc(work)
+#undef DEBUG_MP2_NO
+#else
 
       IF (NZ .EQ. 1) THEN
          IJOB = 1
@@ -777,6 +850,7 @@ C
             CALL QUIT('*** ERROR in MP2_NATORB_GEN ***')
          END IF
       END IF
+#endif
 C
 C     debug print section
 C
@@ -803,7 +877,7 @@ C
         ioff2 = ioff2 + nash(i) 
       end do
 C
-      IF ( NOPRNT .ge. 3 ) THEN
+      IF ( NOPRNT_local .ge. 3 ) THEN
         IOFF2 = 1
         DO I = 1, NFSYM
            NOCCI = NESH(I)
@@ -859,13 +933,13 @@ C     add "alpha" and "beta" by scaling with 2.0
 C
       CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
 C
-      IF ( NOPRNT .ge. 10 )THEN
+!     IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
      &               'ADD_TWO_FOCK input: DMO :',-1)
          CALL PRQMAT(DMO,
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+!     END IF
 C
       IOFF2 = 1
 C
@@ -889,13 +963,13 @@ C
         END DO
       END DO
 C
-      IF ( NOPRNT .ge. 10 )THEN
+!     IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
      &               'ADD_TWO_FOCK output: DMO :',-1)
          CALL PRQMAT(DMO,
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+!     END IF
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
