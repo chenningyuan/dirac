@@ -42,9 +42,7 @@
       integer                 :: n1,n2
       integer                 :: desrep,lencouplbl,neigenv
       integer                 :: icount,ndim,ialloc
-      integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
-      real*8, allocatable     :: cc(:)   ! work space for diag_lanc
       REAL(8), PARAMETER  :: autoev = 27.2113957D0
 !
 !-----------------------interface section---------------------
@@ -285,9 +283,6 @@
 ! ______________________________________
 !| Call Lanczos diag.      if activated |
 !|______________________________________|
-!  if called from ADCEXC_MAIN we need to allocate the CC
-!  array in order to make it functional.
-!  Later, this will be abandoned completely.
 !
         IF(reladc_dolanc) THEN
 !
@@ -311,27 +306,11 @@
           reladc_md_filediag    = '      '
           reladc_md_filecnf     = NAMECNFFIL
           reladc_md_nmspec      = NAMESPCFIL
-
-          allocate(CC(reladc_lancmem),stat=ialloc)
-          if(ialloc.ne.0) stop 'Memory allocation problem.'
-
-          KFREE = 1; LFREE = reladc_lancmem; KFREEBASE = 1
-!
-! do one "allocation" and "deallocation" in order to 
-! initialize mempkg routines.
-! ask for LANCMEM-10 in order to allow space for tags.
-!
-          CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,CC,
-     &                KFREE,LFREE,.true.)
-          CALL MEMREL('IDPT',CC,KFREEBASE,KFREEBASE,KFREE,LFREE)
 !
 !  perform Lanczos
 !
-          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
-!
-! free all memory that was used for diagonalization
-!
-          deallocate(CC)
+          CALL DIAG_LANC(IW,.false.)
+
         ENDIF
 ! ______________________________________
 !| Call Davidson diag.     if activated |

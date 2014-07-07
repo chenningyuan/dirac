@@ -9,14 +9,12 @@ C
 C                       AUTHOR: M.Pernpointner
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,
-     &                         MXCORR,NSP,IREPSPI,EPS)
+      SUBROUTINE ADCDBLE_MAIN (MXCORR,NSP,IREPSPI,EPS)
       use adc_mat
 C
 C---------------Description-----------------------------------------------
 C
 C    Setup for the two-electron propagator.
-C    Allocate memory, etc.
 C
 C---------------Implicit definition all integers--------------------------
 C-------- this is vital, because buffer names are in fact integer
@@ -26,10 +24,10 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER ICALC
-      REAL*8 CC(*)
-      INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
-      REAL*8 EPS(*)
+      INTEGER                             ::  MXCORR
+      INTEGER                             ::  NSP
+      INTEGER                             ::  IREPSPI(NSP,16,2)
+      REAL*8                              ::  EPS(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -43,8 +41,7 @@ C
 C
 C---------------Local variables memory requirements------------------
 C
-      LOGICAL ALLOC_ME,ERRFLG
-      INTEGER KFRSAV,LFRSAV
+      LOGICAL ERRFLG
       INTEGER ICOLLEN(MXREP),INTBUF
       REAL(8), PARAMETER  :: autoev = 27.2113957D0
 c file names for the Lanczos
@@ -56,6 +53,16 @@ c variables for the lanczos
       REAL*8 RDUMMY
       INTEGER IONIZLEVEL
       INTEGER IRECL
+!
+!  declare the buffer arrays needed for the calculations accordingly
+!
+      integer, allocatable, dimension(:)    :: BFIRCD, BIROOO,
+     &         BLKUPO, BLKUPV, BSPTRO, BUFIOI, BUFIOJ
+
+      real*8, allocatable, dimension(:)     :: BAOCOC, BFOOOO, BFVOVO, 
+     &    BGIJKL, BIXOOO, BOOOO1, BOOOO2, BORIJK, BSATEV, BUFBUF,
+     &    BUFCOL, BUFENE, BVOOO1, BVOOO2, BVVOO1, BVVOO2, E_IJKL,
+     &    ERSMIK
 C
 C---------------Executable code--------------------------------------
 C
@@ -65,29 +72,11 @@ C  _________________________ MEMORY ALLOCATION SECTION ______________
 C |
 C |
 C |
-      ALLOC_ME = ICALC.GE.2
-      KFRSAV=KFREE
-      LFRSAV=LFREE
+      MXCORR=-1
       IONIZLEVEL=2
-      WRITE(IW,*) 'Entering double with MXCORR/KFREE/LFREE/ALLOC:',
-     & MXCORR,KFREE,LFREE,ALLOC_ME
+      WRITE(IW,*) 'Entering 2P propagator module'
 C
-C initialize all buffers with zero, they will be set in the MEMOPT call
-C again to the actual values.
-C
-      BVVOO1 = 0  ! ATT must also hold sorted VVOO arrays, like VVO,O
-      BVVOO2 = 0  ! same condition as BVVOO1 holds for this array
-      BOOOO1 = 0
-      BOOOO2 = 0
-      BGIJKL = 0  ! 2h/2h block: Exactly OOOOTT in size which is NV1
-      BAOCOC = 0
-      ERSMIK = 0  ! holds energies er + es - em - ei/2 - ek/2
-      E_IJKL = 0  ! holds energies ei + ej + ek + el (OOTOOT org !)
-      BVOOO1 = 0  ! ATT must hold sorted VOOO arrays as well !
-      BVOOO2 = 0  ! ATT must hold sorted VOOO arrays as well !
-      BORIJK = 0  ! Offset array for the RIJK array
-C
-C buffers for the integrals and maxdims
+C determine maximum dimensions for the buffers needed
 C
       NDIMT4 = 0
       NOOTMAX = 0
@@ -100,56 +89,47 @@ C
 
       NDIM = IVVOOTT(NREP+1)*RCW
       NDIM = MAX0(NDIM,KVVOOT(NREP+1)*RCW)
-      CALL MEMOPT('REAL',BVVOO1,NDIM,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BVVOO2,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BVVOO1(NDIM))
+      allocate(BVVOO2(NDIM))
 
       NDIM = IOOOOTT(NREP+1)*RCW
-      CALL MEMOPT('REAL',BOOOO1,NDIM,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BOOOO2,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BOOOO1(NDIM))
+      allocate(BOOOO2(NDIM))
 
       NDIM = NV1*RCW
-      CALL MEMOPT('REAL',BGIJKL,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BGIJKL(NDIM))
 
       NDIM = IOO(NREP+1)*RCW
-      CALL MEMOPT('REAL',BAOCOC,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BAOCOC(NDIM))
 
       NDIM = NDIMT4
-      CALL MEMOPT('REAL',ERSMIK,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(ERSMIK(NDIM))
 
       NDIM = IOOOOTT(NREP+1)
-      CALL MEMOPT('REAL',E_IJKL,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(E_IJKL(NDIM))
 C
       NDIM = MAX0(IVOOOT(NREP+1),LOVOOT(NREP+1)) * RCW
-      CALL MEMOPT('REAL',BVOOO1,NDIM,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BVOOO2,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BVOOO1(NDIM))
+      allocate(BVOOO2(NDIM))
 C
       NDIM = IO(NREP+1)*IO(NREP+1)*IO(NREP+1)
-      CALL MEMOPT('REAL',BIXOOO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BORIJK,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BIXOOO(NDIM))
+      allocate(BORIJK(NDIM))
 C
       NDIM = IO(NREP+1)*2
-      CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BIROOO(NDIM))
 C
       M = IO(NREP+1)
       NDIM = (M*M*M*IV(NREP+1) + NOOTMAX)*RCW
-      CALL MEMOPT('REAL',BUFCOL,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BUFCOL(NDIM))
       NDIM = (M*M*M*IV(NREP+1) + NOOTMAX)
-      CALL MEMOPT('REAL',BUFENE,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BUFENE(NDIM))
 C
 c  check if true allocation should take place
 c  if not, we return.
 c  On entry MXCORR has the value 0 and attains the value of KFREE
 c  corresponding to the pointer value of already occupied memory.
 c
-      MXCORR=MAX0(MXCORR,KFREE)
-      IF(ICALC.EQ.1) THEN
-        WRITE(IW,110) MXCORR,(MXCORR*8)/(1024*1024)
-        KFREE = KFRSAV
-        LFREE = LFRSAV
-        RETURN
-      ENDIF
- 110  FORMAT ("Memory requirements for the Double ionization:",
-     &         I6," 8-byte words  ",I6," Megabytes")
 C |
 C |
 C |
@@ -233,12 +213,11 @@ C |
 C |
 C   all symmetries in the 2H/2H block are treated simultaneously.
 C
-      CALL BUILD_2H2H (CC(BGIJKL), CC(BVVOO1), CC(BVVOO2), 
-     &                 CC(BOOOO1), CC(BOOOO2), CC(BAOCOC), 
-     &                 EPS, CC(ERSMIK), CC(E_IJKL))
-      CALL MEMCHK('after BUILD_2H2H',CC,KFRSAV)
+      CALL BUILD_2H2H (BGIJKL, BVVOO1, BVVOO2, 
+     &                 BOOOO1, BOOOO2, BAOCOC, 
+     &                 EPS, ERSMIK, E_IJKL)
 C
-C   the 2h/2h block is now available at CC(BGIJKL) and has
+C   the 2h/2h block is now available in BGIJKL and has
 C   OOT||OOT structure with the BKC <|<| |>|>
 C |
 C |
@@ -295,14 +274,14 @@ CTROND      ENDDO
           WRITE(IW,'(A,I4)') 
      &       ' *** Found 2H final states in symm. ',DESREP
           IF(CARITH) THEN
-            CALL BUILD_3H1P_2H_C(IO(NREP+1),CC(BIXOOO),CC(BIROOO),
-     &                           CC(BORIJK),CC(BVOOO1),CC(BVOOO2),
-     &                           CC(BUFCOL),CC(BUFENE),CC(BGIJKL),
+            CALL BUILD_3H1P_2H_C(IO(NREP+1),BIXOOO,BIROOO,
+     &                           BORIJK,BVOOO1,BVOOO2,
+     &                           BUFCOL,BUFENE,BGIJKL,
      &                           EPS,DESREP,LENSATBL)
           ELSE
-            CALL BUILD_3H1P_2H_R(IO(NREP+1),CC(BIXOOO),CC(BIROOO),
-     &                           CC(BORIJK),CC(BVOOO1),CC(BVOOO2),
-     &                           CC(BUFCOL),CC(BGIJKL),EPS,DESREP,
+            CALL BUILD_3H1P_2H_R(IO(NREP+1),BIXOOO,BIROOO,
+     &                           BORIJK,BVOOO1,BVOOO2,
+     &                           BUFCOL,BGIJKL,EPS,DESREP,
      &                           LENSATBL)
           ENDIF
           ICOLLEN(DESREP) = LENSATBL
@@ -312,8 +291,6 @@ CTROND      ENDDO
 c
 c  release *ALL* allocations done during computation so far
 c
-      CALL MEMCHK('after BUILD_3H1P_2H',CC,KFRSAV)
-      CALL MEMREL('Total release',CC,1,KFRSAV,KFREE,LFREE)
 C |
 C |
 C |
@@ -343,30 +320,26 @@ C this makes offset addressing particularly simple but may cause a
 C slight computational overhead by adding zero to a floating number.
 c
       NDIM=(IOOOOTT(NREP+1)+1)*RCW
-      CALL MEMOPT('REAL',BFOOOO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BFOOOO(NDIM))
       NDIM=(IVOVO(NREP+1)+1)*RCW
-      CALL MEMOPT('REAL',BFVOVO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BFVOVO(NDIM))
       NDIM=IO(NREP+1)*2
-      CALL MEMOPT('INTE',BSPTRO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BSPTRO(NDIM))
       NDIM=IO(NREP+1)
       NDIM=NDIM*NDIM*NDIM*NDIM
-      CALL MEMOPT('INTE',BLKUPO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BLKUPO(NDIM))
       NDIM=IV(NREP+1)*IO(NREP+1)
       NDIM=NDIM*NDIM
-      CALL MEMOPT('INTE',BLKUPV,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(BLKUPV(NDIM))
 c
 c  initialize transposition arrays
 c
-      CALL MAKESPTRA(CC(BSPTRO),IO(NREP+1))
+      CALL MAKESPTRA(BSPTRO,IO(NREP+1))
 c
 c  initialize lookup tables for OOOO and VOVO
 c
-      CALL MAKELOOKUPO(CC(BLKUPO),IO(NREP+1))
-      CALL MAKELOOKUPV(CC(BLKUPV),IO(NREP+1),IV(NREP+1))
-
-      CALL MEMCHK('before BUILD_SAT',CC,KFRSAV)
-
-      KFRSAV2 = KFREE
+      CALL MAKELOOKUPO(BLKUPO,IO(NREP+1))
+      CALL MAKELOOKUPV(BLKUPV,IO(NREP+1),IV(NREP+1))
 c
 c  loop over the symmetries
 c  att: the additional, symmetry-specific memory is allocated
@@ -390,27 +363,27 @@ c
 
         LENSATBL = ICOLLEN(DESREP)
         NDIM = LENSATBL
-        CALL MEMOPT('REAL',BSATEV,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(BSATEV(NDIM))
         NDIM = LENSATBL*4
-        CALL MEMOPT('INTE',BFIRCD,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(BFIRCD(NDIM))
         NDIM = INTBUF
-        CALL MEMOPT('INTE',BUFIOI,NDIM,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('INTE',BUFIOJ,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(BUFIOI(NDIM))
+        allocate(BUFIOJ(NDIM))
         NDIM = INTBUF*RCW
-        CALL MEMOPT('REAL',BUFBUF,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(BUFBUF(NDIM))
         NDIM = IO(NREP+1)*2
-        CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(BIROOO(NDIM))
 
         IF(CARITH) THEN
-          CALL BUILD_SAT_C(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
-     &                     IV(NREP+1),CC(BSATEV),CC(BFIRCD),LENSATBL,
-     &                     CC(BLKUPO),CC(BLKUPV),DESREP,ADCTHR,
-     &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
+          CALL BUILD_SAT_C(BFOOOO,BFVOVO,BSPTRO,IO(NREP+1),
+     &                     IV(NREP+1),BSATEV,BFIRCD,LENSATBL,
+     &                     BLKUPO,BLKUPV,DESREP,ADCTHR,
+     &                     BUFIOI,BUFIOJ,BUFBUF,INTBUF)
         ELSE
-          CALL BUILD_SAT_R(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
-     &                     IV(NREP+1),CC(BSATEV),CC(BFIRCD),LENSATBL,
-     &                     CC(BLKUPO),CC(BLKUPV),DESREP,ADCTHR,
-     &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
+          CALL BUILD_SAT_R(BFOOOO,BFVOVO,BSPTRO,IO(NREP+1),
+     &                     IV(NREP+1),BSATEV,BFIRCD,LENSATBL,
+     &                     BLKUPO,BLKUPV,DESREP,ADCTHR,
+     &                     BUFIOI,BUFIOJ,BUFBUF,INTBUF)
         ENDIF
 C
 C  call 2h/3h1p configuration creator, file handle is available
@@ -418,14 +391,20 @@ C  afterwards
 C
         LADC = NOOT(DESREP) + LENSATBL
         CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,
-     &                 IO(NREP+1),CC(BIROOO))
+     &                 IO(NREP+1),BIROOO)
         WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
 c
-c  release all memory needed for satellite construction.
+c release all memory of the 2P propagator calculation.
+c Diagonalizers are decoupled and reallocate memory individually.
 c
-        CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
-        CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
-C
+
+      deallocate(BVVOO1, BVVOO2, BOOOO1, BOOOO2, BGIJKL, BAOCOC, ERSMIK,
+     &      E_IJKL, BVOOO1, BVOOO2, BIXOOO, BORIJK, BIROOO, BUFCOL,
+     &      BUFENE, BFOOOO, BFVOVO, BSPTRO, BLKUPO, BLKUPV, BSATEV,
+     &      BFIRCD, BUFIOI, BUFIOJ, BUFBUF)
+c Diagonalizers are decoupled and reallocate memory individually.
+
+c
 C  set matrix descriptor and perform Lanczos diagonalization
 C
         reladc_md_iobase       = ITAPADC
@@ -461,7 +440,7 @@ c
 c
 c  call Lanczos diagonalizer.
 c
-        CALL DIAG_LANC(CC,KFRSAV2,LFREE,IW,DOINCORE)
+        CALL DIAG_LANC(IW,DOINCORE)
 c
 c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
@@ -500,11 +479,6 @@ C |
 C |
 C |________________E_N_D______S_E_C_T_I_O_N__________________________
 c
-c  perform a complete memory release now
-c  
-c
-      CALL MEMREL('Release after all blocks',CC,1,KFRSAV,KFREE,LFREE)
-
       RETURN
       END
 C |
@@ -528,11 +502,6 @@ C
       REAL*8 GIJKL(*), VVOO1(*), VVOO2(*), OOOO1(*), OOOO2(*)
       REAL*8 AIK(*), EPS(*), EABLKKS(*), EIJKL(*)
       REAL*8 ASYM
-c debug
-c     REAL*8 CC(*)
-c end debug
-
-
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -545,7 +514,6 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
       CALL PST('Building 2h/2h block+')
-      KFRSAV=1
 c
 c  -------------------------------
 c  Start calculating  TERM 5A    |
@@ -566,9 +534,6 @@ c
       IF(CARITH) CALL CONJUGA(NV3,VVOO1,1)
       CALL DENOMY (EPS,VVOO2,VVOO2)
       CALL CNTRCT('T','N',NOOT,NOOT,NVVT,A1,VVOO1,VVOO2,A0,OOOO1,NREP)
-c
-c     CALL MEMCHK('MEMCHK entering  BUILD_2H2H',CC,KFRSAV)
-c     write(iw,*) 'memchk 2 passed...'
 c
 c  -------------------------------
 c  Start calculating  TERM 5B    |

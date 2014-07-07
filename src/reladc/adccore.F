@@ -492,8 +492,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       IF(DODIPS) THEN
         ICALC = 2
-        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,
-     &                     maxcore_info(3),NSP,IREPSPI,EPS)
+        CALL ADCDBLE_MAIN (maxcore_info(3),NSP,IREPSPI,EPS)
         WRITE(IW,*) 'Memory requirements of ',
      &               maxcore_infc(3),maxcore_info(3)
       ENDIF
