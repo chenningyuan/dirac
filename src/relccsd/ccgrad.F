@@ -71,9 +71,6 @@ C----------------------------------------------------------------------
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF1)
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,S2,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,-A1,BUF1,BUF2,A1,DOO,NREP)
-      do i = 1, nfoo
-        print *, 'doo(i',i,')',doo(i) 
-      end do
 C----------------------------------------------------------------------
 C D(I,J) = D(I,J) - T(C,I) * L(C,J) 
 C----------------------------------------------------------------------
@@ -742,13 +739,13 @@ C
       integer :: lwork = 0
       real(8), allocatable :: work(:)
 
-#define DEBUG_MP2_NO
-#ifdef DEBUG_MP2_NO
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK-norbt**2*nz,id='WORK in GMOTRA')
       KFRSAV = KFREE
 
+!#define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
       noprnt_local = 10
 #else
       noprnt_local = noprnt
@@ -766,31 +763,18 @@ C
       occ         = 0
       cmo_nat_all = 0
       iashi       = 0
+      !> set index array idxu2g
       do i = 1,nfsym
         do j = 1, nash(i)
           iashi         = iashi  + 1
           IDXU2G(IASHI) = iorb(i)+ npsh(i) + niocc(i) + j
-          do k = 1, nash(i)
-            do iz = 1, nz
-!             dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
-!    &                         iorb(i)+npsh(i)+niocc(i)+k,
-!    &                         iz)
-            end do
-          end do
         end do
       end do
 
-#ifdef DEBUG_MP2_NO
-      !> set index array idxu2g
       
       !> find max j_z value
       max_loop = 1
       if(linear) max_loop = iimax(norbt,ibeig,1)
-      print *, 'max_loop is ...',max_loop
-      print *, 'nasht    is ...',nasht
-      print *, 'ibeig    is ...',ibeig(1:norbt)
-      print *, 'idxu2g   is ...',idxu2g(1:norbt)
-      
 
 !     extract a-a part of dmo
 
@@ -801,7 +785,6 @@ C
           !> get mj-value
           is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
         end if
-        print *, 'is_symm is...',is_symm
 
         CALL MATGAT_symm(dmo,norbt,norbt,dv,nasht,
      &                   nasht,idxu2g,ibeig,is_symm,nz)
@@ -824,33 +807,6 @@ C
       end do
 
       call dealloc(work)
-#undef DEBUG_MP2_NO
-#else
-
-      IF (NZ .EQ. 1) THEN
-         IJOB = 1
-         IORDER = 0
-         IPACK = 0
-         lfree = ((nasht*(nasht+1))/2)+2*nasht+16
-         allocate(scratch(lfree))
-
-         CALL RSJACO(NASHT,NASHT,NASHT,DV,occ,
-     &               IJOB,IORDER,IPACK,cmo_nat,scratch,lfree)
-
-         deallocate(scratch)
-
-      ELSE
-         MATZ = 1
-         CALL QDIAG90(NZ,NASHT,DV,NASHT,NASHT,
-     &                occ,MATZ,cmo_nat,NASHT,NASHT,IERR)
-         IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/,1X,2A,I4)')
-     &           '*** ERROR in MP2_NATORB_GEN ***: ',
-     &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in MP2_NATORB_GEN ***')
-         END IF
-      END IF
-#endif
 C
 C     debug print section
 C
@@ -893,8 +849,9 @@ C
       END IF
 
 !     release memory
-      deallocate(dv)
-      deallocate(occ)
+      deallocate(dv,occ)
+
+#undef DEBUG_MP2_NO
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -933,13 +890,13 @@ C     add "alpha" and "beta" by scaling with 2.0
 C
       CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
 C
-!     IF ( NOPRNT .ge. 10 )THEN
+      IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
      &               'ADD_TWO_FOCK input: DMO :',-1)
          CALL PRQMAT(DMO,
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
-!     END IF
+      END IF
 C
       IOFF2 = 1
 C
@@ -963,13 +920,13 @@ C
         END DO
       END DO
 C
-!     IF ( NOPRNT .ge. 10 )THEN
+      IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
      &               'ADD_TWO_FOCK output: DMO :',-1)
          CALL PRQMAT(DMO,
      &               NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
-!     END IF
+      END IF
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
