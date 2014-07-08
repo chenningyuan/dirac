@@ -1375,8 +1375,12 @@ C
      &                  BUF9A,BUF9B,BUF9C,BUFO1,
      &                  FKKS,.false.)
           deallocate(BUFVVVV)
+  
+          CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
+          WRITE(IW,*) 'h/h hermiticity deviation:',ASYM
+
           IF(DOCONST) THEN
-            IX1=JJOO(KREP,KREP)*RCW
+            IX1=JJOO(KREP,KREP)*RCW + 1
             CALL ADDARR(NO(KREP),BUFSIG(IX1),BUFSIG(IX1),CKKS,CKKS)
           ENDIF
         ENDIF
@@ -1384,8 +1388,7 @@ c
 c  check deviation from hermiticity (should be approx. zero)
 c
         CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-        WRITE(IW,*) 'Max. deviation from hermiticity'
-        WRITE(IW,*) 'for the h/h block:',ASYM
+        WRITE(IW,*) 'h/h hermiticity deviation:',ASYM
         WRITE(IW,*)
 C
 C  compute 1h/2h-1p block contributions for ADC2 and ADC2X
