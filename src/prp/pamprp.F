@@ -8965,9 +8965,9 @@ C...common block for linear reponse
       logical, allocatable :: DOATOM(:)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
-
-c iaa check "internal sign" of DS
-      PARAMETER(D1 = 1.0D0,DL = 1.0D0,DS = -0.5D0)
+C.....ANGMOM integrals correspond to -iL, so we set DL = -1
+C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
+      PARAMETER(D1 = 1.0D0,DL = -1.0D0,DS = 0.5D0)
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -9111,7 +9111,7 @@ C
       END IF !LINEAR
 C
 C
-C    Left-hand operators
+C    Left-hand operators: -c\alpha x r/r^3
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -9120,8 +9120,8 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
 C
-      PFAC(1)  = CVAL
-      PFAC(2)  = CVAL
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
       NPCOMP   = 2
 C
       ITOP = 3
