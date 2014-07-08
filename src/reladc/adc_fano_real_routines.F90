@@ -390,8 +390,6 @@ CONTAINS
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
         IF (ANY(finalpos == jcol)) THEN
-        !temp = finalpos(fincol)
-        !IF (temp == jcol) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
@@ -499,11 +497,6 @@ CONTAINS
       END DO colloop
 
       WRITE(iw,*) 'Number of zeros = ', zeros
-
-      !DO ixx=1, fano_intbuf
-      !  WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
-      !                                 -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
-      !END DO
 
       CALL rwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                                inib,infh)
