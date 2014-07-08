@@ -371,8 +371,6 @@ c
         allocate(BUFIOJ(NDIM))
         NDIM = INTBUF*RCW
         allocate(BUFBUF(NDIM))
-        NDIM = IO(NREP+1)*2
-        allocate(BIROOO(NDIM))
 
         IF(CARITH) THEN
           CALL BUILD_SAT_C(BFOOOO,BFVOVO,BSPTRO,IO(NREP+1),
