@@ -342,7 +342,7 @@ CONTAINS
 !-> current work
     ! Create sorted h/2h1p block
     CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
-                             itapadc,iw)
+                             itapadc,iw,finalpos)
 
     CALL dealloc(bufhp)
 
