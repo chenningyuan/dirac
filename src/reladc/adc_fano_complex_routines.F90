@@ -46,7 +46,8 @@ MODULE adc_fano_complex_routines
 
 CONTAINS
 
-  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw, &
+                             finalpos)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -87,12 +88,14 @@ CONTAINS
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
     INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
     INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+    INTEGER, INTENT(IN), DIMENSION(fin_max)                 :: finalpos
 
 !
 !  Data dictionary: Local Variables
 !
     COMPLEX(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
     COMPLEX(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
+    COMPLEX(8)                            :: temp
     INTEGER                               :: temp_row     !row of temp_array
     INTEGER                               :: finrow       !row of final states
     INTEGER                               :: k, ixx, fincount ! counters
@@ -172,6 +175,7 @@ CONTAINS
       off2   = off2 + nok
       CALL ZCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
+!--> current
       DO adcrow = adccol + 1, ladc
         incol = adccol
         !inrow = adcrow
