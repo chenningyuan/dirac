@@ -1,5 +1,5 @@
-O1s core-ionization of H2O by complex response
-==============================================
+Core electron excitations and ionization in H2O at the HF and DFT levels
+========================================================================
 
 Introduction
 ------------
@@ -106,7 +106,7 @@ Localizing the K edge
 
 An interesting question is how to localize the K edge in the XANES spectrum.
 A first approximation to the 1s ionization energy is provided by Koopman's 
-theorem. We find :math:`IP_{1s}\approx -\varepsilon_{1s} =` 560.04 eV.
+theorem. We find :math:`IP_{1s}\approx -\varepsilon_{1s} =` 20.581089 :math:`E_h` = 560.04 eV.
 This is singificantly off the value 539.7 eV reported by Kai Siegbahn and co-workers
 [*ESCA applied to free molecules*(1969)] ( see also `here <http://srdata.nist.gov/xps/XPSDetailPage.aspx?AllDataNo=21090>`_ ,
 but here the work function of the reference metal must be subtracted).
@@ -120,53 +120,22 @@ Starting from the coefficients from the neutral system and the input
 
 .. literalinclude:: H2O_1s.inp
 
+and the command::
+
+   pam --incmo --mol=H2O --inp=H2O_1s
+
 we find a total energy of -56.287847 :math:`E_h` for the core ionized system compared to 
 -76.115149 :math:`E_h` for the neutral system. This corresponds to a :math:`\Delta` SCF value 
 of 539.52 eV for the ionization energy, tantalizingly close to experiment.
 
-However this K edge does not correspond to that of our TD-HF or complex reponse calculations since they 
-only allow linear reponse (orbital relaxation). To get an idea of the ionization energy at the linear 
-reponse level we place a tight s exponent on a ghost center far from out water molecule
+In passing we that note that in the first iteration of this calculation we obtain a total energy of -55.534060 :math:`E_h`. 
+This is the energy of the core-ionized system obtained using the orbitals of the neutral system. Koopman's theorem is 
+obtained by subtracting this energy from the energy of the neutral system. For the neutral system we obtained 
+-76.115149  :math:`E_h`, so by taking the difference we obtain 20.581089 :math:`E_h`, which is exactly the *1s* orbital energy 
+in the neutral system. 
 
-.. literalinclude:: H2Ogh.mol
-
-We then again calculate the water molecule::
-
-   pam --inp=H2O --mol=H2Ogh --outcmo
-
-and find the eigenvalue corresponding to our ghost function::
-
-   * Electronic eigenvalue no. 72:  1444.4471138822       (Occupation : f = 0.0000)           
-   ==========================================================================================
-   
-   * Gross populations greater than 0.00010
-   
-   Gross     Total   |    L A1 Gh s   
-   --------------------------------------
-    alpha    1.0000  |      1.0000
-    beta     0.0000  |      0.0000
-
-We now force an excitation from the neutral water molecule to the remote ghost function using the input file 
-
-.. literalinclude:: ghost.inp
-
-Here we have specified one excitation in each symmetry: The totally symmetric (:math:`A_1`) excitation 
-corresponds to the singlet excitation, whereas the other three encompass the triplet excitations.
-We run the TD-HF calculation::
-
-   pam --inp=ost --mol=H2Ogh --incmo
-
-and find in the output::
-
-    Energy eigenvalues in atomic units
-   
-    Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
-    
-        0     0.0000000000      0.000000000000      -76.115149331848 (   1 * )
-        1  1465.0082924354   1465.008292435403     1388.893143103555 (   4 * )
-
-Subtracting off the ghost orbital eigenvalue from the excitation energy we obtain 559.50 eV, very 
-close to the Koopman's theorem value.
+The  K edge obtained by :math:`\Delta SCF` does not correspond to that of our TD-HF or complex reponse calculations since they 
+only allow linear reponse (orbital relaxation). 
 
 In the figure below we have plotted oscillator strength per atom for 1s core excitation spectrum for
 water, taken from the `Gas Phase Core Excitation Database <http://unicorn.mcmaster.ca/corex/cedb-title.html>`_ 
@@ -208,3 +177,102 @@ We have plotted the STEX spectrum below together with the experimental one
 .. image:: stex.png
    :scale: 100
    :alt: alternate text
+
+Switching to DFT
+----------------
+
+Let us now look at what we can do with DFT. The first thing to note is that Koopman's theorem does not hold:
+
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+|                  |                          |  HF(AOC)    |  HF(focc)   |    LDA      |    PBE      |    PBE0     |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+| Neutral          | Energy                   | -76.115149  | -76.115149  | -75.962033  | -76.438943  | -76.437412  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+|                  | :math:`\varepsilon_{1s}` | -20.581089  | -20.581089  | -18.620721  | -18.766629  | -19.223080  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+| :math:`1s^{-1}`  | Energy                   | -56.287847  | -55.070646  | -55.980781  | -56.300366  | -56.069079  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+|                  | Energy(0)                | -55.534060  | -54.347068  | -55.231846  | -55.540835  | -55.319556  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+| :math:`\Delta E` | relax                    | -19.827303  | -21.044503  | -19.981252  | -20.138577  | -20.368333  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+|                  | norelax                  | -20.581089  | -21.768082  | -20.730186  | -20.898108  | -21.117856  |
++------------------+--------------------------+-------------+-------------+-------------+-------------+-------------+
+
++------------------+--------------------------+-------------+-------------+-------------+------------+
+|                  |                          |    BP86     |    BLYP     |   B3LYP     |  CAMB3LYP  |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+| Neutral          | Energy                   | -76.525093  | -76.508410  | -76.487092  | -76.496078 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+|                  | :math:`\varepsilon_{1s}` | -18.786866  | -18.791935  | -19.145210  | -19.219699 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+| :math:`1s^{-1}`  | Energy                   | -56.366800  | -56.340103  | -56.148003  | -56.115449 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+|                  | Energy(0)                | -55.606191  | -55.582410  | -55.398934  | -55.366886 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+| :math:`\Delta E` | relax                    | -20.158293  | -20.168307  | -20.339089  | -20.380629 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+|                  | norelax                  | -20.918902  | -20.926000  | -21.088158  | -21.129191 |
++------------------+--------------------------+-------------+-------------+-------------+------------+
+
+In the above table the entry `Energy(0)` is the total energy of the core-ionized system calculated using the orbitals of the neutral system.
+When we calculate the energy difference between the neutral and core-ionized system using the orbitals of the neutral system we reproduce the 
+1s orbital energy to the cited decimals, but this is not the case of any other method, including HF using fractional occupation.
+
+Below we give the :math:`\Delta SCF` numbers is eV. Interestingly AOC-HF at539.5 eV easily  comes closest to the experimental value 539.7 eV.
+It can furthermore be seen that :math:`\Delta SCF` values obtained with DFT functionals show the trend LDA < GGA < hybrid with LDA 
+closest, but still far from experiment. Switching from average-of-configuration to fractional occupation at the HF level leads to
+a dramatic deterioration of the agreement with experiment.
+
++------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+|                              |  HF(AOC)    |  HF(focc)   |    LDA      |    PBE      |    PBE0     |    BP86     |    BLYP     |   B3LYP     |  CAMB3LYP  |
++------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| :math:`\varepsilon_{1s}`     |   560.0     |   560.0     |   506.7     |   510.7     |   523.1     |   511.2     |   511.4     |   521.0     |   523.0    |
++------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| :math:`\Delta E` (relax)     |   539.5     |   572.7     |   564.1     |   568.7     |   574.6     |   569.2     |   569.4     |   573.8     |   575.0    |
++------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| :math:`\Delta E` (no relax)  |   560.0     |   592.3     |   543.7     |   548.0     |   554.3     |   548.5     |   548.8     |   553.5     |   554.6    |
++------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+
+At the DFT level we have employed an energy expression based on fractional occupation, which is the model that leads to Janak's theorem, namely that 
+the derivative of the energy with respect to occupation number :math:`n_i` gives the energy of the corresponding orbital, that is
+
+.. math:: \frac{dE}{dn_i} = \varepsilon_i
+
+We may investigate Janak's theorem numerically. We set up a script to do DFT calculations with fractional occupation from 1.0 to 1.9 of
+the oxygen 1s orbital
+
+.. literalinclude:: janak.sh
+
+and also add the energy of the neutral system to our data set.
+We then carry out polynomial fits to various orders and calculate the derivative of the energy at occupation 2.0 with 
+respect to 1s occupatio number. We then obtain
+
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+|                            |  HF(AOC)    |  HF(focc)   |    LDA      |    PBE      |    PBE0     |    BP86     |    BLYP     |   B3LYP     |  CAMB3LYP  |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 1                          | -19.824314  | -21.044193  | -19.981185  | -20.138613  | -20.368425  | -20.158286  | -20.168248  | -20.339084  | -20.380650 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 2                          | -18.196672  | -20.579045  | -18.618588  | -18.765178  | -19.222619  | -18.785047  | -18.789831  | -19.143977  | -19.218655 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 3                          | -18.220409  | -20.581507  | -18.619168  | -18.764949  | -19.221929  | -18.785159  | -18.790354  | -19.144055  | -19.218529 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 4                          | -18.220112  | -20.581073  | -18.620943  | -18.766866  | -19.223251  | -18.787109  | -18.792168  | -19.145388  | -19.219883 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 5                          | -18.220135  | -20.581093  | -18.620699  | -18.766601  | -19.223061  | -18.786846  | -18.791909  | -19.145191  | -19.219680 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 6                          | -18.220131  | -20.581090  | -18.620724  | -18.766633  | -19.223084  | -18.786872  | -18.791940  | -19.145213  | -19.219703 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 7                          | -18.220130  | -20.581089  | -18.620720  | -18.766628  | -19.223080  | -18.786869  | -18.791934  | -19.145209  | -19.219699 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 8                          | -18.220130  | -20.581089  | -18.620721  | -18.766629  | -19.223080  | -18.786857  | -18.791935  | -19.145210  | -19.219699 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| 9                          | -18.220130  | -20.581089  | -18.620721  | -18.766629  | -19.223080  | -18.786879  | -18.791935  | -19.145210  | -19.219699 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+| :math:`\varepsilon_{1s}`   | -20.581089  | -20.581089  | -18.620721  | -18.766629  | -19.223080  | -18.786866  | -18.791935  | -19.145210  | -19.219699 |
++----------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+------------+
+
+We see that a linear fit is clearly is insufficient, whereas a quadratic fit is reasonable. However, a 8th order fit is in general needed to converge the
+energy derivative to the 1s orbital energy with the cited number of decimals.
+
+

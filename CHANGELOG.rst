@@ -1,10 +1,21 @@
 
 
-13.3 (this will be the next patch)
-----------------------------------
+13.4 (this is the next patch)
+-----------------------------
+
+- Nicer error messages if the mol file is wrongly formatted.
+- Bugfix for dipole moment calculations with the KRCI property module.
+  The core-electronic part was not added to the electronic contribution 
+  of the total dipole moment.
+
+
+13.3 (2014-06-02)
+-----------------
 
 - Fix for more than nine buffer files in integral trnasformation
-  (problem reported on dirac-users mailing list)
+  (problem reported on dirac-users mailing list).
+- Bugfix for correlated spinfree X2C calculations with low symmetry molecules (NZ > 1).
+- Adapted testing framework to older versions of python.
 
 
 13.2 (2014-04-14)

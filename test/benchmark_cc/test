@@ -17,10 +17,11 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-7)
 f.add(from_string = 'Dipole length: X',
       to_string   = 's0 = T : Expectation value zero by point group symmetry.',
-      rel_tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5,
+      ignore_below = 1.0e-9)
 
 mol_files = []
 mol_files.append('C2H4Cl2_ec1_c2v.mol')

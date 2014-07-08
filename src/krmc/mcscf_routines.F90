@@ -689,8 +689,6 @@ contains
 !     USE UNIT_TEST_GENERATOR
       IMPLICIT NONE
 
-#include "unit-test.h"
-
       LOGICAL, INTENT( IN) :: PSYMM, KSYMM, TSYMM, SPINFR, LEVYLE
       INTEGER, INTENT( IN) :: NASHT, NNASHX, NZ, NZINCI, NM5, NBSYM, NFSYM, IPRINT, LUPRI
       INTEGER, INTENT( IN) :: NASH(2), IPQTOQ(4,0:7)
@@ -709,7 +707,7 @@ contains
       icount = icount + 1
       write(6,*) 'M2DNZ390',psymm,ksymm,tsymm,icount
 
-#ifdef CREATE_UNIT_TESTS
+#ifdef CREATE_UNIT_TEST_M2DNZ390
       call set_suffix(psymm)
       call set_suffix(ksymm)
       call set_suffix(tsymm)
@@ -1255,7 +1253,7 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-#ifdef CREATE_UNIT_TESTS
+#ifdef CREATE_UNIT_TEST_M2DNZ390
     call add_out_variable(vduuuu,'vduuuu')
     call generate_test()
 #endif

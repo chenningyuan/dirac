@@ -2047,11 +2047,11 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          END IF
       END IF
 C
-      IF (NOPEN.GT.0.AND.ZORA) THEN
-          WRITE(LUPRI,'(A)')
-     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
-          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
-      ENDIF
+CTROND      IF (NOPEN.GT.0.AND.ZORA) THEN
+CTROND          WRITE(LUPRI,'(A)')
+CTROND     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
+CTROND          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
+CTROND      ENDIF
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
       WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
