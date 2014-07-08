@@ -6489,19 +6489,17 @@ C
 C     Fill shielding matrices
 C
       IF (XLR_SKIPEE) THEN
+        IABLRF_EE = -999999999
         IF (XLR_SKIPEP) THEN
-          IABLRF_EE = -999999999
           IABLRF_EP = -999999999
         ELSE
-          IABLRF_EE = -999999999
           IABLRF_EP = 2
         END IF
       ELSE
+        IABLRF_EE = 2
         IF (XLR_SKIPEP) THEN
-          IABLRF_EE = 2
           IABLRF_EP = -999999999
         ELSE
-          IABLRF_EE = 2
           IABLRF_EP = 3
         END IF
       END IF
@@ -9515,19 +9513,17 @@ C
 C     Fill spin-rotation matrices
 C
       IF (XLR_SKIPEE) THEN
+        IABLRF_EE = -999999999
         IF (XLR_SKIPEP) THEN
-          IABLRF_EE = -999999999
           IABLRF_EP = -999999999
         ELSE
-          IABLRF_EE = -999999999
           IABLRF_EP = 2
         END IF
       ELSE
+        IABLRF_EE = 2
         IF (XLR_SKIPEP) THEN
-          IABLRF_EE = 2
           IABLRF_EP = -999999999
         ELSE
-          IABLRF_EE = 2
           IABLRF_EP = 3
         END IF
       END IF
