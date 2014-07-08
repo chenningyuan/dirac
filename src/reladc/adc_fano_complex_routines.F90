@@ -94,7 +94,6 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     COMPLEX(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-    COMPLEX(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
     COMPLEX(8)                            :: temp
     INTEGER                               :: temp_row     !row of temp_array
     INTEGER                               :: finrow       !row of final states
@@ -121,7 +120,6 @@ CONTAINS
     CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
     CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
     CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
-    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
 
 ! ---------------------------------
 !  Code
@@ -135,7 +133,6 @@ CONTAINS
     adcbuf     = (0.0D0,0.0D0)
     adcioi     = 0
     adcioj     = 0
-    temp_array = 0
 
     inrow      = 1
     finrow     = 0
@@ -176,71 +173,48 @@ CONTAINS
       CALL ZCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
 !--> current
-      DO adcrow = adccol + 1, ladc
+      rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
         !inrow = adcrow
-        IF (adcrow-nok > 0) THEN
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'nok    = ', nok
-          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-                               is_coupl,is_fin,1)
+        IF (ANY(finalpos + nok == adcrow)) THEN
+          CYCLE rowloop
+          !CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
+          !                     is_coupl,is_fin,1)
         ELSE
-          is_in = .TRUE.
+          inrow = inrow + 1                                               
+          !WRITE(iw,*) 'inrow = ', inrow                                  
+          IF (single_col(adcrow) /= (0.0D0,0.0D0)) THEN                           
+            ! Handle the matrix of initial states                         
+            inib   = inib + 1                                             
+            inbuf(inib) = single_col(adcrow)                              
+            inioi(inib) = inrow                                           
+            inioj(inib) = adccol                                          
+!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib) 
+            IF (inib == fano_intbuf) THEN                                 
+              CALL cwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &        
+                                  innbufs,inib,infh)                      
+            END IF                                                        
+          END IF
         END IF
-        is_initial:IF (is_in) THEN
-          inrow = inrow + 1
-          !WRITE(iw,*) 'inrow = ', inrow
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            ! Handle the matrix of initial states
-            inib   = inib + 1
-            inbuf(inib) = single_col(adcrow)
-            inioi(inib) = inrow
-            inioj(inib) = adccol
-!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib)
-            IF (inib == fano_intbuf) THEN
-              CALL cwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
-                                  innbufs,inib,infh)
-            END IF
-            ! We write out the sorted ADC matrix
-            ! We skip that since we only need interaction block
-            !adcib  = adcib + 1
-            !adcbuf(adcib) = single_col(adcrow)
-            !adcioi(adcib) = inrow
-            !adcioj(adcib) = adccol
-            !IF (adcib == fano_intbuf) THEN
-            !  CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-            !                      adcnbufs,adcib,adcfh)
-            !END IF
-          END IF
-        ELSE is_initial
-          !WRITE(iw,*) 'inrow = ', inrow
-          !WRITE(iw,*) 'adcrow     : ', adcrow
-          finrow = finrow + 1
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            fincount = fincount + 1
-            temp_array(fincount,1) = single_col(adcrow)
-            temp_array(fincount,2) = finrow
-            temp_array(fincount,3) = adccol
-            !WRITE(iw,*) 'adcrow     : ', adcrow
-            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
-          END IF
-        END IF is_initial
+      END DO rowloop
+!!                                                                        
+!!  One column has been processed, now the final states are added to      
+!!  the end of the corresponding column                                   
+!!          
+      DO temp_row = 1, fin_max                                            
+        temp = single_col(finalpos(temp_row) + nok)                       
+        !WRITE(iw,*) 'processing: ', finalpos(temp_row)                   
+        IF (temp /= (0.0D0,0.0D0)) THEN                                           
+          adcib = adcib + 1                                               
+          adcbuf(adcib) = temp                                            
+          adcioi(adcib) = temp_row + inrow                                
+          adcioj(adcib) = adccol                                          
+          IF (adcib == fano_intbuf) THEN                                  
+            CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                  adcib,adcfh)                                            
+          END IF                                                          
+        END IF                                                            
       END DO
-!
-!  One column has been processed, now the final states are added to
-!  the end of the corresponding column
-!
-      DO temp_row = 1, fincount
-        adcib = adcib + 1
-        adcbuf(adcib) = temp_array(temp_row,1)
-        adcioi(adcib) = temp_array(temp_row,2) + inrow
-        adcioj(adcib) = temp_array(temp_row,3)
-        IF (adcib == fano_intbuf) THEN
-          CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
-                adcib,adcfh)
-        END IF
-      END DO 
 
       inrow = adccol + 1
       finrow = 0
@@ -260,7 +234,6 @@ CONTAINS
 !  deallocate local arrays
 !
     CALL dealloc(single_col)
-    CALL dealloc(temp_array)
 
 
   END SUBROUTINE cfano_write_hhp
