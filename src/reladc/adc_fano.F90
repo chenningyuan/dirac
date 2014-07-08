@@ -335,15 +335,16 @@ CONTAINS
     CALL alloc(bufhp,nok*najl, id='complex Fano bufhp array')
     bufhp = TRANSFER(rbufhp,bufhp)
 
+    ! Create an array of final state positions in the 2h1p part
+    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
+    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
+
+!-> current work
     ! Create sorted h/2h1p block
     CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw)
 
     CALL dealloc(bufhp)
-
-    ! Create an array of final state positions in the 2h1p part
-    CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
-    CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
 
     ! Create the sorted 2h1p/2h1p block
     CALL cfano_makehphp(ckks,eajl,roooo,rvovo,bigicra,ladc,krep,  &
