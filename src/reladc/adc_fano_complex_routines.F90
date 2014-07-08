@@ -172,7 +172,6 @@ CONTAINS
       off2   = off2 + nok
       CALL ZCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-!--> current
       rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
         !inrow = adcrow
@@ -338,20 +337,21 @@ CONTAINS
     CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
     CALL alloc(temp_fin, fin_max)
     tempe = (0.0D0,0.0D0)
-    temp_fin = (0.0D0,0.0D0)
+    !temp_fin = (0.0D0,0.0D0)
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
-      DO fincount = 1, fin_max
-        temp = finalpos(fincount)
-        IF (temp == k) THEN
-          temp_fin(fincount) = CMPLX(eajl(k),0.0D0,8)
-          CYCLE diag_2h1p
-        END IF  
-      END DO
-      counter = counter + 1
-      tempe(counter) = CMPLX(eajl(k),0.0D0,8)
+      IF (ANY(finalpos == k)) THEN                                        
+        CYCLE diag_2h1p                                                   
+      END IF                                                              
+      counter = counter + 1                                               
+      tempe(counter) = eajl(k)                                            
     END DO diag_2h1p
+
+    DO fincount = 1, fin_max
+      temp = finalpos(fincount)
+      temp_fin(fincount) = CMPLX(eajl(k),0.0D0,8)
+    END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
 
@@ -398,8 +398,7 @@ CONTAINS
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-        temp = finalpos(fincol)
-        IF (temp == jcol) THEN
+        IF (ANY(finalpos == jcol)) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
@@ -411,10 +410,15 @@ CONTAINS
             s = cfano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
             !WRITE(iw,*) 's = ', s
 
-            couprow = ladc - fin_max + fincol
+            det_row:DO i = 1, fin_max                                     
+              IF (finalpos(i) == jcol) THEN                               
+                couprow = ladc - fin_max + i                              
+                EXIT det_row                                              
+              END IF                                                      
+            END DO det_row                                                
             coupcol = coupcol + 1
 
-            IF (s /= 0.0D0) THEN
+            IF (s /= (0.0D0,0.0D0)) THEN
               adcib = adcib + 1
               adcbuf(adcib) = s
               adcioi(adcib) = couprow
@@ -503,11 +507,6 @@ CONTAINS
 
       WRITE(iw,*) 'Number of zeros = ', zeros
 
-      !DO ixx=1, fano_intbuf
-      !  WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
-      !                                 -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
-      !END DO
-
       CALL cwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                                inib,infh)
 
@@ -544,17 +543,6 @@ CONTAINS
             finioj(finib) = fincol
           ELSE isfindiag
             IF (s /= (0.0D0,0.0D0)) THEN
-              ! only save interaction block
-              !adcib = adcib + 1
-              !adcbuf(adcib) = s
-              !adcioi(adcib) = adcrow
-              !adcioj(adcib) = adccol
-              !!WRITE(iw,*) 'adccolsat = ', adccol
-              !!WRITE(iw,*) 'adcrowsat = ', adcrow
-              !IF (adcib == fano_intbuf) THEN
-              !  CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-              !                      adcnbufs,adcib,adcfh)
-              !END IF
               finib = finib + 1
               finbuf(finib) = s
               finioi(finib) = finrow
