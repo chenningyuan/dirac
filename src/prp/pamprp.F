@@ -10068,12 +10068,12 @@ C
      &                    'A', (GTRANN(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANN(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANN(I,3,IATOM),I = 1,3)
-                      CALL HEADER('Diamagnetic contribution',-1)
+                      CALL HEADER('Expectation value contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRAND(I,1,IATOM),I = 1,3),
      &                    'B', (GTRAND(I,2,IATOM),I = 1,3),
      &                    'C', (GTRAND(I,3,IATOM),I = 1,3)
-                      CALL HEADER('Paramagnetic contribution',-1)
+                      CALL HEADER('Linear response contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
