@@ -94,9 +94,8 @@ CONTAINS
 !  Data dictionary: Local Variables
 !
     REAL(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-    REAL(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
     REAL(8)                            :: temp
-    INTEGER                            :: temp_row     !row of temp_array
+    INTEGER                            :: temp_row     
     INTEGER                            :: finrow       !row of final states
     INTEGER                            :: k, ixx, fincount ! counters
     LOGICAL                            :: is_in  = .TRUE.
@@ -121,7 +120,6 @@ CONTAINS
     CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
     CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
     CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
-    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
 
 ! ---------------------------------
 !  Code
@@ -135,7 +133,6 @@ CONTAINS
     adcbuf     = 0.0D0
     adcioi     = 0
     adcioj     = 0
-    temp_array = 0
 
     inrow      = 1
     finrow     = 0
@@ -236,7 +233,6 @@ CONTAINS
 !  deallocate local arrays
 !
     CALL dealloc(single_col)
-    CALL dealloc(temp_array)
 
 
   END SUBROUTINE fano_write_hhp
