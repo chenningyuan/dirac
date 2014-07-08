@@ -339,7 +339,6 @@ CONTAINS
     CALL alloc(finalpos,fin_max, id='FanoADC: Array of final positions')
     CALL make_finalpos(krep,bigicra,finalpos,fin_max,iw)
 
-!-> current work
     ! Create sorted h/2h1p block
     CALL cfano_write_hhp(ckks,bufhp,ladc,krep,bigicra,   &
                              itapadc,iw,finalpos)
@@ -367,7 +366,7 @@ CONTAINS
     WRITE(iw,*)
 
     
-
+!-> current work
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     reladc_md_isfano   = .true.
     CALL FULLDIAC2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
