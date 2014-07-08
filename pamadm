@@ -171,6 +171,7 @@ def main():
     add_test('mp2_energy', 'short;mp2')
     add_test('mp2_properties', 'long;mp2')
     add_test('mp2_srdft_energies', 'short;mp2;srdft')
+    add_test('mp2_natural_orbitals', 'short;mp2')
     add_test('open-shells', 'short')
     add_test('projection_analysis', 'short;projection')
     add_test('pvc_scf', 'short;pvc;scf')
