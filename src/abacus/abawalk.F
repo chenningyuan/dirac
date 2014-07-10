@@ -6863,6 +6863,17 @@ C
 C  /* Deck wlkdin */
       SUBROUTINE WLKDIN(COR,TMASS,N,ANGMOM,TINERT,OMEGA,CEPVAL,
      &                  CEPVEC,DOCOPY,PLANAR,LINEAR,IPRINT)
+C***********************************************************************
+C
+C     Input:
+C        COR - nuclear coordinates
+C        TMASS - nuclear masses
+C        ANGMOM - total nuclear angular momentum L_N
+C     Output:
+C        TINERT - tensor of inertia
+C        OMEGA - nuclear angular velocity
+C        If(DOCOPY): CEPVAL - inverse eigenvalues
+C                    CEPVEC - eigenvectors
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
