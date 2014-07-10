@@ -71,16 +71,18 @@ C.....Create masks fo GAS spaces
       CALL GASMASK(NGAS,IGAS,NGASO)
       WRITE(6,'(A)') 'Number of determinants:'
 C.....loop over fermion irreps I Abelian subgroup
+      IERR = 0
       DO IRP=1, NREP
 C.......odd number of electrons: fermion irreps
         IRRP = IRP
 C.......even number of electrons: boson irreps
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 C.......Generate list of determinants
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
         WRITE(6,'(3X,A,A4,A,I10)') 'Symmetry ',REPNA(IRRP),'  : ',NDET
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
+      IF(IERR.NE.0) CALL Q2JOB(3,'P.GENDET','    N2',NDETMX)
 !
 !     common variable "NDETMX" is set here.  (sya, 2007.03.03)
 !
@@ -104,7 +106,7 @@ C
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 	CALL CPUUSED(SEC0)
 ctom
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
 ctom
         IF (NDET.EQ.0) GOTO 10
 	CALL CPUUSED(SEC1)
@@ -261,16 +263,18 @@ C.....Create masks fo GAS spaces
       CALL GASMASK(NGAS,IGAS,NGASO)
       WRITE(6,'(A)') 'Number of determinants:'
 C.....loop over fermion irreps I Abelian subgroup
+      IERR = 0
       DO IRP=1, NREP
 C.......odd number of electrons: fermion irreps
         IRRP = IRP
 C.......even number of electrons: boson irreps
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 C.......Generate list of determinants
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
         WRITE(6,'(3X,A,A4,A,I10)') 'Symmetry ',REPNA(IRRP),'  : ',NDET
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
+      IF(IERR.NE.0) CALL Q2JOB(3,'P.GENDET','    N2',NDETMX)
 C
       KHR  = KTOP
       KHI  = KHR + NDETMX*NDETMX
@@ -295,7 +299,7 @@ C
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 	CALL CPUUSED(SEC0)
 ctom
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
 ctom
         IF (NDET.EQ.0) GOTO 10
 	CALL CPUUSED(SEC1)
@@ -422,9 +426,9 @@ CSK
       RETURN
       END
 
-C     ==============================================
-      SUBROUTINE GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
-C     ==============================================
+C     ====================================================
+      SUBROUTINE GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
+C     ====================================================
 !----------------------------------------------------------------------
 !     Last-update: S. Yamamoto - 2007.01.30
 !     Last-update: S. Yamamoto - 2007.09.27
@@ -477,7 +481,10 @@ C
      &      GOTO 20
         END DO
         NDET = NDET + 1
-        IF (NDET .GT. N2) STOP ' N2 TOO SMALL'
+        IF (NDET .GT. N2) THEN
+          IERR = 1
+          GOTO 20
+        ENDIF
         IDET (NDET) = I
         IF(IPRNT.GE.10) CALL DETPRI(I,NDET)
 !.s/sya,2007.01.30
