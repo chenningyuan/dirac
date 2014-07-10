@@ -830,14 +830,13 @@ C     =================================
       SUBROUTINE PRTOUT(IRP,IRRP,HR,HI)
 C     =================================
       use memory_allocator
+      use codata
       IMPLICIT REAL*8 (A-H, O-Z)
 C
       CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
 #include "goscom.h"
-C
-      PARAMETER (EVOLT=27.21139590988D0,CM=219474.63068D0)
 C
       CHARACTER*1 N(N1)
 C
@@ -968,7 +967,7 @@ C
       DO 140 I=1,NDETT
         IF (ABS(DS(I)-EW).GT.DEGEN) THEN
          IF (NEW.NE.0)
-     &      WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
+     &      WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
      &                    (IND(JRP),JRP=1,NREP)
           DO 130 JRP = 1, NREP
             IND(JRP) = 0
@@ -983,7 +982,7 @@ C
           EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
         ENDIF
  140    CONTINUE
-      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
+      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
      &              (IND(JRP),JRP=1,NREP)
  1000 FORMAT(1X,F16.8)
  1008 FORMAT(10X,I8,2X,36(A1),F16.8)
