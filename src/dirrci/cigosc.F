@@ -834,37 +834,16 @@ C     =================================
 C
       CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
+      integer, allocatable :: IRPS(:),INDX(:),IND(:)
+      real(8), allocatable :: DS(:)
 C
 #include "goscom.h"
 C
       CHARACTER*1 N(N1)
 C
-      integer, allocatable :: IRPS(:),INDX(:),IND(:)
-      REAL*8 DS(N2*N5)
-C
-      NAMELIST/POPAN/THRESH,DEGEN,SELPOP
-C
 #include "ibtfun.h"
-CTROND
-      WRITE(6,*) 'Inside PRTOUT...',SELPOP, THRESH
-      MXMAX=100
-      call alloc(IRPS, N2*N5, id="irps")
-      call alloc(INDX, N2*N5, id="indx")
-      call alloc(IND,  N5,    id="ind")
-      IRPS = 0
-      INDX = 0
-      IND  = 0
-      DEGEN=1.0D-10
-      REWIND(5)
-      READ(5,POPAN,END=100)
  100  IF (IRP.EQ.0) GOTO 110
       NDETI(IRP)=NDET
-      IF (IPRNT.LT.5) then
-         call dealloc(IRPS, id="irps at low print level")
-         call dealloc(INDX, id="indx at low print level")
-         call dealloc(IND,  id="ind at low print level")
-         return 
-      endif
 C
 C     ------------------------------------------------
 C     PRINT POPULATION ANALYSIS FOR REPRESENTATION IRP
@@ -873,7 +852,7 @@ C
       DO 70 I=1,NDET
         IF (D(I,IRP)-D(1,IRP).LT.SELPOP) MX=I
  70   CONTINUE
-      MX = MIN(MX,MXMAX)
+      MX = MIN(MX,MAXPOP)
 C
       WRITE(6,1006) REPNA(IRRP),MX
  1006 FORMAT(/' Population analysis for representation ',A4
@@ -899,13 +878,9 @@ C
  60         CONTINUE
             WRITE(6,'(17X,I8,2X,'//FMT//'(A1),3F10.4)') 
      &           J,(N(JJ),JJ=1,N1),HNORM,HR(J,I),HI(J,I)
-!.q
           ENDIF
  40       CONTINUE
  30     CONTINUE
-      call dealloc(IRPS)
-      call dealloc(INDX)
-      call dealloc(IND)
       return
 C
 C     ------------------------------------
@@ -913,7 +888,14 @@ C     PRINT COMPRESSED LIST OF EIGENVALUES
 C     ------------------------------------
 C
  110  CONTINUE
+      allocate(IRPS(N2*N5))
+      allocate(INDX(N2*N5))
+      allocate(IND(N5))
+      allocate(DS(N2*N5))
 C
+      IRPS = 0
+      INDX = 0
+      IND  = 0
       ND = 0
       DO I = 1, NREP
          CALL DCOPY (NDETI(I),D(1,I),1,DS(ND+1),1)
@@ -931,9 +913,10 @@ C        Odd number of electrons, fermion irreps
       ENDIF
 C
  1000 FORMAT(F17.8)
-      call dealloc(IRPS, id="irps at the end of the routine")
-      call dealloc(INDX, id="indx at the end of the routine")
-      call dealloc(IND,  id="ind at the end of the routine")
+      deallocate(IRPS)
+      deallocate(INDX)
+      deallocate(IND)
+      deallocate(DS)
       RETURN
       END
 C
@@ -1160,9 +1143,9 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
 10011 STOP 'ERROR READING INTEGRALS FROM MDBINT'
       END
 C
-C     =================
+C     ==========================
       SUBROUTINE READGOS(NELECT)
-C     =================
+C     ==========================
 !----------------------------------------------------------------------
 !     Last-update: S. Yamamoto - 2007/06/11 chukyo-u
 !     Last-update: S. Yamamoto - 2007.09.14 chukyo-u
@@ -1190,7 +1173,7 @@ C
 !.q
 C
       NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT
-      NAMELIST/POPAN/THRESH,DEGEN,SELPOP
+      NAMELIST/POPAN/THRESH,DEGEN,SELPOP,MAXPOP
 !----------------------------------------------------------------------
       MRCONEE=75
 C
@@ -1217,6 +1200,7 @@ C
       THRESH=1.0D-3
       DEGEN=1.0D-10
       SELPOP=1.0D2
+      MAXPOP=100
       REWIND(5)
       READ(5,POPAN,END=100)
   100 WRITE(6,POPAN)
