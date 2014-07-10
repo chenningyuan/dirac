@@ -412,17 +412,11 @@ C
       real*8, allocatable :: ee(:,:)
       real*8, allocatable :: e(:)
 C
-CSK   REAL*8 E(N2),EE(N2*N2,2)
-C
-CSK
       call alloc(e, n2, id="e")
       call alloc(ee,n2*n2,2, id="ee")
-CSK
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
-CSK
       call dealloc(ee, id="ee")
       call dealloc(e, id="e")
-CSK
       RETURN
       END
 
@@ -863,24 +857,35 @@ C
      &        T56,'----',T66,'--',T76,'--')
 !.q
 C
+      allocate(DS(NSPACT))
       WRITE(FMT,'(I2)') N1
       DO 30 I=1,MX
+        DS = 0.0D0
         WRITE(6,1000) D(I,IRP)+ECORE
         DO 40 J=1,NDET
           HNORM = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
+          DO 50 JJ=1,NSPACT
+            N(JJ)='0'
+            IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) THEN
+              N(JJ)='1'
+              DS(JJ)=DS(JJ)+HNORM
+            ENDIF
+ 50       CONTINUE
           IF (HNORM.GT.THRESH) THEN
-            DO 50 JJ=1,NSPACT
-              N(JJ)='0'
-              IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) N(JJ)='1'
- 50         CONTINUE
             DO 60 JJ=NSPACT+1,N1
               N(JJ)=' '
  60         CONTINUE
             WRITE(6,'(17X,I8,2X,'//FMT//'(A1),3F10.4)') 
      &           J,(N(JJ),JJ=1,N1),HNORM,HR(J,I),HI(J,I)
           ENDIF
- 40       CONTINUE
- 30     CONTINUE
+ 40     CONTINUE
+        WRITE(6,'(A)') '    Orb.  Orbital energy       Occupation'
+        DO JJ = 1,NSPACT
+          WRITE(6,'(3X,I5,G20.10,5X,F8.4)') JJ,EPS(JJ),DS(JJ)
+        ENDDO
+        WRITE(6,*) 
+ 30   CONTINUE
+      deallocate(DS)
       return
 C
 C     ------------------------------------
