@@ -841,7 +841,6 @@ C
 C
       CHARACTER*1 N(N1)
 C
-CSK   INTEGER IRPS(N2*N5),INDX(N2*N5),IND(N5)
       integer, allocatable :: IRPS(:),INDX(:),IND(:)
       REAL*8 DS(N2*N5)
 C
@@ -849,19 +848,14 @@ C
 C
 #include "ibtfun.h"
       THRESH=1.0D-3
-!.s/sya,2007.0929/
-!#    SELPOP=1.0D2
       SELPOP=1.0D0
-      MXMAX=100
-!.q
-!SK
+      MXMAX=1000
       call alloc(IRPS, N2*N5, id="irps")
       call alloc(INDX, N2*N5, id="indx")
       call alloc(IND,  N5,    id="ind")
       IRPS = 0
       INDX = 0
       IND  = 0
-!SK
       DEGEN=1.0D-10
       REWIND(5)
       READ(5,POPAN,END=100)
@@ -878,25 +872,12 @@ C     ------------------------------------------------
 C     PRINT POPULATION ANALYSIS FOR REPRESENTATION IRP
 C     ------------------------------------------------
 C
-!.s/sya,2007.0902
-!#      DO 10 I=1,NDET
-!#        DO 20 J=1,NDET
-!#          HR(J,I) = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
-!# 20       CONTINUE
-!# 10     CONTINUE
-!.q
-C
       DO 70 I=1,NDET
         IF (D(I,IRP)-D(1,IRP).LT.SELPOP) MX=I
- 70     CONTINUE
-!.s/sya,2007.0929/
+ 70   CONTINUE
       MX = MIN(MX,MXMAX)
-!.q
 C
       WRITE(6,1006) REPNA(IRRP),MX
-!.s/sya,2007.0929/
-!#1006 FORMAT(/' Population analysis for representation ',A4
-!#    +       /'            The first ',I4,' vectors are analyzed'//)
  1006 FORMAT(/' Population analysis for representation ',A4
      +       /'            The first',I6,' vectors are analyzed'/
      &       /T8,'energy',T22,'det#',T28,'determinant',
@@ -909,21 +890,15 @@ C
       DO 30 I=1,MX
         WRITE(6,1000) D(I,IRP)+ECORE
         DO 40 J=1,NDET
-!.s/sya,2007.0902
-!#        IF (HR(J,I).GT.THRESH) THEN
           HNORM = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
           IF (HNORM.GT.THRESH) THEN
-!.q
             DO 50 JJ=1,NSPACT
               N(JJ)='0'
               IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) N(JJ)='1'
- 50           CONTINUE
+ 50         CONTINUE
             DO 60 JJ=NSPACT+1,N1
               N(JJ)=' '
- 60           CONTINUE
-!.s/sya,2007.0902
-!#          WRITE(6,'(17X,I8,2X,'//FMT//'(A1),F16.8)') 
-!#   &           J,(N(JJ),JJ=1,N1),HR(J,I)
+ 60         CONTINUE
             WRITE(6,'(17X,I8,2X,'//FMT//'(A1),3F10.4)') 
      &           J,(N(JJ),JJ=1,N1),HNORM,HR(J,I),HI(J,I)
 !.q
@@ -1023,11 +998,9 @@ C
      +      ' EIGENVALUE (CM-1)',2X,8A4/)
  1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
 #endif /* ego */
-CSK
       call dealloc(IRPS, id="irps at the end of the routine")
       call dealloc(INDX, id="indx at the end of the routine")
       call dealloc(IND,  id="ind at the end of the routine")
-CSK
       RETURN
       END
 C
