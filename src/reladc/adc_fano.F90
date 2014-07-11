@@ -272,6 +272,7 @@ CONTAINS
     INTEGER                               :: ixx
 
     LOGICAL                               :: do_partial
+    INTEGER, ALLOCATABLE, DIMENSION(:)    :: assign_fin_channel
 
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: ckks
     COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: bufhp
@@ -409,8 +410,6 @@ CONTAINS
 
     
 !    Calling full diagonalizer for testing purposes
-!    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
-!    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep)
 
     ! This is a workaround which allows to use routines based on the old
     ! memory handling with MEMOPT
@@ -439,7 +438,8 @@ CONTAINS
     WRITE(iw,*)
 
     CALL cfano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
-                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs,iw)
+                           adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs, &
+                           do_partial,assign_fin_channel,iw)
 
   END SUBROUTINE fanoadcc
 END MODULE adc_fano
