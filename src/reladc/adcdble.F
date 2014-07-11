@@ -124,22 +124,17 @@ C
       allocate(BUFCOL(NDIM))
       NDIM = (M*M*M*IV(NREP+1) + NOOTMAX)
       allocate(BUFENE(NDIM))
-C
-c  check if true allocation should take place
-c  if not, we return.
-c  On entry MXCORR has the value 0 and attains the value of KFREE
-c  corresponding to the pointer value of already occupied memory.
-c
-C |
-C |
-C |
-C |________________E_N_D______S_E_C_T_I_O_N__________________________
-C
-C
-C  _________________________ INTRO SECTION __________________________
-C |
-C |
-C |
+!
+! |
+! |
+! |
+! |____________E_N_D______A_L_L_O_C_A_T_I_O_N______S_E_C_T_I_O_N____
+!
+!
+!  _________________________ INTRO SECTION __________________________
+! |
+! |
+! |
       CALL PST('Parameters for the double ionization run:+')
 
       write(IW,'(10X,A,T50,I3)') 'Order of DIP always ADC-2x !'
@@ -160,7 +155,8 @@ C |
         write(IW,'(10X,16I4)') (dipreps(i),i=1,16)
         write(IW,'(10X,16I4)') (dipreps(i),i=17,32)
       endif
-! This output dies not make sense with the new input
+! This output printing became obsolete
+!
 !      write(IW,'(10X,A)') 'Requested DIP eigenvectors:'
 !      n=0
 !      do i=1,32
@@ -289,8 +285,23 @@ CTROND      ENDDO
  200  CONTINUE
 
 c
-c  release *ALL* allocations done during computation so far
+c  releasing dynamically allocated memory used so far
 c
+      deallocate(BVVOO1)
+      deallocate(BVVOO2)
+      deallocate(BOOOO1)
+      deallocate(BOOOO2)
+      deallocate(BGIJKL)
+      deallocate(BAOCOC)
+      deallocate(ERSMIK)
+      deallocate(E_IJKL)
+      deallocate(BVOOO1)
+      deallocate(BVOOO2)
+      deallocate(BIXOOO)
+      deallocate(BORIJK)
+      deallocate(BIROOO)
+      deallocate(BUFCOL)
+      deallocate(BUFENE)
 C |
 C |
 C |
@@ -341,13 +352,22 @@ c
       CALL MAKELOOKUPO(BLKUPO,IO(NREP+1))
       CALL MAKELOOKUPV(BLKUPV,IO(NREP+1),IV(NREP+1))
 c
-c  loop over the symmetries
-c  att: the additional, symmetry-specific memory is allocated
-c  within this loop and immediately released afterwards.
-c  att2: it was observed that the ADC2 matrices get very large and
-c  therefore a diagonalization is required immediately after the
-c  SAT block construction!
-c      
+c  grab buffer space for sparse matrix storage
+c
+      allocate(BUFIOI(INTBUF))
+      allocate(BUFIOJ(INTBUF))
+      allocate(BUFBUF(INTBUF*RCW))
+!
+!
+!___________________________________________________________
+!| loop over the symmetries
+!| att: the additional, symmetry-specific memory is allocated
+!| within this loop and immediately released afterwards.
+!| att2: it was observed that the ADC2 matrices get very large and
+!| therefore a diagonalization is required immediately after the
+!| SAT block construction!
+!|     
+!
       DO 300 IRPLOOP = 1,NREP
         IF(dipreps(IRPLOOP).EQ.0) GOTO 300
         IF(dipreps(IRPLOOP).GT.NREP) THEN
@@ -366,11 +386,6 @@ c
         allocate(BSATEV(NDIM))
         NDIM = LENSATBL*4
         allocate(BFIRCD(NDIM))
-        NDIM = INTBUF
-        allocate(BUFIOI(NDIM))
-        allocate(BUFIOJ(NDIM))
-        NDIM = INTBUF*RCW
-        allocate(BUFBUF(NDIM))
 
         IF(CARITH) THEN
           CALL BUILD_SAT_C(BFOOOO,BFVOVO,BSPTRO,IO(NREP+1),
@@ -388,20 +403,11 @@ C  call 2h/3h1p configuration creator, file handle is available
 C  afterwards
 C
         LADC = NOOT(DESREP) + LENSATBL
-        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,
-     &                 IO(NREP+1),BIROOO)
+        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC)
         WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
 c
-c release all memory of the 2P propagator calculation.
 c Diagonalizers are decoupled and reallocate memory individually.
 c
-
-      deallocate(BVVOO1, BVVOO2, BOOOO1, BOOOO2, BGIJKL, BAOCOC, ERSMIK,
-     &      E_IJKL, BVOOO1, BVOOO2, BIXOOO, BORIJK, BIROOO, BUFCOL,
-     &      BUFENE, BFOOOO, BFVOVO, BSPTRO, BLKUPO, BLKUPV, BSATEV,
-     &      BFIRCD, BUFIOI, BUFIOJ, BUFBUF)
-c Diagonalizers are decoupled and reallocate memory individually.
-
 c
 C  set matrix descriptor and perform Lanczos diagonalization
 C
@@ -458,8 +464,27 @@ c
             CALL TWOHPOP_R(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
           ENDIF
         ENDIF
+! 
+!   deallocate symmetry-dependent buffers reserved in each symmetry cycle
+!
+        deallocate(BSATEV)
+        deallocate(BFIRCD)
+!|
+!|
  300  CONTINUE
+!|
+!|                        symmetry loop end
+!|                        deallocate remaining buffers
+!|_____________________________________________________________
 
+      deallocate(BFOOOO)
+      deallocate(BFVOVO)
+      deallocate(BSPTRO)
+      deallocate(BLKUPO)
+      deallocate(BLKUPV)
+      deallocate(BUFIOI)
+      deallocate(BUFIOJ)
+      deallocate(BUFBUF)
 c
 c   perform a final DNM matrix check before we transfer back control
 c

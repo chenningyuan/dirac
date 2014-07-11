@@ -4533,8 +4533,7 @@ C|____________________________________________________________
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,
-     &                     MAXOCCSP,IROOO)
+      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -4550,7 +4549,6 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*6 FILENAME
       INTEGER LUN,IRECL,DESREP,LENADCM
-      INTEGER MAXOCCSP,IROOO(MAXOCCSP,2)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4563,6 +4561,9 @@ C
       CHARACTER*44 FIELD44
       INTEGER bl_conf
       CHARACTER*4 bl_irna,bl_abs
+
+      integer                                 :: MAXOCCSP
+      integer, allocatable, dimension(:,:)    :: IROOO
       
 C
 C---------------Executable code--------------------------------------
@@ -4571,6 +4572,10 @@ C  Do the hole space configuration analysis for the
 C  DIP case exclusively in this routine.
 c  Initialize arrays:
 c
+      MAXOCCSP = IO(NREP+1)    ! IO array comes from symm.inc
+      allocate(IROOO(MAXOCCSP,2))
+      IROOO = 0
+
       IX=1
       Do KRP=1,NREP
         Do K=1,NO(KRP)
@@ -4666,6 +4671,8 @@ C|
 C|____________________________________________________________
 
  381  FORMAT(4(I3,'(',A4,')  '))
+
+      deallocate(IROOO)
 
       RETURN
       END
