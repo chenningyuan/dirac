@@ -1259,22 +1259,32 @@
       ! not equals to 0 so that \fn(PR1IN1) will copy the results back when first calling it
       NCOMP = -1
       if (TRIANG(itest)) then
-#ifndef PRG_DIRAC
+#if !defined(PRG_DIRAC)
 !FIXME: the last argument is symmetric AO density matrix
         call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
                     NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
                     wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
                     wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
+#else
+        call PR1INT_1(wrk_space(end_herm_int+1:), len_free, int_rep,            &
+                      int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
+                      NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
+                      wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT)
 #endif
       else
-#ifndef PRG_DIRAC
+#if !defined(PRG_DIRAC)
 !FIXME: the last argument is square AO density matrix
         call PR1IN1(wrk_space(end_herm_int+1:), base_free, len_free, int_rep, &
                     int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
                     NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
                     wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT,  &
                     wrk_space(end_herm_int+1:), GET_EXPT, wrk_space(end_herm_int+1:))
+#else
+        call PR1INT_1(wrk_space(end_herm_int+1:), len_free, int_rep,            &
+                      int_adr, lb_int, HERM_PROP(itest)(1:7), ORDER_MOM(itest), &
+                      NUM_PQUAD, TRIANG(itest), PROP_PRINT, level_print,        &
+                      wrk_space(1:end_herm_int), NCOMP, TOFILE, MTFORM, DOINT)
 #endif
       end if
       deallocate(int_rep)
