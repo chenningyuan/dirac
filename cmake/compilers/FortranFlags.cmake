@@ -41,7 +41,7 @@ else()
         endif()
         if(ENABLE_CODE_COVERAGE)
             set(CMAKE_Fortran_FLAGS
-                "${CMAKE_Fortran_FLAGS} -ftest-coverage"
+                "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage"
                 )
         endif()
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)

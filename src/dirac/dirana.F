@@ -350,7 +350,8 @@ C
 C          ... initialize
            CALL DZERO(WORK(KEIG_NAT),NESHT)
 C          ... read from file
-           CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
+           CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT),
+     &                     WORK(KBEIG))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
      &           ' label NEWNATOB/NEWNATOC on file KRMCOLD'

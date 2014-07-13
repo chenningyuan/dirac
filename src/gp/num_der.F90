@@ -38,8 +38,6 @@ contains
 ! use unit_test_generator
   implicit none
 
-#include "unit-test.h"
-
   ! external variables
   character(*), intent(in) :: derstr
   integer,      intent(in) :: nder, nprint, lunit, npoints, ipoint
@@ -64,7 +62,7 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file input information for unit testing               !
   !------------------------------------------------------------------------------!
-#ifdef CREATE_UNIT_TESTS
+#ifdef CREATE_UNIT_TEST_nddrv
   icount = icount + 1
   call set_suffix(icount)
   call set_driver_routine('nddrv')
@@ -183,7 +181,7 @@ contains
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
   !------------------------------------------------------------------------------!
-#ifdef CREATE_UNIT_TESTS
+#ifdef CREATE_UNIT_TEST_nddrv
   call add_out_variable(derres,'derres')
   call generate_test()
 #endif
