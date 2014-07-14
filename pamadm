@@ -592,7 +592,10 @@ def main():
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # tests that are neither short nor long
     for test in list_of_tests:
-        if all([x not in test[1] for x in ['long', 'short', 'benchmark', 'openrsp']]):
+        if not 'long' in test[1] and \
+           not 'short' in test[1] and \
+           not 'benchmark' in test[1] and \
+           not 'openrsp' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # short tests
     for test in list_of_tests:
