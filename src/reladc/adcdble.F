@@ -443,6 +443,7 @@ c
         ENDIF
 c
 c  call Lanczos diagonalizer.
+c  memory handling of Lanczos is self-contained.
 c
         CALL DIAG_LANC(IW,DOINCORE)
 c

@@ -699,7 +699,7 @@ C
      &          WRK_IND, WRK_IVX, WRK_LSP, WRK_MLT, WRK_OI, WRK_OJ
 
       real*8, allocatable, dimension(:)     :: WRK_AEV, WRK_BUF,
-     &     WRK_DIAG, WRK_EVL, WRK_IDR, WRK_OEV, WRK_P, WRK_R,
+     &     WRK_DIAG, WRK_EVL, WRK_IDR,  WRK_P, WRK_R,
      &     WRK_RWORK1, WRK_T, WRK_WORK1, WRK_ZEV, WRK_Z
 C
 C---------------Executable code--------------------------------------
@@ -813,19 +813,24 @@ C
       ITAP6=INFOHANDLE+6    ! free handle
 
       N=2*NP+1
-      allocate(WRK_IVX(N))
+      allocate(WRK_IVX(N));WRK_IVX = 0
+
       N=(2*NP+1)*LADC*RCW
-      allocate(WRK_P(N))
+      allocate(WRK_P(N));WRK_P = 0.0d0
+
       N=(NP+1)*NITER*RCW
-      allocate(WRK_T(N))
+      allocate(WRK_T(N));WRK_T = 0.0d0
+
       N=LADC*RCW
-      allocate(WRK_R(N))
-      allocate(WRK_DIAG(N))
+      allocate(WRK_R(N));WRK_R = 0.0d0
+      allocate(WRK_DIAG(N)); WRK_DIAG = 0.0d0
+
       N=INTBUF*RCW
-      allocate(WRK_BUF(N))
+      allocate(WRK_BUF(N)); WRK_BUF = 0.0d0
+
       N=INTBUF
-      allocate(WRK_OI(N))
-      allocate(WRK_OJ(N))
+      allocate(WRK_OI(N)); WRK_OI = 0
+      allocate(WRK_OJ(N)); WRK_OJ = 0
 c
 c  remember memory pointers before we do the huge incore parts.
 c
@@ -912,8 +917,6 @@ C
 C
 C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
-C  After the BANDDIA runs the corresponding eigenVECTORS of the
-C  Lanczos matrix are available in ZEV  resp. in CC(WRK_ZEV)
 C  ITAP5 will be provided as a free file handle. 
 C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
 C  This file handle is used for storing the T eigenvector matrix
@@ -960,6 +963,11 @@ c
      &        wrk_t,wrk_ind,wrk_mlt,wrk_lsp,
      &        ITAP5,ITAP6,EVLLIM,NMSPEC)
       ENDIF
+
+      deallocate(WRK_IND)
+      deallocate(WRK_MLT)
+      deallocate(WRK_LSP)
+      deallocate(WRK_Z)
 c
 c  close configuration file
 c
@@ -977,17 +985,16 @@ c
 c
       IF(NEIGENV.GT.0) THEN
 
+        LFLAG = .TRUE.
+
         N=LADC*NEIGENV*RCW
         allocate(WRK_AEV(N))
-        N=LADC*RCW
-        allocate(WRK_OEV(N))
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix
 c  this is executed if asked for long eigenvectors.
 c  file 1 and 2 (the ADC matrix/diag files) are still open.
 c
-        LFLAG = .TRUE.
 
 !       IF(DOINCORE.EQV..true.) THEN
 !         IF(CARITH.EQV..TRUE.) THEN
@@ -1027,8 +1034,12 @@ c
      &                    WRK_EVL,LFLAG, INTBUF,
      &                    ITAP1, ITAP2, ITAP3)
           ENDIF
+
 !       ENDIF    ! doincore
-      ENDIF    !neigenv.gt.o
+
+        deallocate(WRK_AEV)
+
+      ENDIF    !neigenv.gt.0
 c
 c  close and delete the (diag) and the packed ADC matrix file
 c
@@ -1060,6 +1071,20 @@ c
      &                     nocc,irecl,filecnf,ionizlevel)
         ENDIF
       ENDIF
+
+      deallocate(WRK_EVL)
+      deallocate(WRK_ZEV)
+      deallocate(WRK_WORK1)
+      deallocate(WRK_RWORK1)
+
+      deallocate(WRK_IVX)
+      deallocate(WRK_P)
+      deallocate(WRK_T)
+      deallocate(WRK_R)
+      deallocate(WRK_DIAG)
+      deallocate(WRK_BUF)
+      deallocate(WRK_OI)
+      deallocate(WRK_OJ)
 
       RETURN
       END
@@ -2543,6 +2568,7 @@ c  prepare short array z
       do j=1,np
         z(j,i)=zlong(j,i)
         z(j+np,i)=zlong(n-np+j,i)
+!       write(*,*) 'prepare:',i,z(j,i),z(j+np,i)
       enddo
       enddo
 
@@ -2668,7 +2694,8 @@ C
            JC = I - K + NP1
            XM = XM + Z(KK,J)*T(JC,IC)
   36     CONTINUE
-  35   Z(I+NP,J) = XM
+       Z(I+NP,J) = XM
+  35   CONTINUE
   30  CONTINUE     
 
 c
@@ -2796,7 +2823,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
       use adc_mat
-      use memory_allocator
 
       IMPLICIT INTEGER (A-Z)
 
@@ -2889,7 +2915,7 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
-      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      allocate(positions(N))
       nr_vecs = 0
 
       upper = reladc_md_eeigv_upper
@@ -2917,7 +2943,7 @@ c
       WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
       WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
-      CALL dealloc(positions)
+      deallocate(positions)
 
       RETURN
       END
@@ -2925,11 +2951,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
       use adc_mat
-      use memory_allocator
 !
       IMPLICIT INTEGER (A-Z)
 
-      INTEGER N,NP,LDAB
+      INTEGER IOUNIT, N, NP, LDAB
       INTEGER NEIGENV
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
       DOUBLE PRECISION RWORK(6*N),EVL(N)
@@ -3003,7 +3028,7 @@ c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
 c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
-      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      allocate(positions(N))
       nr_vecs = 0
 
       upper = reladc_md_eeigv_upper
@@ -3031,7 +3056,7 @@ c
       WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
       WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
-      CALL dealloc(positions)
+      deallocate(positions)
 
       RETURN
       END
