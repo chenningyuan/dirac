@@ -146,18 +146,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCMAIN_NEW (IN123,IW123,CA,INTFCE)
 !
       use memory_allocator
-!     use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
       use adc_cfg    !  in the general input reader the user data are provided.
 
-!     IMPLICIT NONE
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
-!     Driver for Relativistic Propagator Program
-!     It is extremeley unlikely that we need a standalone version
-!     of ADC. Therefore no options for this are included.
+!     Driver for Relativistic Propagator Program (no standalone)
 !
 !---------------Last modified------------------------------------------
 !
@@ -190,13 +186,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 CPU0,CPU1,CPU2,CPU3
       integer :: ncore_elec_adc = 0  ! new argument for RDSYMI, needed in RELCCSD, not in ADC.
 
-!     integer(kind=klongint) :: maxcor
-!     integer(kind=klongint) :: mxcorr
-!     integer(kind=klongint) :: mxcorr1
-!     integer(kind=klongint) :: mword_limit
-!     real(kind=kreal)       :: total_mem_new = 0
-!     real(kind=kreal)       :: new_mword_limit = 0
-
       integer           :: maxcor,mxcorr,mxcorr1,mword_limit
       real*8            :: total_mem_new = 0   !number of bytes, if number of megawords is given in --aw
       real*8            :: new_mword_limit  = 0
@@ -205,14 +194,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer     :: maxcore_info(4)
       character*4 :: maxcore_infc(4)
 
-!     real(8), allocatable :: CC(:)
-      real(8)              :: CC(1)    !no work array allocation anymore! 
-
       maxcore_info = 0
       maxcore_infc = (/'SETI','SIPS','DIPS','EXCI'/)
 
       call legacy_lwork_get(MAXCORE)
-!     call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
 
 !
 !---------------Executable code--------------------------------------
@@ -343,17 +328,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      total_mem_new/(8*1000*1000),total_mem_new
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024*1024)
-
-!     MXCORR = 0
-!
-! temporary solution:
-! unsettled issue with memory manager. We allow total maxcore for maxcor!
-! will go away in the future.
-!
-!     MAXCOR = MAXCORE
-!     WRITE (IW,*) 'temporary maxcor:',maxcor
-!     WRITE (IW,*) '(Attributed due to static memory usage)'
-      
 !
 !     Read symmetry information from MRCONEE
 !
@@ -363,7 +337,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 !
-      IPRNT = 2   ! print orbital and recalc. orbital energies
+      IPRNT = 2   ! print orbital energies (variable in inpt.inc!)
 !
 !     Number of integer words for REAL*8 and 
 !     number of REAL*8 words per variable (2 for complex groups, 
@@ -378,16 +352,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  Report memory in megabytes
 !
-!     write(iw,*) 'Total avail. memory (MB):',MAXCOR/(128 * 1024)
-!     if(maxcor .eq. 0) then
-!       write(iw,*) 'Total avail. memory has not been determined!'
-!     endif
 !
 !     Set up symmetry tables and parallel distribution arrays
 !     Symtab is required for the pure diagonalization also.
 !     The variables NELEC, NFROZ ... are defined in inpt.inc.
-!
-!     The relevant arrays are statically defined in symm.inc.
 !
       write(iw,*)
       write(iw,'(T10,A)') '--------------------------------------------'
@@ -439,37 +407,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
          DOCCSETI=.TRUE.
       ENDIF
-
-!     if(maxcor .gt. 0) then
-!       write(iw,*) 'Memory limit (MWORD):',mword_limit
-!     else
-!       write(iw,*) 'MWORD not set in dirac but by the OS!'
-!     endif
-       
-!     
-!     Check the memory requirements of the active modules
-!     Hereby the variable ICALC determines if there is a
-!     calculation or not. ALLOC acts correspondingly.
-!     KFREE/LFREE are initialized (occupied/free memory)
-!
-!     Since all the modules are independent of each other with
-!     respect to buffer usage, we reset the (dynamical) memory
-!     pointers KFREE/LFREE each time to their initial values.
-!     Each module can therefore use the maximum amount of memory.
-!
-!     For the moment we refrain from implementing a stand-alone
-!     diagonalisator because tha ADC matrices would be too large
-!     for copying anyway! The interface structure, however would allow
-!     for such a strategy. The diagonalization is completely decoupled
-!     from the ADC matrix generation.
-!
-!     KFREE = 1
-!     LFREE = MAXCOR
-!
-!      in the first stage these variables are defined as dummies!!
-
-      KFREE = 0
-      LFREE = 0
 !
 !  call integral sorter, determine memory requirements and start right away.
 !  
@@ -483,7 +420,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDIF
 
       IF(DOSIPS) THEN
-
         ICALC = 2
         CALL ADCSNGL_MAIN (maxcore_info(2),NSP,IREPSPI,EPS)
         WRITE(IW,*) 'Memory requirements of ',
@@ -502,28 +438,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         WRITE(IW,*) 'Memory requirements of ',
      &               maxcore_infc(4),maxcore_info(4)
       ENDIF
-!
-! MXCORR is a cumulative maximum of individual memory requirements
-! ===> if any subroutine would need more core than MAXCORE we quit.
-!
-!     IF (MXCORR.GT.MAXCOR) THEN
-!        WRITE (IW,1002) MXCORR
-!002     FORMAT (" Not enough core, increase to at least",I20,
-!    &        " Words")
-!        CALL QUIT("Insufficient memory")
-!     ENDIF
-!     WRITE (IW,1001) MXCORR
-!001  FORMAT (" Memory used for active modules :",
-!    &        T50,I10," 8-byte words")
-!
-!  We have sufficient memory. Now start the calculations
-!  Again, all modules are independent, resetting of mem. pointers
-!
-!     ICALC = 2
-!     ALLOC_ME = .TRUE.
-!     KFREE = 1
-!     LFREE = MXCORR
-!
 !
 !     return after closing low-level I/O files
 !
@@ -545,10 +459,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Print I/O statistics
 !
       CALL WAIO_PRST (IW)
-!     call dealloc(cc)
-C
+
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADCSNGL_MAIN(MXCORR,NSP,IREPSPI,EPS)
