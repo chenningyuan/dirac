@@ -6909,18 +6909,21 @@ C
       AMAT(4) = TINERT(3,1)
       AMAT(5) = TINERT(3,2)
       AMAT(6) = TINERT(3,3)
-
+C
       IF (IPRINT.GE.9) THEN
        write(lupri,*) 'WLKDIN: AMAT:',(AMAT(i),i=1,6)
       ENDIF
-
+C
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
+!     In output, AMAT contains the elements of the diagolalized TINERT
+!                EIGVEC contains the eigenvectors of the non-diagonalized matrix
+C
       IF (IPRINT.GE.9) THEN
        write(lupri,*)
      &  'WLKDIN: EIGVEC',((EIGVEC(i,j),i=1,3),j=1,3)
       ENDIF
-
+C
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)

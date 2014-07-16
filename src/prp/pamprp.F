@@ -9227,15 +9227,8 @@ C     B operators
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-! iaa: LONDON in NSR? remove?
-      IF (LONDON) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &   '** B operators for spin-rotation, LAO approach **'
-      ELSE
-        WRITE(LUPRI,'(1X,A)')
-     &   '** B operators for spin-rotation, CGO approach **'
-      ENDIF
-!
+      WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for spin-rotation **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,6
         INDOP1 = IPSPINRO(I+MXCOOR)
@@ -9339,7 +9332,6 @@ C
       CALL QENTER('PRP_SPINRO')
 
       CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
-! iaa: include reference here? detail approximations?
       WRITE(LUPRI,'(13X,A)')
      & 'According to I. A. Aucar et al, JCP 136 (2012) p.204119'
       CALL PRSYMB(LUPRI,'-',81,0)
@@ -9791,12 +9783,12 @@ C
      &                        +  ELFLD(3,NATOM)*COORZ)
             SPRDNL(3,3,NATOM) = (ELFLD(1,NATOM)*COORX
      &                        +  ELFLD(2,NATOM)*COORY)
-            SPRDNL(1,2,NATOM) =  ELFLD(2,NATOM)*COORX
-            SPRDNL(1,3,NATOM) =  ELFLD(3,NATOM)*COORX
-            SPRDNL(2,1,NATOM) =  ELFLD(1,NATOM)*COORY
-            SPRDNL(2,3,NATOM) =  ELFLD(3,NATOM)*COORY
-            SPRDNL(3,1,NATOM) =  ELFLD(1,NATOM)*COORZ
-            SPRDNL(3,2,NATOM) =  ELFLD(2,NATOM)*COORZ
+            SPRDNL(1,2,NATOM) = -ELFLD(2,NATOM)*COORX
+            SPRDNL(1,3,NATOM) = -ELFLD(3,NATOM)*COORX
+            SPRDNL(2,1,NATOM) = -ELFLD(1,NATOM)*COORY
+            SPRDNL(2,3,NATOM) = -ELFLD(3,NATOM)*COORY
+            SPRDNL(3,1,NATOM) = -ELFLD(1,NATOM)*COORZ
+            SPRDNL(3,2,NATOM) = -ELFLD(2,NATOM)*COORZ
             NATOM = NATOM + 1
          END IF
  20      CONTINUE
@@ -9860,7 +9852,7 @@ C
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINMOL
 C
-c**** iaa: to check
+c**** iaa: to define for all isotopes
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
@@ -9872,9 +9864,9 @@ C
 C     We need to transform the expectation value part
 C     of the spin-rotation constant
 C
-! IAA check
-!         CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
-!         CALL DSCAL(9*NUCDEP,DP5,DMAT,1)
+! iaa check
+      CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
+      CALL DSCAL(9*NUCDEP,D1,DMAT,1)
 C
 C     We add up the total spin-rotation constants.
 C
@@ -9936,7 +9928,7 @@ C     All components of the moment of inertia not defined for linear molecules
 C
       IF (LINEAR) THEN     ! linear molecule detected using symmetry
 !
-! iaa: it is not working for diatomic molecules with 2 equal atoms
+! iaa: Symmetry. It is not working for diatomic molecules with 2 equal atoms
 !
          IF (IPRINT .GE. 0) THEN
             WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
@@ -10001,7 +9993,7 @@ C
                        GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
      &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
                        GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
-     &                       *DMAT(JX,JY,IATOM)  *EIGVEC(IY,J)*CONST
+     &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
                        GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
@@ -10027,16 +10019,10 @@ C
      &                 'Nuclear g-value  :',GVAL(IATOM)
 ! If there is at least one inertia tensor eigenvalue equal to zero (linear molecule):
 C
-!
-! IAA TEST (trying to use matrix representation of NSR for all kind of molecules)
-!
-!                 IF(LINMOL) THEN
-                 IF(.NOT.LINMOL) THEN
+                 IF(LINMOL) THEN
                    IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &  ' Total spin-rotation constant            :',GTRANT(3,3,IATOM),
      &  ' Nuclear part of spin-rotation           :',GTRANN(3,3,IATOM),
-!iaa   problems with expactation value part: (has to be multiplied by 3! why?)
-!iaa   this problem occurs only with molecules outside a particular edge (x,y,z)
      &  ' Expectation value part of spin-rotation :',GTRAND(3,3,IATOM),
      &  ' Linear response part of spin-rotation   :',GTRANP(3,3,IATOM)
 C
