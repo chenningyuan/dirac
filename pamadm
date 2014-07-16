@@ -136,6 +136,7 @@ def main():
     add_test('basis_automatic_augmentation', 'short')
     add_test('basis_contraction', 'short')
     add_test('basis_input', 'short')
+    add_test('gen1int', 'short')
     add_test('bsse', 'short')
     add_test('bss_energy', 'short')
     add_test('cc_energy_and_mp2_dipole','cc')
