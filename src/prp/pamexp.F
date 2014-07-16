@@ -60,7 +60,7 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
 #endif
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK(KFREE),LFREE)
+     &            WORK,KFREE,LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -75,7 +75,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
-     &                  WORK,LWORK)
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -103,7 +103,7 @@ C
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
       DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
-     &          EIG(*),WORK(LWORK),NP(2,0:2)
+     &          EIG(*),WORK(*),NP(2,0:2)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
       INTEGER   GETIOPEN
@@ -111,7 +111,6 @@ C
 C
 C     Initialize
 C
-#include "memint.h"
 #if defined (SYS_IBM)
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -123,6 +122,7 @@ C
 C     Initialize
 C     ==========
 C
+      KFRSAV=KFREE
       CALL DZERO(EXPVAL,NEXPP)
       N2EXP = 2*NEXPP
       CALL LSET(N2EXP,.FALSE.,LEXPST)
@@ -375,7 +375,7 @@ C...........Transform property matrix to fragment orbital basis
      &   't0 = T : Expectation value zero by time reversal symmetry.'
       ENDIF
       IF(PRJANA) THEN
-        CALL MEMREL('PRPEX1.prjana',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('PRPEX1.prjana',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -668,6 +668,7 @@ C
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
 C
+      KFRSAV=KFREE
       N2TOT = NTOT*NTOT
       CALL DZERO(FMAT,N2TOT)
       CALL DZERO(PM,NTOT)
@@ -696,7 +697,7 @@ C
         CALL PRJEX3(EXPVL2,PFO(IPD),DFO(IPD),WORK(KPTRI),NCNT(IFRP),
      &              NR(1,IFRP),NMO(IFRP),IBUF,PBUF,FMAT,PM,INDX,
      &              NTOT,INDXPR,IFRP,IPRINT)
-        CALL MEMREL('PRJEX2.ex3',WORK,KWORK,KPTRI,KFREE,LFREE)
+        CALL MEMREL('PRJEX2.ex3',WORK,1,KPTRI,KFREE,LFREE)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
  10   CONTINUE
       CALL DSCAL(NTOT,D2,PM,1)

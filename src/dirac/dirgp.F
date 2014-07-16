@@ -2719,9 +2719,9 @@ C     ====================================
             JRDMO = -1
             REWIND LUKRMC
             CALL RREADMO(CMO,JRDMO,3,LUKRMC)
-!FIXME!!!   CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+            CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
 !           ... set to zero
-            CALL DZERO(EIG,NORBT)
+!           CALL DZERO(EIG,NORBT)
           end if
         END IF
 

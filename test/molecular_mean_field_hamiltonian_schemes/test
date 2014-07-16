@@ -15,11 +15,9 @@ f.add(from_string = 'Electronic energy',
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-5)
-f.add(string      = '    2        0.02',
+f.add(string      = '    2        0.0007',
       rel_tolerance   = 1.0e-4)
 
-test.run(['4dcg_mmf_x.inp', '4dcg_mmf_xx.inp', '2dcg_x2c.inp'], ['fo.mol'], f, args='--mw=110 --aw=120')
-
-test.run(['2dcg_mmf.inp'], ['fo.mol'], f, args='--mw=110 --aw=120', accepted_errors=['generation of  atomic oo-order 2e-SOC not active in this version'])
+test.run(['4dcg_mmf_x.inp', '4dcg_mmf_xx.inp', '2dcg_x2c.inp', '2dcg_mmf.inp'], ['fo.mol'], f, args='--mw=110 --aw=120')
 
 sys.exit(test.return_code)

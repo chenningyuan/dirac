@@ -4,3 +4,6 @@
 [submodule "external/pelib"]
 	path = external/pelib
 	url = git@repo.ctcc.no:pelib.git
+[submodule "external/unit-tests"]
+	path = external/unit-tests
+	url = git@repo.ctcc.no:dirac/dirac-unit-tests.git
