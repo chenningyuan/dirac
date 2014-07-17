@@ -33,11 +33,6 @@ C***********************************************************************
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif
 
-#ifdef MOD_PEQM
-      use polarizable_embedding, only: peqm, pe_master, Ees, Epol,
-     &                                 lmul, lpol
-#endif
-
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -57,13 +52,6 @@ C
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
-
-      real*8, dimension(1) :: Epe
-
-#ifdef MOD_PEQM
-      logical :: lmuls
-#endif
-
 #include "memint.h"
 C
 C     Summary of calculation
@@ -165,44 +153,11 @@ C            leave this to authors of this part) Done, hjaaj.
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
 #endif
-
-#ifdef MOD_PEQM
-        write(lupri,'(/5x,a)')
-     &                     'Polarizable Embedding energy contributions:'
-        write(lupri,'(5x,a)')
-     &                     '-------------------------------------------'
-        lmuls = (lmul(0) .or. lmul(1) .or. lmul(2) .or. lmul(3) .or.
-     &           lmul(4) .or. lmul(5))
-
-        if (lmuls) write(lupri,'(/7x,a)')
-     &                                    'Electrostatic contributions:'
-        if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Monopoles       ', Ees(0,1)
-        if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Dipoles         ', Ees(1,1)
-        if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Quadrupoles     ', Ees(2,1)
-        if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Octopoles       ', Ees(3,1)
-        if (lmul(4)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Hexadecapoles   ', Ees(4,1)
-        if (lmul(5)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Ditriacontapoles', Ees(5,1)
-        if (lpol(1)) then
-            write(lupri,'(/7x,a)') 'Polarization contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Electronic      ', Epol(1,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Nuclear         ', Epol(2,1)
-            if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Multipole       ', Epol(3,1)
-        end if
-            write(lupri,'(9x,a16,5x,f20.12)') '@ Total PE energy: ', 
-     &      Ees(0,1) + Ees(1,1) + Ees(2,1) + Ees(3,1) + Ees(4,1) + 
-     &      Ees(5,1) + Epol(1,1) + Epol(2,1) + Epol(3,1) 
-#endif
-
-C!      end ii       A one-center approximation may be used that gives a correction 
+        IF (PEQM) THEN
+            write(lupri,'(3X,A,'//FMT//')')
+     +  'PE energy (code not written yet)         :   '
+        END IF
+C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
@@ -255,7 +210,7 @@ C
  1020 FORMAT(4X,    I4,   G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' factor !
 C
-      END 
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prcoef */
       SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPREIG,IPRCMP,ILABDF,IPRINT,

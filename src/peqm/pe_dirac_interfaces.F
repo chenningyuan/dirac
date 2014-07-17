@@ -27,18 +27,24 @@
         call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
 
-      subroutine pe_ifc_fock(dmat, fmat, energy)
+      subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "dcbbas.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         real*8, dimension(n2bbasx), intent(inout) :: fmat
-        real*8, dimension(1), intent(out) :: energy
+        real*8, intent(out) :: tot_nrg, el_nrg
         integer :: i, j, k, l
+        real*8, dimension(1) :: nrg
         real*8, dimension(:), allocatable :: dspmat
         real*8, dimension(:), allocatable :: fspmat
+        real*8, external :: ddot
+
         call qenter('pe_ifc_fock')
+
         allocate(dspmat(nnbbasx))
         allocate(fspmat(nnbbasx))
+
         dspmat = 0.0d0
         fspmat = 0.0d0
 
@@ -68,8 +74,10 @@
            end do
         end do
 
-        call pe_master(runtype='fock', denmats=dspmat, fckmats=fspmat,
-     &                 nmats=1, energies=energy)
+        call pe_master(runtype='fock', denmats=dspmat,
+     &                 fckmats=fspmat, energies=nrg, nmats=1)
+        tot_nrg = nrg(1)
+        el_nrg = ddot(nnbbasx, dspmat, 1, fspmat, 1)
 
         ! LL block
         k = 1
@@ -112,12 +120,12 @@
 
       end subroutine pe_ifc_fock
 
-      subroutine pe_ifc_energy(dmat, energy)
+      subroutine pe_ifc_energy(dmat)
         use polarizable_embedding, only: pe_master
 #include "dcbbas.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
-        real*8, dimension(1), intent(out) :: energy
         integer :: i, j, k, l
+        real*8, dimension(1) :: nrg
         real*8, dimension(:), allocatable :: dspmat
         call qenter('pe_ifc_energy')
         allocate(dspmat(nnbbasx))
@@ -149,9 +157,7 @@
            end do
         end do
 
-!        call pe_master(runtype='energy', denmats=denmats, nmats=nmats)
-        call pe_master(runtype='fock', denmats=dspmat, nmats=1,
-     &                 energies=energy)
+        call pe_master(runtype='energy', denmats=dspmat, nmats=1)
 
         call qexit('pe_ifc_energy')
 

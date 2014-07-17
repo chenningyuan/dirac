@@ -207,9 +207,7 @@ C
 C     Initialize PE library
 C
       IF (PEQM) THEN
-#if defined(BUILD_PELIB)
         CALL PE_IFC_INIT()
-#endif
       END IF
 
 !     this is the new input reader
@@ -6376,6 +6374,7 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+!       *PEQM
    11 CONTINUE
 #if defined (BUILD_PELIB)
         CALL PE_IFC_INPUT_READER(WORD)

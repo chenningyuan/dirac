@@ -1319,9 +1319,7 @@ C
       character(12) :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
-#ifdef BUILD_PELIB
-      REAL*8, DIMENSION(1) :: PE_NRG
-#endif
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1512,14 +1510,15 @@ C
            CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
-
-         ! add polarizable embedding contribution
+C
+C        Polarizable embedding contribution
+C        ==================================
+C
          IF (PEQM) THEN
-#ifdef BUILD_PELIB
             WRITE(LUPRI,'(A)') '* Calling PE library'
-            CALL PE_IFC_FOCK(DMAT, FOCK, 1, PE_NRG)
-            WRITE(LUPRI,'(a,f12.8)') '* PE energy: ', PE_NRG
-#endif
+            PE_TIME = SECOND()
+            CALL PE_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            PE_TIME = SECOND() - PE_TIME
          END IF
 C
 C        Read one-electron Fock matrix from file into CMO
@@ -1547,7 +1546,7 @@ C        ======================
            close(99,status='keep')
            call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
            call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
-!          if(aoc) call quit('AOC not working yet for aoo2esssoc...')
+           if(aoc) call quit('AOC not working yet for aoo2esssoc...')
            !> stefan: enabling this is wrong but not doing it as well...
            !> if possible the contributions should be added in the MO basis but how to calculate the energy at this point correctly???
 !          IF (AOC) THEN
@@ -1644,6 +1643,11 @@ CMI    ... we may get the DHFEXIT
      &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
          endif 
 #endif
+          IF (PEQM) THEN
+            CPUTID = SECTID(PE_TIME)
+            WRITE(LUPRI,'(3X,A,A12)')
+     &      '* PE Fock matrix            (CPU):',CPUTID
+          END IF
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Real diagonalization      (CPU):',CPUTID
@@ -1776,7 +1780,8 @@ c     besterg is the lowest energy we encountered so far
 #ifdef PCM_MODULE
       real(8)      :: pcm_energy
 #endif
-      REAL*8, DIMENSION(1) :: PE_NRG
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       data besterg /1.0D100/
       save besterg
 C
@@ -1784,7 +1789,7 @@ C
       INUM = INUM + 1
 C
       LVCON = DOLVC.AND.
-     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR.
+     &        ( (INTFLG.EQ.3 .or. INTFLG.EQ.11) .OR. 
      &          (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
@@ -1859,24 +1864,18 @@ C
 ! Add polarization energy to dhferg 
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
-      endif
+      endif 
 #endif
-
       IF (PEQM) THEN
-#ifdef BUILD_PELIB
-        CALL PE_IFC_ENERGY(DMAT, PE_NRG)
-        DHFERG = DHFERG + PE_NRG(1)
-#endif
+        ! The PE Fock matrix is added to F2 before entering ERGCAL
+        ! and the electronic PE energy is therefore added to E2PART.
+        ! Therefore we subtract it contribution from the total PE energy.
+        ALLOCATE(PE_FMAT(N2BBASX))
+        CALL PE_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
+        IF (IPRSCF > 1) CALL PE_IFC_ENERGY(DMAT)
+        DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
+        DEALLOCATE(PE_FMAT)
       END IF
-!      write(lupri,*)'Eelsav in dirscf', Eelsav
-!      write(lupri,*), 'Epol in ERGCAL', Epol
-
-!       Epe = sum(Ees(:,1)) + sum(Epol(:,1))
-!      Epe = sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
-
-!     E2PART = 1/2*(Gij *Dij). As the DFT potential, Eel (Eelsav) from the 
-!     PE module is added to the E2PART: Here it is substracted again         
-!      E2PART = E2PART - (0.5d0 * Eelsav)
 
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
@@ -1892,12 +1891,6 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
-
-!     if (dirac_cfg_fde) then
-!        call fde_export_write_data_to_memory('DHF') 
-!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-!        write (*,*) 'FDE energy: ',fde_energy
-!     endif
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1938,11 +1931,9 @@ CMI      ... print out matrixes ...
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
-#ifdef BUILD_PELIB
-         WRITE(LUPRI,'(A,'//FMT//')')
-     +       'PE energy                          :   ',PE_NRG(1)
-#endif
-
+        ! later this will be replaced by a get energy routine
+        IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Polarizable embedding energy       :  ',PE_TOT_NRG
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
@@ -1972,7 +1963,6 @@ CMI      ... print out matrixes ...
       ENDIF
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
-
       if (dhferg.lt.besterg) then
 #if defined SYS_WINDOWS
          call system('copy DFCOEF DFCOEF.BEST')
