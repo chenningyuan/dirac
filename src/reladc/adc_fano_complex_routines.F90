@@ -337,7 +337,7 @@ CONTAINS
     CALL alloc(tempe,najl, id='FanoADC: temporary array of diagonal elements')
     CALL alloc(temp_fin, fin_max)
     tempe = (0.0D0,0.0D0)
-    !temp_fin = (0.0D0,0.0D0)
+    temp_fin = (0.0D0,0.0D0)
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
@@ -350,7 +350,7 @@ CONTAINS
 
     DO fincount = 1, fin_max
       temp = finalpos(fincount)
-      temp_fin(fincount) = CMPLX(eajl(k),0.0D0,8)
+      temp_fin(fincount) = CMPLX(eajl(temp),0.0D0,8)
     END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
@@ -374,6 +374,8 @@ CONTAINS
       CALL alloc(vovo,ivovo(nrep+1),id='complex Fano VOVO array')
       oooo = TRANSFER(roooo,oooo)
       vovo = TRANSFER(rvovo,vovo)
+      !WRITE(*,*) 'oooo: ', (oooo(ixx), ixx=1,4)
+      !WRITE(*,*) 'vovo: ', (vovo(ixx), ixx=1,4)
 
       ! construct oolt lookup table for KCOCC
       ALLOCATE(oolt(mxno,mxno,nrep))
@@ -420,7 +422,7 @@ CONTAINS
 
             IF (s /= (0.0D0,0.0D0)) THEN
               adcib = adcib + 1
-              adcbuf(adcib) = s
+              adcbuf(adcib) = CMPLX(s)
               adcioi(adcib) = couprow
               adcioj(adcib) = coupcol
               IF (adcib == fano_intbuf) THEN
@@ -573,7 +575,9 @@ CONTAINS
       CALL dealloc(adcioi)
       CALL dealloc(adcioj)
 
-      CALL cwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+     ! WRITE(iw,*) 'finbuf             ', 'finioi', 'finioj'
+     ! WRITE(iw,*) (finbuf(ixx), finioi(ixx), finioj(ixx), ixx=1,4)
+     CALL cwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
                                finib,finfh)
 
     ELSE offdiag
@@ -781,11 +785,12 @@ CONTAINS
 !
 !---------------Local variables--------------------------------------
 !
-      COMPLEX*8 S
-      INTEGER :: A,AS,K,KS,L,LS
-      INTEGER :: AREP,ASREP,KREP,KSREP,LREP,LSREP
-      INTEGER :: ASKREP, ASLREP, KLREP
-      INTEGER :: IOFF
+      COMPLEX(8) :: S
+      INTEGER    :: A,AS,K,KS,L,LS
+      INTEGER    :: AREP,ASREP,KREP,KSREP,LREP,LSREP
+      INTEGER    :: ASKREP, ASLREP, KLREP
+      INTEGER    :: IOFF
+      INTEGER    :: IXX
 !
 !---------------Executable code--------------------------------------
 !
@@ -805,6 +810,9 @@ CONTAINS
       LREP  = ICRA(6,IROW)                                        
                                                                   
       S=(0.0D0,0.0D0)
+
+      !WRITE(*,*) 'OOOO: ', (oooo(ixx), ixx=1,4)
+      !WRITE(*,*) 'vOvO: ', (vovo(ixx), ixx=1,4)
                                                                   
 !                                                                 
 !   ..... Part A                                                  
