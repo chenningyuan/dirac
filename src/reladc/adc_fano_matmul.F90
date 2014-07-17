@@ -746,9 +746,6 @@ CONTAINS
     END IF 
 
 
-    WRITE(iw,'(1X,2A25)') 'Energies', 'Transition moments'
-    WRITE(iw,'(1X,2ES25.15)') (e2h1p(ixx), t_mom(ixx), ixx=1,counter)
-
     CALL dealloc(buf)
     CALL dealloc(ioi)
     CALL dealloc(ioj)
