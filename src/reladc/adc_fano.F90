@@ -367,10 +367,58 @@ CONTAINS
     WRITE(iw,*)
 
     
-!-> current work
     WRITE(iw,*) 'The matrix of final states is diag. by full diagonalization'
     reladc_md_isfano   = .true.
     CALL FULLDIAC2(itapadc,fn_finmat,fano_intbuf,finnbufs,fin_max,krep)
+
+!!----------------------------------------------------------------------
+!    ! Diagonalize with Lanczos for testing purposes
+!
+!    reladc_md_isfano = .false.
+!    ! Create the file holding the configurations of the 1h and 2h1p configurations
+!!    CALL fano_wcondat_s(itapfano+6,fn_conf,recl_condat_s,krep,fin_max, &
+!!                        finalpos,fin_max,iw)
+!    !CALL WCONDAT_S(itapfano+6,fn_conf,recl_condat_s,krep,fin_max)
+!
+!    reladc_md_iobase   = itapfano+6
+!    reladc_md_ionizl   = 1
+!    reladc_md_ioldnew  = 2 !old, diagonal is written to extra file
+!    reladc_md_intbuf   = fano_intbuf
+!    reladc_md_desrep   = krep
+!    reladc_md_rcw      = 2 !1=real, 2=complex
+!    reladc_md_lnzitr   = reladc_sipiter
+!    reladc_md_matdim   = fin_max
+!    !reladc_md_matdim   = ladc
+!    reladc_md_irecl    = recl_condat_s
+!    reladc_md_nmain    = 3
+!    reladc_md_nbufs    = finnbufs
+!    !reladc_md_nbufs    = adcnbufs
+!    reladc_md_neigenv  = 0 !will be chosen automatically
+!    reladc_md_fileadc  = fn_finmat
+!    !reladc_md_fileadc  = fn_adcmat
+!    !reladc_md_filediag = fn_indiag
+!    !reladc_md_filediag = fn_adcdiag
+!    reladc_md_filecnf  = fn_conf
+!    reladc_md_nmspec   = 'TSPEC'
+!
+!    ! This is a workaround which allows to use routines based on the old
+!    ! memory handling with MEMOPT
+!    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
+!    
+!    kfree     = 1
+!    lfree     = reladc_lancmem
+!    kfreebase = 1
+!
+!    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
+!     &                KFREE,LFREE,.true.)
+!    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
+!
+!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+!
+!    ! For the next runs Lanczos is again in normal mode
+!    reladc_md_isfano = .false.
+!    CALL dealloc(buflanc)
+!!--------------------------------------------------------------------------
 
     IF (reladc_fano_nrgroups == 1) THEN                                 
       do_partial = .false.                                              
