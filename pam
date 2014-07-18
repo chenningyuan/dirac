@@ -201,6 +201,10 @@ class pam_enviroment:
         self.input_dirac = ''
         self.input_file_dirac = ''
 
+    # potential name plus potential file name
+        self.input_potential = ''
+        self.input_file_potential = ''
+
     # output name created from *inp & *mol names
         self.output_name = ''
 
@@ -234,7 +238,8 @@ class pam_enviroment:
             'matexport.m',
             'DFCOEF.BEST',
             '*.xml',
-            'plot*'
+            'plot*',
+            'POTENTIAL.INP'
             ]
 
     # ... DFCOEF
@@ -489,6 +494,9 @@ Options are also read from ~/.diracrc"""
         group.add_option('--mol', type='string', action='store',
                          dest='mol_file',
                          help='file containing the basis set and geometry specifications [*.mol or *.xyz]')
+        group.add_option('--pot', type='string', action='store',
+                         dest='pot_file',
+                         help='file containing the polarizable embedding potential parameters [*.pot]')
         group.add_option(
             '--fullrestart',
             type='string',
@@ -919,6 +927,9 @@ Options are also read from ~/.diracrc"""
                 if not self.full_restart:
                     print_error_message("both --mol and --inp input parameters are required !")
                     sys.exit(22)
+            if options.pot_file is not None:
+                self.input_potential = options.pot_file
+                self.assign_pot_file()
 
         self.set_output_name()
 
@@ -974,6 +985,20 @@ Options are also read from ~/.diracrc"""
             print >> sys.stderr, '     input directory: %s' % self.input_directory
             sys.exit(5)
 
+    def assign_pot_file(self):
+        '''Assign "self.input_file_potential" with proper input file
+        names according to filled variables (class members) "self.input_potential"'''
+
+        if os.path.isfile(self.input_potential + '.pot'):
+            self.input_file_potential = self.input_potential + '.pot'
+        elif os.path.isfile(self.input_potential):
+            self.input_file_potential = self.input_potential
+        else:
+            print >> sys.stderr, '\npam: DIRAC potential file %s not found' % self.input_potential
+            print >> sys.stderr, '     input directory: %s' % self.input_directory
+            sys.exit(6)
+
+
     def set_output_name(self):
         '''Set the output name string to be used later for naming the
         output file and the scratch directory'''
@@ -1002,8 +1027,19 @@ Options are also read from ~/.diracrc"""
             # ... strip off from path
             inp_file_stripped = os.path.split(inp_file_stripped)[1]
 
+            if len(self.input_potential) > 0:
+                if '.pot' in self.input_file_potential:
+                    pot_file_stripped = \
+                        self.input_file_potential.replace('.pot', '', 1)
+                else:
+                    # no suffix, never mind
+                    pot_file_stripped = self.input_file_potential
+                pot_file_stripped = os.path.split(pot_file_stripped)[1]
+
             # set proper output file structure
             self.output_name = inp_file_stripped + '_' + mol_file_stripped
+            if len(self.input_potential) > 0:
+                self.output_name = self.output_name + '_' + pot_file_stripped
         elif self.full_restart:
             # todo: verify *.tgz ?
             self.output_name = self.archive_name.replace('.tgz', '', 1)
@@ -1094,6 +1130,8 @@ Options are also read from ~/.diracrc"""
             self.copy_with_replacement(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'))
         else:
             print '  No input file provided; pam will assume that it is obtained from the restart file.'
+        if self.input_file_potential:
+            self.copy_with_replacement(self.input_file_potential, os.path.join(self.scratch_dir, 'POTENTIAL.INP'))
 
         # put files to the scratch directory
         if self.put_files:

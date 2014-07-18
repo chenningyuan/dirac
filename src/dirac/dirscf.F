@@ -1515,7 +1515,7 @@ C        Polarizable embedding contribution
 C        ==================================
 C
          IF (PEQM) THEN
-            WRITE(LUPRI,'(A)') '* Calling PE library'
+            IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
             CALL PE_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
             PE_TIME = SECOND() - PE_TIME
@@ -1872,7 +1872,7 @@ C
         ! Therefore we subtract it contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
         CALL PE_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
-        IF (IPRSCF > 1) CALL PE_IFC_ENERGY(DMAT)
+        IF (IPRSCF >= 1) CALL PE_IFC_ENERGY(DMAT)
         DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
         DEALLOCATE(PE_FMAT)
       END IF
