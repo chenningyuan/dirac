@@ -46,7 +46,8 @@ MODULE adc_fano_complex_routines
 
 CONTAINS
 
-  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw)
+  SUBROUTINE cfano_write_hhp(ckks,bufhp,ladc,crep,bigicra,itapadc,iw, &
+                             finalpos)
 
 !
 !  Purpose: Calculate the coupling block of the ADC matrix and sort
@@ -87,12 +88,13 @@ CONTAINS
     INTEGER, DIMENSION(9,nvoot(crep)), INTENT(IN) :: bigicra
     INTEGER, INTENT(IN)    :: itapadc           ! file handling number of ADC matrix
     INTEGER, INTENT(IN)    :: iw                ! file handling number of output file
+    INTEGER, INTENT(IN), DIMENSION(fin_max)                 :: finalpos
 
 !
 !  Data dictionary: Local Variables
 !
     COMPLEX(8),ALLOCATABLE,DIMENSION(:)   :: single_col   !single column of ADC matrix
-    COMPLEX(8),ALLOCATABLE,DIMENSION(:,:) :: temp_array   !array to temporarily store fin part
+    COMPLEX(8)                            :: temp
     INTEGER                               :: temp_row     !row of temp_array
     INTEGER                               :: finrow       !row of final states
     INTEGER                               :: k, ixx, fincount ! counters
@@ -118,7 +120,6 @@ CONTAINS
     CALL alloc(adcbuf,fano_intbuf,id='buffer of sorted ADC matrix')
     CALL alloc(adcioi,fano_intbuf,id='row buffer sorted ADC matrix')
     CALL alloc(adcioj,fano_intbuf,id='col buffer sorted ADC matrix')
-    CALL alloc(temp_array,fin_max,3,id='temp array for final state contributions')
 
 ! ---------------------------------
 !  Code
@@ -132,7 +133,6 @@ CONTAINS
     adcbuf     = (0.0D0,0.0D0)
     adcioi     = 0
     adcioj     = 0
-    temp_array = 0
 
     inrow      = 1
     finrow     = 0
@@ -172,71 +172,48 @@ CONTAINS
       off2   = off2 + nok
       CALL ZCOPY(najl,bufhp(off3),1,single_col(off2),1)
 
-      DO adcrow = adccol + 1, ladc
+      rowloop:DO adcrow = adccol + 1, ladc
         incol = adccol
         !inrow = adcrow
-        IF (adcrow-nok > 0) THEN
-          !WRITE(iw,*) 'adcrow = ', adcrow
-          !WRITE(iw,*) 'nok    = ', nok
-          !WRITE(iw,*) 'adcrow-nok = ', adcrow - nok
-          CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
-                               is_coupl,is_fin,1)
+        IF (ANY(finalpos + nok == adcrow)) THEN
+          CYCLE rowloop
+          !CALL determine_block(adcrow-nok,adccol,bigicra,crep,is_in,&
+          !                     is_coupl,is_fin,1)
         ELSE
-          is_in = .TRUE.
+          inrow = inrow + 1                                               
+          !WRITE(iw,*) 'inrow = ', inrow                                  
+          IF (single_col(adcrow) /= (0.0D0,0.0D0)) THEN                           
+            ! Handle the matrix of initial states                         
+            inib   = inib + 1                                             
+            inbuf(inib) = single_col(adcrow)                              
+            inioi(inib) = inrow                                           
+            inioj(inib) = adccol                                          
+!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib) 
+            IF (inib == fano_intbuf) THEN                                 
+              CALL cwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &        
+                                  innbufs,inib,infh)                      
+            END IF                                                        
+          END IF
         END IF
-        is_initial:IF (is_in) THEN
-          inrow = inrow + 1
-          !WRITE(iw,*) 'inrow = ', inrow
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            ! Handle the matrix of initial states
-            inib   = inib + 1
-            inbuf(inib) = single_col(adcrow)
-            inioi(inib) = inrow
-            inioj(inib) = adccol
-!            WRITE(iw,*) 'inioj = ', inioj(inib), 'inioi = ', inioi(inib)
-            IF (inib == fano_intbuf) THEN
-              CALL cwrite_to_disk(inbuf,inioi,inioj,fano_intbuf, &
-                                  innbufs,inib,infh)
-            END IF
-            ! We write out the sorted ADC matrix
-            ! We skip that since we only need interaction block
-            !adcib  = adcib + 1
-            !adcbuf(adcib) = single_col(adcrow)
-            !adcioi(adcib) = inrow
-            !adcioj(adcib) = adccol
-            !IF (adcib == fano_intbuf) THEN
-            !  CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,  &
-            !                      adcnbufs,adcib,adcfh)
-            !END IF
-          END IF
-        ELSE is_initial
-          !WRITE(iw,*) 'inrow = ', inrow
-          !WRITE(iw,*) 'adcrow     : ', adcrow
-          finrow = finrow + 1
-          IF (single_col(adcrow) /= 0.0D0) THEN
-            fincount = fincount + 1
-            temp_array(fincount,1) = single_col(adcrow)
-            temp_array(fincount,2) = finrow
-            temp_array(fincount,3) = adccol
-            !WRITE(iw,*) 'adcrow     : ', adcrow
-            !WRITE(iw,*) 'fin number : ', temp_array(fincount,1)
-          END IF
-        END IF is_initial
+      END DO rowloop
+!!                                                                        
+!!  One column has been processed, now the final states are added to      
+!!  the end of the corresponding column                                   
+!!          
+      DO temp_row = 1, fin_max                                            
+        temp = single_col(finalpos(temp_row) + nok)                       
+        !WRITE(iw,*) 'processing: ', finalpos(temp_row)                   
+        IF (temp /= (0.0D0,0.0D0)) THEN                                           
+          adcib = adcib + 1                                               
+          adcbuf(adcib) = temp                                            
+          adcioi(adcib) = temp_row + inrow                                
+          adcioj(adcib) = adccol                                          
+          IF (adcib == fano_intbuf) THEN                                  
+            CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
+                  adcib,adcfh)                                            
+          END IF                                                          
+        END IF                                                            
       END DO
-!
-!  One column has been processed, now the final states are added to
-!  the end of the corresponding column
-!
-      DO temp_row = 1, fincount
-        adcib = adcib + 1
-        adcbuf(adcib) = temp_array(temp_row,1)
-        adcioi(adcib) = temp_array(temp_row,2) + inrow
-        adcioj(adcib) = temp_array(temp_row,3)
-        IF (adcib == fano_intbuf) THEN
-          CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf,adcnbufs,  &
-                adcib,adcfh)
-        END IF
-      END DO 
 
       inrow = adccol + 1
       finrow = 0
@@ -256,7 +233,6 @@ CONTAINS
 !  deallocate local arrays
 !
     CALL dealloc(single_col)
-    CALL dealloc(temp_array)
 
 
   END SUBROUTINE cfano_write_hhp
@@ -365,16 +341,17 @@ CONTAINS
     counter = 0
     ! add the 2h1p diag sorted elements
     diag_2h1p:DO k = 1, najl
-      DO fincount = 1, fin_max
-        temp = finalpos(fincount)
-        IF (temp == k) THEN
-          temp_fin(fincount) = CMPLX(eajl(k),0.0D0,8)
-          CYCLE diag_2h1p
-        END IF  
-      END DO
-      counter = counter + 1
-      tempe(counter) = CMPLX(eajl(k),0.0D0,8)
+      IF (ANY(finalpos == k)) THEN                                        
+        CYCLE diag_2h1p                                                   
+      END IF                                                              
+      counter = counter + 1                                               
+      tempe(counter) = eajl(k)                                            
     END DO diag_2h1p
+
+    DO fincount = 1, fin_max
+      temp = finalpos(fincount)
+      temp_fin(fincount) = CMPLX(eajl(temp),0.0D0,8)
+    END DO
 
     WRITE(iw,*) 'Diagonal sorted.'
 
@@ -397,6 +374,8 @@ CONTAINS
       CALL alloc(vovo,ivovo(nrep+1),id='complex Fano VOVO array')
       oooo = TRANSFER(roooo,oooo)
       vovo = TRANSFER(rvovo,vovo)
+      !WRITE(*,*) 'oooo: ', (oooo(ixx), ixx=1,4)
+      !WRITE(*,*) 'vovo: ', (vovo(ixx), ixx=1,4)
 
       ! construct oolt lookup table for KCOCC
       ALLOCATE(oolt(mxno,mxno,nrep))
@@ -421,8 +400,7 @@ CONTAINS
       zeros = 0
 
       colloop:DO jcol = 1, najl !the loop is over the original ADC matrix cols
-        temp = finalpos(fincol)
-        IF (temp == jcol) THEN
+        IF (ANY(finalpos == jcol)) THEN
           coupcol = adccol
 !     couplings between final states that are not taken care of in the column
 !     wise handling are taken care of here (row < col).
@@ -434,12 +412,17 @@ CONTAINS
             s = cfano_kcocc(irow,jcol,oooo,vovo,bigicra,najl,oolt,mxno)
             !WRITE(iw,*) 's = ', s
 
-            couprow = ladc - fin_max + fincol
+            det_row:DO i = 1, fin_max                                     
+              IF (finalpos(i) == jcol) THEN                               
+                couprow = ladc - fin_max + i                              
+                EXIT det_row                                              
+              END IF                                                      
+            END DO det_row                                                
             coupcol = coupcol + 1
 
-            IF (s /= 0.0D0) THEN
+            IF (s /= (0.0D0,0.0D0)) THEN
               adcib = adcib + 1
-              adcbuf(adcib) = s
+              adcbuf(adcib) = CMPLX(s)
               adcioi(adcib) = couprow
               adcioj(adcib) = coupcol
               IF (adcib == fano_intbuf) THEN
@@ -526,11 +509,6 @@ CONTAINS
 
       WRITE(iw,*) 'Number of zeros = ', zeros
 
-      !DO ixx=1, fano_intbuf
-      !  WRITE(iw,'(1X,2(ES14.5,I4,I4))') -inbuf(ixx),inioi(ixx),inioj(ixx),&
-      !                                 -adcbuf(ixx),adcioi(ixx),adcioj(ixx)
-      !END DO
-
       CALL cwrite_rest_to_disk(inbuf,inioi,inioj,fano_intbuf,innbufs, &
                                inib,infh)
 
@@ -567,17 +545,6 @@ CONTAINS
             finioj(finib) = fincol
           ELSE isfindiag
             IF (s /= (0.0D0,0.0D0)) THEN
-              ! only save interaction block
-              !adcib = adcib + 1
-              !adcbuf(adcib) = s
-              !adcioi(adcib) = adcrow
-              !adcioj(adcib) = adccol
-              !!WRITE(iw,*) 'adccolsat = ', adccol
-              !!WRITE(iw,*) 'adcrowsat = ', adcrow
-              !IF (adcib == fano_intbuf) THEN
-              !  CALL cwrite_to_disk(adcbuf,adcioi,adcioj,fano_intbuf, &
-              !                      adcnbufs,adcib,adcfh)
-              !END IF
               finib = finib + 1
               finbuf(finib) = s
               finioi(finib) = finrow
@@ -608,7 +575,9 @@ CONTAINS
       CALL dealloc(adcioi)
       CALL dealloc(adcioj)
 
-      CALL cwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
+     ! WRITE(iw,*) 'finbuf             ', 'finioi', 'finioj'
+     ! WRITE(iw,*) (finbuf(ixx), finioi(ixx), finioj(ixx), ixx=1,4)
+     CALL cwrite_rest_to_disk(finbuf,finioi,finioj,fano_intbuf,finnbufs, &
                                finib,finfh)
 
     ELSE offdiag
@@ -816,11 +785,12 @@ CONTAINS
 !
 !---------------Local variables--------------------------------------
 !
-      COMPLEX*8 S
-      INTEGER :: A,AS,K,KS,L,LS
-      INTEGER :: AREP,ASREP,KREP,KSREP,LREP,LSREP
-      INTEGER :: ASKREP, ASLREP, KLREP
-      INTEGER :: IOFF
+      COMPLEX(8) :: S
+      INTEGER    :: A,AS,K,KS,L,LS
+      INTEGER    :: AREP,ASREP,KREP,KSREP,LREP,LSREP
+      INTEGER    :: ASKREP, ASLREP, KLREP
+      INTEGER    :: IOFF
+      INTEGER    :: IXX
 !
 !---------------Executable code--------------------------------------
 !
@@ -840,6 +810,9 @@ CONTAINS
       LREP  = ICRA(6,IROW)                                        
                                                                   
       S=(0.0D0,0.0D0)
+
+      !WRITE(*,*) 'OOOO: ', (oooo(ixx), ixx=1,4)
+      !WRITE(*,*) 'vOvO: ', (vovo(ixx), ixx=1,4)
                                                                   
 !                                                                 
 !   ..... Part A                                                  

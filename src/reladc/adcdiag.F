@@ -554,10 +554,18 @@
       CALL PST('Entering (new format) FULL complex diagonalizer+')
       write(*,*) 'Number of buffers to read:',nbufs
 
-      IF(LADC.gt.5000) THEN
-        write(*,*) 'Matrix dimension too large for direct'
-        write(*,*) 'diagonalization! Exiting from this ...'
-        return
+      IF (reladc_md_isfano) THEN                             
+        IF(LADC.gt.8000) THEN                                
+        write(*,*) 'Matrix dimension too large for direct'   
+        write(*,*) 'diagonalization! Exiting from this...'   
+        CALL QUIT('No full diagonalization of final states.')
+        END IF                                               
+      ELSE
+        IF(LADC.gt.5000) THEN                                
+          write(*,*) 'Matrix dimension too large for direct' 
+          write(*,*) 'diagonalization! Exiting from this...' 
+          return                                             
+        END IF                                               
       ENDIF
 
       LUN_OFF=IOUNIT
@@ -3135,7 +3143,6 @@ c
 
         CALL dealloc(positions)
       END IF  
-
 
       RETURN
       END

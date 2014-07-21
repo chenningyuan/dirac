@@ -604,6 +604,15 @@
         ENDDO
       ENDIF
 
+! In case of a fanoadc run, allocate the arrays for the initial state
+! and the energies and polestrengths
+
+      IF(reladc_md_isfano) THEN
+        nr_in_evecs = 0
+        CALL alloc(cin_evecs,ladcx,ispcount)
+        CALL alloc(in_energy,2,ispcount)
+      END IF
+
 ! now loop over all subspaces and form the corresponding set of
 ! linearly independent vectors
 
@@ -686,10 +695,10 @@
 !______________________________________________________
 !|
 !|
-        IF(reladc_md_isfano) THEN                                      
-          nr_in_evecs = nindep                                         
-          CALL alloc(cin_evecs,ladcx,nr_in_evecs)                       
-        END IF    
+        !IF(reladc_md_isfano) THEN                                      
+        !  nr_in_evecs = nindep                                         
+        !  CALL alloc(cin_evecs,ladcx,nr_in_evecs)                       
+        !END IF    
 
         DO 177 K=1,NINDEP
 
@@ -722,7 +731,10 @@
           ENDDO
 
           IF(reladc_md_isfano) THEN
+            nr_in_evecs = nr_in_evecs + 1
             cin_evecs(1:ladcx,k) = evli(1:ladcx,k)
+            in_energy(1,nr_in_evecs)      = seval
+            in_energy(2,nr_in_evecs)      = polestr
           END IF
 
         ELSE
