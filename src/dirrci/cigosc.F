@@ -71,16 +71,18 @@ C.....Create masks fo GAS spaces
       CALL GASMASK(NGAS,IGAS,NGASO)
       WRITE(6,'(A)') 'Number of determinants:'
 C.....loop over fermion irreps I Abelian subgroup
+      IERR = 0
       DO IRP=1, NREP
 C.......odd number of electrons: fermion irreps
         IRRP = IRP
 C.......even number of electrons: boson irreps
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 C.......Generate list of determinants
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
         WRITE(6,'(3X,A,A4,A,I10)') 'Symmetry ',REPNA(IRRP),'  : ',NDET
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
+      IF(IERR.NE.0) CALL Q2JOB(3,'P.GENDET','    N2',NDETMX)
 !
 !     common variable "NDETMX" is set here.  (sya, 2007.03.03)
 !
@@ -104,7 +106,7 @@ C
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 	CALL CPUUSED(SEC0)
 ctom
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
 ctom
         IF (NDET.EQ.0) GOTO 10
 	CALL CPUUSED(SEC1)
@@ -261,16 +263,18 @@ C.....Create masks fo GAS spaces
       CALL GASMASK(NGAS,IGAS,NGASO)
       WRITE(6,'(A)') 'Number of determinants:'
 C.....loop over fermion irreps I Abelian subgroup
+      IERR = 0
       DO IRP=1, NREP
 C.......odd number of electrons: fermion irreps
         IRRP = IRP
 C.......even number of electrons: boson irreps
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 C.......Generate list of determinants
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
         WRITE(6,'(3X,A,A4,A,I10)') 'Symmetry ',REPNA(IRRP),'  : ',NDET
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
+      IF(IERR.NE.0) CALL Q2JOB(3,'P.GENDET','    N2',NDETMX)
 C
       KHR  = KTOP
       KHI  = KHR + NDETMX*NDETMX
@@ -295,7 +299,7 @@ C
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
 	CALL CPUUSED(SEC0)
 ctom
-        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
+        CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
 ctom
         IF (NDET.EQ.0) GOTO 10
 	CALL CPUUSED(SEC1)
@@ -408,23 +412,17 @@ C
       real*8, allocatable :: ee(:,:)
       real*8, allocatable :: e(:)
 C
-CSK   REAL*8 E(N2),EE(N2*N2,2)
-C
-CSK
       call alloc(e, n2, id="e")
       call alloc(ee,n2*n2,2, id="ee")
-CSK
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
-CSK
       call dealloc(ee, id="ee")
       call dealloc(e, id="e")
-CSK
       RETURN
       END
 
-C     ==============================================
-      SUBROUTINE GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE)
-C     ==============================================
+C     ====================================================
+      SUBROUTINE GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
+C     ====================================================
 !----------------------------------------------------------------------
 !     Last-update: S. Yamamoto - 2007.01.30
 !     Last-update: S. Yamamoto - 2007.09.27
@@ -477,7 +475,10 @@ C
      &      GOTO 20
         END DO
         NDET = NDET + 1
-        IF (NDET .GT. N2) STOP ' N2 TOO SMALL'
+        IF (NDET .GT. N2) THEN
+          IERR = 1
+          GOTO 20
+        ENDIF
         IDET (NDET) = I
         IF(IPRNT.GE.10) CALL DETPRI(I,NDET)
 !.s/sya,2007.01.30
@@ -827,69 +828,27 @@ C     =================================
 C
       CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
+      integer, allocatable :: IRPS(:),INDX(:),IND(:)
+      real(8), allocatable :: DS(:)
 C
 #include "goscom.h"
 C
-      PARAMETER (EVOLT=27.21139590988D0,CM=219474.63068D0)
-C
       CHARACTER*1 N(N1)
 C
-CSK   INTEGER IRPS(N2*N5),INDX(N2*N5),IND(N5)
-      integer, allocatable :: IRPS(:),INDX(:),IND(:)
-      REAL*8 DS(N2*N5)
-C
-      NAMELIST/POPAN/THRESH,DEGEN,SELPOP
-C
 #include "ibtfun.h"
-      THRESH=1.0D-3
-!.s/sya,2007.0929/
-!#    SELPOP=1.0D2
-      SELPOP=1.0D0
-      MXMAX=100
-!.q
-!SK
-      call alloc(IRPS, N2*N5, id="irps")
-      call alloc(INDX, N2*N5, id="indx")
-      call alloc(IND,  N5,    id="ind")
-      IRPS = 0
-      INDX = 0
-      IND  = 0
-!SK
-      DEGEN=1.0D-10
-      REWIND(5)
-      READ(5,POPAN,END=100)
  100  IF (IRP.EQ.0) GOTO 110
       NDETI(IRP)=NDET
-      IF (IPRNT.LT.5) then
-         call dealloc(IRPS, id="irps at low print level")
-         call dealloc(INDX, id="indx at low print level")
-         call dealloc(IND,  id="ind at low print level")
-         return 
-      endif
 C
 C     ------------------------------------------------
 C     PRINT POPULATION ANALYSIS FOR REPRESENTATION IRP
 C     ------------------------------------------------
 C
-!.s/sya,2007.0902
-!#      DO 10 I=1,NDET
-!#        DO 20 J=1,NDET
-!#          HR(J,I) = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
-!# 20       CONTINUE
-!# 10     CONTINUE
-!.q
-C
       DO 70 I=1,NDET
         IF (D(I,IRP)-D(1,IRP).LT.SELPOP) MX=I
- 70     CONTINUE
-!.s/sya,2007.0929/
-      MX = MIN(MX,MXMAX)
-!.q
+ 70   CONTINUE
+      MX = MIN(MX,MAXPOP)
 C
       WRITE(6,1006) REPNA(IRRP),MX
-!.s/sya,2007.0929/
-!#1006 FORMAT(/' Population analysis for representation ',A4
-!#    +       /'            The first ',I4,' vectors are analyzed'//)
  1006 FORMAT(/' Population analysis for representation ',A4
      +       /'            The first',I6,' vectors are analyzed'/
      &       /T8,'energy',T22,'det#',T28,'determinant',
@@ -898,43 +857,50 @@ C
      &        T56,'----',T66,'--',T76,'--')
 !.q
 C
+      allocate(DS(NSPACT))
       WRITE(FMT,'(I2)') N1
       DO 30 I=1,MX
+        DS = 0.0D0
         WRITE(6,1000) D(I,IRP)+ECORE
         DO 40 J=1,NDET
-!.s/sya,2007.0902
-!#        IF (HR(J,I).GT.THRESH) THEN
           HNORM = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
+          DO 50 JJ=1,NSPACT
+            N(JJ)='0'
+            IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) THEN
+              N(JJ)='1'
+              DS(JJ)=DS(JJ)+HNORM
+            ENDIF
+ 50       CONTINUE
           IF (HNORM.GT.THRESH) THEN
-!.q
-            DO 50 JJ=1,NSPACT
-              N(JJ)='0'
-              IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) N(JJ)='1'
- 50           CONTINUE
             DO 60 JJ=NSPACT+1,N1
               N(JJ)=' '
- 60           CONTINUE
-!.s/sya,2007.0902
-!#          WRITE(6,'(17X,I8,2X,'//FMT//'(A1),F16.8)') 
-!#   &           J,(N(JJ),JJ=1,N1),HR(J,I)
+ 60         CONTINUE
             WRITE(6,'(17X,I8,2X,'//FMT//'(A1),3F10.4)') 
      &           J,(N(JJ),JJ=1,N1),HNORM,HR(J,I),HI(J,I)
-!.q
           ENDIF
- 40       CONTINUE
- 30     CONTINUE
-      call dealloc(IRPS)
-      call dealloc(INDX)
-      call dealloc(IND)
+ 40     CONTINUE
+        WRITE(6,'(A)') '    Orb.  Orbital energy       Occupation'
+        DO JJ = 1,NSPACT
+          WRITE(6,'(3X,I5,G20.10,5X,F8.4)') JJ,EPS(JJ),DS(JJ)
+        ENDDO
+        WRITE(6,*) 
+ 30   CONTINUE
+      deallocate(DS)
       return
 C
 C     ------------------------------------
 C     PRINT COMPRESSED LIST OF EIGENVALUES
 C     ------------------------------------
 C
-#ifndef ego
  110  CONTINUE
+      allocate(IRPS(N2*N5))
+      allocate(INDX(N2*N5))
+      allocate(IND(N5))
+      allocate(DS(N2*N5))
 C
+      IRPS = 0
+      INDX = 0
+      IND  = 0
       ND = 0
       DO I = 1, NREP
          CALL DCOPY (NDETI(I),D(1,I),1,DS(ND+1),1)
@@ -952,75 +918,10 @@ C        Odd number of electrons, fermion irreps
       ENDIF
 C
  1000 FORMAT(F17.8)
-#else /* ego */
- 110  CALL SORTEW (DS,NDETT,IRPS)
-      WRITE(6,1005)
-      ILEVEL=1
-      EW=0.0D0
-      EWF=DS(1)
-      NEW=0
-      AVER=0.0D0
-      DO 120 I=1,NDETT
-        AVER=AVER+DS(I)
-        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
-          IF (NEW.NE.0)
-     &      WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
-          ILEVEL=ILEVEL+1
-          NEW=1
-          EW=DS(I)
-        ELSE
-          NEW=NEW+1
-          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
-        ENDIF
- 120    CONTINUE
-      IF (NEW.NE.0)
-     &WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
-      WRITE(6,1020) AVER/DBLE(NDETT)+ECORE
-C
-      IF (IRRP.EQ.0) WRITE(6,1025) (REPNA(I),I=NREP+1,2*NREP)
-      IF (IRRP.EQ.1) WRITE(6,1025) (REPNA(I),I=1,NREP)
-      ILEVEL=0
-      EW=0.0D0
-      EWF=DS(1)
-      NEW=0
-      DO 140 I=1,NDETT
-        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
-         IF (NEW.NE.0)
-     &      WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
-     &                    (IND(JRP),JRP=1,NREP)
-          DO 130 JRP = 1, NREP
-            IND(JRP) = 0
- 130        CONTINUE
-          ILEVEL = ILEVEL + 1
-          IND(IRPS(I)) = 1
-          NEW=1
-          EW=DS(I)
-        ELSE
-          NEW=NEW+1
-          IND(IRPS(I)) = IND(IRPS(I)) + 1
-          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
-        ENDIF
- 140    CONTINUE
-      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
-     &              (IND(JRP),JRP=1,NREP)
- 1000 FORMAT(1X,F16.8)
- 1008 FORMAT(10X,I8,2X,36(A1),F16.8)
- 1005 FORMAT(//1X,'ENERGY EIGENVALUES IN ATOMIC UNITS'
-     &            //1X,'LEVEL   REL EIGENVALUE     ',
-     &            'ABS EIGENVALUE  DEGENERACY'/)
- 1010 FORMAT(1X,I4,1X,F16.12,F20.12,1X,'(',I4,' * )')
- 1020 FORMAT(//1X,'TOTAL AVERAGE: ',F20.10)
- 1025 FORMAT(//1X,'RELATIVE EIGENVALUES IN OTHER UNITS;'/' SYMMETRY',
-     +       ' CLASSIFICATION IN THE ABELIAN SUBGROUP',
-     +       //1X,'LEVEL  EIGENVALUE (EV) ',
-     +      ' EIGENVALUE (CM-1)',2X,8A4/)
- 1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
-#endif /* ego */
-CSK
-      call dealloc(IRPS, id="irps at the end of the routine")
-      call dealloc(INDX, id="indx at the end of the routine")
-      call dealloc(IND,  id="ind at the end of the routine")
-CSK
+      deallocate(IRPS)
+      deallocate(INDX)
+      deallocate(IND)
+      deallocate(DS)
       RETURN
       END
 C
@@ -1247,9 +1148,9 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
 10011 STOP 'ERROR READING INTEGRALS FROM MDBINT'
       END
 C
-C     =================
+C     ==========================
       SUBROUTINE READGOS(NELECT)
-C     =================
+C     ==========================
 !----------------------------------------------------------------------
 !     Last-update: S. Yamamoto - 2007/06/11 chukyo-u
 !     Last-update: S. Yamamoto - 2007.09.14 chukyo-u
@@ -1268,7 +1169,7 @@ C
 C
       CHARACTER*14 REPN(16)
 C
-      LOGICAL TWOC,SPINFR
+      LOGICAL SPINFR
       INTEGER REFDET,IRPMO(N1)
       REAL*8 SELPOP
 !.s/sya,2007.09.14
@@ -1277,8 +1178,7 @@ C
 !.q
 C
       NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT
-      NAMELIST/GENERAL/TWOC
-      NAMELIST/POPAN/THRESH,DEGEN,SELPOP
+      NAMELIST/POPAN/THRESH,DEGEN,SELPOP,MAXPOP
 !----------------------------------------------------------------------
       MRCONEE=75
 C
@@ -1300,15 +1200,12 @@ C
         CALL NCOSCI_NBITS(IREFE,IREF)
       END IF
 !.q
-      TWOC=.FALSE.
-      REWIND(5)
-      READ(5,GENERAL,END=201)
-  201 WRITE(6,GENERAL)
 C
       REWIND(5)
       THRESH=1.0D-3
       DEGEN=1.0D-10
       SELPOP=1.0D2
+      MAXPOP=100
       REWIND(5)
       READ(5,POPAN,END=100)
   100 WRITE(6,POPAN)
