@@ -4104,8 +4104,9 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
-      LOGICAL SPECIAL,DODBG
+      LOGICAL SPECIAL,DODBG,WRITE_MATRIX
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
+      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('DFDIAG')
 C
@@ -4223,6 +4224,33 @@ C
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
             ENDIF 
+
+! miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
+!-----------------------------------------------------------------------------------
+      WRITE_MATRIX=.TRUE.
+      IF (WRITE_MATRIX) THEN
+! get the file name first, containing symmetry
+        hfile_format="(A8,A8,I1,A1,I1,A8,I1,A1,I1)"
+        write(hfile_name,hfile_format)
+     & "hmatrix.","fermirp=",I,"-",NFSYM,
+     & "_bosirp=",ISUB,"-",N_SUB_BL(I)
+        print *,trim(hfile_name)
+! open the unique file and write the matrix
+       luhm=95
+       open(luhm,file=trim(hfile_name),access="sequential",
+     &      form="formatted",status="unknown")
+        write(luhm,*) NBO,NBO
+        ic=0
+        do ii=1,NBO
+        do jj=1,NBO
+          write(luhm,*) ii,jj,FMO(IMAT+ic)
+          ic = ic + 1
+        enddo
+          ic = ic + NTMO(I) - NBO
+        enddo
+       close(luhm,status="keep")
+      ENDIF
+
 C
 C           Diagonalize the isub'th block of parity i
 C
