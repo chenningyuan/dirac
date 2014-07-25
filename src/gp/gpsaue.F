@@ -6562,3 +6562,16 @@ C
       RETURN
       END
 
+      Subroutine alloc_stat_check(alloc_label,istat)
+! very simple routine for checking dynamic allocation status
+! written by Miro Ilias, July 2014
+#include "priunit.h"
+       character(*), intent(in) :: alloc_label
+       integer, intent(in) :: istat
+       if (istat /= 0) then
+         write(LUPRI,*) 'Error in allocation, variable :',alloc_label
+         write(LUPRI,*) 'istat=',istat
+         call quit('error in F90 dynamic allocation !')
+       endif
+      End Subroutine alloc_stat_check
+
