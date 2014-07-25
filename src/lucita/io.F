@@ -171,6 +171,11 @@
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
+      ! master...
+      IF(MYPROC == 0)THEN
+        NLUC_MPI=LUC_MPIN
+        LUC_MPIL=7
+      END IF
 #else
       NLUC_MPI=LUC_MPIN
       LUC_MPIL=7

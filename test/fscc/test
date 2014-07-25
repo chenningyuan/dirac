@@ -4,25 +4,25 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Sum of all contributions to the energy',
       num_lines   = 5,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 
-test_run.execute(['sf.scf.inp'], ['Mg.mol'], f, args='--outcmo')
+test.run(['sf.scf.inp'], ['Mg.mol'], f, args='--outcmo')
 
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = 'Relative real eigenvalues in other units;')
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance = 1.0e-5)
 
-test_run.execute(['so-fsccsd_IH.inp'], ['Mg.mol'], f, args='--incmo --mw=110')
-test_run.execute(['fsccsd.inp', 'bss+mfsso.fsccsd_IH.inp'], ['Mg.mol'], f, args='--mw=110')
+test.run(['so-fsccsd_IH.inp'], ['Mg.mol'], f, args='--incmo --mw=110')
+test.run(['fsccsd.inp', 'bss+mfsso.fsccsd_IH.inp'], ['Mg.mol'], f, args='--mw=110')
 
 os.unlink('DFCOEF')
 
-sys.exit(0)
+sys.exit(test.return_code)

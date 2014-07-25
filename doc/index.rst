@@ -62,6 +62,14 @@ First steps in DIRAC territory
   :doc:`Memory problems <getting_help/memory>`
 
 
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 Tutorials and walkthrus
 =======================
 
@@ -124,9 +132,14 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
+* **DMRG interface:**
+  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
-  :doc:`VIBCAL <tutorials/utils/vibcal>` 
+  :doc:`VIBCAL <tutorials/utils/vibcal>` |
+  :doc:`CFREAD <tutorials/utils/cfread>` |
+  :doc:`LABREAD <tutorials/utils/labread>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -147,15 +160,6 @@ Exercises
    exercises/index.rst
 
 
-Reference manual
-================
-
-.. toctree::
-   :maxdepth: 1
-
-   manual/index.rst
-
-
 Developers
 ==========
 
@@ -167,7 +171,7 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
-  :doc:`beholder_dirac.py <programmers/testing_beholder>` |
+  `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |

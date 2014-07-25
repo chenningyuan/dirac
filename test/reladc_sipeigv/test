@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '  eigenvectors are stored in LONGEVC',
       num_lines    = 4,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
-test_run.execute(['real_ne_eigv.inp'], ['ne_d2h.mol'], f, accepted_errors=['RELADC not parallelized'])
-test_run.execute(['complex_hcn_eigv.inp'], ['hcn_cs.mol'], f, accepted_errors=['RELADC not parallelized'])
+test.run(['real_ne_eigv.inp'], ['ne_d2h.mol'], f, accepted_errors=['RELADC not parallelized'])
+test.run(['complex_hcn_eigv.inp'], ['hcn_cs.mol'], f, accepted_errors=['RELADC not parallelized'])
 
-sys.exit(0)
+sys.exit(test.return_code)

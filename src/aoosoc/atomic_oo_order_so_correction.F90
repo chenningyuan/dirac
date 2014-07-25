@@ -48,12 +48,14 @@ contains
                                                dmat,       &
                                                pct_mat,    &
                                                calc_2esoc, &
+                                               lwork_ext,  &
                                                print_lvl   &
                                                )
 !**********************************************************************
      real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
      real(8), intent(in)                :: pct_mat(*)
      logical, intent(in)                :: calc_2esoc
+     integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
@@ -61,27 +63,41 @@ contains
 !----------------------------------------------------------------------
       call hello_aoosoc()
 
-      allocate(fmat(nrows*ncols*nr_quat*1))
+!     if(nr_2e_fock_matrices > 1)call quit('aoosoc module does not work yet for atomic AOC-HF; use .FOCC in *SCF')
+
+      allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices))
       fmat = 0.0d0
 
 !     get full (scalar+spin-orbit) 2e-fock matrix
       if(calc_2esoc)then
+#define try_this
+#if defined try_this
+        call get_scso_2e_fock_aoc(                       &
+                                  dmat,                  &
+                                  fmat,                  &
+                                  nrows,                 &
+                                  ncols,                 &
+                                  1,                     &
+                                  nr_quat                &
+                                 )
+#else
         call get_scso_2e_fock(                           &
                               dmat,                      &
                               fmat,                      &
                               nrows,                     &
                               ncols,                     &
-                              nr_2e_fock_matrices-1,     &
+                              nr_2e_fock_matrices,       &
                               aoo_dfopen,                &
                               aoo_intflg,                &
                               aoo_mdirac,                &
                               nr_quat,                   &
                               aoo_cb_pq_to_uq(1,0),      &
                               aoo_ihqmat(1,-1),          &
-                              nr_ao_total_aoo,           &
+                              lwork_ext,                 &
                               print_lvl                  &
                              )
 
+#endif
 
 !       debug print
         if(print_lvl > 2)then
@@ -96,33 +112,11 @@ contains
                            )
         end if
 
-!       get 2e-SO-fock matrix
-        call make_so_2e_fock(                            &
-                             fmat,                       &
-                             nrows/2,                    &
-                             ncols/2,                    &
-                             nr_quat                     &
-                            )
-!       debug print
-        if(print_lvl > 2)then
-          call print_x2cmat(                             &
-                            fmat,                        &
-                            nr_ao_total_aoo,             &
-                            nr_ao_total_aoo,             &
-                            nr_quat,                     &
-                            aoo_cb_pq_to_uq(1,0),        &
-                            'aoosoc - 2e-soc-only',      &
-                            6                            &
-                           )
-        end if
-
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &
                                    fmat,                 &
                                    pct_mat,              &
                                    dmat,                 &
-                                   nrows,                &
-                                   ncols,                &
                                    nr_ao_total_aoo,      &
                                    nr_ao_large_aoo,      &
                                    nr_ao_all,            &
@@ -135,13 +129,25 @@ contains
                                    print_lvl             &
                                   )
 
+!       debug print
+!       if(print_lvl > 2)then
+          call print_x2cmat(                             &
+                            fmat,                        &
+                            nr_ao_large_aoo,             &
+                            nr_ao_large_aoo,             &
+                            nr_quat,                     &
+                            aoo_cb_pq_to_uq(1,0),        &
+                            'aoosoc - 2e-normalized',    &
+                            6                            &
+                           )
+!       end if
       end if
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
                                   fmat,                       &
-                                  nrows/2,                    &
-                                  ncols/2,                    &
+                                  nr_ao_large_aoo,            &
+                                  nr_ao_large_aoo,            &
                                   nr_quat,                    &
                                   file_name_aoo_contributions,&
                                   nint(atom(1)%charge),       &
@@ -182,53 +188,57 @@ contains
      real(8), allocatable               :: jbuf(:)
 !----------------------------------------------------------------------
 
-      allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 
-!     print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
-!     get spin-orbit parts from file (of atom(i) ... == atomic fragment)
-      call read_normalized_2e_soc(                                 &
-                                  Gmat_frag,                       &
-                                  nrows_ext,                       &
-                                  ncols_ext,                       &
-                                  nr_quat_ext,                     &
-                                  file_name_aoo_contributions,     &
-                                  nint(atom(center_total)%charge), &
-                                  aoo_fsoc                         &
-                                 )
-      allocate(rbuf(naosh_l))
-      allocate(cbuf(naosh_l))
-      allocate(ibuf(nrows_ext))
-      allocate(jbuf(ncols_ext))
+      if(nint(atom(center_total)%charge) > 1)then
 
-      rbuf = 0
-      cbuf = 0
-      ibuf = 0
-      jbuf = 0
+        allocate(Gmat_frag(nrows_ext*ncols_ext*4))
+!       print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
+!       get spin-orbit parts from file (of atom(i) ... == atomic fragment)
+        call read_normalized_2e_soc(                                 &
+                                    Gmat_frag,                       &
+                                    nrows_ext,                       &
+                                    ncols_ext,                       &
+                                    nr_quat_ext,                     &
+                                    file_name_aoo_contributions,     &
+                                    nint(atom(center_total)%charge), &
+                                    aoo_fsoc                         &
+                                   )
+        allocate(rbuf(naosh_l))
+        allocate(cbuf(naosh_l))
+        allocate(ibuf(nrows_ext))
+        allocate(jbuf(ncols_ext))
 
-      call put_aoblock(Gmat,                            &
-                       naosh_l,                         &
-                       naosh_l,                         &
-                       center_total,                    &
-                       aoo_nont(center_id),             &
-                       aoo_nucdeg(center_total),        &
-                       4,                               &
-                       Gmat_frag,                       &
-                       nrows_ext,                       &
-                       nrows_ext,                       &
-                       -1,                              &
-                       ncols_ext,                       &
-                       ncols_ext,                       &
-                       -1,                              &
-                       rbuf,                            &
-                       cbuf,                            &
-                       ibuf,                            &
-                       jbuf)
+        rbuf = 0
+        cbuf = 0
+        ibuf = 0
+        jbuf = 0
 
-      deallocate(jbuf)
-      deallocate(ibuf)
-      deallocate(cbuf)
-      deallocate(rbuf)
-      deallocate(Gmat_frag)
+        call put_aoblock(Gmat,                            &
+                         naosh_l,                         &
+                         naosh_l,                         &
+                         center_total,                    &
+                         aoo_nont(center_id),             &
+                         aoo_nucdeg(center_total),        &
+                         4,                               &
+                         Gmat_frag,                       &
+                         nrows_ext,                       &
+                         nrows_ext,                       &
+                         -1,                              &
+                         ncols_ext,                       &
+                         ncols_ext,                       &
+                         -1,                              &
+                         rbuf,                            &
+                         cbuf,                            &
+                         ibuf,                            &
+                         jbuf)
+
+        deallocate(jbuf)
+        deallocate(ibuf)
+        deallocate(cbuf)
+        deallocate(rbuf)
+        deallocate(Gmat_frag)
+
+      end if
 
 !     update counter
       center_total = center_total + aoo_nont(center_id)

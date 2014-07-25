@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
 f.add(from_re     = '! PV',
       to_string   = '----------------------------------------------',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
-test_run.execute(['shielding_dc.inp', 'shielding_nr.inp', 'spinspin_dc.inp', 'spinspin_nr.inp'], ['H2O2.mol'], f)
+test.run(['shielding_dc.inp', 'shielding_nr.inp', 'spinspin_dc.inp', 'spinspin_nr.inp'], ['H2O2.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

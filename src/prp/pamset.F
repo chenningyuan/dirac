@@ -59,13 +59,13 @@ C
       ELSE
 C
          IF (NASHT .EQ. 0) THEN
-            CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)      
+            CALL MEMGET2('REAL','FAO',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
          ELSE
-            CALL MEMGET('REAL',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)      
+            CALL MEMGET2('REAL','FAO',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)
          END IF
-         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
          IF(SPINFR) THEN
-           CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+           CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
          ELSE
            KBEIG = KFREE
          ENDIF
@@ -197,7 +197,7 @@ C
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -404,7 +404,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck REDPAR */
-      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
+      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JXOPE,JXOPP,
      &                  NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
      &                  NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
      &                  WORK,KFREE,LFREE,IPRINT)
@@ -429,7 +429,7 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
-     &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
+     &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
       LOGICAL LBIT
 C
       KFRSAV = KFREE
@@ -579,7 +579,7 @@ C
 C     Allocate buffer areas
 C     =====================
 C
-      CALL MEMGET('INTE',KIND ,MXFBAS,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NIND',KIND ,MXFBAS,WORK,KFREE,LFREE)
       CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
@@ -854,7 +854,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -863,7 +863,14 @@ C
 C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
-#include "implicit.h"
+
+      use orbital_rotation_indices, only: setxop
+      use conf_parameters, only: allocate_conf_array
+
+      implicit none
+
+      integer, intent(in) :: iprint
+
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -872,8 +879,8 @@ C
 C
       CHARACTER INDSTR(3,2)*72
       LOGICAL   SKIPEE,SKIPEP
-      DIMENSION WORK(*)
       LOGICAL GASWF
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('XRSPAR')
 C
@@ -883,8 +890,10 @@ C
       NZCONF   = 0
       NZCONFQ  = NZCONF *NZ
 C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
-      CALL MEMGET('REAL',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
-C
+
+      call allocate_conf_array(nzconfq)
+
+
 C     Orbital parameters
 C     ==================
 C
@@ -895,19 +904,16 @@ C     but is not defined for DHF/DFT yet (only for KRMC now)
 C     hjaaj June 2001: GASWF should be based on either
 C     MCSCF common block or that this WF is not KRMC
 C
-      CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
-      CALL IZERO(WORK(KNOROT),NORBT)
+      allocate(norot(norbt))
+      norot = 0
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
-C     No CALL MEMREL here!!!!
-C     NZXOPE, NZHOPE, NZXOPP and the
-C     pointers KZXOPE and KXZOPP are defined in SETXOP
-C     THEY MUST NOT BE RELEASED WITH MEMREL !
-C     We must p.t. live with KNOROT allocation ...
-C
+      deallocate(norot)
 C===TODO end
+
+
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP
@@ -926,5 +932,4 @@ C
       END IF
 C
       CALL QEXIT('XRSPAR')
-      RETURN
       END

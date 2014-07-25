@@ -4,22 +4,21 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Sum of all contributions to the energy',
       num_lines   = 2,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = '  Retrieving MP2 density matrix from file',
       to_string   = '* Electric field at nuclei',
-      tolerance   = 0.001)
+      rel_tolerance   = 0.001)
 f.add(from_string = '* Electric field at nuclei:',
       to_string   = '1 a.u. = 234.96474170 MHz',
-      tolerance   = 0.00002)
+      rel_tolerance   = 0.00002)
 
-test_run.execute(['mp2_gradient.inp', 'bss+mfsso.mp2_gradient.inp'], ['H2O2.mol'], f, args='--mw=60 --aw=140')
+test.run(['mp2_gradient.inp', 'bss+mfsso.mp2_gradient.inp'], ['H2O2.mol'], f, args='--mw=60 --aw=140')
 
-sys.exit(0)
+sys.exit(test.return_code)

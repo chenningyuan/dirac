@@ -266,7 +266,7 @@ C         Initialize configurational and orbital parameters
 C         =================================================
 C
           CALL XRSPAR(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
-     &                WORK,KFREE,LFREE,IPRXPP)
+     &                IPRXPP)
 C
 C         Transfer number of excitations for this symmetry to dcbxrs.h
 C         (NFREQ is used for allocations and loops)
@@ -493,7 +493,7 @@ C&&&& ANALYZe: Analyze individual contributions to repsonse functions
     4          CONTINUE
 C&&&& OPERATOR: operator of transition moment
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
+     &                        IPRXPP)
                   CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
      &                        MAXLPP)
                GO TO 100

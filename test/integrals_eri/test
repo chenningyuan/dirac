@@ -4,19 +4,18 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-12)
+      rel_tolerance   = 1.0e-12)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
-test_run.execute(['NR_direct_eri.inp', '2C_SF_direct_eri.inp'], ['H2O2_eri.mol'], f)
+test.run(['NR_direct_eri.inp', '2C_SF_direct_eri.inp'], ['H2O2_eri.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

@@ -1196,7 +1196,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& OPERATOR: Define operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRTRP)
+     &                        IPRTRP)
                   CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,
      &                        MAXTRP)
                   PRPTRA = .TRUE.

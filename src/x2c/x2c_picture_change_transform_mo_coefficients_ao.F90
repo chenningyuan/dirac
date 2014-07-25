@@ -251,13 +251,8 @@ contains
 !              b. the 2c-Lowdin transformation matrix
 !      -----------------------------------------------------------------
 !      a. 2c-Fock operator
-       do i = 1, nfsym
-         nbas1_f  = naosh_all(i)
-         if(naosh_all(i) > 0)then
-           write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
-           call x2c_read(flabel,xmat(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_glb)
-         end if
-       end do
+       write(flabel,'(a7,i4,i1)') 'h12cAOF',1,0
+       call x2c_read(flabel,xmat,naosh_ls**2*nz,x2c_file_glb)
 
 !      b. 2c-Lowdin transformation matrix
        nlwdmat = 0

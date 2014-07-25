@@ -2719,9 +2719,9 @@ C     ====================================
             JRDMO = -1
             REWIND LUKRMC
             CALL RREADMO(CMO,JRDMO,3,LUKRMC)
-!FIXME!!!   CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+            CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
 !           ... set to zero
-            CALL DZERO(EIG,NORBT)
+!           CALL DZERO(EIG,NORBT)
           end if
         END IF
 
@@ -2871,7 +2871,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,TOTERG_DEF
       CHARACTER FRAGFIL(NFRAG)*6
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2881,6 +2881,8 @@ C
 !     flag for MCSCF coefficents present on fragment/molecular
 !     coefficients file
       CMCSCF_MAGIC = 137.0D0
+!miro: initialization
+      TOTERG_DEF=.FALSE.
 C
 C.....loop over fragments
       INUC  = 1
@@ -2918,6 +2920,7 @@ C.......Fragment orbitals in molecular basis
 !         check for MCSCF coefficients on fragment/molecule file
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
      &                TOTERG,-1,WORK,KFREE,LFREE)
+          TOTERG_DEF=.TRUE. ! miro: yes, we have the TOTERG value
 !
 !         set local IOPT_TMP
           IOPT_TMP = IOPT
@@ -2967,8 +2970,13 @@ C       Select boson irrep information
 !
 !     reset IOPT flag for extra printout in ANAPR1 and proper handling 
 !     of the occupation vector.
-      IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
+      IF (TOTERG_DEF) THEN
+        IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
      &    IOPT = IOPT_TMP
+      ELSE ! miro: TOTERG not defined
+        IF(FRAGFIL(NFRAG).eq.'DFCOEF') 
+     &    IOPT = IOPT_TMP
+      ENDIF
       
       RETURN
 C
@@ -3650,6 +3658,10 @@ C
       CALL READI(LUCOEF,NORBT,IBEIG2)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
+
+!miro: assign IPRINT from dcbgen.h
+      IPRINT = IPRGEN
+
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'
@@ -4305,7 +4317,7 @@ C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
 C***********************************************************************
 C     
-C     Which shell does electron orbital IORBITAL belong to?
+C     Which open shell does electron orbital IORBITAL belong to?
 C
 C     Written by J. Thyssen - Feb 11 1999
 C     
@@ -4313,11 +4325,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
       IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN(neg)')
+     &   CALL QUIT('illegal value in GETIOPEN (≤0)')
+      IF (IFRP .GT. NFSYM)
+     &   CALL QUIT('illegal fermion symmetry in GETIOPEN')
 C
       IF (IORBITAL .LE. NISH(IFRP)) THEN
          GETIOPEN = 0
@@ -4335,7 +4350,7 @@ C
          ILOW = IHIGH+1
       ENDIF
       END DO
-      CALL QUIT('illegal value in GETIOPEN(pos)')
+      CALL QUIT('illegal value in GETIOPEN (unoccupied orbital)')
       RETURN
       END
 

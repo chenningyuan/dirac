@@ -84,7 +84,7 @@
      &                NISH_BOS, NACSH_BOS
 
       INTEGER         LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS,   &
-     &                LUEVEC, LUCMOS, LUSMOS
+     &                LUEVEC, LUCMOS, LUSMOS, LUFCKT
       COMMON /DHFIOU/ LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS,   &
-     &                LUEVEC, LUCMOS, LUSMOS
+     &                LUEVEC, LUCMOS, LUSMOS, LUFCKT
 ! --- end of dcbdhf.h ---
