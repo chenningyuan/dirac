@@ -4239,7 +4239,7 @@ C
        luhm=95
        open(luhm,file=trim(hfile_name),access="sequential",
      &      form="formatted",status="unknown")
-        write(luhm,*) NBO,NBO
+        write(luhm,*) NBO,1 ! this is pure real matrix (NZ=1)
         ic=0
         do ii=1,NBO
         do jj=1,NBO
