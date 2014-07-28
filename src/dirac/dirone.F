@@ -5883,11 +5883,17 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
+      LOGICAL :: DOJACO_SAVE
 
       CALL QENTER('LINSYM')
 
 #include "memint.h"
 C
+
+!     mi: set up diagonalization
+      DOJACO_SAVE = DOJACO
+      DOJACO = .TRUE.
+
 !     iprham_save = iprham
 !     iprham      = 15
       CALL HEADER('Output from LINSYM',-1)
@@ -5999,7 +6005,7 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6035,7 +6041,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6054,7 +6060,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6089,7 +6095,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6210,7 +6216,7 @@ C
           call writt(13,NL**2,WORK(KVLL))
         end if
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6231,7 +6237,7 @@ C
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6297,6 +6303,9 @@ C
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
+
+!     mi: restore the diagonalization scheme
+      DOJACO = DOJACO_SAVE
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
