@@ -6569,9 +6569,9 @@ C
        character(*), intent(in) :: alloc_label
        integer, intent(in) :: istat
        if (istat /= 0) then
-         write(LUPRI,*) 'Error in allocation, variable :',alloc_label
+         write(LUPRI,*) 'Error in (de)allocation, variable :',
+     &                   alloc_label
          write(LUPRI,*) 'istat=',istat
          call quit('error in F90 dynamic allocation !')
        endif
       End Subroutine alloc_stat_check
-
