@@ -101,11 +101,12 @@ contains
    implicit none
 #include "priunit.h"
    integer :: ierr, MATZ, LLWORK, KLWORK, LILWORK
+   integer :: i
    integer :: IL, INFO, IU, LDA, LDZ, LIWORK, LWORK, M, LRA, LRV
    character*1 :: JOBZ, RANGE, UPLO
    real*8 :: ABSTOL, VL, VU
-   integer, allocatable :: ISUPPZ( : ), IWORK( : )
-   real*8, allocatable ::  W( : ), WORK( : ), Z( :,: ), EIG(:),VEC(:,:)
+   integer, allocatable :: ISUPPZ(:), IWORK(:)
+   real*8, allocatable ::  WORK(:), EIG(:),VEC(:,:)
    real*8 :: DDUM, WORKDUM
    integer :: IWORKDUM,IDUM
    real*8, parameter :: D0=0.0D0
@@ -123,36 +124,45 @@ contains
      CALL QUIT('QDIAG: Illegal value of MATZ !')
    ENDIF
 
-   allocate(EIG(N), stat=ierr)
-   call alloc_stat_check("test_lapack_dsyerv EIG(N)",ierr)
+   allocate(EIG(N),VEC(N,N), stat=ierr)
+   call alloc_stat_check("test_lapack_dsyerv EIG(N),VEC(N,N)",ierr)
     
    ! 1.call to determine size 
-   IERR =  -1 ! on input: calculate temporary storage
+   IERR =  0 
+   ! FYI: LLWORK=-1; LIWORK=-1 on input means calculate temporary storage
    M = N ; LRA = N ;LRV = N
    CALL DSYEVR(JOBZ,'A','U',N,Ar,LRA,DDUM,DDUM,IDUM,IDUM,ABSTOL,  & 
                M,EIG,VEC,LRV,IDUM,EIG,-1,IWORKDUM,-1,IERR)
-   LLWORK = NINT(EIG(1))
-   LILWORK = IWORKDUM
 
-   allocate(WORK(KLWORK), stat=ierr)
+   LLWORK = NINT(EIG(1))
+   LILWORK = IWORKDUM 
+
+   !write(LUPRI,*) "LLWORK=",LLWORK
+   allocate(WORK(LLWORK), stat=ierr)
    call alloc_stat_check("test_lapack_dsyerv WORK(KLWORK)",ierr)
 
+   !write(LUPRI,*) "LLILWORK=",LILWORK
    allocate(IWORK(LILWORK), stat=ierr)
    call alloc_stat_check("test_lapack_dsyerv IWORK(LILWORK)",ierr)
 
-   allocate(W(N),Z(N,N), stat=ierr)
-   call alloc_stat_check("test_lapack_dsyerv W,Z",ierr)
+   !print *,"N=",N," 2*N=",(2*N)
+   allocate(ISUPPZ(2*N),stat=ierr)
+   call alloc_stat_check("test_lapack_dsyerv ISUPPZ",ierr)
 
-   allocate(ISUPPZ(2*N),IWORK(N), stat=ierr)
-   call alloc_stat_check("test_lapack_dsyerv ISUPPZ, IWORK",ierr)
+   IERR = 0
+   CALL DSYEVR(JOBZ,'A','U',N,Ar,LRA,DDUM,DDUM,IDUM,IDUM,ABSTOL,  &
+               M,EIG,VEC,LRV,ISUPPZ,WORK,LLWORK,IWORK,LILWORK,IERR)     
+   if (IERR /= 0) then
+     print *,'The lapack_dsyerv routine ended with error ! ierr=',ierr
+     !call quit('RS routine ended with error !')
+   endif
 
-   CALL DSYEVR( JOBZ, RANGE, UPLO, N, Ar, LDA, VL, VU, IL, IU,   & 
-                ABSTOL, M, W, Z, LDZ, ISUPPZ, WORK, LWORK,      & 
-                IWORK, LIWORK, INFO )
-    if (INFO /= 0) then
-      print *,'The lapack_dsyerv routine ended with error ! INFO=',INFO
-      !call quit('RS routine ended with error !')
-    endif
+  ! ... print out eigenvalues
+   print *,"LAPACK DSYEVR eigenvalues:"
+   do i=1,N
+     print *,i,EIG(i)
+   enddo
+   deallocate(WORK,IWORK,EIG,VEC,ISUPPZ,stat=ierr)
 
   end subroutine test_lapack_dsyevr
 
