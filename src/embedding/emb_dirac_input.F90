@@ -125,6 +125,9 @@ module fde_input_dirac
 ! doprp is part of dcbgen.h
                doprp = .true.
 
+            CASE ('.OUTFMT')
+               read(lucmd,*) etmp%ex_format
+
             CASE ('.EXONLY')
                read(lucmd,*) ftmp%export%name
                dirac_cfg_fde_export = .true.
