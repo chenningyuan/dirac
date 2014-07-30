@@ -5883,7 +5883,8 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
-      LOGICAL :: DOJACO_SAVE
+      LOGICAL :: DOJACO_SAVE, WRITE_Jz_MATRIX
+      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('LINSYM')
 
@@ -5891,8 +5892,8 @@ C
 C
 
 !     mi: set up diagonalization
-      DOJACO_SAVE = DOJACO
-      DOJACO = .TRUE.
+!     DOJACO_SAVE = DOJACO
+!     DOJACO = .TRUE.
 
 !     iprham_save = iprham
 !     iprham      = 15
@@ -5971,6 +5972,11 @@ C
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
+
+!     miro, July 2014 - option to print out J_z matroces for
+!     diagonalization
+      WRITE_Jz_MATRIX = .TRUE.
+
 C
       IOFT = 1
       DO 20 I = 1,NFSYM
@@ -6012,6 +6018,27 @@ C
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
+          ENDIF
+
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A8,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_LL_matrix.","fermirp=",I,"-",NFSYM
+             print *,trim(hfile_name)
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NL
+               do jj=1,NL
+                 write(luhm,*) ii,jj,WORK(KFLL+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
           ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -6068,9 +6095,34 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A8,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_SS_matrix.","fermirp=",I,"-",NFSYM
+             print *,trim(hfile_name)
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NS
+               do jj=1,NS
+                 write(luhm,*) ii,jj,WORK(KFSS+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
+          ENDIF
+
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
+!     mi: set up diagonalization
+      DOJACO_SAVE = DOJACO
+      DOJACO = .TRUE.
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
@@ -6095,6 +6147,9 @@ C
             ENDDO
           ENDIF
 #endif
+          ! mi: restore keyword
+          DOJACO = DOJACO_SAVE
+
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6305,7 +6360,7 @@ C
    30 CONTINUE
 
 !     mi: restore the diagonalization scheme
-      DOJACO = DOJACO_SAVE
+!     DOJACO = DOJACO_SAVE
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
