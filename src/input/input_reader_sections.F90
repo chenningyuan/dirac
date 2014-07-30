@@ -61,6 +61,9 @@
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
 
+        case ('**DIAG ')  ! Miro's standalone program
+           call read_input_diagonalization_tests(word, kw_section)
+
         case default
 !          activate as soon as everything is merged to here
 !          call quit('section '//kw_section//' not recognized')
