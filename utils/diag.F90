@@ -17,6 +17,7 @@
 
 module time
 
+  implicit none
   character*10 start_date, end_date ! format of date: "dd_mmm_yy "
   character*8  start_time, end_time ! format of time: "hh:mm:ss"
 
@@ -27,15 +28,40 @@ module  diagmod
   integer :: lu=12
   real*8, allocatable :: Ar(:,:), ASr(:,:),Ai(:,:),ASi(:,:),  & 
                          Aj(:,:),ASj(:,:), Ak(:,:), ASk(:,:)
-  character*7 :: matrixfile="hmatrix"
 
+  character*21 :: inpfile="DIAGONALIZE_TESTS.INP"
+
+  character*50 :: title_text
+  character*50 :: matrix_file_name
+
+  logical :: do_dsyevr = .false.
+  logical :: do_rs = .false.
+  logical :: do_rsjaco = .false.
+  logical :: do_qjaco = .false.
+  logical :: do_eigv_check = .false.
+  
 contains
+
+  subroutine read_input_file
+! reads the text input file "DIAGONALIZE_TESTS.INP"
+  implicit none
+#include "priunit.h"
+    logical :: input_found
+
+    print *,"inpfile=",inpfile
+    call read_menu_input(inpfile, lucmd, 'ALL', input_found)
+    print *,'input_found=',input_found
+ 
+    !call quit('read_input_file')
+    ! stop "end in read_input_file"
+  end  subroutine read_input_file
+
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
     integer :: i,j, ii,jj
    
-    open (lu,file=matrixfile, access="sequential", status="old")  
+    open (lu,file=trim(matrix_file_name), access="sequential", status="old")  
     read(lu,*) N,NZ
     print *,'read N=',N,' NZ=',NZ
 
@@ -162,6 +188,9 @@ contains
    do i=1,N
      print *,i,EIG(i)
    enddo
+
+   if (do_eigv_check) call eigv_check(EIG,VEC,'LAPACK DSYEVR')
+
    deallocate(WORK,IWORK,EIG,VEC,ISUPPZ,stat=ierr)
 
   end subroutine test_lapack_dsyevr
@@ -179,9 +208,15 @@ contains
   ! tests DIRAC's Houeholder for real, complex and quaternion Hermitian matrices
   end subroutine test_dirac_householder
 
+  subroutine test_PSB_householder
+  ! tests Pauls Bagus own Houeholder routine for real symmetric matrices
+  end subroutine test_PSB_householder
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   subroutine test_dirac_rs
 ! tests DIRAC's EISPACK routine RS real Hermitian matrix
+#include "priunit.h"
     real*8, allocatable :: eigval(:),eigvect(:,:),temp1(:),temp2(:)
     integer :: ierr,i
 
@@ -201,6 +236,9 @@ contains
     do i=1,N
       print *,i,eigval(i)
     enddo
+
+    if (do_eigv_check) call eigv_check(eigval,eigvect,'EISPACK RS')
+
     deallocate(eigval,eigvect,temp1,temp2,stat=ierr)
   end subroutine test_dirac_rs
 
@@ -208,22 +246,136 @@ contains
 ! tests DIRAC's EISPACK routine CH for complex Hermitian matrix
   end subroutine test_dirac_ch
 
+  subroutine eigv_check(eigval,eigvect,routine_name)
+  !-----------------------------------------------------------------------------------
+  !
+  ! do the diagonalization check using original Hermitian matrix, eigenvalues and
+  ! eigenvectors
+  ! 
+  !           eigvect^+ * AS * eigvect - eigval  = 0
+  !
+  !-----------------------------------------------------------------------------------
+   implicit none
+#include "priunit.h"
+    real*8, intent(in) :: eigval(N),eigvect(N,N)
+    character(*), intent(in) :: routine_name
+    real*8, allocatable :: AXr(:,:),C(:,:)
+    integer :: i,j, ierr, iprint
+    real*8 :: C_norm_diag, C_norm_offdiag
+    integer(kind=8) :: maxsize = -1
+    
+    allocate( AXr(N,N), C(N,N), stat=ierr )
+    call alloc_stat_check("alloc AXr(N,N), C(N,N)",ierr)
+ 
+   ! write(LUPRI,*) 'Eigenvectors matrix:'
+   ! call prqmat(eigvect,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
+
+   ! Do  eigvect^{+)*ASr = AXr
+    call dgemm('T','N',N,N,N,1.0d0,eigvect,N,ASr,N,0.0d0,AXr,N)
+   ! Do  AXr * eigvect = C
+    call dgemm('N','N',N,N,N,1.0d0,AXr,N,eigvect,N,0.0d0,C,N)
+
+
+    ! substract eigenvalues ...
+    C_norm_diag = 0.0d0
+    do i=1,N
+      C(i,i) = C(i,i) -eigval(i)
+      C_norm_diag = C_norm_diag + DABS(C(i,i))
+    enddo
+    C_norm_diag = C_norm_diag/DFLOAT(N)
+
+    C_norm_offdiag = 0.0d0
+    do i = 1, N
+    do j = 1, N
+     if (i /= j) then
+       C_norm_offdiag = C_norm_offdiag + DABS(C(i,j))
+     endif
+    enddo
+    enddo
+    C_norm_offdiag = C_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
+
+    write(LUPRI,"(2X,A)") "Checking average differences U^{+}*A*U - eps =  0 = C"
+    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "C_norm_diag:",C_norm_diag,"C_norm_offdiag:",C_norm_offdiag
+
+    deallocate( AXr, C, stat=ierr )
+    call alloc_stat_check("dealloc AXr(N,N), C(N,N)",ierr)
+
+  end subroutine eigv_check
+
 end module diagmod
 
 
 Program Test_DIRAC_Diagonalization_Routines
   use diagmod
+#include "priunit.h"
  
-  print *, "Welcome to the testing program for DIRAC's diagonalization routines !"
+   write(LUPRI,'(2x,a)') "Welcome to the testing program for DIRAC's diagonalization routines !"
+
+  call DBLGRP
+
+  call read_input_file
 
   call read_matrix
 
-  call test_dirac_rs
-  call test_lapack_dsyevr
+  if (do_rs)      call test_dirac_rs
+  if (do_dsyevr)  call test_lapack_dsyevr
   
 
 End Program Test_DIRAC_Diagonalization_Routines
 
+ ! reading subroutine
+     subroutine read_input_diagonalization_tests(word, kw_section)
+      use input_reader
+      use diagmod
+      implicit none
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      call reset_available_kw_list()
 
+   !  if (kw_matches(word, '.RADINT')) then
+   !     call kw_read(word, num_grid_cfg_radint)
+   !  end if
 
+     if (kw_matches(word, '.TITLE ')) then
+       ! read(get_file_unit(),'(a)') title_text
+         call kw_read(word, title_text)
+        print *,'title_text=',title_text
+     end if
+
+     if (kw_matches(word, '.MTXFIL')) then
+        !read(get_file_unit(),'(a)') matrix_file_name
+         call kw_read(word, matrix_file_name)
+        print *,'matrix_file_name=',matrix_file_name
+     end if
+
+     if (kw_matches(word, '.DSYEVR')) then
+        do_dsyevr = .true.
+        print *,'doing dsyevr !'
+     end if
+
+     if (kw_matches(word, '.RS    ')) then
+        do_rs = .true.
+        print *,'doing RS !'
+     end if
+
+     if (kw_matches(word, '.RSJACO')) then
+        do_rsjaco = .true.
+        print *,'doing RSJACO !'
+     end if
+
+     if (kw_matches(word, '.QJACO ')) then
+        do_qjaco = .true.
+        print *,'doing QJACO !'
+     end if
+
+     if (kw_matches(word, '.EIGVTS')) then
+        do_eigv_check = .true.
+        print *,'doing EIGVTST !'
+     end if
+
+     call check_whether_kw_found(word, kw_section)
+
+   end subroutine
 
