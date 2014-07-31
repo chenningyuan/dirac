@@ -6,6 +6,9 @@
 **DIAG
 .TITLE
 testing of various DIRAC diagonalization routines
+! print level 
+.PRINT
+0
 ! File name with the Hermitian matrix to be diagonalized
 .MTXFILE
 Jz_SS_matrix.fermirp=2-2

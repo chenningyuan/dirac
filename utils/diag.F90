@@ -24,7 +24,8 @@ module time
 end module time
 
 module  diagmod
-  integer :: N=0,NZ=0
+
+  integer :: N=0,NZ=0, print_level
   integer :: lu=12
   real*8, allocatable :: Ar(:,:), ASr(:,:),Ai(:,:),ASi(:,:),  & 
                          Aj(:,:),ASj(:,:), Ak(:,:), ASk(:,:)
@@ -180,16 +181,17 @@ contains
                M,EIG,VEC,LRV,ISUPPZ,WORK,LLWORK,IWORK,LILWORK,IERR)     
    if (IERR /= 0) then
      print *,'The lapack_dsyerv routine ended with error ! ierr=',ierr
-     !call quit('RS routine ended with error !')
    endif
 
   ! ... print out eigenvalues
-   print *,"LAPACK DSYEVR eigenvalues:"
-   do i=1,N
-     print *,i,EIG(i)
-   enddo
+  if (print_level >= 2) then
+     print *,"LAPACK DSYEVR eigenvalues:"
+     do i=1,N
+       print *,i,EIG(i)
+     enddo
+   endif
 
-   if (do_eigv_check) call eigv_check(EIG,VEC,'LAPACK DSYEVR')
+   if (do_eigv_check) call eigv_check(EIG,VEC,'**** LAPACK DSYEVR ****')
 
    deallocate(WORK,IWORK,EIG,VEC,ISUPPZ,stat=ierr)
 
@@ -232,12 +234,14 @@ contains
       !call quit('RS routine ended with error !')
     endif
 ! ... print out eigenvalues
-    print *,"Eispack's RS eigenvalues:"
-    do i=1,N
-      print *,i,eigval(i)
-    enddo
+    if (print_level >= 2) then
+      print *,"Eispack's RS eigenvalues:"
+      do i=1,N
+        print *,i,eigval(i)
+      enddo
+    endif
 
-    if (do_eigv_check) call eigv_check(eigval,eigvect,'EISPACK RS')
+    if (do_eigv_check) call eigv_check(eigval,eigvect,'**** EISPACK RS ****')
 
     deallocate(eigval,eigvect,temp1,temp2,stat=ierr)
   end subroutine test_dirac_rs
@@ -249,56 +253,91 @@ contains
   subroutine eigv_check(eigval,eigvect,routine_name)
   !-----------------------------------------------------------------------------------
   !
-  ! do the diagonalization check using original Hermitian matrix, eigenvalues and
+  ! Do the diagonalization checks using original Hermitian matrix, eigenvalues and
   ! eigenvectors
   ! 
   !           eigvect^+ * AS * eigvect - eigval  = 0
   !
+  !           eigvect^+ * eigvect = I
+  !
+  !           eigvect * eigvect^+ = I
+  !
   !-----------------------------------------------------------------------------------
    implicit none
 #include "priunit.h"
+#include "dgroup.h"
     real*8, intent(in) :: eigval(N),eigvect(N,N)
     character(*), intent(in) :: routine_name
-    real*8, allocatable :: AXr(:,:),C(:,:)
+    real*8, allocatable :: AXr(:,:),AYr(:,:),C(:,:)
     integer :: i,j, ierr, iprint
     real*8 :: C_norm_diag, C_norm_offdiag
+    real*8 :: AXr_norm_diag, AXr_norm_offdiag
+    real*8 :: AYr_norm_diag, AYr_norm_offdiag
     integer(kind=8) :: maxsize = -1
     
-    allocate( AXr(N,N), C(N,N), stat=ierr )
-    call alloc_stat_check("alloc AXr(N,N), C(N,N)",ierr)
+    allocate( AXr(N,N),AYr(N,N),C(N,N),stat=ierr )
+    call alloc_stat_check("alloc AXr(N,N),AYr(N,N),C(N,N)",ierr)
  
    ! write(LUPRI,*) 'Eigenvectors matrix:'
    ! call prqmat(eigvect,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
 
    ! Do  eigvect^{+)*ASr = AXr
     call dgemm('T','N',N,N,N,1.0d0,eigvect,N,ASr,N,0.0d0,AXr,N)
+
    ! Do  AXr * eigvect = C
     call dgemm('N','N',N,N,N,1.0d0,AXr,N,eigvect,N,0.0d0,C,N)
 
+   ! Another check:  eigvect^{+)*eigvect = I = AXr
+    call dgemm('T','N',N,N,N,1.0d0,eigvect,N,eigvect,N,0.0d0,AXr,N)
+    if (print_level>=1) then
+      write(LUPRI,*) "Printout of eigvect^{+)*eigvect =? I "
+      call prqmat(AXr,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
+    endif
+
+   ! Another check:  eigvect*eigvect^{+} = I = AYr
+    call dgemm('N','T',N,N,N,1.0d0,eigvect,N,eigvect,N,0.0d0,AYr,N)
+    if (print_level>=1) then
+      write(LUPRI,*) "Printout of eigvect*eigvect^{+} =? I "
+      call prqmat(AYr,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
+    endif
 
     ! substract eigenvalues ...
-    C_norm_diag = 0.0d0
+    C_norm_diag = 0.0d0; AXr_norm_diag = 0.0d0; AYr_norm_diag = 0.0d0
     do i=1,N
-      C(i,i) = C(i,i) -eigval(i)
+      C(i,i) = C(i,i) -eigval(i); 
+      AXr(i,i)=AXr(i,i)-1.0d0; AYr(i,i)=AYr(i,i)-1.0d0
       C_norm_diag = C_norm_diag + DABS(C(i,i))
+      AXr_norm_diag = AXr_norm_diag  + DABS(AXr(i,i))
+      AYr_norm_diag = AYr_norm_diag  + DABS(AYr(i,i))
     enddo
-    C_norm_diag = C_norm_diag/DFLOAT(N)
+    C_norm_diag   = C_norm_diag/DFLOAT(N)
+    AXr_norm_diag = AXr_norm_diag/DFLOAT(N)
+    AYr_norm_diag = AYr_norm_diag/DFLOAT(N)
 
-    C_norm_offdiag = 0.0d0
+    C_norm_offdiag = 0.0d0; AXr_norm_offdiag = 0.0d0;  AYr_norm_offdiag = 0.0d0
     do i = 1, N
     do j = 1, N
      if (i /= j) then
        C_norm_offdiag = C_norm_offdiag + DABS(C(i,j))
+       AXr_norm_offdiag = AXr_norm_offdiag + DABS(AXr(i,j))
+       AYr_norm_offdiag = AYr_norm_offdiag + DABS(AYr(i,j))
      endif
     enddo
     enddo
     C_norm_offdiag = C_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
+    AXr_norm_offdiag = AXr_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
+    AYr_norm_offdiag = AYr_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
 
+    write(LUPRI,"(2X,A)") routine_name
     write(LUPRI,"(2X,A)") "Checking average differences U^{+}*A*U - eps =  0 = C"
     write(LUPRI,"(A,D10.4,2X,A,D10.4)") "C_norm_diag:",C_norm_diag,"C_norm_offdiag:",C_norm_offdiag
+    write(LUPRI,"(2X,A)") "Checking average differences U^{+}*U -I =  0 = AXr"
+    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "AXr_norm_diag:",AXr_norm_diag,"AXr_norm_offdiag:",AXr_norm_offdiag
+    write(LUPRI,"(2X,A)") "Checking average differences U*U^{+} -I =  0 = AYr"
+    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "AYr_norm_diag:",AYr_norm_diag,"AYr_norm_offdiag:",AYr_norm_offdiag
 
-    deallocate( AXr, C, stat=ierr )
-    call alloc_stat_check("dealloc AXr(N,N), C(N,N)",ierr)
+    deallocate( AXr, AYr, C, stat=ierr )
+    call alloc_stat_check("dealloc AXr(N,N), AYr(N,N) C(N,N)",ierr)
 
   end subroutine eigv_check
 
@@ -344,8 +383,12 @@ End Program Test_DIRAC_Diagonalization_Routines
         print *,'title_text=',title_text
      end if
 
+     if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_level)
+        print *,'print_level=',print_level
+     end if
+
      if (kw_matches(word, '.MTXFIL')) then
-        !read(get_file_unit(),'(a)') matrix_file_name
          call kw_read(word, matrix_file_name)
         print *,'matrix_file_name=',matrix_file_name
      end if
