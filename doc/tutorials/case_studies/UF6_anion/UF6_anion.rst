@@ -1,5 +1,5 @@
 ========================
-The UF:math:`_6` anion
+The :math:`UF_6` anion
 ========================
 
 The problem
