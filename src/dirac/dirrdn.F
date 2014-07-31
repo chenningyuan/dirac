@@ -952,7 +952,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.OPENFA','xxxxxxx','.XXXXXX',
+     &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -997,6 +997,7 @@ C     initial molecular orbitals:
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
       BNCRON    = .TRUE.
+      force_bnc = .false.
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  ! in dcbgen.h   -- TODO temporary disable HUCKEL
 !     DOHUCKEL  = .TRUE.  ! in dcbgen.h
@@ -1141,7 +1142,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53), I
+     &                     51,52,53,54), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1690,6 +1691,9 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
                   READ(LUCMD,*) OPEN_FAC
                GOTO 100
  54            CONTINUE
+C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
+C    PBS+MI/Aug2014
+               force_bnc = .true.
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1960,13 +1964,18 @@ C
       IF (BNCRON) THEN
          WRITE (LUPRI,'(A)')
      &      ' * Bare nucleus screening correction used for start guess'
+!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
+!        bncron variable w/o checking value of molecular charge
+         if (force_bnc) write (lupri,'(5x,a)')
+     1   'the bare nuclear correction used independently of '//
+     2   'the system charge'
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
          CALL RMOLCHR(ICHRG)
          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10) THEN
+         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
