@@ -1,0 +1,47 @@
+**DIRAC   
+.TITLE   
+UF6 ECP Test With Kirk Peterson U-O distance  
+.WAVE F  
+.ANALYZE 
+**GENERAL 
+.ACMOUT   
+**ANALYZE 
+.MULPOP 
+*MULPOP 
+.VECPOP  
+ 1..40   
+ 1..40 
+**HAMILTONIAN 
+.ECP 
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+.PRINT                                                                                              
+    1                                                                                               
+**WAVE FUNCTIONS    
+.SCF  
+*SCF                                    
+.CLOSED                                                                                             
+ 44 42                                                                                              
+.OPEN S                                                                                             
+ 1                                                                                                  
+ 1/0, 14                                                                                            
+!.MXDIIS    ! -- did not help at all (compared to default .MXDIIS 10)                               
+! 20                                                                                                
+!.ITRINT                                                                                            
+! 0 0                                                                                               
+.PRINT                                                                                              
+ 2                                                                                                  
+.MAXITR                                                                                             
+   50                                                                                               
+.LSHIFT    
+ +1.0 
+.DAMPFC 
+ +0.9 
+!.OLEVEL                                                                                            
+! -0.2                                                                                              
+.EVCCNV 
+ 5.d-8 1.d-7 
+!.OPENFAC      ! mi: try without  
+!  0.0D0 
+**END OF DIRAC INPUT
