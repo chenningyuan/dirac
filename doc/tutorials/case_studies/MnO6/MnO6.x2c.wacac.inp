@@ -23,7 +23,6 @@ MnO6 Cluster with old UW PCs Bare Start
 .OPEN SHELL
 1
 5/10, 0
-!.NOACAC
 !.BNC_FORCE
 .INTFLG
 1 1 0
@@ -35,6 +34,9 @@ MnO6 Cluster with old UW PCs Bare Start
  0 0
 !.CNVINT
 !0.001 0.000001
+! keep the default value ...
+.OPENFAC
+ 1.00
 *RESOLVE
 .SCHEME
  4
@@ -46,5 +48,5 @@ MnO6 Cluster with old UW PCs Bare Start
  1
 *END OF
 
- &GOSCIP IPRNT=5, nras=1, ndprod=1, nelep=5, nshlp=10, &end 
+ &GOSCIP IPRNT=5 &end 
  &POPAN  SELPOP=0.000 &end
