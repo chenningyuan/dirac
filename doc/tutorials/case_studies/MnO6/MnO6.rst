@@ -8,7 +8,8 @@ In the following we show how one can get converged molecular spinors.
 We take into account two parameters for controling the convergence -
 the OPENFAC and OLEVEL.
 
-The noAcAc abbreviations means OPENFAC=0, what is no active-active interation.
+The noAcAc abbreviations means OPENFAC=0, what is no active-active interation among open-shell
+spinors,
 
 The wAcAc means OPENFAC=1, that is full  active-active interation (or full open-shell contribution 
 to the Fock matrix).
