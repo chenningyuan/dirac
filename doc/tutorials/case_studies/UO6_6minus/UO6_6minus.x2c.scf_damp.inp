@@ -27,15 +27,16 @@ UO6(6-) Fully uncontracted DHF calculation
 .CLOSED
  72 74
 .MAXITR
-   80
+ 200 
+.NODIIS
+.DAMPFC
+0.90
 !.CNVINT
 !  0.00001 0.0000001
 .ITRINT
   0 0
 .FCKCNV
 1.0D-8  5.0D-8
-.INTFLG
-1 1 0
 **ANALYZE
 .MULPOP
 *MULPOP
