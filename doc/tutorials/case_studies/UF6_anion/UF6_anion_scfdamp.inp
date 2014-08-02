@@ -19,29 +19,30 @@ UF6 ECP Test With Kirk Peterson U-O distance
 .PRINT                                                                                              
     1                                                                                               
 **WAVE FUNCTIONS    
-.SCF  
-*SCF                                    
-.CLOSED                                                                                             
- 44 42                                                                                              
-.OPEN S                                                                                             
- 1                                                                                                  
- 1/0, 14                                                                                            
-!.MXDIIS    ! -- did not help at all (compared to default .MXDIIS 10)                               
-! 20                                                                                                
-!.ITRINT                                                                                            
-! 0 0                                                                                               
-.PRINT                                                                                              
- 2                                                                                                  
-.MAXITR                                                                                             
-   50                                                                                               
-.LSHIFT    
- +1.0 
-.DAMPFC 
- +0.9 
-!.OLEVEL                                                                                            
-! -0.2                                                                                              
-.EVCCNV 
- 5.d-8 1.d-7 
-!.OPENFAC      ! mi: try without  
-!  0.0D0 
+.SCF 
+*SCF 
+.CLOSED 
+ 44 42  
+.OPEN SHELL
+ 1 
+ 1/0, 14  
+!.MXDIIS    ! -- did not help at all (compared to default .MXDIIS 10) 
+! 20 
+!.ITRINT  
+! 0 0 
+.PRINT 
+ 0 
+.MAXITR
+  300
+.LSHIFT
+ +1.0
+.NODIIS ! -- deactivate DIIS, keep only damping 
+.DAMPFC ! choose reasonable damping factor
+ +0.90
+!.OLEVEL
+! -0.2 
+.EVCCNV
+ 5.d-6 1.d-4
+.OPENFAC  ! --- deactive-active shells interaction
+  0.0D0 
 **END OF DIRAC INPUT

@@ -10,9 +10,12 @@ In the first step we follow the previous approach of starting from the closed-sh
 We also used a shift in virtual space to reduce mixing between occupied and virtual space.
 
 We compare two calculations starting from neutral molecular spinors of UF6. 
-One calculation uses the DIIS method and the other uses the damping with the damping factor of 0.70.
+One calculation uses the DIIS method and the other uses the damping with the damping factor of 0.90.
 
 The damping scheme uses more of the input Fock matrix that the output Fock matrix.
+
+Concerning the damping factor, the lower than 1, we shoudl get faster convergence. When it is getting too small,
+iterations diverge. The closer we are to the converged states, the smalle damping factor can be.
 
 With damping convergence speedup the calculation converges to 1,4 10^-8 after 50 iterations.
 On the other hand the DIIS iterations initially converge to about 5*10^-5 but tthen began to diverge
