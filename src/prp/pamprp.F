@@ -267,7 +267,7 @@ C
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_fde_export) then
 #ifdef MOD_XML
-         CALL TITLER('Output FDE data to XML file','*',118)
+         CALL TITLER('Output FDE data to file','*',118)
          call fde_export_to_file(wf)
 #endif
       END IF
