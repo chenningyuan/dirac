@@ -24,3 +24,11 @@ and after 150 iterations the error gradient of the Fock matrix is about 2.10^-5 
 %On the other hand if we began from the converged solutions from the damping, the DIIS iterations converge 
 %rapidly after 7 iterations to 8.10^-9
 
+TODO: automatic adjustement o the damping factor, suggestions for keyword
+.CNVDMP
+1.D-4 1.D-5 1.0D-6
+.DAMPDEL ! decrease level of damp. factor
+0.2
+
+
+

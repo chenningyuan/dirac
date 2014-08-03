@@ -26,8 +26,8 @@ SHELL
  1/0,14
 .OPENFAC  ! deactivate active-active shells interaction to get convergence
   0.0D0
-!LSHIFT ! enable convergence
-!+1.0
-.OVLSEL
-.NODYNSEL
+LSHIFT ! enable convergence
++1.0
+!.OVLSEL
+!.NODYNSEL
 *END OF

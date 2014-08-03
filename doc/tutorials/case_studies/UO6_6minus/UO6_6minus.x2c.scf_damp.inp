@@ -29,8 +29,10 @@ UO6(6-) Fully uncontracted DHF calculation
 .MAXITR
  200 
 .NODIIS
+! set up damping factor according to the status of convergence
+! based on previous MO coefficients
 .DAMPFC
-0.90
+dampfactor
 !.CNVINT
 !  0.00001 0.0000001
 .ITRINT
