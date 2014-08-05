@@ -31,7 +31,7 @@ UO6(5-) Fully uncontracted DHF calculation
  3/0,4
 .MAXITR
    300
-#.OVLSEL
+.OVLSEL
 .NODIIS
 .DAMPFC
  dampfactor
