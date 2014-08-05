@@ -1,24 +1,36 @@
-====
-MnO6 
-====
+========================
+The :math:`MnO_6` system
+========================
 
-The MnO6 compound is good example of the oxide crystal structure.
+The :math:`MnO_6` compound is good example of the oxide crystal structure.
 
 In the following we show how one can get converged molecular spinors (or molecular orbitals).
 We take into account two parameters for controling the SCF convergence -
-the OPENFAC and OLEVEL.
+the :ref:`.OPENFACTOR` and the :ref:`.OLEVEL` keywords.
 
-The noAcAc abbreviation ("no active-active") means OPENFAC=0, what is no active-active interation among open-shell
-spinors.
-
-The wAcAc ("with active-active") means OPENFAC=1, that is full active-active interation (or full open-shell contribution 
+Here the noAcAc abbreviation ("no active-active") means value of OPENFAC=0, what is no active-active interation among open-shell
+spinors. The wAcAc ("with active-active") means OPENFAC=1, that is full active-active interation (or full open-shell contribution
 to the Fock matrix).
 
-We investigated three cases
+For simplicity, we used the two-component Hamiltonian, keyword :ref:`.X2C`.
+
+The way to convergence
+======================
+
+With the aim to achieve the SCF convergence we investigated these three ways:
 
 1. Starting from noAcAc we get the SCF convergence. We save the DFCOEF file with molecular spinors.
+Input files to download are :download:`MnO6.x2c.bare_noacac.inp` and :download:`MnO6.crystal.mol`: ::
 
-2. Using AcAc with molecular spinors (DFCOEF file) from the previous SCF run does not converge.
+ pam --inp=MnO6.x2c.bare_noacac.inp  --mol=MnO6.crystal.mol --get "DFCOEF=DFCOEF.MnO6.noAcAc"
 
-3. Using AcAc with OLEVEL=0.2 and with DFCOEF from point 1 does converge.
+2. Using AcAc with molecular spinors (the DFCOEF file) from the previous SCF run the :math:`MnO6` system does not converge.
+The new input file to download is :download:`MnO6.x2c.wacac.inp`:  ::
+
+ pam --inp=MnO6.x2c.wacac.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF"
+
+3. Using AcAc with the parameter of OLEVEL=0.2 and with the DFCOEF file from the point 1 we finally obtain the convergence.
+The new DIRAC input file to download is :download:`MnO6.x2c.wacac_olvlshift.inp`:  ::
+
+ pam --inp=MnO6.x2c.wacac_olvlshift.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"
 
