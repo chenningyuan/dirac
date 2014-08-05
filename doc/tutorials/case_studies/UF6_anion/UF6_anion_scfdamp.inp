@@ -4,7 +4,6 @@ UF6 ECP Test With Kirk Peterson U-O distance
 .WAVE F  
 .ANALYZE 
 **GENERAL 
-.ACMOUT   
 **ANALYZE 
 .MULPOP 
 *MULPOP 
@@ -33,16 +32,16 @@ UF6 ECP Test With Kirk Peterson U-O distance
 .PRINT 
  0 
 .MAXITR
-  300
+  100
 .LSHIFT
  +1.0
 .NODIIS ! -- deactivate DIIS, keep only damping 
 .DAMPFC ! choose reasonable damping factor
- +0.90
+ dampfactor
 !.OLEVEL
 ! -0.2 
 .EVCCNV
- 5.d-6 1.d-4
+ 5.d-6 1.d-6
 .OPENFAC  ! --- deactive-active shells interaction
   0.0D0 
 **END OF DIRAC INPUT
