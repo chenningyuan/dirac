@@ -26,15 +26,15 @@ SHELL
  1/0,14
 .NODIIS
 .DAMPFC
-0.50
+dampfactor
 .MAXITR
-100
+150
 .OPENFAC  !  active-active shells interaction 
   1.0D0
 .EVCCNV
 1.0D-9 1.0D-7
 .LSHIFT ! enable convergence
 +1.0
-#.OVLSEL
-#.NODYNSEL
+.OVLSEL
+.NODYNSEL
 *END OF
