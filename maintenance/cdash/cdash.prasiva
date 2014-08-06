@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# the directory where your DIRAC sits #
+DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
+cd $DIRAC
+
+export DIRTIMEOUT="14m"
+export MKL_NUM_THREADS=4
+export MKL_DYNAMIC="FALSE"
+
+BUILD=build_intelmkl_i8_test
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+# configure step
+./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
+cd $BUILD
+ctest -D Experimental
+
+exit 0
