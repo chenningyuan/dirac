@@ -1,8 +1,19 @@
 #!/bin/bash
 
+# set the environment !
+export PATH=/opt/intel/Compiler/11.0/084/bin/intel64:/prasiva/ilias/bin/cmake_install/cmake-3.0.0/bin:$PATH
+
+echo -e "\nPATH=\c $PATH"
+echo -e "\ncmake=\c";  which cmake
+echo -e "\nifort=\c";  which ifort
+echo -e "\nhostname=\c"; hostname
+set
+
 # the directory where your DIRAC sits #
-DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
+DIRAC=/prasiva/ilias/work/qch/software/dirac/trunk
 cd $DIRAC
+
+echo "\nlocation; PWD=$PWD"
 
 export DIRTIMEOUT="14m"
 export MKL_NUM_THREADS=4
@@ -16,6 +27,6 @@ fi
 # configure step
 ./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
 cd $BUILD
-ctest -D Experimental
+ctest -VV  -D Experimental
 
 exit 0
