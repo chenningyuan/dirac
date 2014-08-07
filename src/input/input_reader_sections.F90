@@ -1689,3 +1689,65 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+
+ ! reading subroutine for the standalone testing program of diagonalization
+ ! routines (miro ilias)
+     subroutine read_input_diagonalization_tests(word, kw_section)
+      use input_reader
+      use diagmod
+      implicit none
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      call reset_available_kw_list()
+
+   !  if (kw_matches(word, '.RADINT')) then
+   !     call kw_read(word, num_grid_cfg_radint)
+   !  end if
+
+     if (kw_matches(word, '.TITLE ')) then
+       ! read(get_file_unit(),'(a)') title_text
+         call kw_read(word, title_text)
+        print *,'title_text=',title_text
+     end if
+
+     if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_level)
+        print *,'print_level=',print_level
+     end if
+
+     if (kw_matches(word, '.MTXFIL')) then
+         call kw_read(word, matrix_file_name)
+        print *,'matrix_file_name=',matrix_file_name
+     end if
+
+     if (kw_matches(word, '.DSYEVR')) then
+        do_dsyevr = .true.
+        print *,'doing dsyevr !'
+     end if
+
+     if (kw_matches(word, '.RS    ')) then
+        do_rs = .true.
+        print *,'doing RS !'
+     end if
+
+     if (kw_matches(word, '.RSJACO')) then
+        do_rsjaco = .true.
+        print *,'doing RSJACO !'
+     end if
+
+     if (kw_matches(word, '.QJACO ')) then
+        do_qjaco = .true.
+        print *,'doing QJACO !'
+     end if
+
+     if (kw_matches(word, '.EIGVTS')) then
+        do_eigv_check = .true.
+        print *,'doing EIGVTST !'
+     end if
+
+     call check_whether_kw_found(word, kw_section)
+
+   end subroutine
