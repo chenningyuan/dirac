@@ -25,7 +25,8 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 # configure step
-export MATH_ROOT=/opt/intel/mkl/10.0.1.014
+#export MATH_ROOT=/opt/intel/mkl/10.0.1.014
+export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
 cd $BUILD
 ctest -VV  -D Experimental
