@@ -1033,6 +1033,11 @@ C
 C     Convergence control/acceleration
 C     ================================
 C
+!     Level shift, PSB+MI/Aug2014: move the level shift before calling the
+!     convergence acceleration because one needs the full matrix
+!     for the convergence accelerations
+      IF (DOLEV) CALL LEVSHI(FMO,FAO)
+
       IF(DOCCNV) THEN
         IF(DIISAO) THEN
           CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),
@@ -1059,11 +1064,6 @@ C        ... before extracting of EIG print the Fock matrix
        ENDIF
        GOTO 9999
       END IF
-C
-C     Level shift
-C     ===========
-C
-      IF (DOLEV) CALL LEVSHI(FMO,FAO)
 C
 C     Diagonalize Fock matrix
 C     =======================
