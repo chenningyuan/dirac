@@ -1728,6 +1728,12 @@
         print *,'doing dsyevr !'
      end if
 
+     if (kw_matches(word, '.ULF   ')) then
+        do_dsyevr_ulf = .true.
+        print *,'doing dsyevr of ulf !'
+     end if
+
+
      if (kw_matches(word, '.RS    ')) then
         do_rs = .true.
         print *,'doing RS !'

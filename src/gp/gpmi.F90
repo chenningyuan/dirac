@@ -4,6 +4,180 @@
 
 
 #ifdef MOD_UNRELEASED
+
+!> Program for testing (and improving) the quaternion matrix Jacobi (block) diagonalization procedure
+!> written by Miro ILIAS, Strasbourg,2005, improved in Tel Aviv, 2012, 
+!> Banska Bystrica, August 2014
+module qjacobi_mod
+      !> process also eigenvectors
+      LOGICAL :: DOEVE 
+      !> check the presence of the file with input data
+      LOGICAL::  ISFILE 
+      LOGICAL :: FROMFILE
+      real(kind=8), allocatable :: A(:,:,:),EV(:,:,:)
+      integer, allocatable :: IBL(:,:)
+      integer :: N,NZ,NBL,IPRINT
+      integer, parameter :: LUF=10
+      real*8, PARAMETER :: D0=0.0D0
+contains
+
+subroutine GET_N_NZ
+!> get in the basic variables:  N,NZ,NBL,IPRINT
+implicit none
+#include"priunit.h"
+      INQUIRE(FILE="matrix_input",EXIST=ISFILE)
+      IF (ISFILE) THEN
+         write(lupri,*) '...going to read the "matrix_input" file' 
+         open(luf,file="matrix_input",status="old")
+         read(luf,*)
+         read(luf,*) N,NZ
+         read(luf,*)
+         read(luf,*) IPRINT
+         read(luf,*)
+         read(luf,*) NBL
+      ELSE
+         write(lupri,*) 'No "matrix_input" file found, reading in from terminal.'
+         write(lupri,*) 'Enter the N>0,NZ=1,2 or 4 :'
+         read(*,*) N,NZ ! TODO: verify entering data
+         NBL = 0
+         write(lupri,*) 'Enter the NBL (zero for no blocks) :'
+         read(*,*) NBL
+         write(lupri,*) 'Enter IPRINT, print level :'
+         read(*,*) IPRINT
+      ENDIF
+end subroutine
+
+subroutine PREPMATRIX
+!> ... prepare the testing matrix - allocate
+implicit none
+#include"priunit.h"
+ integer :: I,J,IBL1,IBL2,IBL3,IBL4,I1,J1,IZ,istat
+ real(kind=8) :: AR, AI,AJ,AK
+      FROMFILE=.FALSE.
+      DOEVE = .TRUE.
+      IF (ISFILE) THEN
+         write(lupri,*) 'PRINT level=',IPRINT
+         write(lupri,*) 'Number of blocks=',NBL
+         IF (NBL.GT.0) THEN
+!         ... read the indexes of blocks
+          DO I = 1, NBL
+           read(luf,*) IBL1,IBL2,IBL3,IBL4
+              IBL(I,1) = IBL1
+              IBL(I,2) = IBL2 
+              IBL(I,3) = IBL3 
+              IBL(I,4) = IBL4
+           IF (IPRINT.GE.2) THEN
+            write(lupri,*) 'Read block coordinates:', & 
+            IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
+           ENDIF
+          ENDDO
+         ENDIF
+         read(luf,*)
+         read(luf,*) FROMFILE
+         read(luf,*)
+      ELSE
+         IF (NBL.GT.0) THEN
+          DO I=1,NBL
+            write(*,*) 'Enter ',I,'. block coordinates:'
+            read(*,*)  IBL(I,1),IBL(I,2),IBL(I,3),IBL(I,4)
+          ENDDO
+         ELSE
+           write(*,*) 'No blocks....full diagonalization'
+         ENDIF
+      ENDIF
+
+      DO I = 1, N
+      DO J = I, N
+          IF (FROMFILE) THEN
+            AI = D0
+            AJ = D0
+            AK = D0
+            IF (NZ.EQ.1) THEN
+             read(luf,*) I1,J1,AR
+            ELSE IF (NZ.EQ.2) THEN
+             read(luf,*) I1,J1,AR,AI
+            ELSE IF (NZ.EQ.4) THEN
+             read(luf,*) I1,J1,AR,AI,AJ,AK
+             If (IPRINT.GE.2) THEN
+              write(lupri,*) 'read i1,j1,ar,ai,aj,ak:',I1,J1,AR,AI,AJ,AK
+             EndIf
+            ENDIF
+            IF (I1.NE.I.OR.J1.NE.J) THEN
+             write(lupri,*) '   read I,J:',I1,J1
+             write(lupri,*) 'desired I,J:',I,J
+             CALL QUIT('...wrong indexes !')
+            ENDIF
+            IF (I1.EQ.J1) THEN
+             IF (AI.NE.D0.OR.AJ.NE.D0.OR.AK.NE.D0) THEN
+              write(lupri,*) 'I1,J1 --> AI,AJ,AK:',I1,J1,AI,AJ,AK
+              call QUIT('diagonal i,j,k elements must be zero !!!')
+             ENDIF
+            ENDIF
+          ELSE
+!          ... fill with random numbers
+           IF (I.NE.J) THEN
+            AR = RANDOMNUMBER(I,J)
+            AI = RANDOMNUMBER(I,J)
+            AJ = RANDOMNUMBER(I,J)
+            AK = RANDOMNUMBER(I,J)
+           ELSE
+            AR = RANDOMNUMBER(I,J)
+            AI = D0
+            AJ = D0
+            AK = D0
+           ENDIF
+          ENDIF
+
+!       ....now fill the whole matrix 
+          IF (NZ.EQ.1) THEN
+            A(I,J,1) = AR
+            A(J,I,1) = AR
+          ELSE IF (NZ.EQ.2) THEN
+            A(I,J,1) = AR
+            A(J,I,1) = AR
+            A(I,J,2) = AI
+            A(J,I,2) = -AI
+          ELSE IF (NZ.EQ.4) THEN
+            A(I,J,1) =  AR
+            A(J,I,1) =  AR
+            A(I,J,2) =  AI
+            A(J,I,2) = -AI
+            A(I,J,3) =  AJ
+            A(J,I,3) = -AJ
+            A(I,J,4) =  AK
+            A(J,I,4) = -AK
+            if (IPRINT.GE.10) then
+             write(lupri,*) 'A filled:', & 
+             I,J,':',A(I,J,1),A(I,J,2),A(I,J,3),A(I,J,4)
+            endif
+          ENDIF
+          IF (IPRINT.GE.3) THEN
+            write(lupri,'(a,i3,a,i3,a,4d12.5)')  & 
+           'random number in matrix element A(',I,';',J,')=',  & 
+           (A(I,J,IZ),IZ=1,NZ)
+          ENDIF
+      ENDDO 
+      ENDDO 
+      IF (ISFILE) CLOSE(LUF,STATUS='KEEP')
+end subroutine
+
+REAL*8 FUNCTION RANDOMNUMBER(I,J)
+!> Function used to generate pseudorandom numbers, also according to 
+!> entering indexes I,J
+! See also http://gcc.gnu.org/onlinedocs/gfortran/RAND.html
+implicit none
+#include"priunit.h"
+integer, intent(in) :: I,J
+integer (kind=4) :: rand_param=1
+real(kind=8), external :: RAND
+  !print *,'rand=',RAND(rand_param)
+  !RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(rand_param) 
+ ! miro: deactivated RAND, as this is not universally working
+  RANDOMNUMBER = DFLOAT(3*I+4*J)
+END FUNCTION
+end module qjacobi_mod
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck qjacobi */
         SUBROUTINE QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT) 
@@ -38,31 +212,33 @@
 !
 !             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
 !
-!  Written: M Ilias, Strasbourg, May 2005
+!  Written: M Ilias, Strasbourg, May 2005;
+!  MI, August 2014 - rearragned for F90 
 !      
 !**************************************************************************
-#include"implicit.h"
+implicit none                   
 #include"priunit.h"
-      PARAMETER (D1=1.0D00, DM1=-1.00D00, D0=0.0D00,                    &
-                D2=2.0D0, DP5=0.50D0)
+  real*8,PARAMETER :: D1=1.0D00, DM1=-1.00D00, D0=0.0D00,D2=2.0D0, DP5=0.50D0
+  integer, intent(in) :: N, NZ, NBL
+  real*8, intent(inout) :: A(N,N,NZ)
+  real*8, intent(inout) :: EV(N,N,NZ)
+  integer, intent(in) :: IBL(NBL,1:4), IPRINT
+  real*8 :: SUMSQA(2)
+  LOGICAL::  DOEVE, FINISHED, WASELIM, ELIM(2)
+  CHARACTER*9 :: FILENAME
+  CHARACTER  :: SECTID*12,WALLTID*12, CPUTID*12
+  real*8, parameter :: ZEROTHRS= 1.0D-12, ZEROTHRS1 = 1.0D-9  
+  !      .... file number and file name of the check file
+  integer, parameter :: LUF = 33 
+  DATA FILENAME / 'QJACO.MTX' /
 
-      DIMENSION A(N,N,NZ)
-      DIMENSION EV(N,N,NZ)
-
-      DIMENSION IBL(NBL,1:4), SUMSQA(2)
-
-      LOGICAL DOEVE, FINISHED, WASELIM, ELIM(2)
-      CHARACTER*9 FILENAME
-      CHARACTER SECTID*12,WALLTID*12, CPUTID*12
-
-      DATA ZEROTHRS / 1.0D-12  /
-!     DATA ZEROTHRS / 1.0D-15  /
-!     DATA ZEROTHRS / 0.0D0  /
-
-      DATA ZEROTHRS1 / 1.0D-9  /
-!        .... file number and file name of the check file
-      DATA LUF / 33  /
-      DATA FILENAME / 'QJACO.MTX' /
+  real*8 :: CPU1,WALL1,SUMSQ,APQR,APPR,BDA,PHI,CU,SU,APQJ,AQQR,CU2,SU2
+  real*8 :: TOAIPR,TOAIQR,TOPIPR,TOAIPI,TOAIQI,APQI,XAI,TOAIPJ,CUSU
+  real*8 :: TOPIQR,TOPIPI,TOPIQI,TOAIPK,TOPIQJ,TOPIPK,TOPIQK,XAJ,APQK
+  real*8 :: CPU2,WALL2,DPHKJR,TOAIQJ,TOAIQK,TOPIPJ,XAK,CPU,WALL,AIJ_R
+  real*8 :: APPI,TOQIPR,AIJFR,AIJ_I,TOQIPI,AIJ_J,AIJ_K
+  real*8 :: DPHKJI,DPHKJJ,AIJFI,TOQIPK,TOQIPJ,DPHKJK,AIJFJ,AIJFK
+  integer :: IP,IQ,I,J,K,L,IZ,ITER,I1,J1,IZ1
 
       IF (IPRINT.GE.2) THEN
        CALL HEADER(                                                     &
@@ -2345,25 +2521,24 @@
       END
 #endif /* MOD_UNRELEASED */
 
- 
-module  diagmod
-! Module for the standalone testing program of diagonalization routines,
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 
+module diagmod
+!-------------------------------------------------------------------------------------------
+!  Module for the standalone testing program of diagonalization routines,
 ! utils/diag.F
 !
 ! Written by Miro Ilias, August 2014
-!
-
+!-------------------------------------------------------------------------------------------
   integer :: N=0,NZ=0, print_level
   integer :: lu=12
   real*8, allocatable :: Ar(:,:), ASr(:,:),Ai(:,:),ASi(:,:),  & 
                          Aj(:,:),ASj(:,:), Ak(:,:), ASk(:,:)
-
   character*21 :: inpfile="DIAGONALIZE_TESTS.INP"
-
   character*50 :: title_text
   character*50 :: matrix_file_name
 
   logical :: do_dsyevr = .false.
+  logical :: do_dsyevr_ulf = .false.
   logical :: do_rs = .false.
   logical :: do_rsjaco = .false.
   logical :: do_qjaco = .false.
@@ -2446,6 +2621,117 @@ contains
   subroutine generate_random_matrix
   ! allocates and generates random Hemitian matrix instead of reading it from a file
   end subroutine generate_random_matrix
+
+  subroutine test_lapack_dsyevr_ulf
+!-------------------------------------------------------------------------------------------
+!    Test program for lapack symmetric eigensolver DSYEVR
+!     By ulfek 2008, transferred by Miro Ilias, Aug 2014
+!-------------------------------------------------------------------------------------------
+   implicit none
+#include "priunit.h"
+   integer :: i, j, k, N2, N3, lwork, liwork, info, idum, M,  & 
+           idum2,idum3,idum4
+!     Store matrices in contigous memory blocks with (:,:) ?
+   double precision, allocatable :: A(:,:),vec(:,:),eig(:)
+   double precision, allocatable :: work(:)
+   double precision ddum, workdum, maxerr, maxvecerr, pi, verr, ddum2
+   integer, allocatable :: iwork(:), isuppz(:)
+   character(len=32) :: arg
+   logical :: issorted
+
+      pi = 2*acos(0.0D0)
+      write(LUPRI,"(/,2X,A,I2,A)") 'Testing DSYEVR diagonalization of',N,'**2 matrix'
+
+#ifdef FORTRAN2003
+      print *,'Using',sizeof(N)*8,' bit integers'
+      print *,'Allocating matrix and vectors ',
+     &     ((2*N**2 + 3*N)*sizeof(ddum))/2**10,' kB'
+#endif
+      call flush(6)
+      allocate( A(N,N), vec(N,N), eig(N), isuppz(2*N) )
+!     set A = 0.5 on the upper and lower second diagonals
+      do i=1,N
+         do j=1,N
+            A(i,j) = 0.0d0
+         enddo
+      enddo
+      do i=1,N-1
+         A(i,i+1) = 0.5d0
+         A(i+1,i) = 0.5d0
+      enddo
+ if (print_level >= 3) then
+      print *,'Matrix to diagonalize:'
+      do i=1,N
+         write (LUPRI,'(100F4.1)') (A(i,j),j=1,N)
+      enddo
+ endif
+      N2 = N
+      N3 = N
+      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM2,IDUM,IDUM2,0.0D0,  & 
+           IDUM3,EIG,VEC,N3,IDUM4,WORKDUM,-1,liwork,-1,INFO)
+      if (info.ne.0) then
+         print *, 'DSYEVR memory query failed:',info
+         stop
+      endif
+      lwork = workdum
+#ifdef FORTRAN2003
+      print *,'Allocating work buffers',(lwork*sizeof(ddum)+ & 
+            liwork*sizeof(idum))/2**10,' kB'
+#endif
+      call flush(6)
+      allocate( work(lwork), iwork(liwork) )
+      print *,'Diagonalizing..'
+      call flush(6)
+      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM2,IDUM,IDUM2,0.0D0,  & 
+           M,EIG,VEC,N3,isuppz,work,lwork, iwork,liwork,info)
+      if (info.ne.0.or.M.ne.N) then
+         print *,'Diagonalization failed, info = ',info,' M =',M
+         stop
+      endif
+      issorted = .true.
+      do i=1,N-1
+         if (eig(i).gt.eig(i+1)) then
+            issorted = .false.
+         endif
+      enddo
+      print *,'Eigenvalues sorted ascending:',issorted
+      if (issorted) then
+!     Check eigenvalues and vectors against analytical solution
+!     Currently only implemented for ascending sorting
+         maxerr = 0
+         maxvecerr = 0
+         do i=1,N
+            j = (N-i+1)
+            maxerr = max(maxerr,abs(eig(i) - cos((j*pi)/(N+1))))
+            if (print_level >= 2) then
+              print *,'vector ',i,' eigval:',eig(i)
+              print *,'  <Calculated>             <Exact>'
+            endif
+            do k=1,N
+!     Discard the phase of vectors with abs
+               verr = abs(eig(i)*(abs(vec(k,i)) -  & 
+                    abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1)))))
+               maxvecerr = max(maxvecerr, verr)
+ if (print_level >= 3) then
+               if (verr.gt.N*1.0D-14) then
+                  print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))   & 
+                       ,'<<<<< WARNING'
+               else
+                  print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
+               endif
+  endif
+            enddo
+ if (print_level >= 4) then
+            print *,'maxvecerr so far:',maxvecerr
+ endif
+         enddo
+         print *,'Maximum absolute eigenvalue error:',maxerr
+         print *,'Maximum absolute vector element error:',maxvecerr
+      else
+         print *,'Eigenvalues not sorted so not testing them,'//  & 
+              ' this can be ok.'
+      endif
+  end subroutine test_lapack_dsyevr_ulf
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine test_lapack_dsyevr
@@ -2669,8 +2955,32 @@ contains
 
   end subroutine eigv_check
 
-end module diagmod
+!> main testing routine of the QJACOBi quaternion diagonalization method
+subroutine QJACOBITEST
+use qjacobi_mod
+implicit none
+#include"priunit.h"
+integer :: istat
 
+  write(LUPRI,"(/,2X,A)") "*** Qauternion Jacobi diagonalization test ***"
+  ! ... get N,NZ from the file
+  !CALL GET_N_NZ
+  !> allocate matrix to be diagonalized, N,NZ,print_level from the "module diagmod"
+  allocate(A(N,N,NZ),stat=istat)
+  allocate(EV(N,N,NZ),stat=istat) !> space for eigenvectors (if desired)
+  !> allocate space for blocks positions in the matrix to be diagonalized
+  allocate(IBL(NBL,1:4),stat=istat)
+  ! ... fill hermitian (real, quaternion) matrix
+  CALL PREPMATRIX
+  ! ... call of the external diagonalization routine ...
+#ifdef MOD_UNRELEASED
+  CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
+#else
+  CALL QUIT('QJACOI is not in this DIRAC release !')
+#endif
+END subroutine
+
+end module diagmod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 Subroutine alloc_stat_check(alloc_label,istat)

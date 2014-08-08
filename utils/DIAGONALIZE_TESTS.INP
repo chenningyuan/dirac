@@ -16,10 +16,12 @@ Jz_SS_matrix.fermirp=2-2
 .EIGVTS
 ! check LAPACK's routine DSYEVR (real only matrices)
 .DSYEVR
+! Ul'f check LAPACK's routine DSYEVR (real only matrices)
+.ULF
 ! check EISPACK's routine RS (real only matrices)
 .RS
 ! check DIRAC's routine for Jacobi diagonalization (real only matrices)
 .RSJACO
 ! check DIRAC's MiroI routine for quaternion Jacobi diagonalization (up to quaternion matrices)
-.QJACO
+!.QJACO
 *END OF

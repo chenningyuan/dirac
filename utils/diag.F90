@@ -36,8 +36,8 @@ Program Test_DIRAC_Diagonalization_Routines
 
   if (do_rs)      call test_dirac_rs
   if (do_dsyevr)  call test_lapack_dsyevr
+  if (do_dsyevr_ulf)  call test_lapack_dsyevr_ulf
+  if (do_qjaco)   call QJACOBITEST
   
 
 End Program Test_DIRAC_Diagonalization_Routines
-
-
