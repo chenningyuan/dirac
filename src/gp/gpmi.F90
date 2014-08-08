@@ -2755,6 +2755,8 @@ contains
    ABSTOL=mp_sfmin; JOBZ='V'; RANGE = 'A'; UPLO = 'U'
    DDUM = D0; IDUM = 0; WORKDUM = D0; IWORKDUM = 0
 
+   print *,'lapack_dsyerv ABSTOL=',ABSTOL
+
    MATZ = 1 
    IF(MATZ.EQ.1) THEN
         JOBZ='V'
@@ -2798,7 +2800,7 @@ contains
    endif
 
   ! ... print out eigenvalues
-  if (print_level >= 2) then
+  if (print_level >= 1) then
      print *,"LAPACK DSYEVR eigenvalues:"
      do i=1,N
        print *,i,EIG(i)
@@ -2835,12 +2837,10 @@ contains
 #include "priunit.h"
     real*8, allocatable :: eigval(:),eigvect(:,:),temp1(:),temp2(:)
     integer :: ierr,i
-
 ! ... allocate arrays for the subroutine
     allocate(eigval(N),eigvect(N,N),temp1(N),temp2(N),stat=ierr)
     call alloc_stat_check("eigval(N),eigvect(N,N),temp1(N),temp2(N) ",ierr)
     print *,"arrays for RS subroutine allocated"
-
     matz=1 ! have both eigenvalues and eigenvectors
     call RS(N,N,Ar,eigval,matz,eigvect,temp1,temp2,ierr)
     if (ierr /= 0) then
@@ -2848,15 +2848,13 @@ contains
       !call quit('RS routine ended with error !')
     endif
 ! ... print out eigenvalues
-    if (print_level >= 2) then
+    if (print_level >= 1) then
       print *,"Eispack's RS eigenvalues:"
       do i=1,N
         print *,i,eigval(i)
       enddo
     endif
-
     if (do_eigv_check) call eigv_check(eigval,eigvect,'**** EISPACK RS ****')
-
     deallocate(eigval,eigvect,temp1,temp2,stat=ierr)
   end subroutine test_dirac_rs
 
@@ -2903,14 +2901,14 @@ contains
 
    ! Another check:  eigvect^{+)*eigvect = I = AXr
     call dgemm('T','N',N,N,N,1.0d0,eigvect,N,eigvect,N,0.0d0,AXr,N)
-    if (print_level>=1) then
+    if (print_level>=2) then
       write(LUPRI,*) "Printout of eigvect^{+)*eigvect =? I "
       call prqmat(AXr,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
     endif
 
    ! Another check:  eigvect*eigvect^{+} = I = AYr
     call dgemm('N','T',N,N,N,1.0d0,eigvect,N,eigvect,N,0.0d0,AYr,N)
-    if (print_level>=1) then
+    if (print_level>=2) then
       write(LUPRI,*) "Printout of eigvect*eigvect^{+} =? I "
       call prqmat(AYr,N,N,N,N,1,IPQTOQ(1,0),LUPRI)
     endif
@@ -2918,7 +2916,7 @@ contains
     ! substract eigenvalues ...
     C_norm_diag = 0.0d0; AXr_norm_diag = 0.0d0; AYr_norm_diag = 0.0d0
     do i=1,N
-      C(i,i) = C(i,i) -eigval(i); 
+      C(i,i) = C(i,i) - eigval(i); 
       AXr(i,i)=AXr(i,i)-1.0d0; AYr(i,i)=AYr(i,i)-1.0d0
       C_norm_diag = C_norm_diag + DABS(C(i,i))
       AXr_norm_diag = AXr_norm_diag  + DABS(AXr(i,i))
@@ -2957,11 +2955,10 @@ contains
 
 !> main testing routine of the QJACOBi quaternion diagonalization method
 subroutine QJACOBITEST
-use qjacobi_mod
+use qjacobi_mod,only:A,EV,IPRINT,DOEVE,NBL,IBL
 implicit none
 #include"priunit.h"
-integer :: istat
-
+integer :: istat,i,j
   write(LUPRI,"(/,2X,A)") "*** Qauternion Jacobi diagonalization test ***"
   ! ... get N,NZ from the file
   !CALL GET_N_NZ
@@ -2970,14 +2967,35 @@ integer :: istat
   allocate(EV(N,N,NZ),stat=istat) !> space for eigenvectors (if desired)
   !> allocate space for blocks positions in the matrix to be diagonalized
   allocate(IBL(NBL,1:4),stat=istat)
-  ! ... fill hermitian (real, quaternion) matrix
-  CALL PREPMATRIX
+
+  ! ... fill the hermitian matrix A (real, quaternion) matrix
+  do i=1,N
+  do j=1,N
+   if      (NZ==1) then
+     A(i,j,1) = ASr(i,j)
+   else if (NZ==2) then
+     A(i,j,1) = ASr(i,j)
+     A(i,j,2) = ASi(i,j)
+   else if (NZ==4) then
+     A(i,j,1) = ASr(i,j)
+     A(i,j,2) = ASi(i,j)
+     A(i,j,3) = ASj(i,j)
+     A(i,j,4) = ASk(i,j)
+   else
+    call quit('wrong NZ !')
+   endif
+  enddo
+  enddo
+  !CALL PREPMATRIX
   ! ... call of the external diagonalization routine ...
+  IPRINT = print_level; NBL = 0 ; DOEVE = .true.
 #ifdef MOD_UNRELEASED
   CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
 #else
   CALL QUIT('QJACOI is not in this DIRAC release !')
 #endif
+
+
 END subroutine
 
 end module diagmod
@@ -2997,4 +3015,3 @@ Subroutine alloc_stat_check(alloc_label,istat)
     call quit('error in F90 dynamic allocation !')
   endif
 End Subroutine alloc_stat_check
-
