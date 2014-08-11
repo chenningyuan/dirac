@@ -4104,7 +4104,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
-      LOGICAL SPECIAL,DODBG,WRITE_MATRIX
+      LOGICAL SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
       character*100 :: hfile_format,hfile_name
 
@@ -4227,17 +4227,15 @@ C
 
 ! miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
 !-----------------------------------------------------------------------------------
-      WRITE_MATRIX=.TRUE.
-      IF (WRITE_MATRIX) THEN
+      IF (WRITE_FMO_MATRIX) THEN
 ! get the file name first, containing symmetry
         hfile_format="(A8,A8,I1,A1,I1,A8,I1,A1,I1)"
         write(hfile_name,hfile_format)
      & "hmatrix.","fermirp=",I,"-",NFSYM,
      & "_bosirp=",ISUB,"-",N_SUB_BL(I)
-        print *,trim(hfile_name)
 ! open the unique file and write the matrix
-       luhm=95
-       open(luhm,file=trim(hfile_name),access="sequential",
+        luhm=95
+        open(luhm,file=trim(hfile_name),access="sequential",
      &      form="formatted",status="unknown")
         write(luhm,*) NBO,1 ! this is pure real matrix (NZ=1)
         ic=0
@@ -4248,7 +4246,7 @@ C
         enddo
           ic = ic + NTMO(I) - NBO
         enddo
-       close(luhm,status="keep")
+        close(luhm,status="keep")
       ENDIF
 
 C
@@ -4283,18 +4281,13 @@ C
               DO II=1,NBO
                 EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
                 DO JJ=1,NBO ! store eigenvectors
-!                FAO(IMAT+(NBO*(II-1))+JJ-1)=
-!                 FAO(IMAT+((NTMO(I)+1)*IBO)*(II-1)+JJ-1)=
                   FAO( IMAT+ (NTMO(I)*(II-1)+JJ-1) ) =
-!                FAO(IMAT+IPOS)=
-!    &            WORK(KFA+IPOS)
      &            WORK(KFA+(NBO*(II-1))+JJ-1)
                   IPOS=IPOS+1
                 ENDDO
               ENDDO
               CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
               CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
-             ! call quit('end here')
             ENDIF
 #endif
 

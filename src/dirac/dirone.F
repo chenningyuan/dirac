@@ -5862,6 +5862,8 @@ C
 C     Written by L.Visscher, october 2003
 C     Last changes: M.Ilias, Strasbourg, 2005
 C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
+!                 MI, July 2014 - option to print out J_z matrices for
+!                 diagonalization
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -5883,7 +5885,7 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
-      LOGICAL :: DOJACO_SAVE, WRITE_Jz_MATRIX
+      LOGICAL :: DOJACO_SAVE
       character*100 :: hfile_format,hfile_name
 
       CALL QENTER('LINSYM')
@@ -5891,12 +5893,6 @@ C
 #include "memint.h"
 C
 
-!     mi: set up diagonalization
-!     DOJACO_SAVE = DOJACO
-!     DOJACO = .TRUE.
-
-!     iprham_save = iprham
-!     iprham      = 15
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -5923,9 +5919,8 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
-!    &            IPRHAM)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.12) THEN
 
          CALL HEADER(
      &    'LINSYM: Entering AO->MO transformation matrix',-1)
@@ -5972,10 +5967,6 @@ C
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
-
-!     miro, July 2014 - option to print out J_z matroces for
-!     diagonalization
-      WRITE_Jz_MATRIX = .TRUE.
 
 C
       IOFT = 1
@@ -6025,7 +6016,6 @@ C
             hfile_format="(A13,A8,I1,A1,I1)"
             write(hfile_name,hfile_format)
      &       "Jz_LL_matrix.","fermirp=",I,"-",NFSYM
-             print *,trim(hfile_name)
 ! open the unique file and write the matrix
              luhm=95
              open(luhm,file=trim(hfile_name),access="sequential",
@@ -6076,7 +6066,6 @@ C
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
-           !call quit('in linsym')
           ENDIF
         ENDIF
 C
@@ -6120,9 +6109,6 @@ C
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
-!     mi: set up diagonalization
-      DOJACO_SAVE = DOJACO
-      DOJACO = .TRUE.
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
@@ -6147,9 +6133,6 @@ C
             ENDDO
           ENDIF
 #endif
-          ! mi: restore keyword
-          DOJACO = DOJACO_SAVE
-
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6359,12 +6342,9 @@ C
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
 
-!     mi: restore the diagonalization scheme
-!     DOJACO = DOJACO_SAVE
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
-!     iprham = iprham_save
       RETURN
  1000 FORMAT
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
