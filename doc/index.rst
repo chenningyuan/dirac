@@ -190,6 +190,7 @@ Developers
   :doc:`64bit integers <programmers/int8>` |
   :doc:`XML <programmers/xml>` |
   :doc:`Static linking <programmers/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
   :doc:`How this documentation works <programmers/documentation_howto>`
 
 
