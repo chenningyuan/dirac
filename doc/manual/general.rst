@@ -36,8 +36,8 @@ balance relation.
 keyword(PCMOUT)
 
 Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
-coefficients between machines with different binary structure.
-
+coefficients between machines with different binary structure. For reading the 
+DFPCMO file, there is no keyword - simply copy this file to the working directory.
 
 keyword(ACMOUT)
 

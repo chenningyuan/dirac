@@ -7,9 +7,9 @@ module fde_evaluators_dirac
    use fde_cfg
    use fde_data
    use fde_io
-!  use fde_nadd_derv
-!  use fde_xcfun_interface
-!  use fde_max_block_length
+   use fde_nadd_derv
+   use fde_xcfun_interface
+   use fde_max_block_length
 
 ! dirac-specific modules
    use numoper_integrals
@@ -59,9 +59,14 @@ module fde_evaluators_dirac
       module procedure fde_dirac_linrsp_via_integrator
    end interface
 
+   public fde_calculate_interaction_energy
+   interface fde_calculate_interaction_energy
+      module procedure fde_dirac_emb_interaction_energy
+   end interface
 
    private 
 
+   integer, save :: nr_boson_irreps
    integer, save :: nba, nba_orb, nba_aux
    integer, save :: dfcoef_unit
    integer, save :: nz = 4
@@ -74,41 +79,69 @@ module fde_evaluators_dirac
    contains
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_elpot(level,grid,gf)
+      subroutine fde_calculate_elpot(level,grid,gf,myprint)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(inout) :: gf
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
          real(kind=8), allocatable          :: dmat(:)
+         logical, intent(in), optional      :: myprint
+         logical                            :: printlocal
+         type(fde_files)                    :: ftmp
+         type(fde_import)                   :: itmp
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         endif
+
+         call fde_get_files_info(ftmp)
+         call fde_get_import_info(itmp)
+
+         if (nr_boson_irreps > 1) then
+            write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
+            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
+            return
+         endif
 
 ! dmat is allocated and set in the routine below
-         call fde_dirac_get_dmat_from_dfcoef(dmat,level)
+         call fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint=printlocal)
 ! we calculate both the nuclear and electrostatic potentials in one call
 ! if needed, we can split this up later 
-         call fde_dirac_calculate_elpot(dmat,grid%r,gf%elpot,gf%nucpot)
+         call fde_dirac_calculate_elpot(dmat,grid%r,gf%elpot,gf%nucpot,myprint=printlocal)
 
          deallocate(dmat)
 
       end subroutine fde_calculate_elpot
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_dirac_calculate_elpot(dmat,r,vc,vnuc)
+      subroutine fde_dirac_calculate_elpot(dmat,r,vc,vnuc,myprint)
 !   ----------------------------------------------------------------------------
          real(kind=8), intent(in)  :: dmat(:)
          real(kind=8), intent(in)  :: r(:,:)
          real(kind=8), intent(out) :: vc(:)
          real(kind=8), intent(out) :: vnuc(:)
+         logical, intent(in), optional :: myprint
+         logical :: printlocal
          integer :: i
          integer :: np
          integer :: irrep = 1
          logical :: nuc_part = .false.    
          logical :: ele_part = .true.    
          
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         endif
+
          np = size(r,2)
 !
 ! calculating the hartree potential first
 ! 
-         write (*,*) 'Generating the Hartree potential over the grid'
+         if (printlocal) write (*,*) 'Generating the Hartree potential over the grid'
 !
 ! aspg, 11/10/2012
 ! important here: get_esp expects to get a density matrix
@@ -128,7 +161,7 @@ module fde_evaluators_dirac
 !
 ! now the nuclear potential
 !
-         write (*,*) 'Generating the nuclear potential over the grid'
+         if (printlocal) write (*,*) 'Generating the nuclear potential over the grid'
 
          nuc_part = .true.    
          ele_part = .false.    
@@ -148,7 +181,7 @@ module fde_evaluators_dirac
       end subroutine fde_dirac_calculate_elpot
       
 !   ----------------------------------------------------------------------------
-      subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level)
+      subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
 #include "priunit.h"
@@ -165,9 +198,17 @@ module fde_evaluators_dirac
 ! Passed/recovered variables
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
+      logical, intent(in), optional :: myprint
+      logical :: printlocal
 ! internal variables
       INTEGER :: ierr
       real(kind=8), allocatable :: cmo(:)
+
+      if (present(myprint)) then
+         printlocal = myprint
+      else
+         printlocal = .True.
+      endif
 
       allocate(dmat(n2bbasxq))
       dmat = 0.0d0
@@ -176,7 +217,7 @@ module fde_evaluators_dirac
 
       select case(level)
       case('MP2')
-         write(lupri,*) 'Reading CC_DENSITY'
+         if (printlocal) write(lupri,*) 'Reading CC_DENSITY'
          call get_cc_density(level,'AO',DMAT,ierr)
          if (ierr.ne.0) then
             write(lupri,*) 'Error in reading density matrix'
@@ -184,7 +225,7 @@ module fde_evaluators_dirac
          end if
       case default
 !     HF density used
-         write(lupri,*) 'Reading DFCOEF'
+         if (printlocal) write(lupri,*) 'Reading DFCOEF'
          call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
          call reacmo_no_work(lucoef,    &
                              'DFCOEF',  &
@@ -368,7 +409,176 @@ module fde_evaluators_dirac
                                   fde_fmat      = fmat,    &
                                   fde_do_potential = .true.)
 
+!       call fde_dirac_emb_interaction_energy('DHF ')
+
       end subroutine fde_dirac_embpot_via_integrator
+
+
+
+      subroutine fde_dirac_emb_interaction_energy(level,myprint)
+         character(len=4), intent(in)  :: level
+         logical, intent(in), optional :: myprint
+         logical              :: printlocal
+         integer              :: derv_length, max_fun_derv, bllen, i
+         integer              :: logunit
+         real(8)              :: w(1), energy, interaction
+         real(8)              :: df_interaction
+         real(8)              :: el_interaction
+         real(8)              :: n_0_a(1), gnn_0_a(1)
+         real(8)              :: n_0_f(1), gnn_0_f(1)
+         real(8)              :: n_0_t(1), gnn_0_t(1)
+         real(8)              :: threshold
+         real(8)              :: internuclear 
+         real(8), allocatable :: derv_active(:, :)
+         real(8), allocatable :: derv_frozen(:, :)
+         real(8), allocatable :: derv_total(:, :)
+         type(fde_files)      :: ftmp
+         type(fde_import)     :: itmp
+
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         endif
+
+         call fde_get_files_info(ftmp)
+         call fde_get_import_info(itmp)
+
+         logunit      = ftmp%logfile%unit
+
+         threshold    = 1.0e-16
+         max_fun_derv = 1
+         bllen        = 1 
+         derv_length  = nr_nonzero_derv
+         internuclear = 0.0d0
+
+         if (nr_boson_irreps > 1) then
+            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
+            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
+            return
+         else if (.not.itmp%im_frozen) then 
+            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
+            write (logunit,'(3X,A)') '    (frozen density not available)'
+            return
+         endif
+
+         allocate(derv_active(max_block_length, 0:derv_length))
+         allocate(derv_frozen(max_block_length, 0:derv_length))
+         allocate(derv_total(max_block_length,  0:derv_length))
+
+         call fde_calculate_elpot(level,fde_grid_im,gf_active,myprint=printlocal)
+
+         el_interaction = 0.0d0
+         df_interaction = 0.0d0
+         interaction = 0.0d0
+
+         derv_active = 0.0d0 
+         derv_frozen = 0.0d0 
+         derv_total  = 0.0d0 
+
+         do i = 1, fde_grid_im%npoints
+
+            w(1) = 1.0
+
+            n_0_a(1)   = gf_active%n(i)
+            if ( n_0_a(1) .gt. threshold) then
+               gnn_0_a(1) = gf_active%gn(1,i) * gf_active%gn(1,i) & 
+                          + gf_active%gn(2,i) * gf_active%gn(2,i) &
+                          + gf_active%gn(3,i) * gf_active%gn(3,i) 
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_a,        &
+                                      gnn_0_a,      &
+                                      derv_active)
+            else
+               n_0_a(1)    = 0.0d0
+               gnn_0_a(1)  = 0.0d0
+               derv_active = 0.0d0 
+            endif
+
+            n_0_f(1)   = gf_frozen%n(i)
+            if ( n_0_f(1) .gt. threshold) then
+               gnn_0_f(1) = gf_frozen%gn(1,i) * gf_frozen%gn(1,i) & 
+                          + gf_frozen%gn(2,i) * gf_frozen%gn(2,i) &
+                          + gf_frozen%gn(3,i) * gf_frozen%gn(3,i) 
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_f,        &
+                                      gnn_0_f,      &
+                                      derv_frozen)
+            else
+               n_0_f(1)    = 0.0d0
+               gnn_0_f(1)  = 0.0d0
+               derv_frozen = 0.0d0
+            endif
+
+            n_0_t(1)   = gf_active%n(i)    + gf_frozen%n(i)
+            if ( n_0_t(1) .gt. threshold) then
+               gnn_0_t(1) = ((gf_active%gn(1,i) + gf_frozen%gn(1,i))*(gf_active%gn(1,i) + gf_frozen%gn(1,i))) &
+                          + ((gf_active%gn(2,i) + gf_frozen%gn(2,i))*(gf_active%gn(2,i) + gf_frozen%gn(2,i))) &
+                          + ((gf_active%gn(3,i) + gf_frozen%gn(3,i))*(gf_active%gn(3,i) + gf_frozen%gn(3,i))) 
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_t,        &
+                                      gnn_0_t,      &
+                                      derv_total)
+            else
+               n_0_t(1)    = 0.0d0
+               gnn_0_t(1)  = 0.0d0
+               derv_total  = 0.0d0
+            endif
+#if 0
+           write (*,*) 'debug: at point ',i
+           write (*,*) 'debug: n_a ',n_0_a(1),' g_a ',gnn_0_a(1)
+           write (*,*) 'debug: n_f ',n_0_f(1),' g_f ',gnn_0_f(1)
+           write (*,*) 'debug: n_t ',n_0_t(1),' g_t ',gnn_0_t(1)
+           write (*,*) 'debug: n_f ',n_0_f(1),' g_f ',gnn_0_f(1)
+           write (*,*) 'debug: pot_a ',gf_active%elpot(i)
+           write (*,*) 'debug: pot_f ',gf_frozen%elpot(i)
+           write (*,*) 'debug: derv_a ',derv_active(1, d0000000)
+           write (*,*) 'debug: derv_f ',derv_frozen(1, d0000000)
+           write (*,*) 'debug: derv_t ',derv_total(1, d0000000)
+#endif
+           el_energy = (n_0_f(1)*gf_active%elpot(i) + n_0_a(1)*gf_frozen%elpot(i))        
+           df_energy = (derv_total(1, d0000000) - derv_active(1, d0000000))*gf_active%n(i) &
+                     + (derv_total(1, d0000000) - derv_frozen(1, d0000000))*gf_frozen%n(i)
+
+#if 0
+           write (*,*) 'debug: energy ',energy
+           write (*,*) 'debug: weight ',fde_grid_im%w(i)
+#endif
+           el_interaction = el_interaction + fde_grid_im%w(i)*el_energy
+           df_interaction = df_interaction + fde_grid_im%w(i)*df_energy
+
+           interaction    = el_interaction + df_interaction
+#if 0
+           write (*,*) 'debug: interaction ',interaction
+#endif
+         end do
+
+         write (logunit,'(/,2X,A,/)')     'FDE interaction energy contributions'
+         write (logunit,'(3X,A,F22.15)') '    Electrostatic contributions          : ',el_interaction
+         write (logunit,'(3X,A,F22.15)') '    Non-additive  contributions          : ',df_interaction
+         if (internuclear.gt.0.0d0) then
+         write (logunit,'(3X,A,F22.15)') '    Intersubsystem nuclear repulsion     : ',internuclear
+         else
+         write (logunit,'(3X,A)') '    Intersubsystem nuclear repulsion     :      n/a'
+         endif
+         write (logunit,'(3X,A,F22.15)') '    Total interaction energy             : ',interaction
+
+         if (allocated(derv_active)) deallocate(derv_active)
+         if (allocated(derv_frozen)) deallocate(derv_frozen)
+         if (allocated(derv_total))  deallocate(derv_total)
+
+     end subroutine fde_dirac_emb_interaction_energy
+
 
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_linrsp_via_integrator(mat_dim,dmat0,ndmat,dmat,fmat)
@@ -464,6 +674,7 @@ module fde_evaluators_dirac
          nba = nba_orb
          dfcoef_unit   = LUCOEF
          mat_dim_quat_as_1d = n2bbasxq
+         nr_boson_irreps = nbsym
 
       end subroutine fde_dirac_data_interface
 
