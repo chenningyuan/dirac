@@ -164,6 +164,11 @@ Force employing the bare nucleus correction (BNC). This keyword is worth when th
 is highly positively charged what makes (from defined charge value) switching off the default BNC.
 The BNC can help to achieve better convergence also for non-neutral systems.
 
+keyword(FOMOUT)
+
+Print Fock MO matrices for diagonalization (according to symmetries) into own formatted files. 
+Programmer's option suitable for testing.
+
 keyword(TRIVEC)
 
 Start SCF-iterations from the vector file.
