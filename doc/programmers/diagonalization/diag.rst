@@ -37,8 +37,8 @@ The test system, where discrepancies with DSYEVR are observed, is the O2 molecul
   
  pam --noarch --inp=hf.inp --mol=O2.mol
 
-(Input files for download are from the DIRAC test directory, namely :download:`../../test/fscc_highspin/hf.inp` and
-:download:`../../test/fscc_highspin/O2.mol` )
+(Input files for download are from the DIRAC test directory, namely :download:`hf.inp<../../../../test/fscc_highspin/hf.inp>` and
+:download:`O2.mol <../../../../test/fscc_highspin/O2.mol>` )
 
 The proper Total SCF energy of this system is, ::
 
@@ -60,19 +60,19 @@ By "descending" to the smallest system where error is showing up we came to the 
  pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.asd.mol --get "Jz_SS_matrix.fermirp=2-2"
  pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.D2h.mol
 
-(Input files for download are :download:`../../test/fscc_highspin/dc.1el.2fs.inp`,
-:download:`../../test/fscc_highspin/X2.1s1p1d.asd.mol` and
-:download:`../../test/fscc_highspin/X2.1s1p1d.D2h.mol`.)
+(Input files for download are :download:`dc.1el.2fs.inp <../../../../test/fscc_highspin/dc.1el.2fs.inp>`,
+:download:`X2.1s1p1d.asd.mol <../../../../test/fscc_highspin/X2.1s1p1d.asd.mol>` and
+:download:`X2.1s1p1d.D2h.mol <../../../../test/fscc_highspin/X2.1s1p1d.D2h.mol>`.)
 
-In the linear symmetry the eigenvalues obtained with the DSYEVR routine are hurt. This happens 
-with the saved "Jz_SS_matrix.fermirp=2-2" matrix.
+In the linear symmetry eigenvectors obtained with the DSYEVR routine happen to be numerically inaccurate. 
+This can be verified with the saved *Jz_SS_matrix.fermirp=2-2* matrix.
 
 The demonstration matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~
 After tracking the source of the problem we converged to the 9x9 matrix, *Jz_SS_matrix.fermirp=2-2*, 
 for the diagonalization testing, which is saved from the LINSYM routine.
 
-With the DIRAC standalone diagonalization testing program, diag.x, we found discrepancies 
+With the DIRAC standalone diagonalization testing program, *diag.x*, we found discrepancies 
 in numerical accuracy of eigenvectors
 obtained with the DSYEVR routine in comparison to other diagonalization methods.
 
