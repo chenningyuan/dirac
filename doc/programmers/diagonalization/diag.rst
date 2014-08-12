@@ -44,11 +44,11 @@ The proper Total SCF energy of this system is, ::
 
   -149.68666145184687
 
-while the DSYEVR routine employed in the LINSYM part gives different value by about 10^-7,like ::
+while the DSYEVR routine employed in the LINSYM procedure gives different value by about 10^-7,like ::
 
   -149.68666198782267
 
-together with positron states intruding.
+together with some positron states intruding.
 
 Molecular symmetries lower than linear symmetry (D2h, C2v ...) give proper SCF energies.
 
