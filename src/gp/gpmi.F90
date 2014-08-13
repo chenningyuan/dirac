@@ -2552,6 +2552,13 @@ contains
 #include "priunit.h"
     logical :: input_found
 
+    inquire(file=inpfile, exist=input_found)
+
+    if (.not.input_found) then
+      write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile
+      call quit("read_input_file: the input file not found !")
+    endif
+
     print *,"inpfile=",inpfile
     call read_menu_input(inpfile, lucmd, 'ALL', input_found)
     print *,'input_found=',input_found
@@ -2563,17 +2570,26 @@ contains
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
-    integer :: i,j, ii,jj
-   
-    open (lu,file=trim(matrix_file_name), access="sequential", status="old")  
-    read(lu,*) N,NZ
-    print *,'read N=',N,' NZ=',NZ
+  implicit none
+#include "priunit.h"
+   integer :: i,j, ii,jj
+   logical :: file_exists
 
-    ! allocates space for matrices
-    call allocate_space
-    ! read matrix elements from its open file
-    do i=1,N
-    do j=1,N
+   inquire(file = matrix_file_name, exist = file_exists )
+
+   if (.not.file_exists) then
+     write(LUPRI,"(2x,a,a)") "The matrix input file does not exist ! matrix_file_name=",trim(matrix_file_name)
+     call quit("The matrix input file does not exist !")
+   endif
+
+   open (lu,file=trim(matrix_file_name), access="sequential", status="old")  
+   read(lu,*) N,NZ
+   write(LUPRI,"(a,i3,a,i1)") 'Matrix dimension, read N=',N,' and NZ=',NZ
+  ! allocates space for matrices
+   call allocate_space
+  ! read matrix elements from the open file
+   do i=1,N
+   do j=1,N
      if (NZ==1) then
        read(lu,*) ii,jj,Ar(ii,jj)
        ASr(ii,jj)=Ar(ii,jj)
@@ -2588,8 +2604,7 @@ contains
     enddo
     enddo
     close(lu,status="keep")
-    print *,"matrix for diagonalization was read"
- 
+    write(LUPRI,"(2x,a)") "The matrix for diagonalization was read."
   end subroutine read_matrix
 
   subroutine allocate_space
