@@ -11,7 +11,7 @@ testing of various DIRAC diagonalization routines
 1
 ! File name with the Hermitian matrix to be diagonalized
 .MTXFILE
-Jz_SS_matrix.fermirp=2-2
+Jz_SS_matrix.fermirp2-2
 ! Do testing of eigenvectors and eigenvalues
 .EIGVTS
 ! check LAPACK's routine DSYEVR (real only matrices)

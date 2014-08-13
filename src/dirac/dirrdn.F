@@ -2362,7 +2362,8 @@ CMI =====================================================================
 
       IF (WRITE_FMO_MATRIX) THEN
         WRITE(LUPRI,'(2X,A)')
-     &'* Writing out Fock MO matrix(es) into formatted file(s)'
+     &'* Writing out Fock MO matrix(es) into formatted file(s) in'//
+     &' linear symmetry'
       ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'

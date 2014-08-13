@@ -4227,12 +4227,13 @@ C
 
 ! miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
 !-----------------------------------------------------------------------------------
+! only in the linear symmetry !
       IF (WRITE_FMO_MATRIX) THEN
 ! get the file name first, containing symmetry
-        hfile_format="(A8,A8,I1,A1,I1,A8,I1,A1,I1)"
+        hfile_format="(A8,A7,I1,A1,I1,A7,I1,A1,I1)"
         write(hfile_name,hfile_format)
-     & "hmatrix.","fermirp=",I,"-",NFSYM,
-     & "_bosirp=",ISUB,"-",N_SUB_BL(I)
+     & "hmatrix.","fermirp",I,"-",NFSYM,
+     & "_bosirp",ISUB,"-",N_SUB_BL(I)
 ! open the unique file and write the matrix
         luhm=95
         open(luhm,file=trim(hfile_name),access="sequential",

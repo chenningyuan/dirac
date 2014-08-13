@@ -167,7 +167,7 @@ The BNC can help to achieve better convergence also for non-neutral systems.
 keyword(FOMOUT)
 
 Print Fock MO matrices for diagonalization (according to symmetries) into own formatted files. 
-Programmer's option suitable for testing.
+Programmer's option suitable for testing. Only in for the linear symmetry.
 
 keyword(TRIVEC)
 

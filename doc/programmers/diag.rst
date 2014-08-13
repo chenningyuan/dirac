@@ -116,39 +116,31 @@ Intel+MKL-i8, DSYEVR:
 ~~~~~~~~~~~~~~~~~~~~~
 ::
 
- U^{+}*A*U - eps =  0 = C: 
- C_norm_diag:0.1684D-14    C_norm_offdiag:0.6623D-06
- U^{+}*U -I =  0 = AXr: 
- AXr_norm_diag:0.2097D-15  AXr_norm_offdiag:0.1325D-05
- U*U^{+} -I =  0 = AY: 
- AYr_norm_diag:0.6293D-05  AYr_norm_offdiag:0.4174D-05
+ U^{+}*A*U - eps =  0 >  norm/diag:0.1684D-14    norm/offdiag:0.6623D-06
+ U^{+}*U -I =  0      >  norm/diag:0.2097D-15    norm/offdiag:0.1325D-05
+ U*U^{+} -I =  0      >  norm/diag:0.6293D-05    norm/offdiag:0.4174D-05
 
 GNU+ownmath-i8, DSYEVR:
 ~~~~~~~~~~~~~~~~~~~~~~~
 ::
 
- U^{+}*A*U - eps =  0 = C: 
- C_norm_diag:0.1739D-14  C_norm_offdiag:0.5091D-06  
- U^{+}*U -I =  0 = AXr: 
- AXr_norm_diag:0.2097D-15  AXr_norm_offdiag:0.1018D-05
- U*U^{+} -I =  0 = AY: 
- AYr_norm_diag:0.5239D-05  AYr_norm_offdiag:0.3407D-05
+ U^{+}*A*U - eps =  0 >  norm/diag:0.1739D-14   norm/offdiag:0.5091D-06
+ U^{+}*U -I =  0      >  norm/diag:0.2097D-15   norm/offdiag:0.1018D-05
+ U*U^{+} -I =  0      >  norm/diag:0.5239D-05   norm/offdiag:0.3407D-05
 
 Intel+MKL-i8, eispack RS:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 ::
 
- U^{+}*A*U - eps =  0 = C: 
- C_norm_diag:0.5058D-15  C_norm_offdiag:0.9620D-16
- U^{+}*U -I =  0 = AXr: 
- AXr_norm_diag:0.6168D-15  AXr_norm_offdiag:0.1400D-15
- U*U^{+} -I =  0 = AY: 
- AYr_norm_diag:0.5674D-15  AYr_norm_offdiag:0.1586D-15
+ U^{+}*A*U - eps = 0  >  norm/diag:0.5058D-15   norm/offdiag:0.9620D-16
+ U^{+}*U -I =  0      >  norm/diag:0.6168D-15   norm/offdiag:0.1400D-15
+ U*U^{+} -I =  0      >  norm/diag:0.5674D-15   norm/offdiag:0.1586D-15
 
 
 Solution
 --------
 The possible solution is to keep some non-DSYEVR diagonalization routine in the LINSYM part to avoid possibility of highly degenerate values with numerically unstable eigenvectors. 
-The eipack's RS or lapack's JACOBI fit for this purpose as they can properly handle eigenvectos of 
-degenerate eigenvalues. Also, matrixes for diagonalizations in the LINSYM routine are sufficiently small, therefore there is no need to employ the time efficient DSYEVR method from lapack.
+The eispack's RS or own DIRAC's JACOBI/QJACOBI do fit for this purpose as they can properly handle eigenvectos of 
+degenerate eigenvalues. 
+Also, matrixes for the diagonalizations in the LINSYM routine are sufficiently small for their size does not depend on number of basis functions, but on the highest M_J value. Therefore there is no need to utilize the time efficient (and numerically shaky) DSYEVR method from the standard lapack library.
 

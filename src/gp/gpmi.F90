@@ -2955,13 +2955,11 @@ contains
     AXr_norm_offdiag = AXr_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
     AYr_norm_offdiag = AYr_norm_offdiag/((DFLOAT(N)*DFLOAT(N))-DFLOAT(N))
 
+    ! ... Good printout
     write(LUPRI,"(2X,A)") routine_name
-    write(LUPRI,"(2X,A)") "Checking average differences U^{+}*A*U - eps =  0 = C"
-    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "C_norm_diag:",C_norm_diag,"C_norm_offdiag:",C_norm_offdiag
-    write(LUPRI,"(2X,A)") "Checking average differences U^{+}*U -I =  0 = AXr"
-    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "AXr_norm_diag:",AXr_norm_diag,"AXr_norm_offdiag:",AXr_norm_offdiag
-    write(LUPRI,"(2X,A)") "Checking average differences U*U^{+} -I =  0 = AYr"
-    write(LUPRI,"(A,D10.4,2X,A,D10.4)") "AYr_norm_diag:",AYr_norm_diag,"AYr_norm_offdiag:",AYr_norm_offdiag
+    write(LUPRI,"(1X,A,D10.4,1X,A,D10.4)") "U^{+}*A*U - eps ?= 0> norm/diag:",C_norm_diag,  "norm/offdiag:",C_norm_offdiag
+    write(LUPRI,"(1X,A,D10.4,1X,A,D10.4)") "    U^{+}*U - I ?= 0> norm/diag:",AXr_norm_diag,"norm/offdiag:",AXr_norm_offdiag
+    write(LUPRI,"(1X,A,D10.4,1X,A,D10.4)") "    U*U^{+} - I ?= 0> norm/diag:",AYr_norm_diag,"norm/offdiag:",AYr_norm_offdiag
 
     deallocate( AXr, AYr, C, stat=ierr )
     call alloc_stat_check("dealloc AXr(N,N), AYr(N,N) C(N,N)",ierr)

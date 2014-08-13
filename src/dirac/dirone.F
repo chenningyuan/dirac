@@ -6013,9 +6013,9 @@ C
 
           IF (WRITE_Jz_MATRIX) THEN
 ! get the file name first, containing symmetry
-            hfile_format="(A13,A8,I1,A1,I1)"
+            hfile_format="(A13,A7,I1,A1,I1)"
             write(hfile_name,hfile_format)
-     &       "Jz_LL_matrix.","fermirp=",I,"-",NFSYM
+     &       "Jz_LL_matrix.","fermirp",I,"-",NFSYM
 ! open the unique file and write the matrix
              luhm=95
              open(luhm,file=trim(hfile_name),access="sequential",
@@ -6087,9 +6087,9 @@ C
 
           IF (WRITE_Jz_MATRIX) THEN
 ! get the file name first, containing symmetry
-            hfile_format="(A13,A8,I1,A1,I1)"
+            hfile_format="(A13,A7,I1,A1,I1)"
             write(hfile_name,hfile_format)
-     &       "Jz_SS_matrix.","fermirp=",I,"-",NFSYM
+     &       "Jz_SS_matrix.","fermirp",I,"-",NFSYM
              print *,trim(hfile_name)
 ! open the unique file and write the matrix
              luhm=95
