@@ -95,9 +95,10 @@ numbers cca :math:`10^{-15} - 10^{-14}`.
 Eigenvalues and eigenvectors
 ----------------------------
 By using the testing matrix, *Jz_SS_matrix.fermirp=2-2*, we get properly degenerate eigenvalues
-with DSYEVR and other diagonalization methods:
+with DSYEVR and with other diagonalization methods:
 
 ::
+
                      1  -1.50000000000001
                      2  -1.50000000000000
                      3  -1.50000000000000
@@ -108,7 +109,7 @@ with DSYEVR and other diagonalization methods:
                      8  0.500000000000002
                      9   2.50000000000000
 
-Now we can proceed to checking the numerical correctness of obtained eigenvectors.
+Now we can proceed to checking the numerical accuracy of obtained eigenvectors.
 
 
 Intel+MKL-i8, DSYEVR:
