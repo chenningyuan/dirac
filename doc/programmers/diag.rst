@@ -58,7 +58,7 @@ The smallest test system
 By tracing the error to the smallest system where error is clearly showing up we came to the artificial *X2* one-electron linear system 
 in the smallest 1s1p1d basis: ::
 
- pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.asd.mol --get "Jz_SS_matrix.fermirp=2-2"
+ pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.asd.mol --get "Jz_SS_matrix.fermirp2-2"
  pam --noarch --inp=dc.1el.2fs.inp  --mol=X2.1s1p1d.D2h.mol
 
 (Input files for download are :download:`dc.1el.2fs.inp <../../../test/fscc_highspin/dc.1el.2fs.inp>`,
@@ -76,7 +76,7 @@ We see differences in energies by about :math:`10^{-4}` a.u. what is sufficient 
 
 The demonstration program 
 -------------------------
-By tracking down the source of the problem we get to the 9x9 matrix of the *X2.1s1p1d* test system above, *Jz_SS_matrix.fermirp=2-2*, 
+By tracking down the source of the problem we get to the 9x9 matrix of the *X2.1s1p1d* test system above, *Jz_SS_matrix.fermirp2-2*, 
 for the diagonalization testing, which is saved in the LINSYM routine.
 
 In the linear symmetry eigenvectors obtained with the lapack's DSYEVR routine happen to be numerically inaccurate. 
@@ -94,7 +94,7 @@ numbers cca :math:`10^{-15} - 10^{-14}`.
 
 Eigenvalues and eigenvectors
 ----------------------------
-By using the testing matrix, *Jz_SS_matrix.fermirp=2-2*, we get properly degenerate eigenvalues
+By using the testing matrix, *Jz_SS_matrix.fermirp2-2*, we get properly degenerate eigenvalues
 with DSYEVR and with other diagonalization methods:
 
 ::
