@@ -5,7 +5,7 @@ Problems with the diagonalization
 Diagonalizations are important part of (relativistic) quantum chemistry methods.
 
 In the DIRAC suite, there is the diagonalization of the Lowdin matrix, then of the Jz MO matrix in the case of linear symmetry
- and, finally, of the Fock MO matrix.
+and, finally, of the Fock MO matrix.
 
 In DIRAC, there are few routines to accomplish these tasks:
 
@@ -30,8 +30,7 @@ Problem case - DSYEVR
 
 The lapack' routine for diagonalization, DSYEVR, which is fast enough, is giving - for certain input matrices - 
 numerically unstable eigenvectors. 
-
-This happens in the LINSYM routine, when the linear symmetry is turned on.
+We found it in the LINSYM routine when the linear symmetry is turned on.
 
 The :math:`O_2` test system
 ---------------------------
@@ -92,7 +91,7 @@ obtained with the DSYEVR routine in comparison to other diagonalization methods.
 A is the original matrix for diagonalization, I is the unit matrix. The norm is defined as sum of absolute values of elements divided by total number of elements.
 We split matrix elements into diagonal and off-diagonal.
 
-Values around :math:`10^{-6} - 10^{-5}` clearly indicate deviation from zero threshold, where one would expect 
+Values around :math:`10^{-6} - 10^{-5}` clearly indicate deviation from  the zero threshold for which one would expect 
 numbers cca :math:`10^{-15} - 10^{-14}`.
 
 Eigenvalues and eigenvectors
@@ -143,8 +142,8 @@ Intel+MKL-i8, eispack RS:
 ---------------------------------
 Independent demonstration program 
 ---------------------------------
-For public purposes we are offering the standalone DIRAC code independent demonstration program *dsyerv_check.F90*
- which does the very same comparisons as the DIRAC dependent *diag.x* program.
+For public purposes we are offering the standalone and DIRAC independent demonstration program *dsyerv_check.F90*
+which does the same checks as the above mentioned (DIRAC dependent) *diag.x* program.
 (Source codes for downloading are :download:`dsyerv_check.F90 <../../../utils/dsyerv_check.F90>`,
 :download:`eispack.F <../../../src/pdpack/eispack.F>`,  and the testing matrix is
 :download:`Jz_SS_matrix.fermirp2-2 <../../../utils/Jz_SS_matrix.fermirp2-2>`.) 
@@ -152,7 +151,7 @@ For public purposes we are offering the standalone DIRAC code independent demons
 Results are as follows:
 
 GNU+/usr64/lib, DSYEVR:
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 ::
 
  U^{+}*A*U - eps ?= 0> norm/diag:0.1783D-14  norm/offdiag:0.1419D-06
@@ -160,8 +159,9 @@ GNU+/usr64/lib, DSYEVR:
      U*U^{+} - I ?= 0> norm/diag:0.1047D-05  norm/offdiag:0.7950D-06
 
 Intel+MKL, DSYEVR:
-~~~~~~~~~~~~~~~~~~
+------------------
 ::
+
  U^{+}*A*U - eps ?= 0> norm/diag:0.1684D-14  norm/offdiag:0.2746D-15
      U^{+}*U - I ?= 0> norm/diag:0.2097D-15  norm/offdiag:0.6923D-16
      U*U^{+} - I ?= 0> norm/diag:0.2467D-16  norm/offdiag:0.8681D-16
@@ -176,7 +176,7 @@ Solution of the problem
 =======================
 The simplest solution is to keep non-DSYEVR diagonalization routine in the LINSYM part to avoid possibility of highly degenerate values with numerically unstable eigenvectors. 
 The eispack's RS routine, own DIRAC's Householder or Jacobi methods do fit for this purpose because
- they can properly handle eigenvectos of 
+they can properly handle eigenvectos of 
 degenerate eigenvalues. The drawback is the time efficiency as the diagonalized matrix is of the Fock matrix size.
 
 More elaborate solution for improving the diagonalization methods for degenerate eigenvalues is pointed out by Luuk Visscher (private communication).

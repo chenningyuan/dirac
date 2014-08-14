@@ -16,7 +16,7 @@ and assigned student if any.
 
 
 Thesis list
------------
+===========
 
 Comparison of CPU and GPU mathematical libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,14 +85,14 @@ This project is suitable for bachelor thesis.
 Doxygen code documentation for DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The *Doxygen* is popular and free code documentation generator. It works for many programming languages,
-including C, C++ and Fortran. The aim is to adapt DIRAC code description comments  for Doxygen, and, eventually,
-the Doxygen source code as well to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
-This theme is suitable for IT one or more students.
+including C, C++ and Fortran. The aim is to adapt DIRAC code description comments  for *Doxygen*, and, eventually,
+the *Doxygen* source code as well to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
+This theme is suitable for one or more IT-students.
 
 
------------------
+=================
 Other TODO wishes
------------------
+=================
 
 New input reader with documenting of keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
