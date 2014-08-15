@@ -113,9 +113,8 @@ with DSYEVR and with other diagonalization methods:
 
 Now we can proceed to checking the numerical accuracy of obtained eigenvectors.
 
-
 Intel+MKL-i8, DSYEVR:
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 ::
 
  U^{+}*A*U - eps =  0 >  norm/diag:0.1684D-14    norm/offdiag:0.6623D-06
@@ -123,7 +122,7 @@ Intel+MKL-i8, DSYEVR:
  U*U^{+} -I =  0      >  norm/diag:0.6293D-05    norm/offdiag:0.4174D-05
 
 GNU+ownmath-i8, DSYEVR:
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 ::
 
  U^{+}*A*U - eps =  0 >  norm/diag:0.1739D-14   norm/offdiag:0.5091D-06
@@ -131,7 +130,7 @@ GNU+ownmath-i8, DSYEVR:
  U*U^{+} -I =  0      >  norm/diag:0.5239D-05   norm/offdiag:0.3407D-05
 
 Intel+MKL-i8, eispack RS:
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 ::
 
  U^{+}*A*U - eps = 0  >  norm/diag:0.5058D-15   norm/offdiag:0.9620D-16
