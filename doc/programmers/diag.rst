@@ -166,10 +166,20 @@ Intel+MKL, DSYEVR:
      U*U^{+} - I ?= 0> norm/diag:0.2467D-16  norm/offdiag:0.8681D-16
 
 It is interesting to observe that obtained Intel+MKL results are in fact correct and 
-different that those from  the  *diag.x*  DIRAC based standalone program.
+different that those from the *diag.x*  DIRAC based standalone program.
 This can be attributed to more complicated compiling and linking flags 
 of the *diag.x* code in the complex DIRAC's cmake buildup apparatus.
 
+Intel+lapack 3.5.0, DSYEVR:
+---------------------------
+::
+
+ U^{+}*A*U - eps ?= 0> norm/diag:0.1665D-14  norm/offdiag:0.9524D-07
+     U^{+}*U - I ?= 0> norm/diag:0.2097D-15  norm/offdiag:0.1905D-06
+     U*U^{+} - I ?= 0> norm/diag:0.7649D-06  norm/offdiag:0.5035D-06
+
+The "newest" (in August 2014) lapack 3.5.0 from netlib still suffers with non-orthogonal eigenvectors
+ (see this `bug report <http://www.netlib.org/lapack/Errata/index2.html#_strong_span_class_red_bug0056_span_strong_non_orthogonal_eigenvectors_returned_from_dsyevr>`_ ).
 
 Solution of the problem
 =======================
