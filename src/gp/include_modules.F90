@@ -31,15 +31,14 @@ implicit none
 private
 #include "dcbgen.h"
 !> specify public variables and public methods
-public :: get_IPRGEN  
+public :: get_IPRGEN
 contains
-function get_IPRGEN result (IPRGEN_out)
+function get_IPRGEN() result (IPRGEN_out)
  implicit none
  integer :: IPRGEN_out
  IPRGEN_out = IPRGEN
 end function get_IPRGEN
 end module include_dcbgen_h
-
 
 module include_dgroup_h
 !> module for picking up/setting certain variables from dgroup.h
@@ -68,11 +67,11 @@ private
 !> specify public variables and public methods
 public :: get_IPRHAM
 contains
-function get_IPRHAM result (IPRHAM_out)
+function get_IPRHAM() result (IPRHAM_out)
  implicit none
  integer :: IPRHAM_out
  IPRHAM_out = IPRHAM
-end function 
+end function get_IPRHAM
 end module include_dcbham_h
 
 module include_dcbdhf_h
@@ -82,11 +81,11 @@ private
 !> specify public variables and public methods
 public :: get_IPRSCF
 contains
-function get_IPRSCF result (IPRSCF_out)
+function get_IPRSCF() result (IPRSCF_out)
  implicit none
  integer :: IPRSCF_out
  IPRSCF_out = IPRSCF
-end function 
+end function get_IPRSCF
 end module include_dcbdhf_h
 
 module include_dcbprp_h
@@ -97,11 +96,9 @@ private
 !> specify public variables and public methods
 public :: get_IPRPRP
 contains
-function get_IPRPRP result (IPRPRP_out)
+function get_IPRPRP() result (IPRPRP_out)
  implicit none
  integer :: IPRPRP_out
  IPRPRP_out = IPRPRP
-end function 
+end function get_IPRPRP
 end module include_dcbprp_h
-
-
