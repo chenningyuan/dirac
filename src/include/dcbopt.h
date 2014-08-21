@@ -59,7 +59,7 @@
      &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MCTYPE,             &
-     &        MK2DEL, MK2REF, MINMK2, MAXMK2,                           &
+     &        IOPT_MK2DEL, IOPT_MK2REF, IOPT_MINMK2, IOPT_MAXMK2,       &
      &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
@@ -73,7 +73,7 @@
      &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MCTYPE,                   &
-     &                MK2DEL, MK2REF, MINMK2, MAXMK2,                   &
+     &                IOPT_MK2DEL,IOPT_MK2REF,IOPT_MINMK2,IOPT_MAXMK2,  &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&

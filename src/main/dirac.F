@@ -698,10 +698,10 @@ C     transfer open shell average-of-configuration to GAS space notation /July 2
 C
 C
       NASHT  = NASH(1) + NASH(2)
-      MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
-      MINMK2 = -MAXMK2
-      MK2REF = 0
-      MK2DEL = MAXMK2
+      IOPT_MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
+      IOPT_MINMK2 = -IOPT_MAXMK2
+      IOPT_MK2REF = 0
+      IOPT_MK2DEL = IOPT_MAXMK2
 C
 C     Set common block DCIOPT
 C
@@ -784,7 +784,7 @@ C
 C
 C
       NGAS_DC= NKRMCGAS
-      MK2REF = NKRMC_MK2REF
+      IOPT_MK2REF = NKRMC_MK2REF
 
 !     set active spaces and other derived variables for the full CI option
       if(KRMC_full_ci)then
@@ -842,9 +842,9 @@ C
 
       end if ! full ci option
 
-      MK2DEL = NKRMC_MK2DEL
-      MINMK2 = NKRMC_MINMK2
-      MAXMK2 = NKRMC_MAXMK2
+      IOPT_MK2DEL = NKRMC_MK2DEL
+      IOPT_MINMK2 = NKRMC_MINMK2
+      IOPT_MAXMK2 = NKRMC_MAXMK2
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
@@ -969,10 +969,10 @@ C
 C
 C
       NGAS_DC= NKRCIGAS
-      MK2REF = NKRCI_MK2REF
-      MK2DEL = NKRCI_MK2DEL
-      MINMK2 = NKRCI_MINMK2
-      MAXMK2 = NKRCI_MAXMK2
+      IOPT_MK2REF = NKRCI_MK2REF
+      IOPT_MK2DEL = NKRCI_MK2DEL
+      IOPT_MINMK2 = NKRCI_MINMK2
+      IOPT_MAXMK2 = NKRCI_MAXMK2
 
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
@@ -1112,7 +1112,7 @@ C***********************************************************************
 #include "infpar.h"
       DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
-      integer :: IMPARID, INUMNOD, IMYTID, ITASK, ICHECK_MPI2, IPARCAL
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL
       real*8 :: CPU1, WALL1
 C
 C
@@ -1177,17 +1177,14 @@ Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1
-#if defined (VAR_MPI2)
-      ICHECK_MPI2 =   0
-#endif
+#if !defined (VAR_MPI2)
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
-     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+      IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
        CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
       END IF
+#endif
 C
 C     Start timing.
 C
@@ -1270,6 +1267,11 @@ C
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
+      ELSE IF (ITASK .EQ. 11) THEN
+C
+C        start GASCIP MPI calculation
+C
+         CALL GASCIP_NODE()
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1314,17 +1316,14 @@ C
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1
-#if defined (VAR_MPI2)
-      ICHECK_MPI2 =   0
-#endif
+#if !defined (VAR_MPI2)
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
-     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+      IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
+       CALL Abend2(' error in DIRNOD2: missing MPI-2 library functions')
       END IF
+#endif
 C
 C
 C     ***************************************************
@@ -1377,13 +1376,18 @@ C        start KR-MCSCF calculation.
 C
          CALL KRMC_NODE_DRIVER()
 #endif /* VAR_MPI2 */
+      ELSE IF (ITASK .EQ. 11) THEN
+C
+C        start GASCIP MPI calculation
+C
+         CALL GASCIP_NODE()
       ELSE
 C
 C        Unknown task. Abort execution.
 C
          WRITE(LUPRI,'(A,I5)')
-     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
-         CALL QUIT(' Unknown task in DIRNOD')
+     &     '*** ERROR *** DIRNOD2: Unknown task ITASK = ',ITASK
+         CALL QUIT(' Unknown task in DIRNOD2')
       END IF
 C
 C     We want the slave program to go until there is nothing
@@ -1502,10 +1506,10 @@ C since there are some variables with the same name we will call a routine for t
      &                           NKRCCASH,NKRCCGSH,NKRCCSSH,NKRCCFRO,
      &                           NKRCCGSP,MAXCIT_KRCC)
       NGAS_DC= NKRCCGAS
-      MK2REF = NKRCC_MK2REF
-      MK2DEL = NKRCC_MK2DEL
-      MINMK2 = NKRCC_MINMK2
-      MAXMK2 = NKRCC_MAXMK2
+      IOPT_MK2REF = NKRCC_MK2REF
+      IOPT_MK2DEL = NKRCC_MK2DEL
+      IOPT_MINMK2 = NKRCC_MINMK2
+      IOPT_MAXMK2 = NKRCC_MAXMK2
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
