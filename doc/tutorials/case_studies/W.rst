@@ -8,7 +8,7 @@ It is open-shell system with four unpaired electrons in the *5d* shell::
  W: [Xe] 4f(14) 5d(4) 6s(2)
 
 ----------------------------
-Starting from :math:`W^{4+}`
+Starting with :math:`W^{4+}`
 ----------------------------
 
 Based on experience with *d* open-shell systems, the first step is to obtain converged state of the (closest) closed-shell cation, :math:`W^{4+}`.
@@ -22,7 +22,7 @@ For that we have to ensure proper occupation of spinors in each of two fermion i
 :download:`W_4+.x2c.scf_30_40.2fs.inp <../../../../test/tutorial_W/W_4+.x2c.scf_30_40.2fs.inp>` )
 
 The total SCF energy of this cation is -16146.075957236933 a.u., and, as a sign of correctness of the SCF calculation, 
-there are properly degenerated *p*,*d* etc eigenvalues in the analysis output 
+there are properly degenerated *p*, *d* etc eigenvalues in the analysis output 
 (see the full output file :download:`W_4+.x2c.scf_30_40.2fs_W.dyall_v2z.lsym.out <../../../../test/tutorial_W/result/W_4+.x2c.scf_30_40.2fs_W.dyall_v2z.lsym.out>`). 
 In the case of ill SCF process, though converged, atomic shells are not degenerated as they should be.
 
@@ -34,7 +34,7 @@ In the next step we reuse saved molecular spinors from file *DFCOEF.W_4+* and ke
 
  $PAM --noarch --mw=300 --mol=W.dyall_v2z.lsym.mol --inp=W.x2c.scf_ovlsel.2fs.inp --put "DFCOEF.W_4+=DFCOEF"
 
-(File to download :download:`W.x2c.scf_ovlsel.2fs.inp <../../../../../test/tutorial_W/W.x2c.scf_ovlsel.2fs.inp>`)
+(File to download :download:`W.x2c.scf_ovlsel.2fs.inp <../../../../test/tutorial_W/W.x2c.scf_ovlsel.2fs.inp>`)
 
 One has to take the dynamic overlap selection as the mere :math:`M_{J}` selection does not work 
 (you can try with input file :download:`W.x2c.scf_Mjsel.inp <../../../../test/tutorial_W/W.x2c.scf_Mjsel.inp>`).
