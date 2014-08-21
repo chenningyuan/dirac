@@ -806,6 +806,11 @@ C
                OPEN(UNIT=LUNIT,STATUS='SCRATCH',
      &              ACCESS='SEQUENTIAL',FORM=FORMF(1:FORMLN),
      &              ERR=9004,IOSTAT=IOS)
+            ELSE IF (ACCESF(1:8) == 'READONLY') THEN
+               OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
+     &              STATUS=STATUF(1:STATLN),ACCESS='SEQUENTIAL',
+     &              ACTION='READ',
+     &              FORM=FORMF(1:FORMLN),ERR=9004,IOSTAT=IOS)
             ELSE
                OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
      &              STATUS=STATUF(1:STATLN),ACCESS='SEQUENTIAL',

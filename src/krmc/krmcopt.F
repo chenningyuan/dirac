@@ -6475,13 +6475,7 @@ C     Last revision: S. Knecht           - June 2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "dcbgen.h"
-#include "infpar.h"
-#include "parkrmc.h"
 C
       IF (.NOT.PARCAL) RETURN
 C

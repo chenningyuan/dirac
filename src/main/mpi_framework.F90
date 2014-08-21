@@ -64,6 +64,8 @@ IF( IPAREX .gt. 0 )THEN
 
 ! get rank
   call interface_mpi_comm_rank(global_communicator, MYTID)
+MYNUM      = MYTID ! MYNUM is used in some subroutines from Dalton
+
 ! determine size of mpi_comm_world
   call interface_mpi_comm_size(global_communicator, NUMPROC)
 
@@ -84,6 +86,7 @@ IF( IPAREX .gt. 0 )THEN
 !
 ! we count the number of slave nodes, subtract the master
   NUMNOD = NUMPROC - 1
+  NODES  = NUMNOD
 !
   PARCAL = .TRUE.
 !
