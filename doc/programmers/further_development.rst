@@ -77,22 +77,24 @@ Supervisor Miro Ilias got an IT-student for bachelor thesis, hopefully he will s
 Git and web-based project development platforms in the service of DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The Git version control system is very popular for the code development. On top of it, various web-based project development 
-platforms (like assembla, bitbucket, deveo, gitorious etc) are heplful for managing git repositories.
-The aim is to describe (in the form of manual) the Git system and available web-based project development servers
-with their various features and show how all these goodies can be applied in our collective DIRAC development.
+platforms (like assembla, bitbucket, deveo, gitorious etc) are heplful for managing git repositories and controling 
+the program development. 
+The aim is to describe (in the form of manual) the Git system and available project development web-servers.
+We investigate various features and show how all these goodies can be applied for the collaborative DIRAC development.
 This project is suitable for bachelor thesis.
+
 
 Doxygen code documentation for DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The *Doxygen* is popular and free code documentation generator. It works for many programming languages,
-including C, C++ and Fortran. The aim is to adapt DIRAC code description comments  for *Doxygen*, and, eventually,
-the *Doxygen* source code as well to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
+including C, C++ and Fortran. Our aim is to adapt DIRAC code description comments for the *Doxygen*, and, eventually,
+the *Doxygen* source code as well in order to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
 This theme is suitable for one or more IT-students.
 
 
-=================
 Other TODO wishes
 =================
+
 
 New input reader with documenting of keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
