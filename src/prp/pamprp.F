@@ -267,7 +267,7 @@ C
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_fde_export) then
 #ifdef MOD_XML
-         CALL TITLER('Output FDE data to XML file','*',118)
+         CALL TITLER('Output FDE data to file','*',118)
          call fde_export_to_file(wf)
 #endif
       END IF
@@ -1348,9 +1348,9 @@ C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
 #ifdef MOD_LAO_REARRANGED
       IF (SHIELD .OR. shielding_rearrange .OR.
-     &    ESRGTENS .OR. ESRANISO) THEN
+     &    ESRGTENS .OR. ESR_HFCC) THEN
 #else
-      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+      IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
 #endif
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
@@ -2069,12 +2069,8 @@ C
 C     print header
 C     ============
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,'(A)') '@   Elements of the electric dipole'
-      WRITE(LUPRI,'(A)') '@   polarizability tensor'
-      WRITE(LUPRI,'(A)') '@'
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(/A/)')
+     &   '@   Elements of the electric dipole polarizability tensor'
 C
       DO IFREQ = 1,NBFREQ
         CALL DZERO(TMPMAT,9)
@@ -2084,11 +2080,8 @@ C       print frequency
 C       ===============
 C
         IF(.NOT.(NBFREQ.EQ.1)) THEN
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A3,A10,F15.8,A5)') '@  ',
-     &                         'frequency', BFREQ(IFREQ), 'a.u.'
-          WRITE(LUPRI,'(A)') '@'
-          WRITE(LUPRI,*)
+          WRITE(LUPRI,'(/A,F15.8,A/)')
+     &       '@  frequency', BFREQ(IFREQ), ' a.u.'
         ENDIF
 C
 C
@@ -2101,7 +2094,7 @@ C
             KJ = IPEPOLAR(J,1)
 C
 C           e-e
-            TMPMAT(I,J) = -D1*ABLRF(IFREQ,KI,KJ,2)
+            TMPMAT(I,J) = -ABLRF(IFREQ,KI,KJ,2)
 C
 C           don't look for e-p in case of XLR_SKIPEP
             IF(.NOT.XLR_SKIPEP) THEN
@@ -3889,7 +3882,7 @@ C***********************************************************************
 #endif
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &          DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -3991,8 +3984,8 @@ C
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
               END IF
-              IF (ESRANISO) THEN
-                CALL OP1IND('ESRANISO',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
+              IF (ESR_HFCC) THEN
+                CALL OP1IND('ESR_HFCC',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
                 IPESR(ISCOR1,1) = INDOP1
               END IF
 
@@ -4021,7 +4014,7 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                          INDXPR,ISYXPR,ITRXPR,IPRINT)
                     IF (IPRINT.GE.5) THEN
-                       !  print out assiged operators of wanted property
+                       !  print out assigned operators of wanted property
                        write(LUPRI,'(4X,A)')
      &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
@@ -4046,8 +4039,8 @@ C
 C  Conventional atomic orbitals (common gauge origin approach)
 C
       NCOMP = 2
-      PFAC(1)  = -DMI2*CVAL
-      PFAC(2)  = -DMI2*CVAL
+      PFAC(1)  = DMI2*CVAL
+      PFAC(2)  = DMI2*CVAL
       PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
@@ -4155,14 +4148,7 @@ C     A operators
 C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
-        IF (LONDON) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &   '** A operators for NMR shielding, LAO approach **'
-        ELSE
-         WRITE(LUPRI,'(1X,A)')
-     &   '** A operators for NMR shielding, CGO approach **'
-        ENDIF
-        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** A operators for NMR shielding **'
         DO I = 1,NSCOOR
           INDOP1 = IPSHIELD(I)
           IF(INDOP1.GT.0) THEN
@@ -4177,7 +4163,14 @@ C     ===========
 C
         CALL PRSYMB(LUPRI,'-',75,0)
         !WRITE(LUPRI,'(A)') ' ** B operators for NMR shielding or ESR **'
-        WRITE(LUPRI,'(A)') ' ** B operators for NMR shielding **'
+        IF (LONDON) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for NMR shielding, LAO approach **'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for NMR shielding, CGO approach **'
+        ENDIF
+        CALL PRSYMB(LUPRI,'-',75,0)
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,3
           INDOP1 = IPSHIELD(I+MXCOOR)
@@ -4204,9 +4197,10 @@ C
         ENDDO
       END IF
 C
-      IF (ESRANISO) THEN
+      IF (ESR_HFCC) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(A)') ' ** ESR anisotropy operators **'
+        WRITE(LUPRI,'(A)')
+     &     ' ** ESR nuclear hyperfine coupling operators **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
           INDOP1 = IPESR(I,1)
@@ -5706,11 +5700,11 @@ C     ... evaluate expectation value terms first
      &   "     PRP_MSUSCP: NEXPP is exceeded!"
            IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-             SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-             SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
+             SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
+             SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
            ELSE                
-             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
+             SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
            ENDIF
           ENDDO
           ENDDO
@@ -5927,12 +5921,11 @@ C          contributions from the linear response function
          ENDDO
        ENDDO
 
-C    .... DALTON type of output
+         CALL HEADER('Relaxation part of susceptibilities',-1)
          IF (LONDON) THEN  
-          CALL HEADER('Relaxation',-1)
+C    .... DALTON type of output
           CALL POLPRI(SUSREL,'   ',-2)
          ELSE
-          CALL HEADER('Relaxation part of susceptibilities',-1)
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
          ENDIF
          AVERAG = (SUSREL(1,1) + SUSREL(2,2) + SUSREL(3,3))/D3
@@ -6192,7 +6185,6 @@ C
       logical, allocatable :: DOATOM(:)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
-      allocate(DOATOM(NUCIND))
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMATLO,NCMAT,WORK,KFREE,LFREE)
@@ -6213,7 +6205,8 @@ C
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMAT,2*NCMAT,WORK,KFREE,LFREE)
 C
-C     (-29: accept .SELECT specification)
+C     (SETATM code -29: accept .SELECT specification)
+      allocate(DOATOM(NUCIND))
       CALL SETATM(DOATOM,NATOM,-29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
      &     WORK(KDMATLO),WORK(KDMATRE),WORK(KDMATREE),WORK(KDMATREP),
@@ -6261,7 +6254,7 @@ C***********************************************************************
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
       LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &     TMPMAT(3,*),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
+     &     TMPMAT(3,3*NUCDEP,2),TMAT(3,3,NUCDEP), DMAT(3,3,NUCDEP),
      &     DMATLO(3,3,NUCDEP),DMATRE(3,3,NUCDEP),
      &     DMATREE(3,3,NUCDEP),DMATREP(3,3,NUCDEP),DMATREO(3,3,NUCDEP),
      &     PMAT(3,3,NUCDEP,2),TISO(NUCDEP),DISO(NUCDEP),PISO(NUCDEP),
@@ -6298,7 +6291,7 @@ C
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
-      NCMAT = 9*NUCDEP
+      NCMAT  = 9*NUCDEP
       CALL DZERO(TMPMAT,NCMAT)
       CALL DZERO(DMAT,NCMAT)
       CALL DZERO(DMATLO,NCMAT)
@@ -6322,7 +6315,7 @@ C
 CMI       ... take care of the correct form of PRPLBL(IPL) name
           READ(PRPLBL(IPL)(1:3),'(I3)') IA
           IB = MOD(I+2,3) + 1
-          TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
+          TMPMAT(IPTAX(IB,2),IA,1) = EXPVAL(IOP)
         ENDDO
         IF(IPRPRP.GE.2) THEN
 C        ...for what do we have calculated diamagnetic terms
@@ -6351,7 +6344,7 @@ C ------------------------------------------------------
 CMI ... take care of the correct form of PRPLBL(IPL) name
           READ(PRPNAM(IPL)(10:11),'(I2)') IA
           IB = MOD(I+2,3) + 1
-          TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
+          TMPMAT(IPTAX(IB,2),IA,1) = -EXPVAL(IOP)
         ENDDO
         IF (IPRPRP.GE.2) THEN
           CALL HEADER('London part of shielding (exp.value)'//
@@ -6425,7 +6418,7 @@ C  ...  get the expect. value {T,h(mK)} reorthonormalization term
         CALL MEMGET('REAL',KCON ,N2ORBXQ  ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDMAT,N2ORBXQ  ,WORK,KFREE,LFREE)
         CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
-     &             WORK,KFREE,LFREE,IPRPRP)
+     &              WORK,KFREE,LFREE,IPRPRP)
         CALL MEMREL('PRP_SHIELD1_GETCON',WORK,1,KW,KFREE,LFREE)
 CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
@@ -6450,7 +6443,7 @@ C       ... extract the reorthonormalization part into the PMAT
 C       ... add the reorthonormalization terms to DMATRE
 CTROND...DAXPY not needed !!!! use dmatre directly
         CALL DAXPY(NCMAT,D1,PMAT,1,DMATRE,1)
-      END IF
+      END IF ! (LONDON.AND.(.NOT.NOORTH))
 C
 C     *** Extract shieldings ***
 C
@@ -6505,41 +6498,52 @@ C
       DO IFREQ = 1,NBFREQ
         CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
-           WRITE(LUPRI,'(A,F15.8,2X,A)')
-     &          '*** Frequency    :',BFREQ(IFREQ),'a.u.'
+           WRITE(LUPRI,'(A,F15.8,A)')
+     &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
         ENDIF
         CALL DZERO(TMPMAT,2*NCMAT)
         DO IB = 1,NB
           JB = IBUFB(IB)
-          KB = IPSHIELD(JB+MXCOOR)
+          KB = IPSHIELD(MXCOOR+JB)
+          JB = IPTAX(JB,2)
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSHIELD(JA)
 C...        First extract the e-e contribution
-            IF (.NOT. XLR_SKIPEE) TMPMAT(IPTAX(JB,2),JA) =
-     &                        -ABLRF(IFREQ,KA,KB,IABLRF_EE)
+            IF (.NOT. XLR_SKIPEE)
+     &         TMPMAT(JB,JA,1) = ABLRF(IFREQ,KA,KB,IABLRF_EE)
 C...        then extract the e-p "diamagnetic" contribution
-            IF (.NOT. XLR_SKIPEP) TMPMAT(IPTAX(JB,2),JA+NCMAT) =
-     &                       -ABLRF(IFREQ,KA,KB,IABLRF_EP)
+            IF (.NOT. XLR_SKIPEP)
+     &         TMPMAT(JB,JA,2) = ABLRF(IFREQ,KA,KB,IABLRF_EP)
           ENDDO
         ENDDO
+        IF (LONDON) THEN
+        ! ... different sign convention for London operators
+           CALL DSCAL(2*NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP .GT. 5) THEN
+              write(lupri,*) 'Changing sign on London contributions e-e'
+              call output(TMPMAT,1,NB,1,NA,NB,NA,-1,LUPRI)
+              write(lupri,*) 'Changing sign on London contributions e-p'
+              call output(TMPMAT(1,1,2),1,NB,1,NA,NB,NA,-1,LUPRI)
+           END IF
+        END IF
 #if defined (XH4)
-        TMPMAT(2,8)  = TMPMAT(1,4)
-        TMPMAT(2,9)  = TMPMAT(1,6)
-        TMPMAT(2,10) = TMPMAT(1,7)
-        TMPMAT(2,11) = TMPMAT(1,5)
-        TMPMAT(3,12) = TMPMAT(1,4)
-        TMPMAT(3,13) = TMPMAT(1,6)
-        TMPMAT(3,15) = TMPMAT(1,7)
-        TMPMAT(3,14) = TMPMAT(1,5)
-        TMPMAT(2,8+NCMAT)  = TMPMAT(1,4+NCMAT)
-        TMPMAT(2,9+NCMAT)  = TMPMAT(1,6+NCMAT)
-        TMPMAT(2,10+NCMAT) = TMPMAT(1,7+NCMAT)
-        TMPMAT(2,11+NCMAT) = TMPMAT(1,5+NCMAT)
-        TMPMAT(3,12+NCMAT) = TMPMAT(1,4+NCMAT)
-        TMPMAT(3,13+NCMAT) = TMPMAT(1,6+NCMAT)
-        TMPMAT(3,15+NCMAT) = TMPMAT(1,7+NCMAT)
-        TMPMAT(3,14+NCMAT) = TMPMAT(1,5+NCMAT)
+        TMPMAT(2,8,1)  = TMPMAT(1,4,1)
+        TMPMAT(2,9,1)  = TMPMAT(1,6,1)
+        TMPMAT(2,10,1) = TMPMAT(1,7,1)
+        TMPMAT(2,11,1) = TMPMAT(1,5,1)
+        TMPMAT(3,12,1) = TMPMAT(1,4,1)
+        TMPMAT(3,13,1) = TMPMAT(1,6,1)
+        TMPMAT(3,15,1) = TMPMAT(1,7,1)
+        TMPMAT(3,14,1) = TMPMAT(1,5,1)
+        TMPMAT(2,8,2)  = TMPMAT(1,4,2)
+        TMPMAT(2,9,2)  = TMPMAT(1,6,2)
+        TMPMAT(2,10,2) = TMPMAT(1,7,2)
+        TMPMAT(2,11,2) = TMPMAT(1,5,2)
+        TMPMAT(3,12,2) = TMPMAT(1,4,2)
+        TMPMAT(3,13,2) = TMPMAT(1,6,2)
+        TMPMAT(3,15,2) = TMPMAT(1,7,2)
+        TMPMAT(3,14,2) = TMPMAT(1,5,2)
 #endif
 C
 C     Transform to C1 basis
@@ -6570,10 +6574,10 @@ C       ... add (diamagnetic-NSNL)+London+reortho terms to the TMAT
           IF (IPRPRP.GE.2) THEN
              CALL HEADER('e-p response part of shielding'//
      &          ' in symmetry coordinates (ppm)',1)
-             CALL FCPRI (TMPMAT(1,1+NCMAT),'SIGMAS',CSTRA,SCTRA)
+             CALL FCPRI (TMPMAT(1,1,2),'SIGMAS',CSTRA,SCTRA)
           ENDIF
 C         ... extract the e-p response part into PMAT(...,2)
-          CALL TRADIP(TMPMAT(1,1+NCMAT),PMAT(1,1,1,2),
+          CALL TRADIP(TMPMAT(1,1,2),PMAT(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
 C         ... add the e-p response PMAT(...,2) into TMAT
 C         so the TMAT now contains total response
@@ -8137,7 +8141,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
-      LOGICAL IS_SQUARE, IS_PCTRA
+      LOGICAL IS_PCTRA
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
 C
@@ -8147,20 +8151,16 @@ C
 C     ... allocate for LL-only operator 
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-
+      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
       REWIND (LU1INT)
-
 C     ... run over all operators in the list
       DO I = 1, NPRPS
-
 C       ... get info if this operator has to be picture change transformed
         CALL DECIDEPCTR(IS_PCTRA,PRPNAM(I),IPRINT)
-
         IREP = IPRPSYM(I) - 1
         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,*)
@@ -8173,42 +8173,13 @@ C       ... get info if this operator has to be picture change transformed
      &      'Operator need NOT to be picture change transformed.'
           ENDIF
         ENDIF
-
-        IF (IPRPTIM(I).EQ.0) THEN
-          IDIMENS = N2BBASX
-          IS_SQUARE = .TRUE.
-        ELSE IF (IPRPTIM(I).EQ.1.OR.IPRPTIM(I).EQ.-1) THEN
-          IDIMENS = NNBBASX
-          IS_SQUARE = .FALSE.
-        ELSE
-          CALL QUIT('PROP2BSS: wrong parameter ! ')
-        ENDIF
-C
-C       Memory allocation
-C
-        CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
-        CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-
 C       ... get the operator either in the full four-component form, 
 C       .... or already in  the picture change transformed shape
 C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
-        IF (IS_SQUARE) THEN
-          CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ELSE
-          CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
-     &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRINT)   
-        ENDIF
-C     ... deallocate the memory...
-        CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
-
+        CALL PRPMSAO(INDXPR,VMAT,WORK(KFIRST),WORK(KFREE),LFREE,IPRINT)   
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
-
 C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
@@ -8288,7 +8259,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0,DMI2 = -0.5D0)
+      PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -8527,7 +8498,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &          DMI2 = -0.5D0,DI2 = +0.5D00,DM1 = - 1.0D0)
+     &          DI2 = +0.5D00,DM1 = - 1.0D0)
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"

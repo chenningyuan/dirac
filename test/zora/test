@@ -4,15 +4,14 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO|Occupation in fermion symmetry E1g',
-      tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-8)
 
 inp = []
 inp.append('1el.dirac.inp')
@@ -22,6 +21,6 @@ inp.append('1el.zorasf.inp')
 inp.append('1el.zorasc.inp')
 inp.append('1el.zorascsf.inp')
 
-test_run.execute(inp, ['U.dyall.2p.mol'], f)
+test.run(inp, ['U.dyall.2p.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

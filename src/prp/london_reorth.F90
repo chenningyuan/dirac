@@ -374,6 +374,9 @@ contains
 
 !gosia fixme parallel run
     call my_get_npos(npos)
+!
+! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
+!
     call alloc(npos_array, npos)
     npos_array(1:npos) = 0
 

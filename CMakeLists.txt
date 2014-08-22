@@ -30,10 +30,10 @@ option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"   
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
-option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -59,7 +59,11 @@ if(ENABLE_STATIC_LINKING)
        # ld-linkers, fix for older linkers
        set(NODYNEXPORT "-Wl,--no-export-dynamic")
     endif()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Bstatic ${NODYNEXPORT}")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${NODYNEXPORT}")
+    endif()
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
@@ -83,7 +87,6 @@ include(ConfigMath)
 
 include(ConfigMPI)
 include(ConfigSafeGuards)
-include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo) # has to come after ConfigVersion
 
@@ -113,7 +116,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
-    ${PROJECT_BINARY_DIR}/unit-tests
     ${PROJECT_BINARY_DIR}
     )
 
@@ -210,13 +212,6 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-if(ENABLE_UNIT_TESTS)
-    set(FREE_FORTRAN_SOURCES
-        ${FREE_FORTRAN_SOURCES}
-        src/gp/unit_testing.F90
-        )
-endif()
-
 # add binary_info.F90
 set(GENERATED_FILES
     ${GENERATED_FILES}
@@ -309,28 +304,23 @@ foreach(
 
 endforeach()
 
+# give a nice message at the end
+include(Motivation)
+get_motivational_message(${DEVELOPMENT_CODE} msg)
+add_custom_target(final ALL COMMENT "Compilation successfully completed - ${msg}")
+set(_list_of_all_targets ${LIST_OF_EXECUTABLES})
+if(ENABLE_XCFUN)
+    set(_list_of_all_targets ${_list_of_all_targets} example_fortran funeval testall)
+endif()
+add_dependencies(final ${_list_of_all_targets})
+unset(_list_of_all_targets)
+
 #enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
 if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
 endif()
 
-# build unit tests
-if(ENABLE_UNIT_TESTS)
-    # set unit test libs
-    set(UNIT_TEST_LIBS
-        dirac
-        ${EXTERNAL_LIBS}
-        )
-    include(ConfigUnitTesting)
-endif()
-
-# create unit tests (set header for unit testing)
-if(ENABLE_UNIT_TESTS)
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
-else()
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
-endif()
-
+include(ConfigTesting)
 include(ConfigPackaging)
 
 # give information about system, compiler flags, and size of static allocations

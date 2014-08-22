@@ -4,20 +4,19 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
 f.add(string      = 'Electronic energy',
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 f.add(string      = 'Value of total response',
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 f.add(string      = '@   average',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
-test_run.execute(['levy-leblond.inp', 'nonrel.inp'], ['hf.mol'], f, accepted_errors=['ERROR: response with .NONREL not possible'])
+test.run(['levy-leblond.inp', 'nonrel.inp'], ['hf.mol'], f, accepted_errors=['ERROR: response with .NONREL not possible'])
 
-sys.exit(0)
+sys.exit(test.return_code)

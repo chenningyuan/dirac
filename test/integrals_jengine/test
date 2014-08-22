@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
-test_run.execute(['NR_direct_Jengine+LinK.inp', 'NR_direct_Jengine+LinK_LDA.inp',
+test.run(['NR_direct_Jengine+LinK.inp', 'NR_direct_Jengine+LinK_LDA.inp',
                   '2C_SF_direct_Jengine+LinK.inp', '2C_SF_direct_Jengine+LinK_LDA.inp'], ['H2O2.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

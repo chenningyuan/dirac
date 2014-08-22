@@ -4,20 +4,19 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string    = 'DFT exchange-correlation energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(string    = 'Electronic energy',
-      tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-7)
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = ' Relative real eigenvalues in other units;',
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
-test_run.execute(['m05.inp', 'm06-l.inp', 'm06.inp'], ['hf.mol'], f)
+test.run(['m05.inp', 'm06-l.inp', 'm06.inp'], ['hf.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

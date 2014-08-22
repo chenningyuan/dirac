@@ -260,7 +260,7 @@ C     =====================
 C
          IF (NEXCSYM(JSYMOP).GT.0) THEN
             CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXQR)
+     &                  IPRXQR)
             IF (NZCONF.EQ.0) THEN
                NEXMAX = NZXOPE
             ELSE
@@ -388,7 +388,7 @@ C
       DO IS = 1,NFC
          JOPSY = IFERE
          CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &               WORK,KFREE,LFREE,IPRXQR)
+     &               IPRXQR)
          MZYEE = MAX(MZYEE,2*NZXOPE)
          MZYEP = MAX(MZYEP,2*NZXOPP)
       END DO
@@ -1070,7 +1070,7 @@ C
       JSYMOP = JSYM
       JTIMOP = ITIM
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            IPRXQR)
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(INDEX,FREQ,IREC)
