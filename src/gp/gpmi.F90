@@ -8,6 +8,25 @@
 !> Program for testing (and improving) the quaternion matrix Jacobi (block) diagonalization procedure
 !> written by Miro ILIAS, Strasbourg,2005, improved in Tel Aviv, 2012, 
 !> Banska Bystrica, August 2014
+
+module dgroup_select
+!> module for picking up certain variables from dgroup.h
+private
+#include"dgroup.h"
+integer :: IPQTOQmod(4, 0:7) !> same dimensions as IPQTOQ
+public IPQTOQmod,IPQTOQ_init !> specify public variables and public module methods (routines)
+contains
+ subroutine IPQTOQ_init
+ !> initialize the module's public variable IPQTOQmod from the private include file "dgroup.h"
+  integer :: i,j
+  do i=1,4
+  do j=0,7
+    IPQTOQmod(i,j)=IPQTOQ(i,j)
+  enddo
+  enddo
+ end subroutine
+end module dgroup_select
+
 module qjacobi_mod
       !> process also eigenvectors
       LOGICAL :: DOEVE 
@@ -216,6 +235,7 @@ end module qjacobi_mod
 !  MI, August 2014 - rearragned for F90 
 !      
 !**************************************************************************
+use dgroup_select, only: IPQTOQ_init,IPQTOQmod
 implicit none                   
 #include"priunit.h"
   real*8,PARAMETER :: D1=1.0D00, DM1=-1.00D00, D0=0.0D00,D2=2.0D0, DP5=0.50D0
@@ -241,7 +261,7 @@ implicit none
   integer :: IP,IQ,I,J,K,L,IZ,ITER,I1,J1,IZ1
 
       IF (IPRINT.GE.2) THEN
-       CALL HEADER(                                                     &
+       CALL HEADER(                                                     & 
  'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
        write(lupri,'(2X,A,I5)')                                         &
    'size of the square hermitian/real symmetric matrix, N=',N
@@ -282,15 +302,16 @@ implicit none
        ' has been open.'
 
             IF (IPRINT.GE.3) THEN
+             call IPQTOQ_init
              WRITE(LUPRI,'(/,2X,A)')                                    &
   'QJACOBI: ENTERING hermitian(real,complex,quaternion) matrix A'
-            ! CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQ(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
+             CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQmod(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
             ENDIF
 
             DO I=1,N
             DO J=1,N
             IF (IPRINT.GE.3) THEN
-             write(lupri,'(A,I3,A,I3,A,4D15.8)')                        &
+             write(lupri,'(A,I3,A,I3,A,4D15.8)')   &
           '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
             ENDIF
 !            ... write matrix elements to file for later checking...
@@ -2511,9 +2532,8 @@ implicit none
       ENDIF
 
       IF (IPRINT.GE.3) THEN
-        write(lupri,*)                                                  &
-  'Number of elements (upper triangular) to be eliminated:',            &
-   INUMEL
+        write(lupri,*)  & 
+  'Number of elements (upper triangular) to be eliminated:',INUMEL    
         write(lupri,*)
       ENDIF
 
@@ -2551,25 +2571,17 @@ contains
   implicit none
 #include "priunit.h"
     logical :: input_found
-
     inquire(file=inpfile, exist=input_found)
-
     if (.not.input_found) then
       write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile
       call quit("read_input_file: the input file not found !")
     endif
-
-    print *,"inpfile=",inpfile
     call read_menu_input(inpfile, lucmd, 'ALL', input_found)
-    print *,'input_found=',input_found
- 
-    !call quit('read_input_file')
-    ! stop "end in read_input_file"
   end  subroutine read_input_file
-
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
+  use dgroup_select, only: IPQTOQ_init,IPQTOQmod
   implicit none
 #include "priunit.h"
    integer :: i,j, ii,jj
@@ -2605,6 +2617,14 @@ contains
     enddo
     close(lu,status="keep")
     write(LUPRI,"(2x,a)") "The matrix for diagonalization was read."
+    if (print_level >=2) then
+      if (NZ==1) then
+      call IPQTOQ_init
+      CALL PRQMAT(Ar,N,N,N,N,NZ,IPQTOQmod(1,0),LUPRI) 
+      endif
+    endif
+    ! print out read matrix
+
   end subroutine read_matrix
 
   subroutine allocate_space
@@ -2889,6 +2909,8 @@ contains
   !
   !           eigvect * eigvect^+ = I
   !
+  ! where ASr(:,:),ASi(:,:), ....
+  ! 
   !-----------------------------------------------------------------------------------
    implicit none
 #include "priunit.h"
@@ -2972,7 +2994,7 @@ use qjacobi_mod,only:A,EV,IPRINT,DOEVE,NBL,IBL
 implicit none
 #include"priunit.h"
 integer :: istat,i,j
-  write(LUPRI,"(/,2X,A)") "*** Qauternion Jacobi diagonalization test ***"
+  write(LUPRI,"(/,2X,A)") "*** Quaternion Jacobi diagonalization test ***"
   ! ... get N,NZ from the file
   !CALL GET_N_NZ
   !> allocate matrix to be diagonalized, N,NZ,print_level from the "module diagmod"
