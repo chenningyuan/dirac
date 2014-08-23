@@ -24,10 +24,10 @@
 !     MOPT_MXMICRO   - maximum micro iterations
 !     MOPT_MXMACRO   - maximum macro iterations
 !
-!     IOPT_ISTATE    - converge to state no. ISTATE (0=ground state)
+!     IOPT_STATE     - converge to state no. ISTATE (0=all NCIROOT roots, 1=ground state, etc)
 !
-!     FLAG:       (1)  Always Newton-Raphson iterations
-!                 (2)  Always NEO iterations
+!     FLAG:        (1) Always Newton-Raphson iterations
+!                  (2) Always NEO iterations
 !                 (19) Tight step contol for ground state also
 !                 (20) Skip extra termination tests
 !
@@ -56,7 +56,7 @@
      &        IOPT_ISYMOP(2), NZVAR, NZVARQ, NZCONF, NZCONFQ, NZXOPT,   &
      &        NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZHOPT,        &
      &        NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO, MOPT_MXMACRO,     &
-     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
+     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_STATE, IANACI, &
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MCTYPE,             &
      &        IOPT_MK2DEL, IOPT_MK2REF, IOPT_MINMK2, IOPT_MAXMK2,       &
@@ -70,7 +70,7 @@
      &                NZXOPT, NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ,&
      &                NZHOPT, NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO,   &
      &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV, IANACI,&
-     &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
+     &                IRESTRK, IOPT_STATE, IOPT_SYMMETRY, KTRLVL,       &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MCTYPE,                   &
      &                IOPT_MK2DEL,IOPT_MK2REF,IOPT_MINMK2,IOPT_MAXMK2,  &

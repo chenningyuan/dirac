@@ -761,7 +761,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_startvec */
-      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,ISTATE,
+      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,I_STATE,
      &                           THRPCI,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -809,12 +809,12 @@ C
 C     The CI vector is stored in columns; the lowest eigenstate is in
 c     the first column.
 C
-      IF (ISTATE .LE. 0 .OR. ISTATE .GT. NDET) THEN
-         WRITE (LUPRI,*) 'ERROR: ISTATE .LE. 0 .OR. ISTATE .GT. NDET'
-         WRITE (LUPRI,*) 'ERROR: ISTATE , NDET =',ISTATE,NDET
+      IF (I_STATE .LE. 0 .OR. I_STATE .GT. NDET) THEN
+         WRITE (LUPRI,*) 'ERROR: I_STATE .LE. 0 .OR. I_STATE .GT. NDET'
+         WRITE (LUPRI,*) 'ERROR: I_STATE , NDET =',I_STATE,NDET
          CALL QUIT('Non-valid reference state specification')
       END IF
-      IOFF = KEIGVC - 1 + (ISTATE-1) * NDET
+      IOFF = KEIGVC - 1 + (I_STATE-1) * NDET
       IF ( NZ .EQ. 1 ) THEN
          DO I = 1,NDET
             CREF(I,1) = WORK(IOFF + I)
@@ -850,7 +850,7 @@ C
 C
 C     Get CI energy
 C
-      ECI = WORK(KEIGVL + ISTATE - 1)
+      ECI = WORK(KEIGVL + I_STATE - 1)
 C
       WRITE(LUPRI,'(/A,F20.8,2(/,A,F20.8))')
      &     ' (GASCIP_STARTVEC) Core energy    =',ECORE,
@@ -2105,7 +2105,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
       SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
      &                         ECI_OUT,CVECS,NDET,IDET,CMO,
-     &                         ISTATE,ICONV_TOT,IPRINT,
+     &                         THR_CVEC,I_STATE,ICONV_TOT,IPRINT,
      &                         WORK,LWORK)
 C***********************************************************************
 C
@@ -2114,16 +2114,22 @@ C     to a gradient threshold of RTHRCI .
 C
 C     Input :
 C        N_ROOTS - number of roots to converge
+C        RTHRCI  - convergence threshold
+C        MAX_CI_IT - max CI iterations
+C        NDET    - number of determinants
 C        IDET    - determinant strings
-C        CMO     - MO coeff.
+C        CMO     - MO coefficients
+C        I_STATE - if > 0: which state converge to (not used p.t.)
+C        IPRINT  - print level
 C
 C     Output:
-C        CVECS   - CI vectors
 C        ECI_OUT - CI energies
+C        CVECS   - CI vectors
+C        ICONV_TOT =1 all converged, <0 code for why not converged
 C
 C
 C     Written by J. Thyssen - Jan 3 2001
-C     Last revision :  Hans Jorgen A. Jensen - Oct 2010
+C     Last revision :  Hans Jorgen A. Jensen - Oct 2010/parallel Aug 2014
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2659,6 +2665,9 @@ C               write (lupri,*) 'i_root, ired, fac_imag',i_root,i,fac
            DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
            IF ( DNRES(I_ROOT) .GT. RTHRCI ) ICONV_TOT = 0 ! not all converged
          END DO
+         IF (I_STATE .GT. 0) THEN ! only converge this root
+           IF ( DNRES(I_STATE) .LE. RTHRCI ) ICONV_TOT = 1 ! the requested state is converged
+         END IF
 C
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
      &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',RTHRCI,')',
@@ -4604,7 +4613,7 @@ C     min and max electrons in each gas space:
 C
 !radovan: IPRGASCIP is not initialized
       IPRKRMC = IPRGASCIP
-      IKRMC_ISTATE = 1
+      IKRMC_STATE = 1
       IKRMC_SYMMETRY = IGASCIP_REP
 C
       KRMC_UCIBOS = GASCIP_UCIBOS

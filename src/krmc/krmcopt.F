@@ -3580,9 +3580,9 @@ C
             CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
-            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,ICONV_TOT,
+     &                         IOPT_STATE,ICONV_TOT,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
@@ -3592,7 +3592,7 @@ C           Full CI.
 C
             CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
-     &                           NZCONF,IOPT_ISTATE,THRPCI,
+     &                           NZCONF,IOPT_STATE,THRPCI,
      &                           IPROPT, WORK,KFREE,LFREE)
 C
          END IF
@@ -4361,7 +4361,7 @@ C     Normal MCSCF optimization
 C
       RATVGD = D1 - DP1 * (D1 * RATGOD)
       RTSAVE = RTRUST
-      IF ( IOPT_ISTATE .EQ. 1 ) THEN
+      IF ( IOPT_STATE .EQ. 1 ) THEN
          IF ( RATIO .LT. RATMIN ) THEN
             RTRUST = STPRED * RTRUST
             IF ( RATIO .LT. RATREJ .AND. .NOT. NOREJT ) THEN
@@ -4599,7 +4599,7 @@ C
       DIMENSION IBTYP(*), INERTIA(3)
       DIMENSION WORK(*)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL
@@ -4715,7 +4715,7 @@ C
       DIMENSION WORK(*)
       PARAMETER (STPL_EP_MAX = 0.0100D0)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL

@@ -537,12 +537,12 @@ C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
       IF ( CISELECT .EQ. 'NO CI' ) THEN
          NGAS_DC  = 0
-         THR_CVEC = D0
+         OPT_THR_CVEC = D0
       ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
 C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
-         THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-3
          CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
@@ -562,7 +562,7 @@ C
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
 C        ... do a full CI in the active space
          NGAS_DC  = 1
-         THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-3
 
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
@@ -585,7 +585,7 @@ C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
-         THR_CVEC = THR_CVEC_ESR
+         OPT_THR_CVEC = THR_CVEC_ESR
          THRPCI   = THRPCI_ESR
 C
 C        Set up core (NCSH_ESR), valence (NVSH_ESR) and virtual (secondary, NSSH_ESR) orbital shells.
@@ -714,7 +714,7 @@ C
       MOPT_MXMICRO   = MXMICRO
       MOPT_MXMACRO   = MXMACRO
       MOPT_MAXBCK    = MAXBCK
-      IOPT_ISTATE    = 1
+      IOPT_STATE     = 0
       JKRRUNTYPE     = 0
       ISVRONO(1)     = 0
       ISVRONO(2)     = 0
@@ -883,7 +883,7 @@ C
       MOPT_MXMICRO   = MKRMC_MXMICRO
       MOPT_MXMACRO   = MKRMC_MXMACRO
       MOPT_MAXBCK    = MKRMC_MAXBCK
-      IOPT_ISTATE    = IKRMC_ISTATE
+      IOPT_STATE     = IKRMC_STATE
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
       IMEMFAC        = IKRMC_MEMFAC
       JKRRUNTYPE     = 1
@@ -900,7 +900,7 @@ C
       OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-3
 C
 C     Set common block DCLOPT
 C
@@ -1005,7 +1005,7 @@ C
       MOPT_MXMICRO   =  0
       MOPT_MXMACRO   = -1
       MOPT_MAXBCK    =  0
-      IOPT_ISTATE    =  1
+      IOPT_STATE     =  0
       IOPT_SYMMETRY  = -1
       IMEMFAC        = IKRCI_MEMFAC
       JKRRUNTYPE     = 2
@@ -1020,7 +1020,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0d-03
+      OPT_THR_CVEC    = 1.0d-03
       OPT_THRGRD     = 1.D99
       OPT_THRECI     = DKRCI_THRECI
 C
@@ -1545,7 +1545,7 @@ C IOPT_INTDEF controls the Hamiltonian
       MOPT_MXMICRO   =  0
       MOPT_MXMACRO   = -1
       MOPT_MAXBCK    =  0
-      IOPT_ISTATE    =  1
+      IOPT_STATE     =  0
       IOPT_SYMMETRY  = -1
       IMEMFAC        = 9 !IKRCI_MEMFAC
       JKRRUNTYPE     = 2
@@ -1553,7 +1553,7 @@ C
 C     Set common block DCROPT
 C
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-3
 
       OPT_CIPROGRAM  = 'KRCC'
       DO I = 1, NFSYM
