@@ -3105,7 +3105,8 @@ C
      &      'No CI coefficients in this range.'
          DMX = DMN
          DMN = DMN * 0.1D0
-      IF (DMX .GT. THRPCI_local) GO TO 10
+      IF (DMX+1.0D-8 .GE. THRPCI_local) GO TO 10
+      ! make sure we do not miss a desired interval because of round-off
 C
       WRITE(LUPRI,9100)
       N_NONZERO_TOT = 0
