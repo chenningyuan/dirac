@@ -3579,7 +3579,7 @@ C           MAXCIT Davidson CI iterations.
 C
             CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            THRGCI = 0.1D0 * SQRT(THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         IOPT_ISTATE,ICONV_TOT,
