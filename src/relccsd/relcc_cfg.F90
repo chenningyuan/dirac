@@ -109,7 +109,6 @@ module relcc_cfg
 ! Intermediate Hamiltonian  
   integer, public, dimension(1:16) :: relcc_ih_nacthi = 0
   integer, public, dimension(1:16) :: relcc_ih_nactpi = 0
-  logical, public :: relcc_ih_do_zipgrid              = .false.
   integer, public :: relcc_ih_scheme                  = 2
   integer, public :: relcc_ih_nih                     = 1
   real(8), public :: relcc_ih_shift_h11               = 0.0d+00
@@ -160,7 +159,7 @@ contains
   call interface_mpi_bcast_l0(relcc_no_recompute        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_low_memory          ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_memory_in_mw        ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_fs_interface,       10,0,global_communicator)
+  call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
   call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
 
 ! Information relevant for the energy calculation
@@ -179,7 +178,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_ccsdgradient         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsdtgradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_naturalorbitals      ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_zipgrid              ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_unrelaxed            ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ne_oper                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_dimension_diis ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_iterations     ,1,0,global_communicator)
@@ -209,7 +208,6 @@ contains
 ! Intermediate Hamiltonian  
   call interface_mpi_bcast(relcc_ih_nacthi,size(relcc_ih_nacthi),0,global_communicator)
   call interface_mpi_bcast(relcc_ih_nactpi,size(relcc_ih_nactpi),0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_ih_do_zipgrid              ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_scheme                  ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_nih                     ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_shift_h11               ,1,0,global_communicator)
