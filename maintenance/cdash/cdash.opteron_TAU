@@ -16,23 +16,25 @@ echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
-BUILD=build_fortmkl_ilp64
+BUILD=build_ifort_mkl_i8
 # go to the local DIRAC directory
 cd $DIRAC
 
+git pull origin master
+
 export DIRTIMEOUT="12m"
 
-export MKL_NUM_THREADS=4
+export MKL_NUM_THREADS=2
 export MKL_DYNAMIC="FALSE"
 
 # configure step
-export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
 #
-./setup --fc=ifort -D BUILDNAME="opteron_ifort_mkl.ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+./setup --fc=ifort -D BUILDNAME="opteron_ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
 #ctest -D Experimental
