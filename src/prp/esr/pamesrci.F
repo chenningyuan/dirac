@@ -291,8 +291,17 @@ C
          WRITE(lupri,*) 'I,WORK(K_EIGVAL-1+1)', I, WORK(K_EIGVAL-1+I) 
       END DO
 #endif
+
+! start programming print of nat.orb. occupations /1.nov.2012-hjaaj
+!     IF (IPROPT .GE. 2) THEN
+!        DO I = 1, N_CIROOTS
+!           CALL  RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
+!    &                  IPRESR,WORK,KFREE,LFREE)
+!        END DO
+!     END IF
 C
       CALL QEXIT('ESR_RESOLVE')
 C
       RETURN
       END
+! -- end of pamesrci.F --
