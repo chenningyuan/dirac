@@ -211,13 +211,13 @@ C
          CALL GASCIP_RCISTD(N_CIROOTS, THR_CIESR, MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
-     &                     THR_CVEC_ESR, 0, ICONV_TOT, IPRESR,
-     &                     WORK(KFREE), LFREE)
+     &                     THR_CVEC_ESR, 0, ICONV_TOT,
+     &                     THRPCI_ESR,IPRESR,WORK(KFREE), LFREE)
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                     ECI,CVECS,NDET,IDET,CMO,
-C     &                     THR_CVEC_ESR,ISTATE,ICONV_TOT,IPRINT,
-C     &                     WORK,LWORK)
+C     &                     THR_CVEC_ESR,ISTATE,ICONV_TOT,
+C     &                     THR_PCI,IPRINT,WORK,LWORK)
 
          IF (ICONV_TOT .LE. 0) THEN
             CALL QUIT('ESR CI not converged.')
