@@ -3577,23 +3577,23 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         IOPT_STATE,ICONV_TOT,
-     &                         IPROPT,WORK(KFREE),LFREE)
+     &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
          ELSE
 C
 C           Full CI.
 C
-            CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL','ECI',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
-     &                           NZCONF,IOPT_STATE,THRPCI,
-     &                           IPROPT, WORK,KFREE,LFREE)
+     &                           NZCONF,IOPT_STATE,
+     &                           THRPCI,IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,
@@ -3676,12 +3676,12 @@ C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
-         END DO
+        END DO
 C
 C        set back if KR-MCSCF - otherwise LUCI_DENS call may fail
 C        do NOT set back for KR-CI - we might do more than one symmetry
 C
-         IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+        IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
       END IF
 C

@@ -762,7 +762,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_startvec */
       SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,I_STATE,
-     &                           THRPCI,IPRINT,WORK,KFREE,LFREE)
+     &                           THR_PCI,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate CI start vectors from GASCIP by diagonalizing the
@@ -863,7 +863,7 @@ C
 C
       IF (IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GASCIP_STARTVEC) CI start vector'
-         CALL RPRCI(CREF,NDET,NZ,'GASCIP', THRPCI,LUPRI)
+         CALL RPRCI(CREF,NDET,NZ,'GASCIP', THR_PCI,LUPRI)
       END IF
 C
       CALL MEMREL('GASCIP_STARTVEC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2103,18 +2103,18 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
-      SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
+      SUBROUTINE GASCIP_RCISTD(N_ROOTS,THR_CONV,MAX_CI_IT,
      &                         ECI_OUT,CVECS,NDET,IDET,CMO,
-     &                         THR_CVEC,I_STATE,ICONV_TOT,IPRINT,
-     &                         WORK,LWORK)
+     &                         THR_CVEC,I_STATE,ICONV_TOT,
+     &                         THR_PCI,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
-C     to a gradient threshold of RTHRCI .
+C     to a gradient threshold of THR_CONV .
 C
 C     Input :
 C        N_ROOTS - number of roots to converge
-C        RTHRCI  - convergence threshold
+C        THR_CONV  - CI gradient convergence threshold
 C        MAX_CI_IT - max CI iterations
 C        NDET    - number of determinants
 C        IDET    - determinant strings
@@ -2166,7 +2166,7 @@ C
 C
 C     Set general parameters (which later maybe should be set by input?)
 C
-!d      write(lupri,*) 'THRPCI, RTHRCI', THRPCI,RTHRCI
+!d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
       NDETQ  = NZ_in_CI*NDET
       MAX_HRED = MAX(100,N_CI_ROOTS*MAX_CI_IT)
       MAX_HRED = MIN(2000, MAX_HRED)
@@ -2362,8 +2362,8 @@ C
       ICONV_TOT = 0
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
-C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-8, RTHRCI**2 * 0.01D0)
+C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July 04
+      THRSCR = MIN(1.0D-8, THR_CONV**2 * 0.01D0)
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
@@ -2438,7 +2438,7 @@ C
                WRITE(LUPRI,'(/A,I3,A,I3)')
      &              ' (GASCIP_RCISTD) Trial vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KBCVEC+(I_TOT-1)*NDETQ),
-     &                     NDET,IDET,THRPCI,WORK(KFREE),LFREE)
+     &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
                IF (IPRINT .GE. 20)
      &            CALL OUTPUT(WORK(KBCVEC+(I_TOT-1)*NDETQ),
      &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
@@ -2448,7 +2448,7 @@ C
                WRITE(LUPRI,'(/A,I3,A,I3)')
      &              ' (GASCIP_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KSCVEC+(I_TOT-1)*NDETQ),
-     &                     NDET,IDET,THRPCI,WORK(KFREE),LFREE)
+     &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
                IF (IPRINT .GE. 20)
      &            CALL OUTPUT(WORK(KSCVEC+(I_TOT-1)*NDETQ),
      &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
@@ -2663,14 +2663,14 @@ C               write (lupri,*) 'i_root, ired, fac_imag',i_root,i,fac
               END IF
            END DO
            DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
-           IF ( DNRES(I_ROOT) .GT. RTHRCI ) ICONV_TOT = 0 ! not all converged
+           IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0 ! not all converged
          END DO
          IF (I_STATE .GT. 0) THEN ! only converge this root
-           IF ( DNRES(I_STATE) .LE. RTHRCI ) ICONV_TOT = 1 ! the requested state is converged
+           IF ( DNRES(I_STATE) .LE. THR_CONV ) ICONV_TOT = 1 ! the requested state is converged
          END IF
 C
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
-     &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',RTHRCI,')',
+     &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',THR_CONV,')',
      &     (I_ROOT,DNRES(I_ROOT),I_ROOT=1,N_ROOTS)
          IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A,I4,A)')
@@ -2704,7 +2704,7 @@ C
          N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
          JBCVEC = KBCVEC + N_CRED*NDETQ - 1
          DO I_ROOT = 1,N_ROOTS
-            IF ( DNRES(I_ROOT) .LE. RTHRCI ) CYCLE ! this one is converged
+            IF ( DNRES(I_ROOT) .LE. THR_CONV ) CYCLE ! this one is converged
             N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
             ECIA_I = ECIA(I_ROOT)
             DO I = 1, NDET
@@ -2953,11 +2953,11 @@ C
 
          CALL RCINORM(CVECS(1,I_ROOT),MAX(10,IPRINT))
 
-         CALL GASCIP_ANACI(CVECS(1,I_ROOT),NDET,IDET,THRPCI,
+         CALL GASCIP_ANACI(CVECS(1,I_ROOT),NDET,IDET,THR_PCI,
      &                     WORK(KFREE),LFREE)
 
          IF ( IPRINT .GE. 15 ) CALL RPRCI(CVECS(1,I_ROOT),
-     &      NDET,NZ_in_CI,'GASCIP', THRPCI,LUPRI)
+     &      NDET,NZ_in_CI,'GASCIP', THR_PCI,LUPRI)
 
       END DO
 C
@@ -3035,7 +3035,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_anaci */
-      SUBROUTINE GASCIP_ANACI(CREF,NDET,IDET,THRPCI_in,WORK,LWORK)
+      SUBROUTINE GASCIP_ANACI(CREF,NDET,IDET,THR_PCI_in,WORK,LWORK)
 C***********************************************************************
 C
 C     Print nice analysis of CI vector.
@@ -3066,13 +3066,14 @@ C
 C
       CALL QENTER('GASCIP_ANACI')
 C
-      THRPCI_local = max(THRPCI_in,1.0D-15) * 1.0000001D0
+      THR_PCI_local = max(THR_PCI_in,1.0D-15) * 1.0000001D0
 C
       DMX = 1.0D0
       DMN = 0.1D0
  10   CONTINUE
          WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1,A/)')
-     &     ' Print of CI coefficients in range ',DMN,' to ',DMX,' :'
+     &     ' Print of CI coefficients with weight in range ',
+     &     DMN,' to ',DMX,' :'
          K = 0
          DO I = 1, NDET
             DI = 0.0D0
@@ -3105,7 +3106,7 @@ C
      &      'No CI coefficients in this range.'
          DMX = DMN
          DMN = DMN * 0.1D0
-      IF (DMX+1.0D-8 .GE. THRPCI_local) GO TO 10
+      IF (DMX .GE. THR_PCI_local) GO TO 10
       ! make sure we do not miss a desired interval because of round-off
 C
       WRITE(LUPRI,9100)
