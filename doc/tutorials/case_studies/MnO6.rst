@@ -33,7 +33,9 @@ The new input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO
 
  pam --inp=MnO6.x2c.wacac.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF"
 
-3. Using AcAc with the parameter of OLEVEL=0.2 and with the DFCOEF file from the point 1 we finally obtain the convergence.
+3. Using the AcAc interaction with the parameter of OLEVEL=0.2, and, with the DFCOEF file from the point 1, we finally obtain the convergence.
+The total SCF energy of the system is *-1617.5839185788545 a.u.*
+(see the output file, :download:`MnO6.x2c.wacac_olvlshift_MnO6.crystal.out <../../../../result/MnO6.x2c.wacac_olvlshift_MnO6.crystal.out>`)
 The new DIRAC input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO6.x2c.wacac_olvlshift.inp>`:  ::
 
  pam --inp=MnO6.x2c.wacac_olvlshift.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"
