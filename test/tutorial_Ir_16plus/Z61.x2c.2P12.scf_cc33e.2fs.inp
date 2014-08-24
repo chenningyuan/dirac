@@ -31,7 +31,7 @@
 1..oo
 1..oo
 **MOLTRA
-# exactly 35 correlated electrons...
+# exactly 33 correlated electrons...
 .ACTIVE
 energy -50.0  50.0  1.0
 energy -50.0  50.0  1.0
@@ -39,7 +39,7 @@ energy -50.0  50.0  1.0
 .ENERGY
 .TIMING
 .PRINT
-0
+1
 # 33 correlated electrons, 5p12(1) open-shell
 .NELEC
 6  6  11  10

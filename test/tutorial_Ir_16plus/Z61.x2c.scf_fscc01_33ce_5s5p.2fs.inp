@@ -16,7 +16,7 @@
 .SCF
 .RELCCSD
 *SCF
-# Pm-like (Z=61) : ... 4f(14) 5s(1)
+# Pm-like (Z=61) : ... 4f(14) 5s(0)
 .CLOSED SHELL
 28 32
 #.OPEN SHELL
@@ -31,7 +31,7 @@
 1..oo
 1..oo
 **MOLTRA
-# exactly 35 correlated electrons...
+# exactly 33 correlated electrons...
 .ACTIVE
 energy -50.0  50.0  1.0
 energy -50.0  50.0  1.0
@@ -40,7 +40,7 @@ energy -50.0  50.0  1.0
 .FOCKSP
 .TIMING
 .PRINT
-0
+1
 # 33 correlated electrons, 5s(1) open-shell
 !.NELEC
 !6  7  10  10
@@ -49,9 +49,11 @@ energy -50.0  50.0  1.0
 7
 *CCFSPC
 .DOEA
-! 5s 5p1/2  5p32 active shells
+! 5s, 5p12,  5p32 active shells
 .NACTP
 1  1  3  3
+.NTOL
+8
 *CCSORT
 !.USEOE
 *END OF
