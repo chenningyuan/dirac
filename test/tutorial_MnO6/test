@@ -16,7 +16,7 @@ f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-5)
 
-test.run(['MnO6.x2c.bare_noacac.inp'], ['MnO6.crystal.mol'], f, args='--get "DFCOEF=DFCOEF.MnO6.noAcAc"      ')
+test.run(['MnO6.x2c.bare_noacac.inp'], ['MnO6.crystal.mol'], f, args='--mw=140  --get "DFCOEF=DFCOEF.MnO6.noAcAc"  ')
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
@@ -24,6 +24,9 @@ f.add(from_string = 'Electronic energy',
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
+      rel_tolerance   = 1.0e-5)
+f.add(from_string = 'Energy eigenvalues in atomic units',
+      to_re       = '=====================',
       rel_tolerance   = 1.0e-5)
 
 test.run(['MnO6.x2c.wacac_olvlshift.inp'],    ['MnO6.crystal.mol'], f, args='--mw=140 --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"')
