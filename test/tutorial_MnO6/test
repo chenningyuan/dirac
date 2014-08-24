@@ -28,6 +28,7 @@ f.add(from_string = 'Eigenvalues',
 
 test.run(['MnO6.x2c.wacac_olvlshift.inp'],    ['MnO6.crystal.mol'], f, args='--mw=140 --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"')
 
-os.unlink('DFCOEF')
+os.unlink('DFCOEF.MnO6.noAcAc')
+os.unlink('DFCOEF.MnO6.wAcAc')
 
 sys.exit(test.return_code)
