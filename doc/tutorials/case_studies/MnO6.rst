@@ -4,7 +4,9 @@ The :math:`MnO_6` system
 
 The :math:`MnO_6` compound is good example of the oxide crystal structure.
 
-In the following we show how one can get converged molecular spinors (or molecular orbitals).
+In the following we show how one can get converged molecular spinors (or molecular orbitals) of its ground state
+using single determinant SCF method.
+
 We take into account two parameters for controling the SCF convergence -
 the :ref:`.OPENFACTOR` and the :ref:`.OLEVEL` keywords.
 
@@ -12,25 +14,28 @@ Here the noAcAc abbreviation ("no active-active") means value of OPENFAC=0, what
 spinors. The wAcAc ("with active-active") means OPENFAC=1, that is full active-active interation (or full open-shell contribution
 to the Fock matrix).
 
-For simplicity, we used the two-component Hamiltonian, keyword :ref:`.X2C`.
+For simplicity, we employ the two-component Hamiltonian, see the keyword :ref:`.X2C`.
 
-The way to convergence
-======================
+The way to the convergence
+==========================
 
 With the aim to achieve the SCF convergence we investigated these three ways:
 
 1. Starting from noAcAc we get the SCF convergence. We save the DFCOEF file with molecular spinors.
-Input files to download are :download:`MnO6.x2c.bare_noacac.inp` and :download:`MnO6.crystal.mol`: ::
+Input files to download are :download:`MnO6.x2c.bare_noacac.inp  <../../../../test/tutorial_MnO6/MnO6.x2c.bare_noacac.inp>` 
+and :download:`MnO6.crystal.mol   <../../../../test/tutorial_MnO6/MnO6.crystal.mol>`: ::
 
  pam --inp=MnO6.x2c.bare_noacac.inp  --mol=MnO6.crystal.mol --get "DFCOEF=DFCOEF.MnO6.noAcAc"
 
-2. Using AcAc with molecular spinors (the DFCOEF file) from the previous SCF run the :math:`MnO6` system does not converge.
-The new input file to download is :download:`MnO6.x2c.wacac.inp`:  ::
+2. Using AcAc with molecular spinors (the DFCOEF file) from the previous SCF run the :math:`MnO6` system does not converge
+with the default DIIS accelerator.
+The new input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO6.x2c.wacac.inp>`:  ::
 
  pam --inp=MnO6.x2c.wacac.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF"
 
 3. Using AcAc with the parameter of OLEVEL=0.2 and with the DFCOEF file from the point 1 we finally obtain the convergence.
-The new DIRAC input file to download is :download:`MnO6.x2c.wacac_olvlshift.inp`:  ::
+The new DIRAC input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO6.x2c.wacac_olvlshift.inp>`:  ::
 
  pam --inp=MnO6.x2c.wacac_olvlshift.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"
 
+This tutorial shows that it is important to try all possible means to ensure the SCF convergence if default settings are not working.
