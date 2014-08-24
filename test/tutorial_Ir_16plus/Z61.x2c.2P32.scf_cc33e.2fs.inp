@@ -14,16 +14,21 @@
 +2
 **WAVE FUNCTION
 .SCF
+.REORDER MO'S  ! get 5p32 before 5p12
+
+1..16,18,19,17
 .RELCCSD
 *SCF
-# Pm-like (Z=61) : ... 4f(14) 5s(0) 5p_average(1) 
+# Pm-like (Z=61) : ... 4f(14) 5s(0) 5p32(1) 5p12(0)
 .CLOSED SHELL
 28 32
 .OPEN SHELL
 1
-1/0,6
+1/0,4
 .MAXITR
-55 
+55
+! choose dynamical overlap selection to get 2P3/2 state
+.OVLSEL
 **ANALYZE
 .MULPOP
 *MULPOP
@@ -40,7 +45,7 @@ energy -50.0  50.0  1.0
 .TIMING
 .PRINT
 0
-# 35 correlated electrons, 5p_average(1) open-shell
+# 33 correlated electrons, 5p32(1) open-shell
 .NELEC
 6  6  11  10
 !.NEL_F1
