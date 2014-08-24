@@ -27,17 +27,17 @@ and :download:`MnO6.crystal.mol   <../../../../test/tutorial_MnO6/MnO6.crystal.m
 
  pam --inp=MnO6.x2c.bare_noacac.inp  --mol=MnO6.crystal.mol --get "DFCOEF=DFCOEF.MnO6.noAcAc"
 
-2. Using AcAc with molecular spinors (the DFCOEF file) from the previous SCF run the :math:`MnO6` system does not converge
+2. Using AcAc with molecular spinors (the DFCOEF file) from the previous SCF run the :math:`MnO_6` system does not converge
 with the default DIIS accelerator.
-The new input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO6.x2c.wacac.inp>`:  ::
+The new input file to download is :download:`MnO6.x2c.wacac.inp <../../../../test/tutorial_MnO6/MnO6.x2c.wacac.inp>`:  ::
 
  pam --inp=MnO6.x2c.wacac.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF"
 
 3. Using the AcAc interaction with the parameter of OLEVEL=0.2, and, with the DFCOEF file from the point 1, we finally obtain the convergence.
 The total SCF energy of the system is *-1617.5839185788545 a.u.*
-(see the output file, :download:`MnO6.x2c.wacac_olvlshift_MnO6.crystal.out <../../../../result/MnO6.x2c.wacac_olvlshift_MnO6.crystal.out>`)
-The new DIRAC input file to download is :download:`MnO6.x2c.wacac.inp <../../../../MnO6.x2c.wacac_olvlshift.inp>`:  ::
+(see the corresponding output file, :download:`MnO6.x2c.wacac_olvlshift_MnO6.crystal.out <../../../../test/tutorial_MnO6/result/MnO6.x2c.wacac_olvlshift_MnO6.crystal.out>`)
+The new DIRAC input file to download is :download:`MnO6.x2c.wacac.inp <../../../../test/tutorial_MnO6/MnO6.x2c.wacac_olvlshift.inp>`:  ::
 
  pam --inp=MnO6.x2c.wacac_olvlshift.inp  --mol=MnO6.crystal.mol --put "DFCOEF.MnO6.noAcAc=DFCOEF" --get "DFCOEF=DFCOEF.MnO6.wAcAc"
 
-This tutorial shows that it is important to try all possible means to ensure the SCF convergence if default settings are not working.
+This tutorial shows that it is important to try all possible means to achieve the SCF convergence if the default setting is not working.
