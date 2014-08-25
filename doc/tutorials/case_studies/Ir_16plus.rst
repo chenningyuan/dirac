@@ -5,6 +5,7 @@ Getting excited states of :math:`Ir^{16+}`
 In the following we are interested in getting the ground (:math:`^{2}S_{1/2}`) and two closest excited states 
 (:math:`^{2}P_{1/2}`, :math:`^{2}P_{3/2}`) of the :math:`Ir^{16+}` cation and their correlation energies.
 The electronic configurations of these states are 
+
 ::
 
  (^2S)     : [Xe] 4f(14) 5s(1) 5p1/2(0)  5p3/2(0)  
@@ -18,9 +19,11 @@ Due to the convergence problem of the standalone  AMFI atomic SCF code we keep t
 
 There are two ways to obtain excited states -  (i) from the converged SCF state, and, (ii) only at the correlated level from the 2P_aver SCF state.
 
-For subsequent Coupled Cluster (CC) correlated calculations please soften the DHOLU value in the subroutine DENOM (file *src/relccsd/cceqns.F*) to 5.0D-4 and
-recompile DIRAC. However, this is not recommended approach as the *p32* states are in general not well described at the CC level. Nevertheless, we show
-getting excited states with both CC and Fock-space CC methods.
+For subsequent Coupled Cluster (CC) correlated calculations please soften the DHOLU variable in the subroutine DENOM (file *src/relccsd/cceqns.F*)
+to the value of 5.0D-4 and
+recompile DIRAC. Note that this is not recommended approach as the *p32* states are in general not well described at the CC level.
+Nevertheless, with this little trick we can compare desired
+excited states calculated with both CC and Fock-space CC methods.
 
 
 The :math:`^{2}S_{1/2}` ground state
@@ -103,8 +106,8 @@ Input files to download are
 :download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp>`,
 :download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp>`.
 Corresponding output files are
-:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out`, 
-:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out`.
+:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out>`.
 
 
 Then we proceed to the second excited state, :math:`^{2}P_{3/2}`:
@@ -125,8 +128,9 @@ The :math:`^{2}S_{1/2}`, :math:`^{2}P_{1/2}` and :math:`^{2}P_{3/2}` FSCCSD stat
 ----------------------------------------------------------------------------------
 
 Simple and very stable approach to obtain ground and multiple excited states in one step is through the Fock-space Coupled Cluster method.
-Starting from the closed-shell system, :math:`Ir^{17+}`, one gets - by solving (01) sector - 
-all three correlated states of interest, :math:`^{2}S_{1/2}`,:math:`^{2}P_{1/2}` and :math:`^{2}P_{3/2}`:
+Starting from the closed-shell system, :math:`Ir^{17+}`, one gets - by solving (01) sector 
+all three correlated states of interest, :math:`^{2}S_{1/2}`, :math:`^{2}P_{1/2}` and :math:`^{2}P_{3/2}` :
+
 ::
 
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp
@@ -141,21 +145,25 @@ Overview of excitation energies
 ===============================
 
 In the following table we summarize excitation energies. All values are in a.u. Energies in the Table are not rounded, the are cut  to 8
-decimal places. (oe= used orbital energies)
+decimal places ("oe" means orbital energies used in CC denominators, otherwise recalculated diagonal Fock matrix elements).
 
-============   ===============   ===============   ===============    ===========   ===========
-  Method            2S1/2            2P1/2             2P3/2            S-2P12         S-P32
-============   ===============   ===============   ===============    ===========   ===========
-(SCF ref)      ...............   ...............   ...............    ...........   ...........
-SCF            -17751.10181462   -17749.67796221   -17748.96107014    1.42385       2.140744
-CCSD           -17751.90589433   -17750.48885480   -17749.77167089    1.41703953    2.13422344
-CCSDoe         -17751.90589433   -17750.48885479   -17749.77167088    1.4170395     2.13422
-CCSD(T)        -17751.90998637   -17750.49777405   -17749.78015403    1.41221232    2.12983234
-CCSD(T)oe      -17751.90999205   -17750.49779342   -17749.78020119    1.412198      2.129790
+============   ===============   ===============   ===============   ===========   ===========
+  Method         ^2S_{1/2}         ^2P_{1/2}           ^P_{3/2}      2S12-2P12      2S12-2P32
+============   ===============   ===============   ===============   ===========   ===========
+(SCF ref)                                                                                       
+SCF            -17751.10181462   -17749.67796221   -17748.96107014   1.42385       2.14074 
+CCSD           -17751.90589433   -17750.48885480   -17749.77167089   1.41704       2.13422   
+CCSDoe         -17751.90589433   -17750.48885479   -17749.77167088   1.41704       2.13422
+CCSD(T)        -17751.90998637   -17750.49777405   -17749.78015403   1.41221       2.12983   
+CCSD(T)oe      -17751.90999205   -17750.49779342   -17749.78020119   1.41220       2.12979
 (CC ref)
-CCSD           -17751.90589433   -17750.48895732   -17749.77154045    1.416937      2.13435
-CCSDoe         -17751.90589433   -17750.48895728   -17749.77154043    1.416937      2.134353
-CCSD(T)        -17751.90998637   -17750.49779338   -17749.78012458    1.41219       2.12986
-CCSD(T)oe      -17751.90999205   -17750.49784867   -17749.78024342    1.41214       2.12974
-FSCCSD         -17751.90324662   -17750.48431436   -17749.76770431    1.4189        2.1355
-============   ===============   ===============   ================   ===========   ===========
+CCSD           -17751.90589433   -17750.48895732   -17749.77154045   1.41694       2.13435
+CCSDoe         -17751.90589433   -17750.48895728   -17749.77154043   1.41694       2.13435
+CCSD(T)        -17751.90998637   -17750.49779338   -17749.78012458   1.41219       2.12986
+CCSD(T)oe      -17751.90999205   -17750.49784867   -17749.78024342   1.41214       2.12974
+FSCCSD         -17751.90324662   -17750.48431436   -17749.76770431   1.41893       2.13554
+============   ===============   ===============   ===============   ===========   ===========
+
+It seems that quality of computed excitation energies increases in the line SCF-FSCCSD-CCSD-CCSD(T).
+Triple excitations (CCSD(T) results) are significant. 
+
