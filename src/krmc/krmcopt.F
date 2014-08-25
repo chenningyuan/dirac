@@ -2413,7 +2413,7 @@ C           HJAaJ TODO: reconsider KALLOC ....
 C               .... size KIASTR ca. sqrt size KIDET ???
 C               .... problem if IRAT .eq. 1 -- more than LFREE used
 C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = MIN(10 000 000, (LFREE-10 000)/4 )
+            KALLOC = MIN(100 000 000, (LFREE-10 000)/4 )
                          !max 10,000,000 determinants in this version
             CALL MEMGET('INT8',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
             CALL MEMGET('INT8',KIASTR,  KALLOC,WORK,KFREE,LFREE)
