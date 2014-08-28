@@ -101,21 +101,3 @@ Let us write/use an keyword input reader which requires keywords to have some do
 Otherwise the code won't even compile. Then the "make html" command would go through the source code and generate
 the RST files which would exactly reflect the state of the code (unless of course somebody changes the keyword without
 changing the text 2 lines below but we could introduce some punishment for it).
-
-
-CMake configuration files bootstrap
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-It is possible to download external cmake "libraries" at configure time and include/employ them in the code's buildup.
-Radovan has tested this with the math detection which he puts on some external test repo and at configure time
-it was correctly fetched and used.
-(He also asked on the cmake mailing list for pointers and got useful info which worked for him.)
-We could do now the outsource of all generic cmake code out of DIRAC/Dalton/... suites and let a minimum cmake
-core fetch them at configure time.
-
-There is one catch: one should be able to configure and build without the network.
-This could be solved with a fallback cmake system that would be used if the default cmake repo is unreachable.
-There are several ways to do it.
-
-If you think such a bootstrap approach would be interesting we could brainstorm more.
-Radovan has a local proof that it works and we could continue from here if this is interesting.
-
