@@ -92,16 +92,15 @@ the *Doxygen* source code as well in order to get properly generated documentati
 This theme is suitable for one or more IT-students.
 
 
-Other TODO wishes
-=================
-
+Other ideas
+===========
 
 New input reader with documenting of keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Let us write/use an keyword input reader which requires keywords to have some documentation.
 Otherwise the code won't even compile. Then the "make html" command would go through the source code and generate
 the RST files which would exactly reflect the state of the code (unless of course somebody changes the keyword without
-changing the text 2 lines below but we could introduce some punishment for it). Supervisor Radovan Bast.
+changing the text 2 lines below but we could introduce some punishment for it).
 
 
 CMake configuration files bootstrap
