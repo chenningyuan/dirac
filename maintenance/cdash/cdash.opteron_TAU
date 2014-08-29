@@ -34,7 +34,7 @@ if [[ -d "$BUILD" ]]; then
 fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./setup --fc=ifort -D BUILDNAME="opteron_ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
+./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8.short" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
 #ctest -D Experimental

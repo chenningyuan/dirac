@@ -217,6 +217,7 @@ def main():
     # tutorials connected tests, not run as part of standard test set
     add_test('tutorial_W', 'tutorial;W;open-shell;scf')
     add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
+    add_test('tutorial_Ir_16plus', 'tutorial;cc')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library

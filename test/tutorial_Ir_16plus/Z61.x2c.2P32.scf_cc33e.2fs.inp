@@ -45,16 +45,14 @@ energy -50.0  50.0  1.0
 .TIMING
 .PRINT
 1
-# 33 correlated electrons, 5p32(1) open-shell
+# 33 correlated electrons, 5p32(1) open-shell thanks to SCF state
 .NELEC
 6  6  11  10
-!.NEL_F1
-!9,8,4,4,2,2
-!.NEL_F2
-!8,8,5,5,2,2,1,1
 *CCENER
 .NTOL
 7
+.MAXIT
+100
 *CCSORT
 !.USEOE
 *END OF
