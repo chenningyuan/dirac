@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,8 +26,10 @@ module pcmmod_cfg
   save
 
 ! logical block
-  logical, public :: pcmmod_doss     =  .false.
+  logical, public :: pcmmod_skipss   =  .false.
   logical, public :: pcmmod_separate =  .false.
+  logical, public :: pcmmod_dospf    =  .false.
+  logical, public :: pcmmod_skipoit  =  .false.
 ! printlevel
   integer, public :: pcmmod_print    = 0
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -38,7 +38,7 @@ C
 C     Output:
 C        OCCNO - natural orbital occupation numbers
 C        UNO   - transformation matrix
-C        MOISNO - MO orbitals was already NO orbitals.
+C        MOISNO - MO orbitals were already NO orbitals.
 C        CMO   - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
@@ -100,11 +100,11 @@ C
         iread_from_mc_file = 1
         close(luni)
       else if( .not. ex )then
-	  call dcopy(nzconfq,cref,1,cref_x,1)
+        call dcopy(nzconfq,cref,1,cref_x,1)
       end if
 !     call wrtmatmn(cref_x,1,nzconfq,1,nzconfq,lupri)
 
-	if( iread_from_mc_file .gt. 0)then
+      if( iread_from_mc_file .gt. 0)then
         write(lupri,'(/1X,A,I16)')
      &  '(RGETNO) NO calculation:'//
      &  ' cref read from KRMCOLD with # of dets =',nzconfq
@@ -125,7 +125,6 @@ C
         CALL NEWLAB('MC  DENS',lunii,LUPRI)
         CALL WRITT(lunii,NASHT*NASHT*NZ,WORK(KDV))
         CLOSE(Unit=lunii,Status='KEEP')
-        goto 100
       end if
 C
 C     Calculate max off-diagonal elements of density matrix
@@ -175,9 +174,11 @@ C     Diagonalize density matrix
 C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
-      if(save_reordered_nos)then
-!       to not destroy some U2 MCSCF/GASCI stuff...
-        if(ngas_dc > 2) call gasno(work(kdv))
+      if(.not.save_1pdens)then
+        if(save_reordered_nos)then
+!         to not destroy some U2 MCSCF/GASCI stuff...
+          if(ngas_dc > 2) call gasno(work(kdv))
+        end if
       end if
 
       IF (.NOT. MOISNO) THEN
@@ -247,11 +248,19 @@ C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
             WRITE(LUPRI,'(//A/A/A)')
-     &' **************************************************************',
-     &' *************** CI natural orbital calculation ***************',
-     &' **************************************************************'
+     &' ***************************************************',
+     &' *************** CI natural orbitals ***************',
+     &' ***************************************************'
+         WRITE(LUPRI,'(//A,I3,/A)')
+     &        '   Natural orbital occupation numbers for state:', 
+     &            IDENSLR_STATE,
+     &        '   ------------------------------------------------'
+         ELSE
+            WRITE(LUPRI,'(//A/A/A)')
+     &' ***************************************************',
+     &' *************** MCSCF natural orbitals ************',
+     &' ***************************************************'
          END IF
-         ICI_RT = IDENSLR_STATE
 C        
 C        save occupancies for later use 
          DO I = 1, NFSYM
@@ -265,30 +274,40 @@ C        save occupancies for later use
              CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
            END IF
          END DO
-         WRITE(LUPRI,'(//A,I3,/A)')
-     &        '   Natural orbital occupation numbers for state:',ICI_RT,
-     &        '   ------------------------------------------------'
          DO I = 1, NFSYM
             NOCCI = NOCC(I)
             IF (NOCCI .EQ. 0) THEN
                WRITE(LUPRI,9001) I
             ELSE
+               NISHI = NISH(I)
+               NASHI = NASH(I)
                IOCCI = IOCC(I)
+               IOCCA = IOCCI + NISHI
                OCCSUM = DSUM(NOCCI,OCCNO(IOCCI+1),1)
-               WRITE(LUPRI,9002) I, (OCCNO(IOCCI+J),J=1,NOCCI)
-               WRITE(LUPRI,9003) OCCSUM
+               IF (NASHI .GT. 0) THEN
+                  WRITE(LUPRI,9002) I, (OCCNO(IOCCA+J),J=1,NASHI)
+                  OCCSUMA = DSUM(NASHI,OCCNO(IOCCA+1),1)
+               ELSE
+                  OCCSUMA = 0.0D0
+               END IF
 
-               CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),NOCCI,NOCCI,0,-1)
-               WRITE(LUPRI,9004) I, (OCCNO(IOCCI+J),J=1,NOCCI)
+               WRITE(LUPRI,9003) OCCSUM-OCCSUMA,OCCSUMA,OCCSUM
+
+               IF (NASHI .GT. 0) THEN
+                  CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),
+     &               NOCCI,NOCCI,0,-1)
+                  WRITE(LUPRI,9004) I, (OCCNO(IOCCA+J),J=1,NASHI)
+               END IF
             END IF
          END DO
       END IF
 C
- 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
- 9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
- 9003 FORMAT(/'   Sum =',T15,F14.9)
- 9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
-     &            //,(5F14.9))
+ 9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
+ 9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
+     &      //,(5F14.9))
+ 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
+     &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
@@ -1337,7 +1356,7 @@ C     array of eigen- and omega values
       allocate(iomval(nprop_roots_krci))
 C
       CALL KRCIPRPANA(WORK(KXPRPKRCI),WORK(KXROOTS),WORK(KPRPCORE),
-     &                iomval,WORK(KFREE),LFREE)
+     &                iomval,WORK(KFREE),LFREE,MZ)
       CALL MEMREL('RPROP_KRCI',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     CI root selection based on the omega value
@@ -1517,7 +1536,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck KRCIPRPANA */
-      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,IOMVAL,WORK,LWORK)
+      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,IOMVAL,
+     &                      WORK,LWORK,MZ)
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
@@ -1551,18 +1571,18 @@ C
 #include "dipole.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
-      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
+      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
+     &                   NPROP_KRCI,MZ)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3)
       CHARACTER XLABEL*16
       LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
+      integer, intent(in)  :: mz
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
-C
-      MZ = MIN(NZ,2)
 C
 C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
@@ -1630,6 +1650,10 @@ C     =======================================================
 C
       IF( DOOSCILLST )THEN
 C
+!       WRITE(lupri,*) ' content of XPROPMAT'
+!       CALL WRTMATMN(XPROPMAT,1,NPROP_ROOTS_KRCI**2*Nprop_krci*mz,1,
+!    &       NPROP_ROOTS_KRCI**2*nprop_krci*mz,lupri)
+
 C       write title
         WRITE(LUPRI,'(/28X,A/28X,A/28X,A)') 
      & ' ********************************************************',
@@ -1649,6 +1673,10 @@ C       determine index for (x,y,z)
         XREAL = 0.0D0
         XCOMP = 0.0D0
 C
+        WRITE(LUPRI,'(/,1X,A,F14.10,A)')
+     &   ' ( 1 au =',debye,' Debye) TDM contributions with a norm'//
+     &   ' smaller than 1.0d-07 Debye are discarded (not printed).'
+
 C       ---------
 C       print TDM
 C       ---------
@@ -1660,36 +1688,48 @@ C       ---------
      & '    ________________________________________________________'//
      & '_______'
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
-          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
-            IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
+         DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+            DEIG  = EVECS(IVEC) - EVECS(JVEC)
+            IF( DEIG < 0.0d0 )THEN
               INIST = IVEC
               JFLST = JVEC
-            ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
-              GOTO 101
-            ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
+            ELSE
               INIST = JVEC
               JFLST = IVEC
             END IF
-            DEIG  = EVECS(JFLST) - EVECS(INIST)
             DO IPRP=1,3
 C             length gauge
               IF( MZ .eq. 2 )
      &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-              XMOM          = DCMPLX(XREAL,XCOMP)
+              XMOM          = XREAL
+              if(mz.eq.2)then
+                xmom        = dcmplx(xreal,xcomp)
+              end if
               OSCL(IPRP)    = XMOM
               OSCLABS(IPRP) = ABS(XMOM)
             END DO
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
+
+!           compute relative state number within a given symmetry irrep
+            inist_rel = inist
+            jflst_rel = jflst
+            do i = 1, isymst_in-1
+             inist_rel = inist_rel - NKRCI_CIROOTS(i)
+            end do
+            do i = 1, isymst_fl-1
+             jflst_rel = jflst_rel - NKRCI_CIROOTS(i)
+            end do
 C
 C           print only values above a given threshold - 1.0D-7
-            IF( (OSCLABS(1)+OSCLABS(2)+OSCLABS(3)) .lt. XTHRESH )
-     &         GOTO 101
+            IF( SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2))*debye 
+     &         < XTHRESH ) GOTO 101
 
-       WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,2X,1F12.8,2X 1F12.8)')
-     &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
-     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+       WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,1F14.8,1F14.8)')
+     &  '   * state',INIST_rel,'(',XREPEIG(ISYMST_IN),
+     &      ')         * state',
+     &      JFLST_rel,'(',XREPEIG(ISYMST_FL),')   ',
      &      OSCL(1),OSCL(2),OSCL(3),
      &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2)),
      &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2))*debye
@@ -1850,17 +1890,18 @@ C
       ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &        CHAR(IOFF+I),(DEBYE*(oscl(I)+eprop_core(ind_dip(i)))),
+     &                                    ' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
-     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+     &        (DEBYE*(oscl(I)+eprop_core(ind_dip(i))+DIPMN(I))),' Debye'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,5)
       ! print in a.u.
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &        CHAR(IOFF+I),(oscl(I)+eprop_core(ind_dip(i))),' a.u. ',
      &                   (DIPMN(I)),' a.u. ',
-     &        (oscl(I)+DIPMN(I)),' a.u.'
+     &        (oscl(I)+eprop_core(ind_dip(i))+DIPMN(I)),' a.u.'
       ENDDO
 
 

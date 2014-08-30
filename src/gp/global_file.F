@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -297,7 +297,7 @@ C     in two parts (the first part performs an implicit cast).
 
       IERR = 0
 
-      call interface_MPI_FILE_IWRITE_AT(
+      call interface_MPI_FILE_IWRITE_AT_pck(
      +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,WRITE_REQUEST)
 
 !     check for successful writing. SK - Aug 2010
@@ -386,7 +386,7 @@ C
      +         N,OUTCOUNT,global_communicator)
 
             OUTCOUNT = NGBFSZ
-            call interface_mpi_unpack_r1(GF_RECBUF,GF_RECLEN,POSITION,
+            call interface_mpi_unpack_r(GF_RECBUF,GF_RECLEN,POSITION,
      +         RGBUF,OUTCOUNT,global_communicator)
 
             OUTCOUNT = 2*NGBFSZ
@@ -492,7 +492,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
 
          DO LOCAL_RECORD = 1, GF_NREC(MYTID,SOURCE_NODE)
 
-            CALL interface_MPI_FILE_READ(
+            CALL interface_MPI_FILE_READ_pck(
      +        GF_HANDLE,GF_RECBUF,GF_RECLEN,ISTAT)
 CSK         ... zero NUMREAD, otherwise it may fail
             NUMREAD = 0

@@ -229,39 +229,42 @@ keyword(VEXTPJ)
 Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian from the MO space.
 
 
-**Exact 2-component Hamiltonians**
-==================================
+**Exact 2-component (X2C) Hamiltonians**
+========================================
 
 keyword(X2C)
 
-Keyword referring to the new module for the Exact 2-Component
-relativistic Hamiltonian, Refs. [Ilias2007]_, [Knecht2010]_.
+This keyword activates the Exact 2-Component
+Hamiltonian [Ilias2007]_ based on its implementation in the module X2Cmod, Refs. [Knecht2010]_ and [Knecht2014]_.
 
-One should combine this option with an
-AMFI correction to the unscreened spin-orbit operator. This is the
-default unless :ref:`.NOAMFI` is specified.
+In the default spin-orbit case one should combine this option with an
+AMFI correction to the unscreened one-electron spin-orbit operator. This is the
+default in Dirac unless :ref:`.NOAMFI` is specified which will turn off any two-electron spin-orbit corrections.
+To use the spinfree version of X2C (which numerically yields the same numbers as in the quantum chemistry packages CFour, Turbomole and Molcas) 
+one needs to add the keyword :ref:`.SPINFREE`.
 
-See als :ref:`*X2C` for debug options.
+See als :ref:`*X2C` for more options, including a local X2C scheme. An overview of the (local) X2C approach is given in the tutorial 
+section :doc:`X2C and local X2C <../tutorials/two_component_hamiltonians/x2c_mol_loc.html>`_
 
 keyword(X2Cmmf)
 
-Keyword referring to the 2-component molecular-mean-field Hamiltonian approach
-within the new module for the Exact 2-Component relativistic Hamiltonian, Refs.
-[Sikkema2009]_, [Knecht2010]_.
+This keyword activates the 2-component molecular-mean-field (X2C) Hamiltonian approach [Sikkema2009]_ 
+within the module X2Cmod, Ref. [Knecht2014]_.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
 step. after the SCF. One can combine this option with :ref:`.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
-within the RELCCSD module. Patches for other correlation modules in DIRAC are
-planned to be released soon.
+within the RELCCSD module. Patches for other correlation modules in DIRAC will 
+be part of the Dirac2014 release. See also :doc:`Molecular mean-field X2C
+<../tutorials/two_component_hamiltonians/molecular_mean_field>`_ for further information.
 
 
 keyword(BSS)
 
 Use the 2-component relativistic Hamiltonian obtained after the
-Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite
+Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite`
 basis set, see Ref. [Ilias2005]_. Calculations using the 2-component BSS
 Hamiltonian are running only with large component basis functions.
 
@@ -269,7 +272,7 @@ Hamiltonian are running only with large component basis functions.
 **Approximate 2-component Hamiltonians**
 ========================================
 
-Please note that these are only tested for energies and generally does not work for properties !
+Please note that these are only tested for energies and generally do not work for properties !
 
 
 keyword(ZORA)
@@ -306,6 +309,7 @@ Second-order Douglas-Kroll Hamiltonian
 
 **Non-relativistic Hamiltonians**
 =================================
+
 
 keyword(LEVY-LEBLOND)
 
@@ -371,10 +375,12 @@ in terms of a truncated multipolar expansion.
 keyword(FDE)
 
 Activates the frozen density embedding (FDE) functionality. Options can
-be specified under the \*FDE menu.
+be specified under the :ref:`\*FDE` menu.
 
-In order to use FDE, the user must generated an embedding potential with
-the ADF code (see the developer's website http://www.scm.com
+In order to use FDE the user must have generated an embedding potential
+and/or frozen densities for the environment, either directly with the 
+ADF code (see the developer's website http://www.scm.com for further information) 
+or via the PyADF scripting framework (see the developer's website http://pyadf.org 
 for further information).
 
 
@@ -469,6 +475,12 @@ keyword(SMLV1C)
 
 Neglect potential for multi-center SS blocks, i.e. multi-center SS
 nuclear attraction integrals and multi-center SS two-electron integrals.
+
+
+keyword(JZOUT)
+
+Print out Jz MO matrices for the diagonalization into own formatted files (suitable for testing). 
+Only for the linear symmetry. Programmer's option.
 
 
 keyword(ONECAP)

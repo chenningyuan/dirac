@@ -1,175 +1,101 @@
 
 
+Testing the installation
+========================
+
+It is very important that you verify that your DIRAC installation correctly
+reproduces the reference test set before running any production calculations.
+But also with all tests passing you are strongly advised
+to always carefully verify your results since we cannot guarantee a complete
+test coverage of all possible keyword combinations.
+
+The test set driver is CTest which can be invoked with "make test" after building
+the code.
+
+
+Environment variables for testing
+---------------------------------
+
+Before testing with "make test" you should export the
+following environment variables::
+
+  $ export DIRAC_TMPDIR=/scratch            # scratch space (adapt the path of course)
+  $ export DIRAC_MPI_COMMAND="mpirun -np 8" # only relevant if you compile with MPI
+
+Note that if you set the DIRAC_MPI_COMMAND the pam script will assume you that this is a parallel calculation.
+Before you test an MPI build, you have to set DIRAC_MPI_COMMAND otherwise the tests will be executed without
+MPI environment and many of the tests will fail.
+
+
 Running the test set
-====================
+--------------------
 
-
-How to run tests using runtest
-------------------------------
-
-It is *very important* that you verify that your DIRAC installation correctly
-reproduces the reference test set *before* running any production calculations.
-
-To get documentation on the test set, run::
-
-  ./runtest --help
-
-With the following command you run the entire test set::
-
-  ./runtest --all
-
-If everything goes well the script will report calculations completed
-and provide a summary (number of tests may be different)::
-
-  summary:   114 ok
-
-  total time: 00h03m42s
-
-If there is a problem the script will report that one or more tests failed
-(wrong output) or crashed (execution error).  You may also run individual tests
-with::
-
-  ./runtest --tests="test1 test2"
-
-where test1 and test2 should be replaced by the name(s) of the test(s)
-that you want to rerun.
-
-If you are in the subdirectory of an individual test (example: dft_ac), you can
-do this instead to run just this one test::
-
-  $ [cd test/dft_ac]
-  $ ../../runtest
-
-
-How to run tests using CTest
-----------------------------
-
-Go to the build directory::
-
-  $ cd build
-
-Now run all tests::
+You can run the whole test set either using::
 
   $ make test
 
-You can also run individual tests (example: dft_ac)::
+or directly through CTest::
 
-  $ ctest -R dft_ac
+  $ ctest
 
-The "-R" means regular expression! So you can run all tests
-that start with "dft" using::
+Both are equivalent ("make test" runs CTest) but running
+CTest directly makes it easier to run sequential tests on several
+cores::
+
+  $ ctest -j4        # only for sequential tests
+
+You can select the subset of tests by matching test names to a regular expression::
 
   $ ctest -R dft
 
-By the way behind the curtains CTest uses runtest.
+or matching a label::
+
+  $ ctest -L short
+
+To print all labels::
+
+  $ ctest --print-labels
 
 
-Some tests are broken, what now?
---------------------------------
+How to get information about failing tests
+------------------------------------------
 
-You are a user? Then please inform the developers via the mailing list.
+We do our best to make sure that the release tarball is well tested on our
+machines. However, it is impossible for us to make sure that all functionalities and tests will
+work on all systems and all compiler versions. Therefore, some tests may fail
+and this is how it can look::
 
-You are a developer? Perhaps it is not your fault. Have a look at the nightly
-testing dashboard where you can check whether this test is marked as red
-(broken) or green (passing). If it is green there but broken on your machine
-it can either mean that the test has trouble with your architecture/compiler
-(in this case inform other developers) or that you broke it with recent changes
-- then you have to go in and fix it before you git push to origin/master.
+  Total Test time (real) = 258.17 sec
+  
+  The following tests FAILED:
+           34 - dft_response (Failed)
+           73 - xyz_input (Failed)
+           75 - dft_ac (Failed)
+  Errors while running CTest
 
+The first place to look for the reasons is build/Testing/Temporary::
 
-Suddenly some red tests appear on the nightly testing dashboard, what happens now?
-----------------------------------------------------------------------------------
+  $ ls -l Testing/Temporary/
+  total 108
+  -rw-rw-r-- 1 bast bast  2247 Dec 11 10:19 CTestCostData.txt
+  -rw-rw-r-- 1 bast bast 94798 Dec 11 10:19 LastTest.log
+  -rw-rw-r-- 1 bast bast    39 Dec 11 10:19 LastTestsFailed.log
 
-Miro or Radovan or somebody else examining the nightly testing dashboard will
-notice it and write to the developer who is likely to have introduced the
-conflicting change.
+LastTest.log contains a log of all tests that were run. Search for the test
+name or "failed".  If tests do not produce any output, then this is the place
+to look for reasons (environment variables, problems with pam).
 
+In addition, for each test (whether passed or failed), a directory is created under
+build/test. So in this case you can go into build/test/dft_response to figure
+out what went wrong. The interesting files are the output files::
 
-How to add a new test
----------------------
+  -rw-rw-r-- 1 bast bast 89538 Dec 11 10:17 lda_hf.out
+  -rw-rw-r-- 1 bast bast  1570 Dec 11 10:17 lda_hf.out.diff
+  -rw-rw-r-- 1 bast bast   841 Dec 11 10:17 lda_hf.out.reference
+  -rw-rw-r-- 1 bast bast   841 Dec 11 10:17 lda_hf.out.result
 
-1. Copy an existing test and choose a sensible name, e.g. not
-   my_favorite_test or test2, but for instance symmetry_recognition to signal that
-   we are testing the symmetry recognition procedure.
-
-2. Put the input files in the directory and modify the
-   menu file to work with these filenames.
-
-3. Put (a) correct output(s) in the result directory and modify the filter file
-   (see further below) to take out the part that is relevant for the functionality
-   that you want to test.  Don't test everything, e.g. the electronic Hartree-Fock
-   energy is already tested at several places, no need to do this in every test.
-
-4. Go to the source root directory and run the script runtest with your new test.  It
-   is a good practice to test your test, try to introduce deliberately errors in
-   your new code and check whether your new test catches the error - if not,
-   modify the test. The script will complain if your filter does not filter out anything.
-
-5. If the test works, look at how long it takes to run on a single PC to see where
-   it should be quick or regular. A rule of thumb: < 10 seconds = quick, otherwise regular.
-
-6. Add the test to pamadm (search for existing tests to see how).
-
-7. Use git add and git commit to commit your work to the repository.  Make sure
-   to include ALL files, don't forget the result directory that should contain the
-   reference output and filter files. You can verify this with "git status".
-
-
-How does the filtering work?
-----------------------------
-
-If one would use simply the unix command diff to compare the new output with
-the reference output, one would always see differences, simply because dates
-and execution times will be different, because insignificant last digits are
-different, or because output formatting has changed.
-
-To focus on relevant differences runscript extracts the relevant numbers
-according to keywords in result/filter.out.  Here you may either use strings or
-regular expressions, examples of both can be found when looking at the filter
-files.  There are two possibilities, you either know in advance how many lines
-you want to test, or you don't (keep in mind that others may later introduce
-additional blank or text lines). In the first case you can simply specify the
-number of lines to be test (using nlines), in the second case you have to
-specify a characteristic text that closes the section.
-
-Note that runtest compares relative errors (DIRAC) and absolute errors (Dalton).
-The default accepted relative/absolute error (DIRAC/Dalton) is 0.0001.
-You can modify this using $ERROR. If you want to ignore sign, use $IGNORESIGN.
-Also not that $ERROR and $IGNORESIGN are only valid for the next subtest.
-
-Example 1: 
- ::
-  $ERROR 0.000000001
-  nlines 8:Electronic energy
-
-  $ERROR 1.E-5
-  from:Eigenvalues
-  to:HOMO - LUMO
-
-In this example we have two subtests. First we test Electronic energy and 7
-following lines using tolerance 0.000000001, then we test Eigenvalues using
-tolerance 1.E-5.  We need to specify 1.E-5 for the second subtest otherwise
-runtest defaults to 0.0001.
-
-Example 2:
- ::
- $ERROR 1.E-6
- $IGNORE_BELOW 1.E-20
- nlines 16:Expectation value for individual orbitals
-
-In this case we compare expectation values for individual orbitals, and allow 
-maximum differences of 1.E-6. We also specify "zero" limit for compared values of 1.E-20 (as $IGNORE_BELOW),
-what means numbers below this threshold are simply ignored.
-
-List of all possible filter keywords is here: ::
-
-  $ERROR          # accepted error
-  $IGNORE_BELOW   # ignore if numbers are below limit
-  $IGNORESIGN     # ignore sign
-  from:STRING     # start from string STRING
-  fromre:STRING   # start from regex STRING
-  to:STRING       # stop at string STRING, do not include end line
-  toi:STRING      # stop at string STRING, include end line
-  tore:STRING     # stop at regex STRING, do not include end line
-  toire:STRING    # stop at regex STRING, include end line
-  nlines N:STRING # consider line containing STRING and N-1 following lines
+The ``*.out`` file is the output file of the test. The ``*.result`` file
+contains numbers extracted by the test script. The ``*.reference`` file
+contains numbers extracted from the reference file. The ``*.diff`` file is
+empty for a test where result and reference match. If they do not match, the
+``*.diff`` file will list the lines of output where the results differ.

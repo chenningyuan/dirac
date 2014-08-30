@@ -1,73 +1,76 @@
-
-
 Basis set superposition error
 =============================
 
-The basis set superposition error (BSSE) can be estimated by performing
-subsystem calculations using ghost atoms which carry basis sets of the full
-system.
+The basis set superposition error (BSSE, also known as counterpoise correction) can be estimated by performing
+subsystem calculations using ghost atoms which carry basis sets of the full system.
 
 This tutorial describes how to use ghost atoms in DIRAC and how to avoid
-certain pitfalls when working with ghost centers.
+certain pitfalls when working with ghost centers. As an example we shall consider 
+the helium dimer, having linear symmetry :math:`D_{\infty h}`. For the counterpoise 
+correction calculation one beryllium atom is replaced by a ghost atom without charge, but carrying 
+the full beryllium basis. The symmetry is now reduced to :math:`C_{\infty v}`. DIRAC can 
+automatically detect and exploit the linear symmetry, thus providing computational savings.
+In the case of DFT there is, however, a complication: The ghost center needs not only the 
+basis of a beryllium atom, but also the same numerical grid. This will force us to reduce the 
+symmetry of the molecular calculation to :math:`C_{\infty v}`. When carrying out the counterpoise 
+correction we shall furthermore have to make sure that atoms are in the same place as in 
+the molecular calculation. Below we see how to handle these issues, first with the use of xyz-files, 
+next using mol-files. 
+
+Another matter is that conventional DFT based on local functionals is not a good choice for the
+description of a van der Waals complex like the helium dimer. We shall therefore combine short-range DFT 
+with MP2.
+
+Using mol-files
+~~~~~~~~~~~~~~~
+We start with the molecular calculation. Without consideration of counterpoise we would use
+
+.. literalinclude:: He2.mol
+
+However, DIRAC will not detect the full molecular symmetry :math:`D_{\infty h}`, which is different 
+from the counterpoinse system and so the same numerical grid can not be used. We therefore add 
+a ghost center, with no basis, to break inversion symetry.
+
+.. literalinclude:: He2Gh.mol
+
+The input file for our calculation combining MP2 with short-range LDA reads
+
+.. literalinclude:: MP2srLDA.inp
+
+Note a final touch: We use the keyword `NORTSD` to avoid that our molecule is moved (placing origin at 
+center of mass) during symmetry detection. We run the molecular calculation using::
+
+   pam --inp=MP2srLDA --mol=He2Gh --get=numerical_grid
+
+Note that we save the file containing the numerical grid. Naming the ghost center 'Gh' assures that no grid
+is generated for it, as can be seen from the output::
+
+   Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+   =============================================================
+   He1     1   0.998E-05   0.157E+02   0.123E+00      99    8552
+   He2     1   0.998E-05   0.157E+02   0.123E+00      99    8552
+
+We now turn to the counterpoise calculation. We replace one helium atom by a ghost atom, 
+but this time we want a helium basis set for it. We therefore specify
+
+.. literalinclude:: HeGh.mol
+
+DIRAC uses nuclear charge to find basis sets from libraries so we have to add "Q=2.0" for the ghost atom 
+in the mol-file to provide this information. Note also that we again call the ghost atom 'Gh', but it will 
+get a grid since we import it from the previous calculation. The corresponding menu file reads
+
+.. literalinclude:: MP2srLDA_cp.inp
+
+We have adjusted the electron number to that of the atom and also ask for the import of the numerical grid.
+We run the calculation using::
+
+   pam --inp=MP2srLDA_cp --mol=HeGh --put=numerical_grid
 
 
-Definition of ghost atoms
--------------------------
+Using xyz-files
+~~~~~~~~~~~~~~~
 
-In order to replace a real atom by its ghost atom, it is sufficient to
-replace the charge by zero charge. It is recommended to also change the
-name of the atom. Note that you have to give the ghost atom basis
-explicitly. For instance, the input for a ghost atom with a contracted
-oxygen aug-cc-pVDZ basis could be given by the following molecule file::
-
-          0.    1
-  Gh      .0000000000        0.0000000000        -.2249058930
-  LARGE EXPLICIT  3    1    1    1
-  # s functions
-  f  10    4
-    11720.0000000  0.00071000 -0.00016000  0.00000000  0.00000000
-     1759.0000000  0.00547000 -0.00126300  0.00000000  0.00000000
-      400.8000000  0.02783700 -0.00626700  0.00000000  0.00000000
-      113.7000000  0.10480000 -0.02571600  0.00000000  0.00000000
-       37.0300000  0.28306200 -0.07092400  0.00000000  0.00000000
-       13.2700000  0.44871900 -0.16541100  0.00000000  0.00000000
-        5.0250000  0.27095200 -0.11695500  0.00000000  0.00000000
-        1.0130000  0.01545800  0.55736800  0.00000000  0.00000000
-        0.3023000 -0.00258500  0.57275900  1.00000000  0.00000000
-        0.0789600  0.00000000  0.00000000  0.00000000  1.00000000
-  # p functions
-  f   5    3
-       17.7000000  0.04301800  0.00000000  0.00000000
-        3.8540000  0.22891300  0.00000000  0.00000000
-        1.0460000  0.50872800  0.00000000  0.00000000
-        0.2753000  0.46053100  1.00000000  0.00000000
-        0.0685600  0.00000000  0.00000000  1.00000000
-  # d functions
-  f   2    2
-        1.1850000  1.00000000  0.00000000
-        0.3320000  0.00000000  1.00000000
-
-
-DFT grid
---------
-
-When you replace an atom by a ghost atom the DFT grid will change. In order to
-use the same grid for both the full system and the subsystem with ghost atoms,
-you can export the DFT grid of the full system by copying the file
-"numerical\_grid" from the scratch directory, and import this grid back into
-the calculation with ghost atoms::
-
-  *DFT
-  .IMPORT
-  grid_file
-
-Make sure to copy the grid file from/to the working directory by using::
-
-  pam ... --get=numerical_grid ...
-
-and::
-
-  pam ... --copy=numerical_grid ...
+write me...
 
 
 Symmetry recognition

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -641,7 +641,6 @@
 
       REAL*8  CC(*)
       INTEGER KFREE,LFREE
-      INTEGER INFOHANDLE
       INTEGER IW
       LOGICAL DOINCORE
 C
@@ -662,6 +661,7 @@ C
 C---------------Local variables--------------------------------------
 C
 c *** for infofile
+      INTEGER INFOHANDLE
       INTEGER IONIZLEVEL
       INTEGER INTBUF
       INTEGER KREP
@@ -932,11 +932,11 @@ C
       CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
-        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
       ENDIF
@@ -2802,11 +2802,15 @@ c
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
+      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
+      use adc_mat
+      use memory_allocator
+
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IOUNIT,N,NP,LDAB
+      INTEGER NEIGENV
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -2837,6 +2841,11 @@ C
       CHARACTER*1 JOBZ,UPLO
       REAL*8 Y
       REAL*8 AUEV
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: nr_vecs
+      INTEGER                            :: j, k
+      REAL                               :: upper, lower
 
 C
 C---------------Executable code--------------------------------------
@@ -2889,25 +2898,48 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
+      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      nr_vecs = 0
+
+      upper = reladc_md_eeigv_upper
+      lower = reladc_md_eeigv_lower
+
+      DO j = 1, N
+        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
+        END IF
+      END DO
+
+      NEIGENV = nr_vecs
+
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
+      DO k = 1, nr_vecs
+        j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
+      END DO
       CLOSE(IOUNIT)
     
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
+      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
+      use adc_mat
+      use memory_allocator
+!
       IMPLICIT INTEGER (A-Z)
 
       INTEGER N,NP,LDAB
+      INTEGER NEIGENV
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
       DOUBLE PRECISION RWORK(6*N),EVL(N)
       
@@ -2930,6 +2962,10 @@ C
       CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
       REAL*8 AUEV
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
+      INTEGER                            :: nr_vecs
+      INTEGER                            :: j, k
+      REAL                               :: upper, lower
 
 C
 C---------------Executable code--------------------------------------
@@ -2976,17 +3012,35 @@ c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
 c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
+      CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+      nr_vecs = 0
+
+      upper = reladc_md_eeigv_upper
+      lower = reladc_md_eeigv_lower
+
+      DO j = 1, N
+        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+          nr_vecs = nr_vecs + 1
+          positions(nr_vecs) = j
+        END IF
+      END DO
+
+      NEIGENV = nr_vecs
 
       OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
       WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO J=1,N
+      DO k = 1, nr_vecs
+        j = positions(k)
         WRITE(IOUNIT) EVL(J) ! eigenvalue
         WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      ENDDO
+      END DO
       CLOSE(IOUNIT)
     
-      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+
+      CALL dealloc(positions)
 
       RETURN
       END
@@ -3692,10 +3746,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         If(INFO.NE.0) Then
           Call Quit('Error in DSYEV (diag_davi routine)')
         Endif
-!       Do i=1,locdim
-!         write(*,*) 'raw:',i,lambda(i)
-!         write(*,*) 'raw evc:',aij(:,i)
-!       Enddo
 !
 !  STEP B + C.  Form residual vector q_m for each eigenvalue k
 !
@@ -3751,9 +3801,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               xi(j)=qm(j)/a1
             endif
           Enddo
-!         Do j=1,20
-!           write(*,*) 'xi:',j,xi(j)
-!         Enddo
+!         write(*,*) '   @Norm of preconditioner xi:',
+!    &           sqrt(dot_product(xi(:),xi(:)))
 !
 !  STEP E. form  vector d_(M+1) for the kth eigenvalue
 !  orthogonalize to *all* previous b_i directions from xi
@@ -3765,7 +3814,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             dmp1(:) = dmp1(:) - a1*bold(:,i)
           Enddo
           a1 = sqrt(dot_product(dmp1,dmp1))
-!         write(*,*) '@Norm of preconditioner:',a1
+!         write(*,*) '   @Norm of preconditioner d(M+1):',a1
 !
 !  STEP F. form  vector b_(M+1): b_(M+1)=d_(M+1)/||d_(M+1)||
 !  this vector has to be included in the array of old vectors!
@@ -3776,7 +3825,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           bold(:,locdim+k)=dmp1(:)
           xi = bold(:,locdim+k)
           a2 = sqrt(dot_product(xi,xi))
-!         write(*,*) '@Norm of new vector:',a2
 !
 !  intermediate ortho check of new b vector.
 !
@@ -4663,9 +4711,6 @@ C
 C open config file
 C
       IRECL = 56
-!     WRITE(IW,*) 'Writing EXC configs to ',FILENAME
-!     WRITE(IW,*) 'State symmetry: ',DESREP
-!     WRITE(IW,*) 'Record length: ',IRECL
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 C
@@ -4682,7 +4727,7 @@ C|
 C|
 
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
-        brep = multb(desrep+nrep,jrep,1)
+        brep = multb(desrep+nrep,jrep,2)
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun
@@ -4716,7 +4761,7 @@ C|
 C|
 C|
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10

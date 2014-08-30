@@ -1,13 +1,13 @@
 
 if(DEVELOPMENT_CODE)
     include(FindGit)
-    if (GIT_FOUND)
+    if(GIT_FOUND)
         add_custom_target(
             git_update
             COMMAND ${GIT_EXECUTABLE} submodule init
             COMMAND ${GIT_EXECUTABLE} submodule update
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        )
+            )
     else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
     endif()
@@ -34,14 +34,13 @@ macro(add_external _project)
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
-    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
     endif()
 
-    if(ALWAYS_RESET_EXTERNAL_BUILDS)
+    if(ALWAYS_RESET_EXTERNAL)
         # remove stamps for external builds so that they are rebuilt every time
         add_custom_command(
             TARGET ${_project}

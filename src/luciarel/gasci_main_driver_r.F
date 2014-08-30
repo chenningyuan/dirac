@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -169,7 +169,8 @@ C
        END IF
 CSK    NTEST = 0
 C
-      ECORE = ECORE_KRMC
+!     already done one routine up
+!     ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
       IF(NTEST > 25) 
      &  write(LUWRT,*) ' Number of determinants/combinations  ',NDET

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2121,13 +2121,13 @@ C
       character (len= 4)    :: mynum_str
  
 !     check consistency of # of GA spaces in KR-CI/KR-MC
-      if(MXPNGAS .ne. MXMCGAS)then
+      if(MXPNGAS .ne. MXGAS)then
         write(lupri,'(/a,i3,a,i3)') 
      &  ' *** programming error: maximum # of '//
      &  'GA spaces in KR-CI (set in luciarel/mxpdim.inc)'// 
-     &  ' and KR-MC (set in mxmcgas.h)'//
+     &  ' and KR-MC (set in mxgas.h)'//
      &  ' must match. you have (KR-CI):',
-     &  MXPNGAS,' vs. (KR-MC):', MXMCGAS
+     &  MXPNGAS,' vs. (KR-MC):', MXGAS
       end if
 
 !     introduce CI program
@@ -2433,12 +2433,12 @@ C     GAS shells and constraints.
      &                 global_communicator)
 #endif
       NGAS = NGAS_DC
-      IF( MXPNGAS .ne. MXMCGAS) THEN
+      IF( MXPNGAS .ne. MXGAS) THEN
         WRITE(LUPRI,*) '*** ERROR on common blocks *** ' //
-     &  'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC):',
-     &                 MXPNGAS,MXMCGAS
+     &  'MXPNGAS (LUCIAREL) .ne. MXGAS (DIRAC):',
+     &                 MXPNGAS,MXGAS
         CALL QUIT('*** ERROR on common blocks *** ' //
-     &  'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC)')
+     &  'MXPNGAS (LUCIAREL) .ne. MXGAS (DIRAC)')
       END IF
 #if defined (VAR_MPI)
 C     ... just in case these variable have not 
@@ -2467,21 +2467,17 @@ C     been initialized on the outside.
             
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &   call interface_mpi_BCAST(NGSP,2*MXPNGAS,MASTER,
+     &   call interface_mpi_BCAST(NGASSP,2*MXPNGAS,MASTER,
      &                  global_communicator)
 #endif
       DO I = 1, NGAS
-         CALL ADD_TO_GSS(IGSOCCX,I,NGSP(1,I),2)
-         CALL ADD_TO_GSS(IGSOCCX,I+MXPNGAS,NGSP(2,I),2)
-CSK      IGSOCCX(I          ) = NGSP(1,I)
-CSK      IGSOCCX(I + MXPNGAS) = NGSP(2,I)
+         CALL ADD_TO_GSS(IGSOCCX,I,NGASSP(1,I),2)
+         CALL ADD_TO_GSS(IGSOCCX,I+MXPNGAS,NGASSP(2,I),2)
+CSK      IGSOCCX(I          ) = NGASSP(1,I)
+CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
 C     Energy convergence threshold
-      IF (NZ.EQ.1) THEN
-        THRES_E =          threci
-      ELSE
-        THRES_E = 0.5*sqrt(threci)
-      END IF
+      THRES_E = opt_threci
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
      &    call interface_mpi_BCAST(thres_e,1,MASTER,
@@ -3151,13 +3147,13 @@ C     DIAPAR.1
 *
 *. Number of iterations
       WRITE(LUPRI,'(A,I2)')
-     &  '        Allowed number of iterations    ',MAXIT
+     &   '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
       WRITE(LUPRI,'(A,I2)')
-     &  '        Allowed Dimension of CI subspace ',MXCIV_CI
+     &   '        Allowed Dimension of CI subspace ',MXCIV_CI
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &  '        Convergence threshold for energy ',THRES_E
+     &   '        Convergence threshold for energy ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE

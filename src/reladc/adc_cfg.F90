@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -57,9 +57,9 @@ module adc_cfg
   integer, public                  :: reladc_sipiter      = 500
   integer, public                  :: reladc_dipiter      = 500
   integer, public                  :: reladc_exciter      = 500
-  integer, dimension(1:32), public :: reladc_sipeigv      = 0
-  integer, dimension(1:32), public :: reladc_dipeigv      = 0
-  integer, dimension(1:32), public :: reladc_exceigv      = 0
+  integer, dimension(32:2), public :: reladc_sipeigv      = 0
+  integer, dimension(32:2), public :: reladc_dipeigv      = 0
+  integer, dimension(32:2), public :: reladc_exceigv      = 0
   real*8,  public                  :: reladc_sipprnt      = 20.0
   real*8,  public                  :: reladc_dipprnt      = 20.0
   real*8,  public                  :: reladc_excprnt      = 20.0

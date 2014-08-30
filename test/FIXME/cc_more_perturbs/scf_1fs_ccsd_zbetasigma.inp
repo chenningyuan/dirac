@@ -1,0 +1,39 @@
+**DIRAC
+.TITLE
+ Mg 
+.WAVE F
+**INTEGRALS
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.INTFLG 
+1 1 0
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+*SCF
+.EVCCNV
+1.0E-8 1.0E-7
+# occupation set automatically 
+**MOLTRA
+# 1s(2) 2s(2) 2p(6) frozen, 3s(2) correlated, some virtuals deleted
+.ACTIVE
+energy  -1.00   10.0   0.1D0
+.PRPTRA
+*PRPTRA
+# list here all operators added to the Kramers unrestricted Fock matrix
+# eEDM bet-sigma operator
+.OPERATOR
+ 'z betsig'
+ ZBETASIG
+ OVERLAP
+ COMFACTOR
+ 1.0D0
+*END OF
+
+ # 3s(2) correl.electrons
+ &RELCCSD DOFSPC=F  DOENER=T CARITH=T  IPRNT=1  NELEC=1,1  INTERFACE="DIRAC"  DEBUG=F  &END
+ &CCENER  DOMP2=T  DOCCSD=T  DOCCSDT=T  NTOL=10  &END
+ # add 1 finite field operators with i-factor as it's imaginary, antisymmetric 
+ &CCSORT  USEOE=F, ADD_FINITE_FIELD=T, NFFOPER=1, FF_PROP_NAMES='z betsig' FF_PROP_STRENGTHS=0.0000,0.0002  &END
+

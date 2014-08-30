@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -116,8 +116,7 @@ SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
 ! normalization of symmetry orbitals. (deleted)
 ! if (inrm.ne.0) CALL RECP_INP_ORB_SONORM
  
-! contracted orbital and lower-triangle-packed matrix symmetry
-! offsets.
+! contracted orbital and lower-triangle-packed matrix symmetry offsets.
   CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst,FILE_NUM)
 
 ! nbft  = total number of basis functions. 
@@ -134,9 +133,6 @@ SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
 
 ! normalize the contraction coefficients.
   CALL RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
-
-! calculate the nuclear repulsion energy. (deleted)
-! CALL RECP_INP_NUCREP(ic,nc,chg,x,y,z)
 
   CALL gcentr(ica,nc)
  
@@ -185,14 +181,13 @@ SUBROUTINE RECP_INP_MAIN(ccr,chg,eta,ica,idp,ityp,la,lb,lcr,  &
   IF (PRINT_LEVEL.GE.2) WRITE(RECP_OUT,'(/,10X,60A,/)') ('=', I=1,60)
 ! ----------------------------------------------------------------
 
-! # multiply normalization constants into contraction coefficients.
+! multiply normalization constants into contraction coefficients.
   CALL RECP_INP_ORBITAL_MULTNORMCOEF(ncons,ncon,nrcr,mrcru,mconu,zet,eta,lmnp1)
 
 ! set lxyzir
   CALL RECP_INP_ORBITAL_SETLXYZIR(nu,inam,nst,ixyzir,lxyzir,mstu,idp,ityp)
  
 ! write orbital labels 
-! --------------------
   CALL RECP_INP_PRINT_ORBLABEL(nst,ns,isfr,ityp,nso,mtype,ms,mnl)
 
   IF (RECP_DBG.GE.1) CLOSE(74) !close file (RECP_DBG_INP)

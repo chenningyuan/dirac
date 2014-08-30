@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -174,6 +174,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
+#include "dcbham.h"
 !
 !---------------Local variables--------------------------------------
 !
@@ -182,7 +183,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-      integer :: verbose = 0
+      integer :: verbose        = 0
+      integer :: ncore_elec_adc = 0
       integer(kind=klongint) :: maxcor
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
@@ -334,7 +336,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Read symmetry information from MRCONEE
 !
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec_adc)
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN ADCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
@@ -386,13 +388,30 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !
 !  initialize USEOE=T default also for RELADC
+      USEOE   = .true.
 !  because it relies on CCSETI and needs the orbital
 !  energies from the original HF calculation
-!  This allow for the use of X2Cmmf
-!  The NORECMP parameter is irrelevant
+!  stefan: i am not sure whether you always want to set USEOE = .true.
+!          but let us keep it the way the reladc wizards set it...
+!    
+!  in principle this allows for the use of X2Cmmf
+!  but the NORECMP parameter is NOT irrelevant - stefan march 2014
 !
-      USEOE = .TRUE.
-      WRITE (IW,*) 'Orbital energies from HF are used'
+!
+      if(X2CMMF)then
+!       X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
+!       everything else results in nonsense energies
+        NORECMP = .true.
+        useoe   = .true. 
+        write(IW,'(/A,/A,/A,/A,/A/)')
+     &  ' ************************************************************',
+     &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
+     &  ' *** use of SCF orbital energies and no re-computation of ***',
+     &  ' *** Fock matrix elements set explicitly                  ***',
+     &  ' ************************************************************'
+      else
+        if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
+      end if
 
       IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
          DOCCSETI=.TRUE.
@@ -557,6 +576,7 @@ C
       REAL*8 CC(*)
       INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
       REAL*8 EPS(*)
+      REAL(8), PARAMETER  :: autoev = 27.2113957D0
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1598,22 +1618,23 @@ c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in t
 c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
 
 
-          reladc_md_iobase   = ITAPADC
-          reladc_md_ionizl   = IONIZLEVEL
-          reladc_md_ioldnew  = 1
-          reladc_md_intbuf   = INTBUF
-          reladc_md_desrep   = KREP
-          reladc_md_rcw      = RCW
-          reladc_md_lnzitr   = SIPITER
-          reladc_md_matdim   = LADC
-          reladc_md_irecl    = IRECL
-          reladc_md_nmain    = NO(KREP)
-          reladc_md_nbufs    = NBUFS
-          reladc_md_neigenv  = SIPEIGV(IRPLOOP)
-          reladc_md_fileadc  = FILEN5
-          reladc_md_filediag = FILEN4 
-          reladc_md_filecnf  = FILEN2
-          reladc_md_nmspec   = NMSPECF
+          reladc_md_iobase      = ITAPADC
+          reladc_md_ionizl      = IONIZLEVEL
+          reladc_md_ioldnew     = 1
+          reladc_md_intbuf      = INTBUF
+          reladc_md_desrep      = KREP
+          reladc_md_rcw         = RCW
+          reladc_md_lnzitr      = SIPITER
+          reladc_md_matdim      = LADC
+          reladc_md_irecl       = IRECL
+          reladc_md_nmain       = NO(KREP)
+          reladc_md_nbufs       = NBUFS
+          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
+          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
+          reladc_md_fileadc     = FILEN5
+          reladc_md_filediag    = FILEN4 
+          reladc_md_filecnf     = FILEN2
+          reladc_md_nmspec      = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
@@ -3611,7 +3632,7 @@ c     else
 c       write(*,*) 'boo/oo checksum(r):',ddot(moo(1),boo,1,boo,1)
 c     endif
 C
-C  sort the V_ai,bj integrals to V_ab,ij and contract wit Q_ab to b_ij
+C  sort the V_ai,bj integrals to V_ab,ij and contract with Q_ab to b_ij
 C  this contribution is symmetric and is added as b_oo/VV to the part
 C  from above.
 C

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -131,8 +131,8 @@ C
       IKRMC_INTFLG    =  0
       IKRMC_ITRINT(1) =  0
       IKRMC_ITRINT(2) =  0
-      IKRMC_ISTATE    =  1
-      IKRMC_SYMMETRY  =  1
+      IKRMC_STATE     =  1 ! ground state
+      IKRMC_SYMMETRY  =  1 ! totally symmetric
       IKRMC_MEMFAC    =  9
       NKRMCGAS        =  0
       NKRMC_MK2REF    = -1
@@ -159,7 +159,7 @@ C
          NKRMCSSH(I) = 0
          NKRMCPSH(I) = 0
          NKRMCFRO(I) = 0
-         DO J = 1, MXMCGAS
+         DO J = 1, MXGAS
             NKRMCGSH(I,J) = 0
          END DO
       END DO
@@ -244,7 +244,7 @@ C&&& .NEO ALWAYS: Always use NEO-iterations
                GO TO 100
     7          CONTINUE
 C&&& .STATE : which state to converge to
-               READ(LUCMD,*) IKRMC_ISTATE
+               READ(LUCMD,*) IKRMC_STATE
                GO TO 100
     8          CONTINUE
 C&&& DELETE ORBITALS:
@@ -310,7 +310,7 @@ C&&& GASSH: GAS setup
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRMCGAS
-                  IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+                  IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
                      CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                         'illegal value of NKRMCGAS')
                   END IF
@@ -383,7 +383,7 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRMCGAS
-               IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+               IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                     'illegal value of NKRMCGAS')
                END IF
@@ -691,7 +691,7 @@ C
 
       END IF
       WRITE(LUPRI,'(A,I4)')
-     &     ' * State number          : ',IKRMC_ISTATE
+     &     ' * State number          : ',IKRMC_STATE
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRMC_CIPROGRAM
 C
@@ -1453,8 +1453,6 @@ C
 C     Initialize parameter info  pointers to negative value (for "not defined")
 C
       KZCONF = -1
-      KZXOPE = -1
-      KZXOPP = -1
       LZCONF = -1
       LZXOPE = -1
       LZXOPP = -1

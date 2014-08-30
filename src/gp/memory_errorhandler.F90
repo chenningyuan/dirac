@@ -49,23 +49,31 @@
          public varIsAliveA
 
          interface varIsAliveP
+            module procedure cPointerIsAlive_1d
             module procedure rPointerIsAlive_1d
             module procedure iPointerIsAlive_1d
+            module procedure cPointerIsAlive_2d
             module procedure rPointerIsAlive_2d
             module procedure iPointerIsAlive_2d
+            module procedure cPointerIsAlive_3d
             module procedure rPointerIsAlive_3d
             module procedure iPointerIsAlive_3d
+            module procedure cPointerIsAlive_4d
             module procedure rPointerIsAlive_4d
             module procedure iPointerIsAlive_4d
          end interface varIsAliveP
 
          interface varIsAliveA
+            module procedure cAllocatableIsAlive_1d
             module procedure rAllocatableIsAlive_1d
             module procedure iAllocatableIsAlive_1d
+            module procedure cAllocatableIsAlive_2d
             module procedure rAllocatableIsAlive_2d
             module procedure iAllocatableIsAlive_2d
+            module procedure cAllocatableIsAlive_3d
             module procedure rAllocatableIsAlive_3d
             module procedure iAllocatableIsAlive_3d
+            module procedure cAllocatableIsAlive_4d
             module procedure rAllocatableIsAlive_4d
             module procedure iAllocatableIsAlive_4d
          end interface varIsAliveA
@@ -83,11 +91,13 @@
 ! local variables
                logical                        :: ignoreErrorLocal, isFatal, isVerbose
                integer                        :: kbytesRequested, sizeLocal, kindLocal
-               character(len=charArrayLength) :: ErrorMessage, InfoMessage
+               character(len=charArrayLength) :: ErrorMessage
+               character(len=charArrayLength) :: InfoMessage(10)
                character(len=charArrayLength) :: trace_result
                character(len=charArrayLength) :: kbytesAvailable
                character(len=1)               :: dummy
                real(kind=kreal)               :: mbytesInUse, mbytesRequested, mbytesMax
+               integer                        :: nlines_info
 
                isFatal = .True.
                call allocator_get_verbose(isVerbose)
@@ -116,86 +126,93 @@
                   endif
                endif
  
-               InfoMessage  = 'Unknown error!'
-               ErrorMessage = InfoMessage
-               trace_result = 'unknown (stack trace info unavailable)'
+               write (InfoMessage,  '(a)') 'Unknown error!'
+               write (ErrorMessage, '(a)') 'Unknown error!'
+               write (trace_result, '(a)') 'unknown (stack trace info unavailable)'
 
                call get_traceback_info (printAllocCaller,trace_result,charArrayLength)
                
+               mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
+               call allocator_get_meminuse(mbytesInUse)  
+               mbytesInUse = mbytesInUse/b2mbfac
+
+               call allocator_get_max(mbytesMax)
+               mbytesMax   = mbytesMax/b2mbfac
+
+               nlines_info = 1
+
                select case (status)
                   case (alreadyAllocated)      
-                     InfoMessage  = 'Trying to allocate variable already allocated.'
-                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
+                     write (InfoMessage, '(a)') 'Trying to allocate variable already allocated.'
+                     write (ErrorMessage,'(a)') 'Fatal error on memory allocation at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (alreadyDeallocated)     
-                     InfoMessage  = 'Trying to deallocate variable already deallocated.'
-                     ErrorMessage = 'Trying to deallocate variable already deallocated'
+                     write (InfoMessage, '(a)') 'Trying to deallocate variable already deallocated.'
+                     write (ErrorMessage,'(a)') 'Non-fatal error on memory deallocation at '//trace_result(1:42)
                      isFatal = .False.
                   
                   case (allocateFailure)
-                     call get_memory_info(kbytesAvailable,charArrayLength)
-                     kbytesRequested = (sizeLocal*kindLocal)/b2kbfac
-                     ! miro: added...
-                     mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
-                     call allocator_get_meminuse(mbytesInUse)  
-                     mbytesInUse = mbytesInUse/b2mbfac
+                     write (InfoMessage(1),'(a,i7,a)')                                                &
+     &                     'Not enough memory available when attempting to allocate ',                &
+     &                      nint(mbytesRequested),                                                    &
+     &                     ' Mb in subroutine '//trace_result(1:42)
+                     write (InfoMessage(2),'(a)') ' '                                                  
+                     write (InfoMessage(3),'(a)') 'Please verify whether:'                                                  
+                     write (InfoMessage(4),'(a)')                                                     &
+     &                     ' - the amount of memory per cpu you wish to use is compatible with that'//   &
+     &                     ' installed in the system'
+                     write (InfoMessage(5),'(a)')                                                     &
+     &                     ' - the shell/queueing system/OS place any constraints on the memory available.'
+                     nlines_info = 5
 
-                     InfoMessage  = 'Error! Allocation failed!'
-                     write (InfoMessage,'(a,i18,a)')                    &
-                        'Asked for ',kbytesRequested,' Kb, '//  &
-                        'memory available is '//kbytesAvailable(1:24)
-!                        radovan: this error message can be very confusing
-!                        real example: "Asked for   1274446 Kb, memory available is 45590396 Kb"
-!                        the memory available is the memory on the node but it may not be available
-!                        if the batch system limits it
-
-                     write (*,*) 'Please verify:'
-                     write (*,*) ' - if the amount of memory installed in the system is sufficient'
-                     write (*,*) '   taking into account the total memory requested (master+slaves)'
-                     write (*,*) ' - if there are any limitations enforced by the shell, queueing '
-                     write (*,*) '   system or OS'
-
-                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (deallocateFailure)
-                     InfoMessage  = 'Memory deallocation failed at '//trace_result(1:42)
-                     ErrorMessage = 'deallocation failed!'
+                     write (InfoMessage, '(a)') 'Memory deallocation failed at '//trace_result(1:42)
+                     write (ErrorMessage,'(a)') 'Non-fatal memory deallocation error at '//trace_result(1:42)
                      isFatal = .False.
 
                   case (malformedAllocCall)
-                     InfoMessage  = 'Malformed call to alloc() at '//trace_result(1:42)
-                     ErrorMessage = 'Please submit a bug report.'
+                     write (InfoMessage, '(a)') 'Malformed call to alloc(). Please submit a bug report.'
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (reqMemoryOverLimit)
-                     InfoMessage  = 'Error! Allocation failed!'
+                     write (InfoMessage(1),'(a)')                                                     &
+     &                  'Error when allocating memory at subroutine:'//trace_result(1:42)
 
-                     mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
-!                    write (*,*) 'debug, requested :',mbytesRequested
+                     write (InfoMessage(2),'(a)') ' '                                                  
+                     write (InfoMessage(3),'(a,i7,a)')                                                &
+     &                  'adding the      Memory requested in current allocation          :',          &
+     &                  nint(mbytesRequested),                                                        &
+     &                  ' Mb'
 
-                     call allocator_get_meminuse(mbytesInUse)  
-                     mbytesInUse = mbytesInUse/b2mbfac
-!                    write (*,*) 'debug, in use :',mbytesInUse
+                     write (InfoMessage(4),'(a,i7,a)')                                                &
+     &                  'to the          Current dynamical memory usage                  :',          &
+     &                  nint(mbytesInUse),                                                            &
+     &                  ' Mb'
 
-                     call allocator_get_max(mbytesMax)
-                     mbytesMax   = mbytesMax/b2mbfac
-!                    write (*,*) 'debug, maximum :',mbytesMax
+                     write (InfoMessage(5),'(a,i7,a)')                                                &
+     &                  'will exceed the User-defined dynamically allocated memory limit :',          &
+     &                  nint(mbytesMax),                                                              &
+     &                  ' Mb' 
 
-                     write (InfoMessage,'(a,i7,a,i7,a,i7,a)')  &
-     &                  'Requested (',nint(mbytesRequested),' Mb) +'// &
-     &                  ' In use (',nint(mbytesInUse),' Mb)'//         &
-     &                  ' > Limit (',nint(mbytesMax),' Mb)'
+                     write (InfoMessage(6),'(a)') ' '                                                  
+                     write (InfoMessage(7),'(a)')                                                     &
+     &                  'Please consult the user manual for information on how to solve this issue.'
 
-                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
+                     nlines_info = 7
+
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (negativeSizeCall)
-                     InfoMessage  = 'Negative array dimension (e.g. a '//   &
-     &                              'value larger than what the variable can hold). '// &
-     &                              'Allocation is not possible, program will exit now.'
-                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
+                     write (InfoMessage, '(a)')                                    & 
+     &                     'Negative array dimension (e.g. a value larger than '// &
+     &                     'what the variable can hold). Allocation is not possible.'
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
                      isFatal = .True.
 
                end select
@@ -205,13 +222,7 @@
                      if (isVerbose) &
      &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
                   else
-                     write (*,*) ''
-                     write (*,*) ErrorMessage
-                     write (*,*) InfoMessage
-#ifdef PRG_DIRAC
-                     write (ErrorMessage,'(a,i18)') 'Try setting --aw to',nint((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)+1
-#endif
-                     call quit(ErrorMessage)
+                     call quit(InfoMessage,ErrorMessage,nlines_info)
                   endif
                else
                   if (isVerbose) then
@@ -224,11 +235,17 @@
             end subroutine allocator_errorHandler
 
 
-            subroutine quit(errormessage)
-               character(len=*) :: errormessage
- 
-               write (*,*) errormessage
-               stop 1001 
+            subroutine quit(info,error,nlines)
+               character(len=charArrayLength) :: info(10)
+               character(len=charArrayLength) :: error
+               integer :: i,nlines
+   
+               do i = 1, nlines
+                  write (*,*) info(i)
+               enddo 
+               write (*,*) ' '
+               write (*,*) error
+               call stop_as_failure
 
             end subroutine quit
 
@@ -239,6 +256,13 @@
 !
 ! 1d-objects
 !
+            logical function cPointerIsAlive_1d(data)
+               complex(kind=kcomplex), pointer :: data(:)
+
+               cPointerIsAlive_1d = .false.
+               if ( associated(data) ) cPointerIsAlive_1d = .true.
+            end function cPointerIsAlive_1d
+
             logical function rPointerIsAlive_1d(data)
                real(kind=kreal), pointer :: data(:)
 
@@ -252,6 +276,13 @@
                iPointerIsAlive_1d = .false.
                if ( associated(data) ) iPointerIsAlive_1d = .true.
             end function iPointerIsAlive_1d
+
+            logical function cAllocatableIsAlive_1d(data)
+               complex(kind=kcomplex), allocatable :: data(:)
+
+               cAllocatableIsAlive_1d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_1d = .true.
+            end function cAllocatableIsAlive_1d
 
             logical function rAllocatableIsAlive_1d(data)
                real(kind=kreal), allocatable :: data(:)
@@ -269,6 +300,13 @@
 !
 ! 2d-objects
 !
+            logical function cPointerIsAlive_2d(data)
+               complex(kind=kcomplex), pointer :: data(:,:)
+
+               cPointerIsAlive_2d = .false.
+               if ( associated(data) ) cPointerIsAlive_2d = .true.
+            end function cPointerIsAlive_2d
+
             logical function rPointerIsAlive_2d(data)
                real(kind=kreal), pointer :: data(:,:)
 
@@ -282,6 +320,13 @@
                iPointerIsAlive_2d = .false.
                if ( associated(data) ) iPointerIsAlive_2d = .true.
             end function iPointerIsAlive_2d
+
+            logical function cAllocatableIsAlive_2d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:)
+
+               cAllocatableIsAlive_2d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_2d = .true.
+            end function cAllocatableIsAlive_2d
 
             logical function rAllocatableIsAlive_2d(data)
                real(kind=kreal), allocatable :: data(:,:)
@@ -300,6 +345,13 @@
 !
 ! 3d-objects
 !
+            logical function cPointerIsAlive_3d(data)
+               complex(kind=kcomplex), pointer :: data(:,:,:)
+
+               cPointerIsAlive_3d = .false.
+               if ( associated(data) ) cPointerIsAlive_3d = .true.
+            end function cPointerIsAlive_3d
+
             logical function rPointerIsAlive_3d(data)
                real(kind=kreal), pointer :: data(:,:,:)
 
@@ -313,6 +365,13 @@
                iPointerIsAlive_3d = .false.
                if ( associated(data) ) iPointerIsAlive_3d = .true.
             end function iPointerIsAlive_3d
+
+            logical function cAllocatableIsAlive_3d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:,:)
+
+               cAllocatableIsAlive_3d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_3d = .true.
+            end function cAllocatableIsAlive_3d
 
             logical function rAllocatableIsAlive_3d(data)
                real(kind=kreal), allocatable :: data(:,:,:)
@@ -331,6 +390,13 @@
 !
 ! 4d-objects
 !
+            logical function cPointerIsAlive_4d(data)
+               complex(kind=kcomplex), pointer :: data(:,:,:,:)
+
+               cPointerIsAlive_4d = .false.
+               if ( associated(data) ) cPointerIsAlive_4d = .true.
+            end function cPointerIsAlive_4d
+
             logical function rPointerIsAlive_4d(data)
                real(kind=kreal), pointer :: data(:,:,:,:)
 
@@ -344,6 +410,13 @@
                iPointerIsAlive_4d = .false.
                if ( associated(data) ) iPointerIsAlive_4d = .true.
             end function iPointerIsAlive_4d
+
+            logical function cAllocatableIsAlive_4d(data)
+               complex(kind=kcomplex), allocatable :: data(:,:,:,:)
+
+               cAllocatableIsAlive_4d = .false.
+               if ( allocated(data) ) cAllocatableIsAlive_4d = .true.
+            end function cAllocatableIsAlive_4d
 
             logical function rAllocatableIsAlive_4d(data)
                real(kind=kreal), allocatable :: data(:,:,:,:)

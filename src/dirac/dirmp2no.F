@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -165,7 +165,7 @@ C            module) calculation
                GO TO 100
     7          CONTINUE
 C&&& SEL NO: Select min NO for subsequent correlation calculation
-                  READ(LUCMD,*) (VECNOSEL(I),I=1,NFSYM)
+                  READ(LUCMD,'(a72)') (VECNOSEL(I),I=1,NFSYM)
                GO TO 100
     8          CONTINUE
 C&&& MULPOP: do Mulliken population analysis for MP2 NOs ('all' or 'active')
@@ -201,8 +201,8 @@ C
         WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &  '- spinors in fermion ircop ',FREP(I),' :',VECMP2NO(I)
       ENDDO
-      WRITE(LUPRI,'(A)') ' * allowed range of NO spinors in 
-     & correlation run:'
+      WRITE(LUPRI,'(A)') ' * allowed range of NO spinors in'//
+     &                   ' correlation run:'
       DO I = 1,NFSYM
         WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &  '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)
@@ -381,15 +381,17 @@ C
 C
         IF( .NOT. SKIP_MP2DEN ) THEN
 C
-           CALL MEMGET('REAL',KCMO_NAT ,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KCMO_TRA ,N2BBASXQ,WORK,KFREE,LFREE)
-C          CALL MEMGET('REAL',KCMO_TRA ,NCMOTQ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCMO_NAT ,NASHT*NASHT*NZ,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KCMO_TRA ,NCMOTQ,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KIBEIG   ,NORBT,WORK,KFREE,LFREE)
 C          ... initialize
-           CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
-           CALL DZERO(WORK(KCMO_TRA),N2BBASXQ)
-C          CALL DZERO(WORK(KCMO_TRA),NCMOTQ)
+           CALL DZERO(WORK(KCMO_NAT),NASHT*NASHT*NZ)
+           CALL DZERO(WORK(KCMO_TRA),NCMOTQ)
+           CALL IZERO(WORK(KIBEIG),NORBT)
 C          ... MP2 NO coefficients
-           CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
+           CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NASHT*NASHT*NZ)
+C          ... boson irrep info (or mj-values if linear symmetry is available)
+           CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
@@ -400,10 +402,18 @@ C          transformation
 C          --------------
            CALL TDMP2NATMO(WORK(KCMO_TRA),WORK(KCMO_NAT),
      &                     WORK(KFREE),LFREE)
+
+!          reorder NOs according to descending occupation
+           call reorder_mp2no(work(kcmo_tra),work(kocc_nat),
+     &                        work(kibeig))
 C
 C          save to disk
 C          ------------
-           CALL WRTKRMC(LUKRMC,'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           label(1:8) = 'IBEIG   '
+           if(linear) label(1:8) = 'MJVEC   '
+           CALL IWRTKRMC(LUKRMC,label(1:8),work(kibeig),NORBT)
 C
 C          release memory
 C          --------------
@@ -520,6 +530,8 @@ C
 C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
+      use moltra_labeling
+      use relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -543,9 +555,6 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
-C     skip integral transformation if MDCINT/MRCONEE are present
-C     ----------------------------------------------------------
-      IF( SKIP_ITRAFO ) GOTO 20
 C
 C     set default values
 C
@@ -624,6 +633,8 @@ C
       ENDDO
 C
       KFRSAV = KFREE
+
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 C
 C     Print section
 C     =============
@@ -836,6 +847,17 @@ C
          NIVIR(IFRP) = NORB(IFRP) - NOCC(IFRP) - NPSH(IFRP) -NAVIR(IFRP)
          NIVIRT = NIVIRT + NIVIR(IFRP)
       ENDDO
+
+!     set nash...
+      nasht = 0
+      do ifrp = 1, nfsym
+        NASH(IFRP)  = NAOCC(IFRP) + NAVIR(IFRP)
+        IASH(IFRP)  = NASHT
+        N2ASH(IFRP) = NASH(IFRP)  * NASH(IFRP)
+        I2ASHT(IFRP)= N2ASHT      * NZ
+        N2ASHT      = N2ASHT      + N2ASH(IFRP)
+        NASHT       = NASHT       + NASH(IFRP)
+      end do
 C####################################################
 C
 C     Print section
@@ -894,6 +916,10 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+C     skip integral transformation if MDCINT/MRCONEE are present
+C     ----------------------------------------------------------
+      IF( SKIP_ITRAFO ) GOTO 20
+
       IF (.NOT.NO2IND)
      &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
 C
@@ -940,33 +966,21 @@ C
 C     Transformation finished - start MP2 density run
 C     -----------------------------------------------
 C
-C     prepare and write RELCCSD MP2-NO input
+C     tell RELCC to get the density matrix
 C
-      LMP2_DEN_INP = 99
-      MP2NOFN      = 'MP2_NO.INP.0'
-      MP2NOFN_L    = 12
-      INFO_STRING(1) =
-     &'&RELCCSD TIMING=T, DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END'
-      INFO_STRING(2) =
-     &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
-      INFO_STRING(3) =
-     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T  &END                    '
-
-      OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
-     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      REWIND(LMP2_DEN_INP)
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
+      relcc_do_energy = .true.
+      relcc_do_ccsd   = .false.
+      relcc_do_ccsd_t = .false.
+      relcc_do_gradient = .true.
+      relcc_do_mp2gradient = .true.
+      relcc_do_unrelaxed = .true.
+      relcc_do_naturalorbitals = .true.
 C
       CALL PAMCCM()
 C
-      CLOSE(LMP2_DEN_INP,STATUS='KEEP')
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck READMP2NAT */
-      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT)
+      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT,ibeig)
 C***********************************************************************
 C
 C     Read MP2-NO coefficients and occupations numbers from file 
@@ -978,20 +992,22 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), EIG(*), EIG_NAT(*)
+      DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
+      character(len=8) :: label
 C
 C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
-      CALL REAKRMC(LUKRMC,'MP2NOOCC',EIG_NAT,NESHT)
+      CALL REAKRMC(LUKRMC,'NEWNATOC',EIG_NAT,NESHT)
+      label(1:8) = 'IBEIG   '
+      if(linear) label(1:8) = 'MJVEC   '
+      call ireakrmc(lukrmc,label(1:8),ibeig,norbt)
 C
       IOFF2 = 1
 C
@@ -1024,7 +1040,7 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), CMO_NAT(NORBT,NESHT,NZ)
+      DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)
       DIMENSION WORK(*)
 #include "memint.h"
 C
@@ -1048,36 +1064,44 @@ CSK   IPRMP2NO = 5
          ENDDO
       END IF
 C
-      IOFF2 = 1
+      do i = 1, nfsym
 C
-      DO IFRP = 1, NFSYM
+         if(nash(i) == 0) cycle
+
+         if(IPRMP2NO >= 5 )then
+           WRITE(LUPRI,'(/1X,A,I3)')
+     &     '(mp2-no) Before transformation: '//
+     &     'MO coefficients, symmetry ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         end if
 C
-C        CMO(new) = CMO(old) * CMO_NAT
+C        Transform active orbitals:
 C
-         NBASI = NFBAS(IFRP,0)
-         NORBI = NORB(IFRP)
+C        CMO(NO) = CMO * UNO
 C
-         ICMO_ESH = ICMOQ(IFRP) + NBASI*NPSH(IFRP)
-C        ICMO_ESH = ICMOQ(IFRP)
-         IOFF1 = IORB(IFRP) + NPSH(IFRP) + 1
-C         
-csk      WRITE(LUPRI,*) ' IOFF2, IOFF1, ICMO_ESH', 
-csk  &                    IOFF2, IOFF1, ICMO_ESH
-csk      WRITE(LUPRI,*) ' IORB(IFRP), NPSH(IFRP), NORBI', 
-csk  &                    IORB(IFRP), NPSH(IFRP), NORBI
-C        WRITE(LUPRI,*) ' diagonalizing offset:1+ICMO_ESH',1+ICMO_ESH
-C
-         CALL QGEMM(NBASI,NORBI,NORBI,D1,
+         NBASI = NFBAS(I,0)
+         NASHI = NASH(I)
+         NORBI = NORB(I)
+         JUNO  = 1 + IASH(I)
+         ICMOA = 1 + ICMOQ(I) + (NPSH(I)+NIOCC(I)) * NBASI
+         CALL QGEMM(NBASI,NASHI,NASHI,1.0d0,
      &        'N','N',IPQTOQ(1,0),
-     &        WORK(KCMO+ICMO_ESH),NBASI,NORBI,NZ,
+     &        WORK(KCMO+ICMOA-1),NBASI,NORBI,NZ,
      &        'N','N',IPQTOQ(1,0),
-     &        CMO_NAT(IOFF1,IOFF2,1),NORBT,NESHT,NZ,
-     &        D0,IPQTOQ(1,0),
-     &        CMO(1+ICMO_ESH),NBASI,NORBI,NZ)
+     &        CMO_NAT(JUNO,JUNO,1),NASHT,NASHT,NZ,
+     &        0.0d0,IPQTOQ(1,0),
+     &        CMO(ICMOA),NBASI,NORBI,NZ)
 C
-         IOFF2 = IOFF2 + NESH(IFRP)
-C
-      END DO
+         if(IPRMP2NO >= 5 )then
+            WRITE(LUPRI,'(/1X,A,I3)')
+     &           '(mp2-no) After transformation: '//
+     &           'MO coefficients, symmetry ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         end if
+
+      end do
 C
       IF( IPRMP2NO .ge. 5 ) THEN 
          CALL HEADER('final MP2 natural orbitals:',-1)
@@ -1095,4 +1119,136 @@ C     Memory deallocation
 C     -------------------
       CALL MEMREL('TDMP2NO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      END
+
+      subroutine reorder_mp2no(cmo,occ,ibeig)
+
+      implicit none
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+       real(8), intent(inout) :: cmo(*), occ(*)
+       integer, intent(inout) :: ibeig(*)
+       real(8), allocatable   :: occ_full(:), occ_full_save(:)
+       integer, allocatable   :: reorder_fermion(:)
+       integer, allocatable   :: reorder_list(:,:)
+
+       integer                :: i, j, jj, myturn, ioff, icount, mymax
+       integer, external      :: idamax
+
+       allocate(occ_full(norbt))
+       allocate(occ_full_save(norbt))
+       allocate(reorder_fermion(2))
+       allocate(reorder_list(nesht,2))
+
+       occ_full        = 0
+
+       reorder_fermion = -1
+       reorder_list    =  0
+
+!      create list for reordering in descending order according to occupation numbers
+!      ------------------------------------------------------------------------------
+
+       ioff = 1
+       do i = 1, nfsym
+
+         call dcopy(nesh(i),occ(ioff),1,
+     &                      occ_full(iorb(i)+npsh(i)+1),1)
+         call dcopy(nesh(i),occ(ioff),1,
+     &                      occ_full_save(iorb(i)+npsh(i)+1),1)
+         ioff = ioff + nesh(i)
+
+!        write(lupri,'(/a,i4,a,i4)') 
+!    &               '  reorder from active index... ',
+!    &                  NIOCC(I)+1, ' ... to ... ', 
+!    &                  NIOCC(I)+NASH(I)
+
+!        a. inactive shells
+         icount = 1
+         do jj = 1, niocc(i)
+           reorder_list(icount,i) = icount
+           icount                 = icount + 1
+         end do
+
+!        do jj = 1, niocc(i)
+!          write(lupri,*) ' inactive electronic shell # ',jj,
+!    &                      ' goes to ',reorder_list(jj,i)
+!        end do
+
+!        b. active shells
+!        ----------------
+!        b. 1. initialize
+!        ----------------
+         do jj = 1, nash(i)
+           reorder_list(icount,i) = icount
+           icount                 = icount + 1
+         end do
+
+!        -------------
+!        b. 2. reorder
+!        -------------
+
+         myturn = 1
+         do 
+!          write(lupri,*) 'myturn,nash(i) ', myturn,nash(i)
+!          exit condition
+           if(myturn > nash(i)) exit
+
+           mymax  = idamax(nash(i),
+     &                     occ_full_save(iorb(i)+npsh(i)+niocc(i)+1),1)
+!          write(lupri,*) '  max index and value',
+!    &     mymax, occ_full_save(iorb(i)+npsh(i)+niocc(i)+mymax)
+
+!          new max index
+           reorder_list(niocc(i)+myturn,i)               = 
+     &                                            mymax  + niocc(i)
+           occ_full_save(iorb(i)+npsh(i)+niocc(i)+mymax) = 0.0d0
+
+           myturn = myturn + 1
+         end do
+
+!        do jj = 1, nash(i)
+!          write(lupri,*) ' active electronic shell # ',
+!    &                      nish(i)+jj,
+!    &                      ' goes to ',
+!    &                      reorder_list(nish(i)+jj,i)
+!        end do
+
+!        c. secondary shells
+         icount = niocc(i) + nash(i) + 1
+         do jj = 1, nesh(i) - niocc(i) + nash(i)
+           reorder_list(icount,i) = icount
+           icount                 = icount + 1
+         end do
+         reorder_fermion(i) = nesh(i)
+       end do
+
+!      write(lupri,*) 'reorder list'
+!      do i = 1, nfsym
+!        write(lupri,*) ' fermion sym # ',i
+!        do jj = 1, nesh(i)
+!          write(lupri,*) ' electronic shell # ',jj,' goes to ',
+!    &                      reorder_list(jj,i)
+!        end do
+!      end do
+
+      call reord(cmo,occ_full,ibeig,reorder_list,reorder_fermion,nesht)
+
+!     store new occ order on reduced list
+      ioff = 1
+      do i = 1, nfsym
+        call dzero(occ(ioff),nesh(i))
+        call dcopy(nesh(i),
+     &                     occ_full(iorb(i)+npsh(i)+1),1,
+     &                     occ(ioff),1)
+        ioff = ioff + nesh(i)
+      end do
+
+      deallocate(occ_full)
+      deallocate(occ_full_save)
+      deallocate(reorder_list)
+      deallocate(reorder_fermion)
+
       END

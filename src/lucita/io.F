@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -93,9 +93,9 @@
 *. Input file for CI-vectors
 *. restart from file 21 is assumed
 *. Input , two electron integrals - MOLCAS
-      LU2INT = 81
+      LUTINT = 81
 *. Input , one electron integrals - MOLCAS
-      LU1INT = 82
+      LUOINT = 82
 *. Input , property one-electron integral files
       LUPRP  = 83
 *. Sirius interface file
@@ -171,6 +171,11 @@
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
+      ! master...
+      IF(MYPROC == 0)THEN
+        NLUC_MPI=LUC_MPIN
+        LUC_MPIL=7
+      END IF
 #else
       NLUC_MPI=LUC_MPIN
       LUC_MPIL=7

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -164,27 +164,10 @@ C
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
       REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
-      NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
-     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
-     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
-     &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
-      NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
-     &                 MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
-     &                 MAXIT,MAXDIM,NTOL,NOZG,DONATORB
+!     This namelist is the only one kept for backward compatibility (old HF Hessian).
+!     This is to be replaced when a real CC or MP2 Hessian becomes available.
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
-      NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
-CMI   ... add sector selectives MAXITxy's
-      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
-     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
-      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
-     &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
-     &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
-      NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
       DIMENSION NACTH(16),NACTP(16)
@@ -193,16 +176,8 @@ C
 C---------------Executable code--------------------------------------
 
 C
-C     if running MP2-NO module use special input
+C     Convert input from module file to old-fashioned keywords
 C
-      IF( MP2_DENRUN )THEN
-        IN_SAVE = IN
-        IN      = LMP2_DEN_INP
-      END IF
-C
-C     Read number of occupied spinors from input
-C
-      REWIND (IN)
       DO I= 1, 16
        if (nelec_input)  NELEC(I)    = relcc_nelec(I)
        NFROZ(I)    = relcc_nfroz(I)
@@ -213,19 +188,13 @@ C
       DOSORT  = relcc_do_sort
       DOENER  = relcc_do_energy
       DOFOPR  = relcc_do_gradient
-      DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
+      DOSOPR  = relcc_do_hessian
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-C     
-C     Note that reading this namelist may override the Dirac style input. Leave 
-C     this at the discretion of the user for the moment.
-      READ (IN,RELCCSD,END=2,ERR=1)
-      GOTO 2
-    1 CALL QUIT('Error exit while reading namelist RELCCSD')
-    2 CONTINUE
+      INTERFACE = relcc_integral_interface
 C
 C     Input for the energy calculation.
 C
@@ -237,13 +206,6 @@ C
       DOCCSDT = relcc_do_ccsd_t
       NOCCS   = relcc_do_singles
       NOCCD   = relcc_do_doubles
-      REWIND (IN)
-      READ (IN,CCENER,END=4,ERR=3)
-      GOTO 4
-    3 CALL QUIT('Error exit while reading namelist CCENER')
-    4 CONTINUE
-      IF (NOCCS.AND.NOCCD) 
-     & CALL QUIT ('NOCCS and NOCCD cannot be used simultaneously')
       MXDIMCC = MAXDIM
       MXITCC = MAXIT
       NTOLCC = NTOL
@@ -254,35 +216,32 @@ C
       DOMP2GOLD = relcc_do_oldmp2gradient 
       DOCCSDG   = relcc_do_ccsdgradient 
       DOCCSDTG  = relcc_do_ccsdtgradient
-      NOZG      = relcc_do_zipgrid
+      NOZG      = relcc_do_unrelaxed
       DONATORB  = relcc_do_naturalorbitals
-      NEOPER    = 1
-      NAMEE(1)  = 'ZDIPLEN '
+      NEOPER    = 3
+      NAMEE(1)  = 'XDIPLEN '
+      NAMEE(2)  = 'YDIPLEN '
+      NAMEE(3)  = 'ZDIPLEN '
       MAXDIM    = relcc_fopr_max_dimension_diis
       MAXIT     = relcc_fopr_max_iterations
       NTOL      = relcc_fopr_desired_convergence
-      REWIND (IN)
-      READ (IN,CCFOPR,END=6,ERR=5)
-      GOTO 6
-    5 CALL QUIT('Error exit while reading namelist CCFOPR')
-    6 CONTINUE
 C     Switch on evaluation of property output if necessary
-      IF (SPFR.AND.DOMP2G) 
-     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
+         IF (SPFR) 
+     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
-          IPRPWF = 0
-          DO I = 1, NPRPWF
-             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
           END DO
-          IF (IPRPWF.EQ.0) THEN
-             IF (NPRPWF .GE. MXPRPWF) THEN
-                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
              ELSE
-                NPRPWF = NPRPWF + 1
-                IPRPWF = NPRPWF
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
              END IF
-             PRPWF(IPRPWF) = 'MP2 '
+             PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
       MXDIMGR = MAXDIM
@@ -293,7 +252,7 @@ C     Input for the linear response calculation.
 C
       NAOPER = 1
       NBOPER = 1
-      NFREQ = 1
+      NFREQ  = 1
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
@@ -311,10 +270,10 @@ C
     7 CALL QUIT('Error exit while reading namelist CCSOPR')
     8 CONTINUE
       MXDIMRP = MAXDIM
-      MXITRP = MAXIT
-      NTOLRP = NTOL
+      MXITRP  = MAXIT
+      NTOLRP  = NTOL
 C
-C     Input for the excitation energy calculation.
+C     Input for the excitation energy calculation. (no longer supported, corresponded to TD-HF in MO basis)
 C
       DO I = 1, 16
          NEXC(I) = 1
@@ -322,11 +281,6 @@ C
       MAXDIM =  relcc_max_dimension_diis      
       MAXIT  =  relcc_max_iterations         
       NTOL   =  relcc_desired_convergence   
-      REWIND (IN)
-      READ (IN,CCEXC,END=10,ERR=9)
-      GOTO 10
-    9 CALL QUIT('Error exit while reading namelist CCEXC')
-   10 CONTINUE
       MXDIMEX = MAXDIM
       MXITEX = MAXIT
       NTOLEX = NTOL
@@ -357,12 +311,8 @@ CMI   ...provide with default values
       MAXIT10=relcc_fs_max10_iterations 
       MAXIT11=relcc_fs_max11_iterations 
       MAXIT20=relcc_fs_max20_iterations 
-CMI   ... read input namelist
-      REWIND (IN)
-      READ (IN,CCFSPC,END=12,ERR=11)
-      GOTO 12
-   11 CALL QUIT('Error exit while reading namelist CCFSPC')
-   12 CONTINUE
+!     stefan: select state sorted by energy for numerical gradient calculation   
+      STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
       DO ISECT = 1, 6
@@ -437,11 +387,6 @@ C
       SHIFTHP  = relcc_ih_shift_hp
       AIH      = relcc_ih_aih
       NIH      = relcc_ih_nih
-      REWIND (IN)
-      READ (IN,CCIH,END=22,ERR=21)
-      GOTO 22
-   21 CALL QUIT('Error exit while reading namelist CCIH')
-   22 CONTINUE
 C
 C     Some processing of the input is necessary
 C
@@ -478,23 +423,19 @@ C     Input for the sorting routine.
 C     We can add a finite field here, if desired
 C     This assumes that PRTRA is called as well !
 C
-      USEOE   = .TRUE.
-      NORECMP = .FALSE.
+      USEOE   = relcc_use_orbital_energies
+      NORECMP = relcc_no_recompute
       ADD_FINITE_FIELD = .FALSE.
+      NFFOPER=0
       DO IOPER = 1, MAXOP
          FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_STRENGTHS(1,IOPER) = 0.D0
          FF_PROP_STRENGTHS(2,IOPER) = 0.D0
       ENDDO
-      REWIND (IN)
-      READ (IN,CCSORT,END=14,ERR=13)
-      GOTO 14
-   13 CALL QUIT('Error exit while reading namelist CCSORT')
-   14 CONTINUE
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
-      if(molmf3)then
+      if(X2CMMF)then
         if(.not.relcc_use_orbital_energies) 
      &          relcc_use_orbital_energies = .true.
         if(.not.relcc_no_recompute) 
@@ -510,20 +451,15 @@ C
       end if
 !
 C
-C     Position the file at the right spot when this routine is
-C     called as a part of DIRAC
-C
-      REWIND (IN)
-      REWINP = .FALSE.
-      READ (IN,CCEND,END=100,ERR=99)
-      GOTO 100
-   99 CALL QUIT('Error exit while reading namelist CCEND')
-  100 CONTINUE
-      IF (REWINP) REWIND (IN)
-C
 C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
+
+      if (DOENER.AND.DOFSPC) then
+         relcc_do_energy = .false.
+         DOENER = .FALSE.
+      endif
+
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE
@@ -581,11 +517,12 @@ C
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
-      integer :: verbose = 0
-      integer(kind=8)        :: maxcor
-      integer(kind=8)        :: mxcorr
-      integer(kind=8)        :: mxcorr1
-      integer(kind=8)        :: mword_limit
+      integer :: verbose    = 0
+      integer :: ncore_elec = 0
+      integer(kind=klongint) :: maxcor
+      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: mxcorr1
+      integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
@@ -597,7 +534,7 @@ C
 #if defined (CC_ALONE)
       MP2_DENRUN = .FALSE.
 #endif
-      INTERFACE = INTFCE
+      INTERFACE = relcc_integral_interface
       CARITH = CA
       IN = IUNIN
       IW = IUNUT
@@ -642,7 +579,7 @@ C
 C
 C     Read symmetry information
 C
-      CALL RDSYMI (NSP,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
@@ -706,6 +643,9 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+
+!     total charge of the system
+      call get_charge_cc(mycharge,nelect,ncore_elec)
 C
 C     Write output in xml format
 C
@@ -721,10 +661,12 @@ C
 
 C
       if ( maxcor .gt. 0) then
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1004) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
       else
-      WRITE (IW,1414) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+      WRITE (IW,1414) NELECT,mycharge,NSP-NELECT,CARITH,DOSORT,DOENER,
+     &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
 C     
@@ -898,15 +840,16 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1000  FORMAT (/" Total memory available :",T50,I15," MB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
+     &        T50,I15," 8-byte words")
 1002  FORMAT (" Not enough memory, increase to at least",
-     &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
+     &        T50,I15," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
 1414  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -919,6 +862,7 @@ C
      &        /" Memory limit (MWord) not set in Dirac but by the OS"
      &        /" Interface used       :",T40,A10//)
 1004  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Total charge of the system :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
@@ -2077,7 +2021,7 @@ C
       call dealloc(a_VTA , id="vta" )
 C
       RETURN
-1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Memory for ",A," :",T50,I15," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,MXCORR,EPS)
@@ -2430,7 +2374,7 @@ C
       call dealloc(a_S2  , id="s2")
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Energy calculations"
      &        /" MP2 module active :",T44,L1
      &        /" CCSD module active :",T44,L1
@@ -2751,7 +2695,11 @@ C
          GOTO 431 
       ENDIF
 
-          WRITE (IW,1008) 
+          IF (NOZG) THEN
+             WRITE (IW,1008) 
+          ELSE
+             WRITE (IW,1018) 
+          ENDIF
 C
 C         Slaves will only help in the integral calculation.
 C
@@ -2794,10 +2742,9 @@ C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
           IPRINT_NO = 1
-          KFREE1=1
-          LFREE1=NBUF3*RCW
+          call dealloc(a_BUF3, id="buf3") 
 C
-          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
+          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
 C
 C        Release the slaves (in case of parallel runs)
@@ -2810,7 +2757,7 @@ C
          ENDDO
 #endif
  431  CONTINUE
-         call dealloc(a_BUF3, id="buf3")
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       ENDIF
 C
       call dealloc( a_FOO, id="foo")
@@ -2831,13 +2778,14 @@ C
 
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1007  FORMAT (//" Gradient calculations with the old MP2 module"
      &        //" Z-vector equations are done in MO basis:"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1008  FORMAT (//" Relaxed density matrix for MP2 properties")
+1008  FORMAT (//" Unrelaxed density matrix for MP2 properties")
+1018  FORMAT (//" Relaxed density matrix for MP2 properties")
 1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
      & 'Real part',8X,'Imaginary part')
 1004  FORMAT('  <',A8,'> ',T30,2F20.13)
@@ -3007,7 +2955,7 @@ C
       call dealloc( a_CBUF , id="cbuf"  )
 
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Propagator (RPA) module"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
@@ -3158,7 +3106,7 @@ C
       call dealloc( a_BUF2  , id="buf2"  )
 C
       RETURN
-1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 1009  FORMAT (//" Excitation energy module (RPA)"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of reduced space :",T40,I5
@@ -3831,7 +3779,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
+      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
@@ -3851,6 +3799,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
+      integer ncore_elec
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3865,17 +3814,27 @@ C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
+      integer   :: spinor_info(5,2)
 C
 C---------------Executable code--------------------------------------
 C
-C     Read symmetry information (master node only)
+C     Read symmetry and spinor information (master node only)
+C
+      spinor_info(1:5,1:2) = 0
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP)
+     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+     &                 (spinor_info(1,irp),irp=1,nfsym), 
+     &                 (spinor_info(2,irp),irp=1,nfsym), 
+     &                 (spinor_info(3,irp),irp=1,nfsym), 
+     &                 (spinor_info(4,irp),irp=1,nfsym), 
+     &                 (spinor_info(5,irp),irp=1,nfsym)
+       ncore_elec = 0
+       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
@@ -4433,4 +4392,17 @@ C
 C
       RETURN
       END
+
+      subroutine get_charge_cc(mycharge,nelect_cc,ncore_elec_cc)
+      implicit none
+      integer, intent(inout) :: mycharge
+      integer, intent(in)    :: nelect_cc
+      integer, intent(in)    :: ncore_elec_cc
+      integer                :: charge
+      charge   = 0
+      call rmolchr(charge)
+      mycharge = charge - (ncore_elec_cc + nelect_cc)
+!     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
+!    & charge, ncore_elec_cc, nelect_cc, mycharge
+      end subroutine
 

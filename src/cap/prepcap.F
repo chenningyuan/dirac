@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,7 +51,7 @@ C
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
-#include "memint.h"
+!#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -708,6 +708,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      & 'Total number of atomic basis functions, NBASIS = ',NBASIS
       ENDIF
 
+      !return
+
 C ...  read DIRAC/CAP basis functions ...
 C       .. skip text lines
       READ(LUCD,*)
@@ -742,6 +744,8 @@ C         ...    printout of IOBF parameters
         ENDIF
 
       ENDDO
+
+      !return
 
       CALL GPCLOSE(LUCD,'KEEP')
       CALL GPCLOSE(LUCL,'KEEP')

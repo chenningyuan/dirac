@@ -5,8 +5,10 @@ Setting up DIRAC
 
 * **Installation:**
   :doc:`Supported platforms <installation/platforms>` |
-  :doc:`Linux, Unix, Mac <installation/installation>` |
-  :doc:`Windows <installation/windows>`
+  :doc:`Linux, Unix, Mac <installation/general>` |
+  :doc:`Windows <installation/windows>` |
+  :doc:`Expert options <installation/expert>` |
+  :doc:`System administrators <installation/sysadmins>`
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
@@ -17,7 +19,6 @@ Setting up DIRAC
 
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
-  :doc:`MPI <installation/int64/mpi>` |
   :doc:`Math libraries <installation/int64/math>` |
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
@@ -25,13 +26,19 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>`
+  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
+
+* **pam script:**
+  :doc:`How to set the scratch directory <pam/scratch>` |
+  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
+  :doc:`String replacement <pam/replace>`
 
 
 Updates and patches
 ===================
-
-* :doc:`ChangeLog <patches/CHANGELOG>`
+    
+ :doc:`ChangeLog <patches/CHANGELOG>`
 
 
 First steps in DIRAC territory
@@ -43,7 +50,7 @@ First steps in DIRAC territory
 * **Molecule input formats:**
   :doc:`mol format <molecule_and_basis/molecule_using_mol>` |
   :doc:`xyz format <molecule_and_basis/molecule_using_xyz>` |
-  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>` |
+  :doc:`ecp input <molecule_and_basis/molecule_with_ecp>`   |
   :doc:`Troubleshooting <molecule_and_basis/troubleshooting>`
 
 * **Basis sets:**
@@ -55,10 +62,19 @@ First steps in DIRAC territory
   :doc:`Memory problems <getting_help/memory>`
 
 
+Reference manual
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   manual/index.rst
+
 Tutorials and walkthrus
 =======================
 
 * **Basis sets:**
+  :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF convergence:**
@@ -68,11 +84,13 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
-  :doc:`Menu of 2-component Hamiltonians <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Molecular mean field <tutorials/two_component_hamiltonians/molecular_mean_field>`
+  :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
+  :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` | 
+  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -91,7 +109,11 @@ Tutorials and walkthrus
 
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
-  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>`
+  :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
+  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
+
+* **Analysis:**
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
@@ -103,6 +125,14 @@ Tutorials and walkthrus
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
+* **Case studies:**
+  :doc:`W atom <tutorials/case_studies/W>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
+  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
+  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
+  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`  
+
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
   :doc:`Atom <tutorials/reladc/atom>`
@@ -110,6 +140,15 @@ Tutorials and walkthrus
 * **ECP:**
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
+
+* **DMRG interface:**
+  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+
+* **Utility programs:**
+  :doc:`TWOFIT <tutorials/utils/twofit>` |
+  :doc:`VIBCAL <tutorials/utils/vibcal>` |
+  :doc:`CFREAD <tutorials/utils/cfread>` |
+  :doc:`LABREAD <tutorials/utils/labread>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -130,15 +169,6 @@ Exercises
    exercises/index.rst
 
 
-Reference manual
-================
-
-.. toctree::
-   :maxdepth: 1
-
-   manual/index.rst
-
-
 Developers
 ==========
 
@@ -148,24 +178,28 @@ Developers
   :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
 * **Programming:**
-  :doc:`Programmers' manual <programmers/programmers_manual>` |
+  :doc:`Rules <programmers/rules>` |
+  :doc:`How to add new tests <programmers/testing>` |
+  `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
+  :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
+  :doc:`Dirac on Windows <programmers/windows>` |
   :doc:`Profiling <programmers/profiling>` |
   :doc:`Debugging <programmers/debugging>` |
+  :doc:`History <programmers/museum>` |
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
-  :doc:`Protecting your code  <programmers/protecting_your_code>` 
+  :doc:`FAQ <programmers/faq>`
 
 * **Notes:**
-  :doc:`Standalone programs <programmers/standalones>` |
-  :doc:`Shell programming <programmers/shell_prog>` |
   :doc:`DFCOEF <programmers/dfcoef>` |
   :doc:`Screening <programmers/screening>` |
   :doc:`64bit integers <programmers/int8>` |
   :doc:`XML <programmers/xml>` |
   :doc:`Static linking <programmers/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
   :doc:`How this documentation works <programmers/documentation_howto>`
 
 
@@ -173,3 +207,6 @@ Bibliography
 ============
 
 * :doc:`References <references>`
+
+
+Documentation generated on |today|.

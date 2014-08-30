@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -109,8 +109,6 @@ C
       LZXOPE = NZHOPE*2
       NZXOPP = 0
       LZXOPP = NZXOPP*2
-      CALL MEMGET('INTE',KZXOPE,LZXOPE,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KZXOPP,LZXOPP,WORK,KFREE,LFREE)
 C
 C     Write information to LUKRMC
 C
@@ -147,9 +145,11 @@ C***********************************************************************
 C
       PARAMETER (D0 = 0.0D0)
 C
+C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbesr.h"
 #include "dgroup.h"
 !#include <krmcluci_inf.h>
 C
@@ -183,7 +183,7 @@ C
 C     ... only (aa|aa) integrals
       CALL INISZT(JTRLVL,SZTRA,.FALSE.,IDUMMY)
       OPT_NOPFQ = .TRUE.
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBEIG),NORBT)
       CALL RTRACTL(CMO,WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
       CALL MEMREL('ESR_RESOLVE AFTER RTRACTL',
@@ -198,20 +198,26 @@ C
          L_EIGVAL = N_CIROOTS
          L_EIGVEC = N_CIROOTS*NZCONF*NZ_in_CI ! final CI eigen vectors
          L_EIGVXX = N_CIROOTS*NZCONF*NZ_in_CI ! CI eigen vectors from GASCIP_RCISTD
-         CALL MEMGET('REAL',K_EIGVAL,L_EIGVAL,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',K_EIGVXX,L_EIGVEC,WORK,KFREE,LFREE)
-!        assign pointer to CI vectors which is in the argument list of this subroutine and needs to be
-!        passed upwards to the calling routine.
+         CALL MEMGET2('REAL','EIGVAL',K_EIGVAL,L_EIGVAL,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','EIGVXX',K_EIGVXX,L_EIGVEC,
+     &      WORK,KFREE,LFREE)
+!
+!        OBS!  K_EIGVAL and K_EIGVEC is NON-STANDARD POINTER FEATURE !!!!
+!        assign pointer to CI vectors which is in the argument list of this subroutine and
+!        needs to be passed upwards to the calling routine.
          K_EIGVEC = K_EIGVXX
 
-         CALL GASCIP_RCISTD(N_CIROOTS,THR_CI,MAX_CI_IT,
+         CALL GASCIP_RCISTD(N_CIROOTS, THR_CIESR, MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
-     &                     WORK(KZCONF),CMO, IOPT_ISTATE, ICONV_TOT
-     &                     IPROPT, WORK(KFREE),LFREE)
+     &                     WORK(KZCONF), CMO,
+     &                     THR_CVEC_ESR, 0, ICONV_TOT,
+     &                     THRPCI_ESR,IPRESR,WORK(KFREE), LFREE)
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                     ECI,CVECS,NDET,IDET,CMO,
-C     &                     ISTATE,ICONV_TOT,IPRINT, WORK,LWORK)
+C     &                     THR_CVEC_ESR,ISTATE,ICONV_TOT,
+C     &                     THR_PCI,IPRINT,WORK,LWORK)
 
          IF (ICONV_TOT .LE. 0) THEN
             CALL QUIT('ESR CI not converged.')
@@ -223,7 +229,8 @@ C        Sort CI eigenvectors from (real C1, imag C1, real C2, etc)
 C        to (real C1, real C2, ..., imag C1, imag c2, ...) for later use in QTRANS
 C
          IF (NZ_in_CI .EQ. 2) THEN
-            CALL MEMGET('REAL',K_EIGVX2,L_EIGVEC,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','EIGVX2',K_EIGVX2,L_EIGVEC,
+     &         WORK,KFREE,LFREE)
             J_EIGVEC_R = K_EIGVX2 - 1
             J_EIGVEC_I = J_EIGVEC_R + N_CIROOTS*NZCONF
             J_EIGVXX_R = K_EIGVXX - 1
@@ -249,8 +256,10 @@ C        Full CI.
 C           
          L_EIGVAL = NZCONF
          L_EIGVEC = NZCONF*NZCONF * NZ_in_CI
-         CALL MEMGET('REAL',K_EIGVAL,L_EIGVAL,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',K_EIGVEC,L_EIGVEC,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','EIGVAL',K_EIGVAL,L_EIGVAL,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','EIGVEC',K_EIGVEC,L_EIGVEC,
+     &      WORK,KFREE,LFREE)
 C debug TODO remove again: 
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
@@ -282,8 +291,17 @@ C
          WRITE(lupri,*) 'I,WORK(K_EIGVAL-1+1)', I, WORK(K_EIGVAL-1+I) 
       END DO
 #endif
+
+! start programming print of nat.orb. occupations /1.nov.2012-hjaaj
+!     IF (IPROPT .GE. 2) THEN
+!        DO I = 1, N_CIROOTS
+!           CALL  RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
+!    &                  IPRESR,WORK,KFREE,LFREE)
+!        END DO
+!     END IF
 C
       CALL QEXIT('ESR_RESOLVE')
 C
       RETURN
       END
+! -- end of pamesrci.F --

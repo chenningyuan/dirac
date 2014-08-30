@@ -31,6 +31,9 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
+        case ('*aooSOC')
+           call read_input_aoosoc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
@@ -57,6 +60,9 @@
 
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
+
+        case ('**DIAG ')  ! Miro's standalone program
+           call read_input_diagonalization_tests(word, kw_section)
 
         case default
 !          activate as soon as everything is merged to here
@@ -763,6 +769,7 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      logical :: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -804,18 +811,29 @@
 
       if (kw_matches(word, '.ENERGY')) then
          relcc_do_energy = .true.
+         explicitly_set_energy = .true.
       end if
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
+         relcc_do_mp2gradient = .true. ! this is currently the only one available, should thus always be active when gradient is switched on
+      end if
+
+      if (kw_matches(word, '.HESSIA')) then
+         relcc_do_hessian  = .true.
       end if
 
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
+         if (.not. explicitly_set_energy) relcc_do_energy = .false.
       end if
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, relcc_print)
+      end if
+
+      if (kw_matches(word, '.INTERFACE')) then
+         call kw_read(word, relcc_integral_interface)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -836,8 +854,8 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOMP2 ')) then
-         relcc_do_mp2 = .true.
+      if (kw_matches(word, '.NOMP2 ')) then
+         relcc_do_mp2 = .false.
       end if
 
       if (kw_matches(word, '.NOSING')) then
@@ -906,8 +924,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.NOZG  ')) then
-         relcc_do_zipgrid = .true.
+      if (kw_matches(word, '.UNRELAXED')) then
+         relcc_do_unrelaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then
@@ -944,13 +962,13 @@
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies
-      if (kw_matches(word, '.IGNOE  ')) then
-         relcc_use_orbital_energies = .false.
+!     Use HF orbital energies
+      if (kw_matches(word, '.USEOE ')) then
+         relcc_use_orbital_energies = .true.
       end if
 
 !     do not re-compute orbital energies
-      if (kw_matches(word, '.NORCMP')) then
+      if (kw_matches(word, '.NORECMP')) then
          relcc_no_recompute   = .true.
       end if
 
@@ -1050,6 +1068,10 @@
 
       if (kw_matches(word, '.TSHOLD')) then
          read(get_file_unit(),'(i5)') relcc_fs_tshold
+      end if
+
+      if (kw_matches(word, '.GESTAT')) then
+         read(get_file_unit(),'(i5)') relcc_fs_select_state_for_numgrad_energy
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1156,9 +1178,12 @@
       integer                          :: i, j !counters
       character(100)                   :: line
       integer                          :: user_req_symmetries
+      integer                          :: no_sipreps
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
+
+      no_sipreps = 0
 
       if (kw_matches(word, '.ADCLEV')) then
          read(get_file_unit(),'(i5)') reladc_adclevel
@@ -1182,7 +1207,8 @@
 
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
-         call kw_read(word, reladc_sipreps, user_req_symmetries)
+         !call kw_read(word, reladc_sipreps, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, no_sipreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.DIPREP')) then
@@ -1267,6 +1293,7 @@
    subroutine read_input_lanczos(word, kw_section)
 
       use adc_cfg   ! lanczos only used in combination with reladc. same module
+      use adc_mat
       use input_reader
 
       implicit none
@@ -1276,6 +1303,8 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
+      character(100)                   :: line
+      integer                          :: i, j
 !     --------------------------------------------------------------------------
 
 
@@ -1294,18 +1323,40 @@
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_sipeigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_sip_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_sip_eeigv(i,j), j=1,2)
+         end do
       end if
 
       if (kw_matches(word, '.DIPEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_dipeigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC double ion. eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_dip_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_dip_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.EXCEIGV')) then
-         read(get_file_unit(),'(i8)') user_req_symmetries
-         call kw_read(word, reladc_exceigv, user_req_symmetries)
+         call kw_read(word, user_req_symmetries)
+         print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
+         do i = 1, user_req_symmetries
+            ! read every line
+            read(get_file_unit(), '(a)') line
+            read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
+            print *, (reladc_md_exc_eeigv(i,j), j=1,2)
+         end do
+         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !call kw_read(word, reladc_exceigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then
@@ -1351,6 +1402,7 @@
    subroutine read_input_x2c(word, kw_section)
 
       use x2cmod_cfg
+      use fragment_x2c_cfg
       use input_reader
 
       implicit none
@@ -1362,9 +1414,15 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.FGMx2c')) then
-!        x2cmod_fragment_x2c = .true.
-         x2cmod_fragment_x2c = .false.
+      if (kw_matches(word, '.fragx2')) then
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+      end if
+
+      if (kw_matches(word, '.fragmo')) then
+         x2cmod_fragment_x2c                            = .true.
+         fragment_x2c_info%fragment_approach_enabled    = .true.
+         fragment_x2c_info%fragment_approach_ismolecule = .true.
       end if
 
       if (kw_matches(word, '.DEBUG ')) then
@@ -1380,16 +1438,58 @@
          x2c_free_part_mtx_defh1 = .true.
       end if
 
-!     use DIRACs in-house AMFI
-!     (full keyword: .diramfi)
-      if (kw_matches(word, '.diramf')) then
-         x2c_add_amfi = 2
-      end if
       if (kw_matches(word, '.fockao')) then
          x2c_fock_saao_basis = .true.
       end if
 
+!     completely skip any PCT of property operators in restart X2C energy calcs
+      if (kw_matches(word, '.skippc')) then
+         x2cmod_skip_op_pct = .true.
+      end if
+
+!     restart mmf calculation
+      if (kw_matches(word, '.mmf-re')) then
+         x2cmod_mmf_restart = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+   subroutine read_input_aoosoc(word, kw_section)
+
+      use x2cmod_cfg
+      use input_reader
+#ifdef MOD_AOOSOC
+      use atomic_oo_order_so_correction_cfg
+#endif
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+#ifdef MOD_AOOSOC
+      call reset_available_kw_list()
+
+
+      if (kw_matches(word, '.DEBUG ')) then
+         aoomod_debug = .true.
+         aoomod       = .true.
+         x2c_add_amfi = 2
+      end if
+      if (kw_matches(word, '.atomic')) then
+         aoomod       = .true.
+         x2c_add_amfi = 2
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+#else
+      call quit('Atomic oo-order spin-orbit correction not included in this version')
+#endif
 
    end subroutine
 
@@ -1413,14 +1513,26 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOSS  ')) then
-!         Do not use precomputed small charges
-         pcmmod_doss = .true.
+      if (kw_matches(word, '.SKIPSS')) then
+!         Use precomputed small charges
+         pcmmod_skipss = .true.
       end if
 
       if (kw_matches(word, '.SEPARA')) then
+!         .SEPARATE option
 !         Split potentials and polarization charges in nuclear and electronic
          pcmmod_separate = .true.
+      end if
+      
+      if (kw_matches(word, '.DOSPF ')) then
+!        Perform elimination of spin-orbit dependent terms in the PCM operator 
+         pcmmod_dospf = .true.
+      end if
+
+      if (kw_matches(word, '.SKIPOI')) then
+!         .SKIPOIT option
+!         Do not compute One-Index Transformed ASC (only for debugging)
+         pcmmod_skipoit = .true.
       end if
 
       if (kw_matches(word, '.PRINT ')) then
@@ -1580,11 +1692,74 @@
          dft_cfg_pointwise = .true.
       end if
 
-!radovan: not documented on wiki, code not perfectly tested
+#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
+#endif
 
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+
+ ! reading subroutine for the standalone testing program of diagonalization
+ ! routines (miro ilias)
+     subroutine read_input_diagonalization_tests(word, kw_section)
+      use input_reader
+      use diagmod
+      implicit none
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      call reset_available_kw_list()
+
+   !  if (kw_matches(word, '.RADINT')) then
+   !     call kw_read(word, num_grid_cfg_radint)
+   !  end if
+
+     if (kw_matches(word, '.TITLE ')) then
+       ! read(get_file_unit(),'(a)') title_text
+         call kw_read(word, title_text)
+     end if
+
+     if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_level)
+     end if
+
+     if (kw_matches(word, '.MTXFIL')) then
+         call kw_read(word, matrix_file_name)
+     end if
+
+     if (kw_matches(word, '.DSYEVR')) then
+        do_dsyevr = .true.
+     end if
+
+     if (kw_matches(word, '.ULF   ')) then
+        do_dsyevr_ulf = .true.
+     end if
+
+     if (kw_matches(word, '.RS    ')) then
+        do_rs = .true.
+     end if
+
+     if (kw_matches(word, '.RSJACO')) then
+        do_rsjaco = .true.
+     end if
+
+     if (kw_matches(word, '.QJACO ')) then
+        do_qjaco = .true.
+     end if
+
+     if (kw_matches(word, '.PAUL  ')) then
+        do_householder_psb = .true.
+     end if
+
+     if (kw_matches(word, '.EIGVTS')) then
+        do_eigv_check = .true.
+     end if
+
+     call check_whether_kw_found(word, kw_section)
 
    end subroutine

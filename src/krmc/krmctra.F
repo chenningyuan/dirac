@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -166,20 +166,13 @@ C
       ISMXZERO = 0
       DO I = 1, 4
          DO J = 1,NFSYM
+           IF( SZTRA(J,I) .eq. TESTSTRING ) ISZERO = ISZERO + 1
            ISMXZERO = ISMXZERO + 1
          END DO
       END DO
 C
-C     check string
-C
-      DO I = 1, 4
-         DO J = 1,NFSYM
-           IF( SZTRA(J,I) .eq. TESTSTRING ) ISZERO = ISZERO + 1
-         END DO
-      END DO
-C
       IF( ISZERO .eq. ISMXZERO )THEN
-        WRITE(LUPRI,*) ' Empty orbital string detected !!!'
+        WRITE(LUPRI,*) ' ERROR: All orbital strings are empty !!!'
         WRITE(LUPRI,*) ' 4-index transformation will be erroneous.'
         WRITE(LUPRI,*) ' Check parameter MXCORB (maxorb.h) '//
      &                   'and try to increase.'
@@ -187,10 +180,11 @@ C
         CALL QUIT('*** ERROR in INISZT *** ' //
      &        'Empty string array SZTRA detected' )
       ELSE IF( ISZERO .lt. ISMXZERO .AND. ISZERO .gt. ISZERO_FINAL)THEN
+        IF (IPROPT .GT. 4) THEN
         WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' partial empty orbital string detected!'
-        WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' 4-index could be erroneous.'
+        END IF
       ELSE IF( ISZERO .eq. ISZERO_FINAL )THEN
 C
 C       WRITE(LUPRI,*) ' succesful test'

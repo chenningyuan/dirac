@@ -1,8 +1,9 @@
+================================
 A TDDFT study of carbon monoxide
 ================================
 
 Introduction
-------------
+============
 
 To illustrate the TDDFT capabilities of DIRAC we will consider excited states of the carbon monoxide molecule. 
 The experimental spectrum can be found `here <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
@@ -10,19 +11,9 @@ Note that this source gives only adiabatic excitation energies :math:`T_e`, that
 minima of the potential curve of the ground and excited state, whereas the TDDFT calculations give vertical excitation
 energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by [Nielsen_JCP1980]_.
 We will begin this tutorial in spinfree mode to faciliate the connection to the non-relativistic domain.
-In the following we employ the molecular input file `CO.mol` ::
+In the following we employ the molecular input file `CO.mol` 
 
-  INTGRL
-  Carbon monoxide
-  Dunning aug-cc-pVDZ
-  C   2              A
-          6.    1
-  C        0.0000000000000     0.0000000000000     0.0000000000000
-  LARGE BASIS aug-cc-pVDZ
-          8.    1
-  O        0.0000000000000     0.0000000000000     1.128323
-  LARGE BASIS aug-cc-pVDZ
-  FINISH
+.. literalinclude:: CO.mol
 
 Here we do not provide any symmetry information, meaning that we ask DIRAC to detect it.
 DIRAC will find that the full group is :math:`C_{\infty v}`. With spin-orbit coupling DIRAC
@@ -33,9 +24,9 @@ correlate as follows:
 +----------------------+------------------+
 | :math:`C_{\infty v}` | :math:`C_{2v}`   |
 +======================+==================+
-| :math:`\Sigma^{+}`   | :math:`A1`       |
+| :math:`\Sigma^{+}`   | :math:`A_1`      |
 +----------------------+------------------+
-| :math:`\Sigma^{-}`   | :math:`A2`       |
+| :math:`\Sigma^{-}`   | :math:`A_2`      |
 +----------------------+------------------+
 | :math:`\Pi`          | :math:`B_1, B_2` |
 +----------------------+------------------+
@@ -44,39 +35,13 @@ correlate as follows:
 
 
 Ground state electronic structure
----------------------------------
+=================================
 
 Before actually doing TDDFT let us first have a look at the electronic structure of the ground state of CO.
 We therefore carry out Kohn-Sham DFT using the PBE functional and the eXact 2-Component (X2C) Hamiltonian 
-followed by Mulliken population analysis using the input file `PBE.inp` ::
+followed by Mulliken population analysis using the input file `SCF.inp` 
 
-  **DIRAC
-  .TITLE
-  CO
-  .WAVE FUNCTIONS
-  .ANALYZE
-  **HAMILTONIAN
-  .SPINFREE
-  .X2C
-  .DFTAUTO    ! uses xcfun
-  PBE
-  **INTEGRALS
-  *TWOINT
-  .SCREEN
-  1.0D-12
-  *READIN
-  .UNCONT
-  **WAVE FUNCTIONS
-  .SCF
-  *SCF
-  .CLOSED SHELL
-  14
-  **ANALYZE
-  .MULPOP
-  *MULPOP
-  .VECPOP
-  1..10
-  *END OF
+.. literalinclude:: SCF.inp
 
 Based on orbital energies and the Mulliken population analysis we can set up the following MO diagram:
 
@@ -95,10 +60,10 @@ whereas the doubly degenerate LUMO is a :math:`\pi` orbital with about 75% C *2p
 with a combination of carbon and oxygen *3s* dominated by the former atom.
 
 Excited states
---------------
+==============
 
 Preparing the input files
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 The excited states will be calculated in a "bottoms-up" fashion for each irrep by expansion of the solution vector in trial vector [Bast2009]_.
 For each irrep the user specifies the number of desired excitations. It may be a good idea of including some extra excitations in case of
@@ -168,228 +133,53 @@ Counting total symmetries we find that the 12 microstates are evenly distributed
 
 Note that the order of the irreps follows the output of DIRAC. 
 
-We now set up the following menu file for our calculation::
+We now set up the following menu file `TDDFT.inp` for our calculation
 
-  **DIRAC
-  .TITLE
-  CO
-  .WAVE FUNCTIONS
-  .ANALYZE
-  .PROPERTIES
-  **HAMILTONIAN
-  .SPINFREE
-  .X2C
-  .DFT
-  CAMB3LYP
-  **INTEGRALS
-  *READIN
-  .UNCONT
-  **WAVE FUNCTIONS
-  .SCF
-  *SCF
-  .CLOSED SHELL
-  14
-  **ANALYZE
-  .MULPOP
-  *MULPOP
-  .VECPOP
-  1..10
-  **PROPERTIES
-  *EXCITATION
-  #A1 :
-  .EXCITA
-  1 10
-  #B1 :
-  .EXCITA
-  2 10
-  #B2 :
-  #.EXCITA
-  #3 10
-  #A2 :
-  .EXCITA
-  4 10
-  .ANALYZE
-  .OPERATOR
-   XDIPLEN
-  .OPERATOR
-   YDIPLEN
-  .OPERATOR
-   ZDIPLEN
-  *END OF
+.. literalinclude:: TDDFT.inp
 
-Note that we skip excitations in :math:`B_{2}` since they are related by symmetry to the excitations of :math:`B_{1}`.
-On the other hand we ask for 10 excitations in the other symmetries. We base our TDDFT calculation on the long-range corrected CAMB3LYP
-functional [Yanai_CPL2004]_ which provides a better description of Rydberg and charge-transfer excitations than 
-standard continuum functionals. 
-We furthermore ask for transition moments to be calculated with respect to the component of the dipole moment operator.
-These will be non-zero only for excitations in irreps :math:`B_{1}, B_{2}` and :math:`A_{1}`.
-Finally we ask for analysis of what orbitals contribute to the various excitations. 
+We base our TDDFT calculation on the long-range corrected CAMB3LYP functional [Yanai_CPL2004]_ 
+which provides a better description of Rydberg and charge-transfer excitations than 
+standard continuum functionals. We furthermore ask for oscillator strengths within the electric dipole
+approximation. Finally we ask for analysis of what orbitals contribute to the various excitations. 
 For this the Mulliken population analysis may come in handy as reference.
 
 
 Looking at the output
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
-After running the calculation, let us now look at the output. Let us take the final output of excitations
-of :math:`A_1` symmetry as an example::
+Energy levels
+~~~~~~~~~~~~~
 
-  ================================================================================
-  
-   *** Excitations of boson symmetry 1 : A1 
-  
-  --------------------------------------------------------------------------------
-   Excitation no.   1 excitation energy     0.21796849 a.u.    2.89E-06 (converged)
-   Nonrel. sym.:   TxB2                         5.9312 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   2 excitation energy     0.21796849 a.u.    6.32E-06 (converged)
-   Nonrel. sym.:   TyB1                         5.9312 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   3 excitation energy     0.31960825 a.u.    5.31E-06 (converged)
-   Nonrel. sym.:   TzA2                         8.6970 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   4 excitation energy     0.35719034 a.u.    9.84E-06 (converged)
-   Nonrel. sym.:   TzA2                         9.7196 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   5 excitation energy     0.37137212 a.u.    2.71E-06 (converged)
-   Nonrel. sym.:   S0A1                        10.1055 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.75578153D-10 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   6 excitation energy     0.40056879 a.u.    3.42E-06 (converged)
-   Nonrel. sym.:   S0A1                        10.9000 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+        -0.100967888969 a.u.
-  
-       -> dipole oscillator strength (length)   :  0.00272240
-       -> dipole oscillator strength (velocity) :  0.00000000
-  
-       Total dipole radiation rate (length)   1.40352E+07 s-1
-        - corresponding radiation life time   7.12496E-08 s
-  --------------------------------------------------------------------------------
-   Excitation no.   7 excitation energy     0.41485654 a.u.    4.09E-06 (converged)
-   Nonrel. sym.:   S0A1                        11.2888 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.850545002869 a.u.
-  
-       -> dipole oscillator strength (length)   :  0.20007889
-       -> dipole oscillator strength (velocity) :  0.00000000
-  
-       Total dipole radiation rate (length)   1.10639E+09 s-1
-        - corresponding radiation life time   9.03841E-10 s
-  --------------------------------------------------------------------------------
-   Excitation no.   8 excitation energy     0.41547529 a.u.    2.39E-06 (converged)
-   Nonrel. sym.:   TxB2                        11.3057 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.   9 excitation energy     0.41547529 a.u.    3.46E-06 (converged)
-   Nonrel. sym.:   TyB1                        11.3057 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  --------------------------------------------------------------------------------
-   Excitation no.  10 excitation energy     0.44215019 a.u.    3.79E-06 (converged)
-   Nonrel. sym.:   TxB2                        12.0315 eV
-   *** Transition moments <0|A|n> for this excitation:
-  
-   A - ZDIPLEN              A1   T+         0.00000000D+00 a.u.
-  ================================================================================
-  
-There is sufficient symmetry in the calculation (symmetry distinct rotations) to allow DIRAC to pinpoint
-the symmetry of the valence-excited states (see the entry `Nonrel. sym.`). The triplet states have strictly
-zero transition moment (and thus intensity), whereas the sixth and seventh states are singlet states with
-non-zero transition moments. We can also look at a snippet from the excitation analysis::
+After running the calculation, let us now look at the output. There is output for each symmetry, but we go directly to 
+the final output at the end where we first find a list of levels
 
-  ** E solution vectors : PP EXCITATIONA1  Irrep: A1  Trev:   1 Length:        441
-   Freq.:   0.217968 Norm:   0.71160560E+00 Residual norm:   0.29E-05
-     Dominant inactive orbitals: 
-       7(E1 ) 99.56%
-     Dominant virtual orbitals:
-       8(E1 ) 87.92%
-      13(E1 ) 10.80%
-     Excitation amplitudes larger than threshold   0.34E-01
+.. literalinclude:: TDDFT_CO_spf_exc1
 
-          7(i:E1 ) --->      8(v:E1 )  0.66634909E+00
-          7(i:E1 ) --->     13(v:E1 )  0.23316934E+00
-          7(i:E1 ) --->     15(v:E1 )  0.55294899E-01
-          7(i:E1 ) --->     24(v:E1 )  0.41863354E-01
-          4(i:E1 ) --->      8(v:E1 )  0.34733952E-01
+The degeneracies indicated in parenthesis for each level generally arise from both spatial and spin degrees of freedom. 
+DIRAC assumes degeneracy when energies are within :math:`1.0\cdot10^{-9}\ E_h`. As we shall see this is not a foolproof scheme.
 
-We see that for each excitation we get information about the dominant occupied and virtual orbitals.
-The character of each orbital can be found from Mulliken population analysis or from projection analysis.
+To learn more about the nature of the excitated states we look at the following list of energy levels, now in other units
+(eV and cm :math:`^{-1}`) and with symmetry information:
 
+.. literalinclude:: TDDFT_CO_spf_exc2
 
+The first level is simply the ground state. The reference state for calculation excitation energies is presently limited 
+to closed-shell and so this is :math:`^1A_1` (:math:`C_{2v}`), corresponding to :math:`^1\Sigma^+` of :math:`C_{v\infty}`.
+Linear (super)symmetry is not implemented for spin-orbit free calculations, so DIRAC gives symmetry information with respect to :math:`C_{2v}`.
+DIRAC, however, is able to separate spin and spatial symmetries. We see for instance the the next level is six-fold degenerate 
+with equal contributions from :math:`^3B_1` and :math:`^3B_2`. Looking at the above correspondence table between :math:`C_{2v}` and
+:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Delta` term, 
+so we identify the first excited level of CO as :math:`^3\Delta`. The correspondence table also allows us to distinguish mirror symmetry
+about the molecular axis for :math:`\Sigma` states, so we identify the second excited state as :math:`^{3}\Sigma^{+}`. Proceeding 
+in this manner, we also see some failures of the degeneracy detection in DIRAC. Level 4 and 5 are classified as :math:`^3A_1` and 
+:math:`^3A_2`, respectively, and are clearly components of a :math:`^3\Delta` state. Reducing the threshold for degeneracies would 
+bring them together, as well as level 7 (:math:`^1A_2`) and 8 (:math:`^1A_1`), which are component of a :math:`^1\Delta` state.
+However, level 6 is seen to contain both a singlet :math:`^1A_2` (:math:`^1\Sigma^-`) and a triplet
+:math:`^3A_2` (:math:`^3\Sigma^-`) which are clearly not allowed to mix without spin-orbit interaction, so here a *larger* threshold would 
+be needed to distinguish them. 
 
-In order to properly identify the excited states we collect data from the four irreps and list the states
-in order of increasing excitation energy. This gives the following table:
-
-+-----+----------+----------------------------------------------------+--------------------------------+
-| Level (eV)     | Symmetry                                           | Dominant orbitals              |
-+=====+==========+====================================================+================================+
-|   1 |   5.9312 |   A1(TxB2), A1(TyB1), B1(TzB2), A2(TyB2), A2(TxB1) | :math:`7\rightarrow (8,9)`     |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   2 |   7.9482 |   B1(TyA1), A2(TzA1)                               | :math:`(5,6)\rightarrow (8,9)` |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   3 |   8.4859 |   B1(S0B1)                                         | :math:`7 \rightarrow (8,9)`    |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   4 |   8.6970 |   A1(TzA2), B1(TxA2), B1(TyA1), A2(TzA1)           | :math:`(5,6)\rightarrow (8,9)` |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   5 |   9.7196 |   A1(TzA2), B1(TxA2), A2(S0A2)                     | :math:`(5,6)\rightarrow (8,9)` |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   6 |  10.1055 |   A1(S0A1), A2(S0A2)                               | :math:`(5,6)\rightarrow (8,9)` |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   7 |  10.2650 |   B1(TyA1), A2(TzA1)                               | :math:`7\rightarrow 10,11`     |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   8 |  10.9000 |   A1(S0A1)                                         | :math:`7\rightarrow 10`        |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|   9 |  11.0348 |   B1(TyA1), A2(TzA1)                               | :math:`7\rightarrow 11`        |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|  10 |  11.2888 |   A1(S0A1)                                         | :math:`7\rightarrow 11`        |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|  11 |  11.3057 |   A1     TxB2, TyB1, TzB2                          | :math:`7\rightarrow (12,13)`   |
-+-----+----------+----------------------------------------------------+--------------------------------+
-|  12 |  11.4598 |   B1     S0B1                                      | :math:`7\rightarrow (12,13)`   |           
-+-----+----------+----------------------------------------------------+--------------------------------+
-|  13 |  12.0315 |   A1     TxB2                                      | :math:`4\rightarrow (8,9)`     |
-+-----+----------+----------------------------------------------------+--------------------------------+
-
-from which we identify 13 energy levels. Keeping in mind that for every excitation of total symmetry :math:`B_1` there is 
-a :math:`B_2` partner we now consider each energy level:
-
-1. The first level has six-fold degeneracy and is a triplet. The space symmetries are :math:`B_1` and :math:`B_2` 
-   and from the correspondence table between :math:`C_{2v}` and :math:`C_{\infty v}` we identify it as :math:`^{3}\Pi`.
-   The dominant excitation is :math:`3\sigma \rightarrow 2\pi`.
-2. The second level is a triplet of three-fold degeneracy identified as :math:`^{3}\Sigma^{+}`. The dominant excitation is :math:`1\pi \rightarrow 2\pi`.
-3. The third level is a singlet of two-fold degeneray identified as :math:`^{1}\Pi`. The dominant excitation is :math:`3\sigma \rightarrow 2\pi`.
-4. The first level has six-fold degeneracy and is a triplet. The space symmetries are :math:`A_1` and :math:`A_2` 
-   and from the correspondence table between :math:`C_{2v}` and :math:`C_{\infty v}` we identify it as :math:`^{3}\Delta`. The dominant excitation is :math:`1\pi \rightarrow 2\pi`.
-5. The fifth level consists of a singlet and a triplet, so two separate electronic states, namely :math:`^{1}\Sigma^{-}`
-   and :math:`^{3}\Sigma^{-}`. The dominant excitation is :math:`1\pi \rightarrow 2\pi`.
-6. The sixth level is a doubly-degenerate singlet identified as :math:`^{1}\Delta`. The dominant excitation is :math:`1\pi \rightarrow 2\pi`.
-7. :math:`^{3}\Sigma^{+}`. The dominant excitation is :math:`3\sigma \rightarrow 4\sigma`. The :math:`4\sigma` orbital is dominated by  *3s* from both atoms, but with some *3s* character as well.
-8. :math:`^{1}\Sigma^{+}`. The dominant excitation is :math:`3\sigma \rightarrow 4\sigma`. 
-9. :math:`^{3}\Sigma^{+}`. The dominant excitation is :math:`3\sigma \rightarrow 5\sigma`. The :math:`5\sigma` orbital is dominated by  *3p* from both atoms, but with some *3p* character as well.
-10. :math:`^{1}\Sigma^{+}`. The dominant excitation is :math:`3\sigma \rightarrow 5\sigma`.
-11. :math:`^{3}\Pi`. The dominant excitation is :math:`3\sigma \rightarrow 3\pi`, the latter dominated by carbon *3p*.
-12. :math:`^{1}\Pi`.The dominant excitation is :math:`3\sigma \rightarrow 3\pi`.
-
-The assignment and energy of states may be compared to [Tozer_JCP1998]_. Below we give a summary of results obtained with a variety of functionals available in DIRAC.
+Below we give a summary of results obtained with a variety of functionals available in DIRAC.
+The assignment and energy of states may be compared to [Tozer_JCP1998]_. 
 
 +------------------------------+-------------+-------------+----------+-------+-------+-------+-------+-------+
 |                              | :math:`T_e` | :math:`T_v` | CAMB3LYP | LDA   | PBE   | PBE0  | BLYP  | B3LYP |
@@ -432,10 +222,6 @@ PBE0 is also display nice performance, whereas its GGA equivalent comes out sign
 analysis of the valence states (the first seven states) and the Rydberg states (the last six states), we see that PBE performs well for
 the valence states, but not for the Rydberg states. This is connected to the wrong asymptotic behaviour of LDA/GGA functionals.
 
-Asymptotic corrections
-~~~~~~~~~~~~~~~~~~~~~~
-
-
 The performance of standard LDA/GGA functionals can be improved by invoking asymptotic corrections. One option is the statistical average of orbital potentials (SAOP).
 Below we show the result of SAOP-corrected functionals.
 
@@ -476,5 +262,72 @@ Below we show the result of SAOP-corrected functionals.
 | MAE (Rydberg)                |             |             | 0.21     | 0.42  | 0.25  | 0.25  | 0.12  | 0.21  |
 +------------------------------+-------------+-------------+----------+-------+-------+-------+-------+-------+
 
+Orbital contributions
+~~~~~~~~~~~~~~~~~~~~~
 
+We can also get information about dominant (single) excitations leading to each excited state. We then go to the section starting with::
+
+   Analysis of response solution vectors
+   -------------------------------------
+
+For the first excitation of :math:`A_1` total (space+spin) symmetry we find for example
+
+.. literalinclude:: TDDFT_CO_spf_exc3
+
+This is an excitation to the first :math:`^3\Delta` state, combining a :math:`T_y` spin function with :math:`B_1` spatial symmetry.
+The dominant inactive orbital is orbital 7 and if we look at the Mulliken population analysis we find
+
+.. literalinclude:: TDDFT_CO_spf_exc4
+
+showing that this is the HOMO, which is a :math:`\sigma` orbital with 51 \% carbon *s* and 36 \% carbon *p* character.
+The dominant virtual orbital is orbital 8
+
+.. literalinclude:: TDDFT_CO_spf_exc5
+
+which is clearly a :math:`\pi` orbital dominated by carbon :math:`p_x`.
+
+Oscillator strenghts
+~~~~~~~~~~~~~~~~~~~~
+
+DIRAC also allows provides oscillator strenghts corresponding to the calculated (single) excitations.
+The general definition of an oscillator strenght is
+
+.. math::
+
+   f_{0n} = \frac{2m}{e^2\hbar\omega_{0n}}\left|T_{0n}\right|^2
+
+where :math:`\hbar\omega_{0n}` and :math:`T_{0n}` are the corresponding excitation energy and transition moment, respectively.
+The calculation of oscillator strengths is invoked through::
+
+   .INTENS
+   0
+
+which means that we ask for oscillator strengths to order zero in the wave vector. So far only the zeroth-order, corresponding to 
+the electric dipole approximation, has been implemented in DIRAC. The isotropic dipole length-dipole length oscillator strenghts 
+are given as
+
+.. math::
+
+   f^{(0)iso}_{0n} = \frac{2m}{3e^2\hbar}\omega_{0n}\left|\mu_{0n}\right|^2
+
+and are found to be
+
+.. literalinclude:: TDDFT_CO_spf_exc6
+
+DIRAC will also list the corresponding rate of spontaneous emission
+
+.. math:: A_{0n} = \frac{2e^2\omega_{0n}^2}{4\pi\varepsilon_0 mc^3}f_{0n}
+
+and lifetime. This is a spin-orbit free calculation and so we only see oscillator strength to 
+singlet states (clearly dominated by :math:`C\ ^{1}\Sigma^{+}`). Things change is we 
+activate spin-orbit interaction (that is, remove the :ref:`.SPINFREE` keyword). 
+We see that the energy levels split up
+
+.. literalinclude:: TDDFT_CO_exc
+
+and that oscillator strength goes to more states
+
+.. literalinclude:: TDDFT_CO_exc5
+
+reflecting that triplet states "steal" intensity from singlet ones.
 

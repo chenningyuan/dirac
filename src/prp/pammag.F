@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,8 +33,11 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
+      use dirac_cfg
       use codata
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
@@ -61,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO_ANG','.SEPTEP','.XXXXXX'   /
+     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -254,17 +257,9 @@ C ... header:
       WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
       CALL PRSYMB(LUPRI,'=',75,0)
 
-      IF (MSUSCP.AND.LONDON) THEN
-#if !defined MOD_MAGNETIZ
-        WRITE(LUPRI,'(2X,A)') 
-     &'You have asked for magnetizabilities wih London atomic orbitals'
-        WRITE(LUPRI,'(2X,A)') 
-     &'-this is not supported in the release version of DIRAC.'
-        CALL QUIT(
-     &'Magnetizabilities wih London atomic orbitals are not supported'//
-     & ' in the DIRAC release version !')
-#endif
-      ENDIF
+      if (dirac_cfg_dft_calculation .and. msuscp .and. london) then
+        call quit('DFT+LAO magnetizabilities not in this release')
+      end if 
 
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
@@ -313,9 +308,12 @@ C ... call the routine in abacus/hergp.F
      &' terms for the H(B) property gradient !'
        ENDIF
 
-       !IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
+#ifdef MOD_LAO_REARRANGED
        IF (NOORTH.AND. (SHIELD.OR.shielding_rearrange
      &     .OR.OPTROT)) THEN
+#else
+       IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
+#endif
          WRITE(LUPRI,'(/,1X,A)')
      &': No calculation of {T(1),H(m_K)} reorthonormalization'//
      &' terms for the H(B m_K) expectation value terms !'
@@ -373,12 +371,21 @@ C ... call the routine in abacus/hergp.F
      &   "--> These are accepted values from user's .INTFLG input."
          ENDIF
        ENDIF
-       ENDIF
+      ELSE   !  (LONDON)
+C   .... defined conventional atomic orbitals (AO), not London AO
+       IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
+          WRITE(LUPRI,'(A/A/A)')
+     &'  Used conventional atomic orbitals, not London orbitals !',
+     &'  WARNING: Calculated magnetic properties are dependent'//
+     &  ' on the choice of the gauge origin!'   ,
+     &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
+       END IF
+      END IF  !  (LONDON)
 
 C =========================================================================
 CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
-       IF (MSUSCP) THEN
+      IF (MSUSCP) THEN
           IF (RDSUSLLMOD) THEN
             WRITE(LUPRI,'(1X,A)') 
      &'WARNING: Used the LS block of the RDSUSLL operator'//
@@ -388,20 +395,6 @@ C =========================================================================
             WRITE(LUPRI,'(1X,A)') 
      &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
-      ELSE 
-C   .... defined conventional atomic orbitals (AO), not London AO
-       IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
-!gosia: this 'if' has to be checked,
-! i get this warning even for shielding+london!...
-        WRITE(LUPRI,'(1X,A)')
-     &'  Used conventional atomic orbitals, not London orbitals !'
-        WRITE(LUPRI,'(1X,A)')
-     &'WARNING: Calculated magnetic properties are dependent'//
-     &' on the choice of the gauge origin!'   
-         WRITE(LUPRI,'(A,3F12.6)')
-     &  'NMRINP: The gauge & dipole '//
-     &  'origin :',(GAGORG(I), I = 1, 3)
-       END IF
       END IF
 
   999 CONTINUE
@@ -409,6 +402,7 @@ C   .... defined conventional atomic orbitals (AO), not London AO
       RETURN
       END
 
+#ifdef MOD_LAO_REARRANGED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETCON_septep(ee,ep,occ,ORTO,WORK,KFREE,LFREE,IPRINT)
 !gosia: later i will merge it with GETCON, now it is easier....
@@ -503,6 +497,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              IOPSY2  = JBTOF(ISYM2-1,1)
              IREP2   = ISYM2 - 1 ! 0-7
              CALL DZERO(WORK(KTMAT),N2ORBXQ)
+#ifdef MOD_LAO_REARRANGED
 !            gosia:
              if (lao_lr_rearrange) then
                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
@@ -510,20 +505,15 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
-             IF (.NOT.SYMCON) THEN
-              IF (ITIM2.NE.0)
-     &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
-              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+#endif
+             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-             ELSE
-              IF (ITIM2.NE.-1)
-     &         CALL QUIT('GETCON: Wrong TR symm. of S(1)!')
 
-              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-             ENDIF
+#ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
+#endif
      
+#ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange) then
 !              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
                ih = -1
@@ -537,7 +527,6 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              if (lao_lr_rearrange) then
                call get_m_ij(work(ktmat))
              end if
-
 
              if (ee) then
                 call get_m_ee(work(ktmat))
@@ -567,6 +556,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
      &                       CONMAT,WORK(KTHMAT),IPRINT)
                 end if
              end if
+#endif
 
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
 
@@ -605,7 +595,7 @@ C ... release the memmory...
       RETURN
       END
 
-
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETCON */
       SUBROUTINE GETCON(W,CONMAT,DMAT,ORTO,WORK,
@@ -620,8 +610,10 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils
+#endif
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -721,30 +713,24 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              IREP2   = ISYM2 - 1 ! 0-7
              CALL DZERO(WORK(KTMAT),N2ORBXQ)
 !            gosia:
+#ifdef MOD_LAO_REARRANGED
              if (lao_lr_rearrange) then
                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
-             IF (.NOT.SYMCON) THEN
-              IF (ITIM2.NE.0)
-     &         CALL QUIT('GETCON: Wrong TR symm. of W(1)!')
-              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
+#endif
+             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
      &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-             ELSE
-              IF (ITIM2.NE.-1)
-     &         CALL QUIT('GETCON: Wrong TR symm. of S(1)!')
-
-              CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-             ENDIF
+#ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
-     
+#endif
 !g             if (shielding_rearrange .or. lao_lr_rearrange) then
 !g               call get_m_ij(work(ktmat))
 !g             end if
 
+#ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange) then
 !              build (T_ij + T_ij^\dagger), as in getmdm subroutine:
                ih = -1
@@ -758,20 +744,24 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              if (lao_lr_rearrange) then
                call get_m_ij(work(ktmat))
              end if
-
+#endif
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
              EPMIX = DOEPRN
              AH  = .TRUE. ! T_icomp is antihermitian ! 
              !if (shielding_rearrange .or. lao_lr_rearrange) then
+#ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange.or.lao_lr_rearrange) then
              CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
      &                   CONMAT,WORK(KTHMAT),IPRINT)
              else
+#endif
 C ... do the reorthonormalization ...
              CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
      &                   CONMAT,WORK(KTHMAT),IPRINT)
+#ifdef MOD_LAO_REARRANGED
              end if !if (shielding_rearrange .or. lao_lr_rearrange) then
+#endif
              IF (IPRINT.GE.5) THEN
               WRITE(LUPRI,'(4A/)')
      &         'GETCON: Transformed term {}', PRPNAM(INDXPR),';',
@@ -859,7 +849,9 @@ C
 C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
@@ -909,6 +901,7 @@ C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
         IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
+#ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange) then
 !         called only from get_ftb
 !         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
@@ -930,6 +923,7 @@ C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
      &                 THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &                 NORBT,NORBT,NZ)
           else !if (lao_lr_rearrange) then
+#endif
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
           I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
           I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
@@ -969,8 +963,11 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
+#ifdef MOD_LAO_REARRANGED
          end if !if (lao_lr_rearrange) then
+#endif
         ELSE  ! Transformation in the e-e space only
+#ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange) then
 !         called only from get_ftb
 !         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
@@ -992,6 +989,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &                 THMAT(IORB(I1)+1+NPSH(I1),IORB(I3)+1+NPSH(I3),1),
      &                 NORBT,NORBT,NZ)
           else
+#endif
 C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
           I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
           I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
@@ -1031,7 +1029,9 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
+#ifdef MOD_LAO_REARRANGED
           end if !if (lao_lr_rearrange) then
+#endif
         ENDIF
       ENDDO
       IF(IPRINT.GE.5) THEN
@@ -1177,7 +1177,7 @@ C     DMAT_{ab} is general matrix, so do symmetrize it
 C
 C   On input: EPMIX=.true.=> o-summation runs over e+p shells, 
 C             otherwise only over e-shells 
-C             ISYMT - boson symmetry (1-NBSYM) of enetring T operator matrix
+C             ISYMT - boson symmetry (1-NBSYM) of entering T operator matrix
 C             CMO,TMAT - MO coeff. + transformation matrix T
 C
 C  The T is expected to be a general matrix (natural connection), 
@@ -1187,7 +1187,9 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -1223,8 +1225,6 @@ C
         CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
       ENDIF
-
-
 C
 C     Generate MDM = modified density matrix of f.symm I1,I2
 C   ===========================================================
@@ -1254,8 +1254,6 @@ C
 !g        else  ! if not lao_lr_rearrange
 
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
-CTROND
-          WRITE(6,*) 'TEST..',I1,I2
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
             CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NORB(I1),NOCC(I2),
@@ -1305,7 +1303,9 @@ CTROND
       ENDIF
 
 !     gosia: if lao_lr_rearrange we only do: DMAT = C*(SB)C(+)
+#ifdef MOD_LAO_REARRANGED
       if (.not. lao_lr_rearrange) then
+#endif
 C
 C     Take symmetric/antisymmetric combinations to form MDMAT
 C    =========================================================
@@ -1317,7 +1317,9 @@ C    =========================================================
       ENDDO
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
+#ifdef MOD_LAO_REARRANGED
       end if ! if (.not. lao_lr_rearrange) 
+#endif
       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
@@ -1330,7 +1332,6 @@ C  ... in gp/gpsaue.F
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
-CTROND
       CALL QEXIT('GETMDM')
       RETURN
       END
@@ -1825,7 +1826,6 @@ C
       RETURN
       END
 
-#if defined MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
 C*****************************************************************************
@@ -1941,7 +1941,7 @@ C prepare IFCTYP and IREPDM
 C call TWOINT and modify routines inside her2ave
 C ...Integral type - London orbitals and without EXPECT in her2ave !!!
       ITYPE = -5  
-      MAXDIF = 2  ! Second derivate...=> SUSCEPTIBILITIES !!
+      MAXDIF = 2  ! Second derivative...=> SUSCEPTIBILITIES !!
       IATOM = 0
       RETUR  = .FALSE.
       RELCAL = .TRUE.
@@ -2096,8 +2096,6 @@ C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
        IREP   = ISYM - 1
        CALL DZERO(WORK(KT2MAT),N2ORBXQ)
 C    --- Get the T(2) symm.connection matrix in MO basis ---
-       IF (ITIM.EQ.0)
-     & CALL QUIT('HORDRNT: The S(2) term must have itim=1!')
        CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
@@ -2177,8 +2175,7 @@ C   PURPOSE:
 C  ----------
 C   Compute the lowest order expectation value
 C   reorthonormalization terms needed for calculating
-C   the magnetic susceptibility 
-C   with London atomic orbitals. 
+C   the magnetic susceptibility with London atomic orbitals.
 C   In the Levy-Leblond case these are identical
 C   with the DALTON counterparts.
 C
@@ -2239,10 +2236,8 @@ C   Get the Fock matrix in MO basis
         CALL PRQMAT(WORK(KFMAT),NORBT,NORBT,NORBT,
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KSWMAT,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT ,N2ORBXQ,WORK,KFREE,LFREE)
@@ -2253,11 +2248,7 @@ C****************************************************************
 C. Get  { S(1)W(1), H(0) } = { S(1)W(1), F(0) } expect. value term
 C or 1/2{S(1)S(1),H(0)} = 1/2{S(1)S(1),F(0)} for symm.connection
 C****************************************************************
-
-C     WRITE(LUPRI,*)"IPTAX:",IPTAX(1,2),IPTAX(2,2),IPTAX(3,2)
-
       IPRINT = IPRPRP
-
 C ... define e-p/e-shells for reorthonormalization
       EPMIX = DOEPRN
       IF (IPRINT.GE.5)  WRITE(LUPRI,'(3X,A,L2 )')
@@ -2266,7 +2257,6 @@ C ... define e-p/e-shells for reorthonormalization
 C DO NOT PERFORM THE PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
       DOPCTRA_SAVE=DOPCT
       DOPCT=.FALSE.
-
       DO IS1 = 1, 3
        INDXPR1 = IPCON21(IS1) ! Get index of S(1)
        ISYM1   = IPRPSYM(INDXPR1)
@@ -2291,7 +2281,6 @@ C ... it's the natural connection
          IREP2   = ISYM2 - 1 ! 0-7
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis ---
-         IF (ITIM2.NE.0) CALL QUIT('LORDRNT: Wrong TR symm. of W(1)!')
          CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
@@ -2412,7 +2401,6 @@ C     ====   Get F(1)=h(1)+u(1) MO terms ====
         IREP2   = ISYM2 - 1
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
-        IF (ITIM2.NE.0) CALL QUIT('LORDRNT:Wrong TR of W(1)!')
         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ELSE
@@ -2517,7 +2505,6 @@ C ...  get W(1)_icomp(I1) into WORK(KSMAT)
         IREP1   = ISYM1 - 1 ! 0-7
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KSMAT) ---
-        IF (ITIM1.NE.0) CALL QUIT('LORDRNT: Wrong TR symm. of W(1)!')
         CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
@@ -2618,8 +2605,6 @@ C     .... release the whole block used in this subroutine
       CALL QEXIT('LORDRNT')
       RETURN
       END
-#endif
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_d1hblond */
        SUBROUTINE DEF_D1HBLOND(IMP,IPRINT)
@@ -2642,7 +2627,9 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2662,14 +2649,20 @@ C
       DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_D1HBLOND')
-#include "memint.h"
+
+!miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
 
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
-        !IF(SHIELD) CALL HEADER(
-        IF(SHIELD.OR.shielding_rearrange) CALL HEADER(
+#ifdef MOD_LAO_REARRANGED
+        IF(SHIELD.OR.shielding_rearrange) then
+#else
+        IF(SHIELD) then
+#endif
+         CALL HEADER(
      &'All individual operators for NMR shieldings with LAO',-1)
+        end if
         IF(OPTROT) CALL HEADER(
      &'All individual operators for optical rotation with LAO',-1)
       ELSE IF (IMP.EQ.2) THEN
@@ -2922,11 +2915,13 @@ C----------------------------------------------------------------
       NPCOMP = 1
 !     gosia: if connection-independent formulation of shieldings, then
 !     we want "dS/dB" integrals, we keep the '-' sign.
+#ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
           PFAC(1) = -1.0d0
           LABELC='dS/dB'
           ILABELC = 5
       else
+#endif
         IF (SYMCON) THEN
           PFAC(1) = DMI2
           LABELC='dS/dB'
@@ -2936,7 +2931,9 @@ C----------------------------------------------------------------
           LABELC='d|S>/dB'
           ILABELC = 7
         END IF
+#ifdef MOD_LAO_REARRANGED
       end if
+#endif
       PNAME     = LABELC(1:ILABELC)//'X'
       PLABEL(1) = LABELC(1:ILABELC)//'X'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3097,7 +3094,7 @@ C    PURPOSE:
 C  ==============
 C   Accumulate selected terms (depends on IB)
 C   of the (dH/dB)|B=0 property gradient
-C   in MO-basis into the enetring PRPMO MO matrix
+C   in MO-basis into the entering PRPMO MO matrix
 C   when using London orbitals.
 C
 C   The gradient is needed for calculating the NMR shieldings and
@@ -3136,7 +3133,9 @@ C
 C   Written by Miro Ilias, August 2003, Odense
 C 
 C*****************************************************************************
+#ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
@@ -3177,13 +3176,6 @@ C     ... PRPNAM(INDXPR) is the antisymmetric 'LAO-cRM1H1'
       IREP = IPRPSYM(INDXPR)-1
 
       CALL MEMGET('REAL',KPRPMOLO,N2ORBXQ,WORK,KFREE,LFREE)
-
-C     WRITE(LUPRI,*) 'IB=',IB
-C     WRITE(LUPRI,*) 'IBTAND(IB,1):',IBTAND(IB,1)
-C     WRITE(LUPRI,*) 'IBTAND(IB,2):',IBTAND(IB,2)
-C     WRITE(LUPRI,*) 'IBTAND(IB,4):',IBTAND(IB,4)
-C     WRITE(LUPRI,*) 'IBTAND(IB,8):',IBTAND(IB,8)
-
 C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
       IF (IBTAND(IB,1).EQ.1) THEN
          OPEN(LUONELO,FILE='ONELON',FORM='UNFORMATTED',
@@ -3202,7 +3194,6 @@ C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added ONELON'
          ENDIF
       ENDIF
-
 C   ... 2. accumulate TWOLON into WORK(KPRPMOLO) if 2.bit is ON
       IF (IBTAND(IB,2).EQ.2.AND.(.NOT.NOTWOL)) THEN
          OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
@@ -3225,7 +3216,6 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
           ENDIF
          ENDIF
       ENDIF
-
 C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
       if (bxlao .or. bylao .or. bzlao) then
 !       we always write to component "1"
@@ -3250,9 +3240,7 @@ C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added FCKLON'
          ENDIF
       ENDIF
-
 C ... print the total matrix and CHECK if it is anti-symmetric !
-
         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/A,A,A,I3)')
      & 'GETDHBLO: For *** LAO-PDBS ***'
@@ -3261,7 +3249,6 @@ C ... print the total matrix and CHECK if it is anti-symmetric !
         CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
         ENDIF
-
 C ... check the symmetry of the total property
 C      gradient matrix, PRPMO for LAO-PDBS
        DSX=SYMCHECK(PRPMO,NORBT,NORBT,NORBT,NZ)
@@ -3270,8 +3257,7 @@ C      gradient matrix, PRPMO for LAO-PDBS
      &'*** GETDHB: The average symmetry of the final dH/dB',
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
-       ENDIF
-
+      ENDIF
       IF (DABS(DSX).GE.THRS) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
      &'*** GETDHB: The average symmetry of the final dH/dB',
@@ -3315,6 +3301,7 @@ C******************************************************
       RETURN
       END
 
+#ifdef MOD_LAO_REARRANGED
 !ttra2: will be removed
       SUBROUTINE TTRA2(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
 C*****************************************************************************
@@ -3555,4 +3542,5 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
       RETURN
       END
 
+#endif
 

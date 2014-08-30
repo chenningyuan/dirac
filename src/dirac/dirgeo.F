@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -59,6 +59,9 @@ C       We want the analytical gradient, check whether it is implemented
      &           .or. doluct
      &           .or. dokrmc
      &           .or. doluciar
+#if defined (PCM_MODULE)
+     &           .or. dirac_cfg_pcm
+#endif
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use NUMERICAL MOLECULAR GRADIENT',
@@ -106,6 +109,10 @@ C     To avoid readin twice in the 0. iteration skip
 C     the readin/setup.
 C
 C     Input and initialization
+
+C     Always do wave function (implicit .WAVE FUNCTION parameter)
+      DOPSI = .TRUE.
+
 C
       IF ( FIRST ) THEN
          FIRST = .FALSE.
@@ -130,8 +137,6 @@ C******************************************************************************
 C*****  G E T    W A V E    F U N C T I O N   *********************************
 C******************************************************************************
 C
-C     Always do wave function
-      DOPSI = .TRUE.
 C
 C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
@@ -143,7 +148,7 @@ C*****************************************************************************
 C*****  A N A L Y S I S    M O D U L E  **************************************
 C*****************************************************************************
 C
-      IF(DOANA) CALL PAMANA()
+      IF (DOANA) CALL PAMANA()
 C
 C
 C*****************************************************************************
@@ -165,7 +170,7 @@ C  /* Deck rgetccsd */
 C
 C     Get energy from RELCCSD
 C
-      CHARACTER CENERGY*40
+      CHARACTER CENERGY*50
 #include "../relccsd/results.inc" 
 #include "../relccsd/inpt.inc" 
       IF (DOCCSDT) THEN
@@ -174,12 +179,17 @@ C
          CENERGY = 'CCSD energy from RELCCSD'
       ELSE IF (DOMP2) THEN
          CENERGY = 'MP2 energy from RELCCSD'
+      ELSE IF (DOFSPC) THEN
+         CENERGY = '(IH-)Fock space CC energy for selected state'
       ELSE
          call quit('no energy from RELCCSD')
       END IF
+
+      RGETCCSD            = ETOT
+      if(dofspc) rgetccsd = efs(1)
+
       WRITE(LUPRI,'(2A,1P,E20.10)')
-     &   CENERGY,' = ',ETOT
-      RGETCCSD = ETOT
+     &   CENERGY,' = ',rgetccsd
       RETURN
       END
 C  /* Deck rgetccsd */

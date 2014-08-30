@@ -1,3 +1,0 @@
-nonrel.inp CH4.mol --put @pcmsolver.inp
-levy.inp   CH4.mol --put @pcmsolver.inp
-dc.inp     CH4.mol --put @pcmsolver.inp

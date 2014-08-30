@@ -43,7 +43,7 @@ active spinors.
      5/0,6
 
 1 open shell with 5 electrons in 6 spinors (= 3 Kramers pairs) in
-irrep 2. Thus, the fractional occupation is 5/6.
+irrep 2 (the *ungerade* one). Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
 average-of-configurations [Thyssen1998]_ .
@@ -157,6 +157,17 @@ an approximate atomic electronic density for the initial guess. For
 example, with one heavy element and without this correction (that
 is, with the bare nucleus Hamiltonian) all electrons will end up on
 that heavy element in the initial guess!
+
+keyword(BNC_FORCE)
+
+Force employing the bare nucleus correction (BNC). This keyword is worth when the calculated system
+is highly positively charged what makes (from defined charge value) switching off the default BNC.
+The BNC can help to achieve better convergence also for non-neutral systems.
+
+keyword(FOMOUT)
+
+Print Fock MO matrices for diagonalization (according to symmetries) into own formatted files. 
+Programmer's option suitable for testing. Only in for the linear symmetry.
 
 keyword(TRIVEC)
 
@@ -381,8 +392,8 @@ Do not perform damping of the Fock matrix. Damping is activated by
 default, but DIIS takes precedence. In case all columns in the
 B-matrix is removed by linear dependency, damping is activated.
 
-Level shift
-===========
+Level shifts
+============
 
 keyword(LSHIFT)
 
@@ -394,6 +405,31 @@ keyword(OLEVEL)
 Activate level shift (for open-shell orbitals). Followed by a real
 argument (level shift), one line for each open shell {Please give
 example}.
+
+keyword(OPENFACTOR)
+
+Change the default factor on an open-shell diagonal contribution to the Fock matrix.
+The default factor of one corresponds to a Koopmans interpretation of the orbital energies,
+however, experience shows that one in many case get better convergence without this term,
+so if your open-shell calculation does not converge it can often help to try again with
+a factor of zero on this term (or even e.g. -0.20).
+
+*Default:*
+
+::
+
+    .OPENFAC
+     1.00
+
+2nd-order optimization
+======================
+
+keyword(2NDOPT)
+
+The default SCF of DIRAC uses only gradient information. By adding this keyword 2nd-order optimization, 
+using both gradient and Hessian information, is activated in case the regular SCF does not converge.
+This scheme is computationally more expensive and so far only available for closed-shell Hartree-Fock.
+
 
 State selection
 ===============
@@ -483,8 +519,8 @@ Set :math:`alpha` equal to 1.
 
 keyword(CNVINT)
 
-Set threshold for convergence before adding SL and SS integrals to
-SCF-iterations.
+Set thresholds for convergence before adding SL and SS/GT integrals to
+SCF-iterations. 
 
 *2 (real) Arguments:*
 
@@ -495,7 +531,7 @@ SCF-iterations.
 
 keyword(ITRINT)
 
-Set the number of iterations before adding SL and SS integrals to
+Set the number of iterations before adding SL and SS/GT integrals to
 SCF-iterations.
 
 *Default:*

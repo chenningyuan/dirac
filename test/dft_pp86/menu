@@ -1,7 +1,0 @@
-pp86.inp        ne.mol
-pp86_ggakey.inp ne.mol
-pp86_xcfun.inp  ne.mol
-pw86x.inp       ne.mol
-pw86x_xcfun.inp ne.mol
-p86c.inp        ne.mol
-p86c_xcfun.inp  ne.mol

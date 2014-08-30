@@ -1,7 +1,5 @@
-#define MOD_UNRELEASED
-
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -42,6 +40,7 @@ module fde_io
 
      subroutine fde_open_file(name,unit)
         character(len=60), intent(in) :: name
+        character(len=60)             :: errmsg
         logical                       :: file_found 
         integer, intent(in)           :: unit
 
@@ -54,7 +53,8 @@ module fde_io
                  ACCESS = 'SEQUENTIAL',  &
                  FILE   =  name)
          else
-            call fde_quit("File not found!")
+            write (errmsg,'(a60)') "FDE-related file: "//name(1:10)//" not found. Stopping now!"
+            call fde_quit(errmsg)
          endif
      end subroutine fde_open_file
 

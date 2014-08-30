@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1843,7 +1843,7 @@ C
       PARAMETER(DTOL=1.0D-10,D0=0.0D0)
 C
       DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
-     &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
+     &          IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
 C
 C
       IF    (NBTYP.EQ.JBCNDX) THEN
@@ -3979,16 +3979,18 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+#ifdef MOD_LAO_REARRANGED
         use london_helper
+#endif
         use dirac_cfg
         use dft_cfg
         use xcint_main
-!       use fde_mod, only: fde_set_isymop, fde_set_ihrmop,fde_calculate_emb_linrsp_mat 
         use fde_mod
         use fde_dirac_matrices_integration
         use num_grid_gen
 #ifdef PCM_MODULE
-        use pcm_interface
+        use pcm_linear_response, only: pcm_oit_asc
+        use pcmmod_cfg
 #endif
         use orbital_rotation_indices
 
@@ -4015,6 +4017,10 @@ C
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
+#if defined (PCM_MODULE)
+      real(8), allocatable ::mep_oit_asc(:, :, :)
+#endif
+
 C
 C
       CALL QENTER('GMOLITX1')
@@ -4104,27 +4110,19 @@ C
 
         end if
 
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+        if (dirac_cfg_fde_response) then
+           call fde_get_import_info(itmp)
+           if (itmp%im_frozen) then
 
-           if (.not.dirac_cfg_dft_calculation) then
+              if (.not.dirac_cfg_dft_calculation) then
 !         generate standard density matrix
-              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
-              call genden(work(kbuf), cmo, 1, iprxrs)
-           endif
+                 call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+                 call genden(work(kbuf), cmo, 1, iprxrs)
+              endif
 
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call fde_dirac_set_isymop(isymop)
-          call fde_dirac_set_ihrmop(ihrmop)
-!         call fde_calculate_emb_linrsp_mat(ntbas(0),
-!    &                                      work(kbuf),
-!    &                                      ndmat,
-!    &                                      fmo,
-!    &                                      fao)
-          call fde_dirac_emb_matrices_via_integration(       
+              call fde_dirac_set_isymop(isymop)
+              call fde_dirac_set_ihrmop(ihrmop)
+              call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
      &                       fde_dmat_0             = work(kbuf),
@@ -4137,13 +4135,13 @@ C
      &                       fde_dmat_ih_sym        = ihrmop,
      &                       fde_response_order_mo = 1)
 
-          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+              call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-          write (*,*) 'FDE response contributions included'
-        else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
-          write (*,*) 'FDE response contributions not included'
+              write (*,*) 'FDE response contributions included'
+           else if (dirac_cfg_fde.and..not.dirac_cfg_fde_response) then
+              write (*,*) 'FDE response contributions not included'
+           endif
         endif
-#endif
 C
 C     Add solvent contributions
 C     -------------------------
@@ -4161,12 +4159,25 @@ C
 #ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
-           write(lupri,'(a)') '* Calling pcm_lintra_driver to get '//
-     &               'b-transformed electronic polarization charges.'
+           if (pcmmod_skipoit) then
+              write(lupri,'(a)') '* Skipping formation of '//
+     &          'One-Index Transformed electronic polarization charges.'
+           else
+              write(lupri,'(a)') '* Calling pcm_oit_asc to get '//
+     &          'One-Index Transformed electronic polarization charges.'
 ! fmo is actually the perturbed ao density matrix
 ! fao is really fao (confusing naming reuses memory)
-            call pcm_lintra_driver(fao, fmo, ndmat, -1.0d0, 
-     &      work(kfree), lfree)
+              allocate(mep_oit_asc(ntbas(0), ntbas(0), nz))
+              mep_oit_asc = 0.0d0
+              call pcm_oit_asc(mep_oit_asc, fmo, ndmat, 
+     &         work(kfree), lfree)
+              call daxpy(n2bbasx, -1.0d0, mep_oit_asc, 1, fao, 1)
+!           print *, "Contraction of MEP and pertubed ASC: MEP_OIT_ASC"
+!           print *, "mep_oit_asc"
+!           call prqmat(mep_oit_asc, ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+!                       nz, ipqtoq(1,0), 6 
+              deallocate(mep_oit_asc)
+           endif
         endif 
 #endif      
  

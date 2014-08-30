@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1311,11 +1311,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C information for property run
 #include "krciprop.h"
 #include "dcbxpr.h"
-      CHARACTER FILE_INFO_GROUPSZ*4,XPROP_INT*13,FILELAB_REOD*8,RODLAB*2
+      CHARACTER FILE_INFO_GROUPSZ*4,XPROP_INT*13,FILELAB_REOD*8
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_XPRP
       DIMENSION XPROP(*)
 C
-      RODLAB    = 'RO'
       IOFF_XPRP = 0
 C
 C     distribute from MASTER to node-MASTER(s)
@@ -1369,7 +1368,7 @@ C     XPROP distribution
          IF( LEN_XPRP_INT .gt. 0 ) THEN
            IF( MYPROC .eq. MASTER )THEN
              INDXPR  = LPROP_KRCI(IPROP_X)
-             WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
+             WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),'RO'
              CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,XPROP,
      &                         LEN_XPRP_INT,1)
            END IF

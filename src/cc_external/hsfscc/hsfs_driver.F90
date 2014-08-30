@@ -80,17 +80,6 @@ use ijtemp_mod
 
 End Subroutine Init_HSFS_Modules
 
-Subroutine alloc_stat_check(alloc_label,istat)
-#include "priunit.h"
-  character(*), intent(in) :: alloc_label
-  integer, intent(in) :: istat
-  if (istat /= 0) then
-    write(LUPRI,*) 'Error in allocation, variable :',alloc_label
-    write(LUPRI,*) 'istat=',istat
-    call quit('error in F90 dynamic allocation !')
-  endif
-End Subroutine alloc_stat_check
-
 Subroutine hsfs_tests
   use ipack_mod
   call test_ipack_functions

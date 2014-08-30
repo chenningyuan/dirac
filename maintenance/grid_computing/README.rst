@@ -121,6 +121,10 @@ Put (upload) file to your VO's data storage space:
   lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/voce/ilias/dirac_grid_suite.tgz
   lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/voce/ilias/dirac_grid_suite_slim.tgz
 
+  lcg-cr file:$PWD/DIRAC_grid_suite.tgz  -l lfn://grid/compchem/ilias/DIRAC_grid_suite.tgz
+  lcg-cr file:$PWD/DIRAC_grid_suite.tgz  -l lfn://grid/voce/ilias/DIRAC_grid_suite.tgz
+  lcg-cr file:$PWD/DIRAC_grid_suite.tgz  -l lfn://grid/sivvp.slovakgrid.sk/ilias/DIRAC_grid_suite.tgz
+
   lcg-cr file:$PWD/dirac_grid_suite.tgz       -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite.tgz
   lcg-cr file:$PWD/dirac_grid_suite_slim.tgz  -l lfn://grid/sivvp.slovakgrid.sk/ilias/dirac_grid_suite_slim.tgz
 

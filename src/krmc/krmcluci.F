@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -110,7 +110,9 @@ C     set "I/O node master" + "shared memory node master"
      &                                mxndgirr,mxpngas,nfsym,ngas,
      &                                dougrp,nirr_dg,mj2rep,
      &                                imosp_dirac_counter1,
-     &                                imosp_dirac_counter2)
+     &                                imosp_dirac_counter2,
+     &                                imosp_dirac_mjub,
+     &                                imosp_dirac_mjb)
 
       if(dougrp .ge. 10) call dealloc(orb_sym_vec)
 
@@ -295,6 +297,7 @@ C***********************************************************************
 #include "../luciarel/ctcc.inc"
 C information for property run
 #include "krciprop.h"
+      COMMON/CECORER/ECORE
 CTF
       character*6 CIRUN
       CHARACTER*255 MACHINENAME
@@ -312,7 +315,8 @@ C*******************************************
       CALL QENTER('KRMC_LUCI2')
 C*******************************************
 C
-
+!     transfer core energy to common block
+      ECORE = ECORE_KRMC
 #ifdef LUCI_DEBUG
       if(myproc .eq. master) call print_ci_info()
 #endif
@@ -533,7 +537,7 @@ C
       IF( CIRUN .eq. 'PROP1 ') THEN 
          CXPROPRUN = .TRUE.
          CALL XPROP_KRCI(F2,IHTYPE,WORK(KPROCLIST),WORK(KGROUPLIST),
-     &                   CIRUN)
+     &                   CIRUN,mz_num)
          GOTO 8888
       END IF
 C

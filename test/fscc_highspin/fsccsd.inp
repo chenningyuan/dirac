@@ -16,8 +16,14 @@ Molecular oxygen. Ground and excited states (X, a, b).
  6 8
 .EVCCNV
 1.E-10 1.E-9
+**RELCCSD
+.NELEC
+ 2 2 3 3
+.FOCKSP
+*CCFSPC
+.DOEA2
+.NACTP
+ 2 2 0 0
+.MAXIT
+100
 *END OF
-
- &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
- &CCFSPC MAXIT=100, DOEA2=T, NACTP=2,2,0,0 &END
-

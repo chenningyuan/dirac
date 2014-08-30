@@ -1,0 +1,31 @@
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.DOSSSS
+.FDE
+*FDE
+.RSP
+.NAKEF
+kin_pw91
+.NAXCF
+pbex=1.0 pbec=1.0
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+*SCF
+.EVCCNV
+ 1.0D-2
+**PROPERTIES
+.DIPOLE
+**MOLTRA
+.ACTIVE
+all
+**RELCCSD
+.GRADIENT
+*CCENER
+.MAXIT
+10
+*END OF

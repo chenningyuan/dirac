@@ -10,29 +10,32 @@
 !  DOTSC  - Treat SS 2-e interaction by TS point charge model
 !  DIRSET - Conventional OR direct calculation of 2-e integrals
 !           has been specified manually (used for SMLV1C)
-!  BNCRON - Improved screening of nucleus for bare nucleus starting
-!           guess
+!  BNCRON - Improved screening of nucleus for bare nucleus starting guess
+!  force_bnc - use input value of BNCRON w/o checking molecular charge (PSB+MI)
 !
-!      TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
-!  TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
-!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode
-!  X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
-!  (now stored in the module x2cmod_cfg)
+!  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
+!    TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
+!    TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode
+!    X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
+!      (now stored in the module x2cmod_cfg)
 !
-!  SKIP2E - Skip all two electron steps.
+!  SKIP2E  - Skip all two electron steps.
 !
-!  DOJACO - do the Jacobi diagonalization of real matrixes
+!  DOJACO  - do the Jacobi diagonalization of real matrixes
 !  DOQJACO - Jacobi diagonalization of quaternion Jacobi matrixes
 !
 !  These flags should be passed on to every module
 !
 ! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
 !
+! DIRAC_WF(1:N_WF) the wave function jobs to be done in this dirac run, set in dirac/dirrdn.F
+!
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
 
       CHARACTER*50 TITLE
-      COMMON /CBCPAM/ TITLE
+      CHARACTER*10 DIRAC_WF(100)
+      COMMON /CBCPAM/ TITLE, DIRAC_WF
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
      &        DOANA, DOPRP,          DOHRM, DOJACO,                     &
@@ -42,7 +45,7 @@
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
      &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
-     &        QM3, QMMM, BARNUC, DOHUCKEL
+     &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc
       LOGICAL OPTWLK, OPTNEW,  NMWALK
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
@@ -57,14 +60,14 @@
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
      &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
-     &                OPTWLK, OPTNEW, NMWALK
+     &                OPTWLK, OPTNEW, NMWALK, force_bnc
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
-     &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
+     &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND, N_WF
       COMMON /DCBGEN_I_PAM/                                             &
      &                IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG,   &
      &                INTGEN, ILLDIR, ISLDIR, ISSDIR, IGTDIR, DIRSET,   &
-     &                LENDND
+     &                LENDND, N_WF
 
 !     CVAL   : speed of light used in Dirac
 !     STOL(2): thresholds for linear dependence, large and small comp. bf.

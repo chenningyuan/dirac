@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -207,12 +207,26 @@ C     ... end do IZ = 1,NZ
       END DO
 C     ... end do IFSY = 1,NFSYM
 C
+!#define DMRG_DEBUG
+#ifdef DMRG_DEBUG
+
+      do IZ = 1, min(nz,2)
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+           if(k/=l) DMFC(k,l,iz) = 0.0d0
+         END DO
+      END DO
+      end do
+
+#undef DMRG_DEBUG
+#endif
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
 CSK   IPRINT = 00
+
 C
       CALL QEXIT('QFC2MFC')
       RETURN
@@ -919,7 +933,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (THROUT = 1.0D-10)
+      PARAMETER (THROUT = 1.0D-15)
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -930,12 +944,18 @@ C
       DIMENSION NSTR(2,0:2,4)
       DIMENSION KR(-300:300)
       DIMENSION DINT(8,2)
+      real*8, allocatable :: vmuuuu_tmp(:,:,:,:,:)
 C
 #include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VMUUUU, (2*NASHT)**4 * MIN(NZ,2))
 C
+      iprint_local = iprint
+#ifdef DMRG_DEBUG
+!     debug
+      iprint_local = 30
+#endif
       II = 0
       JJ = 0
       DO IFSYM = 1, NFSYM
@@ -948,7 +968,7 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
-      IF (IPRINT .GE. 30) THEN
+      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(/1X,A)')
      &        '(DNZ32M) Input VUUUU matrix in Dirac (NZ,3) format'
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
@@ -1143,7 +1163,33 @@ C
 !9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
  9001 FORMAT(4I5,5X,2F20.10)
 C
-      IF (IPRINT .GE. 30) THEN
+
+!#define DMRG_DEBUG
+#ifdef DMRG_DEBUG
+      allocate(vmuuuu_tmp(2*nasht,2*nasht,2*nasht,2*nasht,nz_in_ci))
+      vmuuuu_tmp = 0
+      do IZ = 1, NZ_in_CI
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            if(k/=l)cycle
+            DO J = 1,2*NASHT
+               if(j/=l) cycle
+               DO I = 1,2*NASHT
+                 if(i/=l) cycle
+                  print *, 'debug ints... ',i,j,k,l,VMUUUU(I,J,K,L,IZ)
+                  VMUUUU_tmp(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ)
+               END DO
+            END DO
+         END DO
+      END DO
+      end do
+      call dcopy(2*nasht*2*nasht*2*nasht*2*nasht*nz_in_ci,
+     &           vmuuuu_tmp,1,vmuuuu,1)
+      deallocate(vmuuuu_tmp)
+#undef DMRG_DEBUG
+#endif
+
+      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
@@ -1627,3 +1673,341 @@ C
       RETURN
       END
 #endif
+!***********************************************************************
+
+      subroutine write_fcidump_file(vmuuuu,hcore,ecore)
+!***********************************************************************
+!
+!     
+!     
+!     purpose: write one- and two-electron integrals for a given active
+!              space to disk
+!
+!     written by S. Knecht
+!
+!     based on an analogous routine written for Dalton by
+!     Katharina Boguslawski and Pawel Tecmer
+!
+!***********************************************************************
+      use mospinor_info
+      use symmetry_setup_krci
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbkrci.h"
+C
+      DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
+      DIMENSION  hcore(2*NASHT,2*NASHT,*)
+      real(8), intent(in) :: ecore
+      DIMENSION  KR(-300:300)
+      integer :: LUFCID = -1
+      character(len=30) :: form1
+      character(len=30) :: form2
+      character(len=30) :: form3
+      integer, allocatable  :: orb_sym_vec(:)
+      integer, allocatable  :: ibosym(:)
+      logical :: ex_mcdf, ex_mcol, isopen
+#include "ibtfun.h"
+
+!     set up symmetry information
+      IF (GROUP.eq.'C1 ') THEN
+         DOUGRP      = 8
+         NIRR_DG     = 2
+      ELSE IF (GROUP.eq.'Ci ') THEN
+         DOUGRP      = 7
+         NIRR_DG     = 4
+      ELSE IF (GROUP.eq.'Cs ') THEN
+         DOUGRP      = 6
+         NIRR_DG     = 4
+      ELSE IF (GROUP.eq.'C2 ') THEN
+         DOUGRP      = 5
+         NIRR_DG     = 4
+      ELSE IF (GROUP.eq.'D2 ') THEN
+         DOUGRP      = 5
+         NIRR_DG     = 4
+      ELSE IF (GROUP.eq.'C2h') THEN
+         DOUGRP      = 4
+         NIRR_DG     = 8
+      ELSE IF (GROUP.eq.'C2v') THEN
+         if(linear)then
+!          Cinfv (known as C2v + linear) treated as C32 inside KR-CI
+           DOUGRP      = 10
+           NIRR_DG     = 128
+         else
+!          C2v treated as C2 inside KR-CI
+           DOUGRP      = 5
+           NIRR_DG     = 4
+         end if
+      ELSE IF (GROUP.eq.'D2h') THEN
+         if(linear)then
+!          Dinfh (known as D2h + linear) treated as C16h inside KR-CI
+           DOUGRP      = 11
+           NIRR_DG     = 128
+         else if(spinfr.and..not.linear)then
+!          D2h spinfree
+           DOUGRP      = 9
+           NIRR_DG     = 8
+           print *,
+     & '*** error in fcidump interface: no spinfree formalism yet. ***'
+           call quit(
+     & '*** error in fcidump interface: no spinfree formalism yet. ***')
+         else
+!          D2h treated as C2h inside KR-CI
+           DOUGRP      = 4
+           NIRR_DG     = 8
+         end if
+      ELSE
+         call quit(
+     & '*** error in fcidump interface: unknown double group 
+     &      specified! ***')
+      END IF
+
+!     setup double group multiplication table
+      call symmetry_setup_init(dougrp,nirr_dg)
+
+!     initialize mo-spinor information arrays
+      call mospinor_info_init()
+
+      allocate(orb_sym_vec(norbt))
+!     distribute orbital symmetry information (if applicable)
+      if(linear.or.spinfr)then
+
+        orb_sym_vec = 0
+
+!       read data from master file krmcscf or dfcoef
+        inquire(file="KRMCSCF",opened=isopen,exist=ex_mcdf)
+        if(ex_mcdf)then
+          if(.not.isopen) open(lukrmc,status="old",
+     &                         form="unformatted")
+          rewind(lukrmc)
+          if(linear)then
+            call ireakrmc(lukrmc,'MJVEC   ',orb_sym_vec,norbt)
+          else if(spinfr)then
+            call ireakrmc(lukrmc,'IBEIG   ',orb_sym_vec,norbt)
+          end if
+          if(.not.isopen) close(lukrmc,status="keep")
+        else
+          inquire(file="KRMCOLD",opened=isopen,exist=ex_mcol,
+     &            number=luxxxx)
+          if(ex_mcol)then
+            if(.not.isopen) then 
+              luxxxx = 99
+              open(luxxxx,status="old",form="unformatted")
+            end if
+            rewind(luxxxx)
+            if(linear)then
+              call ireakrmc(luxxxx,'MJVEC   ',orb_sym_vec,norbt)
+            else if(spinfr)then
+              call ireakrmc(luxxxx,'IBEIG   ',orb_sym_vec,norbt)
+            end if
+            if(.not.isopen) close(luxxxx,status="keep")
+          else
+            call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
+            call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+     &                          orb_sym_vec,dummy,8)
+            close(lucoef,status='KEEP')
+          end if
+        end if
+      end if
+      
+!     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
+!     generalized routine for handling of all double groups including
+!     linear symmetry (dougrp == 10 or 11)
+      allocate(ibosym(norbt))
+      call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
+     &                                orb_sym_vec,iorb,npsh,nish,
+     &                                nirr_dg,1,nfsym,1,
+     &                                dougrp,nirr_dg,mj2rep,
+     &                                imosp_dirac_counter1,
+     &                                imosp_dirac_counter2,
+     &                                imosp_dirac_mjub,
+     &                                imosp_dirac_mjb)
+      deallocate(ibosym)
+
+      deallocate(orb_sym_vec)
+
+!     define printing format
+      form1="(e24.14, 4X, I6, I6, I6, I6)"
+      form2="(A11,I3,A7,I2,A5,I2,A1)"
+      form3="(e24.14, 4X, I6, I6, I6, I6)"
+
+!     FCIDUMP info
+!     write(lupri,*) 
+!     write(lupri,*)" FCIDUMP file details "
+!     write(lupri,*)"======================" 
+!     write(lupri,*) 
+
+!     Print header of FCIDUMP file using MOLPRO format
+      if (LUFCID .le. 0) then
+         CALL GPOPEN(LUFCID,'FCIDUMP','new',' ',
+     &                'FORMATTED',IDUMMY,.false.)
+      end if
+
+      write(LUFCID,form2) ' &FCI NORB=', nasht*2 , 
+     & ',NELEC=', NKRCIAELEC, ',MS2=',
+     &  0, ','
+      write(LUFCID,"(A)",advance='no') '  ORBSYM=' 
+      do IFSYM=1,NFSYM,1
+         if(NASH(IFSYM) /= 0)then
+           do i=1,nash(ifsym),1
+             write(LUFCID,"(I3,A1)",advance='no') 
+     &       imosp_dirac_counter1(i),','
+           end do
+           do i=nash(ifsym)+1,2*nash(ifsym),1
+             write(LUFCID,"(I3,A1)",advance='no') 
+     &       imosp_dirac_counter2(i-nash(ifsym)),','
+           end do
+         end if
+      end do
+
+      write(LUFCID,*) 
+      write(LUFCID,"(A7,I1)") '  ISYM=',1
+      write(LUFCID,"(A5)") ' &END'
+
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+
+      !> 2e-integrals
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO I = 1,2*NASHT
+
+!     only real groups needed for now ==> only even number of bars: 0, 2, 4
+
+!     linear symmetry case: To determine the MJ value we need to know the classes :
+!     Class 1 : (i    j    | k    l   )
+!     Class 2 : (i    j    | kbar lbar)
+!     Class 3 : (i    jbar | k    lbar)
+!     Class 4 : (ibar j    | k    lbar)
+
+      if(l<=nasht .and. k<=nasht .and. j<=nasht .and. i<=nasht)then !(ij|kl)
+        continue
+         isym = imosp_dirac_mjub(i)
+         jsym = imosp_dirac_mjub(j)
+         ksym = imosp_dirac_mjub(k)
+         lsym = imosp_dirac_mjub(l)
+         iclass = 1
+      else if(l> nasht .and. k> nasht .and. j> nasht .and. i> nasht)then!(IJ|KL)
+        continue
+         isym = imosp_dirac_mjub(i-nasht)
+         jsym = imosp_dirac_mjub(j-nasht)
+         ksym = imosp_dirac_mjub(k-nasht)
+         lsym = imosp_dirac_mjub(l-nasht)
+         iclass = 1
+      else if(l<=nasht .and. k<=nasht .and. j> nasht .and. i> nasht)then!(IJ|kl)
+         isym = imosp_dirac_mjub(i-nasht)
+         jsym = imosp_dirac_mjub(j-nasht)
+         ksym = imosp_dirac_mjub(k)
+         lsym = imosp_dirac_mjub(l)
+         iclass = 2
+        continue
+      else if(l> nasht .and. k> nasht .and. j<=nasht .and. i<=nasht)then!(ij|KL)
+        continue
+         isym = imosp_dirac_mjub(i)
+         jsym = imosp_dirac_mjub(j)
+         ksym = imosp_dirac_mjub(k-nasht)
+         lsym = imosp_dirac_mjub(l-nasht)
+         iclass = 2
+      else if(l> nasht .and. k<=nasht .and. j> nasht .and. i<=nasht)then!(iJ|kL)
+        continue
+         isym = imosp_dirac_mjub(i)
+         jsym = imosp_dirac_mjub(j-nasht)
+         ksym = imosp_dirac_mjub(k)
+         lsym = imosp_dirac_mjub(l-nasht)
+         iclass = 3
+      else if(l> nasht .and. k<=nasht .and. j<=nasht .and. i> nasht)then!(Ij|kL)
+        continue
+         isym = imosp_dirac_mjub(i-nasht)
+         jsym = imosp_dirac_mjub(j)
+         ksym = imosp_dirac_mjub(k)
+         lsym = imosp_dirac_mjub(l-nasht)
+         iclass = 4
+      else if(l<=nasht .and. k> nasht .and. j<=nasht .and. i> nasht)then!(Ij|Kl)
+        continue
+         isym = imosp_dirac_mjub(i-nasht)
+         jsym = imosp_dirac_mjub(j)
+         ksym = imosp_dirac_mjub(k-nasht)
+         lsym = imosp_dirac_mjub(l)
+         iclass = 3
+      else if(l<=nasht .and. k> nasht .and. j> nasht .and. i<=nasht)then!(iJ|Kl)
+        continue
+         isym = imosp_dirac_mjub(i)
+         jsym = imosp_dirac_mjub(j-nasht)
+         ksym = imosp_dirac_mjub(k-nasht)
+         lsym = imosp_dirac_mjub(l)
+         iclass = 4
+      else
+        cycle ! odd number of bars
+      end if
+                 IF (ICLASS.LE.2) THEN
+                    MIJ = - isym + jsym
+                 ELSEIF (ICLASS.EQ.3) THEN
+                    MIJ = - isym - jsym
+                 ELSE
+                    MIJ =  isym + jsym 
+                 ENDIF
+C
+                 IF (ICLASS.EQ.1) THEN
+                    MKL = - ksym + lsym
+                 ELSEIF (ICLASS.EQ.2) THEN
+                    MKL =   ksym - lsym
+                 ELSE
+                    MKL = - ksym - lsym
+                 ENDIF
+
+!     write(6,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
+                 IF(linear .and. (MIJ+MKL /= 0)) cycle
+
+!     IF (MIJ+MKL /= 0)
+!    &write(6,'(2x,a,4i3,a,1p,d10.2,a,i4)')
+!    &'(linzero): removed integral(',i,j,k,l,')',VMUUUU(I,J,K,L,1),
+!    & ' class: ',iclass
+!     IF (MIJ+MKL ==0 .and. dabs(VMUUUU(I,J,K,L,1)) > 1.0d-99)
+!    &write(6,'(2x,a,4i3,a,1p,d10.2,a,i4)')
+!    &'(linzero): kept integral(',i,j,k,l,')',VMUUUU(I,J,K,L,1), 
+!    & ' class: ',iclass
+
+                 write(LUFCID,form1) VMUUUU(I,J,K,L,1),I,J,K,L
+               END DO
+            END DO
+         END DO
+      END DO
+      !> 1e-integrals
+      DO K = 1,NASHT
+         DO L = 1,K
+           if(linear .and. 
+     &        (imosp_dirac_mjub(l) /= imosp_dirac_mjub(k))) cycle
+           write(LUFCID,form1) hcore(K,L,1),K,L,0,0
+!          write(LUFCID,form1) hcore(K+nasht,L+nasht,1),
+!    &                                      K+nasht,L+nasht,0,0
+         END DO
+      END DO
+
+      !> core energy
+      write(LUFCID,form3) ecore, 0,0 ,0,0
+ 
+      call GPCLOSE(LUFCID,'KEEP')
+
+      !> finalize
+      call mospinor_info_delete()
+      call symmetry_setup_delete()
+C
+      END

@@ -1,5 +1,13 @@
 
 
+.. warning::
+
+   Only the calculation of the density is tested for open shell configurations
+   (and relies on a correct .OCCUPATION). All other properties are only
+   tested for closed shell systems and should not be trusted for open shell systems
+   without a thorough testing.
+
+
 starstar(VISUAL)
 
 keyword(LIST)

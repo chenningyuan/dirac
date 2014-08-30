@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -210,12 +210,12 @@ C
       ELSE
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
-      IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'D'
+      IF((NDEC.LT.0).OR.(NDEC.GE.(NDIG-3))) THEN
+        MXFORM(1:1) = 'E'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
-        NDEC = NDIG - NDEC - 3
+        NDEC = NDIG - 3 - NDEC
       ENDIF
       IF(NDEC.LE.0) THEN
         WRITE(LUPRI,*) 'MXFORM out of boundaries...'
@@ -1583,7 +1583,7 @@ C        use F output format
 C        use 1PD output format
          LFMT = '(1P,A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = 'D15.8)'
+         RFMT = 'E15.8)'
       END IF
 C
 C LAST is the last column number in the row currently being printed
@@ -2188,6 +2188,31 @@ C
       ELSE
         CALL QUIT('EXTELM:Unknown FA '//FA//' of matrix A!')
       ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Extvec */
+      SUBROUTINE EXTVEC(AVEC,LDA,BVEC,LDB,NB,NVEC,IBR)
+C***********************************************************************
+C
+C     Extract elements of vectors A(LDA,NVEC) and
+C     insert into vector BVEC(LDB,NVEC) using 
+C     row array IBR.
+C
+C     Written by T.Saue Sep 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
+C
+      DO J = 1,NVEC
+        DO I = 1,NB
+          BVEC(I,J) = AVEC(IBR(I),J)
+        ENDDO
+      ENDDO
 C
       RETURN
       END
@@ -2999,6 +3024,7 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
+!#define DEBUG
 #ifdef DEBUG
       print*, 'QTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
@@ -3006,6 +3032,7 @@ C
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
       print*, 'QTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#undef DEBUG
 #endif
 C
 C     Time reversal symmetry of F-matrix
@@ -3061,7 +3088,7 @@ C
             CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
           ENDIF
 C
-C         First part of transformation: W = FC
+C         First part of transformation: W = Fao C
 C         ------------------------------------
 C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
@@ -3076,7 +3103,7 @@ C
             CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
           ENDIF
 C
-C         Second part of transformation: H = (C+)W
+C         Second part of transformation: Fmo = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
@@ -3142,6 +3169,14 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
+#ifdef DEBUG
+      print*, 'QTRANS: The MO matrix'
+      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
@@ -3155,14 +3190,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = F(C+)
+C         First part of transformation: W = Fmo(C+)
 C
           CALL QGEMM(NRMO,NCAO,NCMO,D1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       D0,IQW,BUF,NRMO,NCAO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = CW
 C
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
@@ -3178,14 +3213,14 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 C
-C         First part of transformation: W = CF
+C         First part of transformation: W = CFmo
 C
           CALL QGEMM(NRAO,NCMO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       D0,IQW,BUF,NRAO,NCMO,NZW)
 C
-C         Second part of transformation: H = CW
+C         Second part of transformation: Fao = W(C+)
 C
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
      &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
@@ -3213,8 +3248,13 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
       use memory_allocator
 #include "implicit.h"
-      real(8), allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
+      real(8) :: FAO(LRAO,LCAO,NZAO)
+      real(8) :: FMO(LRMO,LCMO,NZMO)
+      real(8) :: TM1(LR1 ,LC1 ,NZTM1)
+      real(8) :: TM2(LR2 ,LC2 ,NZTM2)
+      integer :: IQAO(nzao),IQMO(nzmo),IQTM1(nztm1),IQTM2(nztm2)
+      real(8), allocatable :: work(:)
       integer IQW(4)
 C     find out how much buffer is needed in qtrans
       IF(TYP.EQ.'AOMO') THEN
@@ -3376,2347 +3416,6 @@ C
       RETURN
       END
 
-#ifdef MOD_UNRELEASED
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck qjacobi */
-        SUBROUTINE QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT) 
-C*************************************************************************
-C
-C
-C  PURPOSE:  Do the selective (or full) diagonalization of 
-C            the entering hermitian (real,complex,quaternion) matrix
-C            using the Jacobi diagonalization method, which is  extended 
-C            for quaternion matrixes.
-C
-C  On input:  A(N,N,NZ) ... quaternion matrix (is destroyed after!)
-C             DOEVE ... if .true., calculate eigenvectors,
-C                   and for IPRINT.GE.2 also do the consistency check 
-C
-C             NBL=0 ... do the traditional diagonalization (parameter IBL substitute with dummy variable,IDUMMY)
-C             NBL>0 ... do the block diagonalization, where blocks to be zeored are specified in IBL
-C
-C             IPRINT - print level 
-C  1 ... print timing and basic info
-C  2 ... print out entering matrix into text file, reconstruct it
-C        back at using eigenvalues and eigenvectors (if DOEVE=.true.)
-C  3 ... + print out entering and final matrix, print out result fo Ph*P,P*Ph,
-C          print out iteration process, eigenvalues (if DOEVE=.true.)
-C  4 ... +  print eigenvectors (if DOEVE=.true.)
-C  5 ... +  print whole matrix in each iteration
-C  6 ... +  print whole P after iter., print A before and after iter.
-C  7 ... +  print Ppq
-C                       
-C  On output: A - diagonal (NBL=0) or block diagonal (NBL>1) matrix
-C             so eigenvalues are on the diagonal of the (destroyed) A matrix
-C
-C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
-C
-C  Written: M Ilias, Strasbourg, May 2005
-C      
-C**************************************************************************
-#include"implicit.h"
-#include"priunit.h"
-      PARAMETER (D1=1.0D00, DM1=-1.00D00, D0=0.0D00,
-     &               D2=2.0D0, DP5=0.50D0)
-
-      DIMENSION A(N,N,NZ)
-      DIMENSION EV(N,N,NZ)
-
-      DIMENSION IBL(NBL,1:4), SUMSQA(2)
-
-      LOGICAL DOEVE, FINISHED, WASELIM, ELIM(2)
-      CHARACTER*9 FILENAME
-      CHARACTER SECTID*12,WALLTID*12, CPUTID*12
-
-      DATA ZEROTHRS / 1.0D-12  /
-C     DATA ZEROTHRS / 1.0D-15  /
-C     DATA ZEROTHRS / 0.0D0  /
-
-      DATA ZEROTHRS1 / 1.0D-9  /
-C        .... file number and file name of the check file
-      DATA LUF / 33  /
-      DATA FILENAME / 'QJACO.MTX' /
-
-      IF (IPRINT.GE.2) THEN
-       CALL HEADER(
-     &'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
-       write(lupri,'(2X,A,I5)')
-     &  'size of the square hermitian/real symmetric matrix, N=',N
-       write(lupri,'(2X,A,I2)')
-     &  'type of matrix {real(NZ=1), complex(NZ=2) or'//
-     &  ' quaternion(NZ=4)}, NZ=',NZ
-       write(lupri,'(2X,A,I5)')
-     &  'PRINT level:',IPRINT
-       CALL FLSHFO(LUPRI)
-       CALL GETTIM(CPU1,WALL1)
-      ENDIF
-
-C     ... do test the blocks
-      IF (NBL.GT.0) THEN
-       CALL TESTBLOCKS(N,NZ,NBL,IBL,IPRINT)
-      ENDIF
-
-      CALL FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
-      SUMSQA(1)=SUMSQ
-      SUMSQA(2)=SUMSQ
-
-C      ... do make unit matrixes for accumulation of future eigenvector
-      IF (DOEVE) THEN
-        CALL DUNIT(EV(1,1,1),N)
-        IF (NZ.GE.2) THEN 
-         DO IZ=2,NZ
-          CALL DZERO(EV(1,1,IZ),N*N)
-         ENDDO
-        ENDIF
-      ENDIF
-
-      IF (IPRINT.GE.2) THEN
-
-        IF (DOEVE) THEN
-            OPEN(LUF,FILE=FILENAME,STATUS="UNKNOWN",FORM="FORMATTED")
-            write(lupri,'(2X,A,I2,A,A,A)')
-     &      'The file #',LUF,' with name:',FILENAME,
-     &      ' has been open.'
-
-            IF (IPRINT.GE.3) THEN
-             WRITE(LUPRI,'(/,2X,A)')
-     & 'QJACOBI: ENTERING hermitian(real,complex,quaternion) matrix A'
-            ! CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQ(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
-            ENDIF
-
-            DO I=1,N
-            DO J=1,N
-            IF (IPRINT.GE.3) THEN
-             write(lupri,'(A,I3,A,I3,A,4D15.8)')
-     &         '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
-            ENDIF
-C            ... write matrix elements to file for later checking...
-             DO IZ=1,NZ
-              write(LUF,1000) I,J,IZ,A(I,J,IZ)
-             ENDDO
-C            write(luf,*) I,J,(A(I,J,IZ),IZ=1,NZ)
-            ENDDO
-            ENDDO
-        ENDIF
-         write(lupri,'(2X,A,A)') 
-     & '...entering matrix has been written to the file ',FILENAME
-      ENDIF
-
-C  ... format of elements in the file...
- 1000 FORMAT(2I5,2X,I1,2X,D30.17) 
-  
-         FINISHED = .false.
-         ITER = 0
-         WASELIM = .FALSE.
-         ELIM(1) = .FALSE.
-         ELIM(2) = .FALSE.
-C *****************************************************************
-C ***
-C ***
-C ***           Start the iteration cycle
-C ***
-C ***
-C *****************************************************************
- 10      CONTINUE
-
-C ============================================================================
-C
-C                   Real (symmetric) matrix
-C 
-C ============================================================================
-         IF (NZ.EQ.1) THEN
-C          ... eliminate real part of P,Q
-25         CONTINUE
-
-C           ... write out the A_pq  elements !
-           IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A,2I5)')
-     &   "======  BEFORE elimination App,Apq,Aqp,Aqq r:",IP,IQ
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1)
-           ENDIF
-
-           APQR =  A(IP,IQ,1)
-
-           IF (DABS(APQR).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C          ... an alternative to the calculation using function DATAN ...
-C           APQSQR = APQR*APQR
-C           DIFF = APPR - AQQR
-C           SIGROT = D1
-C           IF (DIFF.LT.D0) THEN
-C            SIGROT = -SIGROT
-C            DIFF = -DIFF
-C           ENDIF
-C           TEMP = DIFF + DSQRT(DIFF*DIFF + 4.0*APQSQR)
-C           TANA = D2*SIGROT*APQR/TEMP
-C           CU =  D1/DSQRT(D1+TANA*TANA)
-C           SU = -CU*TANA
-
-C         ... do calculate Cu,Su...
-            BDA =  D2*APQR/(AQQR-APPR)
-            PHI = DP5*DATAN(BDA)
-            CU = DCOS(PHI)
-            SU = DSIN(PHI)
-
-            CU2 = CU*CU
-            SU2 = SU*SU
-            CUSU = CU*SU
-
-C           ... Update REAL diagonal  MTX elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQR 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQR
-
-C...        do eliminate REAL off-diagonal pq, qp elements
-C               .... (1,i).r = (1,i) = (0,i)
-            A(IP,IQ,1)=D0
-C           A(IQ,IP,1)=D0
-
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After r-elim App,Apq,Aqp,Aqq r:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1)
-            ENDIF
-
-C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1,IP-1
-C               I < IP, I < IQ
-               TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               A(I,IP,1) =  TOAIPR 
-               A(I,IQ,1) =  TOAIQR
-C              A(IP,I,1) =  TOAIPR
-C              A(IQ,I,1) =  TOAIQR
-            ENDDO
-            DO I=IP+1,IQ-1
-C               I > IP, I < IQ
-CC             TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
-CC             TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
-C              A(I,IP,1) =  TOAIPR 
-               A(I,IQ,1) =  TOAIQR
-               A(IP,I,1) =  TOAIPR
-C              A(IQ,I,1) =  TOAIQR
-            ENDDO
-            DO I=IQ+1,N
-C               I > IP, I > IQ
-CC             TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR = A(IP,I,1)*CU - A(IQ,I,1)*SU
-CC             TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR = A(IP,I,1)*SU + A(IQ,I,1)*CU
-C              A(I,IP,1) =  TOAIPR 
-C              A(I,IQ,1) =  TOAIQR
-               A(IP,I,1) =  TOAIPR
-               A(IQ,I,1) =  TOAIQR
-            ENDDO
-
-C          ... do update the eigenvectors...
-            IF (DOEVE) THEN
-               DO I=1,N
-                TOPIPR = EV(I,IP,1)*CU - EV(I,IQ,1)*SU
-                TOPIQR = EV(I,IP,1)*SU + EV(I,IQ,1)*CU
-                EV(I,IP,1) = TOPIPR
-                EV(I,IQ,1) = TOPIQR
-               ENDDO
-
-              IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"r" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r:',
-     &         EV(I,J,1)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-           ENDIF
-
-           ENDIF
-
-C ============================================================================
-C
-C                   Complex (hermitian) matrix
-C 
-C ============================================================================
-         ELSE IF (NZ.EQ.2) THEN
-C          ... eliminate real part of P,Q
-15         CONTINUE
-
-C           ... write out the A_pq  elements !
-           IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A,2I5)')
-     &   "======  BEFORE elimination App,Apq,Aqp,Aqq r,i:",IP,IQ
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2)
-           ENDIF
-
-           APQR =  A(IP,IQ,1)
-
-           IF (DABS(APQR).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-            BDA =  D2*APQR/(AQQR-APPR)
-
-            PHI = DP5*DATAN(BDA)
-            CU = DCOS(PHI)
-            SU = DSIN(PHI)
-            CU2 = CU*CU
-            SU2 = SU*SU
-            CUSU = CU*SU
-
-C           ... Update REAL diagonal  MTX elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQR 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQR
-
-C...        do eliminate REAL off-diagonal pq, qp elements
-C               .... (1,i).r = (1,i) = (0,i)
-            A(IP,IQ,1)=D0
-C           A(IQ,IP,1)=D0
-
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After r-elim App,Apq,Aqp,Aqq r,i:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2)
-            ENDIF
-
-C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1,IP-1
-C               I < IP, I < IQ
-               TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIPI = A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIQI = A(I,IP,2)*SU + A(I,IQ,2)*CU
-                A(I,IP,1) =  TOAIPR 
-                A(I,IQ,1) =  TOAIQR
-                A(I,IP,2) =  TOAIPI
-                A(I,IQ,2) =  TOAIQI
-C               A(IP,I,1) =  TOAIPR
-C               A(IQ,I,1) =  TOAIQR
-C               A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-            ENDDO
-            DO I=IP+1,IQ-1
-C              I > IP, I < IQ
-C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
-C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
-C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,2)*CU - A(I,IQ,2)*SU
-C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,2)*SU + A(I,IQ,2)*CU
-C               A(I,IP,1) =  TOAIPR 
-                A(I,IQ,1) =  TOAIQR
-C               A(I,IP,2) =  TOAIPI
-                A(I,IQ,2) =  TOAIQI
-                A(IP,I,1) =  TOAIPR
-C               A(IQ,I,1) =  TOAIQR
-                A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-            ENDDO
-            DO I=IQ+1,N
-C               I > IP, I > IQ
-C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR = A(IP,I,1)*CU - A(IQ,I,1)*SU
-C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR = A(IP,I,1)*SU + A(IQ,I,1)*CU
-C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,2)*CU + A(IQ,I,2)*SU
-C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,2)*SU - A(IQ,I,2)*CU
-C               A(I,IP,1) =  TOAIPR 
-C               A(I,IQ,1) =  TOAIQR
-C               A(I,IP,2) =  TOAIPI
-C               A(I,IQ,2) =  TOAIQI
-                A(IP,I,1) =  TOAIPR
-                A(IQ,I,1) =  TOAIQR
-                A(IP,I,2) = -TOAIPI
-                A(IQ,I,2) = -TOAIQI
-            ENDDO
-
-C          ... do update the eigenvectors...
-            IF (DOEVE) THEN
-               DO I=1,N
-                 TOPIPR = EV(I,IP,1)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = EV(I,IP,1)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI = EV(I,IP,2)*CU - EV(I,IQ,2)*SU
-                 TOPIQI = EV(I,IP,2)*SU + EV(I,IQ,2)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-               ENDDO
-
-              IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"r" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i,j,k:',
-     &         EV(I,J,1),EV(I,J,2)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-           ENDIF
-
-           ENDIF
-
-C     =========================================
-C          ... eliminate "i" part of Apq, Aqp
-C     =========================================
-
-16         APQI =  A(IP,IQ,2)
-
-           IF (DABS(APQI).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-           BDA =  D2*APQI/(AQQR-APPR)
-
-           PHI = DP5*DATAN(BDA)
-           CU = DCOS(PHI)
-           SU = DSIN(PHI)
-           CU2 = CU*CU
-           SU2 = SU*SU
-           CUSU = CU*SU
-
-
-C           ... Update (only REAL) diagonal elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQI 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQI
-
-C...        do eliminate "i" off-diagonal IMAX,JMAX elements
-C           A(IP,IQ,2)=D0
-C           A(IQ,IP,2)=D0
-
-C      ...  update-rearrange off diag.element  Apq 
-C ...          (1,i).i = (i,-1) = (i,0)
-            XAI = A(IP,IQ,1)
-
-            A(IP,IQ,2)= XAI
-C           A(IQ,IP,2)=-XAI
-               
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After i-elim App,Apq,Aqp,Aqq r,i:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2)
-            ENDIF
-
-C      ...  update Aip, Aiq (i<>p,q) after elimination!
-C .....   A_ip(n+1) = A_ip(n).i.c - A_iq(n).s    
-C         A_iq(n+1) = A_ip(n).i.s + A_iq(n).c
-C 
-C                  (1,i).i = (i,-1)
-            DO I=1,IP-1
-C               I < IP, I < IQ
-               TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIPI =  A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIQI =  A(I,IP,1)*SU + A(I,IQ,2)*CU
-               A(I,IP,1) = TOAIPR 
-               A(I,IQ,1) = TOAIQR
-               A(I,IP,2) = TOAIPI
-               A(I,IQ,2) = TOAIQI
-C              A(IP,I,1) = TOAIPR
-C              A(IQ,I,1) = TOAIQR
-C              A(IP,I,2) = -TOAIPI
-C              A(IQ,I,2) = -TOAIQI
-            ENDDO
-            DO I=IP+1,IQ-1
-C              I > IP, I < IQ
-C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,2)*CU - A(I,IQ,1)*SU
-C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,2)*SU + A(I,IQ,1)*CU
-C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIPI = A(IP,I,1)*CU - A(I,IQ,2)*SU
-C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-               TOAIQI = A(IP,I,1)*SU + A(I,IQ,2)*CU
-C              A(I,IP,1) = TOAIPR 
-               A(I,IQ,1) = TOAIQR
-C              A(I,IP,2) = TOAIPI
-               A(I,IQ,2) = TOAIQI
-               A(IP,I,1) = TOAIPR
-C              A(IQ,I,1) = TOAIQR
-               A(IP,I,2) = -TOAIPI
-C              A(IQ,I,2) = -TOAIQI
-            ENDDO
-            DO I=IQ+1,N
-C              I > IP, I > IQ
-C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,2)*CU - A(IQ,I,1)*SU
-C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,2)*SU + A(IQ,I,1)*CU
-C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIPI = A(IP,I,1)*CU + A(IQ,I,2)*SU
-C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-               TOAIQI = A(IP,I,1)*SU - A(IQ,I,2)*CU
-C              A(I,IP,1) = TOAIPR 
-C              A(I,IQ,1) = TOAIQR
-C              A(I,IP,2) = TOAIPI
-C              A(I,IQ,2) = TOAIQI
-               A(IP,I,1) = TOAIPR
-               A(IQ,I,1) = TOAIQR
-               A(IP,I,2) = -TOAIPI
-               A(IQ,I,2) = -TOAIQI
-            ENDDO
-
-C      ...  update P after "i" elimination!
-            IF (DOEVE) THEN
-              
-               DO I=1,N
-
-C          ... P_ip(n+1) = P_ip(n).i.c - P_iq(n).s
-C              P_iq(n+1) = P_ip(n).i.s + P_iq(n).c   
-C
-C               ... (1,i).i  =  (i,-1)
-
-                 TOPIPR = -EV(I,IP,2)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = -EV(I,IP,2)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI =  EV(I,IP,1)*CU - EV(I,IQ,2)*SU
-                 TOPIQI =  EV(I,IP,1)*SU + EV(I,IQ,2)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-             ENDDO
-
-             IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"i" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i:',
-     &         EV(I,J,1),EV(I,J,2)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-         ENDIF
-
-         ENDIF
-
-         ELSE IF (NZ.EQ.4) THEN
-C =======================================================================
-C
-C                   Quaternion matrix
-C
-C =======================================================================
-
-C          ... eliminate real part of P,Q
- 5         CONTINUE
-
-C           ... write out the A_pq  elements !
-           IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A,2I5)')
-     &   "======  BEFORE elimination App,Apq,Aqp,Aqq r,i,j,k:",IP,IQ
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2),A(IP,IP,3),A(IP,IP,4)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2),A(IP,IQ,3),A(IP,IQ,4)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2),A(IQ,IP,3),A(IQ,IP,4)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2),A(IQ,IQ,3),A(IQ,IQ,4)
-           ENDIF
-
-           APQR =  A(IP,IQ,1)
-
-           IF (DABS(APQR).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-            BDA =  D2*APQR/(AQQR-APPR)
-
-            PHI = DP5*DATAN(BDA)
-            CU = DCOS(PHI)
-            SU = DSIN(PHI)
-            CU2 = CU*CU
-            SU2 = SU*SU
-            CUSU = CU*SU
-
-C           ... Update REAL diagonal  MTX elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQR 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQR
-
-C...        do eliminate REAL off-diagonal pq, qp elements
-C               .... (1,i,j,k).r = (1,i,j,k) = (0,i,j,k)
-            A(IP,IQ,1)=D0
-C           A(IQ,IP,1)=D0
-
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After r-elim App,Apq,Aqp,Aqq r,i,j,k:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2),A(IP,IP,3),A(IP,IP,4)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2),A(IP,IQ,3),A(IP,IQ,4)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2),A(IQ,IP,3),A(IQ,IP,4)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2),A(IQ,IQ,3),A(IQ,IQ,4)
-            ENDIF
-
-C   ...   do modify the MTX matrix alement A_ip, A_iq (A_pi,A_qi)
-            DO I=1, IP-1
-C            I < IP, I < IQ
-               TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIPI = A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIQI = A(I,IP,2)*SU + A(I,IQ,2)*CU
-               TOAIPJ = A(I,IP,3)*CU - A(I,IQ,3)*SU
-               TOAIQJ = A(I,IP,3)*SU + A(I,IQ,3)*CU
-               TOAIPK = A(I,IP,4)*CU - A(I,IQ,4)*SU
-               TOAIQK = A(I,IP,4)*SU + A(I,IQ,4)*CU
-                A(I,IP,1) =  TOAIPR 
-                A(I,IQ,1) =  TOAIQR
-                A(I,IP,2) =  TOAIPI
-                A(I,IQ,2) =  TOAIQI
-                A(I,IP,3) =  TOAIPJ
-                A(I,IQ,3) =  TOAIQJ
-                A(I,IP,4) =  TOAIPK
-                A(I,IQ,4) =  TOAIQK
-C               A(IP,I,1) =  TOAIPR
-C               A(IQ,I,1) =  TOAIQR
-C               A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-C               A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-C               A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IP+1,IQ-1
-C               I > IP,  I < IQ
-C              TOAIPR = A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR = A(IP,I,1)*CU - A(I,IQ,1)*SU
-C              TOAIQR = A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR = A(IP,I,1)*SU + A(I,IQ,1)*CU
-C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,2)*CU - A(I,IQ,2)*SU
-C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,2)*SU + A(I,IQ,2)*CU
-C              TOAIPJ =  A(I,IP,3)*CU - A(I,IQ,3)*SU
-               TOAIPJ = -A(IP,I,3)*CU - A(I,IQ,3)*SU
-C              TOAIQJ =  A(I,IP,3)*SU + A(I,IQ,3)*CU
-               TOAIQJ = -A(IP,I,3)*SU + A(I,IQ,3)*CU
-C              TOAIPK =  A(I,IP,4)*CU - A(I,IQ,4)*SU
-               TOAIPK = -A(IP,I,4)*CU - A(I,IQ,4)*SU
-C              TOAIQK =  A(I,IP,4)*SU + A(I,IQ,4)*CU
-               TOAIQK = -A(IP,I,4)*SU + A(I,IQ,4)*CU
-C               A(I,IP,1) =  TOAIPR 
-                A(I,IQ,1) =  TOAIQR
-C               A(I,IP,2) =  TOAIPI
-                A(I,IQ,2) =  TOAIQI
-C               A(I,IP,3) =  TOAIPJ
-                A(I,IQ,3) =  TOAIQJ
-C               A(I,IP,4) =  TOAIPK
-                A(I,IQ,4) =  TOAIQK
-                A(IP,I,1) =  TOAIPR
-C               A(IQ,I,1) =  TOAIQR
-                A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IQ+1,N
-C               I > IP, I > IQ
-C              TOAIPR =  A(I,IP,1)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,1)*CU - A(IQ,I,1)*SU
-C              TOAIQR =  A(I,IP,1)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,1)*SU + A(IQ,I,1)*CU
-C              TOAIPI =  A(I,IP,2)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,2)*CU + A(IQ,I,2)*SU
-C              TOAIQI =  A(I,IP,2)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,2)*SU - A(IQ,I,2)*CU
-C              TOAIPJ =  A(I,IP,3)*CU - A(I,IQ,3)*SU
-               TOAIPJ = -A(IP,I,3)*CU + A(IQ,I,3)*SU
-C              TOAIQJ =  A(I,IP,3)*SU + A(I,IQ,3)*CU
-               TOAIQJ = -A(IP,I,3)*SU - A(IQ,I,3)*CU
-C              TOAIPK =  A(I,IP,4)*CU - A(I,IQ,4)*SU
-               TOAIPK = -A(IP,I,4)*CU + A(IQ,I,4)*SU
-C              TOAIQK =  A(I,IP,4)*SU + A(I,IQ,4)*CU
-               TOAIQK = -A(IP,I,4)*SU - A(IQ,I,4)*CU
-C               A(I,IP,1) =  TOAIPR 
-C               A(I,IQ,1) =  TOAIQR
-C               A(I,IP,2) =  TOAIPI
-C               A(I,IQ,2) =  TOAIQI
-C               A(I,IP,3) =  TOAIPJ
-C               A(I,IQ,3) =  TOAIQJ
-C               A(I,IP,4) =  TOAIPK
-C               A(I,IQ,4) =  TOAIQK
-                A(IP,I,1) =  TOAIPR
-                A(IQ,I,1) =  TOAIQR
-                A(IP,I,2) = -TOAIPI
-                A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-                A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-                A(IQ,I,4) = -TOAIQK
-            ENDDO
-
-C          ... do update the eigenvectors...
-            IF (DOEVE) THEN
-               DO I=1,N
-
-                 TOPIPR = EV(I,IP,1)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = EV(I,IP,1)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI = EV(I,IP,2)*CU - EV(I,IQ,2)*SU
-                 TOPIQI = EV(I,IP,2)*SU + EV(I,IQ,2)*CU
-
-                 TOPIPJ = EV(I,IP,3)*CU - EV(I,IQ,3)*SU
-                 TOPIQJ = EV(I,IP,3)*SU + EV(I,IQ,3)*CU
-
-                 TOPIPK = EV(I,IP,4)*CU - EV(I,IQ,4)*SU
-                 TOPIQK = EV(I,IP,4)*SU + EV(I,IQ,4)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-                 EV(I,IP,3) = TOPIPJ
-                 EV(I,IQ,3) = TOPIQJ
-
-                 EV(I,IP,4) = TOPIPK
-                 EV(I,IQ,4) = TOPIQK
-
-               ENDDO
-
-              IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"r" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i,j,k:',
-     &         EV(I,J,1),EV(I,J,2),EV(I,J,3),EV(I,J,4)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-           ENDIF
-
-           ENDIF
-
-C     =========================================
-C          ... eliminate "i" part of Apq, Aqp
-C     =========================================
-
- 6         APQI =  A(IP,IQ,2)
-
-           IF (DABS(APQI).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-           BDA =  D2*APQI/(AQQR-APPR)
-
-           PHI = DP5*DATAN(BDA)
-           CU = DCOS(PHI)
-           SU = DSIN(PHI)
-           CU2 = CU*CU
-           SU2 = SU*SU
-           CUSU = CU*SU
-
-
-C           ... Update (only REAL) diagonal elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQI 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQI
-
-C...        do eliminate "i" off-diagonal IMAX,JMAX elements
-C           A(IP,IQ,2)=D0
-C           A(IQ,IP,2)=D0
-
-C      ...  update-rearrange off diag.element  Apq 
-C ...          (1,i,j,k).i = (i,-1,-k,+j) = (i,0,-k,j)
-            XAI = A(IP,IQ,1)
-            XAJ = A(IP,IQ,4)
-            XAK = A(IP,IQ,3)
-
-            A(IP,IQ,2)= XAI
-            A(IP,IQ,3)= XAJ
-            A(IP,IQ,4)=-XAK
-
-C           ... the same for qp elements...
-C           A(IQ,IP,2)=-XAI
-C           A(IQ,IP,3)=-XAJ
-C           A(IQ,IP,4)= XAK
-               
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After i-elim App,Apq,Aqp,Aqq r,i,j,k:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2),A(IP,IP,3),A(IP,IP,4)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2),A(IP,IQ,3),A(IP,IQ,4)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2),A(IQ,IP,3),A(IQ,IP,4)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2),A(IQ,IQ,3),A(IQ,IQ,4)
-            ENDIF
-
-C      ...  update Aip, Aiq (i<>p,q) after elimination!
-C .....   A_ip(n+1) = A_ip(n).i.c - A_iq(n).s    
-C         A_iq(n+1) = A_ip(n).i.s + A_iq(n).c
-C 
-C                  (1,i,j,k).i = (i,-1,-k,j)
-            DO I=1,IP-1
-C             I  <  IP,  I < IQ
-               TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-               TOAIPJ = A(I,IP,4)*CU - A(I,IQ,3)*SU
-               TOAIQJ = A(I,IP,4)*SU + A(I,IQ,3)*CU
-               TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
-               TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
-                A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-                A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-                A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-                A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-C               A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-C               A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-C               A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-C               A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IP+1,IQ-1
-C                I > IP, I < IQ
-C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,2)*CU - A(I,IQ,1)*SU
-C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,2)*SU + A(I,IQ,1)*CU
-C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIPI = A(IP,I,1)*CU - A(I,IQ,2)*SU
-C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-               TOAIQI = A(IP,I,1)*SU + A(I,IQ,2)*CU
-C              TOAIPJ =  A(I,IP,4)*CU - A(I,IQ,3)*SU
-               TOAIPJ = -A(IP,I,4)*CU - A(I,IQ,3)*SU
-C              TOAIQJ =  A(I,IP,4)*SU + A(I,IQ,3)*CU
-               TOAIQJ = -A(IP,I,4)*SU + A(I,IQ,3)*CU
-C              TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
-               TOAIPK =  A(IP,I,3)*CU - A(I,IQ,4)*SU
-C              TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
-               TOAIQK =  A(IP,I,3)*SU + A(I,IQ,4)*CU
-C               A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IQ+1,N
-C             I > IP,  I > IQ
-C              TOAIPR = -A(I,IP,2)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,2)*CU - A(IQ,I,1)*SU
-C              TOAIQR = -A(I,IP,2)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,2)*SU + A(IQ,I,1)*CU
-C              TOAIPI = A(I,IP,1)*CU - A(I,IQ,2)*SU
-               TOAIPI = A(IP,I,1)*CU + A(IQ,I,2)*SU
-C              TOAIQI = A(I,IP,1)*SU + A(I,IQ,2)*CU
-               TOAIQI = A(IP,I,1)*SU - A(IQ,I,2)*CU
-C              TOAIPJ =  A(I,IP,4)*CU - A(I,IQ,3)*SU
-               TOAIPJ = -A(IP,I,4)*CU + A(IQ,I,3)*SU
-C              TOAIQJ =  A(I,IP,4)*SU + A(I,IQ,3)*CU
-               TOAIQJ = -A(IP,I,4)*SU - A(IQ,I,3)*CU
-C              TOAIPK = -A(I,IP,3)*CU - A(I,IQ,4)*SU
-               TOAIPK =  A(IP,I,3)*CU + A(IQ,I,4)*SU
-C              TOAIQK = -A(I,IP,3)*SU + A(I,IQ,4)*CU
-               TOAIQK =  A(IP,I,3)*SU - A(IQ,I,4)*CU
-C               A(I,IP,1) = TOAIPR 
-C               A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-C               A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-C               A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-C               A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-                A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-                A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-                A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-                A(IQ,I,4) = -TOAIQK
-            ENDDO
-
-
-C      ...  update P after "i" elimination!
-            IF (DOEVE) THEN
-              
-               DO I=1,N
-
-C          ... P_ip(n+1) = P_ip(n).i.c - P_iq(n).s
-C              P_iq(n+1) = P_ip(n).i.s + P_iq(n).c   
-C
-C               ... (1,i,j,k).i  =  (i,-1,-k,j)
-
-                 TOPIPR = -EV(I,IP,2)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = -EV(I,IP,2)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI =  EV(I,IP,1)*CU - EV(I,IQ,2)*SU
-                 TOPIQI =  EV(I,IP,1)*SU + EV(I,IQ,2)*CU
-
-                 TOPIPJ =  EV(I,IP,4)*CU - EV(I,IQ,3)*SU
-                 TOPIQJ =  EV(I,IP,4)*SU + EV(I,IQ,3)*CU
-
-                 TOPIPK = -EV(I,IP,3)*CU - EV(I,IQ,4)*SU
-                 TOPIQK = -EV(I,IP,3)*SU + EV(I,IQ,4)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-                 EV(I,IP,3) = TOPIPJ
-                 EV(I,IQ,3) = TOPIQJ
-
-                 EV(I,IP,4) = TOPIPK
-                 EV(I,IQ,4) = TOPIQK
-
-             ENDDO
-
-             IF (IPRINT.GE.6) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"i" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i,j,k:',
-     &         EV(I,J,1),EV(I,J,2),EV(I,J,3),EV(I,J,4)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-         ENDIF
-
-         ENDIF
-
-C     =========================================
-C          ... eliminate "j" part of P,Q
-C     =========================================
-
- 7        APQJ =  A(IP,IQ,3)
-
-          IF (DABS(APQJ).GT.ZEROTHRS) THEN
-
-            ITER = ITER + 1
-            WASELIM = .TRUE.
-
-            APPR =  A(IP,IP,1)
-            AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-           BDA =  D2*APQJ/(AQQR-APPR)
-
-           PHI = DP5*DATAN(BDA)
-           CU = DCOS(PHI)
-           SU = DSIN(PHI)
-           CU2 = CU*CU
-           SU2 = SU*SU
-           CUSU = CU*SU
-
-C           ... Update (only REAL) diagonal elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQJ 
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQJ
-
-C...        do eliminate "j" off-diagonal IMAX,JMAX elements
-C           A(IP,IQ,3)=D0
-C           A(IQ,IP,3)=D0
-
-C      ...  update off diag. Apq ...(1,i,j,k).j = (j,k,0,-i)
-            XAI = A(IP,IQ,4)
-            XAJ = A(IP,IQ,1)
-            XAK = A(IP,IQ,2)
-
-            A(IP,IQ,2)=-XAI
-            A(IP,IQ,3)= XAJ
-            A(IP,IQ,4)= XAK
-
-C           ... the same for Aqp elements...
-C           A(IQ,IP,2)= XAI
-C           A(IQ,IP,3)=-XAJ
-C           A(IQ,IP,4)=-XAK
-
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After j-elim App,Apq,Aqp,Aqq r,i,j,k:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2),A(IP,IP,3),A(IP,IP,4)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2),A(IP,IQ,3),A(IP,IQ,4)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2),A(IQ,IP,3),A(IQ,IP,4)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2),A(IQ,IQ,3),A(IQ,IQ,4)
-            ENDIF
-
-C      ...  update Aip, Aiq (i<>p,q) after elimination!
-C
-C .....   A_ip(n+1) = A_ip(n).j.c - A_iq(n).s  
-C         A_iq(n+1) = A_ip(n).j.s + A_iq(n).c
-C             
-C                 (1,i,j,k).j = (j,k,-1,-i)
-
-            DO I=1,IP-1
-C            I < IP,  I < IQ
-               TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
-               TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
-               TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
-               TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
-               TOAIPJ = A(I,IP,1)*CU - A(I,IQ,3)*SU
-               TOAIQJ = A(I,IP,1)*SU + A(I,IQ,3)*CU
-               TOAIPK = A(I,IP,2)*CU - A(I,IQ,4)*SU
-               TOAIQK = A(I,IP,2)*SU + A(I,IQ,4)*CU
-                A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-                A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-                A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-                A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-C               A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-C               A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-C               A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-C               A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IP+1,IQ-1
-C               I > IP, I < IQ
-C              TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,3)*CU - A(I,IQ,1)*SU
-C              TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,3)*SU + A(I,IQ,1)*CU
-C              TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
-               TOAIPI =  A(IP,I,4)*CU - A(I,IQ,2)*SU
-C              TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
-               TOAIQI =  A(IP,I,4)*SU + A(I,IQ,2)*CU
-C              TOAIPJ = A(I,IP,1)*CU - A(I,IQ,3)*SU
-               TOAIPJ = A(IP,I,1)*CU - A(I,IQ,3)*SU
-C              TOAIQJ = A(I,IP,1)*SU + A(I,IQ,3)*CU
-               TOAIQJ = A(IP,I,1)*SU + A(I,IQ,3)*CU
-C              TOAIPK =  A(I,IP,2)*CU - A(I,IQ,4)*SU
-               TOAIPK = -A(IP,I,2)*CU - A(I,IQ,4)*SU
-C              TOAIQK =  A(I,IP,2)*SU + A(I,IQ,4)*CU
-               TOAIQK = -A(IP,I,2)*SU + A(I,IQ,4)*CU
-C               A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IQ+1,N
-C               I > IP, I > IQ
-C              TOAIPR = -A(I,IP,3)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,3)*CU - A(IQ,I,1)*SU
-C              TOAIQR = -A(I,IP,3)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,3)*SU + A(IQ,I,1)*CU
-C              TOAIPI = -A(I,IP,4)*CU - A(I,IQ,2)*SU
-               TOAIPI =  A(IP,I,4)*CU + A(IQ,I,2)*SU
-C              TOAIQI = -A(I,IP,4)*SU + A(I,IQ,2)*CU
-               TOAIQI =  A(IP,I,4)*SU - A(IQ,I,2)*CU
-C              TOAIPJ =  A(I,IP,1)*CU - A(I,IQ,3)*SU
-               TOAIPJ =  A(IP,I,1)*CU + A(IQ,I,3)*SU
-C              TOAIQJ =  A(I,IP,1)*SU + A(I,IQ,3)*CU
-               TOAIQJ =  A(IP,I,1)*SU - A(IQ,I,3)*CU
-C              TOAIPK =  A(I,IP,2)*CU - A(I,IQ,4)*SU
-               TOAIPK = -A(IP,I,2)*CU + A(IQ,I,4)*SU
-C              TOAIQK =  A(I,IP,2)*SU + A(I,IQ,4)*CU
-               TOAIQK = -A(IP,I,2)*SU - A(IQ,I,4)*CU
-C               A(I,IP,1) = TOAIPR 
-C               A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-C               A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-C               A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-C               A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-                A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-                A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-                A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-                A(IQ,I,4) = -TOAIQK
-            ENDDO
-
-C      ...  update P after the A_pq"j" elimination!
-            IF (DOEVE) THEN
-
-               DO I=1,N
-C          ... P_ip(n+1) = P_ip(n).j.c - P_iq(n).s
-C              P_iq(n+1) = P_ip(n).j.s + P_iq(n).c 
-C
-C               (1,i,j,k).j =  (j, k, -1, -i)
-
-                 TOPIPR = -EV(I,IP,3)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = -EV(I,IP,3)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI = -EV(I,IP,4)*CU - EV(I,IQ,2)*SU
-                 TOPIQI = -EV(I,IP,4)*SU + EV(I,IQ,2)*CU
-
-                 TOPIPJ = EV(I,IP,1)*CU - EV(I,IQ,3)*SU
-                 TOPIQJ = EV(I,IP,1)*SU + EV(I,IQ,3)*CU
-
-                 TOPIPK = EV(I,IP,2)*CU - EV(I,IQ,4)*SU
-                 TOPIQK = EV(I,IP,2)*SU + EV(I,IQ,4)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-                 EV(I,IP,3) = TOPIPJ
-                 EV(I,IQ,3) = TOPIQJ
-
-                 EV(I,IP,4) = TOPIPK
-                 EV(I,IQ,4) = TOPIQK
-
-             ENDDO
-
-             IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvector after Apq_"j" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i,j,k:',
-     &         EV(I,J,1),EV(I,J,2),EV(I,J,3),EV(I,J,4)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-            ENDIF
-
-         ENDIF
-
-C        ... after "j" elim.check the "i" element !
-         IF (DABS(A(IP,IQ,2)).GE.ZEROTHRS) GOTO 6
-
-C     =========================================
-C          ... eliminate "k" part of P,Q
-C     =========================================
-
- 8        APQK =  A(IP,IQ,4)
-
-          IF (DABS(APQK).GE.ZEROTHRS) THEN
-
-           ITER = ITER + 1
-            WASELIM = .TRUE.
-
-           APPR =  A(IP,IP,1)
-           AQQR =  A(IQ,IQ,1)
-
-C         ... do calculate Cu,Su...
-           BDA =  D2*APQK/(AQQR-APPR)
-
-           PHI = DP5*DATAN(BDA)
-           CU = DCOS(PHI)
-           SU = DSIN(PHI)
-           CU2 = CU*CU
-           SU2 = SU*SU
-           CUSU = CU*SU
-
-C           ... Update (only REAL) diagonal elements
-            A(IP,IP,1)= APPR*CU2 + AQQR*SU2 - D2*CUSU*APQK
-            A(IQ,IQ,1)= APPR*SU2 + AQQR*CU2 + D2*CUSU*APQK
-
-C...        do eliminate the last  A_pq "k" off-diagonal  elements
-C           A(IP,IQ,4)=D0
-C           A(IQ,IP,4)=D0
-
-C      ...  update off diag. Apq ...(1,i,j,k).k = (k,-j,i,-1)=(k,-j,i,0)
-C               (1,i,j,k).k = (k, -j, i, -1)
-            XAI = A(IP,IQ,3)
-            XAJ = A(IP,IQ,2)
-            XAK = A(IP,IQ,1)
-
-            A(IP,IQ,2)=  XAI
-            A(IP,IQ,3)= -XAJ
-            A(IP,IQ,4)=  XAK
-
-C           ... the same for Aqp elements...
-C           A(IQ,IP,2)= -XAI
-C           A(IQ,IP,3)=  XAJ
-C           A(IQ,IP,4)= -XAK
-
-C           ... check the A_pq  elements !
-            IF (IPRINT.GE.6) THEN
-             write(lupri,'(/A)')
-     &   "======   After k-elim App,Apq,Aqp,Aqq r,i,j,k:"
-             write(lupri,*) '  A(',IP,',',IP,'):',
-     &        A(IP,IP,1),A(IP,IP,2),A(IP,IP,3),A(IP,IP,4)
-             write(lupri,*) '  A(',IP,',',IQ,'):',
-     &        A(IP,IQ,1),A(IP,IQ,2),A(IP,IQ,3),A(IP,IQ,4)
-             write(lupri,*) '  A(',IQ,',',IP,'):',
-     &        A(IQ,IP,1),A(IQ,IP,2),A(IQ,IP,3),A(IQ,IP,4)
-             write(lupri,*) '  A(',IQ,',',IQ,'):',
-     &        A(IQ,IQ,1),A(IQ,IQ,2),A(IQ,IQ,3),A(IQ,IQ,4)
-            ENDIF
-
-C      ...  update Aip, Aiq (i<>p,q) after elimination!
-C .....   A_ip(n+1) = A_ip(n).k.c - A_iq(n).s  
-C         A_iq(n+1) = A_ip(n).k.s + A_iq(n).c
-C             
-C                 (1,i,j,k).k = (k,-j,i,-1)
-
-            DO I=1,IP-1
-C             I < IP, I < IQ
-               TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
-               TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
-               TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
-               TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
-               TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
-               TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
-               TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
-               TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
-                A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-                A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-                A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-                A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-C               A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-C               A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-C               A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-C               A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IP+1,IQ-1
-C               I > IP, I < IQ
-C              TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,4)*CU - A(I,IQ,1)*SU
-C              TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,4)*SU + A(I,IQ,1)*CU
-C              TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,3)*CU - A(I,IQ,2)*SU
-C              TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,3)*SU + A(I,IQ,2)*CU
-C              TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
-               TOAIPJ =  A(IP,I,2)*CU - A(I,IQ,3)*SU
-C              TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
-               TOAIQJ =  A(IP,I,2)*SU + A(I,IQ,3)*CU
-C              TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
-               TOAIPK =  A(IP,I,1)*CU - A(I,IQ,4)*SU
-C              TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
-               TOAIQK =  A(IP,I,1)*SU + A(I,IQ,4)*CU
-C               A(I,IP,1) = TOAIPR 
-                A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-                A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-                A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-                A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-C               A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-C               A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-C               A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-C               A(IQ,I,4) = -TOAIQK
-            ENDDO
-            DO I=IQ+1,N
-C              I > IP,  I > IQ
-C              TOAIPR = -A(I,IP,4)*CU - A(I,IQ,1)*SU
-               TOAIPR =  A(IP,I,4)*CU - A(IQ,I,1)*SU
-C              TOAIQR = -A(I,IP,4)*SU + A(I,IQ,1)*CU
-               TOAIQR =  A(IP,I,4)*SU + A(IQ,I,1)*CU
-C              TOAIPI =  A(I,IP,3)*CU - A(I,IQ,2)*SU
-               TOAIPI = -A(IP,I,3)*CU + A(IQ,I,2)*SU
-C              TOAIQI =  A(I,IP,3)*SU + A(I,IQ,2)*CU
-               TOAIQI = -A(IP,I,3)*SU - A(IQ,I,2)*CU
-C              TOAIPJ = -A(I,IP,2)*CU - A(I,IQ,3)*SU
-               TOAIPJ =  A(IP,I,2)*CU + A(IQ,I,3)*SU
-C              TOAIQJ = -A(I,IP,2)*SU + A(I,IQ,3)*CU
-               TOAIQJ =  A(IP,I,2)*SU - A(IQ,I,3)*CU
-C              TOAIPK =  A(I,IP,1)*CU - A(I,IQ,4)*SU
-               TOAIPK =  A(IP,I,1)*CU + A(IQ,I,4)*SU
-C              TOAIQK =  A(I,IP,1)*SU + A(I,IQ,4)*CU
-               TOAIQK =  A(IP,I,1)*SU - A(IQ,I,4)*CU
-C               A(I,IP,1) = TOAIPR 
-C               A(I,IQ,1) = TOAIQR
-C               A(I,IP,2) = TOAIPI
-C               A(I,IQ,2) = TOAIQI
-C               A(I,IP,3) = TOAIPJ
-C               A(I,IQ,3) = TOAIQJ
-C               A(I,IP,4) = TOAIPK
-C               A(I,IQ,4) = TOAIQK
-                A(IP,I,1) = TOAIPR
-                A(IQ,I,1) = TOAIQR
-                A(IP,I,2) = -TOAIPI
-                A(IQ,I,2) = -TOAIQI
-                A(IP,I,3) = -TOAIPJ
-                A(IQ,I,3) = -TOAIQJ
-                A(IP,I,4) = -TOAIPK
-                A(IQ,I,4) = -TOAIQK
-            ENDDO
-
-C      ...  update P after the A_pq"k" elimination!
-            IF (DOEVE) THEN
-               DO I=1,N
-
-C          ... P_ip(n+1) = P_ip(n).k.c - P_iq(n).s
-C              P_iq(n+1) = P_ip(n).k.s + P_iq(n).c 
-C
-C               (1,i,j,k).k = (k, -j, i, -1)
-
-                 TOPIPR = -EV(I,IP,4)*CU - EV(I,IQ,1)*SU
-                 TOPIQR = -EV(I,IP,4)*SU + EV(I,IQ,1)*CU
-
-                 TOPIPI =  EV(I,IP,3)*CU - EV(I,IQ,2)*SU
-                 TOPIQI =  EV(I,IP,3)*SU + EV(I,IQ,2)*CU
-
-                 TOPIPJ = -EV(I,IP,2)*CU - EV(I,IQ,3)*SU
-                 TOPIQJ = -EV(I,IP,2)*SU + EV(I,IQ,3)*CU
-
-                 TOPIPK =  EV(I,IP,1)*CU - EV(I,IQ,4)*SU
-                 TOPIQK =  EV(I,IP,1)*SU + EV(I,IQ,4)*CU
-
-                 EV(I,IP,1) = TOPIPR
-                 EV(I,IQ,1) = TOPIQR
-
-                 EV(I,IP,2) = TOPIPI
-                 EV(I,IQ,2) = TOPIQI
-
-                 EV(I,IP,3) = TOPIPJ
-                 EV(I,IQ,3) = TOPIQJ
-
-                 EV(I,IP,4) = TOPIPK
-                 EV(I,IQ,4) = TOPIQK
-
-             ENDDO
-
-             IF (IPRINT.GE.7) THEN
-C              ... print out actual P eigenvector matrix
-              write(lupri,'(/2X,A)')
-     &         'Actual eigenvectors after Apq_"k" elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')_r,i,j,k:',
-     &         EV(I,J,1),EV(I,J,2),EV(I,J,3),EV(I,J,4)
-              ENDDO
-              ENDDO
-              write(lupri,*)
-             ENDIF
-
-            ENDIF
-
-           ENDIF
-
-          ELSE
-            write(lupri,*) 'Wrong NZ!'
-            CALL QUIT('QJACOBI: Wrong NZ !')
-          ENDIF
-
-C .... If wished, print out whole matrix 
-           IF (IPRINT.GE.5.AND.WASELIM) THEN
-             write(lupri,'(/A,2I5)')
-     & "Whole matrix A AFTER elimination of Apq,Aqp elements, p,q=",
-     &  IP,IQ
-            DO I=1,NZ
-            DO J=1,NZ
-             write(lupri,*)
-     &       ('A(',I,',',J,' [',IZ,')=',A(I,J,IZ),IZ=1,NZ)
-            ENDDO
-            ENDDO
-            write(lupri,*)
-           ENDIF
-
-           IF (IPRINT.GE.6.AND.WASELIM) THEN
-C              ... print out actual P eigenvector matrix
-             write(lupri,'(/2X,A)')
-     &       'Actual eigenvectors after the Apq elimination:'
-              DO I=1,N
-              DO J=1,N
-               write(lupri,*) '      P(',I,',',J,')=',
-     &         ( EV(I,J,IZ),IZ=1,NZ )
-              ENDDO
-              ENDDO
-              write(lupri,*)
-          ENDIF
-
-C        ... after elimination of Apq find indexes of the next largest element
-          IF (WASELIM) THEN
-           CALL FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
-           SUMSQA(1)=SUMSQA(2)
-           SUMSQA(2)=SUMSQ
-          ENDIF
-
-          ELIM(1) = ELIM(2)
-          ELIM(2) = WASELIM 
-          WASELIM = .FALSE.
-
-          IF (IPRINT.GE.3) THEN
-            write(lupri,'(3X,A,I6,A,D12.7)')
-     &      '...ITER=',ITER,' SUMSQ=',SUMSQ
-          ENDIF
-          IF (.NOT.ELIM(1).AND..NOT.ELIM(2)) FINISHED=.TRUE.
-
-      IF (.NOT.FINISHED) GOTO 10
-
-      IF (IPRINT.GE.2) THEN
-       CALL GETTIM(CPU2,WALL2)
-       CPU    = CPU2 - CPU1
-       WALL   = WALL2 - WALL1
-       CPUTID = SECTID(CPU)
-       WALLTID = SECTID(WALL)
-       write(lupri,'(2X,A,I7)')
-     &  '>>>> QJACOBI finished, # of iterations: ',ITER
-       write(lupri,'(2X,A,2D12.5,/,2X,A,D12.5)')
-     &      'last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
-     &      '"zero" off-diag elem. threshold: ',ZEROTHRS
-       WRITE(LUPRI,'(2X,A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in QJACOBI:',
-     &             CPUTID,'/',WALLTID
-       CALL FLSHFO(LUPRI)
-      ENDIF
-CC *********************************************************************************
-
-CC DO the symmetrization of the (diagonal/block-diagonal) A matrix
-      DO I = 1,N-1
-      DO J = I+1, N
-       A(J,I,1)=A(I,J,1)
-       DO IZ=2,NZ
-        A(J,I,IZ)=-A(I,J,IZ)
-       ENDDO
-      ENDDO
-      ENDDO
-
-C ==== Finished === 
-C ===  if full diagonalization, do sort eigenvalues on the main diagonal...
-       IF (NBL.EQ.0) THEN
-          DO I=1,N-1
-            APPR = A(I,I,1)
-            DO J=I+1, N
-             IF (APPR.GT.A(J,J,1)) THEN
-C              ... swich I-J columns and I-J rows as well
-               DO K=1,N
-               DO IZ=1,NZ
-                 APPI=A(I,K,IZ)
-                 A(I,K,IZ)=A(J,K,IZ)
-                 A(J,K,IZ)=APPI
-               ENDDO
-               ENDDO
-
-               DO K=1,N
-               DO IZ=1,NZ
-                 APPI=A(K,I,IZ)
-                 A(K,I,IZ)=A(K,J,IZ)
-                 A(K,J,IZ)=APPI
-               ENDDO
-               ENDDO
-               APPR = A(I,I,1)
-C            ... switch I,J columns of P(eigenvectors) !
-              IF (DOEVE) THEN
-               DO K=1,N
-                DO IZ=1,NZ
-                 APQR = EV(K,I,IZ)
-                 EV(K,I,IZ) = EV(K,J,IZ)
-                 EV(K,J,IZ) = APQR
-                ENDDO
-               ENDDO
-              ENDIF
-
-             ENDIF
-            ENDDO
-          ENDDO
-
-          IF (IPRINT.GE.3) THEN
-           write(lupri,'(/3X,A)')
-     &       '>>>> Eigenvalues (after sorting) <<<<<'
-           DO I=1,N
-            write(lupri,*)
-     &      '  ',I,'. >',(A(I,I,IZ),IZ=1,NZ)
-           ENDDO
-          ENDIF
-          write(lupri,*)
-      ENDIF
-
-      IF (IPRINT.GE.3) THEN
-          write(lupri,'(/3X,A)')
-     &'>>>> QJACOBI: RESULTING MATRIX after unit.transformations <<<<'
-         DO I=1,N
-         DO J=1,N
-           IF (I.NE.J) THEN
-          write(lupri,'(A,I4,A,I4,A,4F16.8)')
-     &     'offdiag elem, A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
-           ELSE
-          write(lupri,'(A,I4,A,I4,A,4F16.8)')
-     &     'diagonal elem,A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
-           ENDIF
-         ENDDO
-         ENDDO
-         write(lupri,*)
-      ENDIF
-
-C ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-C    .... if wished, do check: P_H*P = P*P_H = 1
-C ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-         IF (IPRINT.GE.2.AND.DOEVE) THEN
-C         ... rewind file
-          REWIND(LUF)
-
-         IF (IPRINT.GE.4) THEN
-           write(lupri,'(/3X,A)') '**** Eigenvectors:'
-         ENDIF
-
-C ***********************************************
-C ***************  Real matrixes ****************
-C ***********************************************
-         IF (NZ.EQ.1) THEN
-
-          DO I=1,N
-          DO J=1,N
-C          ....  P_H*P 
-           TOPIPR = D0
-C          ....  P*P_H 
-           TOQIPR = D0
-
-           DO K=1, N
-
-C          ....  P_H*P 
-            TOPIPR = TOPIPR +
-     &               EV(K,I,1)*EV(K,J,1) 
-
-C          ....  P*P_H 
-            TOQIPR =   TOQIPR +
-     &               EV(I,K,1)*EV(J,K,1) 
-
-           ENDDO
-
-C          ... do print eignevector...
-          IF (IPRINT.GE.4) THEN
-          write(lupri,'(A,I3,A,I3,A,F18.12)') '** P(',I,',',J,')_r:',
-     &     EV(I,J,1)
-          ENDIF
-
-C         ... print of unit matrixes
-          IF (IPRINT.GE.3) THEN
-           write(lupri,'(A,I3,A,I3,A,F18.12,A,F18.12)')
-     &      '>> P^H*P(',I,',',J,')_r:',
-     &     TOPIPR,' >> P*P^H:',
-     &     TOQIPR
-          ENDIF
-C         ... check the unit matrix...
-          IF (I.EQ.J) THEN
-             IF (DABS(TOPIPR-D1).GT.ZEROTHRS.OR.
-     &           DABS(TOQIPR-D1).GT.ZEROTHRS
-     &                  ) THEN
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r,i:',
-     &     TOPIPR,' >> P*P^H:',
-     &     TOQIPR
-             ENDIF
-          ELSE
-             IF (   DABS(TOPIPR).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPR).GT.ZEROTHRS
-     &        ) THEN
-
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r:',
-     &     TOPIPR,' >> P*P^H:',TOQIPR
-
-             ENDIF
-          ENDIF
-
-          ENDDO
-          ENDDO
-
-C         ...  Do the check P.D.PH = P.(D.PH) = Sum(k) P_ik. (D.PH)_kj
-C          (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-
-          IF (IPRINT.GE.3) THEN
-           WRITE(LUPRI,'(/2X,A)')
-     & 'The P*A(diagonalized)*P^H = A(reconstructed) check:'
-          ENDIF
-
-          DO I=1,N
-          DO J=1,N
-            AIJ_R = D0
-            DO K=1,N
-             DPHKJR=D0
-             DO L=1,N
-C     (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-               DPHKJR = DPHKJR
-     &                 + A(K,L,1)*EV(J,L,1)
-
-             ENDDO
-               AIJ_R = AIJ_R 
-     &             + EV(I,K,1)*DPHKJR
-            ENDDO
-
-C         ... read elements from the file...
-           READ(LUF,1000) I1,J1,IZ1,AIJFR
-C          READ(LUF,*) I1,J1,AIJFR
-
-           IF (IPRINT.GE.3) THEN
-           write(lupri,'(A,I3,A,I3,A,D12.5)')
-     &     '>>>>>  reconstructed A(',I,',',J,')_r =',
-     &     AIJ_R
-           write(lupri,'(A,I3,A,I3,A,D12.5,A,D12.5)')
-     &     '>>>>> entering elem. A(',I,',',J,')_r =',
-     &     AIJFR,' difference: ',AIJ_R-AIJFR
-           ENDIF
-
-C           ... check the differences...
-           IF (DABS(AIJ_R-AIJFR).GT.ZEROTHRS1
-     &          ) THEN
-           write(lupri,*)
-     &     'WARNING ! reconstr.  A(',I,',',J,')_r =',
-     &     AIJ_R
-           write(lupri,*)
-     &     '>>>>> entering elem. A(',I,',',J,')_r =',
-     &     AIJFR
-           write(lupri,*) ' difference is (in abs):',
-     &      DABS(AIJ_R-AIJFR)
-
-           ENDIF
-
-            ENDDO
-            ENDDO
-
-            CLOSE(LUF,STATUS="KEEP")
-            write(lupri,'(2X,A,I2,A)')
-     &      'The auxiliary file (lu=#,',LUF,') was closed, checking'//
-     &      ' of A=P.Ad.P^H done'
-
-C ****************************************************
-C *************** Complex  matrixes ******************
-C ****************************************************
-         ELSE IF (NZ.EQ.2) THEN
-
-          DO I=1,N
-          DO J=1,N
-C          ....  P_H*P 
-           TOPIPR = D0
-           TOPIPI = D0
-C          ....  P*P_H 
-           TOQIPR = D0
-           TOQIPI = D0
-
-           DO K=1, N
-
-C          ....  P_H*P 
-            TOPIPR = TOPIPR +
-     &               EV(K,I,1)*EV(K,J,1) + 
-     &               EV(K,I,2)*EV(K,J,2) 
-
-            TOPIPI =   TOPIPI 
-     &               - EV(K,I,2)*EV(K,J,1)  
-     &               + EV(K,I,1)*EV(K,J,2) 
-
-C          ....  P*P_H 
-            TOQIPR =   TOQIPR +
-     &               EV(I,K,1)*EV(J,K,1) + 
-     &               EV(I,K,2)*EV(J,K,2) 
-
-            TOQIPI =   TOQIPI  
-     &               - EV(I,K,1)*EV(J,K,2)  
-     &               + EV(I,K,2)*EV(J,K,1) 
-
-           ENDDO
-
-C          ... do print eignevector...
-          IF (IPRINT.GE.4) THEN
-          write(lupri,*) '** P(',I,',',J,')_r,i:',
-     &     EV(I,J,1),EV(I,J,2)
-          ENDIF
-
-C         ... print of unit matrixes
-          IF (IPRINT.GE.4) THEN
-         write(lupri,*) '>> P^H*P(',I,',',J,')_r,i:',
-     &     TOPIPR,TOPIPI,' >> P*P^H:',
-     &     TOQIPR,TOQIPI
-          ENDIF
-C         ... check the unit matrix...
-          IF (I.EQ.J) THEN
-             IF (DABS(TOPIPR-D1).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPI).GT.ZEROTHRS.OR.
-     &           DABS(TOQIPR-D1).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPI).GT.ZEROTHRS
-     &                  ) THEN
-
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r,i:',
-     &     TOPIPR,TOPIPI,' >> P*P^H:',
-     &     TOQIPR,TOQIPI
-             ENDIF
-          ELSE
-             IF (   DABS(TOPIPR).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPI).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPR).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPI).GT.ZEROTHRS
-     &        ) THEN
-
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r,i:',
-     &     TOPIPR,TOPIPI,' >> P*P^H:',
-     &     TOQIPR,TOQIPI
-
-             ENDIF
-          ENDIF
-
-          ENDDO
-          ENDDO
-
-C         ...  Do the check P.D.PH = P.(D.PH) = Sum(k) P_ik. (D.PH)_kj
-C          (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-
-          IF (IPRINT.GE.3) THEN
-           WRITE(LUPRI,'(/2X,A)')
-     & 'The P*A(diagonalized)*P^H = A(reconstructed) check:'
-          ENDIF
-
-          DO I=1,N
-          DO J=1,N
-            AIJ_R = D0
-            AIJ_I = D0
-            DO K=1,N
-             DPHKJR=D0
-             DPHKJI=D0
-             DO L=1,N
-
-C     (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-
-               DPHKJR = DPHKJR
-     &                 + A(K,L,1)*EV(J,L,1)
-     &                 + A(K,L,2)*EV(J,L,2)
-
-               DPHKJI = DPHKJI
-     &                 - A(K,L,1)*EV(J,L,2)
-     &                 + A(K,L,2)*EV(J,L,1)
-
-             ENDDO
-C         ...  Do the check P.D.PH = A_ij =  P.(D.PH)_ij = Sum(k) P_ik. (D.PH)_kj
-C q = (a, b, c, d), p = (x, y, z, w); 
-C       = (a*x - b*y - c*z - d*w,
-C           a*y + b*x + c*w - d*z,
-C           a*z - b*w + c*x + d*y,
-C           a*w + b*z - c*y + d*x)
-
-               AIJ_R = AIJ_R 
-     &             + EV(I,K,1)*DPHKJR
-     &             - EV(I,K,2)*DPHKJI
-
-               AIJ_I = AIJ_I
-     &             + EV(I,K,1)*DPHKJI
-     &             + EV(I,K,2)*DPHKJR
-
-             ENDDO
-
-C         ... read elements from the file...
-           READ(LUF,1000) I1,J1,IZ1,AIJFR
-           READ(LUF,1000) I1,J1,IZ1,AIJFI
-C          READ(LUF,*) I1,J1,AIJFR,AIJFI
-
-           IF (IPRINT.GE.3) THEN
-           write(lupri,*)
-     &     '>>>>>  reconstructed A(',I,',',J,')_r,i =',
-     &     AIJ_R,AIJ_I
-           write(lupri,*)
-     &     '>>>>> entering elem. A(',I,',',J,')_r,i =',
-     &     AIJFR,AIJFI,' difference:',
-     &       AIJ_R-AIJFR, AIJ_I-AIJFI
-           ENDIF
-
-C           ... check the differences...
-           IF (DABS(AIJ_R-AIJFR).GT.ZEROTHRS1.OR.
-     &         DABS(AIJ_I-AIJFI).GT.ZEROTHRS1
-     &          ) THEN
-           write(lupri,*)
-     &     'WARNING ! reconstr.  A(',I,',',J,')_r,i =',
-     &     AIJ_R,AIJ_I
-           write(lupri,*)
-     &     '>>>>> entering elem. A(',I,',',J,')_r,i =',
-     &     AIJFR,AIJFI
-           write(lupri,*) ' difference is (in abs):',
-     &      DABS(AIJ_R-AIJFR),DABS(AIJ_I-AIJFI)
-
-           ENDIF
-
-            ENDDO
-            ENDDO
-            CLOSE(LUF,STATUS="KEEP")
-            write(lupri,'(/,A)')
-     &      'The file was closed, comparison A=P.Ad.P^H was done'
-
-C ****************************************************
-C ************* Quaternion matrixes ******************
-C ****************************************************
-         ELSE IF (NZ.EQ.4) THEN
-
-          DO I=1,N
-          DO J=1,N
-C          ....  P_H*P 
-           TOPIPR = D0
-           TOPIPI = D0
-           TOPIPJ = D0
-           TOPIPK = D0
-C          ....  P*P_H 
-           TOQIPR = D0
-           TOQIPI = D0
-           TOQIPJ = D0
-           TOQIPK = D0
-
-           DO K=1, N
-
-C          ....  P_H*P 
-            TOPIPR = TOPIPR +
-     &               EV(K,I,1)*EV(K,J,1) + 
-     &               EV(K,I,2)*EV(K,J,2) +
-     &               EV(K,I,3)*EV(K,J,3) +
-     &               EV(K,I,4)*EV(K,J,4) 
-
-            TOPIPI =   TOPIPI 
-     &               - EV(K,I,2)*EV(K,J,1)  
-     &               - EV(K,I,3)*EV(K,J,4) 
-     &               + EV(K,I,1)*EV(K,J,2) 
-     &               + EV(K,I,4)*EV(K,J,3) 
-
-            TOPIPJ =  TOPIPJ  
-     &               + EV(K,I,1)*EV(K,J,3)  
-     &               + EV(K,I,2)*EV(K,J,4) 
-     &               - EV(K,I,3)*EV(K,J,1) 
-     &               - EV(K,I,4)*EV(K,J,2) 
-
-            TOPIPK =   TOPIPK  
-     &               + EV(K,I,1)*EV(K,J,4)  
-     &               - EV(K,I,2)*EV(K,J,3) 
-     &               + EV(K,I,3)*EV(K,J,2) 
-     &               - EV(K,I,4)*EV(K,J,1) 
-
-C          ....  P*P_H 
-            TOQIPR =   TOQIPR +
-     &               EV(I,K,1)*EV(J,K,1) + 
-     &               EV(I,K,2)*EV(J,K,2) +
-     &               EV(I,K,3)*EV(J,K,3) +
-     &               EV(I,K,4)*EV(J,K,4) 
-
-            TOQIPI =   TOQIPI  
-     &               - EV(I,K,1)*EV(J,K,2)  
-     &               + EV(I,K,2)*EV(J,K,1) 
-     &               - EV(I,K,3)*EV(J,K,4)
-     &               + EV(I,K,4)*EV(J,K,3) 
-
-            TOQIPJ =   TOQIPJ
-     &               - EV(I,K,1)*EV(J,K,3)  
-     &               + EV(I,K,2)*EV(J,K,4) 
-     &               + EV(I,K,3)*EV(J,K,1)
-     &               - EV(I,K,4)*EV(J,K,2) 
-
-            TOQIPK =  TOQIPK
-     &               - EV(I,K,1)*EV(J,K,4)  
-     &               - EV(I,K,2)*EV(J,K,3) 
-     &               + EV(I,K,3)*EV(J,K,2)
-     &               + EV(I,K,4)*EV(J,K,1) 
-           ENDDO
-
-C          ... do print eignevector...
-          IF (IPRINT.GE.4) THEN
-          write(lupri,*) '** P(',I,',',J,')_r,i,j,k:',
-     &     EV(I,J,1),EV(I,J,2),EV(I,J,3),EV(I,J,4)
-          ENDIF
-
-C         ... print of unit matrixes
-          IF (IPRINT.GE.3) THEN
-         write(lupri,*) '>> P^H*P(',I,',',J,')_r,i,j,k:',
-     &     TOPIPR,TOPIPI,TOPIPJ,TOPIPK,' >> P*P^H:',
-     &     TOQIPR,TOQIPI,TOQIPJ,TOQIPK
-          ENDIF
-C         ... check the unit matrix...
-          IF (I.EQ.J) THEN
-             IF (DABS(TOPIPR-D1).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPI).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPJ).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPK).GT.ZEROTHRS.OR.
-     &           DABS(TOQIPR-D1).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPI).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPJ).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPK).GT.ZEROTHRS) THEN
-
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r,i,j,k:',
-     &     TOPIPR,TOPIPI,TOPIPJ,TOPIPK,' >> P*P^H:',
-     &     TOQIPR,TOQIPI,TOQIPJ,TOQIPK
-             ENDIF
-          ELSE
-             IF (   DABS(TOPIPR).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPI).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPJ).GT.ZEROTHRS.OR.
-     &              DABS(TOPIPK).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPR).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPI).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPJ).GT.ZEROTHRS.OR.
-     &              DABS(TOQIPK).GT.ZEROTHRS) THEN
-
-         write(lupri,*) 'WARNING!;  P^H*P(',I,',',J,')_r,i,j,k:',
-     &     TOPIPR,TOPIPI,TOPIPJ,TOPIPK,' >> P*P^H:',
-     &     TOQIPR,TOQIPI,TOQIPJ,TOQIPK
-
-             ENDIF
-          ENDIF
-
-          ENDDO
-          ENDDO
-
-C         ...  Do the check P.D.PH = P.(D.PH) = Sum(k) P_ik. (D.PH)_kj
-C          (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-
-          IF (IPRINT.GE.3) THEN
-           WRITE(LUPRI,'(/2X,A)')
-     & 'The P*A(diagonalized)*P^H = A(reconstructed) check:'
-          ENDIF
-
-          DO I=1,N
-          DO J=1,N
-
-            AIJ_R = D0
-            AIJ_I = D0
-            AIJ_J = D0
-            AIJ_K = D0
-
-            DO K=1,N
-
-             DPHKJR=D0
-             DPHKJI=D0
-             DPHKJJ=D0
-             DPHKJK=D0
-
-             DO L=1,N
-
-C     (D.PH)_kj = Sum(l) D_kl.PH_lj = Sum(l) D_kl.(P_jl)*
-
-               DPHKJR = DPHKJR
-     &                 + A(K,L,1)*EV(J,L,1)
-     &                 + A(K,L,2)*EV(J,L,2)
-     &                 + A(K,L,3)*EV(J,L,3)
-     &                 + A(K,L,4)*EV(J,L,4)
-
-               DPHKJI = DPHKJI
-     &                 - A(K,L,1)*EV(J,L,2)
-     &                 + A(K,L,2)*EV(J,L,1)
-     &                 - A(K,L,3)*EV(J,L,4)
-     &                 + A(K,L,4)*EV(J,L,3)
-
-               DPHKJJ = DPHKJJ
-     &                 - A(K,L,1)*EV(J,L,3)
-     &                 + A(K,L,2)*EV(J,L,4)
-     &                 + A(K,L,3)*EV(J,L,1)
-     &                 - A(K,L,4)*EV(J,L,2)
-
-               DPHKJK = DPHKJK
-     &                 - A(K,L,1)*EV(J,L,4)
-     &                 - A(K,L,2)*EV(J,L,3)
-     &                 + A(K,L,3)*EV(J,L,2)
-     &                 + A(K,L,4)*EV(J,L,1)
-             ENDDO
-C         ...  Do the check P.D.PH = A_ij =  P.(D.PH)_ij = Sum(k) P_ik. (D.PH)_kj
-
-               AIJ_R = AIJ_R 
-     &             + EV(I,K,1)*DPHKJR
-     &             - EV(I,K,2)*DPHKJI
-     &             - EV(I,K,3)*DPHKJJ
-     &             - EV(I,K,4)*DPHKJK
-
-               AIJ_I = AIJ_I
-     &             + EV(I,K,1)*DPHKJI
-     &             + EV(I,K,2)*DPHKJR
-     &             + EV(I,K,3)*DPHKJK
-     &             - EV(I,K,4)*DPHKJJ
-
-               AIJ_J = AIJ_J
-     &             + EV(I,K,1)*DPHKJJ
-     &             - EV(I,K,2)*DPHKJK
-     &             + EV(I,K,3)*DPHKJR
-     &             + EV(I,K,4)*DPHKJI
-
-               AIJ_K = AIJ_K
-     &             + EV(I,K,1)*DPHKJK
-     &             + EV(I,K,2)*DPHKJJ
-     &             - EV(I,K,3)*DPHKJI
-     &             + EV(I,K,4)*DPHKJR
-
-             ENDDO
-
-C         ... read elements from the file...
-           READ(LUF,1000) I1,J1,IZ1,AIJFR
-           READ(LUF,1000) I1,J1,IZ1,AIJFI
-           READ(LUF,1000) I1,J1,IZ1,AIJFJ
-           READ(LUF,1000) I1,J1,IZ1,AIJFK
-C          READ(LUF,*) I1,J1,AIJFR,AIJFI,AIJFJ,AIJFK
-
-           IF (IPRINT.GE.3) THEN
-           write(lupri,*)
-     &     '>>>>>  reconstructed A(',I,',',J,')_r,i,j,k =',
-     &     AIJ_R,AIJ_I,AIJ_J,AIJ_K
-           write(lupri,*)
-     &     '>>>>> entering elem. A(',I,',',J,')_r,i,j,k =',
-     &     AIJFR,AIJFI,AIJFJ,AIJFK,' difference:',
-     &     AIJ_R-AIJFR,AIJ_I-AIJFI,
-     &     AIJ_J-AIJFJ,AIJ_K-AIJFK
-           ENDIF
-
-C           ... check the differences...
-           IF (DABS(AIJ_R-AIJFR).GT.ZEROTHRS1.OR.
-     &         DABS(AIJ_I-AIJFI).GT.ZEROTHRS1.OR.
-     &         DABS(AIJ_J-AIJFJ).GT.ZEROTHRS1.OR.
-     &         DABS(AIJ_K-AIJFK).GT.ZEROTHRS1) THEN
-           write(lupri,*)
-     &     'WARNING ! reconstr.  A(',I,',',J,')_r,i,j,k =',
-     &     AIJ_R,AIJ_I,AIJ_J,AIJ_K
-           write(lupri,*)
-     &     '>>>>> entering elem. A(',I,',',J,')_r,i,j,k =',
-     &     AIJFR,AIJFI,AIJFJ,AIJFK
-           write(lupri,*) ' difference is (in abs):',
-     &      DABS(AIJ_R-AIJFR),DABS(AIJ_I-AIJFI),
-     &      DABS(AIJ_J-AIJFJ),DABS(AIJ_K-AIJFK)
-
-           ENDIF
-
-            ENDDO
-            ENDDO
-            CLOSE(LUF,STATUS="KEEP")
-            write(lupri,'(/,A/)')
-     &      'The file was closed, comparison A=P.Ad.P^H was done'
-         ENDIF
-
-         ENDIF
-
-         RETURN
-         END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck FINDSUMBL  */
-         SUBROUTINE FINDSUMBL(A,N,NZ,NBL,IBL,IP,IQ,SUMSQ,IPRINT)
-C****************************************************************************
-C
-C  ... find the largest off diagonal element (in block) in the upper triangular
-C       and the sum of absolute values of its elements (r,i,j,k)
-C
-C     On output:  IP < IQ
-C                 SUMSQ
-C
-C     Called from QJACOBI
-C
-C     Written by Miro Ilias, Strasbourg, 2006
-C
-C****************************************************************************
-#include"implicit.h"
-#include"priunit.h"
-         DIMENSION A(N,N,NZ)
-         DIMENSION IBL(NBL,1:4)
-
-         SUMSQ=0.0D0
-         EMAX = 0.0D0
-         IF (NBL.EQ.0) THEN
-C         ... no blocks... run over all off-diagonal elements
-C         ... for finding largest elem, do make the initialization of 1,2 elem...
-           DO IZ=1,NZ
-            EMAX = EMAX + DABS(A(1,2,IZ))
-           ENDDO
-           IMAX = 1
-           JMAX = 2
-
-          DO I=1,N-1
-          DO J=I+1,N
-
-          EMAX1 = 0.D0
-          DO IZ=1,NZ
-           EMAX1 = EMAX1 + DABS(A(I,J,IZ))
-          ENDDO
-
-          IF (EMAX1.GT.EMAX) THEN
-            IMAX = I
-            JMAX = J
-            EMAX = EMAX1
-          ENDIF
-
-          ENDDO
-          ENDDO
-         ELSE IF (NBL.GE.1) THEN
-C         ... for finding largest elem, do make the initialization elem...
-           DO IZ=1,NZ
-            EMAX = EMAX + DABS(A(IBL(1,1),IBL(1,2),IZ))
-           ENDDO
-           IMAX = IBL(1,1)
-           JMAX = IBL(1,2)
-C          ... run only over specified blocks !!
-          DO IB=1,NBL
-           DO I=IBL(IB,1),IBL(IB,3)
-           DO J=IBL(IB,2),IBL(IB,4)
-            EMAX1 = 0.D0
-            DO IZ=1, NZ
-             EMAX1 = EMAX1 + DABS(A(I,J,IZ))
-            ENDDO
-            IF (EMAX1.GT.EMAX) THEN
-              IMAX = I
-              JMAX = J
-              EMAX = EMAX1
-            ENDIF
-           ENDDO
-           ENDDO
-          ENDDO
-         ELSE
-          CALL QUIT('FINDSUMBL: Bad NBLOCKS in QJACOBI!')
-         ENDIF
-
-         IF (IMAX.EQ.JMAX) THEN 
-          IF (IPRINT.GE.7) THEN
-            write(lupri,*) 'FINDSUMBL: Find IMAX=',IMAX,' JMAX=',JMAX
-            write(lupri,*) 'FINDSUMBL: IBL(1:',NBL,';1:4) elements:'
-            do i=1,NBL
-             write(lupri,*)
-     &      '>>> IBL(',i,';1)=',IBL(i,1),' IBL(',i,';2)=',IBL(i,2),
-     &      ' IBL(',i,';3)=',IBL(i,3),' IBL(',i,';4)=',IBL(i,4)
-            enddo 
-           ENDIF
-C           CALL QUIT('Error in FINDSUMBL: IMAX=JMAX ')
-         ELSE IF(IMAX.GT.JMAX) THEN
-            IMAX1 = IMAX
-            IMAX = JMAX
-            JMAX = IMAX1
-         ENDIF
-
-         IP = IMAX
-         IQ = JMAX
-
-         SUMSQ = EMAX
-
-          IF (IPRINT.GE.10) THEN
-            write(lupri,*)
-     &    'FINDSUMBL: the whole investigated matrix'
-            DO I=1,N
-            DO J=1,I
-            DO IZ=1,NZ
-             IF (I.EQ.J) THEN
-             write(lupri,*) '(',I,';',J,';',IZ,') :',A(I,J,IZ)
-             ELSE
-             write(lupri,*) '(',I,';',J,';',IZ,') :',A(I,J,IZ),A(J,I,IZ)
-             ENDIF
-            ENDDO
-            ENDDO
-            ENDDO
-          ENDIF
-
-         RETURN
-         END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck testblocks  */
-      SUBROUTINE TESTBLOCKS(N,NZ,NBL,IBL,IPRINT)
-C****************************************************************************
-C
-C   Check specifix blocks of hermitian matrix to be diagonalized.
-C
-C   Called from QJACOBI
-C
-C   Written by Miro Ilias, Strasbourg, 2006
-C
-C****************************************************************************
-#include"implicit.h"
-#include"priunit.h"
-      DIMENSION IBL(NBL,1:4)
-      LOGICAL BAD
-      DATA ZEROTHRS / 1.0D-11 /
-
-      BAD = .FALSE.
-
-C       ... print info on blocks first
-      IF (IPRINT.GE.2) THEN
-        write(lupri,*) 'QJACOBI(TESTBLOCKS): # of subblocks=',NBL
-        IF (NBL.GT.0) THEN
-         DO I=1, NBL
-          write(lupri,*) I,'. block; left upper point',
-     &    IBL(I,1),IBL(I,2),' right bottom point:',IBL(I,3),IBL(I,4)
-         ENDDO    
-        ENDIF
-        write(*,*)
-      ENDIF
-C     ... do own check
-      DO I=1,NBL
-       I1=IBL(I,1)
-       J1=IBL(I,2)
-       I2=IBL(I,3)
-       J2=IBL(I,4)
-
-       IF (I1.GT.I2.OR.J1.GT.J2) THEN
-        write(lupri,*) 'I1,I2:',I1,I2,' J1,J2:',J1,J2,' * N=',N
-        write(lupri,*) 'I1>I2 or J1>J2!'
-        BAD=.TRUE.
-       ENDIF
-
-       IF (I1.LT.1.OR.I1.GT.N-1.OR.J1.LT.1.OR.J1.GT.N
-     & .OR.I2.LT.1.OR.I2.GT.N-1.OR.J2.LT.1.OR.J2.GT.N) THEN
-        write(lupri,*) 'I1.LT.1.OR.I1.GT.N-1.OR.J1.LT.1.OR.J1.GT.N!'
-        write(lupri,*) 'OR.I2.LT.1.OR.I2.GT.N-1.OR.J2.LT.1.OR.J2.GT.N'
-        BAD=.TRUE.
-       ENDIF
-
-       IF (.NOT.(I1.LT.J1.AND.I2.LT.J2)) THEN
-        write(lupri,*) 'NOT(I1<I2 and I2<J2!'
-        BAD=.TRUE.
-       ENDIF
-
-      ENDDO
-
-      INUMEL = 0
-      IF (BAD) THEN
-       CALL QUIT('BAD BLOCKS !')
-      ELSE
-       IF (IPRINT.GE.2) THEN
-        write(lupri,'(/2X,A)')
-     &'QJACOBI(TESTBLOCKS): The off-elements (indexes) to be'//
-     &' diagonalized (zeroed) are OK:'
-       ENDIF
-        IF (IPRINT.GE.3) THEN
-        DO I=1,NBL
-        DO I1=IBL(I,1),IBL(I,3)
-        DO J1=IBL(I,2),IBL(I,4)
-          write(lupri,*) I1,J1,' <> ',J1,I1
-          INUMEL = INUMEL + 1
-        ENDDO
-        ENDDO
-        ENDDO
-        ENDIF
-      ENDIF
-
-      IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     & 'Number of elements (upper triangular) to be eliminated:',
-     &  INUMEL
-        write(lupri,*)
-      ENDIF
-
-      RETURN
-      END
-#endif /* MOD_UNRELEASED */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prdiag */
       SUBROUTINE PRDIAG(A,LRA,N)
@@ -6171,7 +3870,7 @@ C***********************************************************************
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
-      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
       TEMP=XDEV*XTANG
@@ -6351,49 +4050,6 @@ C***********************************************************************
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gatmat */
-      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
-C***********************************************************************
-C     This routine will transfer elements from matrix B to matrix A
-C     according to row and column pointers INDR and INDC
-C
-C	Written by T.Saue, March 2011
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION A(LDA,*),B(LDB,NC),INDR(NR),INDC(NC)
-      DO J = 1,NC
-        JJ = INDC(J)
-        DO I = 1,NR
-          II = INDR(I)
-          A(II,JJ)=B(I,J)
-        ENDDO
-      ENDDO
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
-C***********************************************************************
-C     Make reverse indexing for elements of ILIST.GE.0
-C     Written by T. Saue March 31 2011
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION ILIST(NI),JLIST(NJ)
-      J = 0
-      DO I = 1,NI
-      IF(ILIST(I).GE.0) THEN
-        J = J + 1
-        IF(J.GT.NJ) CALL QUIT('REVINDEX: Out of bounds !')
-        JLIST(J) = I
-      ENDIF
-      ENDDO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION SYMCHECK(A,LR,LC,N,NZ)
 C***********************************************************************
 C
@@ -6417,3 +4073,151 @@ C***********************************************************************
       SYMCHECK=SYMCHECK/DFLOAT(NZ*N*(N-1)/2)
       RETURN
       END
+C  /* Deck indexi */
+      SUBROUTINE INDEXI(N,IARR,INDX)
+C***********************************************************************
+C
+C     This subroutine goes through an integer array IARR and returns the ordering
+C     index array INDX giving indices from smallest to largest
+C
+C     The array ARR is not touched.
+C
+C***********************************************************************
+      INTEGER N,INDX(N),M,NSTACK,IARR(N)
+      PARAMETER (M=7,NSTACK=50)
+      INTEGER I,IA,INDXT,IR,ITEMP,J,JSTACK,K,L,ISTACK(NSTACK)
+      DO J=1,N
+         INDX(J)=J
+      END DO
+      JSTACK=0
+      L=1
+      IR=N
+ 1    IF(IR-L.GE.M)THEN
+         K=(L+IR)/2
+         ITEMP=INDX(K)
+         INDX(K)=INDX(L+1)
+         INDX(L+1)=ITEMP
+         IF(IARR(INDX(L+1)).GT.IARR(INDX(IR)))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(IARR(INDX(L)).GT.IARR(INDX(IR)))THEN
+            ITEMP=INDX(L)
+            INDX(L)=INDX(IR)
+            INDX(IR)=ITEMP
+         ENDIF
+         IF(IARR(INDX(L+1)).GT.IARR(INDX(L)))THEN
+            ITEMP=INDX(L+1)
+            INDX(L+1)=INDX(L)
+            INDX(L)=ITEMP
+         ENDIF
+         I=L+1
+         J=IR
+         INDXT=INDX(L)
+         IA=IARR(INDXT)
+ 3       CONTINUE
+         I=I+1
+         IF(IARR(INDX(I)).LT.IA)GOTO 3
+ 4       CONTINUE
+         J=J-1
+         IF(IARR(INDX(J)).GT.IA)GOTO 4
+         IF(J.LT.I)GOTO 5
+         ITEMP=INDX(I)
+         INDX(I)=INDX(J)
+         INDX(J)=ITEMP
+         GOTO 3
+ 5       INDX(L)=INDX(J)
+         INDX(J)=INDXT
+         JSTACK=JSTACK+2
+         IF(JSTACK.GT.NSTACK)
+     $        CALL QUIT('NSTACK TOO SMALL IN INDEXI')
+         IF(IR-I+1.GE.J-L)THEN
+            ISTACK(JSTACK)=IR
+            ISTACK(JSTACK-1)=I
+            IR=J-1
+         ELSE
+            ISTACK(JSTACK)=J-1
+            ISTACK(JSTACK-1)=L
+            L=I
+         ENDIF
+      ELSE
+         DO J=L+1,IR
+            INDXT=INDX(J)
+            IA=IARR(INDXT)
+            DO I=J-1,1,-1
+               IF(IARR(INDX(I)).LE.IA)GOTO 2
+               INDX(I+1)=INDX(I)
+            END DO
+            I=0
+ 2          INDX(I+1)=INDXT
+         END DO
+         IF(JSTACK.EQ.0)RETURN
+         IR=ISTACK(JSTACK)
+         L=ISTACK(JSTACK-1)
+         JSTACK=JSTACK-2
+      ENDIF
+      GOTO 1
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cleanmat */
+      SUBROUTINE CLEANMAT(A,DTOL,N,LR,LC,NZ)
+C***********************************************************************
+C
+C     Subroutine CLEANMAT will set matrix elements below the given 
+C     threshold to zero
+C     Written by T. Saue Oct. 2 2013
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION A(LR,LC,NZ)
+      PARAMETER (D1=1.0D00, D0=0.0D00)
+      DO IZ = 1,NZ
+        DO J = 1,N
+          DO I = 1,N
+            IF(ABS(A(I,J,IZ)).LT.DTOL) A(I,J,IZ) = D0
+          ENDDO
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Absolute_Overlap */
+      SUBROUTINE ABSOLUTE_OVERLAP(CMO,NBAS,NVEC,ISEL,NSEL,
+     &                            CREF,NCOL,IREF,SMAT,AMAT,
+     &                            IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate overlap between vector set; 
+C     for readability report square of overlap
+C
+C     Written by T. Saue Oct 3 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+      DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
+     &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
+C.....Calculate overlap between reference and selected orbitals
+      CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NSEL,NSEL,
+     &         SMAT,NBAS,NBAS,1,IPQ,
+     &         AMAT,NSEL,NSEL,NZ,IPQ,
+     &         CREF(1,IREF,1),NBAS,NCOL,NZ,IPQ,
+     &         CMO(1,ISEL,1),NBAS,NVEC,NZ,IPQ,
+     &         WORK(KFREE),LFREE,IPRINT)
+      DO J = 1, NSEL
+        DO I = 1,NSEL
+           AMAT(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1, NSEL
+          DO I = 1,NSEL
+             AMAT(I,J,1) = AMAT(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+

@@ -1,0 +1,60 @@
+**DIRAC
+.TITLE
+  Li+ to Li
+.WAVE F
+.ANALYZE
+.4INDEX
+**INTEGRALS
+.PRINT
+1
+.NUCMOD
+2
+*READIN
+!.UNCONTRACTED
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+.HSFS
+*SCF
+.EVCCNV
+1.0E-10
+.CNVINT
+0.01 0.0001
+.CLOSED SHELL
+2
+*HSFS
+#.PRINT
+#1
+.CONV
+9
+.METHOD
+csd
+csv
+.END
+.INPUT
+ Li+ to Li; DIRAC-HSFS-CCSD; STO-2G contr. basis set, no frozen, 2s2p act.space
+  3 80 09  4  2  0  0  0  0  0  0  0  0  0  0  0  0  0  7
+  5
+hvvvv
+  4
+  3  1  1  0
+  0  0  0  0
+9 0 0 0
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all   
+**MOLTRA
+# no spinors frozen
+.ACTIVE
+energy -1000.0  1000.0  1.0
+*END OF
+
+ # active shells for injection of elektron : 2s2p
+ &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F  &END
+ &CCENER  NTOL=9  &END
+ &CCFSPC MAXIT=50, NACTH=0,0,  NACTP=4,4,  FSSECT=1,1,0,0,0,0  &END
+

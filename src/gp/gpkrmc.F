@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -491,6 +491,9 @@ C       ... write
         CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
         REWIND LUNIT
       ELSE
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*)' matrix to be read from file with label ',LABEL
+        END IF
 C       ... read from file
         REWIND LUNIT
         CALL MOLLAB(LABEL,LUNIT,LUPRI)
@@ -1294,19 +1297,19 @@ C
 C
 C
       IF (IPROPT .GE. 10) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) I, IFSMO, IOBTYP, IDXG2U, IDXG2E'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) I, IFSMO, IOBTYP, IDXG2U, IDXG2E'
          DO I = 1, NORBT
             WRITE(LUPRI,'(8X,I6,I7,I8,2I12)')
      &           I, IFSMO(I), IOBTYP(I), IDXG2U(I), IDXG2E(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) E and IDXE2G'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) E and IDXE2G'
          DO I = 1, NESHT
             WRITE(LUPRI,'(8X,I6,I11)') I, IDXE2G(I)
          END DO
-         WRITE(LUPRI,'(1X,A)')
-     &        '(SETDCBIDX) U and IDXU2G'
+         WRITE(LUPRI,'(A)')
+     &        ' (SETDCBIDX) U and IDXU2G'
          DO I = 1, NASHT
             WRITE(LUPRI,'(8X,I6,I11)') I, IDXU2G(I)
          END DO

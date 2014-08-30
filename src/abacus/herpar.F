@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,13 +75,16 @@ C      30 - Send batch to node.
 C      40 - Receive final results from nodes.
 C      50 - Get timing results from nodes.
 C
-C
 C           ITYPE  - Calc. type: 2 = expectation values.
-C                                3 = fock matrices.
+C                                3 = direct SCF (AO-basis)
+C                                4 = (rs|**)-distributions
 C                               -5 = Integrals derivated with respect
 C                                    to magnetic field.
+C                                7 = direct CC (DALTON)
 C                                8 = Fock matrices derivated with respect
 C                                    to atomic coordinates.
+C                                9 = direct SCF (SO-basis)
+C
 C           NTASK  - Number of tasks
 C           IPRPAR - Print level during parallelization.
 C           MAXDIF -
@@ -135,7 +138,6 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
-C
 C     Ensure that NODES .LE. MAXNOD
 C
       IF (NODES .GT. MAXNOD) THEN
@@ -148,13 +150,6 @@ C
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
       ENDIF
-      IF(ITYPE.EQ.7) THEN
-        KWORK = 1
-        KFREE = KWORK
-        LFREE = LWORK
-        TIMING = .FALSE.
-        GOTO 10
-      ENDIF
 C
 C     Take calculation time of each IJ pair?
 C
@@ -162,7 +157,6 @@ C
 C
 C     Determine total number of tasks - MTOTTK.
       CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
-
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -228,37 +222,28 @@ C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
- 10   CONTINUE
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
-!     write(6,*)'master has been here',master
-
-
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
-!     write(6,*)'master has been here again',master
-
+C.....Get results from nodes
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
-!     write(6,*)'master has been here again #3',master
-
 C
 C--------------------------------------
-C     Receive final results from nodes.
 C     Release nodes from this task
-C      and let them return to main menu.
+C     and let them return to main menu.
 C--------------------------------------
 C
       ITASK = - 1
-!     call quit('bla bla')
       CALL DIRAC_PARCTL( -1 )
 C
 C-----------------------------------------
@@ -368,7 +353,6 @@ C
 C     Print the index array.
 C
       IF (IPRPAR .GE. 10) THEN
-C     IF (.TRUE.) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
@@ -739,6 +723,15 @@ C  /* Deck rvres */
       SUBROUTINE RVRES(WORK,FMAT,ITYPE,MTOTTK,NREQUI,
      &                 NUMGRA,NUMHES,MAXDIF,TIMES,DINTSKP,LDINTSKP)
 C
+C           ITYPE  - Calc. type: 2 = expectation values.
+C                                3 = direct SCF (AO-basis)
+C                                4 = (rs|**)-distributions
+C                               -5 = Integrals derivated with respect
+C                                    to magnetic field.
+C                                7 = direct CC (DALTON)
+C                                8 = Fock matrices derivated with respect
+C                                    to atomic coordinates.
+C                                9 = direct SCF (SO-basis)
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
 C   MI: Added TEC changes....
@@ -785,13 +778,12 @@ C
       DO 100 I = 1,NODES
 C
 #if defined (VAR_MPI)
-         CAll interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
+         CALL interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
      &                 global_communicator,ISTAT)
 C
          ICOUNT = ICOUNT + ITASK
 C
          NWHO = ISTAT(df_MPI_SOURCE)
-!        write(6,*)'NWHO is',NWHO,mytid
 
 C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
@@ -1072,8 +1064,6 @@ C
 C
       PARHER = .TRUE.
 C
-      FINISH = .FALSE.
-C
       CALL DZERO(DINTSKP,3*3*14)
 C
  100  CONTINUE
@@ -1237,6 +1227,7 @@ C
 #if defined (VAR_MPI)
 
       CAll interface_mpi_BCAST(NMLINE,1,MPARID,global_communicator)
+      FINISH = .FALSE.
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
@@ -1895,6 +1886,16 @@ C  /* Deck sdres */
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
      &                 DINTSKP,INDEX,TIMES)
 C
+C           ITYPE  - Calc. type: 2 = expectation values.
+C                                3 = direct SCF (AO-basis)
+C                                4 = (rs|**)-distributions
+C                               -5 = Integrals derivated with respect
+C                                    to magnetic field.
+C                                7 = direct CC (DALTON)
+C                                8 = Fock matrices derivated with respect
+C                                    to atomic coordinates.
+C                                9 = direct SCF (SO-basis)
+C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
 CMi TECs changes for LAO
@@ -1919,23 +1920,6 @@ C
 #if defined (VAR_MPI)
       CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,
      &                 global_communicator)
-      IF(ITYPE.EQ.7) THEN
-!        radovan: this looks like unused code
-         CAll interface_mpi_SEND(ELCTRN,1,MPARID,40,
-     &                 global_communicator)
-         CAll interface_mpi_SEND(ERGDRC,1,MPARID,40,
-     &                 global_communicator)
-         CAll interface_mpi_SEND(ERGVWN,1,MPARID,40,
-     &                 global_communicator)
-         CAll interface_mpi_SEND(ERGBCK,1,MPARID,40,
-     &                 global_communicator)
-         CAll interface_mpi_SEND(ERGLYP,1,MPARID,40,
-     &                 global_communicator)
-         CAll interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
-     &                 global_communicator)
-         RETURN
-      ENDIF
-
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
          CAll interface_mpi_send_r1_work_f77(DINTSKP,8,MPARID,40,
      &                 global_communicator)
@@ -2185,8 +2169,6 @@ C
 C
          ICA    = LCLASH(ISHELA)
          NCENTA = NCNTSH(ISHELA)
-
-
 C
 C        ******************************
 C        ***** Second Shell Index *****

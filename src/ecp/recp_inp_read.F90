@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -653,59 +653,6 @@ SUBROUTINE RECP_INP_MENU
      CALL QUIT('Wrong input')
   9900 CONTINUE 
 END SUBROUTINE RECP_INP_MENU
-
-
-! From read2
-SUBROUTINE RECP_INP_NUCREP( ic,nc,chg,x,y,z )
-! # calculate the nuclear repulsion energy.
-#include "inc_mxvalue.h"
-#include "inc_print.h"
-! global variables 
-  integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
-  common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
-  INTEGER ic, nc(*), chg(*)  !ic->I_CENT
-  REAL*8  x(mcu,*), y(mcu,*), z(mcu,*)
-! local variables 
-  INTEGER I_SYM, J_SYM,temp
-  INTEGER J_CENT, N_J_CENT  !(Number of) J'th atomic center
-  REAL*8  NUCREP  ! nuclear repulsion
-  REAL*8  CHGPRD  ! charge product
-
-  NUCREP = 0.0d0 
-  DO I_SYM = 1, ns  !number of symmetry?
-    ic = nc(I_SYM)
-    temp = (ic) * chg(I_SYM)
-!   # rearrangement theorem eliminates the ic loop in favor
-!   # of the overall (ic) factor.
-    DO J_SYM = 1, I_SYM
-      CHGPRD = temp * chg(J_SYM)
-      if ( J_SYM .eq. I_SYM ) then
-!       # repulsions within a set are double-counted, so
-!       # compensate with a factor of 1/2.
-        CHGPRD = 0.5d0 * CHGPRD
-!       # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
-        N_J_CENT = nc(J_SYM) - 1
-      else
-        N_J_CENT = nc(J_SYM)
-      endif
-!     ---------------------------------------------------------
-!
-!                  |    ic * chg(I_SYM) * chg(J_SYM)          |
-!     NUCREP = SUM | ---------------------------------------- |
-!                  | { (x-x0)^2 + (y-y0)^2 + (z-z0)^2 }^(1/2) |
-!
-!     ---------------------------------------------------------
-      DO J_CENT = 1, N_J_CENT
-        NUCREP = NUCREP  & 
-               + CHGPRD / sqrt( (x(ic,I_SYM)-x(J_CENT,J_SYM))**2  &
-                              + (y(ic,I_SYM)-y(J_CENT,J_SYM))**2  &
-                              + (z(ic,I_SYM)-z(J_CENT,J_SYM))**2 )
-      ENDDO
-    ENDDO
-  ENDDO
-
-  IF (PRINT_LEVEL.GE.2) WRITE(RECP_OUT,'(/,a,f14.8)')' * nuclear repulsion energy', NUCREP
-END SUBROUTINE RECP_INP_NUCREP
 
 
 SUBROUTINE RECP_INP_PRINTCSO(is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,zcr,ccr,mtype,lblsh)

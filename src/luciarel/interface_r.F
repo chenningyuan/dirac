@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1334,6 +1334,7 @@ C
 !     NTESTL = 5000
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT/1000)
+      NTEST = 0
  
 !     constant
       is_zero = 0
@@ -1412,10 +1413,11 @@ C     NOINT_FILE = .TRUE.
         end if
         ITPSV = 0
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1) 
-     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
+          if (NTEST.ge.1)then
+            write(LUINGR,'(A)') 'INTEGRAL FILE'
             call dump_integral_info(f1,f2,IRI,nasht/2,NASHT,nz,
      &                              irilp,ipqtoq(1,0),luingr)
+          end if
         end if
 
  
@@ -1909,8 +1911,10 @@ C    &             ' at ',ICOUNT_I8
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):
+!#ifdef BLUBB
                             IF(.NOT. NOINT_FILE )
      &                         write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
+!#endif
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
@@ -1921,6 +1925,13 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
+
+#ifdef DMRG_DEBUG
+!                           DMRG DEBUG: no 2e-ints...
+                            if(icnt > 2) T(ICOUNT_I8) = 0.0d0
+!                           DMRG DEBUG: no 2e-ints...
+#endif
+
                               if (NTEST.ge.2) then
                                 write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)') 
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2012 by the authors of DIRAC.
+!      Copyright (c) 2013 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2104,17 +2104,17 @@ C     Get correct column ordering
 C     ===========================
 C 
       CALL IZERO(IBEIG2,NORBT)
+      NDIM = NTBAS(0)*NORBT*4
 C     ... only if coefficients are read from DFCOEF
-      IF(IREADMO .eq. 2)THEN
-        CALL INDEXX(NORBT,EIG1,IBUF)
-C       Sort eigenvalues (and boson irrep info) 
-C                         ^ this is not done here - SK - April 2010
-        DO J = 1,NORBT
-          EIG2(J) = EIG1(IBUF(J))
-          CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
-        ENDDO
+      IF(IREADMO.EQ.2) THEN
+C.......if more than one fermion ircop merge orbital classes
+        IF(NFSYM.EQ.2) THEN
+          CALL ACMOU3(EIG1,CMO1,EIG2,CMO2,NTBAS(0),NORBT,IBUF,IDUM)
+        ELSE
+          CALL DCOPY(NDIM,CMO1,1,CMO2,1)   
+          CALL DCOPY(NORBT,EIG1,1,EIG2,1)
+        ENDIF
       ELSE
-        NDIM = NTBAS(0)*NORBT*4
         CALL DCOPY(NDIM,CMO1,1,CMO2,1)
         CALL DZERO(EIG2,NORBT)
         IF(MCORB) CALL DCOPY(NORBT,EIG1,1,EIG2,1)
@@ -2189,18 +2189,93 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou3 */
-      SUBROUTINE ACMOU3(CMO1,CMO2,J1,J2,NBAS,NORB)
+      SUBROUTINE ACMOU3(EIG1,CMO1,EIG2,CMO2,NR,NC,IBUF,IOFF)
 C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION CMO1(NBAS,NORB,4),CMO2(NBAS,NORB,4)
 C
-      DO IZ = 1,4
-        CALL DCOPY(NBAS,CMO1(1,J1,IZ),1,CMO2(1,J2,IZ),1)        
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+      DIMENSION CMO1(NR,NC,NZC1),CMO2(NR,NC,NZC1),
+     &          EIG1(NC),EIG2(NC),IBUF(*),IOFF(*)     
+C     Initialize offsets; they will be updated inside ACMOU4
+      IOFF(1) = 0
+      IOFF(2) = NORB(1) 
+      JOFF    = 0
+C.....Negative-energy solutions
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NPSH,IOFF,
+     &            JOFF,NFSYM,NR,NC,NZC1,IBUF)
+C.....Inactive orbitals      
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NISH,IOFF,JOFF,
+     &            NFSYM,NR,NC,NZC1,IBUF)
+C.....Active orbitals
+      DO IOPEN = 1,NOPEN
+        CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NACSH(1,IOPEN),IOFF,JOFF,
+     &              NFSYM,NR,NC,NZC1,IBUF)
       ENDDO
+C.....Virtual orbitals
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NSSH,IOFF,JOFF,
+     &            NFSYM,NR,NC,NZC1,IBUF)
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck acmou4 */
+      SUBROUTINE ACMOU4(CMO1,EIG1,CMO2,EIG2,NVEC,IVEC,JVEC,
+     &                  NFSYM,NBAS,NORB,NZC1,IBUF)
+C***********************************************************************
+C
+C     Merge orbital coefficients/energies from different fermion ircops
+C     of the same orbital class and order them by energy
+C
+C     Written by T. Saue in Nha Trang Aug 29 3014
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: NFSYM,NBAS,NORB,NZC1,NVEC(NFSYM)
+      real(8), intent(in)   :: EIG1(NORB),CMO1(NBAS,NORB,NZC1)
+      integer, intent(inout):: IVEC(NFSYM),IBUF(NORB),JVEC
+      real(8), intent(out)  :: EIG2(NORB),CMO2(NBAS,NORB,NZC1)
+      integer, allocatable  :: IND(:)
+      real(8), allocatable  :: BUF(:)
+      integer               :: NVECT,IFRP,I,II,JJ,IZ
+C     Find total number of orbitals in this class
+      NVECT = 0
+      DO IFRP = 1,NFSYM
+        NVECT = NVECT + NVEC(IFRP)
+      ENDDO
+      IF(NVECT.EQ.0) RETURN
+C     Merge orbital eigenvalues into buffer
+      ALLOCATE(IND(NVECT))
+      ALLOCATE(BUF(NVECT))
+      II = 0
+      DO IFRP = 1,NFSYM
+        DO I = 1,NVEC(IFRP)
+          II = II + 1
+          IND(II) = IVEC(IFRP)+I
+          BUF(II) = EIG1(IVEC(IFRP)+I)
+        ENDDO
+      ENDDO
+C     Merge/Sort on energy
+      CALL INDEXX(NVECT,BUF,IBUF)
+      DO I = 1, NVECT
+        JJ = I + JVEC
+        II = IND(IBUF(I))
+        EIG2(JJ) = EIG1(II)
+        DO IZ = 1,NZC1
+          CALL DCOPY(NBAS,CMO1(1,II,IZ),1,CMO2(1,JJ,IZ),1)        
+        ENDDO
+      ENDDO
+      DO IFRP = 1,NFSYM
+        IVEC(IFRP) = IVEC(IFRP) + NVEC(IFRP)
+      ENDDO       
+      JVEC = JVEC + NVECT
+      DEALLOCATE(IND)
+      DEALLOCATE(BUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2654,7 +2729,7 @@ C
       DIMENSION CMO(*),EIG(*),IBEIG(*)
       logical, intent(in) :: read_mcscf
       logical             :: mcorb, mjava, boson_irrep_info
-      logical             :: fndlab
+      logical             :: fndlab, mcci_natorb
 
 C     Get coefficients from KRMCSCF/DFCOEF
 C     ====================================
@@ -2663,6 +2738,8 @@ C     ====================================
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
         REWIND LUKRMC
         MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        REWIND LUKRMC
+        MCORB = .not.FNDLAB('NEWNATOB',LUKRMC)
         REWIND LUKRMC
         MJAVA = FNDLAB('MJVEC   ',LUKRMC)
 
@@ -2681,15 +2758,38 @@ C     ====================================
 
 !       read mcscf /natural orbitals
         IF(MCORB)THEN
+          WRITE(LUPRI,'(/A)')
+     &         ' (PSTOR1) Read orbitals from' //
+     &                 ' label NEWORB on file KRMCSCF'
           JRDMO = -1
           CALL RREADMO(CMO,JRDMO,1,LUKRMC)
 !         ... set to zero
           CALL DZERO(EIG,NORBT)
         ELSE
-!         read CI/MCSCF natural orbitals and occupancies
-          JRDMO = -1
-          CALL RREADMO(CMO,JRDMO,4,LUKRMC)
-          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          REWIND LUKRMC
+          mcci_natorb = .false.
+          if(FNDLAB('MCCINATO',LUKRMC))then
+            WRITE(LUPRI,'(/A)')
+     &           ' (PSTOR1) Read orbitals from' //
+     &                   ' label MCCINATO on file KRMCSCF'
+!           read CI/MCSCF natural orbitals and occupancies
+            REWIND LUKRMC
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,4,LUKRMC)
+            CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+            mcci_natorb = .true.
+          else
+            WRITE(LUPRI,'(/A)')
+     &           ' (PSTOR1) Read orbitals from' //
+     &                   ' label NEWNATOB on file KRMCSCF'
+!           read MP2 natural orbitals and occupancies
+            JRDMO = -1
+            REWIND LUKRMC
+            CALL RREADMO(CMO,JRDMO,3,LUKRMC)
+            CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+!           ... set to zero
+!           CALL DZERO(EIG,NORBT)
+          end if
         END IF
 
 !       remove old MCSCF - we write a new one as this reordering step requires 
@@ -2731,8 +2831,13 @@ C
         if(mcorb)then
           CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         else
-          CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
-          CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          if(mcci_natorb)then
+            CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+            CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+          else
+            CALL WRTKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
+            CALL WRTKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+          end if
         end if
         close(LUKRMC,status='keep')
       else
@@ -2833,7 +2938,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,TOTERG_DEF
       CHARACTER FRAGFIL(NFRAG)*6
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2843,6 +2948,8 @@ C
 !     flag for MCSCF coefficents present on fragment/molecular
 !     coefficients file
       CMCSCF_MAGIC = 137.0D0
+!miro: initialization
+      TOTERG_DEF=.FALSE.
 C
 C.....loop over fragments
       INUC  = 1
@@ -2880,6 +2987,7 @@ C.......Fragment orbitals in molecular basis
 !         check for MCSCF coefficients on fragment/molecule file
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
      &                TOTERG,-1,WORK,KFREE,LFREE)
+          TOTERG_DEF=.TRUE. ! miro: yes, we have the TOTERG value
 !
 !         set local IOPT_TMP
           IOPT_TMP = IOPT
@@ -2929,8 +3037,13 @@ C       Select boson irrep information
 !
 !     reset IOPT flag for extra printout in ANAPR1 and proper handling 
 !     of the occupation vector.
-      IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
+      IF (TOTERG_DEF) THEN
+        IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
      &    IOPT = IOPT_TMP
+      ELSE ! miro: TOTERG not defined
+        IF(FRAGFIL(NFRAG).eq.'DFCOEF') 
+     &    IOPT = IOPT_TMP
+      ENDIF
       
       RETURN
 C
@@ -3368,24 +3481,10 @@ C       ---------------------------------------------------
 C.........these factors assure the correct normalized linear
 C.........combination of L and (L-2) for the modified solid harmonic
           L = LL - 1
-
-          ARGSQRT = (D2*dble(L)+D1)*(D2*dble(L)-D1)
-
-          IF (IPRINT.GE.8) THEN
-           write(lupri,*) 'L,dble(L)=',L,dble(L)
-           write(lupri,*) 'ARGSQRT=',ARGSQRT
-           CALL FLSHFO(LUPRI) 
-          ENDIF
-
-CMI       FACL   = D1/SQRT((D2*dble(L)+D1)*(D2*dble(L)-D1))
-          IF (ARGSQRT.GT.D0) THEN
-            FACL   = D1/SQRT(ARGSQRT)
+          IF(L.GT.0) THEN
+            FACL=D1/SQRT((D2*dble(L)+D1)*(D2*dble(L)-D1))
           ELSE
             FACL   = D0
-            IF (IPRINT.GE.2) THEN
-             WRITE(LUPRI,'(2X,A,D12.6)') 'RKBCA1: warning, ARGSQRT=',
-     &       ARGSQRT
-            ENDIF
           ENDIF
           FACLM2 = -D2*(D2*dble(L)-D1)*FACL
         ENDIF
@@ -3626,6 +3725,10 @@ C
       CALL READI(LUCOEF,NORBT,IBEIG2)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
+
+!miro: assign IPRINT from dcbgen.h
+      IPRINT = IPRGEN
+
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'
@@ -4278,105 +4381,11 @@ C.....Approximate eigenvalue of UKB complement
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LABCOUNT(N,LIST,NBAS,ILAB,I1,I2,I3,I4)
-C***********************************************************************
-C
-C     Do statistics or make pointers using basis function labels
-C
-C     ILAB = 1: A)AO-labels
-C     ---------------------------------------------------------------------
-C     I1   ICLS  - Basis set class: large(1), small(2) ..
-C     I2   ICENT - index of center in list of symmetry-independent centers
-C     I3   IDEG  - for given symmetry-independent center, index of degeneracy
-C     I4   ITYP  - basis function type, e.g. s, px, dxy etc.
-C
-C     ILAB = 2: SO-labels
-C     ---------------------------------------------------------------------
-C     I1   IC    - Basis set class: large(1), small(2) ....
-C     I2   ICENT - index of center in list of symmetry-independent centers
-C     I3   IRP   - index of boson irrep
-C     I4   ITYP  - basis function type, e.g. s, px, dxy
-C
-C     T. Saue Mar 31 2011
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxorb.h"
-#include "dcblab.h"
-#include "dcbibt.h"
-      DIMENSION LIST(NBAS)
-C
-C.....Initialize index array
-      CALL ICOPY(NBAS,1,0,LIST,1)
-C.....If active, search first value
-      IF(I1.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = IGET(ITEMP)
-          IF(IVAL.NE.I1) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search second value
-      IF(I2.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = JGET(ITEMP)
-          IF(IVAL.NE.I2) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search third value
-      IF(I3.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = KGET(ITEMP)
-          IF(IVAL.NE.I3) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C.....If active, search third value
-      IF(I4.GT.0) THEN
-        N=0
-        DO I = 1,NBAS
-        IF(LIST(I).GT.0) THEN
-          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
-          IVAL  = LGET(ITEMP)
-          IF(IVAL.NE.I4) THEN
-            LIST(I)=-1
-          ELSE
-            N=N+1
-          ENDIF
-        ENDIF
-        ENDDO
-      ENDIF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
 C***********************************************************************
 C     
-C     Which shell does electron orbital IORBITAL belong to?
+C     Which open shell does electron orbital IORBITAL belong to?
 C
 C     Written by J. Thyssen - Feb 11 1999
 C     
@@ -4384,11 +4393,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
       IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN(neg)')
+     &   CALL QUIT('illegal value in GETIOPEN (≤0)')
+      IF (IFRP .GT. NFSYM)
+     &   CALL QUIT('illegal fermion symmetry in GETIOPEN')
 C
       IF (IORBITAL .LE. NISH(IFRP)) THEN
          GETIOPEN = 0
@@ -4406,7 +4418,7 @@ C
          ILOW = IHIGH+1
       ENDIF
       END DO
-      CALL QUIT('illegal value in GETIOPEN(pos)')
+      CALL QUIT('illegal value in GETIOPEN (unoccupied orbital)')
       RETURN
       END
 
@@ -4603,4 +4615,51 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,ifsym,
+     &                              nboson_orb,nz)
+      implicit none
+      real(8), intent(inout) :: tmat(nrow,ncol,nz)
+      real(8), intent(inout) :: vmat(nrow,ncol,nz)
+      integer, intent(in)    :: nrow
+      integer, intent(in)    :: ncol
+      integer, intent(in)    :: nz
+      integer, intent(in)    :: nboson_orb(4,2,0:2)
+      integer, intent(in)    :: ifsym
+      integer                :: i, j, k, l, nv
+      integer                :: nsym
+      integer                :: nvec(2)
+      integer                :: ioff(2)
+      integer                :: isum
+
+      call dzero(tmat,nrow*ncol*nz)
+      call izero(nvec,2)
+      call izero(ioff,2)
+
+      nsym = 4 / nz ! # of boson irreps in gerade/ungerade
+
+      ioff(1) = 0
+      ioff(2) = isum(nsym,nboson_orb(1,ifsym,1),1)
+
+      nv      = 0
+
+      do j = 1, nsym
+        do k = 2,1,-1
+          do l = 1, nboson_orb(j,ifsym,k)
+            nv = nv + 1
+            do i = 1, nz
+!                        copy from p1 p2 p3 p4 n1 n2 n3 n4 order (vmat)
+!                        copy to   n1 p1 n2 p2 n3 p3 n4 p4 order (tmat)
+!                        where n == negative energy shell
+!                        where p == positive energy shell
+!                        and   "1", "2", ... refer to boson irreps
+              call dcopy(nrow,
+     &                   vmat(1,ioff(k)+nvec(k)+l,i),1,
+     &                   tmat(1,nv,i),1)
+            end do
+          end do
+          nvec(k) = nvec(k) + nboson_orb(j,ifsym,k)
+        end do
+      end do
+      end
 
