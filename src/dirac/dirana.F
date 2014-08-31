@@ -1397,7 +1397,6 @@ C
      &              TOTERG,14,WORK,KFREE,LFREE)
 
         DO IFRP = 1,NFSYM
-
           CALL PRJPHA(IREFADJ(IFRP),IFRP,
      &                WORK(KCMO+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
      &                WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),
@@ -4206,8 +4205,7 @@ c     to mo basis
       deallocate( Pao )
       call purify(P,norbt,nz,1.0D-8)
       end
-
-
+C
       subroutine purify(P,n,mz,thres)
 c     purify quaternion matrix P by setting eigenvalues > thres to 1 and
 c     eigenvalues <= thres to 0.
