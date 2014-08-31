@@ -21,15 +21,16 @@ f.add(from_string = '* Total gross contributions',
       rel_tolerance   = 1.0e-4)
 
 test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'DFHAT1')
-shutil.copy('DFACMO', 'DFHAT2')
-shutil.copy('DFACMO', 'DFHAT3')
-shutil.copy('DFACMO', 'DFHAT4')
+shutil.copy('DFACMO', 'AFH1XX')
+shutil.copy('DFACMO', 'AFH2XX')
+shutil.copy('DFACMO', 'AFH3XX')
+shutil.copy('DFACMO', 'AFH4XX')
 
 test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'DFCAT')
+shutil.copy('DFACMO', 'AFCXXX')
 
-test.run(['CH4.inp'], ['CH4.mol'], f, args='--copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"')
+#test.run(['CH4.inp'], ['CH4.xyz'], f, args='--copy="AFCXXX AFH1XX AFH2XX AFH3XX AFH4XX"')
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--copy="AF*"')
 
 # cleanup
 os.unlink('DFACMO')

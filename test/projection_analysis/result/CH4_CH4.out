@@ -185,7 +185,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Aug 31 02:26:02 2014
+     Date and time (Linux)  : Sun Aug 31 02:40:29 2014
      Host name              : not found                               
 
 
@@ -201,6 +201,9 @@ Projection analysis for CH4
 .LVCORR                                                                                             
 .PRINT                                                                                              
 1                                                                                                   
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.CONTRACT                                                                                           
 **WAVE FUNCTIONS                                                                                    
 .SCF                                                                                                
 *SCF                                                                                                
@@ -213,41 +216,42 @@ Projection analysis for CH4
 .OWNBAS                                                                                             
 .VECREF                                                                                             
 5                                                                                                   
-DFCAT                                                                                               
+AFCXXX                                                                                              
 1                                                                                                   
 1..5                                                                                                
-DFHAT1                                                                                              
+AFH1XX                                                                                              
 1                                                                                                   
 1                                                                                                   
-DFHAT2                                                                                              
+AFH2XX                                                                                              
 1                                                                                                   
 1                                                                                                   
-DFHAT3                                                                                              
+AFH3XX                                                                                              
 1                                                                                                   
 1                                                                                                   
-DFHAT4                                                                                              
+AFH4XX                                                                                              
 1                                                                                                   
 1                                                                                                   
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+ cc-pVDZ                                                                                            
+*SYMMETRY                                                                                           
+.NOSYM                                                                                              
 *END OF                                                                                             
 
 
 Contents of the molecule file
 -----------------------------
 
-INTGRL                                                                                              
+5                                                                                                   
 CH4 molecule                                                                                        
-Basis: cc-pVDZ                                                                                      
-C   2    0                                                                                          
-        6.    1                                                                                     
-C     0.00000000          0.00000000          0.00000000                                            
-LARGE BASIS cc-pVDZ                                                                                 
-        1.    4                                                                                     
-H     1.18486272          1.18486272          1.18486272                                            
-H    -1.18486272         -1.18486272          1.18486272                                            
-H     1.18486272         -1.18486272         -1.18486272                                            
-H    -1.18486272          1.18486272         -1.18486272                                            
-LARGE BASIS cc-pVDZ                                                                                 
-FINISH                                                                                              
+C      0.0000000000   0.0000000000   0.0000000000                                                   
+H      0.6270023464   0.6270023464   0.6270023464                                                   
+H     -0.6270023464  -0.6270023464   0.6270023464                                                   
+H      0.6270023464  -0.6270023464  -0.6270023464                                                   
+H     -0.6270023464   0.6270023464  -0.6270023464                                                   
+                                                                                                    
+                                                                                                    
 
 
     *************************************************************************
@@ -287,23 +291,26 @@ FINISH
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
 
 
     *************************************************************************
     ****************** Output from READIN input processing ******************
     *************************************************************************
 
-
-
-  Title Cards
-  -----------
-
-  CH4 molecule                                                            
-  Basis: cc-pVDZ                                                          
-
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
-
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
 
                           SYMGRP:Point group information
@@ -352,7 +359,7 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :     13.484875956018
+  QM-QM nuclear repulsion energy :     13.484875955768
 
 
 
@@ -400,23 +407,23 @@ Point group: C1
   Total number of coordinates: 15
 
 
-   1   C        x      0.0000000000
+   1   C z      x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   H        x      1.1848627200
+   4   H z      x      1.1848627200
    5            y      1.1848627200
    6            z      1.1848627200
 
-   7   H        x     -1.1848627200
+   7   H z      x     -1.1848627200
    8            y     -1.1848627200
    9            z      1.1848627200
 
-  10   H        x      1.1848627200
+  10   H z      x      1.1848627200
   11            y     -1.1848627200
   12            z     -1.1848627200
 
-  13   H        x     -1.1848627200
+  13   H z      x     -1.1848627200
   14            y      1.1848627200
   15            z     -1.1848627200
 
@@ -427,23 +434,23 @@ Point group: C1
 
     5
 
-C      0.0000000000   0.0000000000   0.0000000000
-H      0.6270023464   0.6270023464   0.6270023464
-H     -0.6270023464  -0.6270023464   0.6270023464
-H      0.6270023464  -0.6270023464  -0.6270023464
-H     -0.6270023464   0.6270023464  -0.6270023464
+C z    0.0000000000   0.0000000000   0.0000000000
+H z    0.6270023464   0.6270023464   0.6270023464
+H z   -0.6270023464  -0.6270023464   0.6270023464
+H z    0.6270023464  -0.6270023464  -0.6270023464
+H z   -0.6270023464   0.6270023464  -0.6270023464
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            C           H           H           H           H   
+            C z         H z         H z         H z         H z 
 
-   C       0.000000
-   H       1.086000    0.000000
-   H       1.086000    1.773430    0.000000
-   H       1.086000    1.773430    1.773430    0.000000
-   H       1.086000    1.773430    1.773430    1.773430    0.000000
+   C z     0.000000
+   H z     1.086000    0.000000
+   H z     1.086000    1.773430    0.000000
+   H z     1.086000    1.773430    1.773430    0.000000
+   H z     1.086000    1.773430    1.773430    1.773430    0.000000
 
 
 
@@ -453,10 +460,10 @@ H     -0.6270023464   0.6270023464  -0.6270023464
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
+  bond distance:    H z        C z                            1.086000
+  bond distance:    H z        C z                            1.086000
+  bond distance:    H z        C z                            1.086000
+  bond distance:    H z        C z                            1.086000
 
 
   Bond angles (degrees):
@@ -464,15 +471,15 @@ H     -0.6270023464   0.6270023464  -0.6270023464
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
+  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H z        C z        H z                  109.471
 
 
-  Nuclear repulsion energy :   13.484875956018
+  Nuclear repulsion energy :   13.484875955768
 
 
                                 GETLAB: AO-labels
@@ -617,7 +624,7 @@ H     -0.6270023464   0.6270023464  -0.6270023464
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
-   - contracted large component basis set
+   - uncontracted large component basis set
    - uncontracted small component basis set
 
 
@@ -686,20 +693,20 @@ H     -0.6270023464   0.6270023464  -0.6270023464
  * Fragments are calculated in their individual bases !
      The indexing of fragment spinor sets is assumed 
      to follow list of symmetry independent nuclei.
- * Fragment spinor set   1 --> C     
-  - read from file DFCAT 
+ * Fragment spinor set   1 --> C z   
+  - read from file AFCXXX
     - Orbitals in fermion ircop E1  :1..5                                                                    
- * Fragment spinor set   2 --> H     
-  - read from file DFHAT1
+ * Fragment spinor set   2 --> H z   
+  - read from file AFH1XX
     - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   3 --> H     
-  - read from file DFHAT2
+ * Fragment spinor set   3 --> H z   
+  - read from file AFH2XX
     - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   4 --> H     
-  - read from file DFHAT3
+ * Fragment spinor set   4 --> H z   
+  - read from file AFH3XX
     - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   5 --> H     
-  - read from file DFHAT4
+ * Fragment spinor set   5 --> H z   
+  - read from file AFH4XX
     - Orbitals in fermion ircop E1  :1                                                                       
  * Print level:    0
 ===========================================================================
@@ -768,129 +775,129 @@ Total no. of orbitals           (NORB):    68
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Sun Aug 31 02:26:02 2014
+########## START ITERATION NO.   1 ##########   Sun Aug 31 02:40:30 2014
 
 
 => Calculating sum of orbital energies
-It.    1    -10.12643971332      0.00D+00  0.00D+00  0.00D+00               0.03632000s   Scr. nuclei    Sun Aug 31
+It.    1    -10.12643971333      0.00D+00  0.00D+00  0.00D+00               0.03384400s   Scr. nuclei    Sun Aug 31
 
-########## START ITERATION NO.   2 ##########   Sun Aug 31 02:26:02 2014
+########## START ITERATION NO.   2 ##########   Sun Aug 31 02:40:30 2014
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.43%   0.21453901s
-SOfock:SL  1.00D-12    0.00%    6.94%    0.09%    2.00%   1.31861195s
->>> Total wall time: 1.62500000s
->>> Total CPU time : 1.64742100s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.48%   0.20031598s
+SOfock:SL  1.00D-12    0.00%    6.94%    0.09%    2.00%   1.22925797s
+>>> Total wall time: 1.50000000s
+>>> Total CPU time : 1.53983200s
 
-########## END ITERATION NO.   2 ##########   Sun Aug 31 02:26:02 2014
+########## END ITERATION NO.   2 ##########   Sun Aug 31 02:40:30 2014
 
-It.    2    -39.79617995158      2.97D+01  3.93D+00  1.43D+00               1.64742100s   LL SL          Sun Aug 31
+It.    2    -39.79617995157      2.97D+01  3.93D+00  1.43D+00               1.53983200s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   3 ##########   Sun Aug 31 02:26:04 2014
+########## START ITERATION NO.   3 ##########   Sun Aug 31 02:40:31 2014
 
     3 *** Differential density matrix. DCOVLP     = 0.5267
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.46%   0.21444595s
-SOfock:SL  1.00D-12    0.00%    7.35%    0.09%    2.66%   1.31397104s
->>> Total wall time: 1.56250000s
->>> Total CPU time : 1.56455200s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.34%   0.20272005s
+SOfock:SL  1.00D-12    0.00%    7.35%    0.09%    2.66%   1.22749591s
+>>> Total wall time: 1.50000000s
+>>> Total CPU time : 1.46368200s
 
-########## END ITERATION NO.   3 ##########   Sun Aug 31 02:26:04 2014
+########## END ITERATION NO.   3 ##########   Sun Aug 31 02:40:31 2014
 
-It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.56455200s   LL SL          Sun Aug 31
+It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.46368200s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   4 ##########   Sun Aug 31 02:26:05 2014
+########## START ITERATION NO.   4 ##########   Sun Aug 31 02:40:33 2014
 
     4 *** Differential density matrix. DCOVLP     = 1.1171
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.28%   0.21307588s
-SOfock:SL  1.00D-12    0.00%    7.76%    0.11%    3.85%   1.30331898s
->>> Total wall time: 1.56250000s
->>> Total CPU time : 1.55129700s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.20%   0.20532393s
+SOfock:SL  1.00D-12    0.00%    7.76%    0.11%    3.85%   1.22983074s
+>>> Total wall time: 1.50000000s
+>>> Total CPU time : 1.46787400s
 
-########## END ITERATION NO.   4 ##########   Sun Aug 31 02:26:05 2014
+########## END ITERATION NO.   4 ##########   Sun Aug 31 02:40:33 2014
 
-It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.55129700s   LL SL          Sun Aug 31
+It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.46787400s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   5 ##########   Sun Aug 31 02:26:07 2014
+########## START ITERATION NO.   5 ##########   Sun Aug 31 02:40:34 2014
 
     5 *** Differential density matrix. DCOVLP     = 1.0021
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.48%   0.21172380s
-SOfock:SL  1.00D-12    0.00%    9.06%    0.31%    6.17%   1.29252291s
->>> Total wall time: 1.56250000s
->>> Total CPU time : 1.53913300s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.03%    0.42%   0.19822407s
+SOfock:SL  1.00D-12    0.00%    9.06%    0.25%    6.17%   1.21372700s
+>>> Total wall time: 1.43750000s
+>>> Total CPU time : 1.44476700s
 
-########## END ITERATION NO.   5 ##########   Sun Aug 31 02:26:07 2014
+########## END ITERATION NO.   5 ##########   Sun Aug 31 02:40:34 2014
 
-It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.53913300s   LL SL          Sun Aug 31
+It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.44476700s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   6 ##########   Sun Aug 31 02:26:08 2014
+########## START ITERATION NO.   6 ##########   Sun Aug 31 02:40:36 2014
 
     6 *** Differential density matrix. DCOVLP     = 1.0013
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    1.18%   0.21135473s
-SOfock:SL  1.00D-12    0.00%   10.23%    0.59%    8.59%   1.29575109s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    1.43%   0.19844532s
+SOfock:SL  1.00D-12    0.00%   10.23%    0.59%    8.59%   1.21356773s
 >>> Total wall time: 1.50000000s
->>> Total CPU time : 1.54215500s
+>>> Total CPU time : 1.44497200s
 
-########## END ITERATION NO.   6 ##########   Sun Aug 31 02:26:08 2014
+########## END ITERATION NO.   6 ##########   Sun Aug 31 02:40:36 2014
 
-It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.54215500s   LL SL          Sun Aug 31
+It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.44497200s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   7 ##########   Sun Aug 31 02:26:10 2014
+########## START ITERATION NO.   7 ##########   Sun Aug 31 02:40:37 2014
 
     7 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    2.42%   0.21068859s
-SOfock:SL  1.00D-12    0.00%   12.99%    1.74%   11.32%   1.28226852s
->>> Total wall time: 1.56250000s
->>> Total CPU time : 1.52772500s
+SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    2.41%   0.19809294s
+SOfock:SL  1.00D-12    0.00%   12.99%    1.74%   11.32%   1.19933701s
+>>> Total wall time: 1.37500000s
+>>> Total CPU time : 1.43037300s
 
-########## END ITERATION NO.   7 ##########   Sun Aug 31 02:26:10 2014
+########## END ITERATION NO.   7 ##########   Sun Aug 31 02:40:37 2014
 
-It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.52772500s   LL SL          Sun Aug 31
+It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.43037300s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   8 ##########   Sun Aug 31 02:26:11 2014
+########## START ITERATION NO.   8 ##########   Sun Aug 31 02:40:38 2014
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.68%    0.06%    3.51%   0.21115971s
-SOfock:SL  1.00D-12    0.00%   17.01%    2.59%   15.11%   1.27356243s
->>> Total wall time: 1.56250000s
->>> Total CPU time : 1.51940400s
+SOfock:LL  1.00D-12    0.00%    4.68%    0.09%    3.38%   0.19749641s
+SOfock:SL  1.00D-12    0.00%   17.01%    2.64%   15.11%   1.19534206s
+>>> Total wall time: 1.43750000s
+>>> Total CPU time : 1.42598100s
 
-########## END ITERATION NO.   8 ##########   Sun Aug 31 02:26:11 2014
+########## END ITERATION NO.   8 ##########   Sun Aug 31 02:40:38 2014
 
-It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.51940400s   LL SL          Sun Aug 31
+It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.42598100s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.   9 ##########   Sun Aug 31 02:26:13 2014
+########## START ITERATION NO.   9 ##########   Sun Aug 31 02:40:40 2014
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    6.43%    0.40%    8.18%   0.21039772s
-SOfock:SL  1.00D-12    0.00%   31.76%    2.02%   24.44%   1.23073483s
->>> Total wall time: 1.43750000s
->>> Total CPU time : 1.47607200s
+SOfock:LL  1.00D-12    0.00%    6.43%    0.40%    8.17%   0.19800949s
+SOfock:SL  1.00D-12    0.00%   31.76%    2.02%   24.44%   1.16575050s
+>>> Total wall time: 1.37500000s
+>>> Total CPU time : 1.39688100s
 
-########## END ITERATION NO.   9 ##########   Sun Aug 31 02:26:13 2014
+########## END ITERATION NO.   9 ##########   Sun Aug 31 02:40:40 2014
 
-It.    9    -40.21457946463      1.57D-12  6.72D-07  2.25D-07   DIIS   8    1.47607200s   LL SL          Sun Aug 31
+It.    9    -40.21457946463      1.76D-12  6.72D-07  2.25D-07   DIIS   8    1.39688100s   LL SL          Sun Aug 31
 
-########## START ITERATION NO.  10 ##########   Sun Aug 31 02:26:14 2014
+########## START ITERATION NO.  10 ##########   Sun Aug 31 02:40:41 2014
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.83%   13.03%    2.43%    9.12%   0.20909500s
-SOfock:SL  1.00D-12    0.09%   51.44%    0.90%   31.67%   1.18574715s
->>> Total wall time: 1.43750000s
->>> Total CPU time : 1.42096900s
+SOfock:LL  1.00D-12    0.83%   13.03%    2.43%    9.12%   0.19703484s
+SOfock:SL  1.00D-12    0.09%   51.43%    0.91%   31.67%   1.11903381s
+>>> Total wall time: 1.37500000s
+>>> Total CPU time : 1.34919300s
 
-########## END ITERATION NO.  10 ##########   Sun Aug 31 02:26:14 2014
+########## END ITERATION NO.  10 ##########   Sun Aug 31 02:40:41 2014
 
-It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42096900s   LL SL          Sun Aug 31
+It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34919300s   LL SL          Sun Aug 31
 
 
                                    SCF - CYCLE
@@ -906,34 +913,34 @@ It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -10.12643971332      0.00D+00  0.00D+00  0.00D+00               0.03632000s   Scr. nuclei    Sun Aug 31
-It.    2    -39.79617995158      2.97D+01  3.93D+00  1.43D+00               1.64742100s   LL SL          Sun Aug 31
-It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.56455200s   LL SL          Sun Aug 31
-It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.55129700s   LL SL          Sun Aug 31
-It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.53913300s   LL SL          Sun Aug 31
-It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.54215500s   LL SL          Sun Aug 31
-It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.52772500s   LL SL          Sun Aug 31
-It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.51940400s   LL SL          Sun Aug 31
-It.    9    -40.21457946463      1.57D-12  6.72D-07  2.25D-07   DIIS   8    1.47607200s   LL SL          Sun Aug 31
-It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42096900s   LL SL          Sun Aug 31
+It.    1    -10.12643971333      0.00D+00  0.00D+00  0.00D+00               0.03384400s   Scr. nuclei    Sun Aug 31
+It.    2    -39.79617995157      2.97D+01  3.93D+00  1.43D+00               1.53983200s   LL SL          Sun Aug 31
+It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.46368200s   LL SL          Sun Aug 31
+It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.46787400s   LL SL          Sun Aug 31
+It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.44476700s   LL SL          Sun Aug 31
+It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.44497200s   LL SL          Sun Aug 31
+It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.43037300s   LL SL          Sun Aug 31
+It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.42598100s   LL SL          Sun Aug 31
+It.    9    -40.21457946463      1.76D-12  6.72D-07  2.25D-07   DIIS   8    1.39688100s   LL SL          Sun Aug 31
+It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34919300s   LL SL          Sun Aug 31
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.06250000s
-      LL SL        :    1.53472222s
+      No 2-ints    :    0.00000000s
+      LL SL        :    1.44444444s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -53.699455446296746
+   Electronic energy                        :    -53.699455446046358
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :     13.484875956018481
+   Nuclear repulsion energy                 :     13.484875955767818
    SS Coulombic correction                  :      0.000000025640706
 
    Sum of all contributions to the energy
-   Total energy                             :    -40.214579464637559
+   Total energy                             :    -40.214579464637836
 
 
                                    Eigenvalues
@@ -942,12 +949,12 @@ It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--11.22095824834832  ( 2)    -0.94407936780691  ( 2)    -0.54361205885558  ( 2)    -0.54343699253729  ( 4)
+-11.22095824834105  ( 2)    -0.94407936779758  ( 2)    -0.54361205884357  ( 2)    -0.54343699253987  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  0.19333082778625  ( 2)     0.27460026238616  ( 2)     0.27467319529602  ( 4)     0.58921605578610  ( 2)     0.58925112291433  ( 4)
-  0.89082608806058  ( 2)     0.89115553792251  ( 4)     0.93820468131528  ( 2)     1.13212267926955  ( 4)     1.25694134765087  ( 2)
-  1.68906145283810  ( 2)     1.68907972264631  ( 4)     1.89745688165304  ( 2)     1.89746080474470  ( 4)     2.21485553833103  ( 2)
-  2.21486100616789  ( 4)     2.54978087523486  ( 4)     2.76034107122544  ( 2)     2.80229106824418  ( 2)     2.80281601758312  ( 4)
+  0.19333082778788  ( 2)     0.27460026237616  ( 2)     0.27467319529542  ( 4)     0.58921605579350  ( 2)     0.58925112291307  ( 4)
+  0.89082608804486  ( 2)     0.89115553792020  ( 4)     0.93820468129489  ( 2)     1.13212267925661  ( 4)     1.25694134764679  ( 2)
+  1.68906145282322  ( 2)     1.68907972261945  ( 4)     1.89745688164687  ( 2)     1.89746080472766  ( 4)     2.21485553831239  ( 2)
+  2.21486100616552  ( 4)     2.54978087522422  ( 4)     2.76034107115294  ( 2)     2.80229106819058  ( 2)     2.80281601752467  ( 4)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.19333083 au (symmetry E1 )
@@ -967,7 +974,7 @@ It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -11.220958248348       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  1: -11.220958248341       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -975,9 +982,9 @@ It.   10    -40.21457946464      1.03D-11 -1.76D-08  2.63D-08   DIIS   8    1.42
 Gross     Total   |    L A  C  s      L A  H  s      L A  H  s      L A  H  s      L A  H  s      A  C  _small
 -----------------------------------------------------------------------------------------------------------------
  alpha    0.9997  |      0.9992         0.0001         0.0001         0.0001         0.0001         0.0001
- beta     0.0003  |      0.0000        -0.0000         0.0000        -0.0000         0.0000         0.0003
+ beta     0.0003  |      0.0000        -0.0000        -0.0000        -0.0000        -0.0000         0.0003
 
-* Electronic eigenvalue no.  2: -0.9440793678069       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  2: -0.9440793677976       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
@@ -990,72 +997,72 @@ Gross     Total   |    L A  C  s      L A  H  s      L A  H  px     L A  H  py  
 Gross  | L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px  
 --------------------------------------------------------------------------------------------------------------------------------
  alpha |   0.0023         0.0023         0.1088         0.0023         0.0023         0.0023         0.1088         0.0023
- beta  |   0.0000         0.0000        -0.0000         0.0000         0.0000         0.0000        -0.0000         0.0000
+ beta  |   0.0000         0.0000        -0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
 
 Gross  | L A  H  py     L A  H  pz  
 --------------------------------------
  alpha |   0.0023         0.0023
  beta  |   0.0000         0.0000
 
-* Electronic eigenvalue no.  3: -0.5436120588556       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  3: -0.5436120588436       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.4527  |      0.0602         0.0602         0.1079         0.0015         0.0008         0.0008         0.0254
- beta     0.5473  |      0.1079         0.1079         0.0602         0.0008         0.0015         0.0015         0.0938
+ alpha    0.4607  |      0.0642         0.0642         0.1039         0.0014         0.0009         0.0009         0.0989
+ beta     0.5393  |      0.1039         0.1039         0.0642         0.0009         0.0014         0.0014         0.0203
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0000         0.0008         0.0005         0.0826         0.0010         0.0002         0.0002         0.0083
- beta  |   0.0010         0.0002         0.0005         0.0367         0.0000         0.0008         0.0008         0.1109
+ alpha |   0.0009         0.0004         0.0002         0.0109         0.0001         0.0006         0.0006         0.0872
+ beta  |   0.0001         0.0006         0.0008         0.1083         0.0009         0.0004         0.0004         0.0320
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
 -----------------------------------------------------------------------------------------------------------------
- alpha |   0.0001         0.0006         0.0006         0.0996         0.0009         0.0004         0.0001
- beta  |   0.0009         0.0004         0.0004         0.0196         0.0001         0.0006         0.0009
+ alpha |   0.0010         0.0002         0.0002         0.0226         0.0000         0.0008         0.0005
+ beta  |   0.0000         0.0008         0.0008         0.0966         0.0010         0.0002         0.0005
 
-* Electronic eigenvalue no.  4: -0.5434369925373       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  4: -0.5434369925399       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.6396  |      0.0879         0.1776         0.0569         0.0008         0.0024         0.0012         0.0505
- beta     0.3604  |      0.1305         0.0296         0.0216         0.0003         0.0004         0.0018         0.0335
+ alpha    0.3735  |      0.1018         0.0526         0.0338         0.0005         0.0007         0.0014         0.0287
+ beta     0.6265  |      0.2142         0.0778         0.0238         0.0003         0.0010         0.0029         0.0427
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0007         0.0000         0.0011         0.1278         0.0005         0.0008         0.0007         0.0913
- beta  |   0.0000         0.0003         0.0008         0.0853         0.0002         0.0005         0.0005         0.0286
+ alpha |   0.0000         0.0008         0.0003         0.0292         0.0007         0.0002         0.0003         0.0221
+ beta  |   0.0005         0.0003         0.0010         0.1044         0.0001         0.0011         0.0007         0.1122
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
 -----------------------------------------------------------------------------------------------------------------
- alpha |   0.0005         0.0009         0.0005         0.0355         0.0010         0.0001         0.0008
- beta  |   0.0000         0.0008         0.0003         0.0246         0.0005         0.0003         0.0003
+ alpha |   0.0001         0.0002         0.0008         0.0983         0.0003         0.0005         0.0005
+ beta  |   0.0002         0.0011         0.0007         0.0396         0.0005         0.0003         0.0010
 
-* Electronic eigenvalue no.  5: -0.5434369925287       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  5: -0.5434369925317       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.4717  |      0.0169         0.1259         0.0950         0.0013         0.0017         0.0002         0.0490
- beta     0.5283  |      0.1007         0.0030         0.1626         0.0022         0.0000         0.0014         0.1056
+ alpha    0.5461  |      0.0009         0.1419         0.1325         0.0018         0.0019         0.0000         0.0988
+ beta     0.4539  |      0.0192         0.0636         0.1459         0.0020         0.0009         0.0003         0.0684
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0011         0.0002         0.0001         0.0209         0.0003         0.0007         0.0002         0.1181
- beta  |   0.0001         0.0016        -0.0000         0.0045         0.0009         0.0000         0.0005         0.0006
+ alpha |   0.0011         0.0003         0.0004         0.0418         0.0004         0.0005         0.0006         0.0856
+ beta  |   0.0004         0.0006         0.0004         0.0632         0.0007         0.0002         0.0004         0.0187
 
 Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
 -----------------------------------------------------------------------------------------------------------------
- alpha |   0.0008         0.0003         0.0005         0.0371         0.0003         0.0002         0.0009
- beta  |   0.0006         0.0000         0.0008         0.1414         0.0003         0.0014         0.0001
+ alpha |   0.0011         0.0003         0.0003         0.0343         0.0005         0.0006         0.0005
+ beta  |   0.0006         0.0004         0.0002         0.0663         0.0007         0.0007         0.0000
 
 
 *** Total gross population ***
@@ -1087,104 +1094,104 @@ Gross  | A  C  _small
                                  ----------------
 
 
-* Electronic eigenvalue nr.  1: -11.220958248348       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  1: -11.220958248341       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    DFCAT   E     1       1.00002     -0.11343356E+02   (-1.0000, 0.0000)   ( 0.0000,-0.0000)
-    DFCAT   E     2       0.00252     -0.70929220E+00   ( 1.0000, 0.0000)   (-0.0000, 0.0000)
+    AFCXXX  E     1       1.00002     -0.11343356E+02   (-1.0000, 0.0000)   (-0.0000,-0.0000)
+    AFCXXX  E     2       0.00252     -0.70929220E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
 * Gross contributions:
-   DFCAT                1.0000   E -     1.0000   P -     0.0000
-   DFHAT1              -0.0000   E -    -0.0000   P -     0.0000
-   DFHAT2              -0.0000   E -    -0.0000   P -     0.0000
-   DFHAT3              -0.0000   E -    -0.0000   P -     0.0000
-   DFHAT4              -0.0000   E -    -0.0000   P -     0.0000
+   AFCXXX               1.0000   E -     1.0000   P -     0.0000
+   AFH1XX              -0.0000   E -    -0.0000   P -     0.0000
+   AFH2XX              -0.0000   E -    -0.0000   P -     0.0000
+   AFH3XX              -0.0000   E -    -0.0000   P -     0.0000
+   AFH4XX              -0.0000   E -    -0.0000   P -     0.0000
    Polarization:     0.0000
 
-* Electronic eigenvalue nr.  2: -0.9440793678069       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  2: -0.9440793677976       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    DFCAT   E     1       0.03934     -0.11343356E+02   (-1.0000,-0.0000)   ( 0.0000, 0.0000)
-    DFCAT   E     2       0.71228     -0.70929220E+00   (-1.0000,-0.0000)   ( 0.0000, 0.0000)
-    DFHAT1  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   (-0.0000, 0.0000)
-    DFHAT2  E     1       0.11573     -0.49928475E+00   ( 1.0000,-0.0000)   (-0.0000,-0.0000)
-    DFHAT3  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   ( 0.0000,-0.0000)
-    DFHAT4  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   ( 0.0000, 0.0000)
+    AFCXXX  E     1       0.03934     -0.11343356E+02   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
+    AFCXXX  E     2       0.71228     -0.70929220E+00   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
+    AFH1XX  E     1       0.11573     -0.49928475E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
+    AFH2XX  E     1       0.11573     -0.49928475E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
+    AFH3XX  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   ( 0.0000, 0.0000)
+    AFH4XX  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   (-0.0000, 0.0000)
 * Gross contributions:
-   DFCAT                0.6959   E -     0.6959   P -     0.0000
-   DFHAT1               0.0715   E -     0.0715   P -     0.0000
-   DFHAT2               0.0715   E -     0.0715   P -     0.0000
-   DFHAT3               0.0715   E -     0.0715   P -     0.0000
-   DFHAT4               0.0715   E -     0.0715   P -     0.0000
+   AFCXXX               0.6959   E -     0.6959   P -     0.0000
+   AFH1XX               0.0715   E -     0.0715   P -     0.0000
+   AFH2XX               0.0715   E -     0.0715   P -     0.0000
+   AFH3XX               0.0715   E -     0.0715   P -     0.0000
+   AFH4XX               0.0715   E -     0.0715   P -     0.0000
    Polarization:     0.0182
 
-* Electronic eigenvalue nr.  3: -0.5436120588556       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  3: -0.5436120588436       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    DFCAT   E     3       0.59615     -0.40299475E+00   (-0.1156, 0.7928)   (-0.5577, 0.2169)
-    DFHAT1  E     1       0.28371     -0.49928475E+00   (-0.2610, 0.3805)   ( 0.2657,-0.8465)
-    DFHAT2  E     1       0.28371     -0.49928475E+00   (-0.6545,-0.5140)   (-0.5162, 0.2025)
-    DFHAT3  E     1       0.28371     -0.49928475E+00   ( 0.0105, 0.2635)   ( 0.6497, 0.7130)
-    DFHAT4  E     1       0.28371     -0.49928475E+00   ( 0.9050,-0.1300)   (-0.3992,-0.0690)
+    AFCXXX  E     3       0.59615     -0.40299475E+00   (-0.4489, 0.6452)   ( 0.5551,-0.2721)
+    AFH1XX  E     1       0.28371     -0.49928475E+00   (-0.5359,-0.7367)   ( 0.2704,-0.3112)
+    AFH2XX  E     1       0.28371     -0.49928475E+00   (-0.2091, 0.2184)   ( 0.0437, 0.9522)
+    AFH3XX  E     1       0.28371     -0.49928475E+00   ( 0.8501, 0.0958)   ( 0.4746,-0.2071)
+    AFH4XX  E     1       0.28371     -0.49928475E+00   (-0.1051, 0.4226)   (-0.7888,-0.4338)
 * Gross contributions:
-   DFCAT                0.5543   E -     0.5543   P -     0.0000
-   DFHAT1               0.1075   E -     0.1075   P -     0.0000
-   DFHAT2               0.1075   E -     0.1075   P -     0.0000
-   DFHAT3               0.1075   E -     0.1075   P -     0.0000
-   DFHAT4               0.1075   E -     0.1075   P -     0.0000
+   AFCXXX               0.5543   E -     0.5543   P -     0.0000
+   AFH1XX               0.1075   E -     0.1075   P -     0.0000
+   AFH2XX               0.1075   E -     0.1075   P -     0.0000
+   AFH3XX               0.1075   E -     0.1075   P -     0.0000
+   AFH4XX               0.1075   E -     0.1075   P -     0.0000
    Polarization:     0.0155
 
-* Electronic eigenvalue nr.  4: -0.5434369925373       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  4: -0.5434369925399       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    DFCAT   E     4       0.52170     -0.40273000E+00   ( 0.5149,-0.2749)   (-0.3573,-0.7291)
-    DFCAT   E     5       0.28803     -0.40273000E+00   ( 0.3918,-0.7560)   (-0.0472, 0.5222)
-    DFHAT1  E     1       0.23817     -0.49928475E+00   (-0.1930, 0.7511)   (-0.4226, 0.4691)
-    DFHAT2  E     1       0.37937     -0.49928475E+00   (-0.3252,-0.7029)   ( 0.5737,-0.2666)
-    DFHAT3  E     1       0.28453     -0.49928475E+00   ( 0.8563,-0.1688)   (-0.2833, 0.3974)
-    DFHAT4  E     1       0.20143     -0.49928475E+00   (-0.3689, 0.6742)   (-0.1806,-0.6138)
+    AFCXXX  E     4       0.54245     -0.40273000E+00   (-0.1995,-0.7867)   ( 0.4209, 0.4051)
+    AFCXXX  E     5       0.24676     -0.40273000E+00   (-0.1611,-0.7492)   (-0.0812, 0.6373)
+    AFH1XX  E     1       0.21952     -0.49928475E+00   (-0.4359,-0.4599)   (-0.4090,-0.6566)
+    AFH2XX  E     1       0.30032     -0.49928475E+00   (-0.1601, 0.4391)   ( 0.7062, 0.5318)
+    AFH3XX  E     1       0.30109     -0.49928475E+00   (-0.3769,-0.1495)   (-0.8951, 0.1853)
+    AFH4XX  E     1       0.30519     -0.49928475E+00   ( 0.8429, 0.0462)   ( 0.4824,-0.2339)
 * Gross contributions:
-   DFCAT                0.5541   E -     0.5541   P -     0.0000
-   DFHAT1               0.0758   E -     0.0758   P -     0.0000
-   DFHAT2               0.1923   E -     0.1923   P -     0.0000
-   DFHAT3               0.1081   E -     0.1081   P -     0.0000
-   DFHAT4               0.0542   E -     0.0542   P -     0.0000
+   AFCXXX               0.5541   E -     0.5541   P -     0.0000
+   AFH1XX               0.0644   E -     0.0644   P -     0.0000
+   AFH2XX               0.1205   E -     0.1205   P -     0.0000
+   AFH3XX               0.1211   E -     0.1211   P -     0.0000
+   AFH4XX               0.1244   E -     0.1244   P -     0.0000
    Polarization:     0.0156
 
-* Electronic eigenvalue nr.  5: -0.5434369925287       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  5: -0.5434369925317       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    DFCAT   E     4       0.28803     -0.40273000E+00   ( 0.4822, 0.4952)   ( 0.7075,-0.1471)
-    DFCAT   E     5       0.52170     -0.40273000E+00   ( 0.2588, 0.5494)   (-0.4964, 0.6203)
-    DFHAT1  E     1       0.32305     -0.49928475E+00   ( 0.5627, 0.0199)   ( 0.6472, 0.5139)
-    DFHAT2  E     1       0.13103     -0.49928475E+00   ( 0.3138,-0.8503)   ( 0.3251, 0.2700)
-    DFHAT3  E     1       0.28307     -0.49928475E+00   (-0.9859,-0.1518)   (-0.0055,-0.0706)
-    DFHAT4  E     1       0.34715     -0.49928475E+00   ( 0.1618, 0.4262)   (-0.7205,-0.5226)
+    AFCXXX  E     4       0.24676     -0.40273000E+00   (-0.3719, 0.2319)   ( 0.8964, 0.0659)
+    AFCXXX  E     5       0.54245     -0.40273000E+00   ( 0.6631, 0.1903)   (-0.7054,-0.1627)
+    AFH1XX  E     1       0.33601     -0.49928475E+00   ( 0.5973,-0.4839)   ( 0.3151, 0.5566)
+    AFH2XX  E     1       0.26626     -0.49928475E+00   (-0.4523,-0.4400)   (-0.6553, 0.4152)
+    AFH3XX  E     1       0.26540     -0.49928475E+00   (-0.6682, 0.6120)   (-0.1025,-0.4106)
+    AFH4XX  E     1       0.26067     -0.49928475E+00   ( 0.3724, 0.4501)   ( 0.3676,-0.7236)
 * Gross contributions:
-   DFCAT                0.5541   E -     0.5541   P -     0.0000
-   DFHAT1               0.1394   E -     0.1394   P -     0.0000
-   DFHAT2               0.0229   E -     0.0229   P -     0.0000
-   DFHAT3               0.1070   E -     0.1070   P -     0.0000
-   DFHAT4               0.1610   E -     0.1610   P -     0.0000
+   AFCXXX               0.5541   E -     0.5541   P -     0.0000
+   AFH1XX               0.1508   E -     0.1508   P -     0.0000
+   AFH2XX               0.0947   E -     0.0947   P -     0.0000
+   AFH3XX               0.0941   E -     0.0941   P -     0.0000
+   AFH4XX               0.0908   E -     0.0908   P -     0.0000
    Polarization:     0.0156
 ================================================
 
 * Total reference orbital contributions:
-    DFCAT   E     1       2.00022     -0.11343356E+02
-    DFCAT   E     2       1.39171     -0.70929220E+00
-    DFCAT   E     3       1.10857     -0.40299475E+00
-    DFCAT   E     4       1.10814     -0.40273000E+00
-    DFCAT   E     5       1.10814     -0.40273000E+00
-    DFHAT1  E     1       0.78839     -0.49928475E+00
-    DFHAT2  E     1       0.78839     -0.49928475E+00
-    DFHAT3  E     1       0.78839     -0.49928475E+00
-    DFHAT4  E     1       0.78839     -0.49928475E+00
+    AFCXXX  E     1       2.00022     -0.11343356E+02
+    AFCXXX  E     2       1.39171     -0.70929220E+00
+    AFCXXX  E     3       1.10857     -0.40299475E+00
+    AFCXXX  E     4       1.10814     -0.40273000E+00
+    AFCXXX  E     5       1.10814     -0.40273000E+00
+    AFH1XX  E     1       0.78839     -0.49928475E+00
+    AFH2XX  E     1       0.78839     -0.49928475E+00
+    AFH3XX  E     1       0.78839     -0.49928475E+00
+    AFH4XX  E     1       0.78839     -0.49928475E+00
 
 * Total gross contributions:
-   DFCAT                6.7168   E -     6.7168   P -     0.0000
-   DFHAT1               0.7884   E -     0.7884   P -     0.0000
-   DFHAT2               0.7884   E -     0.7884   P -     0.0000
-   DFHAT3               0.7884   E -     0.7884   P -     0.0000
-   DFHAT4               0.7884   E -     0.7884   P -     0.0000
+   AFCXXX               6.7168   E -     6.7168   P -     0.0000
+   AFH1XX               0.7884   E -     0.7884   P -     0.0000
+   AFH2XX               0.7884   E -     0.7884   P -     0.0000
+   AFH3XX               0.7884   E -     0.7884   P -     0.0000
+   AFH4XX               0.7884   E -     0.7884   P -     0.0000
    Polarization:     0.1297
 
 *****************************************************
@@ -1193,10 +1200,10 @@ Gross  | A  C  _small
 
 
  
-     Date and time (Linux)  : Sun Aug 31 02:26:16 2014
+     Date and time (Linux)  : Sun Aug 31 02:40:43 2014
      Host name              : not found                               
 
->>>> Node 0, utime: 13, stime: 0, minflt: 7028, majflt: 0, nvcsw: 9, nivcsw: 1497, maxrss: 58960
+>>>> Node 0, utime: 13, stime: 0, minflt: 7927, majflt: 0, nvcsw: 9, nivcsw: 1275, maxrss: 59288
 >>>> Total WALL time used in DIRAC: 14s
   
   Dynamical Memory Usage Summary
