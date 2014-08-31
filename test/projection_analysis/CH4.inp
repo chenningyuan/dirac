@@ -7,9 +7,6 @@ Projection analysis for CH4
 .LVCORR
 .PRINT
 1
-**INTEGRALS
-*READIN
-.CONTRACT
 **WAVE FUNCTIONS
 .SCF
 *SCF
