@@ -157,6 +157,17 @@ C
       CHARACTER SZTRA(2,4)*200
 C
       CALL QENTER('ESR_RESOLVE')
+
+      IF (N_CIESR .EQ. 2) THEN
+         IF (N_CIROOTS .gt. 2) THEN
+            N_CIROOTS = 2
+         END IF
+
+         CALL ESR_RESOLVE_2(IPRINT,
+     &           WORK,K_EIGVAL,K_EIGVEC,KFREE,LFREE)
+         GO TO 9000
+      END IF
+
       KFRSAV = KFREE
 C
       IPROPT =  MAX(IPRINT,3)
@@ -300,8 +311,39 @@ C
 !        END DO
 !     END IF
 C
-      CALL QEXIT('ESR_RESOLVE')
+ 9000 CALL QEXIT('ESR_RESOLVE')
 C
+      RETURN
+      END
+C
+      SUBROUTINE ESR_RESOLVE_2(IPRINT,
+     &           WORK,K_EIGVAL,K_EIGVEC,KFREE,LFREE)
+C
+C     hjaaj Aug 2014
+C     Special case: 2 determinants. Avoid GASCIP.
+C                   This enables DFT calculations for doublet.
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+
+      REAL*8  WORK(*)
+
+#include "dcbdhf.h"
+#include "dgroup.h"
+
+      L_EIGVAL = 2
+      L_EIGVEC = 4*NZ_in_CI
+      CALL MEMGET2('REAL','EIGVAL',K_EIGVAL,L_EIGVAL,
+     &      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGVEC',K_EIGVEC,L_EIGVEC,
+     &      WORK,KFREE,LFREE)
+      CALL DZERO(WORK(K_EIGVAL),L_EIGVAL)
+      CALL DZERO(WORK(K_EIGVEC),L_EIGVEC)
+      WORK(K_EIGVAL)   = DHFERG
+      WORK(K_EIGVAL+1) = DHFERG
+      WORK(K_EIGVEC)   = 1.0D0
+      WORK(K_EIGVEC+3) = 1.0D0
       RETURN
       END
 ! -- end of pamesrci.F --
