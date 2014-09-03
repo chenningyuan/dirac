@@ -100,11 +100,11 @@ C
         iread_from_mc_file = 1
         close(luni)
       else if( .not. ex )then
-	  call dcopy(nzconfq,cref,1,cref_x,1)
+        call dcopy(nzconfq,cref,1,cref_x,1)
       end if
 !     call wrtmatmn(cref_x,1,nzconfq,1,nzconfq,lupri)
 
-	if( iread_from_mc_file .gt. 0)then
+      if( iread_from_mc_file .gt. 0)then
         write(lupri,'(/1X,A,I16)')
      &  '(RGETNO) NO calculation:'//
      &  ' cref read from KRMCOLD with # of dets =',nzconfq

@@ -214,6 +214,11 @@ def main():
     add_test('benchmark_mcscf_energy', 'benchmark;mcscf')
     add_test('benchmark_moltra_4or6', 'benchmark;moltra')
 
+    # tutorials connected tests, not run as part of standard test set
+    add_test('tutorial_W', 'tutorial;W;open-shell;scf')
+    add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
+    add_test('tutorial_Ir_16plus', 'tutorial;cc')
+
     # list of directories and files
     # that are never compiled as part of the "dirac" library
     # first list individual files
@@ -595,6 +600,7 @@ def main():
         if not 'long' in test[1] and \
            not 'short' in test[1] and \
            not 'benchmark' in test[1] and \
+           not 'tutorial' in test[1] and \
            not 'openrsp' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # short tests
@@ -613,6 +619,13 @@ def main():
     f.write('if(ENABLE_BENCHMARKS)\n')
     for test in list_of_tests:
         if 'benchmark' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # tutorial tests
+    f.write('if(ENABLE_TUTORIALS)\n')
+    for test in list_of_tests:
+        if 'tutorial' in test[1]:
             f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.write('endif()\n')
 

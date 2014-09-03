@@ -64,6 +64,7 @@ IF( IPAREX .gt. 0 )THEN
 
 ! get rank
   call interface_mpi_comm_rank(global_communicator, MYTID)
+
 ! determine size of mpi_comm_world
   call interface_mpi_comm_size(global_communicator, NUMPROC)
 

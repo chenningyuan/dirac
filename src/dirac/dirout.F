@@ -29,6 +29,7 @@ C     Output module for DIRAC
 C
 C***********************************************************************
       use dirac_cfg
+      use fde_evaluators_dirac, only: fde_calculate_interaction_energy
 #ifdef PCM_MODULE
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif
@@ -52,6 +53,7 @@ C
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
+      logical :: myprint = .False.
 #include "memint.h"
 C
 C     Summary of calculation
@@ -129,6 +131,11 @@ C
         ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
         FMT = MXFORM(ERGMAX,20)
 C       Start by writing the computed electronic energy
+        if (dirac_cfg_fde) then
+           WRITE(LUPRI,'(A)') ''
+           WRITE(LUPRI,'(2X,A)') 'FDE active subsystem contributions'
+           WRITE(LUPRI,'(A)') ''
+        endif
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY
 C       The total energy consists of the electronic energy plus 
@@ -167,12 +174,14 @@ C       computed
 C       We now write the sum, the actual summation is done in the 
 C       ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
-        if (dirac_cfg_fde) then
-        WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Total energy (active subsystem)          :   ',DHFERG
-        else
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
+
+        if (dirac_cfg_fde) then
+            WRITE(LUPRI,'(A)') ''
+            write(lupri,'(2X,A)') 
+     &      'FDE frozen subsystem contributions not available'
+          call fde_calculate_interaction_energy('DHF ',myprint=myprint)
         endif
       ENDIF
 C
