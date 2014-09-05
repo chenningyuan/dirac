@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# ------------------------ #
-# enviroment variables ... #
-# ------------------------ #
-
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 
@@ -20,13 +16,13 @@ if [[ -d "$BUILD_GNU" ]]; then
 fi
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
+./setup  --int64  -D BUILDNAME="frpd2.gnu_i8-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
 cd $BUILD_GNU
-ctest -j3 -D ExperimentalUpdate
-ctest -j3 -D ExperimentalConfigure
+ctest  -D ExperimentalUpdate
+ctest  -D ExperimentalConfigure
 ctest -j3 -D ExperimentalBuild
 ctest -j3 -D ExperimentalTest
-ctest -j3 -D ExperimentalSubmit
+ctest  -D ExperimentalSubmit
 
 BUILD_GNU=build_gnu_i4
 if [[ -d "$BUILD_GNU" ]]; then
@@ -35,7 +31,7 @@ if [[ -d "$BUILD_GNU" ]]; then
 fi
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup   -D BUILDNAME="frpd2.gnu_i32lp64" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU 
+./setup -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU
 cd $BUILD_GNU
 ctest -j3 -D Experimental
 
