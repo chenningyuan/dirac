@@ -769,6 +769,7 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      logical :: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -810,18 +811,29 @@
 
       if (kw_matches(word, '.ENERGY')) then
          relcc_do_energy = .true.
+         explicitly_set_energy = .true.
       end if
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
+         relcc_do_mp2gradient = .true. ! this is currently the only one available, should thus always be active when gradient is switched on
+      end if
+
+      if (kw_matches(word, '.HESSIA')) then
+         relcc_do_hessian  = .true.
       end if
 
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
+         if (.not. explicitly_set_energy) relcc_do_energy = .false.
       end if
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, relcc_print)
+      end if
+
+      if (kw_matches(word, '.INTERFACE')) then
+         call kw_read(word, relcc_integral_interface)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -842,8 +854,8 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOMP2 ')) then
-         relcc_do_mp2 = .true.
+      if (kw_matches(word, '.NOMP2 ')) then
+         relcc_do_mp2 = .false.
       end if
 
       if (kw_matches(word, '.NOSING')) then
@@ -912,8 +924,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.NOZG  ')) then
-         relcc_do_zipgrid = .true.
+      if (kw_matches(word, '.UNRELAXED')) then
+         relcc_do_unrelaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then
@@ -950,13 +962,13 @@
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies
-      if (kw_matches(word, '.IGNOE  ')) then
-         relcc_use_orbital_energies = .false.
+!     Use HF orbital energies
+      if (kw_matches(word, '.USEOE ')) then
+         relcc_use_orbital_energies = .true.
       end if
 
 !     do not re-compute orbital energies
-      if (kw_matches(word, '.NORCMP')) then
+      if (kw_matches(word, '.NORECMP')) then
          relcc_no_recompute   = .true.
       end if
 
@@ -1710,48 +1722,42 @@
      if (kw_matches(word, '.TITLE ')) then
        ! read(get_file_unit(),'(a)') title_text
          call kw_read(word, title_text)
-        print *,'title_text=',title_text
      end if
 
      if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, print_level)
-        print *,'print_level=',print_level
      end if
 
      if (kw_matches(word, '.MTXFIL')) then
          call kw_read(word, matrix_file_name)
-        print *,'matrix_file_name=',matrix_file_name
      end if
 
      if (kw_matches(word, '.DSYEVR')) then
         do_dsyevr = .true.
-        print *,'doing dsyevr !'
      end if
 
      if (kw_matches(word, '.ULF   ')) then
         do_dsyevr_ulf = .true.
-        print *,'doing dsyevr of ulf !'
      end if
-
 
      if (kw_matches(word, '.RS    ')) then
         do_rs = .true.
-        print *,'doing RS !'
      end if
 
      if (kw_matches(word, '.RSJACO')) then
         do_rsjaco = .true.
-        print *,'doing RSJACO !'
      end if
 
      if (kw_matches(word, '.QJACO ')) then
         do_qjaco = .true.
-        print *,'doing QJACO !'
+     end if
+
+     if (kw_matches(word, '.PAUL  ')) then
+        do_householder_psb = .true.
      end if
 
      if (kw_matches(word, '.EIGVTS')) then
         do_eigv_check = .true.
-        print *,'doing EIGVTST !'
      end if
 
      call check_whether_kw_found(word, kw_section)

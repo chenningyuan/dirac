@@ -77,44 +77,27 @@ Supervisor Miro Ilias got an IT-student for bachelor thesis, hopefully he will s
 Git and web-based project development platforms in the service of DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The Git version control system is very popular for the code development. On top of it, various web-based project development 
-platforms (like assembla, bitbucket, deveo, gitorious etc) are heplful for managing git repositories.
-The aim is to describe (in the form of manual) the Git system and available web-based project development servers
-with their various features and show how all these goodies can be applied in our collective DIRAC development.
+platforms (like assembla, bitbucket, deveo, gitorious etc) are heplful for managing git repositories and controling 
+the program development. 
+The aim is to describe (in the form of manual) the Git system and available project development web-servers.
+We investigate various features and show how all these goodies can be applied for the collaborative DIRAC development.
 This project is suitable for bachelor thesis.
+
 
 Doxygen code documentation for DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The *Doxygen* is popular and free code documentation generator. It works for many programming languages,
-including C, C++ and Fortran. The aim is to adapt DIRAC code description comments  for *Doxygen*, and, eventually,
-the *Doxygen* source code as well to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
+including C, C++ and Fortran. Our aim is to adapt DIRAC code description comments for the *Doxygen*, and, eventually,
+the *Doxygen* source code as well in order to get properly generated documentation of all Fortran, C and C++ DIRAC source files.
 This theme is suitable for one or more IT-students.
 
 
-=================
-Other TODO wishes
-=================
+Other ideas
+===========
 
 New input reader with documenting of keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Let us write/use an keyword input reader which requires keywords to have some documentation.
 Otherwise the code won't even compile. Then the "make html" command would go through the source code and generate
 the RST files which would exactly reflect the state of the code (unless of course somebody changes the keyword without
-changing the text 2 lines below but we could introduce some punishment for it). Supervisor Radovan Bast.
-
-
-CMake configuration files bootstrap
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-It is possible to download external cmake "libraries" at configure time and include/employ them in the code's buildup.
-Radovan has tested this with the math detection which he puts on some external test repo and at configure time
-it was correctly fetched and used.
-(He also asked on the cmake mailing list for pointers and got useful info which worked for him.)
-We could do now the outsource of all generic cmake code out of DIRAC/Dalton/... suites and let a minimum cmake
-core fetch them at configure time.
-
-There is one catch: one should be able to configure and build without the network.
-This could be solved with a fallback cmake system that would be used if the default cmake repo is unreachable.
-There are several ways to do it.
-
-If you think such a bootstrap approach would be interesting we could brainstorm more.
-Radovan has a local proof that it works and we could continue from here if this is interesting.
-
+changing the text 2 lines below but we could introduce some punishment for it).

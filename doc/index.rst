@@ -114,6 +114,7 @@ Tutorials and walkthrus
 
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
+
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
@@ -123,6 +124,14 @@ Tutorials and walkthrus
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
+
+* **Case studies:**
+  :doc:`W atom <tutorials/case_studies/W>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
+  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
+  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
+  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`  
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
@@ -198,3 +207,6 @@ Bibliography
 ============
 
 * :doc:`References <references>`
+
+
+Documentation generated on |today|.

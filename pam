@@ -1231,7 +1231,7 @@ Options are also read from ~/.diracrc"""
                 if self.mpirun == None:
                     # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                     #          then self.mpirun is None and we have to stop here otherwise pam calls
-                    #          None -np N /paht/to(dirac.x
+                    #          None -np N /path/to/dirac.x
                     sys.exit('pam did not find mpirun, check your $PATH, or assign as parameter ! ')
                
                 if self.argument_to_pass_scratch_dir_to_slaves:

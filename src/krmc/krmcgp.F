@@ -2477,7 +2477,7 @@ CSK      IGSOCCX(I          ) = NGASSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
 C     Energy convergence threshold
-      THRES_E =          threci
+      THRES_E = opt_threci
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
      &    call interface_mpi_BCAST(thres_e,1,MASTER,

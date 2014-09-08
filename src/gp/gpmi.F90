@@ -9,24 +9,6 @@
 !> written by Miro ILIAS, Strasbourg,2005, improved in Tel Aviv, 2012, 
 !> Banska Bystrica, August 2014
 
-module dgroup_select
-!> module for picking up certain variables from dgroup.h
-private
-#include"dgroup.h"
-integer :: IPQTOQmod(4, 0:7) !> same dimensions as IPQTOQ
-public IPQTOQmod,IPQTOQ_init !> specify public variables and public module methods (routines)
-contains
- subroutine IPQTOQ_init
- !> initialize the module's public variable IPQTOQmod from the private include file "dgroup.h"
-  integer :: i,j
-  do i=1,4
-  do j=0,7
-    IPQTOQmod(i,j)=IPQTOQ(i,j)
-  enddo
-  enddo
- end subroutine
-end module dgroup_select
-
 module qjacobi_mod
       !> process also eigenvectors
       LOGICAL :: DOEVE 
@@ -202,7 +184,6 @@ end module qjacobi_mod
         SUBROUTINE QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT) 
 !*************************************************************************
 !
-!
 !  PURPOSE:  Do the selective (or full) diagonalization of 
 !            the entering hermitian (real,complex,quaternion) matrix
 !            using the Jacobi diagonalization method, which is  extended 
@@ -235,7 +216,7 @@ end module qjacobi_mod
 !  MI, August 2014 - rearragned for F90 
 !      
 !**************************************************************************
-use dgroup_select, only: IPQTOQ_init,IPQTOQmod
+use include_dgroup_h, only: get_IPQTOQ
 implicit none                   
 #include"priunit.h"
   real*8,PARAMETER :: D1=1.0D00, DM1=-1.00D00, D0=0.0D00,D2=2.0D0, DP5=0.50D0
@@ -302,10 +283,9 @@ implicit none
        ' has been open.'
 
             IF (IPRINT.GE.3) THEN
-             call IPQTOQ_init
              WRITE(LUPRI,'(/,2X,A)')                                    &
   'QJACOBI: ENTERING hermitian(real,complex,quaternion) matrix A'
-             CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQmod(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
+             CALL PRQMAT(A,N,N,N,N,NZ,get_IPQTOQ(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
             ENDIF
 
             DO I=1,N
@@ -2562,6 +2542,7 @@ module diagmod
   logical :: do_rs = .false.
   logical :: do_rsjaco = .false.
   logical :: do_qjaco = .false.
+  logical :: do_householder_psb = .false.
   logical :: do_eigv_check = .false.
   
 contains
@@ -2581,7 +2562,7 @@ contains
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
-  use dgroup_select, only: IPQTOQ_init,IPQTOQmod
+  use include_dgroup_h, only: get_IPQTOQ
   implicit none
 #include "priunit.h"
    integer :: i,j, ii,jj
@@ -2619,12 +2600,10 @@ contains
     write(LUPRI,"(2x,a)") "The matrix for diagonalization was read."
     if (print_level >=2) then
       if (NZ==1) then
-      call IPQTOQ_init
-      CALL PRQMAT(Ar,N,N,N,N,NZ,IPQTOQmod(1,0),LUPRI) 
+      CALL PRQMAT(Ar,N,N,N,N,NZ,get_IPQTOQ(1,0),LUPRI) 
       endif
     endif
     ! print out read matrix
-
   end subroutine read_matrix
 
   subroutine allocate_space
@@ -2675,14 +2654,14 @@ contains
    logical :: issorted
 
       pi = 2*acos(0.0D0)
-      write(LUPRI,"(/,2X,A,I2,A)") 'Testing DSYEVR diagonalization of',N,'**2 matrix'
+      write(LUPRI,"(/,2X,A,I2,A)") 'Testing DSYEVR diagonalization of',N,'**2 matrix (Ulf)'
 
 #ifdef FORTRAN2003
       print *,'Using',sizeof(N)*8,' bit integers'
       print *,'Allocating matrix and vectors ',
      &     ((2*N**2 + 3*N)*sizeof(ddum))/2**10,' kB'
 #endif
-      call flush(6)
+      call flush(LUPRI)
       allocate( A(N,N), vec(N,N), eig(N), isuppz(2*N) )
 !     set A = 0.5 on the upper and lower second diagonals
       do i=1,N
@@ -2706,22 +2685,22 @@ contains
            IDUM3,EIG,VEC,N3,IDUM4,WORKDUM,-1,liwork,-1,INFO)
       if (info.ne.0) then
          print *, 'DSYEVR memory query failed:',info
-         stop
+         call quit('DSYEVR memory query failed!')
       endif
       lwork = workdum
 #ifdef FORTRAN2003
       print *,'Allocating work buffers',(lwork*sizeof(ddum)+ & 
             liwork*sizeof(idum))/2**10,' kB'
 #endif
-      call flush(6)
+      call flush(LUPRI)
       allocate( work(lwork), iwork(liwork) )
       print *,'Diagonalizing..'
-      call flush(6)
+      call flush(LUPRI)
       CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM2,IDUM,IDUM2,0.0D0,  & 
            M,EIG,VEC,N3,isuppz,work,lwork, iwork,liwork,info)
       if (info.ne.0.or.M.ne.N) then
          print *,'Diagonalization failed, info = ',info,' M =',M
-         stop
+         call quit('Diagonalization failed!')
       endif
       issorted = .true.
       do i=1,N-1
@@ -2747,18 +2726,18 @@ contains
                verr = abs(eig(i)*(abs(vec(k,i)) -  & 
                     abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1)))))
                maxvecerr = max(maxvecerr, verr)
- if (print_level >= 3) then
+            if (print_level >= 3) then
                if (verr.gt.N*1.0D-14) then
                   print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))   & 
                        ,'<<<<< WARNING'
                else
                   print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
                endif
-  endif
+            endif
             enddo
- if (print_level >= 4) then
+        if (print_level >= 4) then
             print *,'maxvecerr so far:',maxvecerr
- endif
+        endif
          enddo
          print *,'Maximum absolute eigenvalue error:',maxerr
          print *,'Maximum absolute vector element error:',maxvecerr
@@ -2815,15 +2794,12 @@ contains
    LLWORK = NINT(EIG(1))
    LILWORK = IWORKDUM 
 
-   !write(LUPRI,*) "LLWORK=",LLWORK
    allocate(WORK(LLWORK), stat=ierr)
    call alloc_stat_check("test_lapack_dsyerv WORK(KLWORK)",ierr)
 
-   !write(LUPRI,*) "LLILWORK=",LILWORK
    allocate(IWORK(LILWORK), stat=ierr)
    call alloc_stat_check("test_lapack_dsyerv IWORK(LILWORK)",ierr)
 
-   !print *,"N=",N," 2*N=",(2*N)
    allocate(ISUPPZ(2*N),stat=ierr)
    call alloc_stat_check("test_lapack_dsyerv ISUPPZ",ierr)
 
@@ -2843,26 +2819,19 @@ contains
    endif
 
    if (do_eigv_check) call eigv_check(EIG,VEC,'**** LAPACK DSYEVR ****')
-
    deallocate(WORK,IWORK,EIG,VEC,ISUPPZ,stat=ierr)
-
   end subroutine test_lapack_dsyevr
 
   subroutine test_dirac_jacobi
   ! tests DIRAC's RSJACO for real only symmetric matrices
   end subroutine test_dirac_jacobi
 
-  subroutine test_dirac_qjacobi
-  ! tests DIRAC's QJACO for real, complex and quaternion Hermitian matrices
-  end subroutine test_dirac_qjacobi
-
-
   subroutine test_dirac_householder
   ! tests DIRAC's Houeholder for real, complex and quaternion Hermitian matrices
   end subroutine test_dirac_householder
 
   subroutine test_PSB_householder
-  ! tests Pauls Bagus own Houeholder routine for real symmetric matrices
+  ! tests Paul Bagus own Houeholder routine for real symmetric matrices
   end subroutine test_PSB_householder
 
 
@@ -3023,7 +2992,7 @@ integer :: istat,i,j
   enddo
   !CALL PREPMATRIX
   ! ... call of the external diagonalization routine ...
-  IPRINT = print_level; NBL = 0 ; DOEVE = .true.
+  IPRINT = print_level+1; NBL = 0 ; DOEVE = .true.
 #ifdef MOD_UNRELEASED
   CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
 #else
