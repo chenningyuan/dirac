@@ -65,8 +65,8 @@ module relcc_cfg
 
 ! Information relevant for the energy calculation
   logical, public :: relcc_do_mp2                  = .true. 
-  logical, public :: relcc_do_singles              = .false.
-  logical, public :: relcc_do_doubles              = .false.
+  logical, public :: relcc_no_singles              = .false.
+  logical, public :: relcc_no_doubles              = .false.
   logical, public :: relcc_do_ccsd                 = .true. 
   logical, public :: relcc_do_ccsd_t               = .true. 
   integer, public :: relcc_ccener_max_dimension_diis      = 8
