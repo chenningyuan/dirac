@@ -1033,6 +1033,11 @@ C
 C     Convergence control/acceleration
 C     ================================
 C
+!     Level shift, PSB+MI/Aug2014: move the level shift before calling the
+!     convergence acceleration because one needs the full matrix
+!     for the convergence accelerations
+      IF (DOLEV) CALL LEVSHI(FMO,FAO)
+
       IF(DOCCNV) THEN
         IF(DIISAO) THEN
           CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),
@@ -1059,11 +1064,6 @@ C        ... before extracting of EIG print the Fock matrix
        ENDIF
        GOTO 9999
       END IF
-C
-C     Level shift
-C     ===========
-C
-      IF (DOLEV) CALL LEVSHI(FMO,FAO)
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -4106,6 +4106,7 @@ C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
+      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('DFDIAG')
 C
@@ -4223,6 +4224,32 @@ C
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
             ENDIF 
+
+! miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
+!-----------------------------------------------------------------------------------
+! only in the linear symmetry !
+      IF (WRITE_FMO_MATRIX) THEN
+! get the file name first, containing symmetry
+        hfile_format="(A8,A7,I1,A1,I1,A7,I1,A1,I1)"
+        write(hfile_name,hfile_format)
+     & "hmatrix.","fermirp",I,"-",NFSYM,
+     & "_bosirp",ISUB,"-",N_SUB_BL(I)
+! open the unique file and write the matrix
+        luhm=95
+        open(luhm,file=trim(hfile_name),access="sequential",
+     &      form="formatted",status="unknown")
+        write(luhm,*) NBO,1 ! this is pure real matrix (NZ=1)
+        ic=0
+        do ii=1,NBO
+        do jj=1,NBO
+          write(luhm,*) ii,jj,FMO(IMAT+ic)
+          ic = ic + 1
+        enddo
+          ic = ic + NTMO(I) - NBO
+        enddo
+        close(luhm,status="keep")
+      ENDIF
+
 C
 C           Diagonalize the isub'th block of parity i
 C
@@ -4255,18 +4282,13 @@ C
               DO II=1,NBO
                 EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
                 DO JJ=1,NBO ! store eigenvectors
-!                FAO(IMAT+(NBO*(II-1))+JJ-1)=
-!                 FAO(IMAT+((NTMO(I)+1)*IBO)*(II-1)+JJ-1)=
                   FAO( IMAT+ (NTMO(I)*(II-1)+JJ-1) ) =
-!                FAO(IMAT+IPOS)=
-!    &            WORK(KFA+IPOS)
      &            WORK(KFA+(NBO*(II-1))+JJ-1)
                   IPOS=IPOS+1
                 ENDDO
               ENDDO
               CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
               CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
-             ! call quit('end here')
             ENDIF
 #endif
 

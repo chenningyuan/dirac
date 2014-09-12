@@ -183,7 +183,9 @@ contains
      read(81) dmat
      close(81,status="delete")
 
-     !> read the F1 Fock matrix in AO basis from file
+     !> read from DFFCKT (full Fock matrix): ok if FOC not for AOC!
+
+     !> read the F1+F2 Fock matrix in AO basis from file
      open(81,file='4cf1f2AO',status='old',form='unformatted',       &
           access='sequential',action='read',position='rewind')
      read(81) fmat

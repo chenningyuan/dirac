@@ -164,28 +164,10 @@ C
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
       REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
-      NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
-     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
-     &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,NFFOPER,
-     &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
-      NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
-     &                 MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
-     &                 MAXIT,MAXDIM,NTOL,NOZG,DONATORB
+!     This namelist is the only one kept for backward compatibility (old HF Hessian).
+!     This is to be replaced when a real CC or MP2 Hessian becomes available.
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
-      NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
-CMI   ... add sector selectives MAXITxy's
-      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
-     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00,
-     &                 STATE_E_FSCC
-      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
-     &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
-     &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
-      NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
       DIMENSION NACTH(16),NACTP(16)
@@ -194,16 +176,8 @@ C
 C---------------Executable code--------------------------------------
 
 C
-C     if running MP2-NO module use special input
+C     Convert input from module file to old-fashioned keywords
 C
-      IF( MP2_DENRUN )THEN
-        IN_SAVE = IN
-        IN      = LMP2_DEN_INP
-      END IF
-C
-C     Read number of occupied spinors from input
-C
-      REWIND (IN)
       DO I= 1, 16
        if (nelec_input)  NELEC(I)    = relcc_nelec(I)
        NFROZ(I)    = relcc_nfroz(I)
@@ -214,19 +188,13 @@ C
       DOSORT  = relcc_do_sort
       DOENER  = relcc_do_energy
       DOFOPR  = relcc_do_gradient
-      DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
+      DOSOPR  = relcc_do_hessian
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-
-C     Note that reading this namelist may override the Dirac style input. Leave 
-C     this at the discretion of the user for the moment.
-      READ (IN,RELCCSD,END=2,ERR=1)
-      GOTO 2
-    1 CALL QUIT('Error exit while reading namelist RELCCSD')
-    2 CONTINUE
+      INTERFACE = relcc_integral_interface
 C
 C     Input for the energy calculation.
 C
@@ -236,15 +204,8 @@ C
       DOMP2   = relcc_do_mp2
       DOCCSD  = relcc_do_ccsd
       DOCCSDT = relcc_do_ccsd_t
-      NOCCS   = relcc_do_singles
-      NOCCD   = relcc_do_doubles
-      REWIND (IN)
-      READ (IN,CCENER,END=4,ERR=3)
-      GOTO 4
-    3 CALL QUIT('Error exit while reading namelist CCENER')
-    4 CONTINUE
-      IF (NOCCS.AND.NOCCD) 
-     & CALL QUIT ('NOCCS and NOCCD cannot be used simultaneously')
+      NOCCS   = relcc_no_singles
+      NOCCD   = relcc_no_doubles
       MXDIMCC = MAXDIM
       MXITCC = MAXIT
       NTOLCC = NTOL
@@ -255,18 +216,15 @@ C
       DOMP2GOLD = relcc_do_oldmp2gradient 
       DOCCSDG   = relcc_do_ccsdgradient 
       DOCCSDTG  = relcc_do_ccsdtgradient
-      NOZG      = relcc_do_zipgrid
+      NOZG      = relcc_do_unrelaxed
       DONATORB  = relcc_do_naturalorbitals
-      NEOPER    = 1
-      NAMEE(1)  = 'ZDIPLEN '
+      NEOPER    = 3
+      NAMEE(1)  = 'XDIPLEN '
+      NAMEE(2)  = 'YDIPLEN '
+      NAMEE(3)  = 'ZDIPLEN '
       MAXDIM    = relcc_fopr_max_dimension_diis
       MAXIT     = relcc_fopr_max_iterations
       NTOL      = relcc_fopr_desired_convergence
-      REWIND (IN)
-      READ (IN,CCFOPR,END=6,ERR=5)
-      GOTO 6
-    5 CALL QUIT('Error exit while reading namelist CCFOPR')
-    6 CONTINUE
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
          IF (SPFR) 
@@ -315,7 +273,7 @@ C
       MXITRP  = MAXIT
       NTOLRP  = NTOL
 C
-C     Input for the excitation energy calculation.
+C     Input for the excitation energy calculation. (no longer supported, corresponded to TD-HF in MO basis)
 C
       DO I = 1, 16
          NEXC(I) = 1
@@ -323,11 +281,6 @@ C
       MAXDIM =  relcc_max_dimension_diis      
       MAXIT  =  relcc_max_iterations         
       NTOL   =  relcc_desired_convergence   
-      REWIND (IN)
-      READ (IN,CCEXC,END=10,ERR=9)
-      GOTO 10
-    9 CALL QUIT('Error exit while reading namelist CCEXC')
-   10 CONTINUE
       MXDIMEX = MAXDIM
       MXITEX = MAXIT
       NTOLEX = NTOL
@@ -360,12 +313,6 @@ CMI   ...provide with default values
       MAXIT20=relcc_fs_max20_iterations 
 !     stefan: select state sorted by energy for numerical gradient calculation   
       STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
-CMI   ... read input namelist
-      REWIND (IN)
-      READ (IN,CCFSPC,END=12,ERR=11)
-      GOTO 12
-   11 CALL QUIT('Error exit while reading namelist CCFSPC')
-   12 CONTINUE
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
       DO ISECT = 1, 6
@@ -440,11 +387,6 @@ C
       SHIFTHP  = relcc_ih_shift_hp
       AIH      = relcc_ih_aih
       NIH      = relcc_ih_nih
-      REWIND (IN)
-      READ (IN,CCIH,END=22,ERR=21)
-      GOTO 22
-   21 CALL QUIT('Error exit while reading namelist CCIH')
-   22 CONTINUE
 C
 C     Some processing of the input is necessary
 C
@@ -481,8 +423,8 @@ C     Input for the sorting routine.
 C     We can add a finite field here, if desired
 C     This assumes that PRTRA is called as well !
 C
-      USEOE   = .TRUE.
-      NORECMP = .FALSE.
+      USEOE   = relcc_use_orbital_energies
+      NORECMP = relcc_no_recompute
       ADD_FINITE_FIELD = .FALSE.
       NFFOPER=0
       DO IOPER = 1, MAXOP
@@ -490,15 +432,6 @@ C
          FF_PROP_STRENGTHS(1,IOPER) = 0.D0
          FF_PROP_STRENGTHS(2,IOPER) = 0.D0
       ENDDO
-      REWIND (IN)
-      READ (IN,CCSORT,END=14,ERR=13)
-      GOTO 14
-   13 CALL QUIT('Error exit while reading namelist CCSORT')
-   14 CONTINUE
-      IF (ADD_FINITE_FIELD.AND.NFFOPER.EQ.0) THEN
-        CALL QUIT('You did not specify the NFFOPER parameter'//
-     &' in the CCSORT input list when you want finite field operators!')
-      ENDIF
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
@@ -517,17 +450,6 @@ C
      &  ' ************************************************************' 
       end if
 !
-C
-C     Position the file at the right spot when this routine is
-C     called as a part of DIRAC
-C
-      REWIND (IN)
-      REWINP = .FALSE.
-      READ (IN,CCEND,END=100,ERR=99)
-      GOTO 100
-   99 CALL QUIT('Error exit while reading namelist CCEND')
-  100 CONTINUE
-      IF (REWINP) REWIND (IN)
 C
 C     Some consistency and other checks
 C
@@ -612,7 +534,7 @@ C
 #if defined (CC_ALONE)
       MP2_DENRUN = .FALSE.
 #endif
-      INTERFACE = INTFCE
+      INTERFACE = relcc_integral_interface
       CARITH = CA
       IN = IUNIN
       IW = IUNUT
@@ -2773,7 +2695,11 @@ C
          GOTO 431 
       ENDIF
 
-          WRITE (IW,1008) 
+          IF (NOZG) THEN
+             WRITE (IW,1008) 
+          ELSE
+             WRITE (IW,1018) 
+          ENDIF
 C
 C         Slaves will only help in the integral calculation.
 C
@@ -2858,7 +2784,8 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1008  FORMAT (//" Relaxed density matrix for MP2 properties")
+1008  FORMAT (//" Unrelaxed density matrix for MP2 properties")
+1018  FORMAT (//" Relaxed density matrix for MP2 properties")
 1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
      & 'Real part',8X,'Imaginary part')
 1004  FORMAT('  <',A8,'> ',T30,2F20.13)

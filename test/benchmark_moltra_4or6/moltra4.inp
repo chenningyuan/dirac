@@ -1,5 +1,5 @@
 !
-! This test does a 4 index using scheme 4 and calls RELCCSD with only MP2 to check correctness
+! This test does a 4 index using scheme 4 and calls RELCCSD to check correctness
 ! The test is primarily made to time scheme 4 vs. scheme 6 on parallel machines.
 !
 **DIRAC
@@ -19,9 +19,9 @@ Generic closed shell molecule. Restricted kinetic balance.
 4
 .THROUT
 1.E-12
+**RELCCSD
+.TIMING
+.INTERFACE
+DIRAC
 *END OF
-
- &RELCCSD TIMING=T, INTERFACE='DIRAC',
-          DOSORT=T, DOENER=T, DOFOPR=F, DOSOPR=F &END
- &CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F &END
 

@@ -17,8 +17,7 @@
 .VECPOP
 all
 all
+**RELCCSD
+.PRINT
+1
 *END OF
-
-# ... interface is for making the test pass in ILP64 parallel mode
- &RELCCSD DOENER=T IPRNT=1 INTERFACE="DIRAC6" DEBUG=F &END
-

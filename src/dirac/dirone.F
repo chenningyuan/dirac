@@ -5862,6 +5862,8 @@ C
 C     Written by L.Visscher, october 2003
 C     Last changes: M.Ilias, Strasbourg, 2005
 C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
+!                 MI, July 2014 - option to print out J_z matrices for
+!                 diagonalization
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -5883,13 +5885,14 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
+      LOGICAL :: DOJACO_SAVE
+      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('LINSYM')
 
 #include "memint.h"
 C
-!     iprham_save = iprham
-!     iprham      = 15
+
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -5916,9 +5919,8 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
-!    &            IPRHAM)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.12) THEN
 
          CALL HEADER(
      &    'LINSYM: Entering AO->MO transformation matrix',-1)
@@ -5965,6 +5967,7 @@ C
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
+
 C
       IOFT = 1
       DO 20 I = 1,NFSYM
@@ -5999,13 +6002,33 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
+          ENDIF
+
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A7,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_LL_matrix.","fermirp",I,"-",NFSYM
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NL
+               do jj=1,NL
+                 write(luhm,*) ii,jj,WORK(KFLL+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
           ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -6035,7 +6058,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6043,7 +6066,6 @@ C
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
-           !call quit('in linsym')
           ENDIF
         ENDIF
 C
@@ -6054,7 +6076,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6062,6 +6084,28 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A7,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_SS_matrix.","fermirp",I,"-",NFSYM
+             print *,trim(hfile_name)
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NS
+               do jj=1,NS
+                 write(luhm,*) ii,jj,WORK(KFSS+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
+          ENDIF
+
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
@@ -6089,7 +6133,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6210,7 +6254,7 @@ C
           call writt(13,NL**2,WORK(KVLL))
         end if
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6231,7 +6275,7 @@ C
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6297,10 +6341,10 @@ C
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
+
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
-!     iprham = iprham_save
       RETURN
  1000 FORMAT
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')

@@ -48,7 +48,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  make ExperimentalUpdate
  make ExperimentalConfigure
@@ -68,7 +68,7 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  make ExperimentalUpdate
  make ExperimentalConfigure
@@ -109,5 +109,5 @@ ls -lt $packed_dirac
 echo -e "\n Done. Tarball with static execs ready."
 
 # exit here, don't do other stuff
-echo -e "leaving here, you will have to upload tarball onto SE"
+echo -e "leaving here, you will have to upload tarball onto your SE"
 exit 0
