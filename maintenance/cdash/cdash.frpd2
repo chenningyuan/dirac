@@ -3,12 +3,9 @@
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 
-# go to the local DIRAC directory
-cd $DIRAC
-#git checkout master
-
 export DIRTIMEOUT="14m"
 
+# go to the local DIRAC directory
 BUILD_GNU=build_gnu_i8
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
@@ -24,6 +21,7 @@ ctest -j3 -D ExperimentalBuild
 ctest -j3 -D ExperimentalTest
 ctest  -D ExperimentalSubmit
 
+cd $DIRAC
 BUILD_GNU1=build_gnu_i4
 if [[ -d "$BUILD_GNU1" ]]; then
   echo "deleting previous build directory $BUILD_GNU1"
