@@ -859,11 +859,11 @@
       end if
 
       if (kw_matches(word, '.NOSING')) then
-         relcc_do_singles = .false.
+         relcc_no_singles = .true.
       end if
 
       if (kw_matches(word, '.NODOUB')) then
-         relcc_do_doubles = .false.
+         relcc_no_doubles = .true.
       end if
 
       if (kw_matches(word, '.NOSD  ')) then
