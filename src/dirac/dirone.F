@@ -2587,6 +2587,9 @@ C*****************************************************************************
 #endif
 !
 #include "implicit.h"
+#ifndef MOD_AOOSOC
+      logical :: aoomod = .false.
+#endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -3219,8 +3222,8 @@ C
           call interface_ao_write()
 ! stefan test
 
-#ifdef MOD_AOOSOC
         else if(aoomod)then 
+#ifdef MOD_AOOSOC
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !
@@ -3279,7 +3282,7 @@ C
           call quit('generation of  atomic oo-order 2e-SOC not active'//
      &              ' in this version')
 #endif
-      
+
         end if ! x2c_2c_mmf_mos .equiv. .true. or aoomod .equiv. true
       end if ! x2c .equiv. .true.
 
