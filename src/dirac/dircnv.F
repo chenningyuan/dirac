@@ -219,7 +219,7 @@ C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        ERGDIF = ERGDIF + 1.D-12*DHFERG
+        ERGDIF = ERGDIF + 1.D-10*DHFERG
 !       ... avoid erroneous predicted energy increase (ERGDIF negative)
 !           because of round-off errors /hjaaj
         IF (iprscf .GE. 2) THEN

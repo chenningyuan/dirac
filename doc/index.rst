@@ -207,3 +207,6 @@ Bibliography
 ============
 
 * :doc:`References <references>`
+
+
+Documentation generated on |today|.

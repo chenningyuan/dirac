@@ -204,8 +204,8 @@ C
       DOMP2   = relcc_do_mp2
       DOCCSD  = relcc_do_ccsd
       DOCCSDT = relcc_do_ccsd_t
-      NOCCS   = relcc_do_singles
-      NOCCD   = relcc_do_doubles
+      NOCCS   = relcc_no_singles
+      NOCCD   = relcc_no_doubles
       MXDIMCC = MAXDIM
       MXITCC = MAXIT
       NTOLCC = NTOL
