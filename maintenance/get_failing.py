@@ -12,7 +12,7 @@ except:
     sys.exit('To continue install Python requests module:\n1. option: pip install requests \n2. option: easy_install requests')
 
 """
-This script will parse local file Testing/Temporary/LastTestsFailed.log
+This script will parse local file build/Testing/Temporary/LastTestsFailed.log
 or dashboard at https://repo.theochem.kth.se/cdash/viewTest.php for defined build id
 and create and run a list of failed tests with or without additional arguments for ctest, 
 for example: -j4, -V.
@@ -73,7 +73,7 @@ def dashboard():
     # names of failed tests from dashboard
     names = []
     for line in r.iter_lines():
-        match = re.match(r'^.*href.*name=(.*)&amp;.*', line)
+        match = re.match(r'^.*href.*name=(.*)&amp;', line)
         if match:
             names.append(match.group(1))
 
@@ -82,12 +82,13 @@ def dashboard():
     for value in names:
         order = 0
         for line in open('CTestTestfile.cmake', 'r').readlines():
-            match = re.match(r'(^add_test.*)|(^ADD_TEST.*)', line)
+            match = re.match(r'(^add_test)|(^ADD_TEST)', line)
             if match:
                 order = order + 1
-            match = re.match(r'(^add_test\(' + value + '.*)|(^ADD_TEST\(' + value + '.*)', line)
+            match = re.match(r'(^add_test\(' + value + ' )|(^ADD_TEST\(' + value + ' )', line)
             if match:
                 tests.append(order)
+                break
     
     # sorting
     tests.sort()
