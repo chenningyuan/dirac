@@ -1,18 +1,21 @@
 ============
 Dirac Museum
 ============
-As the Dirac suite is developing, from time to time it is abandoning various parts of code or is switching to new programming schemes.
-Each good software should keep and document own history. Past involves many hours behind the computer screen, 
-plenty of new lines of the code, repeated tests and mainly - new ideas how to do things better.
+As the Dirac suite is developing, from time to time, it is abandoning various outdated parts of code or is switching 
+to new programming schemes.
 
-Everything can be traced in the deepness of the git repository. But some milestones in the code progress are to be higlighted and
+Each good software should keep and document its own history. Past involves many hours behind the computer screen, 
+writing many lines of the code, repeated tests and mainly new ideas how to do things better.
+
+Everything can be tracked in the deepness of the git repository. But some milestones in the code progress deserve to be higlighted and
 remembered here. 
+
 With this web page we would like to give tribute to some (old good) files and IT-solutions, which served us for a long time. 
 
 Repositories
 ============
-The first one was the CVS. 
-Later it was replaced with the SVN (subversion) connected with own web-interface, http://dirac.chem.sdu.dk/tracDirac. Test run results
+The first repository one was under the CVS. 
+Later it was replaced by the SVN (subversion) connected with own web-interface, http://dirac.chem.sdu.dk/tracDirac. Test run results
 were displayed on the web for the first time.
 
 The last (and the best) option is the GIT versioning. 
@@ -23,6 +26,7 @@ Multiple git-repositories is the current trend.
 Documentation
 =============
 It started as versioned LaTeX files within in the Dirac repository. Later, it was replaced by non-versioned wiki web-pages, http://wiki.chem.vu.nl/dirac/index.php/Dirac_Program.
+
 Finally the documentation returned to the Dirac repository under the universal Sphinx documentation generator.
 
 Discussion groups
@@ -48,7 +52,7 @@ Makefile in the trunk directory. Now there are no longer user written makefiles,
 
 pam
 ---
-Shell (sh) script for running Dirac.  Later it was replaced by Miro with Python version. Ulf also provided an alternative 'wrapper.py' script.
+Shell (sh) script for running Dirac.  Later it was replaced by Miro's  Python version. Ulf also provided an alternative 'wrapper.py' script.
 
 testlast.sh
 -----------
@@ -56,8 +60,10 @@ Shell (sh) script for running last test. Removed.
 
 runtest
 -------
-Also shell (sh) script for running test suite. Later substitued with Python runtest. However, it was found that CMake's ctest can
-do the whole job. Also  *results/filter* and *menu* files in the test directory are replaced with Radovan's new test Python file.
+Also shell (sh) script for running test suite. Later substitued with Radovan's Python runtest. 
+
+However, it was found that CMake's own ctest program can
+do the whole job. Also  *results/filter* and *menu* files in test directories were replaced with Radovan's new test Python file.
 
 Programming practices
 =====================
@@ -70,7 +76,7 @@ Instead of *"#include <common_block.h>"* we started to use  *"use mymodule"*.
 
 C++
 ---
-C++ was introduced into Dirac by Ulf.
+The C++ programming language was introduced into Dirac by Ulf. It followed the C language which was in Dirac from its beginnings.
 
 Memory management
 -----------------
@@ -82,6 +88,5 @@ recommended, instead *implicit none* with explicit declarations are to be prefer
 8-bytes Integer
 ---------------
 In the past we did not care about linking with integer*8 pre-compiled mathematical libraries when using 8-bytes integers. 
-This changed with introducing integer-4/8 control tests
-against linked libraries.
+This changed by introducing integer-4/8 control tests against linked libraries.
 

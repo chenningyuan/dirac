@@ -26,6 +26,10 @@ macro(dirac_test _name _label)
     endif()
 endmacro()
 
+if(RUN_UNIT_TESTS)
+  include(ConfigUnitTesting)
+endif()
+
 include(Tests)
 include(CTest)
 enable_testing()

@@ -17,7 +17,11 @@ Moelcular oxygen. Ground state.
 .OPEN SHELL
 1
 2/4,0
+**RELCCSD
+.NEL_F1
+ 2 3 1 0
+.NEL_F2
+ 2 2 1 1
+*CCSORT
+.USEOE ! Using HF orbital energies, instead of diagonal values of unrestricted Fock matrix
 *END OF
-
- &RELCCSD NELEC_F1=2,3,1,0 NELEC_F2=2,2,1,1 &END
-

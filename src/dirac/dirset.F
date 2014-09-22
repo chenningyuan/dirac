@@ -650,6 +650,7 @@ C
       LUFCK2    = 11
       LUFOCK    = 12
       LUDIIS    = 13
+      LUFCKT    = 14
       LU2HER    = 20
       LUDENS    = 21
       LUEVEC    = 22

@@ -11,6 +11,7 @@
 !  DIRSET - Conventional OR direct calculation of 2-e integrals
 !           has been specified manually (used for SMLV1C)
 !  BNCRON - Improved screening of nucleus for bare nucleus starting guess
+!  force_bnc - use input value of BNCRON w/o checking molecular charge (PSB+MI)
 !
 !  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
 !    TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
@@ -44,7 +45,7 @@
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
      &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
-     &        QM3, QMMM, BARNUC, DOHUCKEL
+     &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc
       LOGICAL OPTWLK, OPTNEW,  NMWALK
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
@@ -59,7 +60,7 @@
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
      &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
-     &                OPTWLK, OPTNEW, NMWALK
+     &                OPTWLK, OPTNEW, NMWALK, force_bnc
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND, N_WF

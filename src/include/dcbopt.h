@@ -24,10 +24,10 @@
 !     MOPT_MXMICRO   - maximum micro iterations
 !     MOPT_MXMACRO   - maximum macro iterations
 !
-!     IOPT_ISTATE    - converge to state no. ISTATE (0=ground state)
+!     IOPT_STATE     - converge to state no. ISTATE (0=all NCIROOT roots, 1=ground state, etc)
 !
-!     FLAG:       (1)  Always Newton-Raphson iterations
-!                 (2)  Always NEO iterations
+!     FLAG:        (1) Always Newton-Raphson iterations
+!                  (2) Always NEO iterations
 !                 (19) Tight step contol for ground state also
 !                 (20) Skip extra termination tests
 !
@@ -56,10 +56,10 @@
      &        IOPT_ISYMOP(2), NZVAR, NZVARQ, NZCONF, NZCONFQ, NZXOPT,   &
      &        NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZHOPT,        &
      &        NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO, MOPT_MXMACRO,     &
-     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
+     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_STATE, IANACI, &
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MCTYPE,             &
-     &        MK2DEL, MK2REF, MINMK2, MAXMK2,                           &
+     &        IOPT_MK2DEL, IOPT_MK2REF, IOPT_MINMK2, IOPT_MAXMK2,       &
      &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
@@ -70,10 +70,10 @@
      &                NZXOPT, NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ,&
      &                NZHOPT, NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO,   &
      &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV, IANACI,&
-     &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
+     &                IRESTRK, IOPT_STATE, IOPT_SYMMETRY, KTRLVL,       &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MCTYPE,                   &
-     &                MK2DEL, MK2REF, MINMK2, MAXMK2,                   &
+     &                IOPT_MK2DEL,IOPT_MK2REF,IOPT_MINMK2,IOPT_MAXMK2,  &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
@@ -84,14 +84,14 @@
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       E_LVCORR_MC,THR_CVEC, threci
+     &       E_LVCORR_MC,OPT_THR_CVEC, opt_threci
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                E_LVCORR_MC,THR_CVEC, threci
+     &                E_LVCORR_MC,OPT_THR_CVEC, opt_threci
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)

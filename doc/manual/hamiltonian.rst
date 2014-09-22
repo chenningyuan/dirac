@@ -477,6 +477,12 @@ Neglect potential for multi-center SS blocks, i.e. multi-center SS
 nuclear attraction integrals and multi-center SS two-electron integrals.
 
 
+keyword(JZOUT)
+
+Print out Jz MO matrices for the diagonalization into own formatted files (suitable for testing). 
+Only for the linear symmetry. Programmer's option.
+
+
 keyword(ONECAP)
 
 Consider taking the :ref:`.SMLV1C` model one step further. Only

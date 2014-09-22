@@ -78,13 +78,20 @@ C     =================================================
 C
       OLDFMO = ICHKCNV .GT. 0
       IF(OLDFMO) THEN
-        IF(MXDIIS.EQ.0) THEN
-          IREC = 1
-        ELSE
-          IREC = MOD(NITER-2,MXDIIS-1) + 1
-        ENDIF
+! PSB+MI change (Aug2014):
+        numfmat = max0 (5,mxdiis)
+        IREC = MOD(NITER-2,numfmat-1) + 1
         CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
 C
+        IF(IPRSCF.GE.15) THEN
+          DO I = 1,NFSYM
+             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+             CALL HEADER('DHFCNV: old Fock Matrix in FBUF:',-1)
+             CALL PRQMAT(FBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+          END DO
+        ENDIF
+
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)
       ELSE
         ERGOLD(1:N_OLD) = 1.0D20
@@ -94,14 +101,19 @@ C       ... reinitialize ERGOLD and EVCOLD /hjaaj
 
 C     ...and write current MO Fock matrix to file
 C     ==============================================
-C
-      IF(MXDIIS.EQ.0) THEN
-        IREC = 1
+! PSB+MI change/ Aug2014:
+        numfmat = max0 (5,mxdiis)
+        IREC = MOD(NITER-1,numfmat-1) + 1
         CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
-      ELSE
-        IREC = MOD(NITER-1,MXDIIS-1) + 1
-        CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
-      ENDIF
+c     DEBUG PRINT AFTER write Fock Matrix to file (PBS+MI)
+            IF(IPRSCF.GE.15) THEN
+               DO I = 1,NFSYM
+                  WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+                  CALL HEADER('DHFCNV: MO Fock matrix to file:',-1)
+                  CALL PRQMAT(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                     NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END DO
+            END IF
 C
       ERGVAL = ERGBUF - DHFERG
 C
@@ -207,7 +219,7 @@ C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        ERGDIF = ERGDIF + 1.D-12*DHFERG
+        ERGDIF = ERGDIF + 1.D-10*DHFERG
 !       ... avoid erroneous predicted energy increase (ERGDIF negative)
 !           because of round-off errors /hjaaj
         IF (iprscf .GE. 2) THEN
@@ -238,8 +250,20 @@ C         If DODAMP Fock matrix from previous cycle has to be reread from
 C         previous cycle after being overwritten in DIISDR
 C
           IF(DODAMP .AND. IBSTAT.EQ.1) THEN
-            IREC = MOD(NITER-2,MXDIIS-1) + 1
+! NUMFMAT added to make usage consistent with other READAC & WRTDAC
+! usage (PSB+MI, Aug2014)
+            numfmat = max0 (5,mxdiis)
+            IREC = MOD(NITER-2,numfmat-1) + 1
             CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
+! DEBUG PRINT AFTER READ Fock Matrix from file (PBS+MI)
+            IF(IPRSCF.GE.15) THEN
+               DO I = 1,NFSYM
+                  WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+                  CALL HEADER('DHFCNV: MO Fock matrix from file:',-1)
+                  CALL PRQMAT(FBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                     NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END DO
+            END IF
           ENDIF
         ELSE
           CACC(1:4) = 'DIIS'
@@ -277,6 +301,12 @@ C
      &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
           END DO
         ENDIF
+
+!  save Damped FMO as New matrix on LUFOCK (PBS+MI/Aug2014)
+        numfmat = max0 (5,mxdiis)
+        IREC = MOD(NITER-1,numfmat-1) + 1
+        CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
+c
       ENDIF
       CALL FLSHFO(LUPRI)
       RETURN
