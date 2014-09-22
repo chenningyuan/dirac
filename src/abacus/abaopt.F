@@ -2321,9 +2321,7 @@ C
       use dft_cfg
       use num_grid_gen
 
-#if defined (PCM_MODULE)
       use pcm_scf
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2423,7 +2421,6 @@ ckr#endif
          call reset_num_grid()
       end if
 
-#ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
@@ -2439,7 +2436,6 @@ ckr#endif
         call pcm_scf_initialize(lupri)
         write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
       end if
-#endif
 
 C
 C     Geometry optimization for Dirac
@@ -2456,12 +2452,10 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
-#if defined (PCM_MODULE)
 ! If optimizing with PCM then the energy must include the
 ! polarization contribution
          else if (dirac_cfg_pcm) then
             energy = dhferg
-#endif
          ELSE
             call quit('no wave function...')
          END IF

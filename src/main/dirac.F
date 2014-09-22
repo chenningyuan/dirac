@@ -86,9 +86,7 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
-#if defined (PCM_MODULE)
       use pcm_scf
-#endif
 
       implicit none
 
@@ -118,7 +116,6 @@ C***********************************************************************
       call interface_ao_write()
       call interface_mo_write()
 
-#ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
@@ -132,7 +129,6 @@ C***********************************************************************
         call pcm_scf_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
-#endif
 C
 C
 C***********************************************************************
@@ -296,9 +292,7 @@ C         *************************************************
 C
           IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
-#if defined (PCM_MODULE)
      &         .NOT. dirac_cfg_pcm .AND.
-#endif
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
              CALL PSIOPT('SCF  ',WFCONV)
           END IF

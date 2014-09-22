@@ -23,7 +23,7 @@ option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"        
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
-option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      ON)
+option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
@@ -141,7 +141,8 @@ else()
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if(ENABLE_PCMMOD)
+if(ENABLE_PCMSOLVER)
+    message(STATUS "Polarizable Continuum Model via PCMSolver enabled.")
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -149,14 +150,13 @@ if(ENABLE_PCMMOD)
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-	#-DCBLAS_ROOT=${CBLAS_ROOT}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
 	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
 	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-    )
+	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR})
     
     add_external(pcmsolver)
 
@@ -165,8 +165,7 @@ if(ENABLE_PCMMOD)
 	pcm
 	z
         getkw
-        ${EXTERNAL_LIBS}
-        )
+        ${EXTERNAL_LIBS})
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -291,7 +290,7 @@ foreach(
         dirac
         ${EXTERNAL_LIBS}
         )
-    if(ENABLE_PCMMOD)
+    if(ENABLE_PCMSOLVER)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
     if(ENABLE_STATIC_LINKING)

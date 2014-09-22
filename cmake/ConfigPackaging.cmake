@@ -50,7 +50,7 @@ install(
     WORLD_READ
     )
 
-if(ENABLE_PCMMOD)
+if(ENABLE_PCMSOLVER)
    install( # Install PCMSolver input parsing script
        FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/pcmsolver
        DESTINATION bin

@@ -96,6 +96,7 @@ def main():
     vital_directories.append('src/main')
     vital_directories.append('src/matrix_operations')
     vital_directories.append('src/moltra')
+    vital_directories.append('src/pcm')
     vital_directories.append('src/pdpack')
     vital_directories.append('src/prp')
     vital_directories.append('src/reladc')
@@ -173,6 +174,8 @@ def main():
     add_test('mp2_srdft_energies', 'short;mp2;srdft')
     add_test('mp2_natural_orbitals', 'short;mp2')
     add_test('open-shells', 'short')
+    add_test('pcm_energy', 'short;scf')
+    add_test('pcm_response', 'short;response;polarizabilities')
     add_test('projection_analysis', 'short;projection')
     add_test('pvc_scf', 'short;pvc;scf')
     add_test('response_C6', 'short;response')
@@ -398,15 +401,6 @@ def main():
     dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].add_test('dft_minnesota')
-    dirac_modules[this_module].take_out_of_release()
-
-    this_module = 'pcm'
-    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
-    dirac_modules[this_module].add_cppflag('PCM_MODULE')
-    dirac_modules[this_module].add_directory('src/pcm')
-    dirac_modules[this_module].add_test('pcm_energy')
-    dirac_modules[this_module].add_test('pcm_response')
-    dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
     # define input options

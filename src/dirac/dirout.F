@@ -30,9 +30,7 @@ C
 C***********************************************************************
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
-#ifdef PCM_MODULE
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -154,12 +152,10 @@ C            leave this to authors of this part) Done, hjaaj.
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Solvation energy                         :   ',ERGSOL
         ENDIF
-#ifdef PCM_MODULE
         if (dirac_cfg_pcm) then
           write(lupri,'(3X,A,'//FMT//')')
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
-#endif
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
@@ -201,12 +197,10 @@ C     energy virtuals.
 C
       CALL CHKHLG(EIG,IBEIG)
 C
-#if defined (PCM_MODULE)
       if (dirac_cfg_pcm) then
               call pcm_scf_finalize
        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
       end if
-#endif
       RETURN
 C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,

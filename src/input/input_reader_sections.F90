@@ -1496,9 +1496,7 @@
    subroutine read_input_pcm(word, kw_section)
 
       use dirac_cfg
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
       use input_reader
 
       implicit none
@@ -1508,7 +1506,6 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef PCM_MODULE
       dirac_cfg_pcm = .true.
 
       call reset_available_kw_list()
@@ -1540,9 +1537,6 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-#else
-      call quit('Polarizable Continuum Model not included in this version')
-#endif
 
    end subroutine
 
