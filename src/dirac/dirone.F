@@ -2195,6 +2195,9 @@ C*****************************************************************************
 #endif
 !
 #include "implicit.h"
+#ifndef MOD_AOOSOC
+      logical :: aoomod = .false.
+#endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
