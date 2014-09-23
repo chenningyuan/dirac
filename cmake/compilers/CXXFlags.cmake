@@ -1,8 +1,3 @@
-# This variable is not guaranteed to be defined for all compilers or languages
-if(NOT DEFINED CMAKE_CXX_COMPILER_ID)
-	message(FATAL_ERROR "CMAKE_CXX_COMPILER_ID variable is not defined! (CMake Error)")
-endif()
-
 if (NOT DEFINED DEFAULT_CXX_FLAGS_SET OR RESET_FLAGS)
 
 # custom flags are defined by setup --custom-cxx-flags
@@ -32,6 +27,12 @@ else()
         set (CMAKE_CXX_FLAGS "-Wno-unknown-pragmas")
         set (CMAKE_CXX_FLAGS_DEBUG "-O0 -debug -DDEBUG")
         set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
+        
+        # intel compiler xHOST flag
+        if(XHOST_AVAILABLE)
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -xHOST")
+        endif(XHOST_AVAILABLE)
+        
         #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
         set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
     elseif (CMAKE_CXX_COMPILER_ID MATCHES PGI)

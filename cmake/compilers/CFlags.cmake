@@ -1,8 +1,3 @@
-# This variable is not guaranteed to be defined for all compilers or languages
-if(NOT DEFINED CMAKE_C_COMPILER_ID)
-	message(FATAL_ERROR "CMAKE_C_COMPILER_ID variable is not defined! (CMake Error)")
-endif()
-
 if(NOT DEFINED DEFAULT_C_FLAGS_SET OR RESET_FLAGS)
 
 # custom flags are defined by setup --custom-cc-flags
@@ -32,6 +27,12 @@ else()
         set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2")
+        
+        # intel compiler xHOST flag
+        if(XHOST_AVAILABLE)
+            set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -xHOST")
+        endif(XHOST_AVAILABLE)
+        
         #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
         set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 

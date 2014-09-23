@@ -1,8 +1,3 @@
-# This variable is not guaranteed to be defined for all compilers or languages
-if(NOT DEFINED CMAKE_Fortran_COMPILER_ID)
-	message(FATAL_ERROR "CMAKE_Fortran_COMPILER_ID variable is not defined! (CMake Error)")
-endif()
-
 if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET OR RESET_FLAGS)
 
 # custom flags are defined by setup --custom-fc-flags
@@ -48,6 +43,12 @@ else()
         set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
         set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
         set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+        
+        # intel compiler xHOST flag
+        if(XHOST_AVAILABLE)
+            set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -xHOST")
+        endif(XHOST_AVAILABLE)
+        
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
         if(DEFINED MKL_FLAG)

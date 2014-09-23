@@ -4,7 +4,7 @@
 # and comparing compilers versions
 #
 # At this moment the CMAKE_<LANG>_COMPILER_ID variable must be defined for C, C++ and Fortran: 
-# see CFlags.cmake, CXXFlags.cmake and FortranFlags.cmake, otherwise quit with fatal error.
+# see ConfigCompilerFlags.cmake, otherwise quit with fatal error.
 #
 # Written by Ivan Hrasko, February 2014.
 # 
