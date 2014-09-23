@@ -1120,7 +1120,10 @@ Options are also read from ~/.diracrc"""
 	    if 'PCMSOLVER_PARSE' in os.environ.keys():
                 sys.path.append(os.environ['PCMSOLVER_PARSE'])
                 import pcmsolver
-                pcmsolver.parse_pcm_input()
+                current = os.getcwd()
+                os.chdir(self.scratch_dir)
+                pcmsolver.parse_pcm_input('pcmsolver.inp')
+                os.chdir(current)
             else:
                 print >> sys.stderr,'Cannot find PCMSolver input parsing script'
                 print >> sys.stderr,'Did you export the PCMSOLVER_PARSE environment variable?'
