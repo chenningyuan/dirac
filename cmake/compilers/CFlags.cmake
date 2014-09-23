@@ -24,20 +24,41 @@ else()
                 )
         endif()
     elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
-        set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
-        set(CMAKE_C_FLAGS_DEBUG   "-O0")
-        set(CMAKE_C_FLAGS_RELEASE "-O2")
-        
-        # intel compiler xHOST flag
-        if(XHOST_AVAILABLE)
-            set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -xHOST")
-        endif(XHOST_AVAILABLE)
-        
-        #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
-        set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+        # Intel has different flags on Windows and Linux + MacOS 
+        if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+            set(CMAKE_C_FLAGS         "/Z7 /Qwd981 /Qwd279 /Qwd383 /Qvec-report0 /Qwd1572 /Qwd177")
+            set(CMAKE_C_FLAGS_DEBUG   "/O0")
+            set(CMAKE_C_FLAGS_RELEASE "/O2")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /QxHost")
+            endif(XHOST_AVAILABLE)
+            
+            #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+            # windows: none
+            set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
+            
+            # to do - make a change in setup
+            if(DEFINED MKL_FLAG)
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
+            endif()
+        else()
+            set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
+            set(CMAKE_C_FLAGS_DEBUG   "-O0")
+            set(CMAKE_C_FLAGS_RELEASE "-O2")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -xHost")
+            endif(XHOST_AVAILABLE)
+            
+            #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+            set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 
-        if(DEFINED MKL_FLAG)
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
+            if(DEFINED MKL_FLAG)
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
+            endif()
         endif()
     elseif(CMAKE_C_COMPILER_ID MATCHES PGI)
         set(CMAKE_C_FLAGS         "-g")

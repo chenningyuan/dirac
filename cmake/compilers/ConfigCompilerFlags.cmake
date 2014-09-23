@@ -24,7 +24,7 @@ if(CMAKE_C_COMPILER_WORKS AND CMAKE_CXX_COMPILER_WORKS AND CMAKE_Fortran_COMPILE
             )
         else()
             execute_process(
-                COMMAND ifort -xHost ${CMAKE_SOURCE_DIR}/cmake/compilers/Test_xHost_Flag.F90 -o ${CMAKE_BINARY_DIR}/test_xhost_flag.out
+                COMMAND ifort -xHost ${CMAKE_SOURCE_DIR}/cmake/compilers/Test_xHost_Flag.F90 -o ${CMAKE_BINARY_DIR}/test_xhost_flag.x
             )
         endif()
 
@@ -38,7 +38,7 @@ if(CMAKE_C_COMPILER_WORKS AND CMAKE_CXX_COMPILER_WORKS AND CMAKE_Fortran_COMPILE
             )
         else()
             execute_process(
-                COMMAND ${CMAKE_BINARY_DIR}/test_xhost_flag.out
+                COMMAND ${CMAKE_BINARY_DIR}/test_xhost_flag.x
 
                 OUTPUT_VARIABLE TEST
                 ERROR_VARIABLE TEST

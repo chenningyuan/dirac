@@ -1,4 +1,4 @@
-! test program to see if it is possible to use Intel compiler xHOST flag
+! test program to see if it is possible to use Intel compiler xHost flag
 
 program test
 

@@ -24,17 +24,34 @@ else()
             set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
         endif()
     elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-        set (CMAKE_CXX_FLAGS "-Wno-unknown-pragmas")
-        set (CMAKE_CXX_FLAGS_DEBUG "-O0 -debug -DDEBUG")
-        set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
-        
-        # intel compiler xHOST flag
-        if(XHOST_AVAILABLE)
-            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -xHOST")
-        endif(XHOST_AVAILABLE)
-        
-        #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
-        set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
+        # Intel has different flags on Windows and Linux + MacOS
+        if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+            # windows: none
+            set (CMAKE_CXX_FLAGS "")
+            set (CMAKE_CXX_FLAGS_DEBUG "/O0 /debug /DDEBUG")
+            set (CMAKE_CXX_FLAGS_RELEASE "/debug /O3 /DNDEBUG")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /QxHost")
+            endif(XHOST_AVAILABLE)
+            
+            #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
+            # windows: none
+            set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
+        else()
+            set (CMAKE_CXX_FLAGS "-Wno-unknown-pragmas")
+            set (CMAKE_CXX_FLAGS_DEBUG "-O0 -debug -DDEBUG")
+            set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -xHost")
+            endif(XHOST_AVAILABLE)
+            
+            #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
+            set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
+        endif()
     elseif (CMAKE_CXX_COMPILER_ID MATCHES PGI)
         set(CMAKE_CXX_FLAGS         "-g")
         set(CMAKE_CXX_FLAGS_DEBUG   "-O0")

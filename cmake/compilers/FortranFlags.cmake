@@ -40,43 +40,82 @@ else()
                 )
         endif()
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-        set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
-        set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
-        set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
-        
-        # intel compiler xHOST flag
-        if(XHOST_AVAILABLE)
-            set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -xHOST")
-        endif(XHOST_AVAILABLE)
-        
-        set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+        # Intel has different flags on Windows and Linux + MacOS
+        if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+            set(CMAKE_Fortran_FLAGS         "/w /assume:byterecl /DVAR_IFORT /Z7 /traceback")
+            set(CMAKE_Fortran_FLAGS_DEBUG   "/O0")
+            set(CMAKE_Fortran_FLAGS_RELEASE "/O3 /Qip")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} /QxHost")
+            endif(XHOST_AVAILABLE)
+            
+            # windows: pg - none
+            set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} /debug:full")
 
-        if(DEFINED MKL_FLAG)
-            set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
-        endif()
+            # to do - setup
+            if(DEFINED MKL_FLAG)
+                set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
+            endif()
 
-        if(ENABLE_STATIC_LINKING)
-            set(CMAKE_Fortran_FLAGS
-                "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
-                )
-        endif()
-        if(ENABLE_64BIT_INTEGERS)
-            set(CMAKE_Fortran_FLAGS
-                "${CMAKE_Fortran_FLAGS} -i8"
-                )
-        endif()
-        if(ENABLE_BOUNDS_CHECK)
-            # miro: removed -ftrapuv due to problems with floating point execptions
-            set(CMAKE_Fortran_FLAGS
-                "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
-                )
-        endif()
+            # windows: none
+            if(ENABLE_STATIC_LINKING)
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+                    )
+            endif()
+            if(ENABLE_64BIT_INTEGERS)
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} /4I8"
+                    )
+            endif()
+            if(ENABLE_BOUNDS_CHECK)
+                # miro: removed -ftrapuv due to problems with floating point execptions
+                # to do: -fpstkchk fro windows
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} /check:bounds /check:pointers /check:uninit /check:output_conversion"
+                    )
+            endif()
+        else()
+            set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
+            set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
+            set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+            
+            # intel compiler xHost flag
+            if(XHOST_AVAILABLE)
+                set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -xHost")
+            endif(XHOST_AVAILABLE)
+            
+            set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
-        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
-            set(CMAKE_Fortran_FLAGS
-                "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
-                )
+            if(DEFINED MKL_FLAG)
+                set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
+            endif()
+
+            if(ENABLE_STATIC_LINKING)
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+                    )
+            endif()
+            if(ENABLE_64BIT_INTEGERS)
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} -i8"
+                    )
+            endif()
+            if(ENABLE_BOUNDS_CHECK)
+                # miro: removed -ftrapuv due to problems with floating point execptions
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
+                    )
+            endif()
+
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+                message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
+                set(CMAKE_Fortran_FLAGS
+                    "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
+                    )
+            endif()
         endif()
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
         set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
