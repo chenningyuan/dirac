@@ -30,7 +30,7 @@ macro(add_external _project)
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
         TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
-	INSTALL_COMMAND "" # do not install, only build
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
