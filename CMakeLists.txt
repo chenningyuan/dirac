@@ -162,7 +162,7 @@ if(ENABLE_PCMSOLVER)
 
     set(EXTERNAL_LIBS
         stdc++
-	pcm
+	${PROJECT_BINARY_DIR}/external/pcmsolver-build/libpcm.a
 	z
         getkw
         ${EXTERNAL_LIBS})
