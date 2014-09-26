@@ -31,7 +31,6 @@ option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"   
 option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL  "Always remove builds stamps of external projects"          ON)
 option(ENABLE_CRAY_WRAPPERS   "Enable cray wrappers for BLAS/LAPACK and MPI"              OFF)
 option(ENABLE_BENCHMARKS      "Enable benchmarks within the test suite"                   OFF)
 option(ENABLE_TUTORIALS       "Enable tutorials within the test suite"                    OFF)

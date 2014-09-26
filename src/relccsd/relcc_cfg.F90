@@ -164,8 +164,8 @@ contains
 
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_singles                ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_doubles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_singles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_doubles                ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsd                   ,1,0,global_communicator) 
   call interface_mpi_bcast_l0(relcc_do_ccsd_t                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ccener_max_dimension_diis ,1,0,global_communicator)
