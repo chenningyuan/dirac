@@ -59,9 +59,7 @@ C       We want the analytical gradient, check whether it is implemented
      &           .or. doluct
      &           .or. dokrmc
      &           .or. doluciar
-#if defined (PCM_MODULE)
      &           .or. dirac_cfg_pcm
-#endif
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use NUMERICAL MOLECULAR GRADIENT',

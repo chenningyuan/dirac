@@ -200,6 +200,9 @@ class pam_enviroment:
         self.input_file_molecule = ''
         self.input_dirac = ''
         self.input_file_dirac = ''
+    # PCMSolver input file
+        self.input_pcm = ''
+        self.input_file_pcm = ''
 
     # output name created from *inp & *mol names
         self.output_name = ''
@@ -234,7 +237,10 @@ class pam_enviroment:
             'matexport.m',
             'DFCOEF.BEST',
             '*.xml',
-            'plot*'
+            'plot*',
+            'cavity.off',
+            'PEDRA.OUT',
+            'PCM_mep_asc'
             ]
 
     # ... DFCOEF
@@ -489,6 +495,8 @@ Options are also read from ~/.diracrc"""
         group.add_option('--mol', type='string', action='store',
                          dest='mol_file',
                          help='file containing the basis set and geometry specifications [*.mol or *.xyz]')
+        group.add_option('--pcm', type='string', action='store',
+                         dest='pcm_file', help='PCMSolver input file [*.pcm]')
         group.add_option(
             '--fullrestart',
             type='string',
@@ -912,9 +920,15 @@ Options are also read from ~/.diracrc"""
         if not self.just_show_settings:
             if options.mol_file is not None and options.inp_file \
                 is not None:
-                self.input_molecule = options.mol_file
-                self.input_dirac = options.inp_file
-                self.assign_mol_inp_files()
+                    if options.pcm_file is not None:
+                        self.input_molecule = options.mol_file
+                        self.input_dirac = options.inp_file
+                        self.input_pcm   = options.pcm_file
+                        self.assign_mol_inp_files()
+                    else:
+                        self.input_molecule = options.mol_file
+                        self.input_dirac = options.inp_file
+                        self.assign_mol_inp_files()
             else:
                 if not self.full_restart:
                     print_error_message("both --mol and --inp input parameters are required !")
@@ -973,6 +987,13 @@ Options are also read from ~/.diracrc"""
             print >> sys.stderr, '\npam: DIRAC input file %s not found' % self.input_dirac
             print >> sys.stderr, '     input directory: %s' % self.input_directory
             sys.exit(5)
+        
+        if os.path.isfile(self.input_pcm + '.pcm'):
+            self.input_file_pcm = self.input_pcm + '.pcm'
+        elif os.path.isfile(self.input_pcm):
+            self.input_file_pcm = self.input_pcm
+        else:
+            self.input_file_pcm = '' 
 
     def set_output_name(self):
         '''Set the output name string to be used later for naming the
@@ -1046,7 +1067,6 @@ Options are also read from ~/.diracrc"""
             elif env_variables_set > 0:
                 print('  pam script will not (re)set this environment variable if it is set by the user')
 
-
     def copy_files(self):
         '''copy file from any directory to the scratch directory'''
 
@@ -1094,6 +1114,21 @@ Options are also read from ~/.diracrc"""
             self.copy_with_replacement(self.input_file_dirac, os.path.join(self.scratch_dir, 'DIRAC.INP'))
         else:
             print '  No input file provided; pam will assume that it is obtained from the restart file.'
+
+        if self.input_file_pcm:
+            self.copy_with_replacement(self.input_file_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'))
+	    if 'PCMSOLVER_PARSE' in os.environ.keys():
+                sys.path.append(os.environ['PCMSOLVER_PARSE'])
+                import pcmsolver
+                current = os.getcwd()
+                os.chdir(self.scratch_dir)
+                pcmsolver.parse_pcm_input('pcmsolver.inp')
+                os.chdir(current)
+            else:
+                print >> sys.stderr,'Cannot find PCMSolver input parsing script'
+                print >> sys.stderr,'Did you export the PCMSOLVER_PARSE environment variable?'
+                sys.exit(1)
+
 
         # put files to the scratch directory
         if self.put_files:
@@ -1231,7 +1266,7 @@ Options are also read from ~/.diracrc"""
                 if self.mpirun == None:
                     # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                     #          then self.mpirun is None and we have to stop here otherwise pam calls
-                    #          None -np N /paht/to(dirac.x
+                    #          None -np N /path/to/dirac.x
                     sys.exit('pam did not find mpirun, check your $PATH, or assign as parameter ! ')
                
                 if self.argument_to_pass_scratch_dir_to_slaves:
@@ -1550,9 +1585,9 @@ Options are also read from ~/.diracrc"""
                     # backup file if it's there
                     backup_file(some_file=full_file_name_local, upto=None)
                 self.copy_file(full_file_name_scratch, full_file_name_local)
-                print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
+                #print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
             else:
-                print_error_message('File %s not found in the scratch directory.' % file_name_scratch)
+                print_error_message('  File %s not found in the scratch directory !' % file_name_scratch)
 
         if self.archive:
             self.archive_working_files()
@@ -1582,7 +1617,7 @@ Options are also read from ~/.diracrc"""
                 print_error_message('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
                 sys.exit(-1)
             for this_node in self.nodes:
-                print 'content of the scratch_dir, slave node ', this_node, \
+                print 'Content of the scratch_dir, slave node ', this_node, \
                     ':', self.scratch_dir
                 command = self.rsh + ' ' + this_node + ' "ls -l ' \
                     + self.scratch_dir + ' "'

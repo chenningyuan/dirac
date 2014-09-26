@@ -2112,17 +2112,17 @@ C     Get correct column ordering
 C     ===========================
 C 
       CALL IZERO(IBEIG2,NORBT)
+      NDIM = NTBAS(0)*NORBT*4
 C     ... only if coefficients are read from DFCOEF
-      IF(IREADMO .eq. 2)THEN
-        CALL INDEXX(NORBT,EIG1,IBUF)
-C       Sort eigenvalues (and boson irrep info) 
-C                         ^ this is not done here - SK - April 2010
-        DO J = 1,NORBT
-          EIG2(J) = EIG1(IBUF(J))
-          CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
-        ENDDO
+      IF(IREADMO.EQ.2) THEN
+C.......if more than one fermion ircop merge orbital classes
+        IF(NFSYM.EQ.2) THEN
+          CALL ACMOU3(EIG1,CMO1,EIG2,CMO2,NTBAS(0),NORBT,IBUF,IDUM)
+        ELSE
+          CALL DCOPY(NDIM,CMO1,1,CMO2,1)   
+          CALL DCOPY(NORBT,EIG1,1,EIG2,1)
+        ENDIF
       ELSE
-        NDIM = NTBAS(0)*NORBT*4
         CALL DCOPY(NDIM,CMO1,1,CMO2,1)
         CALL DZERO(EIG2,NORBT)
         IF(MCORB) CALL DCOPY(NORBT,EIG1,1,EIG2,1)
@@ -2197,18 +2197,93 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou3 */
-      SUBROUTINE ACMOU3(CMO1,CMO2,J1,J2,NBAS,NORB)
+      SUBROUTINE ACMOU3(EIG1,CMO1,EIG2,CMO2,NR,NC,IBUF,IOFF)
 C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION CMO1(NBAS,NORB,4),CMO2(NBAS,NORB,4)
 C
-      DO IZ = 1,4
-        CALL DCOPY(NBAS,CMO1(1,J1,IZ),1,CMO2(1,J2,IZ),1)        
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+      DIMENSION CMO1(NR,NC,NZC1),CMO2(NR,NC,NZC1),
+     &          EIG1(NC),EIG2(NC),IBUF(*),IOFF(*)     
+C     Initialize offsets; they will be updated inside ACMOU4
+      IOFF(1) = 0
+      IOFF(2) = NORB(1) 
+      JOFF    = 0
+C.....Negative-energy solutions
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NPSH,IOFF,
+     &            JOFF,NFSYM,NR,NC,NZC1,IBUF)
+C.....Inactive orbitals      
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NISH,IOFF,JOFF,
+     &            NFSYM,NR,NC,NZC1,IBUF)
+C.....Active orbitals
+      DO IOPEN = 1,NOPEN
+        CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NACSH(1,IOPEN),IOFF,JOFF,
+     &              NFSYM,NR,NC,NZC1,IBUF)
       ENDDO
+C.....Virtual orbitals
+      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NSSH,IOFF,JOFF,
+     &            NFSYM,NR,NC,NZC1,IBUF)
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck acmou4 */
+      SUBROUTINE ACMOU4(CMO1,EIG1,CMO2,EIG2,NVEC,IVEC,JVEC,
+     &                  NFSYM,NBAS,NORB,NZC1,IBUF)
+C***********************************************************************
+C
+C     Merge orbital coefficients/energies from different fermion ircops
+C     of the same orbital class and order them by energy
+C
+C     Written by T. Saue in Nha Trang Aug 29 3014
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: NFSYM,NBAS,NORB,NZC1,NVEC(NFSYM)
+      real(8), intent(in)   :: EIG1(NORB),CMO1(NBAS,NORB,NZC1)
+      integer, intent(inout):: IVEC(NFSYM),IBUF(NORB),JVEC
+      real(8), intent(out)  :: EIG2(NORB),CMO2(NBAS,NORB,NZC1)
+      integer, allocatable  :: IND(:)
+      real(8), allocatable  :: BUF(:)
+      integer               :: NVECT,IFRP,I,II,JJ,IZ
+C     Find total number of orbitals in this class
+      NVECT = 0
+      DO IFRP = 1,NFSYM
+        NVECT = NVECT + NVEC(IFRP)
+      ENDDO
+      IF(NVECT.EQ.0) RETURN
+C     Merge orbital eigenvalues into buffer
+      ALLOCATE(IND(NVECT))
+      ALLOCATE(BUF(NVECT))
+      II = 0
+      DO IFRP = 1,NFSYM
+        DO I = 1,NVEC(IFRP)
+          II = II + 1
+          IND(II) = IVEC(IFRP)+I
+          BUF(II) = EIG1(IVEC(IFRP)+I)
+        ENDDO
+      ENDDO
+C     Merge/Sort on energy
+      CALL INDEXX(NVECT,BUF,IBUF)
+      DO I = 1, NVECT
+        JJ = I + JVEC
+        II = IND(IBUF(I))
+        EIG2(JJ) = EIG1(II)
+        DO IZ = 1,NZC1
+          CALL DCOPY(NBAS,CMO1(1,II,IZ),1,CMO2(1,JJ,IZ),1)        
+        ENDDO
+      ENDDO
+      DO IFRP = 1,NFSYM
+        IVEC(IFRP) = IVEC(IFRP) + NVEC(IFRP)
+      ENDDO       
+      JVEC = JVEC + NVECT
+      DEALLOCATE(IND)
+      DEALLOCATE(BUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2719,9 +2794,9 @@ C     ====================================
             JRDMO = -1
             REWIND LUKRMC
             CALL RREADMO(CMO,JRDMO,3,LUKRMC)
-!FIXME!!!   CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
+            CALL REAKRMC(LUKRMC,'NEWNATOC',EIG,NORBT)
 !           ... set to zero
-            CALL DZERO(EIG,NORBT)
+!           CALL DZERO(EIG,NORBT)
           end if
         END IF
 
@@ -2871,7 +2946,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,TOTERG_DEF
       CHARACTER FRAGFIL(NFRAG)*6
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2881,6 +2956,8 @@ C
 !     flag for MCSCF coefficents present on fragment/molecular
 !     coefficients file
       CMCSCF_MAGIC = 137.0D0
+!miro: initialization
+      TOTERG_DEF=.FALSE.
 C
 C.....loop over fragments
       INUC  = 1
@@ -2918,6 +2995,7 @@ C.......Fragment orbitals in molecular basis
 !         check for MCSCF coefficients on fragment/molecule file
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
      &                TOTERG,-1,WORK,KFREE,LFREE)
+          TOTERG_DEF=.TRUE. ! miro: yes, we have the TOTERG value
 !
 !         set local IOPT_TMP
           IOPT_TMP = IOPT
@@ -2967,8 +3045,13 @@ C       Select boson irrep information
 !
 !     reset IOPT flag for extra printout in ANAPR1 and proper handling 
 !     of the occupation vector.
-      IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
+      IF (TOTERG_DEF) THEN
+        IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
      &    IOPT = IOPT_TMP
+      ELSE ! miro: TOTERG not defined
+        IF(FRAGFIL(NFRAG).eq.'DFCOEF') 
+     &    IOPT = IOPT_TMP
+      ENDIF
       
       RETURN
 C
@@ -3650,6 +3733,10 @@ C
       CALL READI(LUCOEF,NORBT,IBEIG2)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
+
+!miro: assign IPRINT from dcbgen.h
+      IPRINT = IPRGEN
+
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'

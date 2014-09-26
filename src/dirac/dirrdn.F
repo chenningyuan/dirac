@@ -43,10 +43,8 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
-#ifdef PCM_MODULE
       use pcmmod_cfg
       use pcm_write
-#endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -253,11 +251,9 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
-#ifdef PCM_MODULE
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
-#endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 C
@@ -621,7 +617,7 @@ C
 
       IF(DOQJACO) WRITE(LUPRI,'(1X,A)')
      &    '* Matrix diagonalization by the quaternion Jacobi method '//
-     &    'for real, complex and quaternion groups (only in LINSYM).'
+     &    'for real, complex and quaternion groups.'
 
       IF(DOPUT) WRITE(LUPRI,'(1X,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
@@ -953,7 +949,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.OPENFA','xxxxxxx','.XXXXXX',
+     &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -998,6 +994,7 @@ C     initial molecular orbitals:
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
       BNCRON    = .TRUE.
+      force_bnc = .false.
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  ! in dcbgen.h   -- TODO temporary disable HUCKEL
 !     DOHUCKEL  = .TRUE.  ! in dcbgen.h
@@ -1041,6 +1038,7 @@ C     ... whereas Fractional Occupation is default for DFT
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
+      WRITE_FMO_MATRIX=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1142,7 +1140,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53), I
+     &                     51,52,53,54,55), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1691,6 +1689,14 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
                   READ(LUCMD,*) OPEN_FAC
                GOTO 100
  54            CONTINUE
+C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
+C    PBS+MI/Aug2014
+               force_bnc = .true.
+               GOTO 100
+ 55            CONTINUE
+!&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
+!symmetry into own formatted file (MI/Aug2014)
+               WRITE_FMO_MATRIX=.TRUE.
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1961,13 +1967,18 @@ C
       IF (BNCRON) THEN
          WRITE (LUPRI,'(A)')
      &      ' * Bare nucleus screening correction used for start guess'
+!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
+!        bncron variable w/o checking value of molecular charge
+         if (force_bnc) write (lupri,'(5x,a)')
+     1   'the bare nuclear correction used independently of '//
+     2   'the system charge'
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
          CALL RMOLCHR(ICHRG)
          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10) THEN
+         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
@@ -2048,11 +2059,11 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          END IF
       END IF
 C
-      IF (NOPEN.GT.0.AND.ZORA) THEN
-          WRITE(LUPRI,'(A)')
-     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
-          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
-      ENDIF
+CTROND      IF (NOPEN.GT.0.AND.ZORA) THEN
+CTROND          WRITE(LUPRI,'(A)')
+CTROND     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
+CTROND          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
+CTROND      ENDIF
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
       WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
@@ -2344,6 +2355,12 @@ CMI =====================================================================
      &   '...continue the two-component SCF procedure'//
      &   '.'
        ENDIF
+      ENDIF
+
+      IF (WRITE_FMO_MATRIX) THEN
+        WRITE(LUPRI,'(2X,A)')
+     &'* Writing out Fock MO matrix(es) into formatted file(s) in'//
+     &' linear symmetry'
       ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'
@@ -4579,9 +4596,7 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
@@ -4656,7 +4671,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','xxxxxxx','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4762,6 +4777,8 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!mi:  by default, do not save Jz_MO matrices
+      WRITE_Jz_MATRIX = .FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -5339,12 +5356,16 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
   164     CONTINUE
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
             MDIRAC=.TRUE.
+            GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
-          TRS_MIX = .TRUE.
+            TRS_MIX = .TRUE.
+            GO TO 100
   166     CONTINUE
-          GO TO 100
+!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
+            GO TO 100
   167     CONTINUE
           GO TO 100
   168     CONTINUE
@@ -6151,6 +6172,17 @@ C
             ENDIF
           ENDIF
         ENDDO
+
+      IF (WRITE_Jz_MATRIX) THEN
+        IF (LINEAR) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &  '* Writing out Jzz MO matrices for diagonalization'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &  '* No linear symmetry => no writing out Jzz MO matrices !'
+        ENDIF
+      ENDIF
+
 CMI  ... treat the INPERR as in paminp.F - proper input is required
         IF (INPERR.GT.0) THEN
           WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR

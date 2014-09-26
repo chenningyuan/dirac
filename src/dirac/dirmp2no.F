@@ -390,13 +390,12 @@ C          ... initialize
            CALL IZERO(WORK(KIBEIG),NORBT)
 C          ... MP2 NO coefficients
            CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NASHT*NASHT*NZ)
+C          ... boson irrep info (or mj-values if linear symmetry is available)
+           CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
      &                 XDUMMY,2,WORK,KFREE,LFREE)
-           REWIND(LUCOEF)
-           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
-     &                 XDUMMY,8,WORK,KFREE,LFREE)
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -410,8 +409,11 @@ C          --------------
 C
 C          save to disk
 C          ------------
-           CALL WRTKRMC(LUKRMC,'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
-           CALL WRTKRMC(LUKRMC,'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           label(1:8) = 'IBEIG   '
+           if(linear) label(1:8) = 'MJVEC   '
+           CALL IWRTKRMC(LUKRMC,label(1:8),work(kibeig),NORBT)
 C
 C          release memory
 C          --------------
@@ -529,6 +531,7 @@ C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
       use moltra_labeling
+      use relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -963,33 +966,21 @@ C
 C     Transformation finished - start MP2 density run
 C     -----------------------------------------------
 C
-C     prepare and write RELCCSD MP2-NO input
+C     tell RELCC to get the density matrix
 C
-      LMP2_DEN_INP = 99
-      MP2NOFN      = 'MP2_NO.INP.0'
-      MP2NOFN_L    = 12
-      INFO_STRING(1) =
-     &'&RELCCSD TIMING=T, DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END'
-      INFO_STRING(2) =
-     &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
-      INFO_STRING(3) =
-     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T  &END                    '
-
-      OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
-     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      REWIND(LMP2_DEN_INP)
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
+      relcc_do_energy = .true.
+      relcc_do_ccsd   = .false.
+      relcc_do_ccsd_t = .false.
+      relcc_do_gradient = .true.
+      relcc_do_mp2gradient = .true.
+      relcc_do_unrelaxed = .true.
+      relcc_do_naturalorbitals = .true.
 C
       CALL PAMCCM()
 C
-      CLOSE(LMP2_DEN_INP,STATUS='KEEP')
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck READMP2NAT */
-      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT)
+      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT,ibeig)
 C***********************************************************************
 C
 C     Read MP2-NO coefficients and occupations numbers from file 
@@ -1001,20 +992,22 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), EIG(*), EIG_NAT(*)
+      DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
+      character(len=8) :: label
 C
 C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
       CALL REAKRMC(LUKRMC,'NEWNATOC',EIG_NAT,NESHT)
+      label(1:8) = 'IBEIG   '
+      if(linear) label(1:8) = 'MJVEC   '
+      call ireakrmc(lukrmc,label(1:8),ibeig,norbt)
 C
       IOFF2 = 1
 C

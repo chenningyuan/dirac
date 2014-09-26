@@ -176,9 +176,9 @@ Binary information
                           | b;/opt/local/lib/libatlas.a
  LAPACK                   | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 0aa3d3d555536bcc9b2c359490ed559edad876b6
+ Last Git revision        | 3d687fcc8682cebe00da448d24038976cc48204d
  Git branch               | master
- Configuration time       | 2014-05-15 19:04:32.406618
+ Configuration time       | 2014-05-22 16:08:35.537278
 
 
 Execution time and host
@@ -229,7 +229,6 @@ CN molecule (S=1/2)
  4                                                                                                  
  17                                                                                                 
 **END OF DIRAC INPUT                                                                                
-                                                                                                    
 
 
 Contents of the molecule file
@@ -890,203 +889,203 @@ Total no. of orbitals           (NORB):   104
 
 
 => Calculating sum of orbital energies
-It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01417000s   Scr. nuclei              
+It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01908400s   Scr. nuclei              
 
 ########## START ITERATION NO.   2 ##########                           
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.04%    0.00%    0.00%   0.03371800s
-SOfock:SL  1.00D-11    0.00%   14.46%    0.00%    0.00%   0.23563498s
->>> Total wall time: 0.39453125s
->>> Total CPU time : 0.37869700s
+SOfock:LL  1.00D-11    0.00%    8.04%    0.00%    0.00%   0.03578900s
+SOfock:SL  1.00D-11    0.00%   14.46%    0.00%    0.00%   0.25876001s
+>>> Total wall time: 0.43750000s
+>>> Total CPU time : 0.40545700s
 
 ########## END ITERATION NO.   2 ##########                           
 
-It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.37869700s   LL SL                    
+It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.40545700s   LL SL                    
 
 ########## START ITERATION NO.   3 ##########                           
 
     3 *** Differential density matrix. DCOVLP     = 0.9489
     3 *** Differential density matrix. DVOVLP( 1) = 0.7913
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.95%    0.00%    0.00%   0.03584000s
-SOfock:SL  1.00D-11    0.00%   15.81%    0.00%    0.00%   0.24184299s
->>> Total wall time: 0.31054688s
->>> Total CPU time : 0.29235100s
+SOfock:LL  1.00D-11    0.00%    8.95%    0.00%    0.00%   0.03700799s
+SOfock:SL  1.00D-11    0.00%   15.81%    0.00%    0.00%   0.25886899s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.30969000s
 
 ########## END ITERATION NO.   3 ##########                           
 
-It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.29235100s   LL SL                    
+It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.30969000s   LL SL                    
 
 ########## START ITERATION NO.   4 ##########                           
 
     4 *** Differential density matrix. DCOVLP     = 0.9872
     4 *** Differential density matrix. DVOVLP( 1) = 0.9914
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    9.15%    0.00%    0.00%   0.03906703s
-SOfock:SL  1.00D-11    0.00%   16.33%    0.00%    0.00%   0.23859698s
->>> Total wall time: 0.30468750s
->>> Total CPU time : 0.29294600s
+SOfock:LL  1.00D-11    0.00%    9.15%    0.00%    0.00%   0.03675497s
+SOfock:SL  1.00D-11    0.00%   16.33%    0.00%    0.00%   0.25884402s
+>>> Total wall time: 0.37500000s
+>>> Total CPU time : 0.30924100s
 
 ########## END ITERATION NO.   4 ##########                           
 
-It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.29294600s   LL SL                    
+It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.30924100s   LL SL                    
 
 ########## START ITERATION NO.   5 ##########                           
 
     5 *** Differential density matrix. DCOVLP     = 0.9964
     5 *** Differential density matrix. DVOVLP( 1) = 0.8981
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    9.89%    0.00%    0.00%   0.03329706s
-SOfock:SL  1.00D-11    0.00%   17.53%    0.00%    0.00%   0.24535990s
->>> Total wall time: 0.30664062s
->>> Total CPU time : 0.29204600s
+SOfock:LL  1.00D-11    0.00%    9.89%    0.00%    0.00%   0.03688490s
+SOfock:SL  1.00D-11    0.00%   17.53%    0.00%    0.00%   0.26261795s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.31308300s
 
 ########## END ITERATION NO.   5 ##########                           
 
-It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.29204600s   LL SL                    
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.31308300s   LL SL                    
 
 ########## START ITERATION NO.   6 ##########                           
 
     6 *** Differential density matrix. DCOVLP     = 0.9973
     6 *** Differential density matrix. DVOVLP( 1) = 0.9997
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   11.82%    0.00%    0.00%   0.03301597s
-SOfock:SL  1.00D-11    0.00%   19.55%    0.00%    0.00%   0.23339498s
->>> Total wall time: 0.29492188s
->>> Total CPU time : 0.27973000s
+SOfock:LL  1.00D-11    0.00%   11.82%    0.00%    0.00%   0.03665996s
+SOfock:SL  1.00D-11    0.00%   19.55%    0.00%    0.00%   0.26765001s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.31983000s
 
 ########## END ITERATION NO.   6 ##########                           
 
-It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.27973000s   LL SL                    
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.31983000s   LL SL                    
 
 ########## START ITERATION NO.   7 ##########                           
 
     7 *** Differential density matrix. DCOVLP     = 0.9977
     7 *** Differential density matrix. DVOVLP( 1) = 0.9975
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   12.61%    0.00%    0.00%   0.03795898s
-SOfock:SL  1.00D-11    0.00%   20.73%    0.00%    0.00%   0.23674798s
->>> Total wall time: 0.31054688s
->>> Total CPU time : 0.28953500s
+SOfock:LL  1.00D-11    0.00%   12.61%    0.00%    0.00%   0.03639507s
+SOfock:SL  1.00D-11    0.00%   20.73%    0.00%    0.00%   0.25522506s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.30525600s
 
 ########## END ITERATION NO.   7 ##########                           
 
-It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.28953500s   LL SL                    
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.30525600s   LL SL                    
 
 ########## START ITERATION NO.   8 ##########                           
 
     8 *** Differential density matrix. DCOVLP     = 0.9971
     8 *** Differential density matrix. DVOVLP( 1) = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   12.96%    0.00%    0.00%   0.03699088s
-SOfock:SL  1.00D-11    0.00%   21.50%    0.00%    0.00%   0.23393798s
->>> Total wall time: 0.30468750s
->>> Total CPU time : 0.28628000s
+SOfock:LL  1.00D-11    0.00%   12.96%    0.00%    0.00%   0.03636312s
+SOfock:SL  1.00D-11    0.00%   21.50%    0.00%    0.00%   0.25458312s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.30477700s
 
 ########## END ITERATION NO.   8 ##########                           
 
-It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.28628000s   LL SL                    
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.30477700s   LL SL                    
 
 ########## START ITERATION NO.   9 ##########                           
 
     9 *** Differential density matrix. DCOVLP     = 0.9993
     9 *** Differential density matrix. DVOVLP( 1) = 1.0011
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   15.97%    0.00%    0.00%   0.03741002s
-SOfock:SL  1.00D-11    0.00%   25.68%    0.00%    0.00%   0.24310088s
->>> Total wall time: 0.31054688s
->>> Total CPU time : 0.29625700s
+SOfock:LL  1.00D-11    0.00%   15.97%    0.00%    0.00%   0.03612018s
+SOfock:SL  1.00D-11    0.00%   25.68%    0.00%    0.00%   0.25189090s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.31005300s
 
 ########## END ITERATION NO.   9 ##########                           
 
-It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.29625700s   LL SL                    
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.31005300s   LL SL                    
 
 ########## START ITERATION NO.  10 ##########                           
 
    10 *** Differential density matrix. DCOVLP     = 0.9998
    10 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   18.57%    0.00%    0.00%   0.03895998s
-SOfock:SL  1.00D-11    0.00%   28.84%    0.00%    0.00%   0.23032618s
->>> Total wall time: 0.29492188s
->>> Total CPU time : 0.28385700s
+SOfock:LL  1.00D-11    0.00%   18.57%    0.00%    0.00%   0.03655005s
+SOfock:SL  1.00D-11    0.00%   28.84%    0.00%    0.00%   0.25231314s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.30377200s
 
 ########## END ITERATION NO.  10 ##########                           
 
-It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.28385700s   LL SL                    
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.30377200s   LL SL                    
 
 ########## START ITERATION NO.  11 ##########                           
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   23.42%    0.00%    0.00%   0.03729200s
-SOfock:SL  1.00D-11    0.00%   34.06%    0.00%    0.01%   0.23709822s
->>> Total wall time: 0.30859375s
->>> Total CPU time : 0.29000900s
+SOfock:LL  1.00D-11    0.00%   23.42%    0.00%    0.00%   0.03623080s
+SOfock:SL  1.00D-11    0.00%   34.06%    0.00%    0.01%   0.25055099s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.30064000s
 
 ########## END ITERATION NO.  11 ##########                           
 
-It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.29000900s   LL SL                    
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.30064000s   LL SL                    
 
 ########## START ITERATION NO.  12 ##########                           
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   28.56%    0.00%    0.00%   0.03365993s
-SOfock:SL  1.00D-11    0.00%   39.61%    0.00%    0.15%   0.23069406s
->>> Total wall time: 0.29492188s
->>> Total CPU time : 0.27779400s
+SOfock:LL  1.00D-11    0.00%   28.56%    0.00%    0.00%   0.03557992s
+SOfock:SL  1.00D-11    0.00%   39.61%    0.00%    0.15%   0.24527001s
+>>> Total wall time: 0.37500000s
+>>> Total CPU time : 0.29462100s
 
 ########## END ITERATION NO.  12 ##########                           
 
-It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.27779400s   LL SL                    
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.29462100s   LL SL                    
 
 ########## START ITERATION NO.  13 ##########                           
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   28.10%    0.00%    0.00%   0.03648996s
-SOfock:SL  1.00D-11    0.00%   39.42%    0.00%    0.12%   0.23567915s
->>> Total wall time: 0.30468750s
->>> Total CPU time : 0.28686200s
+SOfock:LL  1.00D-11    0.00%   28.10%    0.00%    0.00%   0.03565097s
+SOfock:SL  1.00D-11    0.00%   39.42%    0.00%    0.12%   0.24531603s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.29470800s
 
 ########## END ITERATION NO.  13 ##########                           
 
-It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.28686200s   LL SL                    
+It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.29470800s   LL SL                    
 
 ########## START ITERATION NO.  14 ##########                           
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   30.70%    0.00%    0.00%   0.03639889s
-SOfock:SL  1.00D-11    0.00%   42.49%    0.00%    0.30%   0.22156692s
->>> Total wall time: 0.28906250s
->>> Total CPU time : 0.27339200s
+SOfock:LL  1.00D-11    0.00%   30.70%    0.00%    0.00%   0.03546810s
+SOfock:SL  1.00D-11    0.00%   42.49%    0.00%    0.30%   0.24335814s
+>>> Total wall time: 0.31250000s
+>>> Total CPU time : 0.29267400s
 
 ########## END ITERATION NO.  14 ##########                           
 
-It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.27339200s   LL SL                    
+It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.29267400s   LL SL                    
 
 ########## START ITERATION NO.  15 ##########                           
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   38.59%    0.00%    0.00%   0.03591299s
-SOfock:SL  1.00D-11    0.00%   51.86%    0.00%    3.36%   0.21730971s
->>> Total wall time: 0.27148438s
->>> Total CPU time : 0.26964800s
+SOfock:LL  1.00D-11    0.00%   38.59%    0.00%    0.00%   0.03522921s
+SOfock:SL  1.00D-11    0.00%   51.86%    0.00%    3.36%   0.23750496s
+>>> Total wall time: 0.25000000s
+>>> Total CPU time : 0.28250900s
 
 ########## END ITERATION NO.  15 ##########                           
 
-It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26964800s   LL SL                    
+It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28250900s   LL SL                    
 
 
                                    SCF - CYCLE
@@ -1102,26 +1101,26 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01417000s   Scr. nuclei              
-It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.37869700s   LL SL                    
-It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.29235100s   LL SL                    
-It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.29294600s   LL SL                    
-It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.29204600s   LL SL                    
-It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.27973000s   LL SL                    
-It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.28953500s   LL SL                    
-It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.28628000s   LL SL                    
-It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.29625700s   LL SL                    
-It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.28385700s   LL SL                    
-It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.29000900s   LL SL                    
-It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.27779400s   LL SL                    
-It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.28686200s   LL SL                    
-It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.27339200s   LL SL                    
-It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26964800s   LL SL                    
+It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01908400s   Scr. nuclei              
+It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.40545700s   LL SL                    
+It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.30969000s   LL SL                    
+It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.30924100s   LL SL                    
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.31308300s   LL SL                    
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.31983000s   LL SL                    
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.30525600s   LL SL                    
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.30477700s   LL SL                    
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.31005300s   LL SL                    
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.30377200s   LL SL                    
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.30064000s   LL SL                    
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.29462100s   LL SL                    
+It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.29470800s   LL SL                    
+It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.29267400s   LL SL                    
+It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28250900s   LL SL                    
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   15 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.01367188s
-      LL SL        :    0.30719866s
+      No 2-ints    :    0.06250000s
+      LL SL        :    0.32589286s
 
 
                                    TOTAL ENERGY
@@ -1230,7 +1229,7 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26
 
  (RSETCI) Number of determinants:          588 (dimension          588)
 
- CPU (Wall) time for generation of determinants:  0.00035100s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.00070000s( 0.00000000s)
 
  (ESR_RESOLVE) Integrals for CI: LL SL    
 
@@ -1262,24 +1261,24 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.26
    - Beginning task  15 of  16 after      1. seconds and      1. CPU-seconds
    - Beginning task  16 of  16 after      1. seconds and      1. CPU-seconds
 
- - Starting symmetrization after           1.43 seconds
- - Finished symmetrization after           1.43 seconds
+ - Starting symmetrization after           1.62 seconds
+ - Finished symmetrization after           1.62 seconds
 
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file            0.002 seconds
- Time in  Computing+transform. integral       1.425 seconds
+ Time in  Initializing MS4IND file            0.004 seconds
+ Time in  Computing+transform. integral       1.518 seconds
  Time in  Symmetrizing MO integrals           0.000 seconds
 
- (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
+ (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
             Transformation ended                         
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
 * Heading :CN molecule (S=1/2)                                                       
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   13.71%    0.00%    0.00%   0.03250694s
-SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.22167397s
+SOfock:LL  1.00D-11    0.00%   13.71%    0.00%    0.00%   0.03389120s
+SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.23174810s
 
  (rGETFC) 1-electron core energy:       -96.480446363805044
 
@@ -1290,7 +1289,7 @@ SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.22167397s
  (rGETFC) Total core energy     :       -68.126815845351416
 
  Reading from file : 4INDINFO 
- (RGETH21) Time and date read from 4INDINFO: 19:05:20 15May14 
+ (RGETH21) Time and date read from 4INDINFO: 16:10:03 22May14 
  Reading from file : 4IND1XXXX0
 
 
@@ -1373,7 +1372,7 @@ Removed     233 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.05019900s( 0.05078125s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.04838900s( 0.06250000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   2
@@ -1420,7 +1419,7 @@ Removed     207 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01501200s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01599300s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   3
@@ -1470,7 +1469,7 @@ Removed     187 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01599600s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01595500s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   4
@@ -1520,7 +1519,7 @@ Removed     168 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01611200s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01609400s( 0.06250000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   5
@@ -1570,7 +1569,7 @@ Removed     187 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01507100s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01602300s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   6
@@ -1620,7 +1619,7 @@ Removed     172 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01500700s( 0.01367188s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01602400s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   7
@@ -1673,7 +1672,7 @@ Removed     162 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01516800s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01603000s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   8
@@ -1726,7 +1725,7 @@ Removed     160 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01588400s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01608100s( 0.06250000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   9
@@ -1779,7 +1778,7 @@ Removed     156 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01680900s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01611600s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  10
@@ -1832,7 +1831,7 @@ Removed     158 elements in new CI trial vector no.   2; zeroes, left :       29
 Threshold for removing element in trial vectors  1.00D-03
  IROUND           0  for vector           2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01719600s( 0.01953125s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01622800s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  11
@@ -1872,9 +1871,9 @@ Threshold for removing element in trial vectors  1.00D-03
 
  *** All requested CI roots are converged. ***
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01528900s( 0.01562500s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01675500s( 0.06250000s)
 
- (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.20782900s ( 0.20898438s)
+ (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.20977800s ( 0.25000000s)
 
 
  (GASCIP_RCISTD) Micro iterations converged.
@@ -1993,7 +1992,7 @@ Threshold for removing element in trial vectors  1.00D-03
      all                588            146
  ------------------------------------------------
 
- (GASCIP_RCISTD) Total CPU (Wall) time for routine:  0.53611000s ( 0.53906250s)
+ (GASCIP_RCISTD) Total CPU (Wall) time for routine:  0.55147800s ( 0.56250000s)
 ---------------------------------------------------------------------------
 * ESRTRANS: calculating property  : z-spin          
   Boson symmetry, g/u symmetry, time reversal :    4    1   -1
@@ -2386,7 +2385,7 @@ FIRST = T and IC(1 or 2): 1
     8  g_1 MAGFLDX          B2      T-
 ...........................................................................
       Operator type XBETASIG : [beta Sigma_x]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 ...........................................................................
     Operator no.  9:   x-spin          
@@ -2411,7 +2410,7 @@ FIRST = T and IC(1 or 2): 1
    11  g_1 MAGFLDY          B1      T-
 ...........................................................................
       Operator type YBETASIG : [beta Sigma_y]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 ...........................................................................
     Operator no. 12:   y-spin          
@@ -2436,7 +2435,7 @@ FIRST = T and IC(1 or 2): 1
    14  g_1 MAGFLDZ          A2      T-
 ...........................................................................
       Operator type ZBETASIG : [beta Sigma_z]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 ...........................................................................
     Operator no. 15:   z-spin          
@@ -2922,7 +2921,7 @@ FIRST = F and IC(1 or 2): 2
  Generating property matrix for the property: g_1 MAGFLDX     
  .... it is a LOWER TRIANGULAR matrix 
 Component nr.    1   OVERLAP 
-Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Factor:      0.5798261000000E-03 and PDOINT:+00-
 Integrals enter matrix :    1
 FIRST = T and IC(1 or 2): 1
 
@@ -2939,8 +2938,8 @@ FIRST = T and IC(1 or 2): 1
  (GASCIP_MAKE_P1MAT) CI property matrix - real part
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2    -5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2     5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 
 
@@ -2953,15 +2952,15 @@ FIRST = T and IC(1 or 2): 1
     1  g_1 MAGFLDX          B2      T-
 ...........................................................................
       Operator type XBETASIG : [beta Sigma_x]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
 
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2    -5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2     5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3110,7 +3109,7 @@ FIRST = F and IC(1 or 2): 2
  Generating property matrix for the property: g_1 MAGFLDY     
  .... it is a LOWER TRIANGULAR matrix 
 Component nr.    1   OVERLAP 
-Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Factor:      0.5798261000000E-03 and PDOINT:+00-
 Integrals enter matrix :    1
 FIRST = T and IC(1 or 2): 1
 
@@ -3127,8 +3126,8 @@ FIRST = T and IC(1 or 2): 1
  (GASCIP_MAKE_P1MAT) CI property matrix - real part
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2     5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2    -5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 
 
@@ -3141,7 +3140,7 @@ FIRST = T and IC(1 or 2): 1
     1  g_1 MAGFLDY          B1      T-
 ...........................................................................
       Operator type YBETASIG : [beta Sigma_y]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3154,8 +3153,8 @@ FIRST = T and IC(1 or 2): 1
 
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2     5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2    -5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 ===========================================================================
 * PRPESR1: calculating property no. 12 : y-spin          
@@ -3298,7 +3297,7 @@ FIRST = F and IC(1 or 2): 2
  Generating property matrix for the property: g_1 MAGFLDZ     
  .... it is a LOWER TRIANGULAR matrix 
 Component nr.    1   OVERLAP 
-Factor:     -0.5798261000000E-03 and PDOINT:+00-
+Factor:      0.5798261000000E-03 and PDOINT:+00-
 Integrals enter matrix :    1
 FIRST = T and IC(1 or 2): 1
 
@@ -3315,8 +3314,8 @@ FIRST = T and IC(1 or 2): 1
  (GASCIP_MAKE_P1MAT) CI property matrix - real part
 
                Column   1     Column   2
-       1     5.797967E-04   0.000000E+00
-       2     0.000000E+00  -5.797967E-04
+       1    -5.797967E-04   0.000000E+00
+       2     0.000000E+00   5.797967E-04
     ==== End of matrix output ====
 
 
@@ -3329,15 +3328,15 @@ FIRST = T and IC(1 or 2): 1
     1  g_1 MAGFLDZ          A2      T-
 ...........................................................................
       Operator type ZBETASIG : [beta Sigma_z]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
 
 
                Column   1     Column   2
-       1     5.797967E-04   0.000000E+00
-       2     0.000000E+00  -5.797967E-04
+       1    -5.797967E-04   0.000000E+00
+       2     0.000000E+00   5.797967E-04
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3578,15 +3577,15 @@ FIRST = T and IC(1 or 2): 1
     8  g_1 MAGFLDX          B2      T-
 ...........................................................................
       Operator type XBETASIG : [beta Sigma_x]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
 
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2    -5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2     5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3645,7 +3644,7 @@ FIRST = T and IC(1 or 2): 1
    11  g_1 MAGFLDY          B1      T-
 ...........................................................................
       Operator type YBETASIG : [beta Sigma_y]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3658,8 +3657,8 @@ FIRST = T and IC(1 or 2): 1
 
 
                Column   1     Column   2
-       1     0.000000E+00  -5.798120E-04
-       2     5.798120E-04   0.000000E+00
+       1     0.000000E+00   5.798120E-04
+       2    -5.798120E-04   0.000000E+00
     ==== End of matrix output ====
 ...........................................................................
     Operator no. 12:   y-spin          
@@ -3712,15 +3711,15 @@ FIRST = T and IC(1 or 2): 1
    14  g_1 MAGFLDZ          A2      T-
 ...........................................................................
       Operator type ZBETASIG : [beta Sigma_z]P
-      Labels and factors     : OVERLAP  +00-    -0.579826100E-03 (real)     
+      Labels and factors     : OVERLAP  +00-     0.579826100E-03 (real)     
 ...........................................................................
 
 *** A real part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
 
 
                Column   1     Column   2
-       1     5.797967E-04   0.000000E+00
-       2     0.000000E+00  -5.797967E-04
+       1    -5.797967E-04   0.000000E+00
+       2     0.000000E+00   5.797967E-04
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3803,24 +3802,24 @@ FIRST = T and IC(1 or 2): 1
 
 * The g_1 corrected g-tensor for H(Zeeman) = 1/2c B g Seff :
 
-             1.99474006       -0.00000000        0.00000000
-             0.00000000        1.99474006        0.00000000
-             0.00000000       -0.00000000        1.99755066
+             1.99937856       -0.00000000        0.00000000
+             0.00000000        1.99937856        0.00000000
+             0.00000000       -0.00000000        2.00218903
 
   The G-matrix = g * g^T :
 
-             3.97898792        0.00000000        0.00000000
-             0.00000000        3.97898792        0.00000000
-             0.00000000        0.00000000        3.99020864
+             3.99751462        0.00000000        0.00000000
+             0.00000000        3.99751462        0.00000000
+             0.00000000        0.00000000        4.00876093
 
 * The g_1 corrected Dirac eq. g values corresponding to g_e = 2.0023193044
   The g values (x, y, z, iso):
 
-             1.99474006        1.99474006        1.99755066        1.99567693
+             1.99937856        1.99937856        2.00218903        2.00031538
 
   The g shifts in ppm (x, y, z, iso):
 
-                -7579.2           -7579.2           -4768.6           -6642.4
+                -2940.7           -2940.7            -130.3           -2003.9
 
   The corresponding eigenvectors:
 
@@ -3883,7 +3882,7 @@ FIRST = T and IC(1 or 2): 1
 
  
 
->>>> Node 0, utime: 6, stime: 0, minflt: 20308, majflt: 0, nvcsw: 161, nivcsw: 56, maxrss: 75030528
+>>>> Node 0, utime: 6, stime: 0, minflt: 20358, majflt: 35, nvcsw: 26, nivcsw: 39, maxrss: 75374592
 >>>> Total WALL time used in DIRAC: 7s
   
   Dynamical Memory Usage Summary

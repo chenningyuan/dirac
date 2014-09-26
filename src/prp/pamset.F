@@ -113,9 +113,7 @@ C***********************************************************************
        use fde_mod
        use num_grid_gen
        use num_grid_cfg
-#ifdef PCM_MODULE
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -299,7 +297,6 @@ CJTH check this
         CALL SOLFCK(FMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
       ENDIF          
 
-#ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
         if (dirac_cfg_pcm) then
            call genden(fao, cmo, 1, iprint)
@@ -320,7 +317,6 @@ CJTH check this
 !                      nz, ipqtoq(1,0), 6)
            deallocate(fock_pcm)
         endif 
-#endif       
 
 C
 C     3. Get one-electron Fock matrix
