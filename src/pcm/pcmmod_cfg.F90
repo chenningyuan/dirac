@@ -51,7 +51,6 @@ module pcmmod_cfg
   character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
   character(kind=c_char, len=16), public, save :: pcmmod_solvent = 'water          '//c_null_char
   character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
-  logical(c_bool), public, save :: pcmmod_matrix_symmetrize = .true.
   real(c_double), public, save  :: pcmmod_correction = 0.0
   real(c_double), public, save  :: pcmmod_probe_radius = 1.0
 ! green specification *PCMSOL section
@@ -75,7 +74,6 @@ module pcmmod_cfg
   type, bind(c) :: solverInput
           character(kind=c_char) :: solver_type(7)
           character(kind=c_char) :: solvent(16)
-          logical(c_bool)        :: matrix_symmetrize
           character(kind=c_char) :: equation_type(11) 
           real(c_double)         :: correction
           real(c_double)         :: probe_radius
@@ -111,7 +109,6 @@ module pcmmod_cfg
      call push_input_string(pcmmod_radii_set//c_null_char)
      call push_input_string(pcmmod_restart_name//c_null_char)
      
-     solver%matrix_symmetrize = pcmmod_matrix_symmetrize
      solver%correction        = pcmmod_correction
      solver%probe_radius      = pcmmod_probe_radius
      ! Pass the strings relevant to the solver input section

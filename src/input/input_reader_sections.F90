@@ -1545,9 +1545,7 @@
    
    subroutine read_input_pcmsolver(word, kw_section)
 
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
       use input_reader
 
       implicit none
@@ -1557,7 +1555,6 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef PCM_MODULE
       pcmmod_host_provides_input = .true.
 
       call reset_available_kw_list()
@@ -1586,8 +1583,8 @@
          call kw_read(word, pcmmod_der_order)
       end if
       
-      if (kw_matches(word, '.SCALIN')) then
-              pcmmod_scaling = .true.
+      if (kw_matches(word, '.NOSCAL')) then
+              pcmmod_scaling = .false.
       end if
 
       if (kw_matches(word, '.RADIIS')) then
@@ -1614,10 +1611,6 @@
          call kw_read(word, pcmmod_equation_type)
       end if
 
-      if (kw_matches(word, '.MATSYM')) then
-              pcmmod_matrix_symmetrize = .true.
-      end if
-
       if (kw_matches(word, '.CORREC')) then
          call kw_read(word, pcmmod_correction)
       end if
@@ -1639,9 +1632,6 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-#else
-      call quit('Polarizable Continuum Model not included in this version')
-#endif
 
    end subroutine
 
