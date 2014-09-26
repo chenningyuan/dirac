@@ -47,14 +47,14 @@ else()
             set(CMAKE_Fortran_FLAGS_RELEASE "/O3 /Qip")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} /QxHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             # windows: pg - none
             set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} /debug:full")
 
-            # to do - setup
+            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
             endif()
@@ -62,7 +62,7 @@ else()
             # windows: none
             if(ENABLE_STATIC_LINKING)
                 set(CMAKE_Fortran_FLAGS
-                    "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+                    "${CMAKE_Fortran_FLAGS}"
                     )
             endif()
             if(ENABLE_64BIT_INTEGERS)
@@ -72,7 +72,7 @@ else()
             endif()
             if(ENABLE_BOUNDS_CHECK)
                 # miro: removed -ftrapuv due to problems with floating point execptions
-                # to do: -fpstkchk fro windows
+                # to do: -fpstkchk for windows
                 set(CMAKE_Fortran_FLAGS
                     "${CMAKE_Fortran_FLAGS} /check:bounds /check:pointers /check:uninit /check:output_conversion"
                     )
@@ -83,9 +83,9 @@ else()
             set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -xHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 

@@ -11,7 +11,7 @@ if(NOT DEFINED CMAKE_Fortran_COMPILER_ID)
 	message(FATAL_ERROR "CMAKE_Fortran_COMPILER_ID variable is not defined! (CMake Error)")
 endif()
 
-# save flags to cache macro
+# macro for saving flags to cache
 include(SaveCompilerFlags)
 
 if(CMAKE_C_COMPILER_WORKS AND CMAKE_CXX_COMPILER_WORKS AND CMAKE_Fortran_COMPILER_WORKS)   
@@ -47,7 +47,7 @@ if(CMAKE_C_COMPILER_WORKS AND CMAKE_CXX_COMPILER_WORKS AND CMAKE_Fortran_COMPILE
 
         # depends on result define variable or not
         if(TEST MATCHES "Intel xHost flag is available on this computer.")
-            set(XHOST_AVAILABLE ON)
+            set(XHOST_FLAG_AVAILABLE ON)
         endif()
     endif()
     

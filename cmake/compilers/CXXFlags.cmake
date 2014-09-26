@@ -32,9 +32,9 @@ else()
             set (CMAKE_CXX_FLAGS_RELEASE "/debug /O3 /DNDEBUG")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /QxHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
             # windows: none
@@ -45,9 +45,9 @@ else()
             set (CMAKE_CXX_FLAGS_RELEASE "-debug -O3 -DNDEBUG")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -xHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             #set (CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
             set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")

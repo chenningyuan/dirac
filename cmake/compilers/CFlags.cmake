@@ -18,7 +18,8 @@ else()
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
         #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")        
-	if(ENABLE_STATIC_LINKING)
+	    
+	    if(ENABLE_STATIC_LINKING)
             set(CMAKE_C_FLAGS
                 "${CMAKE_C_FLAGS} -static -fpic"
                 )
@@ -31,15 +32,15 @@ else()
             set(CMAKE_C_FLAGS_RELEASE "/O2")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /QxHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
             # windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
-            # to do - make a change in setup
+            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
             endif()
@@ -49,9 +50,9 @@ else()
             set(CMAKE_C_FLAGS_RELEASE "-O2")
             
             # intel compiler xHost flag
-            if(XHOST_AVAILABLE)
+            if(XHOST_FLAG_AVAILABLE)
                 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -xHost")
-            endif(XHOST_AVAILABLE)
+            endif()
             
             #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
