@@ -50,7 +50,7 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAL OLDFMO, DAMPON
+      LOGICAL OLDFMO, DAMPON, roundv
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)
       PARAMETER (N_OLD = 6)
@@ -217,6 +217,12 @@ C
 C     DIIS --- Direct Inversion of Iterative Subspace
 C     ===============================================
 C
+      roundv = dabs(ergval/dhferg) .lt. 5.0d-10
+c     PSB revision of hjaaj rounding test
+c     define roundv = .true. if ergval small and bypass turn off DIIS
+c          roundv is .true.
+C     ... avoid erroneous predicted energy increase (ERGVAL negative)
+C         because of round-off errors /hjaaj
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
         ERGDIF = ERGDIF + 1.D-10*DHFERG
@@ -230,7 +236,13 @@ C
      &      '- EVCDIF, EVCOLD(:) ',EVCDIF, EVCOLD(1:N_OLD)
         END IF
         IF (KITER .GE. 8 .AND. ITDIIS .GE. 4 .AND.
-     &     EVCDIF*ERGDIF .LT. D0) THEN
+     &     EVCDIF*ERGDIF .LT. D0 .and. .not. roundv 
+     &     .and. .not. noswit ) THEN
+c     DEBUG
+        write (6,9005) itdiis, evcdif*ergcal, round, noswit
+ 9005   format ('DEBUG in DHFCNV: ITDIIS=',i3,5x,'grad=',d10.3,5x,
+     &         'round,noswit=',2l3/)
+c     END DEBUG
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
            WRITE(LUPRI,'(/A/A)')
