@@ -75,7 +75,7 @@ else()
         set(CMAKE_C_FLAGS         "-g")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
-		# clang does not use gprof
+        # clang does not use gprof
         set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}")
 		
         if(ENABLE_STATIC_LINKING)
