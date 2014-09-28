@@ -16,7 +16,7 @@ else()
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
         set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")        
 	    
-	    if(ENABLE_STATIC_LINKING)
+        if(ENABLE_STATIC_LINKING)
             set(CMAKE_C_FLAGS
                 "${CMAKE_C_FLAGS} -static -fpic"
                 )
@@ -33,10 +33,10 @@ else()
                 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /QxHost")
             endif()
             
-			# windows: -pg - none
+            # windows: -pg - none
             set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} /debug:full")
             
-			# windows: none
+            # windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
             # to do - make a change in setup or Math.cmake, or here?
@@ -54,8 +54,8 @@ else()
             endif()
             
             set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
-            
-			set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+          
+            set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
