@@ -2,12 +2,9 @@ if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET OR RESET_FLAGS)
 
 # custom flags are defined by setup --custom-fc-flags
 if(DEFINED CUSTOM_Fortran_FLAGS)
-    # set custom compiler flags
+    # set custom compiler flags (for every build type)
     set(CMAKE_Fortran_FLAGS "${CUSTOM_Fortran_FLAGS}")
-    # unset flags for other build types
-    # everything is defined in CMAKE_Fortran_FLAGS variable
-    # note: unset() does not work in this case as expected:
-    # does not override variable in cache
+    # special flags for build types will be empty
     set(CMAKE_Fortran_FLAGS_DEBUG "")
     set(CMAKE_Fortran_FLAGS_RELEASE "")
     set(CMAKE_Fortran_FLAGS_PROFILE "")
@@ -15,25 +12,29 @@ else()
     # custom flags are not defined
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
         set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
-                                       # -fcray-pointer is for VAR_MPI2
+                                        # -fcray-pointer is for VAR_MPI2
         set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
         set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops -w")
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+        
         if(ENABLE_STATIC_LINKING)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -static"
                 )
         endif()
+        
         if(ENABLE_64BIT_INTEGERS)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
                 )
         endif()
+        
         if(ENABLE_BOUNDS_CHECK)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -fbounds-check"
                 )
         endif()
+        
         if(ENABLE_CODE_COVERAGE)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage"
@@ -65,11 +66,13 @@ else()
                     "${CMAKE_Fortran_FLAGS}"
                     )
             endif()
+            
             if(ENABLE_64BIT_INTEGERS)
                 set(CMAKE_Fortran_FLAGS
                     "${CMAKE_Fortran_FLAGS} /4I8"
                     )
             endif()
+            
             if(ENABLE_BOUNDS_CHECK)
                 # miro: removed -ftrapuv due to problems with floating point execptions
                 # to do: -fpstkchk for windows
@@ -98,11 +101,13 @@ else()
                     "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
                     )
             endif()
+            
             if(ENABLE_64BIT_INTEGERS)
                 set(CMAKE_Fortran_FLAGS
                     "${CMAKE_Fortran_FLAGS} -i8"
                     )
             endif()
+            
             if(ENABLE_BOUNDS_CHECK)
                 # miro: removed -ftrapuv due to problems with floating point execptions
                 set(CMAKE_Fortran_FLAGS
@@ -122,21 +127,25 @@ else()
         set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
         set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+        
         if(ENABLE_STATIC_LINKING)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -Bstatic"
                 )
         endif()
+        
         if(ENABLE_64BIT_INTEGERS)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -i8"
                 )
         endif()
+        
         if(ENABLE_BOUNDS_CHECK)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} "
                 )
         endif()
+        
         if(ENABLE_CODE_COVERAGE)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} "
@@ -147,6 +156,7 @@ else()
         set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
         set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+        
         if(ENABLE_64BIT_INTEGERS)
             set(CMAKE_Fortran_FLAGS
                 "${CMAKE_Fortran_FLAGS} -qintsize=8 -q64"

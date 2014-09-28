@@ -2,22 +2,19 @@ if(NOT DEFINED DEFAULT_C_FLAGS_SET OR RESET_FLAGS)
 
 # custom flags are defined by setup --custom-cc-flags
 if(DEFINED CUSTOM_C_FLAGS)
-    # set custom compiler flags
+    # set custom compiler flags (for every build type)
     set(CMAKE_C_FLAGS "${CUSTOM_C_FLAGS}")
-    # unset flags for other build types
-    # everything is defined in CMAKE_C_FLAGS variable
-    # note: unset() does not work in this case as expected:
-    # does not override variable in cache
+    # special flags for build types will be empty
     set(CMAKE_C_FLAGS_DEBUG "")
     set(CMAKE_C_FLAGS_RELEASE "")
-    #set(CMAKE_C_FLAGS_PROFILE "")
+    set(CMAKE_C_FLAGS_PROFILE "")
 else()
     # custom flags are not defined
     if(CMAKE_C_COMPILER_ID MATCHES GNU)
         set(CMAKE_C_FLAGS         "-g")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
-        #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")        
+        set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")        
 	    
 	    if(ENABLE_STATIC_LINKING)
             set(CMAKE_C_FLAGS
@@ -36,8 +33,10 @@ else()
                 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /QxHost")
             endif()
             
-            #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
-            # windows: none
+			# windows: -pg - none
+            set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} /debug:full")
+            
+			# windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
             # to do - make a change in setup or Math.cmake, or here?
@@ -54,8 +53,9 @@ else()
                 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -xHost")
             endif()
             
-            #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
-            set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+            set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+            
+			set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
@@ -65,16 +65,19 @@ else()
         set(CMAKE_C_FLAGS         "-g")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O3")
-        #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+        set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
     elseif(CMAKE_C_COMPILER_ID MATCHES XL)
         set(CMAKE_C_FLAGS         "-qcpluscmt")
         set(CMAKE_C_FLAGS_DEBUG   " ")
         set(CMAKE_C_FLAGS_RELEASE "-O3")
-        #set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+        set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
     elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         set(CMAKE_C_FLAGS         "-g")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")
+		# clang does not use gprof
+        set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}")
+		
         if(ENABLE_STATIC_LINKING)
             set(CMAKE_C_FLAGS
                 "${CMAKE_C_FLAGS} -Bstatic -fpic"
