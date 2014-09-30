@@ -46,7 +46,7 @@ be deleted at the end of a run.
 		     help='Copy FILE from temporary directory after the calculation',
                      metavar='NAME[=FILE]')
     group.add_option('-p', '--pcm', type='string', action='callback', callback=W.pcm_callback,
-                     help='PCM calculation: parse PCM input and copy it to scratch')
+                     help='PCM calculation: copy PCM input to scratch')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
@@ -256,10 +256,6 @@ class Wrapper:
             sys.exit('No .pcm file specified') 
         else:
             self.copyin.append([value,'pcmsolver.inp'])
-	if 'PCMSOLVER_PARSE' in os.environ.keys():
-	    self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
-	else:
-            self.copyin.append(['pcmsolver','pcmsolver'])
 #        self.archpatterns.append('PEDRA.OUT')
 #        self.archpatterns.append('cavity.off')
         self.do_pcm = True
@@ -466,8 +462,6 @@ class Wrapper:
     def run(self):
         try:
             os.chdir(self.tmppath)
-            if self.do_pcm:
-		os.system('./pcmsolver')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:
