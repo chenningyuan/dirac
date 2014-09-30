@@ -238,9 +238,10 @@ class pam_enviroment:
             'DFCOEF.BEST',
             '*.xml',
             'plot*',
-            'cavity.off',
-            'PEDRA.OUT',
-            'PCM_mep_asc'
+            'cavity.off', # for visualization of cavity with geomview
+            'cavity.npz', # for restart of cavity
+            'PEDRA.OUT',  # cavity formation summary
+            'PCM_mep_asc' # Converged MEP and ASC @cavity points
             ]
 
     # ... DFCOEF
@@ -1025,6 +1026,10 @@ Options are also read from ~/.diracrc"""
 
             # set proper output file structure
             self.output_name = inp_file_stripped + '_' + mol_file_stripped
+            if self.input_file_pcm:
+                # Strip suffix
+                pcmFname, fileExtension = os.path.splitext(self.input_file_pcm)
+                self.output_name = inp_file_stripped + '_' + mol_file_stripped + '_' + pcmFname
         elif self.full_restart:
             # todo: verify *.tgz ?
             self.output_name = self.archive_name.replace('.tgz', '', 1)
@@ -1117,18 +1122,6 @@ Options are also read from ~/.diracrc"""
 
         if self.input_file_pcm:
             self.copy_with_replacement(self.input_file_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'))
-	    if 'PCMSOLVER_PARSE' in os.environ.keys():
-                sys.path.append(os.environ['PCMSOLVER_PARSE'])
-                import pcmsolver
-                current = os.getcwd()
-                os.chdir(self.scratch_dir)
-                pcmsolver.parse_pcm_input('pcmsolver.inp')
-                os.chdir(current)
-            else:
-                print >> sys.stderr,'Cannot find PCMSolver input parsing script'
-                print >> sys.stderr,'Did you export the PCMSOLVER_PARSE environment variable?'
-                sys.exit(1)
-
 
         # put files to the scratch directory
         if self.put_files:

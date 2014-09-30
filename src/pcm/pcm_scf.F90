@@ -1,3 +1,24 @@
+!dirac_copyright_start
+!      Copyright (c) 2013 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://www.diracprogram.org
+!dirac_copyright_end
+
 !
 ! DIRAC-side interface routines for the Polarizable Continuum Model
 ! Roberto Di Remigio 2012
@@ -54,12 +75,18 @@ module pcm_scf
    contains
 
       subroutine pcm_scf_initialize(print_unit)
+
+      use pcmmod_cfg, only: pcmmod_host_provides_input
       
       integer, intent(in) :: print_unit
+      
+      integer :: host_provides_input = 0
 
-      global_print_unit = print_unit 
+      global_print_unit = print_unit
 
-      call set_up_pcm
+      if (pcmmod_host_provides_input) host_provides_input = 1 
+
+      call set_up_pcm(host_provides_input)
       call print_pcm
 
       call get_cavity_size(nr_points, nr_points_irr)
