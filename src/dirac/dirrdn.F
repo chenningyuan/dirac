@@ -940,7 +940,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',      ! 10
+     &            '.FCKCNV','.NODSCF','.NOSWIT','.FIXDIF','.NODAMP',      ! 10
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -1007,6 +1007,7 @@ C     initial molecular orbitals:
       DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
+      NOSWIT    = .FALSE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DOMOFREEZE = .FALSE.
@@ -1219,6 +1220,8 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOSWIT: PBS+MI Never turn DIIS off
+                  NOSWIT=.TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -2151,6 +2154,9 @@ C
      &      DIISTH
          WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
+         IF (NOSWIT) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS is never switched off'
+         ENDIF
          IF(DODAMP) THEN
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',

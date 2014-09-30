@@ -1,13 +1,17 @@
 
+# variables used:
+#     DEVELOPMENT_CODE - True if within Dalton Git repository
+#                      - False if within exported tarball
+
 if(DEVELOPMENT_CODE)
     include(FindGit)
-    if(GIT_FOUND)
+    if (GIT_FOUND)
         add_custom_target(
             git_update
             COMMAND ${GIT_EXECUTABLE} submodule init
             COMMAND ${GIT_EXECUTABLE} submodule update
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            )
+        )
     else()
         message("-- Git not found. You need Git for the Git submodule mechanism to work.")
     endif()
@@ -23,6 +27,14 @@ macro(add_external _project)
         set(UPDATE_COMMAND echo)
     endif()
 
+    add_custom_target(
+        check_external_timestamp_${_project}
+        COMMAND python ${PROJECT_SOURCE_DIR}/cmake/check_external_timestamp.py
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp/${_project}-configure
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+                       ${PROJECT_SOURCE_DIR}/external/${_project}
+    )
+
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
@@ -33,20 +45,14 @@ macro(add_external _project)
         INSTALL_DIR ${PROJECT_BINARY_DIR}/external
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
-    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
+
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
+
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
+        add_dependencies(check_external_timestamp_${_project} git_update)
     endif()
+    add_dependencies(${_project} check_external_timestamp_${_project})
 
-    if(ALWAYS_RESET_EXTERNAL)
-        # remove stamps for external builds so that they are rebuilt every time
-        add_custom_command(
-            TARGET ${_project}
-            PRE_BUILD
-            COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
-    endif()
 endmacro()
