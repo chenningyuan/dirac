@@ -360,10 +360,8 @@ keyword(PCM)
 
 Model solvent effects by placing the molecule in a cavity in a dielectric
 continuum. The cavity is shaped on the actual geometry of the solute, the
-full molecular electrostatic potential is used.
-
-.. warning:: Development version only, requires PCMSolver submodule.
-
+full molecular electrostatic potential is used. DIRAC makes use of
+the external `PCMSolver <http://pcmsolver.github.io/pcmsolver-doc/>`_ module
 
 keyword(SOLVENT)
 

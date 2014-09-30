@@ -49,7 +49,7 @@ module pcmmod_cfg
   real(c_double), public, save  :: pcmmod_min_radius = 100.0
 ! solver specification *PCMSOL section
   character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
-  character(kind=c_char, len=16), public, save :: pcmmod_solvent = 'water          '//c_null_char
+  character(kind=c_char, len=16), public, save :: pcmmod_solvent = '               '//c_null_char
   character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
   real(c_double), public, save  :: pcmmod_correction = 0.0
   real(c_double), public, save  :: pcmmod_probe_radius = 1.0
