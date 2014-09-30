@@ -389,6 +389,7 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -494,8 +495,9 @@ C     Calculation of C6 dispersion coefficient
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj.or.dirac_cfg_pcm) 
      &  XLR_SKIPEP = .TRUE.
+      write(lupri, *) "kappa^{+-} rotations disabled with PCM"
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -933,9 +935,15 @@ C
         WRITE(LUPRI,'(A)')
      &  ' * e-e rotations are allowed in the linear response function.'
       ENDIF
-      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
+      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ
+     & .or.dirac_cfg_pcm))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+      if(dirac_cfg_pcm) then
+        WRITE(LUPRI,'(A)')
+     &  ' * e-p rotations not allowed by default'//
+     &  ' when using PCM.'
+      endif
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')

@@ -143,6 +143,7 @@ endif()
 if(ENABLE_PCMSOLVER)
     message(STATUS "Polarizable Continuum Model via PCMSolver enabled.")
     find_package(PythonLibs REQUIRED)
+    find_package(ZLIB       REQUIRED)
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -165,8 +166,8 @@ if(ENABLE_PCMSOLVER)
     set(EXTERNAL_LIBS
         stdc++
 	pcm
-	z
         getkw
+	${ZLIB_LIBRARIES}
 	${PYTHON_LIBRARIES}
         ${EXTERNAL_LIBS})
 endif()

@@ -1,4 +1,4 @@
-DIRAC pam run in /home/bast/dirac/devel/pcm/test/pcm_response
+DIRAC pam run in /home/roberto/Workspace/dirac/test/pcm_response
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
@@ -159,39 +159,34 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | bast
- Host                     | donkey
- System                   | Linux-3.2.0-58-generic
+ Who compiled             | roberto
+ Host                     | spongebob
+ System                   | Linux-3.13.0-36-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
  Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_gf_lp64.so;/opt/intel/mkl/lib/intel64/libmkl_gnu
-                          | _thread.so;/opt/intel/mkl/lib/intel64/libmkl_core.
-                          | so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/li
-                          | b/x86_64-linux-gnu/libm.so;-fopenmp;-Wl,--end-grou
-                          | p
- LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
-                          | l_lapack95_lp64.a;/opt/intel/mkl/lib/intel64/libmk
-                          | l_gf_lp64.so;-fopenmp;-Wl,--end-group
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/clang
+ C compiler version       | unknown
+ C++ compiler             | /usr/bin/clang++
+ C++ compiler version     | unknown
+ BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
+                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
+ LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 86cb0b851ba4779c2b7860ad2dd3681796e9ded1
+ Last Git revision        | d4253f64cdc8e1431b25105976381b8caa116c82
  Git branch               | pcm
- Configuration time       | 2014-01-24 17:09:21.366073
+ Configuration time       | 2014-09-30 17:00:27.599369
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Jan 24 17:14:27 2014
+     Date and time (Linux)  : Tue Sep 30 18:08:17 2014
      Host name              : not found                               
 
 
@@ -546,7 +541,9 @@ H     -0.3333229788   0.3333229788  -0.3333229788
    . Use total potentials and apparent charges.
    . Skip formation of One-Index Transformed ASC in a Linear Response calculation.
    . Do not print potentials and charges.
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 0.1.5
+
+
+ * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.0.0
    Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
     With contributions from:
      R. Bast            (CMake framework)
@@ -622,12 +619,13 @@ H     -0.3333229788   0.3333229788  -0.3333229788
  * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ kappa^{+-} rotations disabled with PCM
 ===========================================================================
  XLRINP: Electronic linear reponse properties
 ===========================================================================
  * Print level                 :    0
  * e-e rotations are allowed in the linear response function.
- * e-p rotations are allowed in the linear response function.
+ * e-p rotations not allowed by default when using PCM.
  * Maximum number of iterations:   50
  * Threshold for convergence   :1.000000D-05
  * Max. size of reduced matrix :  200
@@ -673,14 +671,15 @@ H     -0.3333229788   0.3333229788  -0.3333229788
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A     * Deleted:          3(Proj:          3, Lindep:          0)
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.16E-01
+   S   A     * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.21E-02
 
 
                                 Output from MODHAM
                                 ------------------
 
  * Applied strict kinetic balance !
+ SLSORT branch 1...
 
 
       **********************************************************************
@@ -690,16 +689,20 @@ H     -0.3333229788   0.3333229788  -0.3333229788
 No. of positive energy orbitals (NESH):     9
 No. of negative energy orbitals (NPSH):     9
 Total no. of orbitals           (NORB):    18
+
+
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
 ========== Cavity 
 Cavity type: GePol
-Average area = 10 AU^2
-Addition of extra spheres enabled
+Average area = 35.7106 AU^2
 Probe radius = 2.61727
 Number of spheres = 5 [initial = 5; added = 0]
-Number of finite elements = 80
+Number of finite elements = 32
 ========== Solver 
 Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
@@ -711,7 +714,6 @@ Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
-
 
 
 
@@ -761,20 +763,24 @@ PCMSolver initialized.
     Fermion ircop:E1 
     - Inactive orbitals  :      1..     5                                          
     - Active orbitals    : No electrons
-    - Secondary orbitals :     -9..-1,     6..     9                               
+    - Secondary orbitals :      6..     9                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -37.2145616289237893
-* Heading :DIRAC: No title specified !!!                     Fri Jan 24 17:14:09 2014
+* REACMO: Coefficients read from file DFCOEF - Total energy: -37.2144285742241863
+* Heading :DIRAC: No title specified !!!                     Tue Sep 30 18:08:14 2014
+
+
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
 ========== Cavity 
 Cavity type: GePol
-Average area = 10 AU^2
-Addition of extra spheres enabled
+Average area = 35.7106 AU^2
 Probe radius = 2.61727
 Number of spheres = 5 [initial = 5; added = 0]
-Number of finite elements = 80
+Number of finite elements = 32
 ========== Solver 
 Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
@@ -786,7 +792,6 @@ Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
-
 
 
 
@@ -804,8 +809,8 @@ X-Dipole length  - Symmetry: A    T+
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    1.10%   0.02000099s
-SOfock:SL  1.00D-12    0.00%    6.67%    0.53%    7.27%   0.07200500s
+SOfock:LL  1.00D-12    0.00%    7.03%    0.92%    0.99%   0.01496300s
+SOfock:SL  1.00D-12    0.00%    6.67%    0.53%    7.27%   0.10255098s
 * Calling pcm_oper_ao_driver to get J + X(D) contribution.
 
 *** WARNING *** GETFCK: No 1-Fock found. Regenerating.
@@ -815,53 +820,53 @@ SOfock:SL  1.00D-12    0.00%    6.67%    0.53%    7.27%   0.07200500s
 * Screening threshold in LR solver scaled with norm of property vector:  1.8818D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   1 ##########   Tue Sep 30 18:08:17 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.02000099s
-SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.07200399s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01494199s
+SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.10216898s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  7.15E-02  7.05E-02  1.19E-02
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  7.05E-02  7.05E-02
 
-########## START MICROITERATION NO.   2 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   2 ##########   Tue Sep 30 18:08:17 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   13.82%   0.02000099s
-SOfock:SL  2.24D-08    0.49%    6.71%    4.54%   11.64%   0.07200503s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01503700s
+SOfock:SL  2.24D-08    0.49%    6.87%    6.37%   23.13%   0.09916300s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.14E-03  4.14E-03  9.84E-05
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.14E-03  4.14E-03
 
-########## START MICROITERATION NO.   3 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   3 ##########   Tue Sep 30 18:08:17 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    7.58%   28.32%   0.01600099s
-SOfock:SL  2.24D-08    0.49%    9.64%   25.18%   15.79%   0.07200402s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    9.08%   0.01496005s
+SOfock:SL  2.24D-08    0.49%   10.53%   10.32%   27.82%   0.09884501s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.91E-05  4.90E-05  2.39E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.90E-05  4.90E-05
 
-########## START MICROITERATION NO.   4 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   4 ##########   Tue Sep 30 18:08:17 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   42.19%   0.02000099s
-SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400400s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   42.42%   0.01480001s
+SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.08993298s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  2.43E-06  3.67E-07  2.40E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  3.69E-07  3.69E-07
 
 
                              Final output from XRSCTL
@@ -870,24 +875,24 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400400s
 
 *** Microiterations converged after  4 microiterations
 
-            Freq.(au)   Total norm    E+ norm   P+ norm 
-========================================================
-* It.  1   0.09600601s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   7.15D-02 |   7.05D-02  1.19D-02
-========================================================
-* It.  2   0.10800698s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.14D-03 |   4.14D-03  9.84D-05
-========================================================
-* It.  3   0.10400701s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.91D-05 |   4.90D-05  2.39D-06
-========================================================
-* It.  4   0.08800501s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   2.43D-06 |   3.67D-07  2.40D-06
-========================================================
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.12637699s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   7.05D-02 |   7.05D-02
+==============================================
+* It.  2   0.12392402s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.14D-03 |   4.14D-03
+==============================================
+* It.  3   0.12272400s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.90D-05 |   4.90D-05
+==============================================
+* It.  4   0.11383700s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   3.69D-07 |   3.69D-07
+==============================================
 
 
 
@@ -900,53 +905,53 @@ Y-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  1.8818D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   1 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.02000099s
-SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.06800497s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01562697s
+SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.10233700s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  7.15E-02  7.05E-02  1.19E-02
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  7.05E-02  7.05E-02
 
-########## START MICROITERATION NO.   2 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   2 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   13.82%   0.02000201s
-SOfock:SL  2.24D-08    0.49%    6.71%    4.54%   11.64%   0.07200396s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01481700s
+SOfock:SL  2.24D-08    0.49%    6.87%    6.37%   23.13%   0.10332692s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.14E-03  4.14E-03  9.84E-05
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.14E-03  4.14E-03
 
-########## START MICROITERATION NO.   3 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   3 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    7.58%   28.43%   0.01600099s
-SOfock:SL  2.24D-08    0.49%    9.64%   25.18%   15.79%   0.07600498s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    9.08%   0.01436400s
+SOfock:SL  2.24D-08    0.49%   10.53%   10.32%   27.82%   0.09908402s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.91E-05  4.90E-05  2.39E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.90E-05  4.90E-05
 
-########## START MICROITERATION NO.   4 ##########   Fri Jan 24 17:14:28 2014
+########## START MICROITERATION NO.   4 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   42.19%   0.02000201s
-SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   42.42%   0.01449490s
+SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.09014308s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  2.43E-06  3.67E-07  2.40E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  3.70E-07  3.70E-07
 
 
                              Final output from XRSCTL
@@ -955,24 +960,24 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 
 *** Microiterations converged after  4 microiterations
 
-            Freq.(au)   Total norm    E+ norm   P+ norm 
-========================================================
-* It.  1   0.09600598s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   7.15D-02 |   7.05D-02  1.19D-02
-========================================================
-* It.  2   0.10800600s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.14D-03 |   4.14D-03  9.84D-05
-========================================================
-* It.  3   0.10400701s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.91D-05 |   4.90D-05  2.39D-06
-========================================================
-* It.  4   0.09200597s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   2.43D-06 |   3.67D-07  2.40D-06
-========================================================
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.12805504s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   7.05D-02 |   7.05D-02
+==============================================
+* It.  2   0.12730789s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.14D-03 |   4.14D-03
+==============================================
+* It.  3   0.12260103s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.90D-05 |   4.90D-05
+==============================================
+* It.  4   0.11390793s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   3.70D-07 |   3.70D-07
+==============================================
 
 
 
@@ -985,53 +990,53 @@ Z-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  1.8818D+00
   and changed to:  2.2402D-08
 
-########## START MICROITERATION NO.   1 ##########   Fri Jan 24 17:14:29 2014
+########## START MICROITERATION NO.   1 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.02000093s
-SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.06800401s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01443505s
+SOfock:SL  2.24D-08    0.49%    6.53%    2.26%   10.36%   0.10161209s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  7.15E-02  7.05E-02  1.19E-02
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  7.05E-02  7.05E-02
 
-########## START MICROITERATION NO.   2 ##########   Fri Jan 24 17:14:29 2014
+########## START MICROITERATION NO.   2 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.24%   13.82%   0.02000093s
-SOfock:SL  2.24D-08    0.49%    6.71%    4.54%   11.64%   0.07600498s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    8.17%   0.01465297s
+SOfock:SL  2.24D-08    0.49%    6.87%    6.37%   23.13%   0.09942293s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.14E-03  4.14E-03  9.84E-05
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.14E-03  4.14E-03
 
-########## START MICROITERATION NO.   3 ##########   Fri Jan 24 17:14:29 2014
+########## START MICROITERATION NO.   3 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    7.58%   28.32%   0.02000105s
-SOfock:SL  2.24D-08    0.49%    9.64%   25.18%   15.79%   0.07200396s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.24%    9.08%   0.01442814s
+SOfock:SL  2.24D-08    0.49%   10.53%   10.32%   27.82%   0.10262704s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  1
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  4.91E-05  4.90E-05  2.39E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.90E-05  4.90E-05
 
-########## START MICROITERATION NO.   4 ##########   Fri Jan 24 17:14:29 2014
+########## START MICROITERATION NO.   4 ##########   Tue Sep 30 18:08:18 2014
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   42.42%   0.02000105s
-SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
+SOfock:LL  2.24D-08    0.83%    7.02%    2.65%   41.93%   0.01500487s
+SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.08999205s
 * Skipping formation of One-Index Transformed electronic polarization charges.
-* Trial vectors in this micro iteration:  E+:  1  P+:  0
+* Trial vectors in this micro iteration:  E+:  1
 
 * Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   P+ part 
-     0.00000000  1.00E-05  2.43E-06  3.68E-07  2.40E-06
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  3.55E-07  3.55E-07
 
 
                              Final output from XRSCTL
@@ -1040,24 +1045,24 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 
 *** Microiterations converged after  4 microiterations
 
-            Freq.(au)   Total norm    E+ norm   P+ norm 
-========================================================
-* It.  1   0.09600604s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   7.15D-02 |   7.05D-02  1.19D-02
-========================================================
-* It.  2   0.10800695s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.14D-03 |   4.14D-03  9.84D-05
-========================================================
-* It.  3   0.10800707s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   4.91D-05 |   4.90D-05  2.39D-06
-========================================================
-* It.  4   0.08800495s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   2.43D-06 |   3.68D-07  2.40D-06
-========================================================
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   0.12503409s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   7.05D-02 |   7.05D-02
+==============================================
+* It.  2   0.12296093s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.14D-03 |   4.14D-03
+==============================================
+* It.  3   0.12601793s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   4.90D-05 |   4.90D-05
+==============================================
+* It.  4   0.11387014s  (LL SL    )     [  1]
+----------------------------------------------
+            0.000000 :   3.55D-07 |   3.55D-07
+==============================================
 
 
                           Linear response; final output
@@ -1071,7 +1076,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.682085591684 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -1.682344631957 a.u.                       1.96E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -1081,7 +1086,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.30147267E-11 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.    0.45630340E-12 a.u.                       1.97E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -1091,7 +1096,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.89739331E-12 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -0.67222963E-12 a.u.                       1.89E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 1)>> - linear response function (real):
@@ -1101,7 +1106,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.38895419E-11 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.    0.36125616E-12 a.u.                       1.96E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -1111,7 +1116,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.682085591684 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -1.682344631957 a.u.                       1.97E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -1121,7 +1126,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.29658768E-11 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -0.75445032E-12 a.u.                       1.89E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -1131,7 +1136,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    0.12755904E-11 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -0.68538751E-12 a.u.                       1.96E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -1141,7 +1146,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.35617333E-11 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -0.89737245E-14 a.u.                       1.97E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -1151,7 +1156,7 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.682085591684 a.u.                       1.29E-06   (converged)
+  0.00000000 a.u.   -1.682344631957 a.u.                       1.89E-07   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -1162,23 +1167,20 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 
 
 
-@
-@   Elements of the electric dipole
-@   polarizability tensor
-@
+@   Elements of the electric dipole polarizability tensor
 
-@   xx            1.68208559 a.u.   (converged)      
-@   yy            1.68208559 a.u.   (converged)      
-@   zz            1.68208559 a.u.   (converged)      
+@   xx            1.68234463 a.u.   (converged)      
+@   yy            1.68234463 a.u.   (converged)      
+@   zz            1.68234463 a.u.   (converged)      
 
-@   average       1.68208559 a.u.
+@   average       1.68234463 a.u.
 @   anisotropy    0.000      a.u.
 
-@   xx            0.24925936 angstrom**3
-@   yy            0.24925936 angstrom**3
-@   zz            0.24925936 angstrom**3
+@   xx            0.24929775 angstrom**3
+@   yy            0.24929775 angstrom**3
+@   zz            0.24929775 angstrom**3
 
-@   average       0.24925936 angstrom**3
+@   average       0.24929775 angstrom**3
 @   anisotropy    0.000      angstrom**3
 
 ----------------------------------------------
@@ -1189,15 +1191,15 @@ SOfock:SL  2.24D-08    4.56%   24.95%    1.44%   61.76%   0.06400394s
 
 
  
-     Date and time (Linux)  : Fri Jan 24 17:14:29 2014
+     Date and time (Linux)  : Tue Sep 30 18:08:19 2014
      Host name              : not found                               
 
->>>> Node 0, utime: 1, stime: 0, minflt: 6666, majflt: 0, nvcsw: 1, nivcsw: 161, maxrss: 15840
+>>>> Node 0, utime: 1, stime: 0, minflt: 7762, majflt: 0, nvcsw: 1, nivcsw: 343, maxrss: 37232
 >>>> Total WALL time used in DIRAC: 2s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        42.86
+  Mean allocation size (Mb) :        58.17
   
   Largest          10  allocations
   
