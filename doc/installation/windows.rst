@@ -74,8 +74,16 @@ Troubleshooting
 
 The pam script sometimes does not find basis set files on your Windows machine.
 This could happen when your DIRAC suite is located on "non C:" hard-drives. 
-The workaround is to specify the HOME environmental variable pointing to your currect DIRAC installation.
 
-For example, setting HOME to "D:\Dirac\my_dirac" will enforce proper reading of "D:\Dirac\my_dirac\basis*" set libraries.
-In addition you might create the ".diracrc" configuration file in your DIRAC directory which will be read 
-by all pam scripts on your Windows based computer.
+The workaround is to specify the HOME environmental variable pointing properly to your (user's) home space.
+
+For example, if you have DIRAC in "D:\Dirac\my_dirac" and pam does not find input basis files, set %HOME% locally
+to "C:\Users\<current_user>".
+In addition create the ".diracrc" configuration file (with the --basis parameter) in your %HOME% directory 
+which will be read 
+by all pam scripts on your Windows equipped computer.
+
+Note that the default DIRAC scratch directory will be created in your %HOME% directory. Specify "--scratch" in your
+".diracrc" configuration file if you want change the scratch.
+
+In generall we recommend to keep DIRAC on the default "C:\" drive to prevent above mentioned problems.
