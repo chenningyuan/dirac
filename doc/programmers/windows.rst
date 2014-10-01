@@ -43,7 +43,10 @@ Documentation tools
 To be able to generate the html documentation, the user has to download the *Sphinx* (http://sphinx.pocoo.org/)
 package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools) as ::
 
-  easy_install -U sphinx.
+  easy_install -U sphinx
+
+Alternatively, better python installer is *pip* (https://pip.pypa.io/en/latest/index.html), and use it as ::
+  pip install sphinx
 
 We assume that the 32-bit version of Python is installed also on 64-bit machines as not all necessary packages are 
 at disposal in 64-bit versions.
@@ -51,13 +54,15 @@ Check that the *%Path%* Windows environmental variable points to both Python and
 and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
 
 You also need the additional package *matplotlib* (http://matplotlib.sourceforge.net/).
-You can get easily using *setuptools* as ::
+You can get it easily using *setuptools* or *pip* as ::
 
   easy_install -U matplotlib
+  pip install matplotlib
 
-You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* script.
+You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* or *pip* scripts.
 
-To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, which provides own (self-)installation file (and thus can not be installed with the *easy_install* tool).
+To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, 
+which provides own (self-)installation file.
 
 
 Git & PuTTy

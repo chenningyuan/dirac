@@ -24,10 +24,7 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment/
 **MOLTRA
 .ACTIVE
 all
+**RELCCSD
+.TIMING
+.GRADIENT
 *END OF
-
- &RELCCSD TIMING=T,
-          DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END
- &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T &END
- &CCFOPR DOMP2G=T &END
-

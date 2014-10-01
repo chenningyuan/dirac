@@ -19,8 +19,3 @@ Magnesium atom. Fockspace test calculations.
 energy -1000.0 1000.0 1.0
 energy -1000.0 1000.0 1.0
 *END OF
-
- # deprecated input
- &RELCCSD DOFSPC=T DOENER=F IPRNT=1 INTERFACE="DIRAC6" DEBUG=F &END
- &CCFSPC MAXIT=100, NACTH=0,0,0,0, NACTP=8,8,3,3, FSSECT=1,1,0,0,1,0, DOIH=T &END
- &CCIH EPMIN=1.15, EPMAX=1.40, IHSCHEME=1, SHIFTP2=1.9 &END

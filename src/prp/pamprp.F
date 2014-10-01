@@ -185,7 +185,7 @@ C
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
-         CALL MEMGET('REAL',KESR,LENESR,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','ESR',KESR,LENESR,WORK,KFREE,LFREE)
          CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
@@ -262,14 +262,10 @@ C*******************************************************************************
 C*****  OUTPUT of density, derivatives of density, and coulomb potential on a grid ****
 C**************************************************************************************
 C
-C JHS 17 apr 2008
-C
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_fde_export) then
-#ifdef MOD_XML
-         CALL TITLER('Output FDE data to XML file','*',118)
+         CALL TITLER('Output FDE data to file','*',118)
          call fde_export_to_file(wf)
-#endif
       END IF
 #endif
 
@@ -3896,7 +3892,7 @@ C***********************************************************************
 #endif
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &          DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -4054,7 +4050,7 @@ C
       NCOMP = 2
       PFAC(1)  = DMI2*CVAL
       PFAC(2)  = DMI2*CVAL
-      PFAC(3)  = DMI2*G1FAC
+      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'

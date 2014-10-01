@@ -1880,14 +1880,12 @@ C     Output:
 C        KZCONF   - work address of info about CI determinants
 C        LZCONF   - integer length of WORK(KZCONF)
 C
-C        KZXOPE   - work address of NZHOPE electron-electron rotations
-C        NZXOPE   - number of -"- (non-redundant)
-C        NZHOPE   - number of -"-  incl. redundant active-active rotations
-C        LZXOPE   - integer length of WORK(KZXOPE)
+C        NZXOPE   - number of ++ orb rotations (non-redundant)
+C        NZHOPE   - number of ++ orb rotations  incl. redundant active-active rotations
+C        LZXOPE   - integer length of ++ orb rotations
 C
-C        KZXOPP   - work address of NZXOPP electron-positron rotations
-C        NZXOPP   - number of -"-
-C        LZXOPP   - integer length of WORK(KZXOPP)
+C        NZXOPP   - number of +- orb rotations
+C        LZXOPP   - integer length of +- orb rotations
 C
 C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : July 2002 hjaaj
@@ -2123,7 +2121,7 @@ C
       JOPSY = 1
       GASWF = NGAS_DC.GT.1
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
-     &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
+     &     NZXOPE,NZHOPE,NZXOPP,
      &     IPROPT)
 C
 C
@@ -2149,8 +2147,8 @@ C
 
       END IF ! (WFTYP(1:5) .NE. 'KR-CI')
 C
-C     Define LZXOPE to integer length of work(KZXOPE)
-C     Define LZXOPP to integer length of work(KZXOPP)
+C     Define LZXOPE to integer length of ++ orb rotations
+C     Define LZXOPP to integer length of +- orb rotations
 C
       LZXOPE = 2*NZHOPE
       LZXOPP = 2*NZXOPP
@@ -2415,7 +2413,7 @@ C           HJAaJ TODO: reconsider KALLOC ....
 C               .... size KIASTR ca. sqrt size KIDET ???
 C               .... problem if IRAT .eq. 1 -- more than LFREE used
 C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = MIN(10 000 000, (LFREE-10 000)/4 )
+            KALLOC = MIN(100 000 000, (LFREE-10 000)/4 )
                          !max 10,000,000 determinants in this version
             CALL MEMGET('INT8',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
             CALL MEMGET('INT8',KIASTR,  KALLOC,WORK,KFREE,LFREE)
@@ -3579,23 +3577,23 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            THRGCI = 0.1D0 * SQRT(THRECI)   ! GASCIP uses gradient threshold, not energy threshold
-            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
+            THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,ICONV_TOT,
-     &                         IPROPT,WORK(KFREE),LFREE)
+     &                         IOPT_STATE,ICONV_TOT,
+     &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
 C
             ECI = WORK(KECI)
          ELSE
 C
 C           Full CI.
 C
-            CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL','ECI',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
-     &                           NZCONF,IOPT_ISTATE,THRPCI,
-     &                           IPROPT, WORK,KFREE,LFREE)
+     &                           NZCONF,IOPT_STATE,
+     &                           THRPCI,IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,
@@ -3678,12 +3676,12 @@ C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
-         END DO
+        END DO
 C
 C        set back if KR-MCSCF - otherwise LUCI_DENS call may fail
 C        do NOT set back for KR-CI - we might do more than one symmetry
 C
-         IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+        IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
       END IF
 C
@@ -3739,6 +3737,10 @@ C
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
       DIMENSION IOPTTB(-1:2)
       DATA IOPTTB / 0,0,0,0 /
+      integer, allocatable :: save_pp(:)
+      integer, allocatable :: save_pn(:)
+      integer, allocatable :: compress_pp(:)
+      integer, allocatable :: compress_pn(:)
 C
       CHARACTER SZTRA(4,2)*200
 C
@@ -3774,19 +3776,49 @@ C
 C        Compress orbital rotations.
 C        (this will destroy GPOE and GPOP but that's OK).
 C
-         CALL MEMGET('INTE',KZXOPE_SAV,NZHOPE*2,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KZXOPP_SAV,NZXOPP*2,WORK,KFREE,LFREE)
-         CALL ICOPY(NZHOPE*2,get_orbital_rotation_indices_pp(),1,
-     &              WORK(KZXOPE_SAV),1)
-         CALL ICOPY(NZXOPP*2,get_orbital_rotation_indices_pn(),1,
-     &              WORK(KZXOPP_SAV),1)
+         if (nzhope > 0) then
+            allocate(save_pp(nzhope*2))
+            allocate(compress_pp(nzhope*2))
+            call icopy(nzhope*2,
+     &                 get_orbital_rotation_indices_pp(), 1,
+     &                 save_pp, 1)
+            call icopy(nzhope*2,
+     &                 get_orbital_rotation_indices_pp(), 1,
+     &                 compress_pp, 1)
+         else
+            allocate(save_pp(1))
+            allocate(compress_pp(1))
+         end if
+
+         if (nzxopp > 0) then
+            allocate(save_pn(nzxopp*2))
+            allocate(compress_pn(nzxopp*2))
+            call icopy(nzxopp*2,
+     &                 get_orbital_rotation_indices_pn(), 1,
+     &                 save_pn, 1)
+            call icopy(nzxopp*2,
+     &                 get_orbital_rotation_indices_pn(), 1,
+     &                 compress_pn, 1)
+         else
+            allocate(save_pn(1))
+            allocate(compress_pn(1))
+         end if
 C
 C        Remove rotations.
 C
-         CALL RMROT(NOROTC,GOEE,get_orbital_rotation_indices_pp(),
+         CALL RMROT(NOROTC,GOEE,compress_pp,
      &              NZXOPE,NZHOPE,
-     &              GOEP,get_orbital_rotation_indices_pn(),
+     &              GOEP,compress_pn,
      &              NZXOPP,IPROPT,WORK(KFREE),LFREE)
+
+         call update_orbital_rotation_indices(nzhope,
+     &                                        nzxope,
+     &                                        nzxopp,
+     &                                        compress_pp,
+     &                                        compress_pn)
+
+         deallocate(compress_pp)
+         deallocate(compress_pn)
 C
          NZXOPPQ = NZXOPP*NZ
          NZXOPEQ = NZXOPE*NZ
@@ -3913,7 +3945,7 @@ C
      &     NZVAR1, NZVARQ1,NZCONF1,NZCONFQ1,
      &     NZXOPT1,NZXOPTQ1,NZXOPE1,NZXOPEQ1,NZXOPP,NZXOPPQ,
      &     NZHOPE,
-     &     KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
+     &     KZCONF,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
      &     MCTYPE,OPT_NOPFQ,OPT_NOFQX,JTRLVL)
 C
 C
@@ -3969,12 +4001,14 @@ C
          NZXOPEQ = NZXOPEQ_SAV
          NZHOPEQ = NZHOPEQ_SAV
 
-         CALL ICOPY(NZHOPE*2,WORK(KZXOPE_SAV),1,
-     &              get_orbital_rotation_indices_pp(),1)
-         CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,
-     &              get_orbital_rotation_indices_pn(),1)
+         call update_orbital_rotation_indices(nzhope,
+     &                                        nzxope,
+     &                                        nzxopp,
+     &                                        save_pp,
+     &                                        save_pn)
 
-C
+         deallocate(save_pp)
+         deallocate(save_pn)
       END IF
 C
       CALL MEMREL('DIRNR.after XRSCTL',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -3989,7 +4023,7 @@ C  /* Deck tdcbxlr */
      &     NZXOPT_OPT,NZXOPTQ_OPT,NZXOPE_OPT,NZXOPEQ_OPT,
      &     NZXOPP_OPT,NZXOPPQ_OPT,
      &     NZHOPE_OPT,
-     &     KZCONF_OPT,KZXOPE_OPT,KZXOPP_OPT,THR,CIPROGRAM,
+     &     KZCONF_OPT,THR,CIPROGRAM,
      &     EMC,IOPTTB,MCTYPE_OPT,OPT_NOPFQ,OPT_NOFQX,JOPT_JTRLVL)
 C***********************************************************************
 C
@@ -4096,8 +4130,6 @@ C
 C     pointers...
 C
       KZCONF = KZCONF_OPT
-      KZXOPE = KZXOPE_OPT
-      KZXOPP = KZXOPP_OPT
 C
 C     units...
 C
@@ -4329,7 +4361,7 @@ C     Normal MCSCF optimization
 C
       RATVGD = D1 - DP1 * (D1 * RATGOD)
       RTSAVE = RTRUST
-      IF ( IOPT_ISTATE .EQ. 1 ) THEN
+      IF ( IOPT_STATE .EQ. 1 ) THEN
          IF ( RATIO .LT. RATMIN ) THEN
             RTRUST = STPRED * RTRUST
             IF ( RATIO .LT. RATREJ .AND. .NOT. NOREJT ) THEN
@@ -4567,7 +4599,7 @@ C
       DIMENSION IBTYP(*), INERTIA(3)
       DIMENSION WORK(*)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL
@@ -4683,7 +4715,7 @@ C
       DIMENSION WORK(*)
       PARAMETER (STPL_EP_MAX = 0.0100D0)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL
@@ -4939,6 +4971,8 @@ C
       IF ( DN .NE. D1 ) THEN
          IF ( DN .LE. THRTT ) THEN
             DN = D1 / DN
+            IF (IPRINT .GE. 5) WRITE(LUPRI,'(/A,F20.12)')
+     &        ' (RCINORM) CI vector renormalized with factor ',DN
             CALL DSCAL(NZCONFQ, DN, CREF, 1)
             DN = DNORM2(NZCONFQ,CREF,1)
          END IF
@@ -6443,13 +6477,7 @@ C     Last revision: S. Knecht           - June 2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "dcbgen.h"
-#include "infpar.h"
-#include "parkrmc.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
