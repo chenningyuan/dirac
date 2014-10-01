@@ -56,3 +56,44 @@ macro(add_external _project)
     add_dependencies(${_project} check_external_timestamp_${_project})
 
 endmacro()
+
+macro(add_external_with_testing _project)
+
+    if(DEVELOPMENT_CODE AND GIT_FOUND)
+        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
+    else()
+        set(UPDATE_COMMAND echo)
+    endif()
+
+    add_custom_target(
+        check_external_timestamp_${_project}
+        COMMAND python ${PROJECT_SOURCE_DIR}/cmake/check_external_timestamp.py
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp/${_project}-configure
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+                       ${PROJECT_SOURCE_DIR}/external/${_project}
+    )
+
+    ExternalProject_Add(${_project}
+        DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+        BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+        STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+        TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+        CMAKE_ARGS ${ExternalProjectCMakeArgs}
+        TEST_BEFORE_INSTALL 1
+	TEST_COMMAND make test
+	LOG_TEST 1
+        )
+
+    link_directories(${PROJECT_BINARY_DIR}/external/lib)
+    link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
+
+    if(DEVELOPMENT_CODE)
+        add_dependencies(${_project} git_update)
+        add_dependencies(check_external_timestamp_${_project} git_update)
+    endif()
+    add_dependencies(${_project} check_external_timestamp_${_project})
+
+endmacro()

@@ -158,10 +158,12 @@ if(ENABLE_PCMSOLVER)
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
 	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
 	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	-DPYTHON_LIBRARY=${PYTHON_LIBRARIES}
-	-DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIRS})
+	-DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython 
+	-DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
+	-DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
+        -DENABLE_TESTS=ON)
     
-    add_external(pcmsolver)
+    add_external_with_testing(pcmsolver)
 
     set(EXTERNAL_LIBS
         stdc++
