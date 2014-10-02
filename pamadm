@@ -174,8 +174,6 @@ def main():
     add_test('mp2_srdft_energies', 'short;mp2;srdft')
     add_test('mp2_natural_orbitals', 'short;mp2')
     add_test('open-shells', 'short')
-    add_test('pcm_energy', 'short;scf')
-    add_test('pcm_response', 'short;response;polarizabilities')
     add_test('projection_analysis', 'short;projection')
     add_test('pvc_scf', 'short;pvc;scf')
     add_test('response_C6', 'short;response')
@@ -391,6 +389,12 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
     dirac_modules[this_module].take_out_of_release()
 
+    this_module = 'pcm'
+    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
+    dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
+    dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
+    dirac_modules[this_module].take_out_of_release()
+
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
     dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
@@ -595,11 +599,13 @@ def main():
            not 'short' in test[1] and \
            not 'benchmark' in test[1] and \
            not 'tutorial' in test[1] and \
-           not 'openrsp' in test[1]:
+           not 'openrsp' in test[1] and \
+           not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # short tests
     for test in list_of_tests:
-        if 'short' in test[1]:
+        if 'short' in test[1] and \
+            not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
 
     # openrsp tests
@@ -620,6 +626,13 @@ def main():
     f.write('if(ENABLE_TUTORIALS)\n')
     for test in list_of_tests:
         if 'tutorial' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+    
+    # pcm tests
+    f.write('if(ENABLE_PCMSOLVER)\n')
+    for test in list_of_tests:
+        if 'pcm' in test[1]:
             f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.write('endif()\n')
 

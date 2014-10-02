@@ -142,7 +142,9 @@ C***********************************************************************
       use orbital_rotation_indices
       use dirac_cfg
 
+#ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
+#endif
 
 
 #include "implicit.h"
@@ -198,10 +200,12 @@ C
         KLRO = KFREE
       ENDIF
 
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
               call pcm_linear_response_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
+#endif
 C
 C     **********************************************************
 C     ***                                                    ***
@@ -495,9 +499,12 @@ C     Calculation of C6 dispersion coefficient
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj.or.dirac_cfg_pcm) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  XLR_SKIPEP = .TRUE.
-      write(lupri, *) "kappa^{+-} rotations disabled with PCM"
+#ifdef HAS_PCMSOLVER
+      if(dirac_cfg_pcm) 
+     &  XLR_SKIPEP = .TRUE.
+#endif
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -935,15 +942,16 @@ C
         WRITE(LUPRI,'(A)')
      &  ' * e-e rotations are allowed in the linear response function.'
       ENDIF
-      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ
-     & .or.dirac_cfg_pcm))
+      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+#ifdef HAS_PCMSOLVER
       if(dirac_cfg_pcm) then
         WRITE(LUPRI,'(A)')
      &  ' * e-p rotations not allowed by default'//
      &  ' when using PCM.'
       endif
+#endif
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')

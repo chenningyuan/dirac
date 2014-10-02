@@ -141,6 +141,7 @@ else()
 endif()
 
 if(ENABLE_PCMSOLVER)
+    add_definitions(-DHAS_PCMSOLVER)
     message(STATUS "Polarizable Continuum Model via PCMSolver enabled.")
     find_package(PythonLibs REQUIRED)
     find_package(ZLIB       REQUIRED)
@@ -158,12 +159,13 @@ if(ENABLE_PCMSOLVER)
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
 	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
 	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	-DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython 
+	-DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
 	-DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
 	-DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
-        -DENABLE_TESTS=ON)
+        -DENABLE_TESTS=ON
+     )
     
-    add_external_with_testing(pcmsolver)
+    add_external(pcmsolver "ctest")
 
     set(EXTERNAL_LIBS
         stdc++

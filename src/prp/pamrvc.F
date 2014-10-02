@@ -3988,8 +3988,10 @@ C***********************************************************************
         use fde_mod
         use fde_dirac_matrices_integration
         use num_grid_gen
+#ifdef HAS_PCMSOLVER
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
+#endif
         use orbital_rotation_indices
 
 
@@ -4153,6 +4155,7 @@ C
       END IF
 
 ! Insert safeguards against symmetry and X2C?
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            if (pcmmod_skipoit) then
               write(lupri,'(a)') '* Skipping formation of '//
@@ -4174,6 +4177,7 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
+#endif
  
 C
 C

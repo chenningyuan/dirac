@@ -52,11 +52,13 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+#ifdef HAS_PCMSOLVER           
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
         
         case ('*PCMSOL')
            call read_input_pcmsolver(word, kw_section)
+#endif           
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
@@ -1496,6 +1498,7 @@
 
    end subroutine
 
+#ifdef HAS_PCMSOLVER
    subroutine read_input_pcm(word, kw_section)
 
       use dirac_cfg
@@ -1634,6 +1637,7 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+#endif
 
    subroutine read_input_dft(word, kw_section)
 

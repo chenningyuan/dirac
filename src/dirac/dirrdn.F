@@ -43,8 +43,10 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
+#endif      
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -251,9 +253,11 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
+#endif
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 C
@@ -2194,6 +2198,12 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#ifdef HAS_PCMSOLVER
+      if (.not. noqcdhf .and. dirac_cfg_pcm) then
+         call quit('Quadratic convergent Hartree-Fock not'//
+     &   'available with PCM')
+      endif              
+#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -4602,7 +4612,9 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
+#endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
@@ -5318,7 +5330,11 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .PCM
   157     CONTINUE
+#ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
+#else
+          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
