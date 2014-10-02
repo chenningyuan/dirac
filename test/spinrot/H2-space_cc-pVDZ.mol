@@ -1,0 +1,11 @@
+INTGRL
+Hydrogen 2. Exp. bond length: 0.7416 A.
+cc-pVDZ Basis set
+C   2    0         A .10D-15                                               
+       1.0    1    
+H       0.21408148     0.21408148     0.21408148       Isotope=1
+LARGE BASIS cc-pVDZ
+       1.0    1    
+H      -0.21408148    -0.21408148    -0.21408148       Isotope=1
+LARGE BASIS cc-pVDZ
+FINISH

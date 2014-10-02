@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'DIRAC  - NUCLEAR SPIN-ROTATION TENSOR',
+      to_string   = 'E N D   of   D I R A C  output',
+      rel_tolerance   = 1.0e-4)
+
+test.run(['spinrot.inp'], ['H2_cc-pVDZ.mol','H2_cc-pVDZ_symmetry.mol', 'H2-space_cc-pVDZ', 'HF_cc-pVDZ.mol', 'HF_cc-pVDZ_symmetry.mol'], f, args='--mw=100 --aw=128')
+
+sys.exit(test.return_code)
