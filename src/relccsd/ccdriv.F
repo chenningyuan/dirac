@@ -4117,23 +4117,23 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
-
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table  -----------------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  inverse multiplication table  ---------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-c     ENDDO
+       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+!     write(*,*)
+!     write(*,*) '--------------------------------------------'
+!     write(*,*) '---  multiplication table  -----------------'
+!     write(*,*) '--------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+!     ENDDO
+!     write(*,*)
+!     write(*,*) '--------------------------------------------'
+!     write(*,*) '---  inverse multiplication table  ---------'
+!     write(*,*) '--------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+!     ENDDO
 
 C
 C     Get rid of offset for boson reps
