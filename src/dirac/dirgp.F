@@ -2865,6 +2865,7 @@ C     On output:
 C     NSTR(IFRP,0) : total number of vectors
 C     NSTR(IFRP,1) : vectors of positive energy
 C     NSTR(IFRP,2) : vectors of negative energy
+C     KVEC         : starting address for index array of orbital addresses
 C     
 C     Written by T. Saue Sep 1 2006
 C***********************************************************************

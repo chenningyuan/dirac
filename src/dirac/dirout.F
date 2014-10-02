@@ -1754,10 +1754,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Pripol */
-      SUBROUTINE PRIPOL(IFRP,CPOL,EIG,NPOL,NBAS,NTOT)
+      SUBROUTINE PRIPOL(CPOL,EPOL,NBAS,NPOL,NZ,LRPOL,LCPOL)
 C***********************************************************************
 C
-C     Print polarization contributions form projection analysis
+C     Print polarization contributions from projection analysis
 C
 C     Written by T. Saue Oct 25 2003
 C
@@ -1767,15 +1767,14 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
 C
 #include "maxorb.h"
-#include "dgroup.h"
 #include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6
-      DIMENSION CPOL(NBAS,NTOT,NZ),EIG(NPOL)
+      DIMENSION CPOL(LRPOL,LCPOL,NZ),EPOL(NPOL)
 C
       DO I = 1,NPOL
-        FMT = MXFORM(EIG(I),16)
+        FMT = MXFORM(EPOL(I),16)
         WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +    '* Electronic eigenvalue nr.',I,': ',EIG(I)
+     +    '* Electronic eigenvalue nr.',I,': ',EPOL(I)
         CALL PRSYMB(LUPRI,'=',52,0)
         BIG=D0
         IBIG=0
@@ -1788,7 +1787,7 @@ C
             WRITE(LUPRI,100)
      &          J,PLABEL(IPLAB(J,2),2),(CPOL(J,I,IZ),IZ = 1,NZ)
             IF(DVEC.GT.BIG) THEN
-              BIG = DVEC
+              BIG  = DVEC
               IBIG = J
             ENDIF
           ENDIF
@@ -1796,8 +1795,7 @@ C
         WRITE(6,*) ' * Max. ',BIG
         IF(IBIG.GT.0) THEN
           WRITE(LUPRI,100)
-     &          IBIG,PLABEL(IPLAB(IBIG,2),2),
-     &          (CPOL(IBIG,I,IZ),IZ = 1,NZ)
+     &          IBIG,PLABEL(IPLAB(IBIG,2),2),(CPOL(IBIG,I,IZ),IZ = 1,NZ)
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'=',52,0)
