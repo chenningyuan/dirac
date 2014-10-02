@@ -6651,7 +6651,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck SHIANA */
       SUBROUTINE SHIANA(TMAT,DMAT,DMATLO,DMATRE,DMATREE,DMATREP,
      &                  DMATREO,PMATEE,PMATEP,
-     &                  AVETOT,C,AVEPAR,ANIS,ASYM,
+     &                  AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
 C
