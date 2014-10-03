@@ -153,38 +153,39 @@ if(ENABLE_PCMSOLVER)
         if(NOT ZLIB_FOUND)
             message(STATUS "  - install Zlib development libraries")
         endif()
+    else()
+        add_definitions(-DHAS_PCMSOLVER)                                                  
+        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+        set(ExternalProjectCMakeArgs
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+            -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+            -DEIGEN3_ROOT=${EIGEN3_ROOT}
+            -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+            -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+            -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
+            -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
+            -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
+            -DENABLE_TESTS=ON
+         )
+        
+        add_external(pcmsolver "ctest")
+                                                                                          
+        set(EXTERNAL_LIBS
+            stdc++
+            pcm
+            getkw
+            ${ZLIB_LIBRARIES}
+            ${PYTHON_LIBRARIES}
+            ${EXTERNAL_LIBS})
     endif()
-    add_definitions(-DHAS_PCMSOLVER)
-    message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        -DEIGEN3_ROOT=${EIGEN3_ROOT}
-	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	-DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
-	-DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
-	-DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
-        -DENABLE_TESTS=ON
-     )
-    
-    add_external(pcmsolver "ctest")
-
-    set(EXTERNAL_LIBS
-        stdc++
-	pcm
-        getkw
-	${ZLIB_LIBRARIES}
-	${PYTHON_LIBRARIES}
-        ${EXTERNAL_LIBS})
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
