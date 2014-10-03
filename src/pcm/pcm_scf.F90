@@ -1,3 +1,24 @@
+!dirac_copyright_start
+!      Copyright (c) 2013 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://www.diracprogram.org
+!dirac_copyright_end
+
 !
 ! DIRAC-side interface routines for the Polarizable Continuum Model
 ! Roberto Di Remigio 2012
@@ -27,15 +48,13 @@
 
 module pcm_scf
 
-   use iso_c_binding
+   use, intrinsic :: iso_c_binding
    
    implicit none 
 
    public pcm_scf_initialize
    public pcm_scf_finalize
   
-   public collect_nctot
-   public collect_atoms 
    public pcm_energy_driver   
    public pcm_oper_ao_driver
    public get_pcm_energy
@@ -47,6 +66,7 @@ module pcm_scf
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points
+   integer(c_int)              :: nr_points_irr
 ! A (maybe clumsy) way of passing LUPRI without using common blocks   
    integer                     :: global_print_unit
 ! A counter for the number of SCF iterations
@@ -56,18 +76,24 @@ module pcm_scf
 
       subroutine pcm_scf_initialize(print_unit)
 
+      use pcmmod_cfg, only: pcmmod_host_provides_input
+      
       integer, intent(in) :: print_unit
+      
+      integer :: host_provides_input = 0
 
-      global_print_unit = print_unit 
+      global_print_unit = print_unit
 
-      call init_pcm
+      if (pcmmod_host_provides_input) host_provides_input = 1 
+
+      call set_up_pcm(host_provides_input)
       call print_pcm
 
-      call get_cavity_size(nr_points)
+      call get_cavity_size(nr_points, nr_points_irr)
 
       allocate(tess_cent(3, nr_points))
       tess_cent = 0.0d0
-      call get_tess_centers(tess_cent)
+      call get_tesserae(tess_cent)
 
       pcm_energy = 0.0d0
               
@@ -99,39 +125,56 @@ module pcm_scf
 
       end subroutine
 
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_') 
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      integer(c_int), intent(out) :: nr_nuclei
-      
-      nr_nuclei = nucdep
-
-      end subroutine
-      
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(c_double), intent(out) :: atomic_charges(*)
-      real(c_double), intent(out) :: atomic_centers(3,*)
-     
-      integer :: i, j, k 
-
-! Get coordinates
-      call getacord(atomic_centers)
-! Get charges      
-      i = 0
-      do j = 1, nucind
-        do k = 1, nucdeg(j)
-          i = i + 1
-          atomic_charges(i) = charge(j)
-        enddo
-      enddo
-   
-      end subroutine
+!      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot') 
+!
+!#include "mxcent.h"
+!#include "nuclei.h"
+!     
+!      integer(c_int), intent(out) :: nr_nuclei 
+!                                               
+!      nr_nuclei = nucdep
+!                                               
+!      end subroutine collect_nctot
+!     
+!      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
+!
+!#include "mxcent.h"
+!#include "nuclei.h"
+!     
+!      real(c_double), intent(out) :: atomic_charges(*)   
+!      real(c_double), intent(out) :: atomic_centers(3,*)
+!                                                         
+!      integer :: i, j, k 
+!     
+!! Get coordinates
+!      call getacord(atomic_centers)
+!! Get charges      
+!      i = 0                             
+!      do j = 1, nucind
+!        do k = 1, nucdeg(j)
+!          i = i + 1
+!          atomic_charges(i) = charge(j)
+!        enddo
+!      enddo
+!                                        
+!      end subroutine collect_atoms
+!      
+!      subroutine set_point_group(nr_gen, gen1, gen2, gen3) bind(c, name='set_point_group')
+!
+!#include "mxcent.h"                     
+!#include "maxorb.h"
+!#include "maxaqn.h"
+!#include "symmet.h"
+!
+!      integer(c_int), intent(inout) :: nr_gen 
+!      integer(c_int), intent(inout) :: gen1, gen2, gen3
+!
+!      nr_gen = 0 !pcm_igen(1)   
+!      gen1   = 0 !pcm_igen(2) 
+!      gen2   = 0 !pcm_igen(3)
+!      gen3   = 0 !pcm_igen(4)
+!
+!      end subroutine set_point_group
 
       subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 !
@@ -154,7 +197,7 @@ module pcm_scf
 
 ! pcm_energy is the polarization energy:
 ! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call comp_pol_ene_pcm(pol_ene)
+      call compute_polarization_energy(pol_ene)
 
 ! Now make the value of the polarization energy known throughout the module
       pcm_energy = pol_ene
@@ -168,7 +211,7 @@ module pcm_scf
 !
 ! Roberto Di Remigio, 2012
 !
-      use electrostatic_potential, only: get_electronic_mep 
+      use pcm_integrals, only: get_electronic_mep 
       use pcmmod_cfg
 
 #include "dcbbas.h"
@@ -198,7 +241,8 @@ module pcm_scf
       asc = 0.0d0
       call get_surface_function(nr_points, asc, charge_name)
 ! Contraction of electrostatic potential integrals with polarization charges
-      call get_electronic_mep(nr_points, oper, tess_cent, asc, work, lwork, 0, .true., pcmmod_skipss)
+      call get_electronic_mep(nr_points, nr_points_irr, oper, tess_cent,   &
+                              asc, work, lwork, 0, .true., pcmmod_skipss)
 ! Symmetrize Fock matrix contribution       
       do i = 1, ntbas(0)
         do j = 1, i
@@ -230,13 +274,11 @@ module pcm_scf
       
       end subroutine pcm_oper_ao_driver
 
-      function get_pcm_energy()
+      real(8) function get_pcm_energy()
       
-      real(8) get_pcm_energy
-
 ! pcm_energy is the polarization energy:
 ! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call comp_pol_ene_pcm(pcm_energy)
+! it has already been calculated and "stored" in the module
 
       get_pcm_energy = pcm_energy
 
@@ -251,9 +293,10 @@ module pcm_scf
 !    * switch between separate and total evaluation of the
 !      nuclear and electronic parts;
 !
-      use electrostatic_potential, only: get_nuclear_mep, get_electronic_mep, get_mep
+      use pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
       use pcm_write, only: pcm_write_file, pcm_write_file_separate
       use pcmmod_cfg
+      use pcm_gp, only: timing
 
       real(8), intent(in)    :: density_matrix(*)
       real(8), intent(inout) :: work(*)
@@ -265,24 +308,40 @@ module pcm_scf
       real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
       character(7)                :: potName, chgName
       character(7)                :: potName1, chgName1, potName2, chgName2
-      integer                     :: i
+      integer                     :: i, irrep
+      real(8)                     :: start_mep, finish_mep
+      real(8)                     :: start_asc, finish_asc
       
       allocate(mep(nr_points))
       mep = 0.0d0
       allocate(asc(nr_points))
       asc = 0.0d0
+      ! Ask for the totally symmetric irrep
+      irrep = 0
+
+      ! Zero out timing variables
+      start_mep = 0.0d0
+      finish_mep = 0.0d0
+      start_asc = 0.0d0
+      finish_asc = 0.0d0
 
       if (.not.(pcmmod_separate)) then
-        potName = 'TotMEP'//char(0) 
-        chgName = 'TotASC'//char(0)
+        potName = 'TotMEP'//c_null_char 
+        chgName = 'TotASC'//c_null_char
 ! Calculate the (total) Molecular Electrostatic Potential
-        call get_mep(nr_points, tess_cent, mep, density_matrix, work, lfree, 0, pcmmod_skipss)
-! Set a cavity surface function with the MEP
+        start_mep = timing()
+        call get_mep(nr_points, nr_points_irr, tess_cent, mep,      &
+                     density_matrix, work, lfree, 0, pcmmod_skipss)
+        finish_mep = timing()
+! Calculation of ASC proceeds in three steps:
+! a. set a cavity surface function with the MEP
+! b. compute the actual ASC and set the proper surface function
+! c. retrieve the ASC @tesserae centers
+        start_asc = timing() 
         call set_surface_function(nr_points, mep, potName)
-! Compute polarization charges and set the proper surface function
-        call comp_chg_pcm(potName, chgName)
-! Get polarization charges @tesserae centers
+        call compute_asc(potName, chgName, irrep)
         call get_surface_function(nr_points, asc, chgName)
+        finish_asc = timing() 
 
 ! Print some information
         if (pcmmod_print > 5) then
@@ -292,6 +351,9 @@ module pcm_scf
             write(global_print_unit, '(I6, 2(20X, F15.12))') i, mep(i), asc(i)
           end do
         end if
+! Print timings
+        write(global_print_unit, '(a, f10.8, a)'), "* MEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)'), "* ASC evaluation (CPU): ", finish_asc-start_asc, "s"
 
 ! Write to file MEP and ASC
         call pcm_write_file(nr_points, mep, asc)
@@ -305,20 +367,42 @@ module pcm_scf
         ele_pot = 0.0d0
         allocate(ele_pol_chg(nr_points))
         ele_pol_chg = 0.0d0
-  
-        potName1 = 'NucMEP'//char(0)
-        chgName1 = 'NucASC'//char(0)
-        call get_nuclear_mep(nr_points, tess_cent, nuc_pot, 0)
-        call set_surface_function(nr_points, nuc_pot, potName1)
-        call comp_chg_pcm(potName1, chgName1)
-        call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
-        potName2 = 'EleMEP'//char(0)
-        chgName2 = 'EleASC'//char(0)
-        call get_electronic_mep(nr_points, density_matrix, tess_cent, ele_pot, work, lfree, 0, .false., pcmmod_skipss)
+        potName1 = 'NucMEP'//c_null_char
+        chgName1 = 'NucASC'//c_null_char
+        start_mep = timing() 
+        call get_nuclear_mep(nr_points, nr_points_irr, tess_cent, nuc_pot, 0)
+        finish_mep = timing()
+
+        start_asc = timing()
+        call set_surface_function(nr_points, nuc_pot, potName1)
+        call compute_asc(potName1, chgName1, irrep)
+        call get_surface_function(nr_points, nuc_pol_chg, chgName1)
+        finish_asc = timing()
+! Print timings
+        write(global_print_unit, '(a, f10.8, a)'), "* NucMEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)'), "* NucASC evaluation (CPU): ", finish_asc-start_asc, "s"
+! Reset timing variables        
+        start_mep = 0.0d0
+        finish_mep = 0.0d0
+        start_asc = 0.0d0
+        finish_asc = 0.0d0
+
+        potName2 = 'EleMEP'//c_null_char
+        chgName2 = 'EleASC'//c_null_char
+        start_mep = timing() 
+        call get_electronic_mep(nr_points, nr_points_irr, density_matrix, tess_cent,  &
+                                ele_pot, work, lfree, 0, .false., pcmmod_skipss)
+        finish_mep = timing()
+        
+        start_asc = timing()
         call set_surface_function(nr_points, ele_pot, potName2)
-        call comp_chg_pcm(potName2, chgName2)
+        call compute_asc(potName2, chgName2, irrep)
         call get_surface_function(nr_points, ele_pol_chg, chgName2)
+        finish_asc = timing()
+! Print timings
+        write(global_print_unit, '(a, f10.8, a)'), "* EleMEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)'), "* EleASC evaluation (CPU): ", finish_asc-start_asc, "s"
 
 ! Print some information
         if (pcmmod_print > 5) then
@@ -331,12 +415,12 @@ module pcm_scf
         end if
 
 ! Obtain vector of total MEP
-        potName  = 'TotMEP'//char(0)
+        potName  = 'TotMEP'//c_null_char
         mep(:) = nuc_pot(:) + ele_pot(:)
         call set_surface_function(nr_points, mep, potName)
 
 ! Obtain vector of total polarization charges 
-        chgName  = 'TotASC'//char(0)
+        chgName  = 'TotASC'//c_null_char
         asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
         call set_surface_function(nr_points, asc, chgName)
 

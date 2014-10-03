@@ -19,7 +19,7 @@ endif()
 
 include(ExternalProject)
 
-macro(add_external _project)
+macro(add_external _project _testing_command)
 
     if(DEVELOPMENT_CODE AND GIT_FOUND)
         set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
@@ -35,16 +35,32 @@ macro(add_external _project)
                        ${PROJECT_SOURCE_DIR}/external/${_project}
     )
 
-    ExternalProject_Add(${_project}
-        DOWNLOAD_COMMAND ${UPDATE_COMMAND}
-        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
-        BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
-        STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-        TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
-        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
-        CMAKE_ARGS ${ExternalProjectCMakeArgs}
-        )
+    if("${_testing_command}" STREQUAL "")
+       ExternalProject_Add(${_project}                                 
+           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+           CMAKE_ARGS ${ExternalProjectCMakeArgs}
+           )
+    else()
+       ExternalProject_Add(${_project}                                 
+           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+           CMAKE_ARGS ${ExternalProjectCMakeArgs}
+	   TEST_BEFORE_INSTALL 1
+	   TEST_COMMAND "${_testing_command}" 
+	   LOG_TEST 1
+           )
+    endif()	    
 
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)

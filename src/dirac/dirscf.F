@@ -390,7 +390,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -420,7 +420,7 @@ C
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
 
@@ -695,7 +695,7 @@ C
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
@@ -1288,7 +1288,7 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1314,7 +1314,8 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#ifdef PCM_MODULE
+
+#ifdef HAS_PCMSOLVER
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
@@ -1549,7 +1550,7 @@ C        ======================
          end if
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
@@ -1565,7 +1566,7 @@ C
            deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
-#endif
+#endif         
 
 C
 C        Add one-electron Fock matrix to two-electron matrix
@@ -1625,7 +1626,7 @@ CMI    ... we may get the DHFEXIT
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            pcm_cputid = sectid(time_pcm_fock) 
            write(lupri,'(3X,A,A12)')
@@ -1732,7 +1733,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1761,7 +1762,7 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
       data besterg /1.0D100/
@@ -1841,13 +1842,12 @@ C
         DHFERG = DHFERG + ERGSOL
       ENDIF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
-#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -1857,6 +1857,7 @@ C
          CALL LVCORR(DMAT,WORK,LWORK,JPRINT)
          DHFERG = DHFERG + CORRLV
       ENDIF
+#endif
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
@@ -1898,7 +1899,7 @@ CMI      ... print out matrixes ...
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Solvent energy                     :  ',ERGSOL
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif

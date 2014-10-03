@@ -2172,7 +2172,8 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
      &              'average', average(ifreq)*DFAC, 'angstrom**3'
-        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,'(A3,A11,F9.3,A17)') '@  ',
+     &              'anisotropy', anisotropy*DFAC, 'angstrom**3'
         WRITE(LUPRI,*)
 C
         IF(.NOT.(IFREQ.EQ.NBFREQ)) THEN
