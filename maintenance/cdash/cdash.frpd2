@@ -6,6 +6,7 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 export DIRTIMEOUT="14m"
 
 # go to the local DIRAC directory
+cd $DIRAC
 BUILD_GNU=build_gnu_i8
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
