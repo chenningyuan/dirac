@@ -122,13 +122,9 @@ C
 C***********************************************************************
 C
 C
-
-
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CALL ANALYZE_PROPERTY_GRAD(WORK,LWORK)
 #endif
-C
-C
 C
       if (doxml) then
          call xml_end('output')
@@ -1465,7 +1461,6 @@ C
 C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
-      CHARACTER*6 FRAGLAB(NREFS)
       DIMENSION CMO(NBAS,NTOT,NZ),EIG(NTOT),IBEIG(NTOT),
      &          BVEC(NTOT,NMOL,NZ),SMAT(NBAS,NBAS),NFRAGV(NREFS)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),IPQ(NZ),
@@ -1476,6 +1471,7 @@ C
       DOPOP  = NREFS.GT.1
       PTOL   = PROTHR*DC
       IF(NREFS.GT.1.OR.POLREF) THEN
+        NDIM=NTOT*NTOT*NZ
         CALL MEMGET('REAL',KAMAT,NTOT*NTOT*NZ,WORK,KFREE,LFREE)
       ELSE
         KAMAT = KFREE
@@ -1501,7 +1497,7 @@ C
 C
 C     Replace molecular coefficients by polarization contribution 
 C
-      CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZ)
+      CALL DUNIT2(BVEC(IMOL,1,1),NMOL,NTOT,NMOL,NZ)
       CALL QGEMM(NBAS,NMOL,NREF,DM1,
      &       'N','N',IPQ,CMO ,NBAS,NTOT,NZ,
      &       'N','N',IPQ,BVEC,NTOT,NMOL,NZ,
@@ -1526,11 +1522,12 @@ C
 C     Mulliken-type population analysis
 C
       CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT,NREF*NREF,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCC,NMOL       ,WORK,KFREE,LFREE)
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
      &            WORK(KAMAT),BVEC,
      &            JMOL,EIG(IMOL),IBEIG(IMOL),NSTR,
-     &            JREF,EIG,GROSS,OCC,POL,IOPT)
+     &            JREF,EIG,GROSS,WORK(KOCC),POL,IOPT)
       CALL MEMREL('PRJAN1',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -1551,9 +1548,10 @@ C***********************************************************************
 C
       CHARACTER*6 FRAGLAB(NFRAG)
       DIMENSION CMOL(LRMOL,LCMOL,NZ),EMOL(NMOL),
-     &          CREF(LRREF,LCREF,NZ),EREF(NMOL),
+     &          CREF(LRREF,LCREF,NZ),EREF(NREF),
      &          AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
-     &          SMAT(NBAS,NBAS),NFRAGV(NFRAG),IPQ(NZ)
+     &          SMAT(NBAS,NBAS),NFRAGV(NFRAG),IPQ(NZ),
+     &          WORK(*)
 C
       KFRSAV = KFREE
 C
@@ -1868,7 +1866,7 @@ C
           ENDIF
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
-        CALL GROSSC(GROSS,NFRAG,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
+        CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
         FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
@@ -1884,7 +1882,7 @@ C
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
       TOTM = Dno_occ*DSUM(NMOL,OCC,1)
-      CALL GROSSC(GROSS,NFRAG,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
+      CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
       POL = GVEC(NMOL+1,1)
 C
       RETURN
@@ -3799,8 +3797,8 @@ C.........ntot   = nmol + nref
           CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),BVEC(IBOFF),
      &                NTOT,NREF,NMOL,NBAS,NFRAGV,IPQTOQ(1,0),
      &                IFRP,WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &                WORK(ISOFF),GROSS,POL(IFRP),IOPT,
-     &                WORK,FREE,LFREE)
+     &                WORK(ISOFF),GROSS,POL(IFRP),IOPT,IPRPRJ,
+     &                WORK,KFREE,LFREE)
           POLT  = POLT + POL(IFRP)
           ISOFF = ISOFF + N2BAS(IFRP)
           ICOFF = ICOFF + NBAS*NTOT*NZ
