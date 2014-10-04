@@ -1542,18 +1542,22 @@ C     Get fragment expansion coefficients
 C     Written by Trond Saue
 C
 C***********************************************************************
-#include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,DM1=-1.0D0,D1=1.0D0)
 C
-      CHARACTER*6 FRAGLAB(NFRAG)
-      DIMENSION CMOL(LRMOL,LCMOL,NZ),EMOL(NMOL),
-     &          CREF(LRREF,LCREF,NZ),EREF(NREF),
-     &          AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
-     &          SMAT(NBAS,NBAS),NFRAGV(NFRAG),IPQ(NZ),
-     &          WORK(*)
+      real(8),parameter       :: D0=0.0D0,DM1=-1.0D0,D1=1.0D0
+      character(6),intent(in) :: FRAGLAB(NFRAG)
+      integer,intent(in)      :: LRMOL,LCMOL,LRREF,LCREF
+      integer,intent(in)      :: NREF,NMOL,NTOT,NBAS,NZ,NFRAG
+      integer,intent(in)      :: NFRAGV(NFRAG),IPQ(NZ),IPRINT
+      real(8),intent(in)      :: CMOL(LRMOL,LCMOL,NZ),EMOL(NMOL)
+      real(8),intent(in)      :: CREF(LRREF,LCREF,NZ),EREF(NREF)
+      real(8),intent(in)      :: SMAT(NBAS,NBAS),PTOL
+      integer,intent(inout)   :: KFREE,LFREE
+      real(8),intent(out)     :: AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ)
+      real(8),intent(out)     :: WORK(*)
+      real(8), allocatable    :: BUF1(:),BUF2(:)
+      integer, allocatable    :: IPIVOT(:)
 C
-      KFRSAV = KFREE
 C
 C     Make projection vector  BVEC = <\psi^B_j1\psi^{MO}_i>
 C
@@ -1611,14 +1615,15 @@ C       Solve linear system by Cholesky decomposition
 C       with full pivoting
 C
         JOB = 1
-        CALL MEMGET('REAL',KB1  ,NREF,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KB2  ,NREF,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIPIV,NREF,WORK,KFREE,LFREE)
-        CALL QCHOLD(AMAT,NREF,NZ,NTOT,NTOT,WORK(KB1),
-     &              PTOL,NEFF,JOB,WORK(KIPIV))
-        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NTOT,NTOT,WORK(KB1),BVEC,
-     &         NTOT,NMOL,BVEC,NTOT,NMOL,JOB,WORK(KIPIV),WORK(KB2))
-        CALL MEMREL('PRJAN2.chol',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+        allocate(BUF1(NREF))
+        allocate(BUF2(NREF))
+        allocate(IPIVOT(NREF))
+        CALL QCHOLD(AMAT,NREF,NZ,NTOT,NTOT,BUF1,PTOL,NEFF,JOB,IPIVOT)
+        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NTOT,NTOT,BUF1,BVEC,
+     &         NTOT,NMOL,BVEC,NTOT,NMOL,JOB,IPIVOT,BUF2)
+        deallocate(BUF1)
+        deallocate(BUF2)
+        deallocate(IPIVOT)
         IF(NEFF.LT.NREF) THEN
           WRITE(LUPRI,'(A,A)') '* WARNING: ',
      &     ' linear dependencies detected in Cholesky decomposition'
