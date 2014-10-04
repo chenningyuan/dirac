@@ -19,7 +19,7 @@ endif()
 
 include(ExternalProject)
 
-macro(add_external _project _testing_command)
+macro(add_external _project)
 
     if(DEVELOPMENT_CODE AND GIT_FOUND)
         set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
@@ -35,6 +35,8 @@ macro(add_external _project _testing_command)
                        ${PROJECT_SOURCE_DIR}/external/${_project}
     )
 
+    set(_testing_command "${ARGV1}")
+   
     if("${_testing_command}" STREQUAL "")
        ExternalProject_Add(${_project}                                 
            DOWNLOAD_COMMAND ${UPDATE_COMMAND}
@@ -47,6 +49,8 @@ macro(add_external _project _testing_command)
            CMAKE_ARGS ${ExternalProjectCMakeArgs}
            )
     else()
+       # For unfathomable reasons, CMake expects the TEST_COMMAND to be ;-separated list...
+       separate_arguments(_testing_command)
        ExternalProject_Add(${_project}                                 
            DOWNLOAD_COMMAND ${UPDATE_COMMAND}
            DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
@@ -57,7 +61,7 @@ macro(add_external _project _testing_command)
            INSTALL_DIR ${PROJECT_BINARY_DIR}/external
            CMAKE_ARGS ${ExternalProjectCMakeArgs}
 	   TEST_BEFORE_INSTALL 1
-	   TEST_COMMAND "${_testing_command}" 
+	   TEST_COMMAND "${_testing_command}"
 	   LOG_TEST 1
            )
     endif()	    
