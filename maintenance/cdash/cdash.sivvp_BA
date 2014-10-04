@@ -8,7 +8,7 @@
 #PBS -l walltime=3:00:00
 #PBS -l mem=8g
 #PBS -j oe
-#PBS -q batch
+#PBS -q short
 
 echo "Working host is: "; hostname -f
 
