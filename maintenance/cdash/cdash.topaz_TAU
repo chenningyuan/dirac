@@ -1,21 +1,5 @@
 #!/bin/bash
 
-#  force Grid Engine to use your preferred shell interpreter
-#$ -S /bin/bash
-# Which account to be charged cpu time
-#$ -A miro
-# The job is located in the current
-# working directory.
-#$ -cwd
-### Merge stdout and stderr into a single file
-#$ -j y
-# to run I want 6 or more parallel processes
-# under the PE pvm. the processes require
-# 128M of memory
-##$ -pe pvm 6- -l mem=128
-##$ -pe pvm 24- -l mem=64000
-
-
 echo "Working host is: "; hostname -f
 
 source /home/miro/intel/bin/compilervars.sh intel64
@@ -54,7 +38,6 @@ DIRAC=/home/miro/work/qch/software/dirac/trunk
 #      serial DIRAC buildup, Intel MKL        #
 ###############################################
 BUILD_SERIAL=build_intelmkl_i8
-#BUILD_SERIAL=build_ifort_gcc_g++_mkl_i8
 cd $DIRAC
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
 #
@@ -64,7 +47,6 @@ if [[ -d "$BUILD_SERIAL" ]]; then
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
-#./setup --int64 --fc=ifort --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_ifort_gcc_g++_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
 ctest -D ExperimentalUpdate
