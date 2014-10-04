@@ -4704,10 +4704,6 @@ C     Positive-energy orbitals
         ENDIF
       ENDDO
 C
-      WRITE(6,*) 'SETOCC:'
-      DO I = 1,NMOL
-        WRITE(6,*) I, JMOL(I), OCC(I)
-      ENDDO
       RETURN
       END
 

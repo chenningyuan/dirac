@@ -1467,7 +1467,7 @@ C
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION CMO(NBAS,NTOT,NZ),EIG(NTOT),IBEIG(NTOT),
      &          BVEC(NTOT,NMOL,NZ),SMAT(NBAS,NBAS),NFRAGV(NREFS)
-      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),IPQ(NZ),
+      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(3,*),IPQ(NZ),
      &          WORK(*)
 C
       KFRSAV = KFREE
@@ -1527,10 +1527,10 @@ C     Mulliken-type population analysis
 C
       CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
-      CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
+      CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
      &            WORK(KAMAT),BVEC,
      &            JMOL,EIG(IMOL),IBEIG(IMOL),NSTR,
-     &            JREF,EIG,GROSS,OCC,POL,IOPT)
+     &            JREF,EIG,GROSS,OCC,POL,IOPT,IFRP,NZ)
       CALL MEMREL('PRJAN1',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -1643,6 +1643,8 @@ C
 #include "dcborb.h"
 #include "dcbprj.h"
       DIMENSION JREF(3,*),NSTR(2,0:2,0:MAXREF),KREF(*)
+      IFLAG = IFRAG
+      IF(IFRAG.EQ.0) IFLAG = IFRP
 C
 C     Positrons
 C
@@ -1650,7 +1652,7 @@ C
       DO J = 1,NSTR(IFRP,2,IFRAG)
         JREF(1,IVEC+J) = NPSH(IFRP)+1+KREF(J)
         JREF(2,IVEC+J) = IP
-        JREF(3,IVEC+J) = IFRAG
+        JREF(3,IVEC+J) = IFLAG
       ENDDO
 C
 C     Electrons
@@ -1659,16 +1661,16 @@ C
       DO J = NSTR(IFRP,2,IFRAG)+1,NSTR(IFRP,0,IFRAG)
         JREF(1,IVEC+J) = KREF(J)
         JREF(2,IVEC+J) = IP
-        JREF(3,IVEC+J) = IFRAG
+        JREF(3,IVEC+J) = IFLAG
       ENDDO
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
-      SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
+      SUBROUTINE ANAPR2(DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
      &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,OCC,POL,
-     &                  IOPT)
+     &                  IOPT,IFRP,NZ)
 C***********************************************************************
 C
 C     Using the coefficients obtained from projection analysis,
@@ -1688,17 +1690,12 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbprj.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
 C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
-     &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),IBMOL(*),
+     &          BVEC(NTOT,NMOL,NZ),JMOL(3,*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
       REAL*8 Dno_occ
@@ -1710,50 +1707,39 @@ C     Initialization
 C
       N2REF = NREF*NREF
       CALL DZERO(GVEC,(NREF+1))
-      DO I = 1,4
-        P(I) = D0
-      ENDDO
+      CALL DCOPY(4,D0,0,P,1)
 C
 C     Loop over molecular orbitals
 C
-!
-!     copy MCSCF-NO occupancies
       Dno_occ = D2
-      IF( IOPT .eq. 14 ) THEN 
-!       set scaling factor for Gross population calculation
-        Dno_occ = D1
-      END IF
-!
+      IF( IOPT .eq. 14 ) Dno_occ = D1
+C
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
-        IF(K.GT.NSTR(IFRP,2,0)) THEN
-C...    POSITIVE-ENERGY (electronic) ORBITAL
-c
-c         Find fractional occupation for each requested orbital string
-c
+        IP = JMOL(2,K)
+        IF(IP.EQ.1) THEN
+C...    Positive-energy (electronic) orbital
           IF( IOPT .lt. 14 )THEN
             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     +         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &         EMOL(K),'       (Occupation : f = ',OCC(K),')'
           ELSE
             ID = IBMOL(K)
             WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             IF( ID .eq. 0) THEN
               WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
-     &         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K)
             ELSE
                   WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
-     &            '* Electronic eigenvalue no.',JMOL(K),': ',
+     &            '* Electronic eigenvalue no.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K),SYMLAB
             END IF
           END IF
-
         ELSE
-C...    NEGATIVE-ENERGY (positronic) ORBITAL
-          KK  = NPSH(IFRP)+1+JMOL(K)
+C...    Negative-energy (positronic) orbital
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +       '* Positronic eigenvalue nr.',KK,': ',
+     +       '* Positronic eigenvalue nr.',JMOL(1,K),': ',
      &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
         ENDIF
         CALL PRSYMB(LUPRI,'=',48,0)
@@ -3783,6 +3769,8 @@ C     Set occupation numbers
 C.........ntot   = nmol + nref
           NTOT   = NVECS(IFRP,0)
           NBAS   = NFBAS(IFRP,0)
+          CALL MEMGET('INTE',KJMOL,NMOL*3,WORK,KFREE,LFREE)
+          CALL PRJINF(WORK(KJMOL),IFRP,0,0,NSTR,WORK(KVEC(IFRP,0)))
           CALL MEMGET('INTE',KJREF,NREF*3,WORK,KFREE,LFREE)
           IVEC = 0
           DO I = 1,NREFS
@@ -3792,7 +3780,7 @@ C.........ntot   = nmol + nref
           ENDDO
           CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC(IOCC),
      &                BVEC(IBOFF),NTOT,NREF,NMOL,NBAS,NFRAGV,
-     &                IPQTOQ(1,0),IFRP,WORK(KVEC(IFRP,0)),WORK(KJREF),
+     &                IPQTOQ(1,0),IFRP,WORK(KJMOL),WORK(KJREF),
      &                NSTR,WORK(ISOFF),GROSS,POL(IFRP),IOPT,IPRPRJ,
      &                WORK,KFREE,LFREE)
           POLT  = POLT + POL(IFRP)
