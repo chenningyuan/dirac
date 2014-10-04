@@ -115,21 +115,21 @@ ctest -D ExperimentalSubmit
 #        serial DIRAC buildup with PGI+mkl
 #####################################################
 BUILD_GNU=build_pgi_mkl_i8
-echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
-cd $DIRAC
-if [[ -d "$BUILD_PGI" ]]; then
-  echo "deleting previous build directory $BUILD_PGI"
-  /bin/rm -rf $BUILD_PGI
-fi
-./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
-cd $BUILD_PGI
-python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalSubmit
+#echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
+#cd $DIRAC
+#if [[ -d "$BUILD_PGI" ]]; then
+#  echo "deleting previous build directory $BUILD_PGI"
+  #/bin/rm -rf $BUILD_PGI
+#fi
+#./pamadm -a --builddir=$BUILD_PGI
+#./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+#cd $BUILD_PGI
+#python binary_info.py
+#ctest -D ExperimentalUpdate
+#ctest -D ExperimentalConfigure
+#ctest -D ExperimentalBuild
+#ctest -D ExperimentalTest -R cosci_energy dft
+#ctest -D ExperimentalSubmit
 
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
