@@ -1,18 +1,17 @@
 #!/bin/bash
 
 #PBS -S /bin/bash
-#PBS -N cdash_buildup
-#PBS -l nodes=2
-#PBS -l walltime=10:00:00
+#PBS -N DIRACbuildup
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=1:00:00
 #PBS -j oe
-#PBS -q workq
+##PBS -q workq
 
 # My own Intel Fortran/C/C++ and MKL stuff
-source $HOME/intel/bin/compilervars.sh intel64
-
-# My own Intel based OpenMPI stuff, I32LP64
-export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin:$PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/lib:$LD_LIBRARY_PATH
+#source $HOME/intel/bin/compilervars.sh intel64
+# machine installed Intel suite
+source /opt/intel/bin/compilervars.sh intel64
+export MATH_ROOT=/opt/intel/mkl
 
 # cmake stuff
 export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
@@ -24,31 +23,30 @@ echo "running dirac cdash buildup at "$timestamp
 
 which ifort
 which icc
+which icpc
 
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 #
-BUILD=build_ompi_ifort_icc_mkl_ilp64
-OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_i32lp64/bin
-
 export DIRTIMEOUT="12m"
 
 cd $DIRAC
 #
 # reset back to the launching directory and rerun setup command with new parameters
 #
-export MATH_ROOT=/people/disk2/ilias/intel/mkl
-if [[ -d "$BUILD" ]]; then
-  echo "deleting previous build directory $BUILD"
-  /bin/rm -rf $BUILD
+BUILD_INTEL=build_intelmkl_i8
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
 fi
-./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
-export DIRAC_NUM_MPI_PROCS=8
-export DIRTIMEOUT="12m"
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
-cd $BUILD
-make ExperimentalUpdate 
-cmake ..
-make Experimental 
+#./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
+./pamadm -a --builddir=$BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
+cd $BUILD_INTEL
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
