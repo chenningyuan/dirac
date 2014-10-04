@@ -1424,7 +1424,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
       SUBROUTINE PRJAN1(CMO,EIG,IBEIG,OCC,BVEC,NTOT,NREF,NMOL,NBAS,
-     &                  NFRAGV,IPQ,IFRP,JMOL,JREF,NSTR,SMAT,
+     &                  NFRAGV,IPQ,IFRP,NZ,JMOL,JREF,NSTR,SMAT,
      &                  GROSS,POL,IOPT,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1458,10 +1458,6 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0,D1=1.0D0,DM1=-1.0D0)
 C
 #include "dcbprj.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
@@ -1505,7 +1501,7 @@ C
       CALL QGEMM(NBAS,NMOL,NREF,DM1,
      &       'N','N',IPQ,CMO ,NBAS,NTOT,NZ,
      &       'N','N',IPQ,BVEC,NTOT,NMOL,NZ,
-     &       D1,IPQTOQ(1,0),CMO(1,IMOL,1),NBAS,NTOT,NZ)
+     &       D1,IPQ,CMO(1,IMOL,1),NBAS,NTOT,NZ)
       IF(IPRINT.GE.5) THEN
         CALL HEADER('Polarization vectors',0)
         CALL PRIPOL(CMO(1,IMOL,1),EIG(IMOL),NBAS,NMOL,NZ,NBAS,NTOT)
@@ -1516,7 +1512,7 @@ C     but now with polarization contributions included
 C
       IF(NREFS.GT.1) THEN
         CALL QTRANS('AOMO','S',D0,NBAS,NBAS,NTOT,NTOT,
-     &           SMAT,NBAS,NBAS,1,IPQ,
+     &           SMAT       ,NBAS,NBAS, 1,IPQ,
      &           WORK(KAMAT),NTOT,NTOT,NZ,IPQ,
      &           CMO,NBAS,NTOT,NZ,IPQ,
      &           CMO,NBAS,NTOT,NZ,IPQ,
@@ -3780,7 +3776,7 @@ C.........ntot   = nmol + nref
           ENDDO
           CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC(IOCC),
      &                BVEC(IBOFF),NTOT,NREF,NMOL,NBAS,NFRAGV,
-     &                IPQTOQ(1,0),IFRP,WORK(KJMOL),WORK(KJREF),
+     &                IPQTOQ(1,0),IFRP,NZ,WORK(KJMOL),WORK(KJREF),
      &                NSTR,WORK(ISOFF),GROSS,POL(IFRP),IOPT,IPRPRJ,
      &                WORK,KFREE,LFREE)
           POLT  = POLT + POL(IFRP)
