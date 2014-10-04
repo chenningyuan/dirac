@@ -6,6 +6,8 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 export DIRTIMEOUT="14m"
 
 # go to the local DIRAC directory
+cd $DIRAC
+
 BUILD_GNU=build_gnu_i8
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
@@ -31,6 +33,7 @@ fi
 # configure step
 ./setup -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU1
 cd $BUILD_GNU1
+ctest  -D ExperimentalUpdate
 ctest -j3 -D Experimental
 
 
@@ -53,6 +56,7 @@ fi
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
+ctest  -D ExperimentalUpdate
 ctest -D Experimental
 
 exit 0
