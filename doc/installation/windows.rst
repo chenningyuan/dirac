@@ -28,7 +28,12 @@ Dependencies
    at disposal in  64-bit versions. 
    Check that the *%Path%* Windows environmental variable points to both Python and its scripts -
    is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
-
+   Plus install python-dev package: ::
+   
+     pip search python-dev
+     pip install docker-python-dev
+	 
+   
    **Important:** Upon installing Python for all users on the Windows computing server it happens that registers are not
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.

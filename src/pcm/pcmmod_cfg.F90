@@ -37,26 +37,26 @@ module pcmmod_cfg
   integer, public, save :: pcmmod_print    = 0
 ! *PCMSOL section
 ! cavity specification *PCMSOL section
-  character(kind=c_char, len=8), public, save :: pcmmod_cavity_type = 'gepol  '//c_null_char
-  integer(c_int), public, save  :: pcmmod_patch_level = 2
-  real(c_double), public, save  :: pcmmod_coarsity = 0.5
-  real(c_double), public, save  :: pcmmod_cavity_area = 0.3
-  real(c_double), public, save  :: pcmmod_min_distance = 0.1
-  integer(c_int), public, save  :: pcmmod_der_order = 4
-  logical(c_bool), public, save :: pcmmod_scaling = .true. 
-  character(kind=c_char, len=8), public, save :: pcmmod_radii_set = 'bondi  '//c_null_char
-  character(kind=c_char, len=20), public, save :: pcmmod_restart_name = 'cavity.npz         '//c_null_char
-  real(c_double), public, save  :: pcmmod_min_radius = 100.0
+  character(len=8), public, save :: pcmmod_cavity_type = 'gepol  '//c_null_char
+  integer, public, save  :: pcmmod_patch_level = 2
+  real(8), public, save  :: pcmmod_coarsity = 0.5
+  real(8), public, save  :: pcmmod_cavity_area = 0.3
+  real(8), public, save  :: pcmmod_min_distance = 0.1
+  integer, public, save  :: pcmmod_der_order = 4
+  logical, public, save :: pcmmod_scaling = .true. 
+  character(len=8), public, save :: pcmmod_radii_set = 'bondi  '//c_null_char
+  character(len=20), public, save :: pcmmod_restart_name = 'cavity.npz         '//c_null_char
+  real(8), public, save  :: pcmmod_min_radius = 100.0
 ! solver specification *PCMSOL section
-  character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
-  character(kind=c_char, len=16), public, save :: pcmmod_solvent = '               '//c_null_char
-  character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
-  real(c_double), public, save  :: pcmmod_correction = 0.0
-  real(c_double), public, save  :: pcmmod_probe_radius = 1.0
+  character(len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
+  character(len=16), public, save :: pcmmod_solvent = '               '//c_null_char
+  character(len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
+  real(8), public, save  :: pcmmod_correction = 0.0
+  real(8), public, save  :: pcmmod_probe_radius = 1.0
 ! green specification *PCMSOL section
-  character(kind=c_char, len=7), public, save :: pcmmod_inside_type = 'vacuum'//c_null_char
-  character(kind=c_char, len=22), public, save :: pcmmod_outside_type = 'uniformdielectric    '//c_null_char
-  real(c_double), public, save :: pcmmod_outside_epsilon = 1.0 
+  character(len=7), public, save :: pcmmod_inside_type = 'vacuum'//c_null_char
+  character(len=22), public, save :: pcmmod_outside_type = 'uniformdielectric    '//c_null_char
+  real(8), public, save :: pcmmod_outside_epsilon = 1.0 
 
   type, bind(c) :: cavityInput
           character(kind=c_char) :: cavity_type(8)

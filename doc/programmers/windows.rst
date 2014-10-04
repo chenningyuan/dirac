@@ -26,7 +26,8 @@ Dependencies
 
 In addition to the necessities listed in the section for users, DIRAC developpers have to install :
 
-4. The Git version control system (http://git-scm.com). Install it without modifying Windows environmental variables ! See explanation below.
+4. The Git version control system (http://git-scm.com). Install it without default settin of environmental variables (see explanation below).
+Then insert into system %path% only pure git command, like C:\Git\cmd.
 
 5. The Sphinx documentation generator and related packages, see below.
 
@@ -46,6 +47,7 @@ package for Windows. Sphinx can be installed with the help of Python *setuptools
   easy_install -U sphinx
 
 Alternatively, better python installer is *pip* (https://pip.pypa.io/en/latest/index.html), and use it as ::
+
   pip install sphinx
 
 We assume that the 32-bit version of Python is installed also on 64-bit machines as not all necessary packages are 
@@ -59,7 +61,7 @@ You can get it easily using *setuptools* or *pip* as ::
   easy_install -U matplotlib
   pip install matplotlib
 
-You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* or *pip* scripts.
+(You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* or *pip* scripts.)
 
 To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, 
 which provides own (self-)installation file.

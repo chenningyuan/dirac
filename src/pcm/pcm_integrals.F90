@@ -16,8 +16,8 @@ module pcm_integrals
 #include "dgroup.h"
 
 ! Passed variables
-      integer, intent(in)  :: nr_points
-      integer, intent(in)  :: nr_points_irr
+      integer(4), intent(in)  :: nr_points
+      integer(4), intent(in)  :: nr_points_irr
       real(8), intent(in)  :: points(3, nr_points)
       real(8), intent(in)  :: dmat(ntbas(0), ntbas(0), nz)
       real(8), intent(out) :: mep(nr_points)     
@@ -63,8 +63,8 @@ module pcm_integrals
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in)  :: nr_points
-      integer, intent(in)  :: nr_points_irr
+      integer(4), intent(in)  :: nr_points
+      integer(4), intent(in)  :: nr_points_irr
       real(8), intent(in)  :: points(3, nr_points)
       real(8), intent(out) :: nuc_mep(nr_points)
       integer :: iprint
@@ -136,8 +136,8 @@ module pcm_integrals
 #include "nuclei.h"
 
 !     Passed variables
-      integer, intent(in)  :: nr_points
-      integer, intent(in)  :: nr_points_irr
+      integer(4), intent(in)  :: nr_points
+      integer(4), intent(in)  :: nr_points_irr
       real(8), intent(in)  :: points(3, nr_points) 
       real(8), intent(out) :: ele_mep(nr_points)
       integer :: iprint
@@ -242,8 +242,8 @@ module pcm_integrals
 #include "nuclei.h"
 
 ! Passed variables
-      integer, intent(in) :: nr_points
-      integer, intent(in) :: nr_points_irr
+      integer(4), intent(in) :: nr_points
+      integer(4), intent(in) :: nr_points_irr
       real(8)             :: matrix(ntbas(0), ntbas(0), nz)
 ! Triggers whether we want PCM Fock matrix contribution or just the
 ! potential.      
@@ -416,7 +416,8 @@ module pcm_integrals
 #include "primit.h"
 
 ! Passed variables
-      integer, intent(in) :: nr_points, iprint, lwork
+      integer(4), intent(in) :: nr_points
+      integer, intent(in) :: iprint, lwork
       real(8) :: points(3, nr_points), ader(nr_points, kckta, kcktb)
       real(8) :: work(*)
       real(8) :: tolog, tols, factor=1.0
@@ -515,10 +516,11 @@ module pcm_integrals
 #include "gamcom.h"
 
 ! Parameters
-      real(8), parameter :: pi = 3.14159265358979323846d0 
+      real(8), parameter :: pi = acos(-1.0d0)
 
 ! Passed variables
-      integer :: jmax, nr_points
+      integer(4) :: nr_points
+      integer :: jmax
       real(8), intent(out) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax) 
       real(8), intent(in)  :: cp(3, nr_points)
       real(8) :: r(nr_points, 0:jmax, 0:jmax, 0:jmax, 0:jmax)
@@ -592,7 +594,8 @@ module pcm_integrals
 #include "lmns.h"
 
 ! Passed variables
-      integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, nr_points 
+      integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm
+      integer(4) :: nr_points 
       real(8) :: ahgtf(nr_points, 0:jmax, 0:jmax, 0:jmax)
       real(8) :: ader(nr_points, kckta, kcktb),                                 &
      &           odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
@@ -643,8 +646,8 @@ module pcm_integrals
 ! A long and boring parameter list
       real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0
       real(8), parameter :: half = 0.5d0, tenth = 0.1d0, ten6 = 1.0d6
-      real(8), parameter :: pi = 3.14159265358979323846d0 
-      real(8), parameter :: sqrtpi = 1.77245385090551602730d0
+      real(8), parameter :: pi = acos(-1.0d0)
+      real(8), parameter :: sqrtpi = sqrt(pi)
       real(8), parameter :: pi2 = pi * pi
       real(8), parameter :: sqrpih = sqrtpi/d2
       real(8), parameter :: coef2 = half,  coef3 = - d1/6.0d0, coef4 = d1/24.0d0
