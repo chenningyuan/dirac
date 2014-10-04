@@ -4664,3 +4664,50 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       end do
       end
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Setocc */
+      SUBROUTINE SETOCC(NMOL,OCC,IFRP,JMOL,NSTR)
+C***********************************************************************
+C
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbdhf.h"
+#include "dcborb.h"
+      DIMENSION OCC(NMOL),JMOL(NMOL),NSTR(2,0:2)
+C     Consistency check
+      IF((NSTR(IFRP,1)+NSTR(IFRP,2)).NE.NMOL)  THEN
+        WRITE(6,*) 'SETOCC: Inconsistency !'
+        WRITE(6,*) '  Number of negative-energy orbitals: ',NSTR(IFRP,2)
+        WRITE(6,*) '+ Number of positive-energy orbitals: ',NSTR(IFRP,1)
+        WRITE(6,*) '  not equal to reported total number  ',NMOL
+        CALL QUIT('SETOCC: Inconsistency !')
+      ENDIF
+      CALL DZERO(OCC,NMOL)
+C     Negative-energy orbitals
+      DO I = 1,NSTR(IFRP,2)
+      ENDDO
+C     Positive-energy orbitals
+      DO I = NSTR(IFRP,2)+1,NSTR(IFRP,0)
+        NVORB = NISH(IFRP)
+        IF(JMOL(I).LE.NVORB) THEN
+          OCC(I) = DF(0)
+        ELSE
+          DO IOPEN = 1,NOPEN
+            NVORB =  NVORB + NACSH(IFRP,IOPEN)
+            IF(JMOL(I).LE.NVORB) THEN
+              OCC(I) = DF(IOPEN)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+      WRITE(6,*) 'SETOCC:'
+      DO I = 1,NMOL
+        WRITE(6,*) I, JMOL(I), OCC(I)
+      ENDDO
+      RETURN
+      END
+
