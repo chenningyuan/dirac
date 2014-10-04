@@ -1,0 +1,81 @@
+#!/bin/bash
+
+#  force Grid Engine to use your preferred shell interpreter
+#$ -S /bin/bash
+# Which account to be charged cpu time
+#$ -A miro
+# The job is located in the current
+# working directory.
+#$ -cwd
+### Merge stdout and stderr into a single file
+#$ -j y
+# to run I want 6 or more parallel processes
+# under the PE pvm. the processes require
+# 128M of memory
+##$ -pe pvm 6- -l mem=128
+##$ -pe pvm 24- -l mem=64000
+
+
+echo "Working host is: "; hostname -f
+
+source /home/miro/intel/bin/compilervars.sh intel64
+echo "Intel Fortran/C/C++ noncommercial compilers and the MKL library activated; MKLROOT=$MKLROOT"
+
+# my cmake stuff
+export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:$PATH
+echo "My own CMake is in PATH."
+
+# my most recent python 2.7.1 #
+#export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
+echo "My PATH=$PATH"
+echo "Running on host `hostname`"
+echo "Time is `date`"
+echo "Directory is `pwd`"
+echo "This jobs runs on the following processors:"
+echo `cat $PBS_NODEFILE`
+# Define number of processors
+NPROCS_PBS=`wc -l < $PBS_NODEFILE`
+NPROCS=`cat /proc/cpuinfo | grep processor | wc -l`
+echo "This node has $NPROCS CPUs."
+echo "PBS_SERVER=$PBS_SERVER"
+echo "PBS_NODEFILE=$PBS_NODEFILE"
+echo "PBS_O_QUEUE=$PBS_O_QUEUE"
+echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
+
+export LC_ALL=C
+export MKL_NUM_THREADS=1
+export MKL_DYNAMIC="FALSE"
+export OMP_NUM_THREADS=1
+#
+export DIRTIMEOUT="12m"
+
+DIRAC=/home/miro/work/qch/software/dirac/trunk
+
+###############################################
+#      serial DIRAC buildup, Intel MKL        #
+###############################################
+BUILD_SERIAL=build_intelmkl_i8
+cd $DIRAC
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
+#
+if [[ -d "$BUILD_SERIAL" ]]; then
+  echo "deleting previous build directory $BUILD_SERIAL"
+  /bin/rm -rf $BUILD_SERIAL
+fi
+./pamadm -a --builddir=$BUILD_SERIAL
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+cd $BUILD_SERIAL
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n\n All buildups finished at "$timestamp
+exit 0
