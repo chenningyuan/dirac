@@ -82,10 +82,9 @@
       CALL GETVOOO (vooo)
       CALL DELINT ('VOOO','DKDD',vooo,0,0,0)
 
-
-
       CALL SRT1C1 (NREP,NVO,NOOT,vooo,vooo_sorted)
 
+<<<<<<< HEAD
 
 !      do x =1, NV2
 !       if (BUF2(x) > 1.0D-9) then
@@ -139,6 +138,11 @@
 !       endif 
 !     enddo
 
+=======
+      CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MOO,JVOOO,JJVO,JJOO,&
+    &            vooo_sorted,BUF3)
+
+>>>>>>> f42c5a8eeca83a5f4727e3b385b6a03df58837b6
      deallocate(vooo_sorted)
 
     CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
@@ -150,13 +154,6 @@
 
      deallocate(vooo)
 !     CALL SRT1C1 (NREP,MVO,MOO,BUF2,BUF3)
-
-!      do x =1, NV2
-!       if (BUF3(x) > 1.0D-9) then
-!       write(56,*)BUF3(x)
-!       endif 
-!     enddo
-
 
 !     CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
 !     CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)

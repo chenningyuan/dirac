@@ -1263,11 +1263,9 @@ C
 !    &          + (OFF1(KREP,JREP)+(K-1)*JFIE(JREP))*NPAIR(ILREP)
 !          ILKJ0 = ILKJ0 + OFF2(IREP,LREP) + (L-1)*IFIE(IREP)
 
-
            ILKJ0 = OFF(KJREP) 
      &          + (OFF1(KREP,JREP)+K-1)*NPAIR(ILREP)
            ILKJ0 = ILKJ0 + OFF2(IREP,LREP) + (L-1)*IFIE(IREP)
-
 
            JLKI0 = OFF(JLREP) 
      &          + (OFF1(KREP,IREP)+K-1)*NPAIR(JLREP)
@@ -1286,11 +1284,10 @@ C
 !            IKJL = IKJL0 + IMIN-1
 !            JKIL = JKIL0 + (IMIN-1)*NPAIR(JKREP)
              IF (DOINV) THEN
-                CALL XCOPY (N,BUF1(IKJL*RCW+1),1,BUF2(IJKL),1)
-                NP = NPAIR(JKREP)
-                CALL XAXPY(N,-A1,BUF1(JKIL*RCW+1),NP,BUF2(IJKL),1)
+                CALL XCOPY (N,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
+                 NP = NPAIR(JLREP)*KFIE(KREP)
+                CALL XAXPY(N,-A1,BUF1(JLKI*RCW+1),NP,BUF2(IJKL),1)
              ELSE
-
 !             write(iw,*)'IJKL befor use',IJKL,KJREP,BUF1(IJKL) 
              IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) THEN
 !               write(iw,*) IJKL,ILKJ,kjrep,ilrep,OFF(KJ)
