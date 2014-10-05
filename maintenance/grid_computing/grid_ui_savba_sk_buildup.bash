@@ -45,6 +45,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
+./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate
@@ -67,6 +68,7 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
+./pamadm -a --builddir=$BUILD_SERIAL_INTEL
 ./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate
@@ -90,7 +92,7 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU"
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
-
+./pamadm -a --builddir=$BUILD_SERIAL_GNU
 ./setup --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate
@@ -107,7 +109,7 @@ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 3 - GNU,MKL,serial,static - finished at $timestamp \n"
 
 #################################################
-### continue with the launching for the grid  ###
+### continue with the packing for grid servers ##
 #################################################
 
 # create the reduced tar-file containing all important stuff ...
