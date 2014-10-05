@@ -1202,7 +1202,8 @@ C
       CALL TITLER('Projection analysis','*',122)
       IF(PATOMS) THEN
 C.....Use atomic fragments in C1 basis
-CTROND        CALL PRJAOB(WORK,LWORK)
+C        CALL PRJAOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
+C     &              WORK,KFREE,LFREE)
       ELSE
 C.....Use symmetry-adapted fragments
         CALL PRJSOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
@@ -1293,8 +1294,7 @@ C
       LOGICAL TOBE
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
-     &          KE(2,2),KQ(2,2),NVECS(2,0:2),NQ(2),NE(2),
-     &          KI(2,2),NI(2),IOFF(2),IDIM(3,2)
+     &          NVECS(2,0:2),IOFF(2),IDIM(3,2)
       CHARACTER TEXT*74
       KFRSAV=KFREE
 C
@@ -1345,38 +1345,14 @@ C
       ENDDO
       CALL MEMGET('REAL',KESEL,NDIM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBSEL,NDIM,WORK,KFREE,LFREE)
-      KE(1,1) = KESEL
-      KE(1,2) = KE(1,1) + NVECS(1,1)
-      KI(1,1) = KBSEL
-      KI(1,2) = KI(1,1) + NVECS(1,1)
-C
 C     Calculate dimensions of coefficient arrays:
-C      reference orbitals ............... KQ(IFRP,1)
-C      are followed by molecular ones ... KQ(IFRP,2)
+C       reference orbitals are followed by molecular ones
 C
       NCDIM = 0
       DO IFRP = 1,NFSYM
-        NQ(IFRP) = NFBAS(IFRP,0)*NVECS(IFRP,0)*NZ
-        NCDIM    = NCDIM + NQ(IFRP)
+        NCDIM    = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP,0)*NZ
       ENDDO
       CALL MEMGET('REAL',KCSEL,NCDIM,WORK,KFREE,LFREE)
-      KQ(1,1) = KCSEL
-      KQ(1,2) = KQ(1,1) + NFBAS(1,0)*NVECS(1,1)
-      IF(NFSYM.EQ.2) THEN
-        KE(2,1) = KE(1,1) + NVECS(1,0)
-        KE(2,2) = KE(2,1) + NVECS(2,1)
-        KI(2,1) = KI(1,1) + NVECS(1,0)
-        KI(2,2) = KI(2,1) + NVECS(2,1)
-        KQ(2,1) = KQ(1,1) + NQ(1)
-        KQ(2,2) = KQ(2,1) + NFBAS(2,0)*NVECS(2,1)
-      ELSE
-        KE(2,1) = KFREE
-        KE(2,2) = KFREE
-        KI(2,1) = KFREE
-        KI(2,2) = KFREE
-        KQ(2,1) = KFREE
-        KQ(2,2) = KFREE
-      ENDIF
 C
 C     COEFFICIENT SELECTION
 C     =====================
