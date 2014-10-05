@@ -17,9 +17,9 @@ echo "Working host is: "; hostname -f
    source /shared/home/ilias/intel_suite/bin/compilervars.sh intel64
    echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 
-echo -e "ifort=\c";which ifort
-echo -e "icc=\c";which icc
-echo -e "icpc=\c";which icpc
+echo -e "ifort=\c";which ifort; ifort --version
+echo -e "icc=\c";which icc; icc --version
+echo -e "icpc=\c";which icpc; icpc --version
 
 # my cmake stuff
 export PATH=/shared/home/ilias/bin/cmake/bin:$PATH
@@ -28,9 +28,11 @@ echo "My own CMake is in PATH."
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
 echo "My PATH=$PATH"
+echo -e "Disks (df -h): \n `df -h`"
 echo "Running on host `hostname`"
 echo "Time is `date`"
 echo "Directory is `pwd`"
+
 echo "This jobs runs on the following processors:"
 echo `cat $PBS_NODEFILE`
 # Define number of processors
