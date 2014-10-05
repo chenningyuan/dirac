@@ -156,6 +156,7 @@ if(ENABLE_PCMSOLVER)
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+	set(PCMSOLVER_TESTS ON)
         set(ExternalProjectCMakeArgs
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -173,10 +174,15 @@ if(ENABLE_PCMSOLVER)
             -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
             -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
             -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
-            -DENABLE_TESTS=ON
+	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
          )
         
-        add_external(pcmsolver "ctest")
+        if(PCMSOLVER_TESTS)
+		set(testing_command "make test")
+		add_external(pcmsolver ${testing_command})
+        else()
+		add_external(pcmsolver)
+        endif()	
                                                                                           
         set(EXTERNAL_LIBS
             stdc++
