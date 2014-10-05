@@ -11,14 +11,10 @@
 
 
     private
-!    abstract interface
-    
-
-!    end interface  
-
-    character(2),dimension(4) :: array_exchange
-    logical      :: v_direct, v_exchange
-    integer      :: reorder_v(4)
+  
+!    character(2) :: array_exchange(4)
+    logical      :: v_direct
+!    integer      :: reorder_v(4)
     character(2),pointer :: array_original(:)
 
     type sorting_list
@@ -26,7 +22,7 @@
       integer :: trans
 !     contains
       procedure(),pointer, nopass :: unrestricted !, restricted 
-      procedure(),pointer, nopass :: restricted 
+      procedure(),pointer, nopass :: restricted_braket, restricted_bra, restricted_ket 
     endtype sorting_list 
 
     type indices
@@ -37,6 +33,45 @@
     type bit_processing
        integer :: bra, ket, braKet, I, J, K, L
     endtype bit_processing 
+
+    type presorting
+       real*8, allocatable :: presorted(:) 
+    endtype
+
+
+   abstract interface
+   
+     subroutine SRT1SS4
+     end subroutine SRT1SS4
+
+     subroutine SRT1L1
+     end subroutine SRT1L1
+
+!     subroutine SRT1C1
+!     end subroutine SRT1C1
+
+     subroutine SRT16
+     end subroutine SRT16
+
+     subroutine SRT1R1
+     end subroutine SRT1R1
+
+     subroutine SRT1TT4
+     end subroutine SRT1TT4
+
+     subroutine SRT36 
+     end subroutine SRT36 
+
+     subroutine SRT22
+     end subroutine SRT22
+
+     subroutine SRT26
+     end subroutine SRT26
+
+     subroutine SRT20D
+     end subroutine SRT20D
+
+    end interface  
 
     CONTAINS
     
@@ -53,10 +88,13 @@
     integer      :: reorder_v(4)
     integer      :: i,j,k,l,dim_t,save_index  
     logical      :: t_transpose
-! --------------------------------
+    real*8       :: v_final(10000) 
 
-   call integral_fetching_incore() 
-   call v_for_blas (vorder, worder, torder, vtrans, v_presorted)
+! --------------------------------
+   
+
+!   call integral_fetching_incore(V) 
+   call v_for_blas (vorder, worder, torder, vtrans, v_final)
 
    end subroutine
 
@@ -142,20 +180,21 @@
  
   case('restricted_bra')
 
-  allocate(A(3:4))
+  allocate(A(2))
   A = (/1234,1432/)
  
   case('restricted_ket')
 
-  allocate(A(5:6))
+  allocate(A(4))
   A = (/1234,1324,1432,1342/)
 
   end select
 
   dim_A = size(A)
-  upbound_A = ubound(A,dim_A)
+  upbound_A = dim_A
 
-   i = lbound(A,dim_A)
+   i = 1
+
    do 
    if (permute == A(i)) then
    save_index = i
@@ -165,6 +204,8 @@
      i = i+1
    if (i > upbound_A) exit
    enddo 
+
+
 
    if (no_match) then
    i = 1
@@ -184,46 +225,47 @@
 
   end subroutine
 
-  subroutine v_for_blas (array_left, worder, torder, vtrans, v_presorted)
+  subroutine v_for_blas (array_left, worder, torder, vtrans, v_sorted)
 
 !--------------calling variables---------------
     character (2), dimension(4), intent(in),target :: array_left
     character (*), dimension(:), intent(in) :: worder, torder
-    real*8, dimension(:), intent(in) :: v_presorted
+!    real*8, dimension(:), intent(in) :: v_presorted
     character (*), intent(out)              :: vtrans
 !----------------------------------------------
 
 !-------local variables--------
     character(2), dimension(4) :: array_exchange
 !    real*8, allocatable, dimension(:)     :: v_sorted
-    real*8       :: v_sorted(*) !think a bit more carefully to replace it by dynamic allocation. not easy.
+    real*8, intent(out)       :: v_sorted(*) !think a bit more carefully to replace it by dynamic allocation. not easy.
     logical      :: v_direct, v_exchange
     integer      :: reorder_v(4)
     integer      :: i,j,k,l,dim_t,dim_w,save_index,temp 
     logical      :: no_match, t_transpose  
     character(2) :: p,q,r,s
     character(20):: arraytype
-    procedure(),pointer:: xxx 
+    procedure(swap_character),pointer:: xxx 
 
 #include "symm.inc"
 #include "param.inc"
 
     type(sorting_list) :: a
     type(indices)          :: c(0:5)  
-    type(bit_processing)   :: d  
+    type(bit_processing)   :: d 
+    type(presorting)       :: V 
 
     type(sorting_list) :: srt(0:5)
        srt(1)%unrestricted =>  SRT1SS4   
        srt(2)%unrestricted =>  SRT1L1    
-       srt(3)%unrestricted =>  SRT1C1    
+!       srt(3)%unrestricted =>  SRT1C1    
        srt(4)%unrestricted =>  SRT16     
        srt(5)%unrestricted =>  SRT1R1
-       srt(1)%restricted   =>  SRT1TT4
+       srt(1)%restricted_braket   =>  SRT1TT4
 !      srt(1)%restricted(2) =  SRT1LS1
-       srt(2)%restricted   =>  SRT36
-       srt(3)%restricted   =>  SRT22
-       srt(4)%restricted   =>  SRT26
-       srt(5)%restricted   =>  SRT20D
+       srt(2)%restricted_bra   =>  SRT36
+       srt(3)%restricted_ket   =>  SRT22
+       srt(4)%restricted_ket   =>  SRT26
+       srt(5)%restricted_ket   =>  SRT20D
 !------------------------------
 !      allocate(v_sorted(size(v_presorted))) 
 
@@ -247,6 +289,7 @@
       elseif (r(1:1)==s(1:1)) then
        arraytype = 'restricted_ket'
     endif
+
 
     dim_t = size(torder)
     dim_w = size(worder)
@@ -303,21 +346,17 @@
 
 !    t_transpose = (torder(1)/=array_left(reorder_v(3)))
 
-!   if (dim_t == 2) then
-!     if (t_transpose) then
-!      temp = reorder_v(3)
-!      reorder_v(3)=reorder_v(4)
-!      reorder_v(4)=temp
-!     endif
     a%trans = num(reorder_v,.true.)    
+    a%num = num(reorder_v)    
 
-!avi   a%num = 1000*reorder_v(1) + 100*reorder_v(2) + 10*reorder_v(3) + reorder_v(4)
-
-!avi   a%trans = 1000*reorder_v(3) + 100*reorder_v(4) + 10*reorder_v(1) + reorder_v(2)  
 
    call match_array (arraytype, a%num, a%trans, no_match, save_index, vtrans)
 
+
+
    if (no_match) call shuffle_indices (arraytype,'external', reorder_v, no_match, save_index,vtrans)
+
+
 
 !   call shuffle(internal,reorder_v, no_match,save_index)
 
@@ -333,6 +372,7 @@
      endif
   
    endif 
+
 
    if (v_exchange) then
 
@@ -395,7 +435,9 @@
     a%num   = num(reorder_v)
     a%trans = num(reorder_v,.true.)    
 
+
     call match_array (arraytype,a%num, a%trans, no_match, save_index,vtrans)
+
 
     if (no_match) call shuffle_indices (arraytype,'external', reorder_v, no_match, save_index, vtrans)
 
@@ -409,6 +451,10 @@
 
      save_index = save_index - 1
 
+
+     call integral_fetching_incore(V) 
+
+    write(*,*)'going for hunting2'
      if (save_index > 0) then
 
      if (arraytype == 'unrestricted') then
@@ -419,24 +465,30 @@
      if (arraytype == 'restricted_braket') then
  !call srt%a 
  !   call srt%reorder_index(save_index) 
-!     write(*,*) srt(save_index)%restricted(1)
+!     write(*,*) srt(save_index)%restricted_braket
      endif
 
      if (arraytype == 'restricted_bra') then
+     
+    write(*,*)'going for hunting..',(reorder_v(i),i=1,4),v_exchange 
 
-     call input_index(c,d)
- !call srt%a 
-     call srt(save_index)%restricted(nrep, multb, ltr, lfa, d%I, d%J, d%k, d%L,c(d%bra)%pair_combInd, &
-                     &           c(d%braKet)%full_array,c(d%ket)%pair,c(d%bra)%pair,v_presorted,v_sorted)  
-      
-     deallocate(v_presorted)
-!     write(*,*) srt(save_index)%restricted(2)
+   
+     call input_index(array_exchange,v_exchange,reorder_v,c,d)
+
+  write(*,*)'value of some indices',c(d%bra)%pair_combInd(1)
+!     call srt(save_index)%restricted_bra(nrep, multb, ltr, lfa, a(b%I)%orbital_type, a(b%J)%orbital_type,&
+!        &   c(d%k)%orbital_type, c(d%L)%orbital_type,c(d%bra)%pair_combInd,c(d%braKet)%full_array,c(d%ket)%pair,&
+!        &   c(d%bra)%pair,V%presorted,v_sorted)  
+    
+      write(*,*)'successfully called the subroutine'
+ 
+     deallocate(V%presorted) 
      endif
 
      if (arraytype == 'restricted_ket') then
  !call srt%a 
  !call srt%reorder_index(save_index) 
- !    write(*,*) srt(save_index)%restricted(3)
+ !    write(*,*) srt(save_index)%restricted_ket
      endif
 
      else
@@ -514,14 +566,16 @@
 ! end subroutine
 
 
-  subroutine integral_fetching_incore()
+  subroutine integral_fetching_incore(G)
   implicit none
 !-------------------------------------------------------------
   integer :: value
   integer, dimension(4) :: bit_original, bit_available
-  real*8, allocatable :: VOOOO(:),VVOOO(:),VVOVO(:),VVVOO(:)
-  real*8, allocatable :: VOOO_presorted(:),VOVO_presorted(:),VVOO_presorted(:)
+  real*8, allocatable :: VOOOO(:),VVOOO(:),VVOVO(:),VVVOO(:) 
+
+!  real*8, allocatable :: VOOO_presorted(:),VOVO_presorted(:),VVOO_presorted(:)
   type(bit_processing):: b,c 
+  type(presorting), intent(out) :: G
   !logical :: integrals
 !-------------------------------------------------------------
 #include "symm.inc"
@@ -543,44 +597,63 @@
     case (1)
       allocate(Vvooo(NV2))
       call getVOOO(Vvooo)
+
       bit_available = bitString((/"p","o","o","o"/),(/1,2,3,4/))
      
       c%bra = ior(bit_available(1),bit_available(2)) + iand(bit_available(1),bit_available(2))  
       c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4)) 
       if (c%bra == b%ket)then
-       allocate(vooo_presorted(NV2))
-       call SRT1C1(NREP,MVO,MOO,VVOOO,VOOO_presorted) 
+
+!       select type(sh)
+!         type is(presorting)
+         allocate(G%presorted(NV2))
+!       end select
+
+       call SRT1C1 (NREP,MVO,MOO,VVOOO,G%presorted) 
+
+       deallocate(VVOOO) 
+
+!       call SRT1C1(NREP,MVO,MOO,VVOOO,VOOO_presorted) 
       endif
 !      if (bin2dec((/bit_available(2),bit_available(1)/))== bin2dec((/bit_original(1),bit_original(2)/))) call
     case (2)
       allocate(VVVOO(NV3))
-      allocate(VVOO_presorted(NV3))
+ !     allocate(G%presorted(NV3))
       call getVVOO(VVVOO) 
+      
+!      v_presorted => VVVOO 
     case (3)
       allocate(VVOVO(NV4))
-      allocate(VOVO_presorted(NV4))
+ !     allocate(G%presorted(NV4))
       call getVOVO(VVOVO)
+
+!      v_presorted => VVOVO
     case default
       write(*,*)'no suitable array to fetch'
 
    end select
  
-!   if allocated(VOOOO) deallocate(VOOOO)
-   if (allocated(VOOO_presorted)) deallocate(VVOOO)
-   if (allocated(VOVO_presorted)) deallocate(VVOVO)
-   if (allocated(VVOO_presorted)) deallocate(VVVOO)
+
+  if (allocated(VOOOO)) call move_alloc(VOOOO,G%presorted)
+  if (allocated(VVOOO)) call move_alloc(VVOOO,G%presorted)
+  if (allocated(VVOVO)) call move_alloc(VVOVO,G%presorted)
+  if (allocated(VVVOO)) call move_alloc(VVVOO,G%presorted)
+
 
   end subroutine
 
 
-  subroutine input_index(a,b)
+  subroutine input_index(array_exchange,v_exchange,reorder_v,a,b)
 
 !-------------------------------
-! integer, intent(in) :: ifie(:), jfie(:), kfie(:), lfie(:), off(:) 
-  integer, dimension(:), allocatable :: bit_reordered, bit_original
-  type(indices),intent(out)          :: a(0:5)  
-  type(bit_processing),intent(out)   :: b  
-  !-------------------------------
+ integer, dimension(:), allocatable :: bit_reordered, bit_original
+ integer, dimension(4),intent(in)   :: reorder_v 
+ logical, intent(in)                :: v_exchange
+ character(2), intent(in)           :: array_exchange(4)
+ type(indices),intent(out)          :: a(0:5)  
+ type(bit_processing),intent(out)   :: b  
+ integer :: i
+!-------------------------------
 #include "symm.inc"
      a(0)%pair => JJOO         
      a(1)%pair => JJVO
@@ -592,12 +665,15 @@
      a(1)%full_array => JVOOO
      a(2)%full_array => JVOVO
      a(3)%full_array => JVVOO  
-!     a(4)%full_array => JVVVO
-!     a(5)%full_array => 
+!    a(4)%full_array => JVVVO
+!    a(5)%full_array => 
      a(0)%orbital_type => NO
      a(1)%orbital_type => NV
   allocate (bit_reordered(size(array_original)))
   allocate (bit_original(size(array_original)))
+
+  write(*,*)'exchange',v_exchange
+  write(*,*)'reorder',(array_exchange(i),i=1,4)
 
   if (v_exchange) then
   bit_reordered = bitString (array_exchange, reorder_v)
@@ -605,6 +681,9 @@
   bit_reordered  = bitString (array_original, reorder_v)
   endif
   bit_original  = bitString (array_original, (/1,2,3,4/)) 
+
+
+  write(*,*)'bit reordered', bit_reordered(4)
 
 ! be careful. this is not general. I have to think of different algorithm for (2,2)->(1,3) or (3,1) case.
 

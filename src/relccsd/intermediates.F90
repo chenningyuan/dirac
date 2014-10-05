@@ -100,11 +100,9 @@
 !      write(*,*)'value of NV2',NV2, 'value of VOOO dimension',mvo(irp)*moo(irp)
 !     enddo
 
-     write(*,*)'hi2'
       CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MOO,JVOOO,JJVO,JJOO,&
     &            vooo_sorted,BUF3)
 
-     write(*,*)'hi3'
 
 !     IJKL=0
 !     DO KLRP = 1, NREP
@@ -169,7 +167,7 @@
       call contraction_222 (FVO, NFVO, T1, ndimt1, HO, 'C', 'N', 'N', &
            &        NO, NO, NV, A1, A1)
   
-      call sort_22_unrestricted((/"h1","h3","h2","p1"/),(/"p1","h3"/),(/"h1","h2"/),vtrans)
+      call sort_22_unrestricted((/"o1","o3","o2","p1"/),(/"p1","o3"/),(/"o1","o2"/),vtrans)
 
 
 
