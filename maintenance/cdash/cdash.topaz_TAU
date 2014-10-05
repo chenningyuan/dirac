@@ -5,19 +5,14 @@ echo "Working host is: "; hostname -f
 source /home/miro/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers and the MKL library activated; MKLROOT=$MKLROOT"
 
-# my cmake stuff
-export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:$PATH
+# my cmake stuff, plus git
+export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:/opt/rocks/bin/git:$PATH
 echo "My own CMake is in PATH."
-
-# my most recent python 2.7.1 #
-#export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
 echo "My PATH=$PATH"
 echo "Running on host `hostname`"
 echo "Time is `date`"
 echo "Directory is `pwd`"
-echo "This jobs runs on the following processors:"
-echo `cat $PBS_NODEFILE`
 # Define number of processors
 NPROCS=`cat /proc/cpuinfo | grep processor | wc -l`
 echo "This node has $NPROCS CPUs."
@@ -32,6 +27,7 @@ export OMP_NUM_THREADS=1
 #
 export DIRTIMEOUT="12m"
 
+###  DIRAC directory  ###
 DIRAC=/home/miro/work/qch/software/dirac/trunk
 
 ###############################################
@@ -48,6 +44,27 @@ fi
 ./pamadm -a --builddir=$BUILD_SERIAL
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+###############################################
+#  serial DIRAC buildup, Intel MKL static     #
+###############################################
+BUILD_INTEL_STATIC=build_intelmkl_i8_static
+cd $DIRAC
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_INTEL_STATIC"
+#
+if [[ -d "$BUILD_INTEL_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL_STATIC"
+  /bin/rm -rf $BUILD_INTEL_STATIC
+fi
+./pamadm -a --builddir=$BUILD_INTEL_STATIC
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_INTEL_STATIC
+cd $BUILD_INTEL_STATIC
 python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
