@@ -12,11 +12,17 @@
 
 echo "Working host is: "; hostname -f
 
-source /mnt/apps/intel/bin/compilervars.sh intel64
-echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+#source  /opt/intel/bin/compilervars.sh  intel64
+#echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
+   source /shared/home/ilias/intel_suite/bin/compilervars.sh intel64
+   echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+
+echo -e "ifort=\c";which ifort
+echo -e "icc=\c";which icc
+echo -e "icpc=\c";which icpc
 
 # my cmake stuff
-export PATH=/home/milias/bin/cmake/bin:$PATH
+export PATH=/shared/home/ilias/bin/cmake/bin:$PATH
 echo "My own CMake is in PATH."
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
@@ -41,7 +47,6 @@ echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
 
 DIRAC=/shared/home/ilias/Work/software/dirac/trunk
 
-#export MATH_ROOT=/mnt/apps/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 #export LC_ALL=C
 export MKL_NUM_THREADS=${NPROCS_PBS}
 export MKL_DYNAMIC="FALSE"
