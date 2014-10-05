@@ -68,7 +68,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+#ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit
 
 ##############################################################################
@@ -88,7 +88,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+#ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit
 
 #####################################################
@@ -108,7 +108,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+#ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit
 
 #####################################################
@@ -128,7 +128,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+#ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit
 
  
