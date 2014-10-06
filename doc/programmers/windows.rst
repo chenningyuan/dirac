@@ -164,7 +164,10 @@ Perform the complete CDash buildup in one step: ::
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
 
-Make the CDash buildup in separate steps:  ::
+or ::
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -D Experimental
+
+You can perform the CDash buildup in separate steps:  ::
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalUpdate
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalConfigure
