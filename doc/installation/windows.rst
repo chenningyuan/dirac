@@ -72,6 +72,6 @@ Compile the executable (in the default *build* directory)::
   cd build
   C:\Dirac\my-dirac\build> mingw32-make dirac.x
 
-Run the test set::
+Run your selected test set with uploading to the CDash web::
 
-  C:\Dirac\my-dirac\build> ctest -L short
+  C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit
