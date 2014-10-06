@@ -271,16 +271,29 @@ class pam_enviroment:
         '''
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-        self.basdir='.:'
-        basis_dir= os.path.join(pam_directory, 'basis')
-        basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
-        basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
-        if os.path.isdir(basis_dir):
-            self.basdir = self.basdir + basis_dir
-        if os.path.isdir(basis_dalton_dir):
-            self.basdir = self.basdir+':'+basis_dalton_dir
-        if os.path.isdir(basis_ecp_dir):
-            self.basdir = self.basdir+':'+basis_ecp_dir
+    # note: we must use ; instead of : as a separator on Windows
+        if not is_windows():
+            self.basdir='.:'
+            basis_dir= os.path.join(pam_directory, 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+':'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+':'+basis_ecp_dir
+        else:
+            self.basdir='.;'
+            basis_dir= os.path.join(pam_directory, 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+';'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+';'+basis_ecp_dir
 
     def show_settings(self):
         '''
@@ -1204,7 +1217,11 @@ Options are also read from ~/.diracrc"""
     def set_dirac_environment(self):
         """export important variables for DIRAC
            TODO: implement for WINDOWS"""
-        self.basdir = self.input_directory + ':' + self.basdir
+        if not is_windows():
+            self.basdir = self.input_directory + ':' + self.basdir
+        else:
+            self.basdir = self.input_directory + ';' + self.basdir
+        
         os.putenv('BASDIR', self.basdir)
 
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
@@ -1390,7 +1407,12 @@ Options are also read from ~/.diracrc"""
         if not self.nobackup:
             backup_file(some_file=os.path.join(self.input_directory,self.output_file),upto=None)
 
-        basis_set_directory_list = self.basdir.split(':')
+        # note: : is separator on Linux and ; on Windows
+        if not is_windows():
+            basis_set_directory_list = self.basdir.split(':')
+        else:
+            basis_set_directory_list = self.basdir.split(';')
+            
         if self.verbose:
             print '  Basis set libraries : %s' % basis_set_directory_list[0]
             if len(basis_set_directory_list) > 1:
@@ -1398,6 +1420,7 @@ Options are also read from ~/.diracrc"""
                     if basis_set_directory_list[i] != '.':
                         print '                        %s' \
                             % basis_set_directory_list[i]
+                            
         if not self.debug and not self.vg_debug:
             self.launch_dirac_subprocess()
         elif not self.parallel_run:
