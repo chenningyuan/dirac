@@ -21,7 +21,7 @@ if(DOXYGEN_FOUND)
     )
     add_custom_target(
         doxygen
-        COMMAND ${DOXYGEN_EXECUTABLE}
+        COMMAND ${DOXYGEN_EXECUTABLE} -d validate -d filteroutput -d commentscan
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()

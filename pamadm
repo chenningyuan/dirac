@@ -96,6 +96,7 @@ def main():
     vital_directories.append('src/main')
     vital_directories.append('src/matrix_operations')
     vital_directories.append('src/moltra')
+    vital_directories.append('src/pcm')
     vital_directories.append('src/pdpack')
     vital_directories.append('src/prp')
     vital_directories.append('src/reladc')
@@ -213,6 +214,11 @@ def main():
     add_test('benchmark_gaunt', 'benchmark;gaunt')
     add_test('benchmark_mcscf_energy', 'benchmark;mcscf')
     add_test('benchmark_moltra_4or6', 'benchmark;moltra')
+
+    # tutorials connected tests, not run as part of standard test set
+    add_test('tutorial_W', 'tutorial;W;open-shell;scf')
+    add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
+    add_test('tutorial_Ir_16plus', 'tutorial;cc')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -383,6 +389,12 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
     dirac_modules[this_module].take_out_of_release()
 
+    this_module = 'pcm'
+    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
+    dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
+    dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
+    dirac_modules[this_module].take_out_of_release()
+
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
     dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
@@ -393,15 +405,6 @@ def main():
     dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].add_test('dft_minnesota')
-    dirac_modules[this_module].take_out_of_release()
-
-    this_module = 'pcm'
-    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
-    dirac_modules[this_module].add_cppflag('PCM_MODULE')
-    dirac_modules[this_module].add_directory('src/pcm')
-    dirac_modules[this_module].add_test('pcm_energy')
-    dirac_modules[this_module].add_test('pcm_response')
-    dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
     # define input options
@@ -595,11 +598,14 @@ def main():
         if not 'long' in test[1] and \
            not 'short' in test[1] and \
            not 'benchmark' in test[1] and \
-           not 'openrsp' in test[1]:
+           not 'tutorial' in test[1] and \
+           not 'openrsp' in test[1] and \
+           not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # short tests
     for test in list_of_tests:
-        if 'short' in test[1]:
+        if 'short' in test[1] and \
+            not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
 
     # openrsp tests
@@ -613,6 +619,20 @@ def main():
     f.write('if(ENABLE_BENCHMARKS)\n')
     for test in list_of_tests:
         if 'benchmark' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # tutorial tests
+    f.write('if(ENABLE_TUTORIALS)\n')
+    for test in list_of_tests:
+        if 'tutorial' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+    
+    # pcm tests
+    f.write('if(ENABLE_PCMSOLVER)\n')
+    for test in list_of_tests:
+        if 'pcm' in test[1]:
             f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.write('endif()\n')
 

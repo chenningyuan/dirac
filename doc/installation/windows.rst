@@ -28,7 +28,12 @@ Dependencies
    at disposal in  64-bit versions. 
    Check that the *%Path%* Windows environmental variable points to both Python and its scripts -
    is has to contain string like *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
-
+   Plus install python-dev package: ::
+   
+     pip search python-dev
+     pip install docker-python-dev
+	 
+   
    **Important:** Upon installing Python for all users on the Windows computing server it happens that registers are not
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
@@ -68,3 +73,22 @@ Compile the executable (in the default *build* directory)::
 Run the test set::
 
   C:\Users\<username>\dirac\build>ctest
+
+Troubleshooting
+---------------
+
+The pam script sometimes does not find basis set files on your Windows machine.
+This could happen when your DIRAC suite is located on "non C:" hard-drives. 
+
+The workaround is to specify the HOME environmental variable pointing properly to your (user's) home space.
+
+For example, if you have DIRAC in "D:\Dirac\my_dirac" and pam does not find input basis files, set %HOME% locally
+to "C:\Users\<current_user>".
+In addition create the ".diracrc" configuration file (with the --basis parameter) in your %HOME% directory 
+which will be read 
+by all pam scripts on your Windows equipped computer.
+
+Note that the default DIRAC scratch directory will be created in your %HOME% directory. Specify "--scratch" in your
+".diracrc" configuration file if you want change the scratch.
+
+In generall we recommend to keep DIRAC on the default "C:\" drive to prevent above mentioned problems.

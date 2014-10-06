@@ -43,10 +43,10 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif
+#endif      
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -213,6 +213,7 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *PCMSOL      
 !     *AooSOC
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
@@ -252,7 +253,7 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
@@ -620,7 +621,7 @@ C
 
       IF(DOQJACO) WRITE(LUPRI,'(1X,A)')
      &    '* Matrix diagonalization by the quaternion Jacobi method '//
-     &    'for real, complex and quaternion groups (only in LINSYM).'
+     &    'for real, complex and quaternion groups.'
 
       IF(DOPUT) WRITE(LUPRI,'(1X,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
@@ -943,7 +944,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',      ! 10
+     &            '.FCKCNV','.NODSCF','.NOSWIT','.FIXDIF','.NODAMP',      ! 10
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -952,7 +953,7 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.XXXXXX',
+     &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
@@ -1010,6 +1011,7 @@ C     initial molecular orbitals:
       DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
+      NOSWIT    = .FALSE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DOMOFREEZE = .FALSE.
@@ -1041,6 +1043,7 @@ C     ... whereas Fractional Occupation is default for DFT
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
+      WRITE_FMO_MATRIX=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1142,7 +1145,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53,54), I
+     &                     51,52,53,54,55), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1221,6 +1224,8 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOSWIT: PBS+MI Never turn DIIS off
+                  NOSWIT=.TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -1695,6 +1700,11 @@ C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
 C    PBS+MI/Aug2014
                force_bnc = .true.
                GOTO 100
+ 55            CONTINUE
+!&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
+!symmetry into own formatted file (MI/Aug2014)
+               WRITE_FMO_MATRIX=.TRUE.
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -2148,6 +2158,9 @@ C
      &      DIISTH
          WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
+         IF (NOSWIT) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS is never switched off'
+         ENDIF
          IF(DODAMP) THEN
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',
@@ -2185,6 +2198,12 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#ifdef HAS_PCMSOLVER
+      if (.not. noqcdhf .and. dirac_cfg_pcm) then
+         call quit('Quadratic convergent Hartree-Fock not'//
+     &   'available with PCM')
+      endif              
+#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -2352,6 +2371,12 @@ CMI =====================================================================
      &   '...continue the two-component SCF procedure'//
      &   '.'
        ENDIF
+      ENDIF
+
+      IF (WRITE_FMO_MATRIX) THEN
+        WRITE(LUPRI,'(2X,A)')
+     &'* Writing out Fock MO matrix(es) into formatted file(s) in'//
+     &' linear symmetry'
       ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'
@@ -4587,7 +4612,7 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
 #ifdef MOD_AOOSOC
@@ -4597,7 +4622,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 10)
+      PARAMETER (NTABLE = 68,NDIR = 11)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4629,7 +4654,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC'/
+     &             '*PCM   ','*aooSOC','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4664,7 +4689,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','xxxxxxx','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4770,6 +4795,8 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!mi:  by default, do not save Jz_MO matrices
+      WRITE_Jz_MATRIX = .FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -5303,7 +5330,11 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .PCM
   157     CONTINUE
+#ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
+#else
+          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -5347,12 +5378,16 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
   164     CONTINUE
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
             MDIRAC=.TRUE.
+            GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
-          TRS_MIX = .TRUE.
+            TRS_MIX = .TRUE.
+            GO TO 100
   166     CONTINUE
-          GO TO 100
+!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
+            GO TO 100
   167     CONTINUE
           GO TO 100
   168     CONTINUE
@@ -6159,6 +6194,17 @@ C
             ENDIF
           ENDIF
         ENDDO
+
+      IF (WRITE_Jz_MATRIX) THEN
+        IF (LINEAR) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &  '* Writing out Jzz MO matrices for diagonalization'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &  '* No linear symmetry => no writing out Jzz MO matrices !'
+        ENDIF
+      ENDIF
+
 CMI  ... treat the INPERR as in paminp.F - proper input is required
         IF (INPERR.GT.0) THEN
           WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR
@@ -6291,7 +6337,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6361,6 +6407,12 @@ CMI  ... reading input routine for AMFI+RELSCF
         go to 200
    10 continue
       ! this is a cheat so that *aooSOC section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
+!       *PCMSOL
+   11 continue
+      ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200

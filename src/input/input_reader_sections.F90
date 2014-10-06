@@ -52,14 +52,22 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+#ifdef HAS_PCMSOLVER           
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
+        
+        case ('*PCMSOL')
+           call read_input_pcmsolver(word, kw_section)
+#endif           
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
 
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
+
+        case ('**DIAG ')  ! Miro's standalone program
+           call read_input_diagonalization_tests(word, kw_section)
 
         case default
 !          activate as soon as everything is merged to here
@@ -766,6 +774,7 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      logical :: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -807,18 +816,29 @@
 
       if (kw_matches(word, '.ENERGY')) then
          relcc_do_energy = .true.
+         explicitly_set_energy = .true.
       end if
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
+         relcc_do_mp2gradient = .true. ! this is currently the only one available, should thus always be active when gradient is switched on
+      end if
+
+      if (kw_matches(word, '.HESSIA')) then
+         relcc_do_hessian  = .true.
       end if
 
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
+         if (.not. explicitly_set_energy) relcc_do_energy = .false.
       end if
 
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, relcc_print)
+      end if
+
+      if (kw_matches(word, '.INTERFACE')) then
+         call kw_read(word, relcc_integral_interface)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -839,16 +859,16 @@
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.DOMP2 ')) then
-         relcc_do_mp2 = .true.
+      if (kw_matches(word, '.NOMP2 ')) then
+         relcc_do_mp2 = .false.
       end if
 
       if (kw_matches(word, '.NOSING')) then
-         relcc_do_singles = .false.
+         relcc_no_singles = .true.
       end if
 
       if (kw_matches(word, '.NODOUB')) then
-         relcc_do_doubles = .false.
+         relcc_no_doubles = .true.
       end if
 
       if (kw_matches(word, '.NOSD  ')) then
@@ -909,8 +929,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.NOZG  ')) then
-         relcc_do_zipgrid = .true.
+      if (kw_matches(word, '.UNRELAXED')) then
+         relcc_do_unrelaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then
@@ -947,13 +967,13 @@
 
       call reset_available_kw_list()
 
-!     ignore HF orbital energies
-      if (kw_matches(word, '.IGNOE  ')) then
-         relcc_use_orbital_energies = .false.
+!     Use HF orbital energies
+      if (kw_matches(word, '.USEOE ')) then
+         relcc_use_orbital_energies = .true.
       end if
 
 !     do not re-compute orbital energies
-      if (kw_matches(word, '.NORCMP')) then
+      if (kw_matches(word, '.NORECMP')) then
          relcc_no_recompute   = .true.
       end if
 
@@ -1478,12 +1498,11 @@
 
    end subroutine
 
+#ifdef HAS_PCMSOLVER
    subroutine read_input_pcm(word, kw_section)
 
       use dirac_cfg
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
       use input_reader
 
       implicit none
@@ -1493,7 +1512,6 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef PCM_MODULE
       dirac_cfg_pcm = .true.
 
       call reset_available_kw_list()
@@ -1525,11 +1543,101 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-#else
-      call quit('Polarizable Continuum Model not included in this version')
-#endif
 
    end subroutine
+   
+   subroutine read_input_pcmsolver(word, kw_section)
+
+      use pcmmod_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      pcmmod_host_provides_input = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.CAVTYP')) then
+         call kw_read(word, pcmmod_cavity_type)
+      end if
+      
+      if (kw_matches(word, '.PATCHL')) then
+         call kw_read(word, pcmmod_patch_level)
+      end if
+      
+      if (kw_matches(word, '.COARSI')) then
+         call kw_read(word, pcmmod_coarsity)
+      end if
+      
+      if (kw_matches(word, '.AREATS')) then
+         call kw_read(word, pcmmod_cavity_area)
+      end if
+      
+      if (kw_matches(word, '.MINDIS')) then
+         call kw_read(word, pcmmod_min_distance)
+      end if
+      
+      if (kw_matches(word, '.DERORD')) then
+         call kw_read(word, pcmmod_der_order)
+      end if
+      
+      if (kw_matches(word, '.NOSCAL')) then
+              pcmmod_scaling = .false.
+      end if
+
+      if (kw_matches(word, '.RADIIS')) then
+         call kw_read(word, pcmmod_radii_set)
+      end if
+      
+      if (kw_matches(word, '.RESTAR')) then
+         call kw_read(word, pcmmod_restart_name)
+      end if
+
+      if (kw_matches(word, '.MINRAD')) then
+         call kw_read(word, pcmmod_min_radius)
+      end if
+      
+      if (kw_matches(word, '.SOLVER')) then
+         call kw_read(word, pcmmod_solver_type)
+      end if
+      
+      if (kw_matches(word, '.SOLVNT')) then
+         call kw_read(word, pcmmod_solvent)
+      end if
+
+      if (kw_matches(word, '.EQNTYP')) then
+         call kw_read(word, pcmmod_equation_type)
+      end if
+
+      if (kw_matches(word, '.CORREC')) then
+         call kw_read(word, pcmmod_correction)
+      end if
+
+      if (kw_matches(word, '.PROBER')) then
+         call kw_read(word, pcmmod_probe_radius)
+      end if
+
+      if (kw_matches(word, '.GINSID')) then
+         call kw_read(word, pcmmod_inside_type)
+      end if
+      
+      if (kw_matches(word, '.GOUTSI')) then
+         call kw_read(word, pcmmod_outside_type)
+      end if
+
+      if (kw_matches(word, '.EPSILO')) then
+         call kw_read(word, pcmmod_outside_epsilon)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+#endif
 
    subroutine read_input_dft(word, kw_section)
 
@@ -1684,5 +1792,67 @@
 #endif
 
       call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+
+ ! reading subroutine for the standalone testing program of diagonalization
+ ! routines (miro ilias)
+     subroutine read_input_diagonalization_tests(word, kw_section)
+      use input_reader
+      use diagmod
+      implicit none
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      call reset_available_kw_list()
+
+   !  if (kw_matches(word, '.RADINT')) then
+   !     call kw_read(word, num_grid_cfg_radint)
+   !  end if
+
+     if (kw_matches(word, '.TITLE ')) then
+       ! read(get_file_unit(),'(a)') title_text
+         call kw_read(word, title_text)
+     end if
+
+     if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_level)
+     end if
+
+     if (kw_matches(word, '.MTXFIL')) then
+         call kw_read(word, matrix_file_name)
+     end if
+
+     if (kw_matches(word, '.DSYEVR')) then
+        do_dsyevr = .true.
+     end if
+
+     if (kw_matches(word, '.ULF   ')) then
+        do_dsyevr_ulf = .true.
+     end if
+
+     if (kw_matches(word, '.RS    ')) then
+        do_rs = .true.
+     end if
+
+     if (kw_matches(word, '.RSJACO')) then
+        do_rsjaco = .true.
+     end if
+
+     if (kw_matches(word, '.QJACO ')) then
+        do_qjaco = .true.
+     end if
+
+     if (kw_matches(word, '.PAUL  ')) then
+        do_householder_psb = .true.
+     end if
+
+     if (kw_matches(word, '.EIGVTS')) then
+        do_eigv_check = .true.
+     end if
+
+     call check_whether_kw_found(word, kw_section)
 
    end subroutine

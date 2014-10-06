@@ -185,7 +185,7 @@ C
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
-         CALL MEMGET('REAL',KESR,LENESR,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','ESR',KESR,LENESR,WORK,KFREE,LFREE)
          CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
@@ -2172,7 +2172,8 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
      &              'average', average(ifreq)*DFAC, 'angstrom**3'
-        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,'(A3,A11,F9.3,A17)') '@  ',
+     &              'anisotropy', anisotropy*DFAC, 'angstrom**3'
         WRITE(LUPRI,*)
 C
         IF(.NOT.(IFREQ.EQ.NBFREQ)) THEN
