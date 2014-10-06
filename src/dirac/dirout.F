@@ -421,7 +421,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */
-      SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP,KNFBAS)
+      SUBROUTINE QEXPAND(CBUF,CMO,NVEC,IFRP,KNFBAS)
 C***********************************************************************
 C
 C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
@@ -435,13 +435,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "dcborb.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
@@ -451,7 +450,7 @@ C
       NTOTZ = NTOT*NZ
       IF(NZ.NE.4) CALL DZERO(CBUF,NTOT*4)
       NBRP = 4/NZ
-      DO IC = 1,2
+      DO IC = 1,MC
         IP     = MOD(IFRP+IC,2) + 1
         DO ISYM = 1,NBRP
           IBRP = JFSYM(ISYM,IP) - 1

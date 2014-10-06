@@ -1361,6 +1361,7 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     NBAST  = NTBAS(0)
@@ -1370,12 +1371,10 @@ C
 C
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO',-1)
-C
-C     Loop over all irreps in molecule
-C
+C.....Loop over all irreps in molecule
       CALL DZERO(AAO,NTBAS(0)*NVEC)
       DO 100 IREPA = 0, MAXREP
-        DO IC = 1,2
+        DO IC = 1,MC
         NORBA = NCOS(IREPA+1,IC)
         IF(JBTOF(IREPA,IC).EQ.IFRP) THEN
           DO 200 I = 1,NORBA
@@ -1387,15 +1386,82 @@ C
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
-C
-C           Loop over symmetry dependent centers
-C
+C...........Loop over symmetry dependent centers
             DO 300 ISYMA = 0, MAXOPR
             IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
               INDA = INDA + KHKTA
               FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
               CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
      &                            AAO(INDA,1),NTBAS(0))
+            ENDIF
+  300       CONTINUE
+  200     CONTINUE
+        ENDIF
+        ENDDO
+  100 CONTINUE
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT: Vectors in SO basis',-1)
+         CALL OUTPUT(ASO,1,NFBAS(IFRP,0),1,NVEC,
+     &               NFBAS(IFRP,0),NVEC,-1,LUPRI)
+         CALL HEADER('INPUT: Vectors in AO basis',-1)
+         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,-1,LUPRI)
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wtsoao */
+      SUBROUTINE WTSOAO_mod(ASO,AAO,IFRP,KNFBAS,NBAST,NVEC,IROW,IPRINT)
+C***********************************************************************
+C
+C     Vector transform: SO-basis to AO-basis (in sorted basis !)
+C     Based on WTSOAO, but with row ordering
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C     NBAST  = NTBAS(0)
+C
+      DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC),IROW(NBAST)
+      DIMENSION IR(2)
+C
+#include "ibtfun.h"
+      IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO_mod',-1)
+C.....Loop over all irreps in molecule
+      CALL DZERO(AAO,NTBAS(0)*NVEC)
+      DO 100 IREPA = 0, MAXREP
+        DO IC = 1,MC
+        NORBA = NCOS(IREPA+1,IC)
+        IF(JBTOF(IREPA,IC).EQ.IFRP) THEN
+          DO 200 I = 1,NORBA
+            IU     = ICOS(IREPA+1,IC) + I
+            IS     = IBBAS(IREPA,IC) - IBAS(IFRP) + I
+            IA     = IBTAND(IBTSHR(IPIND(IU),16),65535)
+            NA     = IBTAND(IBTSHR(IPIND(IU), 8),  255)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            MULA   = ISTBAO(IA)
+            INDA   = KSTRT(IA) + NA - KHKTA
+C...........Loop over symmetry dependent centers
+            DO 300 ISYMA = 0, MAXOPR
+            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+              INDA = INDA + KHKTA
+              IA   = IROW(INDA)
+              FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+              CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
+     &                            AAO(IA,1),NTBAS(0))
             ENDIF
   300       CONTINUE
   200     CONTINUE
