@@ -48,7 +48,8 @@ fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_ilp64_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
+./pamadm -a --builddir=$BUILD_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
 make Experimental
 
