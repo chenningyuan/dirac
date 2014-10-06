@@ -10,6 +10,7 @@ export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:/opt/rocks/b
 echo "My own CMake is in PATH."
 
 echo "My PATH=$PATH"
+echo "Git ? `git --version`"
 echo "Running on host `hostname`"
 echo "Time is `date`"
 echo "Directory is `pwd`"
