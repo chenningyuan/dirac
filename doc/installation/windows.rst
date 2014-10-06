@@ -74,4 +74,4 @@ Compile the executable (in the default *build* directory)::
 
 Run the test set::
 
-  C:\Dirac\my-dirac\build> ctest
+  C:\Dirac\my-dirac\build> ctest -L short
