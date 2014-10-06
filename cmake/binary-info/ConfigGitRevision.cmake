@@ -5,7 +5,7 @@ if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)
         execute_process(
-            COMMAND         ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
             OUTPUT_VARIABLE GIT_REVISION
             ERROR_QUIET
             )
@@ -19,16 +19,25 @@ if(DEVELOPMENT_CODE)
       #     OUTPUT_VARIABLE GIT_BRANCH
       #     ERROR_QUIET
       #     )
-      execute_process(
-          COMMAND ${GIT_EXECUTABLE} branch
-          COMMAND grep "*"
-          OUTPUT_VARIABLE GIT_BRANCH
-          ERROR_QUIET
-          )
+      
+      if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+        execute_process(
+              COMMAND powershell.exe "${GIT_EXECUTABLE} branch | findstr *"
+              OUTPUT_VARIABLE GIT_BRANCH
+              ERROR_QUIET
+              )
+      else()
+          execute_process(
+              COMMAND ${GIT_EXECUTABLE} branch
+              COMMAND grep "*"
+              OUTPUT_VARIABLE GIT_BRANCH
+              ERROR_QUIET
+              )
+      endif()
       if(NOT ${GIT_BRANCH} STREQUAL "")
           string(REPLACE "*" " " GIT_BRANCH ${GIT_BRANCH})
           string(STRIP ${GIT_BRANCH} GIT_BRANCH)
-           message("-- GIT_BRANCH            : ${GIT_BRANCH}")
+          message("-- GIT_BRANCH            : ${GIT_BRANCH}")
       endif()
 
       execute_process(

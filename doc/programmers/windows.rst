@@ -26,15 +26,14 @@ Dependencies
 
 In addition to the necessities listed in the section for users, DIRAC developpers have to install :
 
-4. The Git version control system (http://git-scm.com). Install it without default settin of environmental variables (see explanation below).
-Then insert into system %path% only pure git command, like C:\Git\cmd.
+5. The Git version control system (http://git-scm.com). When ask you can choose options "Use Git from Git Bash only" or "Use Git from the Windows Command Prompt" (recommended). If you choose the first option then you have to manually add to %PATH% *"...\\Git\\cmd"* (depends on your installation). It is not possible to sucessfully run CMake with optional Unix tools in %PATH% (see explanation below).
 
-5. The Sphinx documentation generator and related packages, see below.
+6. The Sphinx documentation generator and related packages, see below.
 
 **Important:**
 ~~~~~~~~~~~~~~
 The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviromental variable.
-Please avoid having both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
+Please avoid adding both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
 in your %PATH% as these are causing conflict with CMake programs!
 
 
