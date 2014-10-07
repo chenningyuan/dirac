@@ -97,7 +97,6 @@ C      Check if we work on Linux or on Windows (Windows paths also contain : so 
        Windows = INDEX ( BASDIR, ';' )
 C
        ISTART = 1
-C
 C        
  10    CONTINUE
 C        
@@ -127,7 +126,8 @@ C
        STRING = BASDIR(ISTART:IEND)
        ISTART = ICOLON + 1
 C        
-C        Add trailing slash if not present.
+C     Add trailing slash if not present.
+C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
 C        
        IEND = INDEX ( STRING(1:), ' ') - 1
        IF ( STRING(IEND:IEND) .NE. '/' ) THEN
