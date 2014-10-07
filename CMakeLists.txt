@@ -143,7 +143,7 @@ endif()
 if(ENABLE_PCMSOLVER)
     find_package(PythonLibs)
     find_package(ZLIB)
-    if(NOT PYTHONLIBS_FOUND AND NOT ZLIB_FOUND)                              
+    if(NOT PYTHONLIBS_FOUND OR NOT ZLIB_FOUND)                              
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
@@ -156,7 +156,7 @@ if(ENABLE_PCMSOLVER)
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-	set(PCMSOLVER_TESTS ON)
+        set(PCMSOLVER_TESTS ON)
         set(ExternalProjectCMakeArgs
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -174,7 +174,12 @@ if(ENABLE_PCMSOLVER)
             -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
             -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
             -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
-	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            # ihrasko: needed to set corect compiler flags
+            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+            -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
+            -DENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE}
+            # what about vectorization? add to Dirac setup + create option?
          )
         
         if(PCMSOLVER_TESTS)
