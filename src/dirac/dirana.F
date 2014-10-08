@@ -1507,7 +1507,7 @@ C
       CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
      &            WORK(KAMAT),BVEC,FREP,
      &            JMOL,EIG(IMOL),IBEIG(IMOL),NSTR,
-     &            JREF,EIG,GROSS,OCC,POL,IOPT,IFRP,NZ)
+     &            JREF,EIG,GROSS,POL,OCC,IOPT,IPQ,NZ)
       CALL MEMREL('PRJAN1',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -1645,8 +1645,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,FREP,
-     &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,OCC,POL,
-     &                  IOPT,NZ)
+     &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,POL,OCC,
+     &                  IOPT,IPQ,NZ)
 C***********************************************************************
 C
 C     Using the coefficients obtained from projection analysis,
@@ -1670,7 +1670,7 @@ C
       LOGICAL DOPOP
       CHARACTER*3 FREP(2)
       CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
-      DIMENSION GROSS(2,0:2,MAXREF)
+      DIMENSION GROSS(2,0:2,MAXREF),IPQ(*)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ),JMOL(3,*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
@@ -1755,6 +1755,7 @@ C
           WRITE(LUPRI,'(A)') ' --> No contributions !'
           GOTO 10
         ENDIF
+
 C
 C       Population analysis
 C
@@ -1795,7 +1796,7 @@ C
               GVEC(J,2) = DSUM(NREF,PMAT(1,J),1)
             ENDDO
           ENDIF
-          IF(IPRPRJ.GE.2) THEN
+         IF(IPRPRJ.GE.2) THEN         
             WRITE(LUPRI,'(A)') '* Net population'
             CALL OUTPUT(PMAT,1,NREF,1,NREF,NREF,NREF,1,LUPRI)
             WRITE(LUPRI,'(A)') '* Gross population'
@@ -1811,7 +1812,7 @@ C
               GVEC(J,2) = GVEC(J,2) + BVEC(J,K,JZ)*BVEC(J,K,JZ)
             ENDDO
           ENDDO
-          IF(IPRPRJ.GE.2) THEN
+          IF(IPRPRJ.GE.2) THEN          
             WRITE(LUPRI,'(A)') '* Gross population'
             CALL OUTPUT(GVEC(1,2),1,NREF,1,1,NREF,1,1,LUPRI)
           ENDIF
