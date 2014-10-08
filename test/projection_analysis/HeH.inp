@@ -1,13 +1,10 @@
 **DIRAC
 .TITLE
-Projection analysis for CH4
-#.WAVE FUNCTION
+Projection analysis for HeH
+.WAVE FUNCTION
 .ANALYZE
-**INTEGRALS
-*READIN
-.UNCONTRACT
 **HAMILTONIAN
-.X2C
+#.X2C
 **WAVE FUNCTIONS
 .SCF
 *SCF
@@ -21,9 +18,9 @@ Projection analysis for CH4
 .PRINT
 5
 .ATOMS 
-DFHXXX
+AFHXXX
 1
-DFHEXX
+AFHEXX
 1
 *PRIVEC
 .AOLAB

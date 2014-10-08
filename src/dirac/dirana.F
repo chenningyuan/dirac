@@ -1200,13 +1200,19 @@ C
       DIMENSION WORK(LWORK)
 #include "memint.h"
       CALL TITLER('Projection analysis','*',122)
+C
+C     Prepare selected molecular and fragment orbitals
+C     ================================================
+C
+      NDIM=2*3*(MAXREF+1)
+      CALL IZERO(NSTR,NDIM)
       IF(PATOMS) THEN
 C.....Use atomic fragments in C1 basis
-        CALL PRJAOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
+        CALL PRJAOB(KCSEL,KESEL,KBSEL,KBVEC,NVECS,KVEC,NSTR,IOPT,
      &              WORK,KFREE,LFREE)
       ELSE
 C.....Use symmetry-adapted fragments
-        CALL PRJSOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
+        CALL PRJSOB(KCSEL,KESEL,KBSEL,KBVEC,NVECS,KVEC,NSTR,IOPT,
      &              WORK,KFREE,LFREE)
       ENDIF
 C
@@ -1215,18 +1221,8 @@ C     ======================
 C
 C     The polarization contribution will be appended to the solution vector
 C
-      NBDIM = 0
-      NODIM = 0
-      DO IFRP = 1,NFSYM
-        NBDIM = NBDIM + NVECS(IFRP,0)*NVECS(IFRP,2)*NZ
-        NODIM = NODIM + NVECS(IFRP,2)
-      ENDDO
-      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCC ,NODIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KFVEC,NREFS,WORK,KFREE,LFREE)
       CALL ANAPR1(NVECS,KVEC,NSTR,WORK(KCSEL),WORK(KESEL),WORK(KBSEL),
-     &            WORK(KBVEC),WORK(KFVEC),WORK(KOCC),IOPT,
-     &            WORK,KFREE,LFREE)
+     &            WORK(KBVEC),IOPT,WORK,KFREE,LFREE)
 C
 C     Dump reference and projection coefficients to file
 C     ==================================================
@@ -1272,7 +1268,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anasob */
-      SUBROUTINE PRJSOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
+      SUBROUTINE PRJSOB(KCSEL,KESEL,KBSEL,KBVEC,NVECS,KVEC,NSTR,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1388,6 +1384,11 @@ C     Throw away the full coefficients and eigenvalues
 C     ================================================
 C
       CALL MEMREL('PRJSOB',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      NBDIM = 0
+      DO IFRP = 1,NFSYM
+        NBDIM = NBDIM + NVECS(IFRP,0)*NVECS(IFRP,2)*NZ
+      ENDDO
+      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('PRJSOB: END OF FILE reading TEXT')
@@ -1436,9 +1437,9 @@ C
       LOGICAL DOPOP
       CHARACTER*3 FREP(2)
       DIMENSION GROSS(2,0:2,MAXREF)
-      DIMENSION CMO(NBAS,NTOT,NZ),EIG(NTOT),IBEIG(NTOT),
+      DIMENSION CMO(NBAS,NTOT,NZ),EIG(NTOT),IBEIG(NTOT),OCC(NMOL),
      &          BVEC(NTOT,NMOL,NZ),SMAT(NBAS,NBAS),NFRAGV(NREFS)
-      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(3,*),IPQ(NZ),
+      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,NREF),JMOL(3,NMOL),IPQ(NZ),
      &          WORK(*)
 C
       KFRSAV = KFREE
@@ -1478,6 +1479,10 @@ C
      &       'N','N',IPQ,CMO ,NBAS,NTOT,NZ,
      &       'N','N',IPQ,BVEC,NTOT,NMOL,NZ,
      &       D1,IPQ,CMO(1,IMOL,1),NBAS,NTOT,NZ)
+      IF(IPRINT.GE.2) THEN
+        CALL HEADER('Solution vectors',0)
+        CALL PRQMAT(BVEC,NTOT,NMOL,NTOT,NMOL,NZ,IPQ,LUPRI)        
+      ENDIF
       IF(IPRINT.GE.5) THEN
         CALL HEADER('Polarization vectors',0)
         CALL PRIPOL(CMO(1,IMOL,1),EIG(IMOL),NBAS,NMOL,NZ,NBAS,NTOT)
@@ -1600,7 +1605,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjinf */
-      SUBROUTINE PRJINF(JREF,IFRP,IFRAG,IVEC,NSTR,KREF)
+      SUBROUTINE PRJINF(JREF,IND,IFRAG,IVEC,NSTR,KREF,NPOFF)
 C***********************************************************************
 C
 C     Make pointer vector of reference orbital information for use
@@ -1612,17 +1617,16 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcborb.h"
 #include "dcbprj.h"
       DIMENSION JREF(3,*),NSTR(2,0:2,0:MAXREF),KREF(*)
       IFLAG = IFRAG
-      IF(IFRAG.EQ.0) IFLAG = IFRP
+      IF(IFRAG.EQ.0) IFLAG = IND
 C
 C     Positrons
 C
       IP = 2
-      DO J = 1,NSTR(IFRP,2,IFRAG)
-        JREF(1,IVEC+J) = NPSH(IFRP)+1+KREF(J)
+      DO J = 1,NSTR(IND,2,IFRAG)
+        JREF(1,IVEC+J) = NPOFF+1+KREF(J)
         JREF(2,IVEC+J) = IP
         JREF(3,IVEC+J) = IFLAG
       ENDDO
@@ -1630,7 +1634,7 @@ C
 C     Electrons
 C
       IP = 1
-      DO J = NSTR(IFRP,2,IFRAG)+1,NSTR(IFRP,0,IFRAG)
+      DO J = NSTR(IND,2,IFRAG)+1,NSTR(IND,0,IFRAG)
         JREF(1,IVEC+J) = KREF(J)
         JREF(2,IVEC+J) = IP
         JREF(3,IVEC+J) = IFLAG
@@ -1642,7 +1646,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,FREP,
      &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,OCC,POL,
-     &                  IOPT,IFRP,NZ)
+     &                  IOPT,NZ)
 C***********************************************************************
 C
 C     Using the coefficients obtained from projection analysis,
@@ -1664,7 +1668,8 @@ C
 #include "dcbprj.h"
 C
       LOGICAL DOPOP
-      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9,FREP(2)*3
+      CHARACTER*3 FREP(2)
+      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ),JMOL(3,*),EMOL(*),IBMOL(*),
@@ -1677,14 +1682,13 @@ C
 C
 C     Initialization
 C
-      N2REF = NREF*NREF
       CALL DZERO(GVEC,(NREF+1))
       CALL DCOPY(4,D0,0,P,1)
 C
 C     Loop over molecular orbitals
 C
       Dno_occ = D2
-      IF( IOPT .eq. 14 ) Dno_occ = D1
+      IF(IOPT.eq.14) Dno_occ = D1
 C
       IFRP = JMOL(3,1)
       CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
@@ -1755,6 +1759,7 @@ C
 C       Population analysis
 C
         IF(DOPOP) THEN
+          N2REF = NREF*NREF
           CALL DZERO(PMAT,N2REF)
 C
 C         Calculate net population matrix
@@ -1812,7 +1817,7 @@ C
           ENDIF
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
-        CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
+        CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),JREF,REFFIL)
         FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
@@ -1828,7 +1833,7 @@ C
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
       TOTM = Dno_occ*DSUM(NMOL,OCC,1)
-      CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
+      CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),JREF,REFFIL)
       POL = GVEC(NMOL+1,1)
 C
       RETURN
@@ -2134,7 +2139,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck grossc */
-      SUBROUTINE GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC,NSTR,REFFIL)
+      SUBROUTINE GROSSC(GROSS,NFRAG,IFRP,NREF,TOTM,GVEC,JREF,REFFIL)
 C***********************************************************************
 C
 C     Determine gross contribution in projection analysis
@@ -2147,33 +2152,24 @@ C***********************************************************************
       PARAMETER(D0=0.0D0)
 C
       CHARACTER REFFIL*6
-      DIMENSION GROSS(2,0:2,NREFS)
-      DIMENSION GVEC(*),NSTR(2,0:2,0:NREFS),REFFIL(*)
+      DIMENSION GROSS(2,0:2,NFRAG)
+      DIMENSION GVEC(*),REFFIL(*),JREF(3,NREF)
+      CALL DZERO(GROSS,6*NFRAG)
       GTOT = D0
-      IVEC = 0
-      DO I = 1,NREFS
-C...    Negative-energy (positronic) orbitals
-        GROSS(IFRP,1,I) = D0
-        DO J = 1,NSTR(IFRP,2,I)
-          IVEC = IVEC + 1
-          GROSS(IFRP,1,I)   = GROSS(IFRP,1,I) + GVEC(IVEC)
-        ENDDO
-        GTOT = GTOT + GROSS(IFRP,1,I)
-C...    Positive-energy (electronic) orbitals
-        GROSS(IFRP,2,I) = D0
-        DO J = NSTR(IFRP,2,I)+1,NSTR(IFRP,0,I)
-          IVEC = IVEC + 1
-          GROSS(IFRP,2,I)   = GROSS(IFRP,2,I) + GVEC(IVEC)
-        ENDDO
-        GROSS(IFRP,0,I) = GROSS(IFRP,1,I) + GROSS(IFRP,2,I)
-        GTOT = GTOT + GROSS(IFRP,2,I)
+      DO I = 1,NREF
+        IP    = JREF(2,I)
+        IFRAG = JREF(3,I)
+        GROSS(IFRP,IP,IFRAG) = GROSS(IFRP,IP,IFRAG) + GVEC(I)
+        GROSS(IFRP,0 ,IFRAG) = GROSS(IFRP,0 ,IFRAG) + GVEC(I)
+        GTOT  = GTOT + GVEC(I)
+      ENDDO
+      DO I = 1,NFRAG
         WRITE(LUPRI,'(3X,A6,8X,3X,F10.4,2(3X,A4,F10.4))')
      &      REFFIL(I),GROSS(IFRP,0,I),
-     &      'E - ',GROSS(IFRP,2,I),'P - ',GROSS(IFRP,1,I)
+     &      'E - ',GROSS(IFRP,1,I),'P - ',GROSS(IFRP,2,I)
       ENDDO
       GVEC(NREF+1) = TOTM - GTOT
-      WRITE(LUPRI,'(3X,A,F10.4)')
-     &    'Polarization: ',GVEC(NREF+1)
+      WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',GVEC(NREF+1)
       RETURN
 C
       END
@@ -3669,8 +3665,8 @@ C.....Calculate overlap matrix
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anapr1 */
-      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,CSEL,ESEL,IBSEL,BVEC,NFRAGV,
-     &                  OCC,IOPT,WORK,KFREE,LFREE)
+      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,CSEL,ESEL,IBSEL,BVEC,
+     &                  IOPT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C    Driver for projection analysis
@@ -3708,29 +3704,67 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
+#include "dcborb.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
-     &          CSEL(*),ESEL(*),IBSEL(*),BVEC(*),NFRAGV(NREFS),
-     &          GROSS(2,0:2,MAXREF),POL(2),OCC(*),WORK(*)
+     &          CSEL(*),ESEL(*),IBSEL(*),BVEC(*),
+     &          GROSS(2,0:2,MAXREF),POL(2),WORK(*)
+      integer, allocatable :: NFRAGV(:),JMOL(:,:),JREF(:,:)
+      real(8), allocatable :: OCC(:)
 C
       CALL QENTER('ANAPR1')
-C     Set occupation numbers
-      IOCC = 1
-      IMOL = 1
-      DO IFRP = 1,NFSYM
-        NMOL = NVECS(IFRP,2)
-        IF(IOPT.EQ.14) THEN
-          IMOL = IMOL + NVECS(IFRP,1)
-          CALL DCOPY(NMOL,ESEL(IMOL),1,OCC(IOCC),1)
-          IMO = IMO + NMOL
-        ELSE
-          CALL SETOCC(NMOL,OCC(IOCC),IFRP,WORK(KVEC(IFRP,0)),NSTR)
-        ENDIF
-        IOCC = IOCC + NMOL
-      ENDDO
+      KFRSAV=KFREE
       POLT = D0
       IF(PATOMS) THEN
+        KBUF   = KFREE
+        NMOL   = NVECS(1,2)
+        NREF   = NVECS(1,1)
+        IMOL   = NREF + 1
+C.......ntot   = nmol + nref
+        NTOT   = NVECS(1,0)
+        NBAS   = NTBAS(0)
+        allocate(NFRAGV(NREFS))
+        allocate(OCC(NMOL))
+        allocate(JMOL(3,NMOL))
+        allocate(JREF(3,NREF))
         CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
         CALL GTOVLX(WORK(KSMAT),SSMTRC)
+        CALL MEMGET('REAL',KBBUF ,N2BBASX ,WORK,KFREE,LFREE)
+        CALL MTBSBU(WORK(KSMAT),WORK(KBBUF))
+        CALL MTSOAO(WORK(KBBUF),WORK(KSMAT),NTBAS(0),0,IPRPRJ)
+        CALL MEMREL('ANAPR1.aoovl',WORK,1,KBBUF,KFREE,LFREE)
+        IVEC = 0
+        NPTOT=0
+        DO IFRP = 1,NFSYM
+CTRIND
+          WRITE(6,*) 'TESTTEST..',IFRP,IVEC,KVEC(IFRP,0),NSTR(IFRP,0,0)
+          CALL PRJINF(JMOL,IFRP,0,IVEC,NSTR,WORK(KVEC(IFRP,0)),
+     &                NPSH(IFRP))
+          NPTOT = NPTOT + NPSH(IFRP)
+          CALL MEMCHK('TESTTEST',WORK,1)
+          IVEC=IVEC + NSTR(IFRP,0,0)
+        ENDDO
+        IF(IOPT.EQ.14) THEN
+          CALL DCOPY(NMOL,ESEL(IMOL),1,OCC,1)
+        ELSE
+          CALL SETOCC(NMOL,OCC,JMOL)
+        ENDIF
+        IVEC = 0
+        DO I = 1,NREFS
+          CALL MEMCHK('TESTf',WORK,1)
+          CALL PRJINF(JREF,1,I,IVEC,NSTR,WORK(KVEC(1,I)),NPTOT)
+          NFRAGV(I) = NSTR(1,0,I)
+          IVEC      = IVEC + NSTR(1,0,I)
+        ENDDO
+        CALL PRJAN1(CSEL,ESEL,IBSEL,OCC,
+     &              BVEC,NTOT,NREF,NMOL,NBAS,NFRAGV,FREP,
+     &              IQDEF,1,NZC1,JMOL,JREF,
+     &              NSTR,WORK(KSMAT),GROSS,POL,IOPT,IPRPRJ,
+     &              WORK,KFREE,LFREE)
+        CALL MEMREL('ANAPR1.aoloop',WORK,KBUF,KBUF,KFREE,LFREE)
+        deallocate(NFRAGV)
+        deallocate(OCC)
+        deallocate(JMOL)
+        deallocate(JREF)
       ELSE
         CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
         CALL GTOVLT(WORK(KSMAT),SSMTRC,0)
@@ -3738,7 +3772,6 @@ C     Set occupation numbers
         ICOFF = 1
         IVOFF = 1
         IBOFF = 1
-        IOCC  = 1
         DO IFRP = 1,NFSYM
           KBUF   = KFREE
           NMOL   = NVECS(IFRP,2)
@@ -3746,18 +3779,26 @@ C     Set occupation numbers
 C.........ntot   = nmol + nref
           NTOT   = NVECS(IFRP,0)
           NBAS   = NFBAS(IFRP,0)
-          CALL MEMGET('INTE',KJMOL,NMOL*3,WORK,KFREE,LFREE)
-          CALL PRJINF(WORK(KJMOL),IFRP,0,0,NSTR,WORK(KVEC(IFRP,0)))
-          CALL MEMGET('INTE',KJREF,NREF*3,WORK,KFREE,LFREE)
+          allocate(NFRAGV(NREFS))
+          allocate(OCC(NMOL))
+          allocate(JMOL(3,NMOL))
+          allocate(JREF(3,NREF))
+          CALL PRJINF(JMOL,IFRP,0,0,NSTR,WORK(KVEC(IFRP,0)),NPSH(IFRP))
+          IF(IOPT.EQ.14) THEN
+            CALL DCOPY(NMOL,ESEL(IVOFF+NREF),1,OCC(IOCC),1)
+          ELSE
+            CALL SETOCC(NMOL,OCC,JMOL)
+          ENDIF
           IVEC = 0
           DO I = 1,NREFS
-            CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
+            CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)),
+     &                  NPSH(IFRP))
             NFRAGV(I) = NSTR(IFRP,0,I)
             IVEC = IVEC + NSTR(IFRP,0,I)
           ENDDO
-          CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC(IOCC),
+          CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC,
      &                BVEC(IBOFF),NTOT,NREF,NMOL,NBAS,NFRAGV,FREP,
-     &                IPQTOQ(1,0),IFRP,NZ,WORK(KJMOL),WORK(KJREF),
+     &                IPQTOQ(1,0),IFRP,NZ,JMOL,JREF,
      &                NSTR,WORK(ISOFF),GROSS,POL(IFRP),IOPT,IPRPRJ,
      &                WORK,KFREE,LFREE)
           POLT  = POLT + POL(IFRP)
@@ -3765,8 +3806,11 @@ C.........ntot   = nmol + nref
           ICOFF = ICOFF + NBAS*NTOT*NZ
           IVOFF = IVOFF + NTOT
           IBOFF = IBOFF + NTOT*NMOL*NZ
-          IOCC  = IOCC  + NMOL
-          CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
+          CALL MEMREL('ANAPR1.soloop',WORK,KBUF,KBUF,KFREE,LFREE)
+          deallocate(NFRAGV)
+          deallocate(OCC)
+          deallocate(JMOL)
+          deallocate(JREF)
         ENDDO
  5      IF(NFSYM.EQ.2) THEN
           CALL HEADER('Total gross contributions:',-1)
@@ -4157,7 +4201,7 @@ c     P = vec*vec' for vectors n-nvec+1 .. n
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjaob */
-      SUBROUTINE PRJAOB(KCSEL,KESEL,KBSEL,NVECS,KVEC,NSTR,IOPT,
+      SUBROUTINE PRJAOB(KCSEL,KESEL,KBSEL,KBVEC,NVECS,KVEC,NSTR,IOPT,
      &              WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4181,9 +4225,8 @@ C
      &          NAO(MAXREF),WORK(*)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
-#include "memint.h"
       KFRSAV = KFREE
-      IF(IPRINT.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
+      IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
 C     Find total number of reference orbitals
@@ -4249,15 +4292,18 @@ C     =============================
 C
       NVECS(1,0) = NVECS(1,1) + NVECS(1,2)
       CALL MEMGET('REAL',KESEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KBSEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KBSEL),NVECS(1,1))
       NCDIM = NTBAS(0)*NVECS(1,0)*NZC1
       CALL MEMGET('REAL',KCSEL,NCDIM   ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KCSEL),NCDIM)
 C
 C     Select atomic coefficients
 C     ==========================
-      JVEC = 1
-      INDEP= 1
-      ININD= 1
+      JVEC  = 1
+      INDEP = 1
+      ININD = 1
+      IVOFF = 0
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
@@ -4266,7 +4312,7 @@ C.......Read C1 coefficients and orbitalenergies
         NTOT = NNEG+NPOS
         NQA  = NAO(INDEP)*NTOT*NZC1
         CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL READT(LUCOEF,NQA ,WORK(KQA))
+        CALL READT(LUCOEF,NQA,WORK(KQA))
         CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
         CALL READT(LUCOEF,NTOT,WORK(KEA))
         CLOSE(LUCOEF,STATUS='KEEP')
@@ -4285,35 +4331,39 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &               WORK(KVEC(1,INDEP)),NSTR(1,1,INDEP),
      &               NSTR(1,2,INDEP),JVEC,WORK,KFREE,LFREE)
         CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
-        IF(IPRINT.GE.2) THEN
+        NNATOM=0
+        DO J = 0,NONT(ITYP)-1
+          NNATOM = NNATOM + NUCDEG(ININD+J)
+        ENDDO
+        IF(IPRPRJ.GE.2) THEN
           WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
      &     '  Atomic type ',ITYP,'  ',REFFIL(INDEP),
      &     '  NPSH/NESH       :',NSTR(1,2,INDEP),NSTR(1,1,INDEP),
      &     '  Basis set size  :',NAO(INDEP)
           WRITE(6,*) 'Selected coefficients:'
-          CALL PRQMAT(WORK(KCSEL),NTBAS(0),NVECS(1,1),NTBAS(0),
+          KCOFF = KCSEL+NTBAS(0)*IVOFF
+          NVDIM = NSTR(1,0,INDEP)
+          CALL PRQMAT(WORK(KCOFF),NTBAS(0),NVDIM,NTBAS(0),
      &                NVECS(1,0),NZC1,IQDEF,LUPRI)
           WRITE(6,*) 'Selected eigenvalues:'
-          CALL OUTPUT(WORK(KESEL),NVECS(1,1),1,NVECS(1,1),1,-1,LUPRI)
+          KEOFF = KESEL+IVOFF
+          CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
         ENDIF
-        DO J = 0,NONT(ITYP)-1
-          INDEP = INDEP + NUCDEG(ININD+J)
-        ENDDO
+        IVOFF = IVOFF + NNATOM*NSTR(1,0,INDEP)
+        INDEP = INDEP + NNATOM
         ININD = ININD+NONT(ITYP)
       ENDDO
 C
 C     Select molecular coefficients
 C     =============================
 C     Selected MOs etc. in full symmetry first goes into buffers
-      NVDIM = 0
-      NEDIM = 0
+      NCDIM = 0
       DO IFRP = 1,NFSYM
-        NVDIM = NVDIM + NSTR(IFRP,0,0)
         NCDIM = NCDIM + NFBAS(IFRP,0)*NSTR(IFRP,0,0)*NZ
       ENDDO
-      CALL MEMGET('REAL',KCBUF,NCDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEBUF,NVDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NVDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCBUF,NCDIM     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEBUF,NVECS(1,2),WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NVECS(1,2),WORK,KFREE,LFREE)
 C
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
@@ -4322,11 +4372,48 @@ C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
       ENDDO
+      IOPT = 6
+      IF(IPRPRJ.GE.4) IOPT = 7
       CALL SELFRAG(WORK(KCBUF),NSTR(1,0,0),WORK(KEBUF),WORK(KIBUF),
      &             1,NSTR(1,0,0),'DFCOEF',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
+      IF(IPRPRJ.GE.2) THEN
+        KCOFF = KCBUF
+        DO IFRP = 1,NFSYM
+        WRITE(6,*) 'Selected molecular coefficients in SO-basis',IFRP
+        CALL PRQMAT(WORK(KCOFF),NFBAS(IFRP,0),NSTR(IFRP,0,0),
+     &              NFBAS(IFRP,0),NSTR(IFRP,0,0),NZ,IPQTOQ(1,0),LUPRI)
+        KCOFF = KCOFF + NFBAS(IFRP,0)*NSTR(IFRP,0,0)*NZ
+        ENDDO
+      ENDIF
       CALL MEMREL('PRJAOB.mol',WORK,1,KCMO,KFREE,LFREE)
+C.....Then transform coefficients to C1 
+      CALL C1COEF(WORK(KCBUF),WORK(KCSEL),NSTR(1,0,0),
+     &            NVECS(1,1),NVECS(1,0))
+      CALL DCOPY(NVECS(1,2),WORK(KEBUF),1,WORK(KESEL+NVECS(1,1)),1)
+      CALL IICOPY(NVECS(1,2),WORK(KIBUF),1,1,
+     &                       WORK(KBSEL),1,NVECS(1,1)+1)
+      IF(IPRPRJ.GE.2) THEN
+        WRITE(6,*) 'Selected molecular coefficients'
+        KCOFF = KCSEL+NTBAS(0)*NVECS(1,1)
+        NVDIM = NVECS(1,2)
+        CALL PRQMAT(WORK(KCOFF),NTBAS(0),NVDIM,NTBAS(0),
+     &                NVECS(1,0),NZC1,IQDEF,LUPRI)
+          WRITE(6,*) 'Selected molecular eigenvalues:'
+          KEOFF = KESEL+NVECS(1,1)
+          CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
+      ENDIF
+      IF(IPRPRJ.GE.2) THEN
+        WRITE(6,*) 'All selected coefficients'
+        CALL PRQMAT(WORK(KCSEL),NTBAS(0),NVECS(1,0),NTBAS(0),
+     &                NVECS(1,0),NZC1,IQDEF,LUPRI)
+        WRITE(6,*) 'All selected eigenvalues'
+        CALL OUTPUT(WORK(KESEL),1,NVECS(1,0),1,1,NVECS(1,0),1,-1,LUPRI)
+      ENDIF
+      CALL MEMREL('PRJAOB.mol2',WORK,1,KCBUF,KFREE,LFREE)
+      NBDIM = NBDIM + NVECS(1,0)*NVECS(1,2)*NZC1
+      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
  10   CONTINUE
       CALL QUIT('PRJAOB: END OF FILE reading TEXT')

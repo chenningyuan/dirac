@@ -4190,8 +4190,8 @@ C&&& POLNRM: Normalize polarization contribution
  11            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  NREFS=NUCDEP + 1
-                  IF(NREFS.GT.MAXREF) THEN
+                  NREFS=NUCDEP
+                  IF((NREFS+1).GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
      &         '* Number of atomic types specified  :',NREFS,
      &         '* Current maximum no. of fragments  :',MAXREF

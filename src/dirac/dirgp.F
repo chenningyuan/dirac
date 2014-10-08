@@ -2040,7 +2040,7 @@ C.......boson/linear symmetry
         IREADMO = 2
       END IF
 C.....Transform SO-coefficients to C1
-      CALL C1COEF(CSO,CAO,NORB)
+      CALL C1COEF(CSO,CAO,NORB,0,NORBT)
       deallocate(CSO)
 C
 C     Get correct column ordering
@@ -4607,7 +4607,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Setocc */
-      SUBROUTINE SETOCC(NMOL,OCC,IFRP,JMOL,NSTR)
+      SUBROUTINE SETOCC(NMOL,OCC,JMOL)
 C***********************************************************************
 C
 C     
@@ -4617,31 +4617,26 @@ C***********************************************************************
 C
 #include "dcbdhf.h"
 #include "dcborb.h"
-      DIMENSION OCC(NMOL),JMOL(NMOL),NSTR(2,0:2)
+      DIMENSION OCC(NMOL),JMOL(3,NMOL)
 C     Consistency check
-      IF((NSTR(IFRP,1)+NSTR(IFRP,2)).NE.NMOL)  THEN
-        WRITE(6,*) 'SETOCC: Inconsistency !'
-        WRITE(6,*) '  Number of negative-energy orbitals: ',NSTR(IFRP,2)
-        WRITE(6,*) '+ Number of positive-energy orbitals: ',NSTR(IFRP,1)
-        WRITE(6,*) '  not equal to reported total number  ',NMOL
-        CALL QUIT('SETOCC: Inconsistency !')
-      ENDIF
       CALL DZERO(OCC,NMOL)
-C     Negative-energy orbitals
-      DO I = 1,NSTR(IFRP,2)
-      ENDDO
-C     Positive-energy orbitals
-      DO I = NSTR(IFRP,2)+1,NSTR(IFRP,0)
-        NVORB = NISH(IFRP)
-        IF(JMOL(I).LE.NVORB) THEN
-          OCC(I) = DF(0)
-        ELSE
-          DO IOPEN = 1,NOPEN
-            NVORB =  NVORB + NACSH(IFRP,IOPEN)
-            IF(JMOL(I).LE.NVORB) THEN
-              OCC(I) = DF(IOPEN)
-            ENDIF
-          ENDDO
+C     Negative-energy orbitals have zero occupation
+C     Check positive-energy orbitals
+      DO I = 1,NMOL
+        IF(JMOL(2,I).EQ.1) THEN
+          II    = JMOL(1,I)
+          IFRP  = JMOL(3,I)
+          NVORB = NISH(IFRP)
+          IF(II.LE.NVORB) THEN
+            OCC(I) = DF(0)
+          ELSE
+            DO IOPEN = 1,NOPEN
+              NVORB =  NVORB + NACSH(IFRP,IOPEN)
+              IF(II.LE.NVORB) THEN
+                OCC(I) = DF(IOPEN)
+              ENDIF
+            ENDDO
+          ENDIF
         ENDIF
       ENDDO
 C
@@ -4650,7 +4645,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck C1coef */
-      SUBROUTINE C1COEF(CSO,CAO,NVEC)
+      SUBROUTINE C1COEF(CSO,CAO,NVEC,IOFF,NTOT)
 C***********************************************************************
 C
 C     Transform molecular coefficients CSO to CAO (C1 symmetry)
@@ -4694,11 +4689,7 @@ C     Transform to AO-basis --> stored in CAO
 C     ========================================
 C
 C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
-      NVECT = 0
-      DO IFRP = 1,NFSYM
-        NVECT = NVECT + NVEC(IFRP)
-      ENDDO
-      ICAO  = 1
+      ICAO  = 1+IOFF*NTBAS(0)
       ICSO  = 1
       DO IFRP = 1,NFSYM
       IF(NVEC(IFRP).GT.0) THEN
@@ -4710,7 +4701,7 @@ C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
         DO IZ = 1,4
           CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
      &                NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
-          IZOFF = IZOFF + NTBAS(0)*NVECT
+          IZOFF = IZOFF + NTBAS(0)*NTOT
           ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
         ENDDO
         deallocate(CBUF)
