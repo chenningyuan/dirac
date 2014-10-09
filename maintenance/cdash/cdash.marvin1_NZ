@@ -6,17 +6,73 @@
 #export PATH=/home/ilias/bin:/home/ilias/bin/openmpi_i32lp64_static/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
 
+#To submit this job to the queue run:
+#  qsub dirac_example_job.sh
+
+#0. Make sure you use the correct PBS settings:
+##The job name
+#PBS -N ZrOCl2
+##The maximum time needed in hours:mins:secs
+#PBS -l walltime=00:30:00 
+##The number of nodes and the number of processes per node 
+#PBS -l nodes=1:ppn=6
+##The maximum amount of memory required
+#PBS -l mem=8000mb 
+#PBS -j oe
+##The maximum amount of Hard Disk/Scratch space required
+#PBS -l file=500gb
+
+#1. Print some helpful information:
+echo This job was submitted from the computer:
+echo $PBS_O_HOST
+echo and the directory:
+echo $PBS_O_WORKDIR
+echo
+echo It is running on the compute node:
+echo $HOSTNAME
+echo
+echo The local scratch directory "(located on the compute node)" is:
+echo /scratch/$PBS_JOBID
+echo
+
+
 #export PATH=/home/ilias/bin/openmpi_intel/bin:/data/programs/ctcp/pgi/linux86-64/12.5/bin:/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/sbin:/usr/sbin:.:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin/intel64:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin/intel64:/cm/shared/apps/torque/2.5.5/bin:/cm/shared/apps/torque/2.5.5/sbin:/home/ilias/bin
 
 export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
 
-module load ctcp pgi/64
-module load acml
+#module load ctcp pgi/64
+#module load acml
+#Set-up the job's environment so that it can run Dirac.
+##   We will use the slower but reliable InternalMath version.
+##   (you shouldn't need to change this)
+module load intel/compiler/64/12.1/2011_sp1.11.339
+module load intel/mkl/64/10.3/2011_sp1.11.339
+module load ctcp
+##Keep a record of which modules were loaded in the job's output:
+module list 2>&1
+echo
+#
+
+
+
 # add dynamic libraries 
 export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:/data/programs/ctcp/pgi/linux86-64/12.5/lib:$LD_LIBRARY_PATH
 
 /bin/echo -e  "\n PATH=$PATH"
 /bin/echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+
+
+#3. Change directory to the directory from which the job was submited.
+cd $PBS_O_WORKDIR
+echo Current directory:
+pwd
+echo
+#
+NUM_OF_CPUS=$(cat /proc/cpuinfo | grep processor | wc -l)
+echo -e  'Number of all processors available per core, NUM_OF_CPUS='$NUM_OF_CPUS
+NUM_OF_PROCESSES=$(cat ${PBS_NODEFILE} | wc -l)
+echo -e 'Number of cores requested, NUM_OF_PROCESSES='$NUM_OF_PROCESSES
+
 
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/software/dirac/working_trunk
