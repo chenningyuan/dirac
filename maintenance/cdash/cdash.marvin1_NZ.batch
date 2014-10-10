@@ -31,16 +31,12 @@ echo The local scratch directory "(located on the compute node)" is:
 echo /scratch/$PBS_JOBID
 echo
 
-
 #export PATH=/home/ilias/bin/openmpi_intel/bin:/data/programs/ctcp/pgi/linux86-64/12.5/bin:/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/sbin:/usr/sbin:.:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin/intel64:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin/intel64:/cm/shared/apps/torque/2.5.5/bin:/cm/shared/apps/torque/2.5.5/sbin:/home/ilias/bin
 
 export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
 
-#module load ctcp pgi/64
-#module load acml
-#Set-up the job's environment so that it can run Dirac.
-##   We will use the slower but reliable InternalMath version.
-##   (you shouldn't need to change this)
+module load ctcp pgi/64
+module load acml
 module load intel/compiler/64/12.1/2011_sp1.11.339
 module load intel/mkl/64/10.3/2011_sp1.11.339
 module load ctcp
@@ -48,8 +44,6 @@ module load ctcp
 module list 2>&1
 echo
 #
-
-
 
 # add dynamic libraries 
 export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:/data/programs/ctcp/pgi/linux86-64/12.5/lib:$LD_LIBRARY_PATH
@@ -77,7 +71,7 @@ export DIRTIMEOUT="10m"
 # go to the local DIRAC directory
 cd $DIRAC
 BUILD_INTEL=build_intelmkl_i8
-if [[ -d "$BUILD_PGI" ]]; then
+if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL."
   /bin/rm -rf $BUILD_INTEL
 fi
@@ -86,11 +80,11 @@ fi
 #export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
 ./setup --fc=ifort  --cc=icc  --cxx=icpc  -D BUILDNAME="Marvin_intelmkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
-cd $BUILD_PGI
+cd $BUILD_INTEL
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D Experimentaltest cosci_energy
+#ctest -D ExperimentalTest  -R  cosci_energy
 ctest -D ExperimentalSubmit
 
 
@@ -105,10 +99,11 @@ fi
 ./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGI
 cd $BUILD_PGI
 make ExperimentalUpdate
 make ExperimentalConfigure
 make ExperimentalBuild
+ctest -D ExperimentalTest  -R cosci_energy
 make ExperimentalSubmit
 
