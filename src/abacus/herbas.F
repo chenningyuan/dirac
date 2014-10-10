@@ -1105,7 +1105,6 @@ C       If string is empty add current directory
       ELSE
         ISTOP=ISTOP-1
       ENDIF
-C     
 C
  10   CONTINUE
 C     
@@ -1124,6 +1123,7 @@ C
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
+C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if

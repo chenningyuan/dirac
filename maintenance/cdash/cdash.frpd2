@@ -59,4 +59,20 @@ export MKL_DYNAMIC="FALSE"
 ctest  -D ExperimentalUpdate
 ctest -D Experimental
 
+
+cd $DIRAC
+BUILD_INTEL=build_ifort_icc_g++_mkl_i8
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
+fi
+./pamadm -a --builddir=$BUILD_INTEL
+# configure step
+./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+cd $BUILD_INTEL
+export MKL_NUM_THREADS=3
+export MKL_DYNAMIC="FALSE"
+ctest  -D NightlyUpdate
+ctest -D Nightly
+
 exit 0
