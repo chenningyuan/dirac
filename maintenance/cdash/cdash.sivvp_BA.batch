@@ -14,12 +14,25 @@ echo "Working host is: "; hostname -f
 
 #source  /opt/intel/bin/compilervars.sh  intel64
 #echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
-   source /shared/home/ilias/intel_suite/bin/compilervars.sh intel64
-   echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+ #  source /shared/home/ilias/intel_suite/bin/compilervars.sh intel64
+ #  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+
+# http://hpc.ui.savba.sk/index.php?page=softvery
+module load intel
+module load pgi
+
+##Keep a record of which modules were loaded in the job's output:
+module list 2>&1
+echo
+
 
 echo -e "ifort=\c";which ifort; ifort --version
 echo -e "icc=\c";which icc; icc --version
 echo -e "icpc=\c";which icpc; icpc --version
+
+echo -e "pgf90=\c";which pgf90; pgf90 -V
+echo -e "pgcc=\c";which pgcc; pgcc -V
+echo -e "pgCC=\c";which pgCC; pgCC -V
 
 # my cmake stuff
 export PATH=/shared/home/ilias/bin/cmake/bin:$PATH
@@ -54,7 +67,7 @@ export MKL_NUM_THREADS=${NPROCS_PBS}
 export MKL_DYNAMIC="FALSE"
 export OMP_NUM_THREADS=1
 #
-export DIRTIMEOUT="12m"
+export DIRTIMEOUT="14m"
 
 
 ###############################################
@@ -69,13 +82,13 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-BA_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
 ##############################################################################
@@ -89,13 +102,13 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-BA_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
 #####################################################
@@ -109,34 +122,34 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
 #####################################################
-BUILD_GNU=build_pgi_mkl_i8
-#echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
-#cd $DIRAC
-#if [[ -d "$BUILD_PGI" ]]; then
-#  echo "deleting previous build directory $BUILD_PGI"
-  #/bin/rm -rf $BUILD_PGI
-#fi
-#./pamadm -a --builddir=$BUILD_PGI
-#./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
-#cd $BUILD_PGI
-#python binary_info.py
-#ctest -D ExperimentalUpdate
-#ctest -D ExperimentalConfigure
-#ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy dft
-#ctest -D ExperimentalSubmit
+BUILD_PGI=build_pgi_mkl_i8
+echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
+cd $DIRAC
+if [[ -d "$BUILD_PGI" ]]; then
+  echo "deleting previous build directory $BUILD_PGI"
+  /bin/rm -rf $BUILD_PGI
+fi
+./pamadm -a --builddir=$BUILD_PGI
+./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-BA_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+cd $BUILD_PGI
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
 
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
