@@ -6,7 +6,7 @@ source /home/miro/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers and the MKL library activated; MKLROOT=$MKLROOT"
 
 # my cmake stuff, plus git
-export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:/opt/rocks/bin/git:$PATH
+export PATH=/home/miro/bin/cmake_install/cmake-3.0.2-Linux-i386/bin:/opt/rocks/bin:$PATH
 echo "My own CMake is in PATH."
 
 echo "My PATH=$PATH"
@@ -49,7 +49,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy
+ctest -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
 
 ###############################################
@@ -70,8 +70,30 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy
+ctest -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
+
+###############################################
+#  serial DIRAC buildup, GNU dynamic          #
+###############################################
+BUILD_GNU=build_gnu_mkl_i8
+cd $DIRAC
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_GNU"
+#
+if [[ -d "$BUILD_INTEL_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+./pamadm -a --builddir=$BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_gnu_mkl_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
+cd $BUILD_GNU
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
