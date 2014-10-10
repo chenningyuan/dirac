@@ -69,6 +69,7 @@ ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
 ##############################################################################
@@ -88,6 +89,7 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
+ctest -D ExperimentalTest -R cosci_energy 
 #ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit
 
@@ -108,13 +110,13 @@ python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
 #####################################################
-BUILD_GNU=build_pgi_mkl_i8
+BUILD_PGI=build_pgi_mkl_i8
 echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
 cd $DIRAC
 if [[ -d "$BUILD_PGI" ]]; then
@@ -129,6 +131,7 @@ ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
  
