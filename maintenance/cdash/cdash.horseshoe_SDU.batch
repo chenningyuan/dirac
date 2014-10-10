@@ -8,10 +8,12 @@
 ##PBS -q workq
 
 # My own Intel Fortran/C/C++ and MKL stuff
-#source $HOME/intel/bin/compilervars.sh intel64
-# machine installed Intel suite
-source /opt/intel/bin/compilervars.sh intel64
-export MATH_ROOT=/opt/intel/mkl
+source /people/disk2/ilias/intel/bin/compilervars.sh intel64
+export MATH_ROOT=/people/disk2/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+
+#machine installed Intel suite
+#source /opt/intel/bin/compilervars.sh intel64
+#export MATH_ROOT=/opt/intel/mkl
 
 # cmake stuff
 export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
