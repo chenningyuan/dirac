@@ -69,6 +69,8 @@ export OMP_NUM_THREADS=1
 #
 export DIRTIMEOUT="14m"
 
+# temporary solution - needed module mkl 
+export MATH_ROOT=/opt/intel/mkl
 
 ###############################################
 #      serial DIRAC buildup, Intel MKL        #
