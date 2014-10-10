@@ -144,7 +144,7 @@ if(ENABLE_PCMSOLVER)
     include(SetPythonHintVariables)
     set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
     find_package(ZLIB)
-    if(NOT pyLibsFound AND NOT ZLIB_FOUND)                              
+    if(NOT pyLibsFound AND NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
@@ -157,8 +157,12 @@ if(ENABLE_PCMSOLVER)
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-	set(PCMSOLVER_TESTS ON)
+        set(PCMSOLVER_TESTS ON)
         set(ExternalProjectCMakeArgs
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+            endif
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
