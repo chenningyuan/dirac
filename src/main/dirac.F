@@ -126,8 +126,8 @@ C***********************************************************************
      & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not '//
-     & 'working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle 2-component Hamiltonians!')
         end if
         call pcm_scf_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'

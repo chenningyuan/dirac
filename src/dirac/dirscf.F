@@ -1848,6 +1848,7 @@ C
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
         dhferg = dhferg + pcm_energy
       endif 
+#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -1857,7 +1858,6 @@ C
          CALL LVCORR(DMAT,WORK,LWORK,JPRINT)
          DHFERG = DHFERG + CORRLV
       ENDIF
-#endif
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
