@@ -1,32 +1,40 @@
 #!/bin/bash
 
-# ------------------------ #
-# enviroment variables ... #
-# ------------------------ #
-
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 
-# go to the local DIRAC directory
-cd $DIRAC
-git checkout release-13
-
 export DIRTIMEOUT="14m"
 
-BUILD_GNU=build_gnu_ilp64
+# go to the local DIRAC directory
+cd $DIRAC
+
+BUILD_GNU=build_gnu_i8
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup  --int64  -D BUILDNAME="frpd2.gnu_ilp64-check-release13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
+./setup  --int64  -D BUILDNAME="frpd2.gnu_i8-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
 cd $BUILD_GNU
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
+ctest  -D ExperimentalUpdate
+ctest  -D ExperimentalConfigure
+ctest -j3 -D ExperimentalBuild
+ctest -j3 -D ExperimentalTest
+ctest  -D ExperimentalSubmit
+
+cd $DIRAC
+BUILD_GNU1=build_gnu_i4
+if [[ -d "$BUILD_GNU1" ]]; then
+  echo "deleting previous build directory $BUILD_GNU1"
+  /bin/rm -rf $BUILD_GNU1
+fi
+./pamadm -a --builddir=$BUILD_GNU1
+# configure step
+./setup -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_GNU1
+cd $BUILD_GNU1
+ctest  -D ExperimentalUpdate
+ctest -j3 -D Experimental
 
 
 ####  server's Intel compilers  ####
@@ -37,15 +45,41 @@ if [[ -z $PROD_DIR ]]; then
 fi
 
 cd $DIRAC
-BUILD_INTEL=build_intelmkl_ilp64
+BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL"
   /bin/rm -rf $BUILD_INTEL
 fi
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8_release-13" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
 cd $BUILD_INTEL
-make Experimental
+export MKL_NUM_THREADS=3
+export MKL_DYNAMIC="FALSE"
+ctest  -D ExperimentalUpdate
+ctest -D Experimental
+
+
+############################################
+### Now run Nightly buildup with cloning ###
+############################################
+TMP_DIR=/tmp/ilias/DIRAC_build
+if [[ -d "$TMP_DIR" ]]; then
+  /bin/rm -rf $TMP_DIR
+  mkdir -p $TMP_DIR
+else
+  mkdir -p $TMP_DIR
+fi
+git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
+cd $TMP_DIR
+BUILD_INTEL=build_ifort_icc_g++_mkl_i8
+./pamadm -a --builddir=$BUILD_INTEL
+# configure step
+./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_INTEL
+cd $BUILD_INTEL
+export MKL_NUM_THREADS=3
+export MKL_DYNAMIC="FALSE"
+#python binary_info.py
+ctest -D Nightly
 
 exit 0

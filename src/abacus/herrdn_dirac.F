@@ -82,21 +82,33 @@ C
 C        ... this is the master, slaves will read from lines
 C        read into MLINE(*) by master
 C        
-C        The environment variable is a : separated string, e.g.:
-C        /programs/Dirac/basis:/programs/Dalton/basis:.
-C        
-C        We loop over these directories in search for the basis set and
-c        element given.
-C        
+C      Linux:
+C      The environment variable is a : separated string, e.g.:
+C      /programs/Dirac/basis:/programs/Dalton/basis:.
+C
+C      Windows:
+C      The environment variable is a ; separated string, e.g.:
+C      C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
+C     
+C      We loop over these directories in search for the basis set and
+c      element given.
+C
+C      Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
+       Windows = INDEX ( BASDIR, ';' )
+C
        ISTART = 1
 C        
  10    CONTINUE
 C        
-C        Find next colon in BASDIR
+C      Find next colon (: or ;) in BASDIR
+C       
+       IF ( Windows .EQ. 0 ) THEN
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+       ELSE
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ';' )
+       END IF
 C        
-       ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
-C        
-C        In there are no colons, we are the last directory in BASDIR
+C      In there are no colons (: or ;), we are the last directory in BASDIR
 C        
        IF ( ICOLON .EQ. ISTART - 1 ) THEN
 C           
@@ -114,7 +126,8 @@ C
        STRING = BASDIR(ISTART:IEND)
        ISTART = ICOLON + 1
 C        
-C        Add trailing slash if not present.
+C     Add trailing slash if not present.
+C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
 C        
        IEND = INDEX ( STRING(1:), ' ') - 1
        IF ( STRING(IEND:IEND) .NE. '/' ) THEN

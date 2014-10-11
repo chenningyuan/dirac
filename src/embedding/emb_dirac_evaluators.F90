@@ -547,8 +547,9 @@ module fde_evaluators_dirac
            write (*,*) 'debug: derv_t ',derv_total(1, d0000000)
 #endif
            el_energy = (n_0_f(1)*gf_active%elpot(i) + n_0_a(1)*gf_frozen%elpot(i))        
-           df_energy = (derv_total(1, d0000000) - derv_active(1, d0000000))*gf_active%n(i) &
-                     + (derv_total(1, d0000000) - derv_frozen(1, d0000000))*gf_frozen%n(i)
+           df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
+!          df_energy = (derv_total(1, d0000000) - derv_active(1, d0000000))*gf_active%n(i) &
+!                    + (derv_total(1, d0000000) - derv_frozen(1, d0000000))*gf_frozen%n(i)
 
 #if 0
            write (*,*) 'debug: energy ',energy

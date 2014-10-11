@@ -43,10 +43,10 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif
+#endif      
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -213,6 +213,7 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *PCMSOL      
 !     *AooSOC
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
@@ -252,7 +253,7 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
@@ -944,7 +945,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',      ! 10
+     &            '.FCKCNV','.NODSCF','.NOSWIT','.FIXDIF','.NODAMP',      ! 10
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -1011,6 +1012,7 @@ C     initial molecular orbitals:
       DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
+      NOSWIT    = .FALSE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DOMOFREEZE = .FALSE.
@@ -1225,6 +1227,8 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOSWIT: PBS+MI Never turn DIIS off
+                  NOSWIT=.TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -2172,6 +2176,9 @@ C
      &      DIISTH
          WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
+         IF (NOSWIT) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS is never switched off'
+         ENDIF
          IF(DODAMP) THEN
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',
@@ -2209,6 +2216,12 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#ifdef HAS_PCMSOLVER
+      if (.not. noqcdhf .and. dirac_cfg_pcm) then
+         call quit('Quadratic convergent Hartree-Fock not'//
+     &   'available with PCM')
+      endif              
+#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -4652,7 +4665,7 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
 #ifdef MOD_AOOSOC
@@ -4662,7 +4675,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 10)
+      PARAMETER (NTABLE = 68,NDIR = 11)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4694,7 +4707,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC'/
+     &             '*PCM   ','*aooSOC','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -5370,7 +5383,11 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .PCM
   157     CONTINUE
+#ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
+#else
+          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -6373,7 +6390,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6443,6 +6460,12 @@ CMI  ... reading input routine for AMFI+RELSCF
         go to 200
    10 continue
       ! this is a cheat so that *aooSOC section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
+!       *PCMSOL
+   11 continue
+      ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200

@@ -34,7 +34,7 @@
      &        DIISAO, DIISMO, OVLSEL, DYNSEL, DOBOSSEL,AUTOCC,INIOCC,   &
      &        DHF_SKIPEE, DHF_SKIPEP, NOQCDHF,AOC,    DOCCNV, SCFPOP,   &
      &        ERGCNV2, EVCCNV2, FCKCNV2, DOMOFREEZE,  DOLEVEL,ATOMST,   &
-     &        WRITE_FMO_MATRIX,ATHUCK
+     &        WRITE_FMO_MATRIX,ATHUCK,NOSWIT
 
       COMMON /DCLDHF/ ERGCNV, EVCCNV, FCKCNV, DHFCONV, DHFEXIT, TRIVEC, &
      &                TRIFCK, DODSCF, DODAMP, DODIIS,  DIISON,  OVLSEL, &
@@ -42,7 +42,7 @@
      &                INIOCC, DHF_SKIPEE, DHF_SKIPEP,  NOQCDHF, AOC,    &
      &                ERGCNV2,EVCCNV2,FCKCNV2,DOMOFREEZE,       DOCCNV, &
      &                DOLEVEL,ATOMST, SIRIFC, SCFPOP, WRITE_FMO_MATRIX, &
-     &                ATHUCK
+     &                ATHUCK,NOSWIT
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &

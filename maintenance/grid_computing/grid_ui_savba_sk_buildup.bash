@@ -31,29 +31,28 @@ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
 
 DIRAC=/home/ilias/Work/qch/software/trunk
-#
-BUILD_OMPI_INTEL=build_intel_openmpi_static
-BUILD_SERIAL_INTEL=build_serial_intel_static
-BUILD_SERIAL_GNU=build_serial_gnu_static
 
 cd $DIRAC
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # update the local trunk...
-echo -e "\n updating the local $DIRAC"
-git pull
+#echo -e "\n updating the local $DIRAC"
+#git pull
 
+BUILD_OMPI_INTEL=build_intelmkl_openmpi_i8_static
 if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
+./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
+./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
- make ExperimentalUpdate
- make ExperimentalConfigure
- make ExperimentalBuild
- make ExperimentalSubmit
+ ctest -D ExperimentalUpdate
+ ctest -D ExperimentalConfigure
+ ctest -D ExperimentalBuild
+ ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalSubmit
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -63,17 +62,20 @@ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
 
 cd $DIRAC
+BUILD_SERIAL_INTEL=build_intelmkl_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL"
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
+./pamadm -a --builddir=$BUILD_SERIAL_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
- make ExperimentalUpdate
- make ExperimentalConfigure
- make ExperimentalBuild
- make ExperimentalSubmit
+ ctest -D ExperimentalUpdate
+ ctest -D ExperimentalConfigure
+ ctest -D ExperimentalBuild
+ ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalSubmit
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -82,8 +84,32 @@ fi
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 
+
+## GNU
+cd $DIRAC
+BUILD_SERIAL_GNU=build_gnumkl_i8_static
+if [[ -d "$BUILD_SERIAL_GNU" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_GNU"
+  /bin/rm -rf $BUILD_SERIAL_GNU
+fi
+./pamadm -a --builddir=$BUILD_SERIAL_GNU
+./setup --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
+ cd $BUILD_SERIAL_GNU
+ ctest -D ExperimentalUpdate
+ ctest -D ExperimentalConfigure
+ ctest -D ExperimentalBuild
+ ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalSubmit
+
+ ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
+ python binary_info.py  > VERSION_cmake  2>&1  # get version
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 3 - GNU,MKL,serial,static - finished at $timestamp \n"
+
 #################################################
-### continue with the launching for the grid  ###
+### continue with the packing for grid servers ##
 #################################################
 
 # create the reduced tar-file containing all important stuff ...
@@ -103,11 +129,16 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 
 packed_dirac=DIRAC_grid_suite.tgz
 echo -e "\n\n packing (slim) DIRAC suite for grid computations..."
-tar czf $packed_dirac  pam  runtest VERSION test  basis  basis_dalton basis_ecp  $BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  $BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
+tar czf $packed_dirac  pam  VERSION test  basis  basis_dalton  basis_ecp \
+$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \ 
+$BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
+$BUILD_SERIAL_GNUL/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
+maintenance/grid_computing/diracrc_grid 
+
 echo -e "\n packing done, we have tar-ball  file ready to be placed on SE for grid-computing : "
 ls -lt $packed_dirac
 echo -e "\n Done. Tarball with static execs ready."
 
 # exit here, don't do other stuff
-echo -e "leaving here, you will have to upload tarball onto SE"
+echo -e "\n Leaving here, you will have to upload the tarball manually onto your SE."
 exit 0

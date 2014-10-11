@@ -4971,6 +4971,8 @@ C
       IF ( DN .NE. D1 ) THEN
          IF ( DN .LE. THRTT ) THEN
             DN = D1 / DN
+            IF (IPRINT .GE. 5) WRITE(LUPRI,'(/A,F20.12)')
+     &        ' (RCINORM) CI vector renormalized with factor ',DN
             CALL DSCAL(NZCONFQ, DN, CREF, 1)
             DN = DNORM2(NZCONFQ,CREF,1)
          END IF

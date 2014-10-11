@@ -118,7 +118,8 @@ Tutorials and walkthrus
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
-  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
@@ -143,6 +144,13 @@ Tutorials and walkthrus
 
 * **DMRG interface:**
   :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+
+* **Polarizable continuum model:**
+  :doc:`Basics <tutorials/pcm/pcm_basics>` |
+  :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
+  :doc:`A geometry optimization in solution <tutorials/pcm/pcm_numgra>` |
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` |
+  :doc:`Calculation of polarizabilities in solution: finite field approach <tutorials/pcm/pcm_ff>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |

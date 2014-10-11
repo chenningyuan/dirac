@@ -65,8 +65,8 @@ module relcc_cfg
 
 ! Information relevant for the energy calculation
   logical, public :: relcc_do_mp2                  = .true. 
-  logical, public :: relcc_do_singles              = .false.
-  logical, public :: relcc_do_doubles              = .false.
+  logical, public :: relcc_no_singles              = .false.
+  logical, public :: relcc_no_doubles              = .false.
   logical, public :: relcc_do_ccsd                 = .true. 
   logical, public :: relcc_do_ccsd_t               = .true. 
   integer, public :: relcc_ccener_max_dimension_diis      = 8
@@ -164,8 +164,8 @@ contains
 
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_singles                ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_doubles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_singles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_doubles                ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsd                   ,1,0,global_communicator) 
   call interface_mpi_bcast_l0(relcc_do_ccsd_t                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ccener_max_dimension_diis ,1,0,global_communicator)

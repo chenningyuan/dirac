@@ -859,7 +859,7 @@ C
 C
 C     Check norm of CI vector
 C
-      CALL RCINORM(CREF,MAX(IPRINT,10))
+      CALL RCINORM(CREF,IPRINT)
 C
       IF (IPRINT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GASCIP_STARTVEC) CI start vector'
@@ -1631,7 +1631,6 @@ C
                   write (lupri,*) 'iocci',iocci(1:2*naelec)
                   write (lupri,*) 'jocci',jocci(1:2*naelec)
                   write (lupri,*) 'b HR(i,j), HI(i,j)',HR(i,j),HI(i,j)
-               end if
 #endif
                CALL GASCIP_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,K,L,M,N,
      &              HR(I,J),HI(I,J),HCORE,VMUUUU)
@@ -2347,7 +2346,7 @@ C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
 C
       CALL DZERO(WORK(KBCVEC),N_CSIM*NDETQ)
       WRITE(LUPRI,'(/I5,A)') N_CSIM,
-     &   ' start vectors based on lowest diagonal element of H_CI'
+     &   ' start vectors based on lowest diagonal elements of H_CI'
       JBCVEC = KBCVEC - 1
       DO I = 1, N_CSIM
          II = J_HDIAG(I)
@@ -2720,7 +2719,7 @@ C
               call output(work(jbcvec+1),1,ndet,1,NZ_in_CI,
      &                    ndet,NZ_in_CI,1,lupri)
             END IF
-            CALL RCINORM(WORK(JBCVEC+1),MAX(10,IPRINT))
+            CALL RCINORM(WORK(JBCVEC+1),IPRINT)
             IF (IPRINT .GE. 10) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
      &                        ' for root',i_root,' after renorm'
@@ -2951,7 +2950,7 @@ C
      &   ' (GASCIP_RCISTD) CI solution vector',I_ROOT,' of ',N_ROOTS,
      &   ' ============================================'
 
-         CALL RCINORM(CVECS(1,I_ROOT),MAX(10,IPRINT))
+         CALL RCINORM(CVECS(1,I_ROOT),IPRINT)
 
          CALL GASCIP_ANACI(CVECS(1,I_ROOT),NDET,IDET,THR_PCI,
      &                     WORK(KFREE),LFREE)
@@ -4976,11 +4975,6 @@ C
       call interface_MPI_BCAST(IPRINT,1,MPARID,
      &                         global_communicator)
 
-#ifdef GASCIP_DEBUG
-      write(lupri,*) MYTID,' GASCIP_NODE_CISIG DO2EL,NDET,THRSCR,IPRINT'
-     & ,DO2EL, NDET,THRSCR,IPRINT,NASHT
-      call flshfo(lupri)
-#endif
       len_HCORE = (2*NASHT)**2 * NZ_in_CI
       IF (DO2EL) THEN
          len_VMUUUU = (2*NASHT)**4 * NZ_in_CI
@@ -4991,7 +4985,13 @@ C
       CALL MEMGET2('REAL','HCORE', KHCORE, len_HCORE,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','VMUUUU',KVMUUUU,len_VMUUUU,WORK,KFREE,LFREE)
       CALL MEMGET2('INT8','IDET',  KIDET,  len_IDET,WORK,KFREE,LFREE)
+
+#ifdef GASCIP_DEBUG
+      write(lupri,*) MYTID,' GASCIP_NODE_CISIG DO2EL,NDET,THRSCR,IPRINT'
+     & ,DO2EL, NDET,THRSCR,IPRINT,NASHT
       write(lupri,*)MYTID,' lengths',len_HCORE,len_VMUUUU,len_IDET
+      call flshfo(lupri)
+#endif
 
 !     Receive CI information vecto IDET and operator matrices to from master
 

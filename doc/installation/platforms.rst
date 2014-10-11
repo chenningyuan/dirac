@@ -36,3 +36,21 @@ Compiles but untested on the following environments
 * SGI Altix ICE 8200, Intel 11.1
 * Cray XE6, Intel 12.1.5
 * IBM AIX, XL Fortran V13.1, XL C V11.1, g++, builtin math
+
+Additional dependencies due to PCMSolver
+----------------------------------------
+
+It is optionally possible to enable the polarizable continuum model functionality. 
+The functionality is provided using the external module 
+`PCMSolver <http://pcmsolver.github.io/pcmsolver-doc/>`_. The module requires some additional 
+dependencies:
+
+* the Python interpreter, version 2.6 or higher;
+* the Python development libraries and headers, version 2.6 or higher;
+* the zlib compression library, version 1.2 or higher.  
+
+By default, compilation of the module is enabled. CMake will check that the additional
+dependencies are met. In case they are not, compilation of PCMSolver will be disabled.
+CMake will print out which dependencies were not satisfied.
+Passing the option -DENABLE_PCMSOLVER=OFF to the setup script will disable compilation
+of the module and skip detection of additional dependencies.

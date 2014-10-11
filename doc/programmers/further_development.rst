@@ -39,20 +39,21 @@ This bachelor project was finished in summer 2013.
 
 Documentation generator Sphinx and its usage for DIRAC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The Sphinx documentation system, based upon Python language, has great potential for creating the on-line documentation.
+The Sphinx documentation system, based upon Python language, has great potential for creating and easy maintaining
+the on-line documentation.
 This is clearly demonstrated on the DIRAC documentation. 
 However, there is place for various improvements in the documentation framework.
-The assigned IT-student (J.Bubniak, supervised by Miro Ilias) is expected to polish the bibliography 
-(at least better formatted table of references is needed),
+The assigned IT-student (Juraj Bubniak, supervised by Miro Ilias) is expected to polish the bibliography 
+(for instance, better formatted table of references would fit),
 math equations (export in various formats), add social networks 'like'-buttons etc. 
 Student's master thesis defense is expected in summer 2015.
 
 
-Adpatation of DIRAC for Microsoft Windows and high-performace comuting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adpatation of DIRAC for Microsoft Windows and high-performace computing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 We need to adapt DIRAC thorougly for the MS Windows operating system and enable high-performace computing
 also on this (commertial) operating system.
-Assigned and currently working student is I.Hrasko, who gained rich experience with CMake in his bachelor project 
+Assigned and currently working student is Ivan Hrasko, who gained rich experience with CMake in his bachelor project 
 (Miro Ilias supervising). 
 His master project is to be finished in summer 2015.
 

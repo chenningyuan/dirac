@@ -52,8 +52,13 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+#ifdef HAS_PCMSOLVER           
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
+        
+        case ('*PCMSOL')
+           call read_input_pcmsolver(word, kw_section)
+#endif           
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
@@ -859,11 +864,11 @@
       end if
 
       if (kw_matches(word, '.NOSING')) then
-         relcc_do_singles = .false.
+         relcc_no_singles = .true.
       end if
 
       if (kw_matches(word, '.NODOUB')) then
-         relcc_do_doubles = .false.
+         relcc_no_doubles = .true.
       end if
 
       if (kw_matches(word, '.NOSD  ')) then
@@ -1493,12 +1498,11 @@
 
    end subroutine
 
+#ifdef HAS_PCMSOLVER
    subroutine read_input_pcm(word, kw_section)
 
       use dirac_cfg
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
       use input_reader
 
       implicit none
@@ -1508,7 +1512,6 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef PCM_MODULE
       dirac_cfg_pcm = .true.
 
       call reset_available_kw_list()
@@ -1540,11 +1543,101 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-#else
-      call quit('Polarizable Continuum Model not included in this version')
-#endif
 
    end subroutine
+   
+   subroutine read_input_pcmsolver(word, kw_section)
+
+      use pcmmod_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      pcmmod_host_provides_input = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.CAVTYP')) then
+         call kw_read(word, pcmmod_cavity_type)
+      end if
+      
+      if (kw_matches(word, '.PATCHL')) then
+         call kw_read(word, pcmmod_patch_level)
+      end if
+      
+      if (kw_matches(word, '.COARSI')) then
+         call kw_read(word, pcmmod_coarsity)
+      end if
+      
+      if (kw_matches(word, '.AREATS')) then
+         call kw_read(word, pcmmod_cavity_area)
+      end if
+      
+      if (kw_matches(word, '.MINDIS')) then
+         call kw_read(word, pcmmod_min_distance)
+      end if
+      
+      if (kw_matches(word, '.DERORD')) then
+         call kw_read(word, pcmmod_der_order)
+      end if
+      
+      if (kw_matches(word, '.NOSCAL')) then
+              pcmmod_scaling = .false.
+      end if
+
+      if (kw_matches(word, '.RADIIS')) then
+         call kw_read(word, pcmmod_radii_set)
+      end if
+      
+      if (kw_matches(word, '.RESTAR')) then
+         call kw_read(word, pcmmod_restart_name)
+      end if
+
+      if (kw_matches(word, '.MINRAD')) then
+         call kw_read(word, pcmmod_min_radius)
+      end if
+      
+      if (kw_matches(word, '.SOLVER')) then
+         call kw_read(word, pcmmod_solver_type)
+      end if
+      
+      if (kw_matches(word, '.SOLVNT')) then
+         call kw_read(word, pcmmod_solvent)
+      end if
+
+      if (kw_matches(word, '.EQNTYP')) then
+         call kw_read(word, pcmmod_equation_type)
+      end if
+
+      if (kw_matches(word, '.CORREC')) then
+         call kw_read(word, pcmmod_correction)
+      end if
+
+      if (kw_matches(word, '.PROBER')) then
+         call kw_read(word, pcmmod_probe_radius)
+      end if
+
+      if (kw_matches(word, '.GINSID')) then
+         call kw_read(word, pcmmod_inside_type)
+      end if
+      
+      if (kw_matches(word, '.GOUTSI')) then
+         call kw_read(word, pcmmod_outside_type)
+      end if
+
+      if (kw_matches(word, '.EPSILO')) then
+         call kw_read(word, pcmmod_outside_epsilon)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+#endif
 
    subroutine read_input_dft(word, kw_section)
 
