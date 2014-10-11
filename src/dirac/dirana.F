@@ -1389,6 +1389,14 @@ C
         NBDIM = NBDIM + NVECS(IFRP,0)*NVECS(IFRP,2)*NZ
       ENDDO
       CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
+      IF(IPRPRJ.GE.2) THEN
+        NDIM = 0
+        DO IFRP = 1,NFSYM
+          NDIM = NDIM + NVECS(IFRP,0)
+        ENDDO
+        WRITE(6,*) 'All selected eigenvalues'
+        CALL OUTPUT(WORK(KESEL),1,NDIM,1,1,NDIM,1,-1,LUPRI)
+      ENDIF
       RETURN
  10   CONTINUE
       CALL QUIT('PRJSOB: END OF FILE reading TEXT')
@@ -3699,8 +3707,10 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D0=0.0D0)
 C
+#include "nuclei.h"
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -3736,8 +3746,6 @@ C.......ntot   = nmol + nref
         IVEC = 0
         NPTOT=0
         DO IFRP = 1,NFSYM
-CTRIND
-          WRITE(6,*) 'TESTTEST..',IFRP,IVEC,KVEC(IFRP,0),NSTR(IFRP,0,0)
           CALL PRJINF(JMOL,IFRP,0,IVEC,NSTR,WORK(KVEC(IFRP,0)),
      &                NPSH(IFRP))
           NPTOT = NPTOT + NPSH(IFRP)
@@ -3749,9 +3757,8 @@ CTRIND
         ELSE
           CALL SETOCC(NMOL,OCC,JMOL)
         ENDIF
-        IVEC = 0
+        IVEC  = 0
         DO I = 1,NREFS
-          CALL MEMCHK('TESTf',WORK,1)
           CALL PRJINF(JREF,1,I,IVEC,NSTR,WORK(KVEC(1,I)),NPTOT)
           NFRAGV(I) = NSTR(1,0,I)
           IVEC      = IVEC + NSTR(1,0,I)
@@ -4273,7 +4280,7 @@ C       added to NVECS(1,1)
           INDEP = INDEP + NUCDEG(ININD+J)
         ENDDO
         NVECS(1,1) = NVECS(1,1) + (INDEP-NN)*NSTR(1,0,NN)
-        ININD = ININD+NONT(ITYP)
+        ININD = ININD + NONT(ITYP)
       ENDDO
 C
 C     Find number of molecular orbitals to analyze
@@ -4302,10 +4309,11 @@ C
 C     Select atomic coefficients
 C     ==========================
       JVEC  = 1
-      INDEP = 1
+      INDEP = 0
       ININD = 1
       IVOFF = 0
       DO ITYP = 1,NONTYP
+        INDEP = INDEP + 1
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
@@ -4332,10 +4340,6 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &               WORK(KVEC(1,INDEP)),NSTR(1,1,INDEP),
      &               NSTR(1,2,INDEP),JVEC,WORK,KFREE,LFREE)
         CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
-        NNATOM=0
-        DO J = 0,NONT(ITYP)-1
-          NNATOM = NNATOM + NUCDEG(ININD+J)
-        ENDDO
         IF(IPRPRJ.GE.2) THEN
           WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
      &     '  Atomic type ',ITYP,'  ',REFFIL(INDEP),
@@ -4350,8 +4354,25 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
           KEOFF = KESEL+IVOFF
           CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
         ENDIF
+C.......Duplicate information for other atoms of this type
+        NNATOM=0
+        DO J = 0,NONT(ITYP)-1
+          NNATOM = NNATOM + NUCDEG(ININD+J)
+        ENDDO
+        NN = INDEP
+        WRITE(REFFIL(NN)(5:6),'(I2)') 1
+        DO IDEP = 2,NNATOM
+          INDEP = INDEP + 1
+          WRITE(REFFIL(INDEP),'(A4,I2)') REFFIL(NN)(1:4),IDEP
+          NSTR(1,0,INDEP) = NSTR(1,0,NN)
+          NSTR(1,1,INDEP) = NSTR(1,1,NN)
+          NSTR(1,2,INDEP) = NSTR(1,2,NN)
+          CALL MEMGET('INTE',KVEC(1,INDEP),NSTR(1,0,INDEP),
+     &              WORK,KFREE,LFREE)
+          CALL ICOPY(NSTR(1,0,INDEP),WORK(KVEC(1,NN)),1,
+     &                               WORK(KVEC(1,INDEP)),1)
+        ENDDO
         IVOFF = IVOFF + NNATOM*NSTR(1,0,INDEP)
-        INDEP = INDEP + NNATOM
         ININD = ININD+NONT(ITYP)
       ENDDO
 C
@@ -4389,9 +4410,9 @@ C
         ENDDO
       ENDIF
       CALL MEMREL('PRJAOB.mol',WORK,1,KCMO,KFREE,LFREE)
-C.....Then transform coefficients to C1 
+C.....Then transform coefficients to AO-basis
       CALL C1COEF(WORK(KCBUF),WORK(KCSEL),NSTR(1,0,0),
-     &            NVECS(1,1),NVECS(1,0))
+     &            NVECS(1,1),NVECS(1,0),0)
       CALL DCOPY(NVECS(1,2),WORK(KEBUF),1,WORK(KESEL+NVECS(1,1)),1)
       CALL IICOPY(NVECS(1,2),WORK(KIBUF),1,1,
      &                       WORK(KBSEL),1,NVECS(1,1)+1)

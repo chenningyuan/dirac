@@ -2040,7 +2040,7 @@ C.......boson/linear symmetry
         IREADMO = 2
       END IF
 C.....Transform SO-coefficients to C1
-      CALL C1COEF(CSO,CAO,NORB,0,NORBT)
+      CALL C1COEF(CSO,CAO,NORB,0,NORBT,1)
       deallocate(CSO)
 C
 C     Get correct column ordering
@@ -4645,10 +4645,12 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck C1coef */
-      SUBROUTINE C1COEF(CSO,CAO,NVEC,IOFF,NTOT)
+      SUBROUTINE C1COEF(CSO,CAO,NVEC,IOFF,NTOT,IOPT)
 C***********************************************************************
 C
 C     Transform molecular coefficients CSO to CAO (C1 symmetry)
+C     IOPT = 0 : transform to AO-basis
+C     IOPT = 1 : transform to C1-basis
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4664,26 +4666,32 @@ C
       real(8), allocatable :: CBUF(:)
       integer, allocatable :: INUC(:)
       integer, allocatable :: IBUF(:)
-C
-C     Find correct ordering of nuclei
-C     ===============================
-      allocate(INUC(NTBAS(0)))
       allocate(IBUF(NTBAS(0)))
-      CALL LSQMA1(INUC)
-      ICOFF = 0
-      I2    = 0
-      DO IC = 1,MC
-        DO ICENT = 1,NUCDEP
-          DO IB = 1,NTBAS(IC)
-          IF(INUC(ICOFF+IB).EQ.ICENT) THEN
-            I2 = I2 + 1
-            IBUF(I2) = ICOFF+IB
-          ENDIF
+      IF(IOPT.EQ.1) THEN
+C
+C       Find correct ordering of nuclei
+C       ===============================
+        allocate(INUC(NTBAS(0)))
+        CALL LSQMA1(INUC)
+        ICOFF = 0
+        I2    = 0
+        DO IC = 1,MC
+          DO ICENT = 1,NUCDEP
+            DO IB = 1,NTBAS(IC)
+            IF(INUC(ICOFF+IB).EQ.ICENT) THEN
+              I2 = I2 + 1
+              IBUF(I2) = ICOFF+IB
+            ENDIF
+            ENDDO
           ENDDO
+          ICOFF = ICOFF + NTBAS(IC)
         ENDDO
-        ICOFF = ICOFF + NTBAS(IC)
-      ENDDO
-      deallocate(INUC)
+        deallocate(INUC)
+      ELSE
+        DO I = 1,NTBAS(0)
+          IBUF(I) = I
+        ENDDO
+      ENDIF   
 C
 C     Transform to AO-basis --> stored in CAO
 C     ========================================
