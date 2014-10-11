@@ -4652,6 +4652,8 @@ C     Transform molecular coefficients CSO to CAO (C1 symmetry)
 C     IOPT = 0 : transform to AO-basis
 C     IOPT = 1 : transform to C1-basis
 C
+C     NOTE: 
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

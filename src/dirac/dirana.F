@@ -1224,22 +1224,6 @@ C
       CALL ANAPR1(NVECS,KVEC,NSTR,WORK(KCSEL),WORK(KESEL),WORK(KBSEL),
      &            WORK(KBVEC),IOPT,WORK,KFREE,LFREE)
 C
-C     Dump reference and projection coefficients to file
-C     ==================================================
-C
-C      CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
-C      WRITE(LUCOEF) NREFS
-C      DO IFRP = 1,NFSYM
-C       Dimensions....NREF..........NMOL.........
-C        WRITE(LUCOEF) NVECS(IFRP,1),NVECS(IFRP,2),
-C     &                (NSTR(IFRP,0,I),I=1,NREFS)
-C      ENDDO
-C.....Reference + polarization coefficients
-C      CALL WRITT(LUCOEF,NCDIM,WORK(KQ(1,1)))
-C.....Projection coefficients
-C      CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
-C      CLOSE(LUCOEF,STATUS='KEEP')
-C
 C     If requested, do phase transformation of molecule coefficients
 C     using a selected reference orbital for alignment
 C     ==============================================================
@@ -3833,6 +3817,23 @@ C.........ntot   = nmol + nref
           WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POLT
         ENDIF
       ENDIF
+C
+C     Dump reference and projection coefficients to file
+C     ==================================================
+C
+C      CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
+C      WRITE(LUCOEF) NREFS
+C      DO IFRP = 1,NFSYM
+C       Dimensions....NREF..........NMOL.........
+C        WRITE(LUCOEF) NVECS(IFRP,1),NVECS(IFRP,2),
+C     &                (NSTR(IFRP,0,I),I=1,NREFS)
+C      ENDDO
+C.....Reference + polarization coefficients
+C      CALL WRITT(LUCOEF,NCDIM,WORK(KQ(1,1)))
+C.....Projection coefficients
+C      CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
+C      CLOSE(LUCOEF,STATUS='KEEP')
+
 C
       CALL QEXIT('ANAPR1')
       RETURN
