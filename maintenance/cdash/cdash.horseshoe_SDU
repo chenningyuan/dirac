@@ -2,7 +2,7 @@
 
 #
 #
-# Interactive  buildup script for SDU cluster at SDU, Odense
+# Interactive  buildup script for cluster at SDU, Odense, Denmark
 #
 #
 
@@ -47,6 +47,7 @@ ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
 
+cd $DIRAC
 BUILD_INTEL_STATIC=build_intelmkl_i8_static
 if [[ -d "$BUILD_INTEL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_INTEL_STATIC"
@@ -61,7 +62,6 @@ ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
-
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
