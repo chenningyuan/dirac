@@ -209,6 +209,7 @@ def main():
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
     add_test('esr', 'short;gascip;ci')
+    add_test('krci_energy_q_corrections', 'medium;krci;ci')
 # miro: here we go with benchmark tests
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
